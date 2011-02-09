@@ -1,0 +1,46 @@
+# $Id: 00_sample_tap_mapfile,v 1.2 2008/08/29 23:58:31 cmzmasek Exp $
+
+RAT#RAT
+Geodia cydonium#GEOCY
+Lubomirskia baicalensis#LUBBA
+Suberites domuncula#SUBDO
+Hydra vulgaris#HYDAT
+Apis mellifera#APIME
+Drosophila pseudoobscura#DROPS
+Aedes aegypti#AEDAE
+Tribolium castaneum#TRICA
+Caenorhabditis briggsae#CAEBR
+HUMAN#HUMAN
+Branchiostoma floridae#BRAFL
+amphioxus#BRAFL
+Brafl1#BRAFL
+Ciona intestinalis#CIOIN
+ciona#CIOIN
+cow#BOVIN
+dog#CANFA
+fugu#FUGRU
+mouse#MOUSE
+MOUSE#MOUSE
+Mus musculus#MOUSE
+Rattus norvegicus#RAT
+tetraodon#TETNG
+Tetraodon nigroviridis#TETNG
+urchin#STRPU
+Xenopus laevis#XENTR
+xenopus#XENTR
+zebrafish#BRARE
+Danio rerio#BRARE
+chicken#CHICK
+celegans#CAEEL
+Caenorhabditis elegans#CAEEL
+fruitfly#DROME
+Drosophila melanogaster#DROME
+Haemonchus contortus#HAECO
+Nematostella vectensis#NEMVE
+anemone#NEMVE
+human#HUMAN
+HUMAN#HUMAN
+Human#HUMAN
+Homo sapiens#HUMAN
+Chlamydomonas reinhardtii#CHLRE
+Monosiga brevicollis#MONBE

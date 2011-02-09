@@ -1,0 +1,100 @@
+# $Id: 00_phylogeny_factory.template,v 1.9 2008/11/25 22:25:52 cmzmasek Exp $
+
+# Name convention if alignment specific parameters
+# are to be used (such as HMMs for hmmalign):
+#  the substring before the first underscore is a
+#  unique identifier and needs to match the identifiers
+#  in '% <parameter-type> <unique-id>=<value>' statements 
+#  Example:
+#  alignment name     : 'bcl2_new_alignment'
+#  parameter statments: '% HMM bcl2=Bcl2_ls' 
+#                       '% RSL bcl2=60' 
+$ PROBCONS=/home/czmasek/SOFTWARE/PROBCONS/probcons_v1_12/probcons
+$ DIALIGN_TX=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.1/source/dialign-tx
+$ DIALIGN_DIR=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.1/conf
+$ MAFFT=/home/czmasek/SOFTWARE/MAFFT/mafft-6.240/src/mafft
+$ T_COFFEE=/home/czmasek/SOFTWARE/T_COFFEE/T-COFFEE_distribution_Version_6.78/bin_linux/t_coffee
+$ MUSCLE=/home/czmasek/SOFTWARE/MUSCLE/muscle3.7/muscle
+$ CLUSTALW=/home/czmasek/SOFTWARE/CLUSTALW/clustalw-2.0.9/src/clustalw2
+$ KALIGN=/home/czmasek/SOFTWARE/KALIGN/kalign203/kalign
+$ HMMALIGN=/home/czmasek/SOFTWARE/HMMER/hmmer-2.3.2/src/hmmalign
+$ MSA_PRO=/home/czmasek/SOFTWARE/FORESTER/DEV/forester-atv/ruby/evoruby/exe/msa_pro.rb
+$ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester-atv/perl/phylo_pl.pl 
+
+# Default value is 40.
+% RSL SRCR=50
+% RSL NACHT=50
+% RSL TIR=60
+% RSL Bcl2=100
+% RSL homeobox=40
+
+% PHYLO_OPT=-WIB100q@1nxbwS21
+
+% TMP_DIR  = /home/czmasek/tmp/
+
+# Need to give full path for HMM files.
+% HMM NACHT=/home/czmasek/DATA/PFAM/NACHT_ls_cz.hmm
+% HMM TIR=/home/czmasek/DATA/PFAM/PFAM_LS/TIR.ls.hmm
+% HMM SRCR=/home/czmasek/DATA/PFAM/PFAM_LS/SRCR.ls.hmm
+% HMM Homeobox=/home/czmasek/DATA/PFAM/PFAM_LS/Homeobox.ls.hmm
+% HMM Cofilin_ADF=/home/czmasek/DATA/PFAM/PFAM_LS/Cofilin_ADF.ls.hmm
+
+
+> KALIGN $ -o $_kalign
+> MSA_PRO -o=p -n=10 -rr=0.5 -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_kalign_05_%[RSL]%.aln $_kalign_05_%[RSL]% %[TMP_DIR]%
+- 
+
+> HMMALIGN -q -m -o $_hmmalign_m %[HMM]% $ 
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign_m $_hmmalign_m_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign_m $_hmmalign_m_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_hmmalign_m_05_%[RSL]%.aln $_hmmalign_m_05_%[RSL]% %[TMP_DIR]%
+- 
+
+> HMMALIGN -q -o $_hmmalign %[HMM]% $ 
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_hmmalign_05_%[RSL]%.aln $_hmmalign_05_%[RSL]% %[TMP_DIR]%
+- 
+
+> PROBCONS $ > $_probcons
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_probcons_05_%[RSL]%.aln $_probcons_05_%[RSL]% %[TMP_DIR]%
+-  
+    
+> DIALIGN_TX DIALIGN_DIR $ $_dialigntx
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_dialigntx $_dialigntx_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_dialigntx $_dialigntx_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_dialigntx_05_%[RSL]%.aln $_dialigntx_05_%[RSL]% %[TMP_DIR]%
+-
+    
+> MAFFT --maxiterate 1000 --localpair --quiet $ > $_mafft
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_mafft $_mafft_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_mafft $_mafft_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_mafft_05_%[RSL]%.aln $_mafft_05_%[RSL]% %[TMP_DIR]%
+-
+    
+#> T_COFFEE $ -outfile $_tcoffee
+#> rm $.dnd
+#> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_tcoffee $_tcoffee_05_%[RSL]%.aln
+#> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_tcoffee $_tcoffee_05_%[RSL]%.nex
+#> PHYLO_PL %[PHYLO_OPT]% $_tcoffee_05_%[RSL]%.aln $_tcoffee_05_%[RSL]% %[TMP_DIR]%
+#> rm $.dnd
+#> rm $.html
+#-
+    
+> MUSCLE  -maxiters 1000 -maxtrees 100 -clw -in $ -out $_muscle
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]%  $_muscle_05_%[RSL]%.aln  $_muscle_05_%[RSL]% %[TMP_DIR]%
+-
+
+> CLUSTALW $ -outfile=$_clustalw
+> rm $.dnd
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_clustalw $_clustalw_05_%[RSL]%.aln
+> MSA_PRO -o=n -n=10 -rr=0.5 -c -rsl=%[RSL]% $_clustalw $_clustalw_05_%[RSL]%.nex
+> PHYLO_PL %[PHYLO_OPT]% $_clustalw_05_%[RSL]%.aln $_clustalw_05_%[RSL]% %[TMP_DIR]%
+> rm $.dnd
+-

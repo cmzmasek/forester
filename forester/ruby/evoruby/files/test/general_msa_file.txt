@@ -1,0 +1,53 @@
+7 26
+# 7 26 is not needed and ignored
+ 
+
+sequence0 ABCDE GHIJ
+ KLMNOPQR TUVW
+sequence1 abcdefghi
+ jklm
+ nopq
+ rstu
+ vw
+sequence2 abcde       
+	fghijkl---x_-*?_XX           
+sequence3 12345678901234567890123                
+
+ # this is_a_comment            
+
+
+sequence4 ----------             
+ -------------                 
+
+sequence5 a*c*ef****************w   
+
+	% this is_another_comment
+
+sequence6 ururufhfghfgftgfhftgftt
+
+   // this is_yet_another_comment
+   !! this is_yet_another_comment
+
+ *  -- *
+
+sequence0 a
+ bc
+sequence1 a
+ b
+ c
+sequence2 abc
+
+sequence3 abc
+          *..
+sequence4 ---                
+sequence5 abc              
+ ...	
+sequence6 abc				
+
+xy0
+xy1
+xy2
+xy3
+xy4
+xy5
+xy6

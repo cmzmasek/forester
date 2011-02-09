@@ -1,0 +1,22 @@
+7 26
+# 7 26 is not needed and ignored
+CLUSTAL 
+PROBCONS 
+>sequence 0
+ABCDEF 
+>sequence 1       
+a
+b         
+c
+//comment 
+d           
+e
+!!comment  
+f  
+  
+  >  sequence 2  
+123456   
+ >  sequence 3   
+
+   a-c--f   
+
