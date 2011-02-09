@@ -1,0 +1,37 @@
+#=ID r17
+#=AC PF99999
+#=DE Test of extended SELEX format
+#=AU SRE, Tue Dec  1 19:17:48 1998
+#=GA -1.0 -2.0
+#=TC -3.0 -4.0
+#=NC -5.0 -6.0
+
+# Derived from r17.slx
+#tag name       weight source   src acc #  from,to,olen description
+#=SQ 28         1.0000 IDENT:   ACCESSION  1..29::29  Sequence one
+#=SQ longname 102.0000 SWISS    NUMBER;    3..19::100 A long name
+#=SQ 2          2.0000 OR       OR         0..0::0    two
+#=SQ 3          3.0000 PIR      -          0..0::0    three
+#=SQ 4          4.0000 OR       FOR        0..0::0    - means no data
+#=SQ 5          5.0000 WHATEVER MISSING    0..0::0    -
+#=SQ 6          6.0000 -        DATA       0..0::0    foo
+#=SQ 7          7      -        -          0..0::0    bar
+#=SQ 8          8.0000 -        -          0..0::0    baz
+#=SQ 9          9.0000 -        -          0..0::0    a description of several words.
+#=SQ 10        10.0000 -        -          0..0::0    -
+
+#=RF        xxxxxxx xxxx xxxxxx
+#=CS        >>>>+>> ^^^^ <<<<<<
+28    gGAGUAAGAUAGC AUCA GCAUCUUGUUCC
+#=SS  +++++>>>>>+>> ^^^^ <<<<<<<+++++
+longname    GUUCACC AUCA GGGGAc
+#=SS        >>>>+>> ^^^^ <<<<<<
+2     AUGGAUGCGCACC AUCA GGGCGUaucuau
+3           GAUCACC AUCA GGGauc
+4           GGUCACC AUCA GGGauc
+5           GGACACC AUCA GGGucu
+6              CACC AUCA GGG
+7           GAUCACC AUCA GGGauc
+8            CUCACC AUCA GGGGG
+9           AUGCACC AUCA GGGCAU
+10           CUCACC AUCA GGGGG

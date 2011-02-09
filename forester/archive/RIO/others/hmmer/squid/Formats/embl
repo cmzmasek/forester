@@ -1,0 +1,155 @@
+ID   XXPHA21    standard; DNA; PHG; 1635 BP.
+XX
+AC   X02501; M23775;
+XX
+SV   X02501.1
+XX
+DT   28-JAN-1986 (Rel. 08, Created)
+DT   12-SEP-1993 (Rel. 36, Last updated, Version 3)
+XX
+DE   Bacteriophage 21 DNA for left end sequence with genes 1 and 2
+XX
+KW   overlapping genes.
+XX
+OS   Bacteriophage 21
+OC   Viruses; dsDNA viruses, no RNA stage; Tailed phages; Siphoviridae.
+XX
+RN   [1]
+RP   1-1635
+RX   MEDLINE; 85237525.
+RA   Miller G., Feiss M.;
+RT   "Sequence of the left end of phage 21 DNA";
+RL   J. Mol. Biol. 183:246-249(1985).
+XX
+DR   SWISS-PROT; P36693; TERL_BPP21.
+DR   SWISS-PROT; P36694; TERS_BPP21.
+XX
+CC   Data kindly reviewed (06-MAR-1986) by M. Feiss
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..1635
+FT                   /db_xref="taxon:10743"
+FT                   /organism="Bacteriophage 21"
+FT   misc_feature    1..177
+FT                   /note="bacteriophage 21 cos segment"
+FT   misc_feature    complement(31..41)
+FT                   /note="integrative host factor (IHF) binding  sequence 1"
+FT   misc_feature    75..85
+FT                   /note="IHF binding sequence 2"
+FT   misc_feature    175..185
+FT                   /note="IHF binding sequence 3"
+FT   RBS             178..181
+FT                   /note="pot. SD-sequence"
+FT   CDS             189..737
+FT                   /db_xref="SWISS-PROT:P36694"
+FT                   /note="gp 1 (aa 1-182)"
+FT                   /transl_table=11
+FT                   /protein_id="CAA26342.1"
+FT                   /translation="MKVNKKRLAEIFNVDPRTIERWQSQGLPCASKGSKGIESVFDTAM
+FT                   AIQWYAQRETDIENEKLRKELDDLRAAAESDLQPGTIDYERYRLTKAQADAQELKNARE
+FT                   DGVVLETELFTFILQRVAQEISGILVRVPLTLQRKYPDISPSHLDVVKTEIAKASNVAA
+FT                   KAGENVGGWIDDFRRAEGS"
+FT   RBS             699..702
+FT                   /note="pot. SD-sequence"
+FT   CDS             709..>1635
+FT                   /db_xref="SWISS-PROT:P36693"
+FT                   /note="gp 2 (aa 1-309)"
+FT                   /transl_table=11
+FT                   /protein_id="CAA26343.1"
+FT                   /translation="MISDAQKAANAAGAIATGLLSLIIPVPLTTVQWANKHYYLPKESS
+FT                   YTPGRWETLPFQVGIMNCMGNDLIRTVNLIKSARVGYTKMLLGVEAYFIEHKSRNSLLF
+FT                   QPTDSAAEDFMKSHVEPTIRDVPALLELAPWFGRKHRDNTLTLKRFSSGVGFWCLGGAA
+FT                   AKNYREKSVDVVCYDELSSFEPDVEKEGSPTLLGDKRIEGSVWPKSIRGSTPKIKGSCQ
+FT                   IEKAANESAHFMRFYVPCPHCGEEQYLKFGDDASPFGLKWEKNKPESVFYLCEHHGCVI
+FT                   HQSELDQSNGRWICENTGMWTRDGLMFF"
+XX
+SQ   Sequence 1635 BP; 411 A; 356 C; 436 G; 432 T; 0 other;
+     gggcggcgac ctcgcggttt ttcactattt atgaaaattt ttcagggaaa atcgtgtcgg        60
+     tacttctcga atataacttt ttgttttttt taatattgca tccgtaaagg tccgacatga       120
+     aagtgtccga aaatgccttt ttctggcgtt ttcatgtcgg gccttgtatt tgataatggg       180
+     ttgttttcat gaaggttaat aaaaagaggc ttgccgaaat tttcaacgtg gacccgcgga       240
+     cgattgaacg ctggcagtct cagggactcc cttgcgcctc caaaggtagt aagggcattg       300
+     aatctgtatt tgatactgcc atggcaattc agtggtatgc gcagagggaa actgatatcg       360
+     aaaacgaaaa gctccgcaaa gaactggacg atttgcgtgc ggcagcggag tcagatttac       420
+     aacccggcac cattgactat gaacgctacc ggctcacaaa agcgcaggca gatgcgcagg       480
+     aactgaaaaa tgcccgtgaa gacggagtag tgctggaaac tgaactgttt accttcattc       540
+     tgcaacgtgt ggcacaggag atttcgggga tacttgtgcg tgtgccgttg acattacagc       600
+     gtaaatatcc ggacatttca ccatcacacc ttgatgtggt gaaaactgaa atcgcgaaag       660
+     cctccaatgt tgcagctaag gccggtgaaa acgtgggcgg gtggatcgat gatttcagac       720
+     gcgcagaagg cagctaatgc agccggtgcg atagctacag ggcttttatc tctcattatt       780
+     cctgttccac tgacgacagt tcagtgggcc aataaacatt attaccttcc taaagagtcg       840
+     tcttataccc cggggcgatg ggaaacactg ccgtttcagg ttggcatcat gaactgtatg       900
+     ggcaacgatc tgattcgcac ggttaacctg attaaatctg cccgtgttgg ttatacaaag       960
+     atgttgctgg gagtggaggc ttattttatt gagcataaat cacgcaacag ccttcttttt      1020
+     cagcccacgg actcagctgc tgaagatttt atgaaatctc atgttgagcc aacgataagg      1080
+     gatgttcctg cattgctgga gctggctcca tggttcggaa gaaaacaccg cgataatacg      1140
+     ctcaccctga agcgtttttc ctccggtgtg gggttctggt gtctgggtgg tgcggcagca      1200
+     aaaaactacc gtgaaaaatc cgtggatgtg gtctgttatg acgagctttc ctcgttcgaa      1260
+     ccggatgttg aaaaagaggg ttcgccaacc ctgctggggg ataaacgtat tgagggctct      1320
+     gtatggccaa aatccattcg cggctcgacg ccaaaaatca aaggctcctg tcagatcgaa      1380
+     aaagccgcta acgagtcggc acacttcatg cgtttttatg tgccctgtcc gcactgtggg      1440
+     gaggagcagt atctgaaatt tggcgatgat gcctcgcctt tcggtcttaa gtgggagaag      1500
+     aataagccag aaagtgtttt ctacctttgc gagcatcatg gctgtgtgat ccatcagtct      1560
+     gagcttgacc agagtaacgg gcggtggatc tgtgaaaaca cgggcatgtg gacccgtgac      1620
+     ggcctgatgt ttttc                                                       1635
+//
+ID   XXPHI80    standard; DNA; PHG; 233 BP.
+XX
+AC   X01639;
+XX
+SV   X01639.1
+XX
+DT   02-JUL-1986 (Rel. 09, Created)
+DT   02-JUL-1986 (Rel. 09, Last updated, Version 1)
+XX
+DE   Bacteriophage phi 80 DNA-fragment with replication origin
+XX
+KW   origin of replication.
+XX
+OS   Bacteriophage phi-80
+OC   Viruses; dsDNA viruses, no RNA stage; Tailed phages; Siphoviridae;
+OC   Lambda phage group; bacteriophage lambda.
+XX
+RN   [1]
+RP   1-233
+RX   MEDLINE; 79135017.
+RA   Grosschedl R., Hobom G.;
+RT   "DNA sequences and structural homologies of the replication origins of
+RT   lambdoid bacteriophages";
+RL   Nature 277:621-627(1979).
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..233
+FT                   /db_xref="taxon:10713"
+FT                   /organism="Bacteriophage phi-80"
+FT   rep_origin      40..187
+FT                   /note="origin of replication of phi 21"
+FT   misc_feature    40..128
+FT                   /note="pot. binding site for initiator protein"
+FT   repeat_region   50..55
+FT                   /note="multiple repeated sequence I"
+FT   misc_feature    61..66
+FT                   /note="inverted repeat of sequence I"
+FT   repeat_region   71..76
+FT                   /note="direct repeat of I"
+FT   misc_feature    82..87
+FT                   /note="inverted repeat of I"
+FT   repeat_region   92..97
+FT                   /note="direct repeat of I"
+FT   misc_feature    103..108
+FT                   /note="inverted repeat of I"
+FT   repeat_region   113..117
+FT                   /note="imp. direct repeat of I"
+FT   misc_feature    129..155
+FT                   /note="pot. region of replicational primer start site"
+FT   misc_feature    156..187
+FT                   /note="pot. binding site for initiator protein"
+XX
+SQ   Sequence 233 BP; 91 A; 51 C; 48 G; 43 T; 0 other;
+     ggaccaaata aaaacatctc agaatggtgc atcctcaaaa cgagggaaaa tcccctaaaa        60
+     cgagggataa aacatccctc aaattggggg attgctatcc ctcaaaacag ggggacacaa       120
+     aagacactat tacaaaagaa aaaagaaaag attattcgtc agagaattct ggcgaatcct       180
+     ctgaccagcc agaaaacgac ctttctgtgg tgaaaccgga tgctgcaatt cag              233
+//

@@ -1,0 +1,641 @@
+% SRE, Mon Dec 25 13:00:46 2000
+
+\documentclass[12pt]{report}
+\usepackage{fullpage}
+\usepackage{times}
+\usepackage{epsfig}
+%\usepackage{html}               % From the LaTeX2html translator
+\usepackage{apalike}
+\setcounter{secnumdepth}{2}
+
+\input{macros}
+
+\begin{document}
+\bibliographystyle{apalike}
+
+\section{SSI format}
+
+SSI format (Sequence/Subsequence Index format) indexes flatfile
+databases by names and/or accessions, enabling fast retrieval.
+
+An SSI index is a binary file that stores sequence names or accessions
+as \emph{keys} that it can look up rapidly. It differentiates between
+\emph{primary keys} and \emph{secondary keys}.  There is one and only
+one primary key per sequence. There can be more than one secondary key
+per sequence. Both primary and secondary keys must be unique
+identifiers (no two records have the same key). A program (like
+HMMER's distributed PVM implementation) that needs to step through
+each sequence one at a time can refer to the list of primary keys. A
+program solely concerned with flexible sequence retrieval (such as
+SQUID's \prog{sfetch}) might consult an SSI index with accessions as
+primary keys, and names as secondary keys.
+
+A single SSI file can index multiple sequence data files. This allows
+indexing multifile databases (e.g. Genbank flatfile distributions).
+
+The SSI format is relatively simple and may prove useful for other
+indexing tasks besides sequence names. HMMER uses SSI format to index
+HMM files.
+
+\subsection{Special features of SSI}
+
+SSI superceded 1994's GSI format after human genome sequence files
+started exceeding 2 GB filesystem limitations, and after problems in
+the HMMER PVM implementation had to be hacked around. SSI has the
+following additional features compared to GSI.
+
+\begin{description}
+\item[Separate primary key section] 
+Primary keys are set apart in a separate section, enabling programs to
+step through a guaranteed one-to-one mapping of keys to sequences.  A
+secondary key section adds many-to-one mapping of keys to sequences.
+
+\item[Arbitrary filename and key lengths]
+File name lengths and key name lengths are effectively unlimited. 
+
+\item[64-bit indexing]
+For sequence files exceeding 2GB, on architectures that support 64-bit
+filesystems (such as IRIX, Solaris, Tru64 UNIX, FreeBSD...), SSI
+supports 64-bit indexing; depending on the system, file sizes may 
+theoretically be allowed to range up to millions of terabytes.
+
+\item[Fast subsequence extraction]
+SSI can be used to greatly accelerate \emph{subsequence} extraction
+from very long sequences (example: human chromosome contigs). The
+sequence file must meet certain formatting conditions for this to
+work; see below for details.
+\end{description}
+
+\subsection{SSI API in SQUID}
+
+\subsubsection{Functions for using a SSI index file:}
+
+\begin{sreapi}
+\item[int SSIOpen(char *filename, SSIFILE **ret\_sfp)]
+
+Opens the SSI index file \prog{filename} and returns a \prog{SSIFILE
+*} stream through \prog{ret\_sfp}. Returns 0 on success, nonzero on
+failure. The caller must eventually close this stream using
+\prog{SSIClose()}.  More than one index can be open at once.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_NOFILE}   & failed to open file; doesn't exist or not readable\\
+\prog{SSI\_ERR\_BADMAGIC} & not a SSI file \\
+\prog{SSI\_ERR\_NO64BIT}  & it has 64-bit offsets, and we can't support that\\
+\prog{SSI\_ERR\_FORMAT}   & file appears to be corrupted\\
+\prog{SSI\_ERR\_MALLOC}   & malloc failed \\
+\end{tabular}
+
+\item[int SSIGetOffsetByName(SSIFILE *sfp, char *key, int *ret\_fh, SSIOFFSET *ret\_offset)]
+
+Looks up the string \prog{key} in the open index \prog{sfp}.
+\prog{key} can be either a primary or secondary key. If \prog{key} is
+found, \prog{*ret\_fh} contains a unique handle on the file
+that contains {key} (suitable for an \prog{SSIFileInfo()} call, or for
+comparison to the handle of the last file that was opened for
+retrieval), and \prog{offset} is filled in with the offset in that
+file. Returns 0 on success, non-zero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_NO\_SUCH\_KEY} & key not found \\
+\prog{SSI\_ERR\_NODATA}        & fread() failed, file appears to be corrupted\\
+\end{tabular}
+
+\item[int SSIGetOffsetByNumber(SSIFILE *sfp, int nkey, int
+*ret\_fh, SSIOFFSET *offset)]
+
+Retrieves information for primary key number \prog{nkey}.  \prog{nkey}
+ranges from 0..\prog{nprimary-1}. When the key is found,
+\prog{*ret\_fh} contains a unique handle on the file that
+contains {key} (suitable for an SSIFileInfo() call, or for comparison
+to the handle of the last file that was opened for retrieval), and
+\prog{offset} is filled in with the offset in that file. Returns 0 on
+success, non-zero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_SEEK\_FAILED}  & failed to reposition in index file\\
+\prog{SSI\_ERR\_NO\_SUCH\_KEY} & key not found \\
+\prog{SSI\_ERR\_NODATA}        & fread() failed, file appears to be corrupted\\
+\end{tabular}
+
+\item[int SSIGetSubseqOffset(SSIFILE *sfp, char *key, int
+requested\_start,  int *ret\_fh,
+SSIOFFSET *record\_offset, SSIOFFSET *data\_offset, int *ret\_actual\_start)]
+
+Implements \prog{SSI\_FAST\_SUBSEQ}. 
+
+Looks up the string \prog{key} in the open index \prog{sfp}, and
+asks for the nearest offset to a subsequence starting at position
+\prog{requested\_start} in the sequence (numbering the sequence 1..L).
+\prog{key} can be either a primary or secondary key. If \prog{key} is
+found, \prog{*ret\_fh} contains a unique handle on the file that
+contains {key} (suitable for an SSIFileInfo() call, or for comparison
+to the handle of the last file that was opened for retrieval);
+\prog{record\_offset} contains the disk offset to the start of the
+record; \prog{data\_offset} contains the disk offset either exactly at
+the requested residue, or at the start of the line containing the
+requested residue; \prog{ret\_actual\_start} contains the coordinate
+(1..L) of the first valid residue at or after
+\prog{data\_offset}. \prog{ret\_actual\_start} is $\leq$
+\prog{requested\_start}.  Returns 0 on success, non-zero on failure.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_NO\_SUBSEQS}   & this file or key doesn't allow subseq lookup\\
+\prog{SSI\_ERR\_NO\_SUCH\_KEY} & key not found \\
+\prog{SSI\_ERR\_RANGE}         & the requested\_start is out of bounds\\
+\prog{SSI\_ERR\_NODATA}        & fread() failed, file appears to be corrupted\\
+\end{tabular}
+
+\item[int SSISetFilePosition(FILE *fp, SSIOFFSET *offset]
+
+Uses \prog{offset} to sets the file position for \prog{fp} (usually an
+open sequence file) relative to the start of the file.  Hides the
+details of system-dependent shenanigans necessary for file positioning
+in large ($>2$ GB) files. Behaves just like \prog{fseek(fp, offset,
+SEEK\_SET)} for 32 bit offsets and $<2$ GB files. Returns 0 on
+success, nonzero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_SEEK\_FAILED}  & failed to reposition the file\\
+\end{tabular}
+
+\item[int SSIFileInfo(SSIFILE *sfp, int fh, char **ret\_filename, int *ret\_format)]
+
+Given a file handle \prog{fh} in an open index file \prog{sfp},
+retrieve file name \prog{ret\_filename} and the file format
+\prog{ret\_format}.  \prog{ret\_filename} is a pointer to a string
+maintained internally by \prog{sfp}. It should not be free'd;
+\prog{SSIClose(sfp)} will take care of it.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_BADARG}  & no such file n\\
+\end{tabular}
+
+\item[void SSIClose(SSIFILE *sfp)]
+
+Close an open \prog{SSIFILE *}.
+\end{sreapi}
+
+\subsubsection{Skeleton example code for using a SSI index file:} 
+
+\small\begin{verbatim}
+    SSIFILE   *sfp;
+    FILE       *fp;	
+    int         fh;
+    char       *seqfile;
+    int         fmt;
+    SSIOFFSET  offset;
+    
+    SSIOpen(``foo.gsi'', &sfp);
+
+    /* Finding an entry by name 
+     * (by number, with SSIGetOffsetByNumber(), is analogous)
+     */
+    SSIGetOffsetByName(sfp, ``important_key'', &fh, &offset);
+    SSIGetFileInfo(sfp, fh, &seqfile, &fmt);
+    fp = fopen(seqfile, ``r''); /* more usually SeqfileOpen(), using fmt */
+    SSIFilePosition(fp, &offset);
+         /* read the entry from there, do whatever... */
+    free(seqfile);
+    fclose(fp);
+
+    SSIClose(sfp);
+\end{verbatim}\normalsize
+
+\subsubsection{Functions for creating a SSI index file:}
+
+\begin{sreapi}
+\item[int SSIRecommendMode(char *file)]
+
+Examines the file and determines whether it should be indexed with
+large file support or not; returns \prog{SSI\_OFFSET\_I32} for most
+files, \prog{SSI\_OFFSET\_I64} for large files, or -1 on failure.
+
+\item[SSIINDEX *SSICreateIndex(int mode)]
+
+Creates and initializes a SSI index structure. Sequence file offset
+type to be used is specified by \prog{mode}, which may be either
+\prog{SSI\_OFFSET\_I32} or \prog{SSI\_OFFSET\_I64}.  Returns a
+pointer to the new structure, or NULL on failure. The caller must free
+this structure with \prog{SSIFreeIndex()} when done.
+
+\item[int SSIGetFilePosition(FILE *fp, int mode, SSIOFFSET *ret\_offset)]
+
+Fills \prog{ret\_offset} with the current disk offset of \prog{fp},
+relative to the start of the file.  {mode} is the type of offset to
+use; it must be either \prog{SSI\_OFFSET\_I32} or
+\prog{SSI\_OFFSET\_I64}. Returns 0 on success, non-zero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_NO64BIT}       & 64-bit mode unsupported on this system\\
+\prog{SSI\_ERR\_TELL\_FAILED}  & failed to determine position in file\\
+\end{tabular}
+
+\item[int SSIAddFileToIndex(SSIINDEX *g, char *filename, int fmt,
+int *ret\_fh)]
+
+Adds the sequence file \prog{filename}, which is known to be in format
+\prog{fmt}, to the index \prog{g}. Creates and returns a unique
+filehandle \prog{ret\_fh} for associating primary keys with this file
+using \prog{SSIAddPrimaryKeyToIndex()}. Returns 0 on success, non-zero
+on failure.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_TOOMANY\_FILES}  & exceeded file number limit\\
+\prog{SSI\_ERR\_MALLOC}          & a malloc() failed\\
+\end{tabular}
+
+\item[int SSISetFileForSubseq(SSIINDEX *g, int fh, int bpl, int rpl)]
+
+Set \prog{SSI\_FAST\_SUBSEQ} for the file indicated by filehandle
+\prog{fh} in the index \prog{g}, setting parameters \prog{bpl} and
+\prog{rpl} to the values given. \prog{bpl} is the number of bytes per
+sequence data line.  \prog{rpl} is the number of residues per sequence
+data line.  Caller must be sure that \prog{bpl} and \prog{rpl} do not
+change on any line of any sequence record in the file (except for the
+last data line of each record). If this is not the case in this file,
+\prog{SSI\_FAST\_SUBSEQ} will not work, and this routine should not be
+called. Returns 0 on success, non-zero on failure.
+
+\item[int SSIAddPrimaryKeyToIndex(SSIINDEX *g, char *key, int
+fh, SSIOFFSET *r\_off, SSIOFFSET *d\_off, int L)]
+
+Puts a primary key \prog{key} in the index \prog{g}, while telling the
+index that this primary key is in the file associated with filehandle
+\prog{fh} and its record starts at position \prog{r\_off} in that
+file.
+
+\prog{d\_off} and \prog{L} are optional; they may be left unset by
+passing NULL and 0, respectively. (If one is provided, both must be
+provided.)  If they are provided, \prog{d\_off} gives the position of
+the first line of sequence data in the record, and \prog{L} gives
+the length of the sequence in residues. They are used when
+\prog{SSI\_FAST\_SUBSEQ} is set for the sequence file. If
+\prog{SSI\_FAST\_SUBSEQ} is not set for the file, \prog{d\_off} and
+\prog{L} will be ignored even if they are available, so it doesn't
+hurt for the indexing program to provide them; typically it won't know
+whether it's safe to set \prog{SSI\_FAST\_SUBSEQ} for the whole file
+until the whole file has been read and every key has already been
+added to the index.
+
+Through \prog{ret\_kh} it provides a ``handle'' - a unique
+identifier for the primary key - that any subsequent calls to
+\prog{SSIAddSecondaryKeyToIndex()} will use to associate one or more
+secondary keys with this primary key.
+
+Returns 0 on success, non-zero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_TOOMANY\_KEYS}  & exceeded primary key limit\\
+\prog{SSI\_ERR\_TOOMANY\_FILES} & filenum exceeds file limit\\
+\prog{SSI\_ERR\_MALLOC}         & a malloc() failed\\
+\end{tabular}
+
+
+\item[int SSIAddSecondaryKeyToIndex(SSIINDEX *g, char *key, char *pkey)]
+
+Puts a secondary key \prog{key} in the index \prog{g}, associating it
+with a primary key \prog{pkey} that has already been added to the index
+by \prog{SSIAddPrimaryKeyToIndex()}.
+Returns 0 on success, non-zero on error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_TOOMANY\_KEYS}  & exceeded secondary key limit\\
+\prog{SSI\_ERR\_MALLOC}         & a malloc() failed\\
+\end{tabular}
+
+
+
+\item[int SSIWriteIndex(char *file, SSIINDEX *g)]
+
+Writes complete index \prog{g} in SSI format to a binary file
+\prog{file}.  Does all overhead of sorting the primary and secondary
+keys, and maintaining the association of secondary keys with primary
+keys during and after the sort. Returns 0 on success, non-zero on
+error.
+
+Error codes:\\
+\begin{tabular}{ll}
+\prog{SSI\_ERR\_NOFILE}  & an fopen() failed\\
+\prog{SSI\_ERR\_FWRITE}  & an fwrite() failed\\
+\prog{SSI\_ERR\_MALLOC}  & a malloc() failed\\
+\end{tabular}
+
+
+\item[void SSIFreeIndex(SSIINDEX *g)]
+
+Free an index structure.
+\end{sreapi}
+    
+
+\subsubsection{Other SSI functions:}
+
+\begin{sreapi}
+\item[char *SSIErrorString(int n)] 
+
+Returns a pointer to an internal string corresponding to error
+\prog{n}, a return code from any of the functions in the API that
+return non-zero on error.
+\end{sreapi}
+
+\subsection{Detailed specification of SSI binary format}
+
+There are four sections to the SSI file:
+\begin{sreitems}{\textbf{Secondary keys}}
+\item[\textbf{Header}] 
+Contains a magic number indicating GSI version number, and 
+various information about the number and sizes of things in the index.
+
+\item[\textbf{Files}]
+Contains one or more \emph{file records}, one per sequence file that's
+indexed. These contain information about the individual files.
+
+\item[\textbf{Primary keys}]
+Contains one or more \emph{primary key records}, one per primary key.
+
+\item[\textbf{Secondary keys}]
+Contains one or more \emph{secondary key records}, one per secondary key.
+\end{sreitems}
+
+All numeric quantities are stored as unsigned integers of known size
+in network (bigendian) order, for maximum crossplatform portability of
+the index files. \prog{sqd\_uint16}, \prog{sqd\_uint32}, and
+\prog{sqd\_uint64} are typically typedef'd as \prog{unsigned short},
+\prog{unsigned int}, and \prog{unsigned long long} or \prog{unsigned
+long} at SQUID compile-time. Values may need to be cast to signed
+quantities, so only half of their dynamic range is valid
+(e.g. 0..32,767 for values of type \prog{sqd\_uint16};
+0..2,146,483,647 (2 billion) for \prog{sqd\_uint32}; and 0..9.22e18 (9
+million trillion) for \prog{sqd\_uint64}).  These typedef's are
+handled automatically by the \prog{./configure} script (see
+\prog{squidconf.h.in} before configuration, \prog{squidconf.h} after
+configuration). If necessary, \prog{./configure}'s guess can be
+overridden in \prog{squidconf.h} after configuration.
+
+\subsubsection{Header section}
+
+The header section contains:
+
+\vspace{1em}
+\begin{tabular}{llrr}
+Variable          & Description                              & Bytes      & Type \\\hline
+\prog{magic}      & SSI version magic number.               &  4         & \prog{sqd\_uint32}\\
+\prog{flags}      & Optional behavior flags (see below)      &  4         & \prog{sqd\_uint32}\\
+\prog{nfiles}     & Number of files in file section.         &  2         & \prog{sqd\_uint16}\\
+\prog{nprimary}   & Number of primary keys.                  &  4         & \prog{sqd\_uint32}\\
+\prog{nsecondary} & Number of secondary keys.                &  4         & \prog{sqd\_uint32}\\
+\prog{flen}       & Length of filenames (incl. '\verb+\0+')         &  4         & \prog{sqd\_uint32}\\
+\prog{plen}       & Length of primary key names (incl. '\verb+\0+') &  4         & \prog{sqd\_uint32}\\
+\prog{slen}       & Length of sec. key names (incl. '\verb+\0+')    &  4         & \prog{sqd\_uint32}\\
+\prog{frecsize}   & \# of bytes in a file record             &  4         & \prog{sqd\_uint32}\\
+\prog{precsize}   & \# of bytes in a primary key record      &  4         & \prog{sqd\_uint32}\\
+\prog{srecsize}   & \# of bytes in a sec. key record         &  4         & \prog{sqd\_uint32}\\
+\prog{foffset}    & disk offset, start of file records       &  \dag         & \dag\\
+\prog{poffset}    & disk offset, start of primary key recs   &  \dag         & \dag\\
+\prog{soffset}    & disk offset, start of sec. key records   &  \dag         & \dag\\
+\end{tabular}
+\vspace{1em}
+
+The optional behavior flags are:
+
+\vspace{1em}
+\begin{tabular}{lll}
+Flag             & Value& Note\\ \hline
+\prog{SSI\_USE64}         & $1 \ll 0$ & Large sequence files; all key offsets 64 bit.\\
+\prog{SSI\_USE64\_INDEX}  & $1 \ll 1$ & Large index; GSI file itself uses 64-bit offsets.\\\hline
+\end{tabular}
+\vspace{1em}
+
+The optional behavior flags define whether the SSI file uses large
+file (64-bit) offsets.  This issue is discussed in greater detail
+below (see ``Large sequence files and large indices''). Briefly: if
+\prog{SSI\_USE64} is set, the sequence file is large, and all sequence
+file offsets are 64-bit integers.  If \prog{SSI\_USE64\_INDEX} is
+set, the index file itself is large, and \prog{foffset},
+\prog{poffset}, and \prog{soffset} (that is, all offsets within the
+index file itself, indicated as \dag\ in the above table) are 64-bit
+integers. \footnote{In the current API it is not expected that
+\prog{SSI\_USE64\_INDEX} would ever be set. The current index-writing
+API keeps the entire index in RAM (it has to sort the keys), and would
+presumably have to be modified or replaced to be able to generate very
+large indices.}
+
+The reason to explicitly record various record sizes (\prog{frecsize},
+\prog{precsize}, \prog{srecsize}) and index file positions
+(\prog{foffset}, \prog{poffset}, \prog{soffset}) is to allow future
+extendibility. More fields might be added without breaking older SSI
+parsers.  The format is meant to be both forwards- and
+backwards-compatible.
+
+\subsubsection{File section}
+
+The file section consists of \prog{nfiles} file records. Each record
+is \prog{frecsize} bytes long, and contains:
+
+\vspace{1em}
+\begin{tabular}{llrr}
+Variable & Description                                       & Bytes & Type \\\hline
+\prog{filename} & Name of file (possibly including full path)       & \prog{flen} & char *\\
+\prog{format}   & Format code for file; see squid.h for definitions & 4    & \prog{sqd\_uint32} \\
+\prog{flags}    & Optional behavior flags                           & 4    & \prog{sqd\_uint32} \\
+\prog{bpl}      & Bytes per sequence data line                      & 4    & \prog{sqd\_uint32} \\
+\prog{rpl}      & Residues per sequence data line                   & 4    & \prog{sqd\_uint32} \\\hline
+\end{tabular}
+\vspace{1em}
+
+When a SSI file is written, \prog{frecsize} is equal to the sum of
+the sizes above.  When a SSI file is read by a parser, it is possible
+that \prog{frecsize} is larger than the parser expects, if the parser
+is expecting an older version of the SSI format: additional fields
+may be present, which increases \prog{frecsize}. The parser will only
+try to understand the data up to the \prog{frecsize} it expected to
+see, but still knows the absolutely correct \prog{frecsize} for
+purposes of skipping around in the index file.
+
+Normally the SSI index resides in the same directory as the sequence
+data file(s), so \prog{filename} is relative to the location of the
+SSI index. In the event this is not true, \prog{filename} can contain
+a full path.
+
+\prog{format} is a SQUID sequence file format code; e.g. something like 
+\prog{SQFILE\_FASTA} or \prog{MSAFILE\_STOCKHOLM}. These constants are defined
+in \prog{squid.h}.
+
+Only one possible optional behavior flag is defined:
+
+\vspace{1em}
+\begin{tabular}{lll}
+Flag             & Value& Note\\ \hline
+\prog{SSI\_FAST\_SUBSEQ} & $1 \ll 0$ & Fast subseq retrieval is possible for this file.\\\hline
+\end{tabular}
+\vspace{1em}
+
+When \prog{SSI\_FAST\_SUBSEQ} is set, \prog{bpl} and \prog{rpl} are
+nonzero. They can be used to calculate the offset of subsequence
+positions in the data file. This is described in the optional behavior
+section below.
+
+\subsubsection{Primary key section}
+
+The primary key section consists of \prog{nprimary} records. Each
+record is \prog{precsize} bytes long, and contains:
+
+\vspace{1em}
+\begin{tabular}{llrr}
+Variable   & Description                                 & Bytes      & Type \\\hline
+\prog{key}	   & Key name (seq name, identifier, accession) & \prog{plen}& char *\\
+\prog{fnum}       & File number (0..nfiles-1)                   & 2          & \prog{sqd\_uint16}\\
+\prog{offset1}    & Offset to start of record                   & \ddag      & \ddag \\
+\prog{offset2}    & Offset to start of sequence data            & \ddag      & \ddag \\
+\prog{len}        & Length of data (e.g. seq length, residues)  & 4          & \prog{sqd\_uint32} \\\hline
+\end{tabular} 
+\vspace{1em}
+
+The offsets are sequence file offsets (indicated by \ddag). They are
+4 bytes of type \prog{sqd\_uint32} normally, 8 bytes of type
+\prog{sqd\_uint32} if \prog{SSI\_USE64} is set, and \prog{sizeof(fpos\_t)} 
+bytes of type \prog{fpos\_t} if \prog{SSI\_FPOS\_T} is set.
+
+\prog{offset2} and \prog{len} are only meaningful if \prog{SSI\_FAST\_SUBSEQ}
+is set on this key's file. \prog{offset2} gives the absolute disk
+position of line 0 in the sequence data. \prog{len} is necessary for
+bounds checking in a subsequence retrieval, to be sure we don't try to
+reposition the disk outside the valid data.
+
+\subsubsection{Secondary key section}
+
+The secondary key section consists of \prog{nsecondary} records. Each
+record is \prog{srecsize} bytes long, and contains:
+
+\vspace{1em}
+\begin{tabular}{llrr}
+Variable   & Description                                   & Bytes      & Type \\\hline
+\prog{key}   & Key name (seq name, identifier, accession)  & \prog{slen}& char *\\
+\prog{pkey}  & Primary key                                 &
+\prog{plen}& char *\\\hline
+\end{tabular}
+\vspace{1em}
+
+All data are kept with the primary key records. Secondary keys are
+simply translated to primary keys, then the primary key has to be
+looked up.
+
+\subsection{Optional behaviors}
+
+\subsubsection{Large sequence files and large indices: 64-bit operation}
+
+Normally a SSI index file can be no larger than 2 GB, and can index
+sequence files that are no larger than 2 GB each. This is due to
+limitations in the ANSI C/POSIX standards, which were developed for
+32-bit operating systems and filesystems. Most modern operating
+systems allow larger 64-bit file sizes, but as far as I'm aware (Dec
+2000), there are no standard interfaces yet for working with positions
+(offsets) in large files. On many platforms, SSI can extend to full
+64-bit capabilities, but on some platforms, it cannot. To understand
+the limitations (of SSI, and possibly of my understanding) you need
+to understand some details about what's happening behind the SSI API
+and how I understand C API's to modern 64-bit OS's and hardware.
+
+First, some information on ANSI C APIs for file positioning. ANSI C
+provides the portable functions \prog{fseek()} and \prog{ftell()} for
+manipulating simple offsets in a file. They store the offset in a
+\prog{long} (which ranges up to 2 GB). The Standard says we're allowed
+to do arithmetic on this value if the file is binary. ANSI C also
+provides \prog{fgetpos()} and \prog{fsetpos()} which store file
+positions in an opaque data type called \prog{fpos\_t}. Modern
+operating systems with large file support define \prog{fpos\_t} in a
+way that permits files $>$2 GB. However, \prog{fpos\_t} is an opaque
+type. It has two disadvantages compared to a simple arithmetic type
+like \prog{long}: first, we're not allowed to do arithmetic on it, and
+second, we can't store it in a binary file in an
+architecture-independent manner. We need both features for SSI,
+unfortunately. \footnote{Surely the professional C community has the
+same problem; does \emph{everyone} hack around \prog{fpos\_t}?}
+
+Therefore we have to rely on system dependent features. Most operating
+systems provide a non-compliant library call that returns an
+arithmetic offset. Fully 64-bit systems typically give us a 64-bit
+\prog{off\_t} and functions \prog{ftello()}/\prog{fseeko()} that work
+with that offset.  Many systems provide a ``transitional interface''
+where all normally named functions are 32-bits, but specially named
+64-bit varieties are available: e.g. \prog{off\_t} is 32 bits, but
+\prog{off64\_t} is 64 bits and we have functions \prog{ftello64()} and
+\prog{fseeko64()}. Some systems provide a \prog{ftell64()} and
+\prog{fseek64()} that work on offsets of type \prog{long long}. Many
+popular systems may even provide more than one of these models,
+depending on compiler flags. 
+
+And, unfortunately, some systems provide none of these models (FreeBSD
+for example). There, we will exploit the fact that most systems
+(including FreeBSD) do in fact implement \prog{fpos\_t} as a simple
+arithmetic type, such as an \prog{off\_t}, so we can misuse it.
+
+At compile time, SQUID's \prog{./configure} script tests for the
+system's capabilities for 64-bit file offsets, and configures a
+section in the \prog{squidconf.h} file. (The configuration includes a
+custom autoconf macro, \prog{SQ\_ARITHMETIC\_FPOS\_T()}, to test
+\prog{fpos\_t} and define \prog{ARITHMETIC\_FPOS\_T} if it is.)  Four
+possible 64-bit models are tested in the following order; if one of
+them is possible, it will be used, and the constant
+\prog{HAS\_64BIT\_FILE\_OFFSETS} is set.
+
+\begin{enumerate}
+\item has \prog{ftello()}, \prog{fseeko()}; sizeof(\prog{off\_t}) $= 8$.
+\item has \prog{ftello64()}, \prog{fseeko64()}; sizeof(\prog{off64\_t}) $= 8$.
+\item has \prog{ftell64()}, \prog{fseek64()}
+\item \prog{fpos\_t} is an arithmetic 64-bit type; (mis)use
+\prog{fgetpos()}, \prog{fsetpos()}.
+\end{enumerate}
+
+
+
+\subsubsection{Fast subsequence retrieval}
+
+In some files (notably vertebrate chromosome contigs) the size of each
+sequence is large. It may be slow to extract a subsequence by first
+reading the whole sequence into memory -- or even prohibitive, if the
+sequence is so large that it can't be stored in memory.
+
+If the sequence data file is very consistently formatted so that each
+line in each record (except the last one) is of the same length, in
+both bytes and residues, we can determine a disk offset of the start
+of any subsequence by direct calculation.
+For example, a simple well-formatted FASTA
+file with 50 residues per line would have 51 bytes per sequence line
+(counting the '\verb+\0+') (\prog{bpl}=51, \prog{rpl}=50). Position $i$ in a sequence
+$1..L$ will be on line $l = (i-1)/\mbox{\prog{rpl}}$, and line $l$ starts at
+disk offset $l * \mbox{\prog{bpl}}$ relative to the start of the sequence
+data. If there are no nonsequence characters in the data line except
+the terminal '\verb+\0+' (which is true iff \prog{bpl} = \prog{rpl}+1 and 1 residue = 1
+byte), position $i$ can be precisely found:
+
+\[
+\mbox{relative offset of residue $i$} =
+\left((i-1)/\mbox{\prog{rpl}}\right)*\mbox{\prog{bpl}} + (i-1) \% \mbox{ \prog{rpl}}
+\]
+
+Even for sequence data lines with extra characters (e.g. spaces,
+coordinates, whatever), fast subsequence retrieval is possible; a
+parser can be positioned at the beginning of the appropriate line $l$,
+which starts at residue $(l*\mbox{\prog{rpl}}) + 1$, and it can start reading
+from there (e.g. the line that $i$ is on) rather than the beginning of
+the whole sequence record.
+
+The program that creates the index is responsible for determining if
+\prog{bpl} and \prog{rpl} are consistent throughout a file; if so, it
+may set the \prog{SSI\_FAST\_SUBSEQ} flag for the file. Then any record
+whose primary key carries the optional data offset (\prog(offset2))
+and sequence length data is available for subsequence position
+calculations by \prog{SSIGetSubseqOffset()}. 
+
+\end{document}

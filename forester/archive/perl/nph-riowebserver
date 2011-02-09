@@ -1,0 +1,939 @@
+#! /usr/bin/perl -W
+ 
+# nph-riowebserver.pl
+# -------------------
+#
+# Copyright (C) 2002 Washington University School of Medicine
+# and Howard Hughes Medical Institute
+# All rights reserved
+#
+# Created: 02/18/02
+# Author: Christian M. Zmasek
+# zmasek@genetics.wustl.edu
+# http://www.genetics.wustl.edu/eddy/people/zmasek/
+#
+# Last modified: 02/20/02
+
+
+use strict;
+use CGI;
+use queue;
+
+
+my $RIOPL                         = "/home/rio/forester/perl/rio4P.pl";
+my $JAVA                          = "/home/rio/j2sdk1.4.0/bin/java";
+my $TEST_NHX                      = $JAVA." -cp /home/rio/forester/java forester.tools.testNHX";
+my $TEMPDIR                       = "/home/rio/rws_temp";
+my $SPECIESTREE                   = "/home/rio/forester/data/species/tree_of_life_bin_1-4.nhx";
+my $SPECIESLIST                   = "/home/rio/forester/data/species/tree_of_life_bin_1-4_species_list";
+my $hmm_search_url_A              = "http://pfam.wustl.edu/cgi-bin/nph-hmmsearch?protseq=";
+my $hmm_search_url_B               = "&search_mode=merge&cutoff_strategy=ga";
+
+my $RIO_ALN_DIRECTORY             = "/data/rio/ALNs/";
+my $RIO_NBD_DIRECTORY             = "/data/rio/NBDs/";
+my $ALIGN_FILE_SUFFIX             = ".aln";
+my $ALIGN_NBD_FILE                = ".nbd";
+my $DIR_FOR_TREES                 = "/var/www/html/trees/";                # Directory for NHX files to be read by ATV applet
+my $URL_FOR_TREES                 = "http://forester.wustl.edu/trees/";    # URL base for NHX files to be read by ATV applet
+my $CODE_BASE_FOR_ATV_APPLET      = "http://forester.wustl.edu/applets/";  # URL for ATV applet (jar file) 
+my $TARGET_FILES_IN_DIR_FOR_TREES = 100; # If the number of nhx files in $DIR_FOR_TREES is lager then $MAX_FILES_IN_DIR_FOR_TREES 
+my $MAX_FILES_IN_DIR_FOR_TREES    = 120; # the oldest files will be deleted until the number is down to $TARGET_FILES_IN_DIR_FOR_TREES.
+my $O_THRESHOLD_DEFAULT           = 0;
+my $SN_THRESHOLD_DEFAULT          = 0;
+my $U_THRESHOLD_DEFAULT           = 50;
+my $SEED_FOR_RANDOM_DEFAULT       = 41;
+my $SORT_DEFAULT                  = 12;
+my $MIN_SIZE                      = 5;         # Minimal size (in chars) for input files
+my $MAX_SIZE                      = 10000;     # Maximal size (in chars) for input files
+my $MAX_LINES                     = 1000;      # Maximal lines for input files
+my $RIO_OPTIONS                   = "U=60 Y=2 X=2 Z=2 I C E x +";
+my $CONTACT                       = "zmasek\@genetics.wustl.edu";
+my $VERSION                       = "0.3";
+
+
+my $o_threshold       = 0; 
+my $sn_threshold      = 0; 
+my $u_threshold       = 0; 
+my $seed_for_random   = 0;
+my $sort              = 0; 
+my $size_d            = 0;
+my $size_c            = 0;
+my $entry_time        = 0;
+my $njobs             = 0;
+my $njobs_thisuser    = 0;
+my $user_defined_tree = 0;
+
+
+
+my $query             = "";
+my $query_seq         = "";
+my $query_seq_file    = "";
+my $tree_file         = ""; 
+my $pfam_domain       = "";
+my $species           = "";
+my $output_tree       = "";
+my $output_up         = "";
+my $remote_addr       = "";
+my $oneline           = "";
+my $aln               = "";
+my $speciestree       = "";
+my $output            = "";
+my $query_sequence    = ""; # To be submitted to hmmsearch website, if necessary.
+my $link_to_hmmsearch = "";
+
+my @lines          = ();
+my %Species_names_hash = ();
+
+
+$| = 1;
+
+$query = new CGI;
+
+
+$query_seq       = $query->param( 'query_seq' );
+$query_seq_file  = $query->upload( 'query_seq_file' );
+$pfam_domain     = $query->param( 'pfam_domain' );
+$species         = $query->param( 'species' );
+$o_threshold     = $query->param( 'o_threshold' );
+$sn_threshold    = $query->param( 'sn_threshold' );
+$u_threshold     = $query->param( 'u_threshold' );
+$seed_for_random = $query->param( 'seed_for_random' );
+$output_up       = $query->param( 'output_up' );
+$sort            = $query->param( 'sort_priority' );
+$tree_file       = $query->upload( 'tree_file' );
+
+$remote_addr = $ENV{ REMOTE_ADDR };
+
+
+# NPH header
+# ----------
+print $query->header( -status=>"200 OK",
+                      -server=>"$ENV{ SERVER_SOFTWARE }",
+                      -nph=>1 );
+
+
+
+
+# Prints the first HTML
+# ---------------------
+print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd\">\n";
+print "<HTML>\n";
+print "<HEAD>\n";
+print "<TITLE>[ RIO SERVER | phylogenomic analysis of a protein sequence ]</TITLE>\n";
+print "<META HTTP-EQUIV = \"Content-Type\" CONTENT = \"text/html; charset=iso-8859-1\" >\n";
+print "<LINK REL = \"stylesheet\"\n";
+print " TYPE = \"text/css\"\n";
+print " HREF = \"http://forester.wustl.edu/style_rio_server2.css\">\n";
+
+&print_ATV_JavaScript();
+
+print "</HEAD>\n";
+print "<BODY>\n";
+
+&print_navbar();
+
+
+
+# Reads in, cleans up and checks
+# ------------------------------
+
+if ( ( !defined( $query_seq_file ) && !defined( $query_seq ) ) 
+||   ( $query_seq_file !~ /\w+/ && $query_seq !~ /\w+/ ) ) {
+    &nph_user_error( "need to specify a sequence file or submit a sequence directly" );
+}
+
+if ( $query_seq_file =~ /\w+/ && $query_seq =~ /\w+/ ) {
+    &nph_user_error( "cannot specify a sequence file and submit a sequence directly" );
+}
+
+
+if ( $query_seq_file =~ /\w+/ ) {
+    # Reading in from file
+    &readInFile( $query_seq_file );
+}
+else {
+    # "cut and paste"			
+    @lines = split( /^/, $query_seq ); 
+}
+
+
+if ( $lines[ 0 ] =~ /^\s*>/ ) { # FASTA
+    shift( @lines );
+} 
+
+
+foreach $oneline ( @lines ) {
+    $size_d += length( $oneline );
+    if ( $size_d > $MAX_SIZE ) {
+        &nph_user_error( "query sequence is too long (>$MAX_SIZE)" );
+    }
+    $oneline =~ s/[^A-Za-z]//g;
+    $size_c += length( $oneline );
+}	  
+if ( $size_c < $MIN_SIZE ) {
+    &nph_user_error( "query sequence is too short (<$MIN_SIZE)" );
+}
+
+
+# Writes a temp file for the query sequence
+open( PROT, ">$TEMPDIR/$$.query" ) || &nph_fatal_error( "failed to open temp query file" );
+foreach $oneline ( @lines ) {
+    print PROT $oneline;
+    $query_sequence .= $oneline;
+}
+close( PROT );
+
+if ( !defined( $species ) || $species !~ /\w+/ || length( $species ) < 2 ) {
+    &nph_user_error( "need to specify the species of the query sequence" );
+}
+
+$link_to_hmmsearch = "<A HREF=\"$hmm_search_url_A".$query_sequence."$hmm_search_url_B\" TARGET=\"_blank\"> >> click here to perform hmmsearch on query sequence << </A>";
+
+if ( !defined( $pfam_domain ) || $pfam_domain !~ /\w+/ || length( $pfam_domain ) < 1 ) { 
+    &nph_user_error( "need to specify a name for a pfam domain of the query sequence<BR>$link_to_hmmsearch" );
+}
+
+if ( length( $species ) > 5 ) {
+    &nph_user_error( "invalid species name" );
+}
+$species =~ s/[^A-Za-z0-9]//g;
+if ( length( $species ) < 2 ) {
+    &nph_user_error( "invalid species name" );
+}
+
+if ( length( $pfam_domain ) > 40 ) {
+    &nph_user_error( "invalid pfam domain name<BR>$link_to_hmmsearch" );
+}
+$pfam_domain =~ s/[\s,;\.><\|\\\/\(\)!@\#\$%&\*\^=]//g;
+if ( length( $pfam_domain ) < 1 ) {
+    &nph_user_error( "invalid pfam domain name<BR>$link_to_hmmsearch" );
+}
+
+if ( defined( $tree_file ) && $tree_file =~ /\w+/ ) {
+    $user_defined_tree = 1; 
+}
+
+$species =~ tr/a-z/A-Z/; 
+
+if ( $user_defined_tree != 1 ) {
+    &checkForPresenceOfSpecies( $species );
+}
+
+$aln = $RIO_ALN_DIRECTORY.$pfam_domain.$ALIGN_FILE_SUFFIX;
+
+if ( &checkForTextFilePresence( $aln ) != 1 ) {
+   &nph_user_error( "no pairwise distances precalculated for pfam domain \"$pfam_domain\"<BR>$link_to_hmmsearch" );
+}
+
+
+if ( checkForNumberBetween0and100( $o_threshold ) != 1 ) {
+   $o_threshold = $O_THRESHOLD_DEFAULT; 
+}
+if ( checkForNumberBetween0and100( $sn_threshold ) != 1 ) {
+   $sn_threshold = $SN_THRESHOLD_DEFAULT; 
+}
+if ( checkForNumberBetween0and100( $u_threshold ) != 1 ) {
+   $u_threshold = $U_THRESHOLD_DEFAULT; 
+}
+if ( !defined( $seed_for_random ) || $seed_for_random !~ /\d/
+|| $seed_for_random =~ /\D/ || $seed_for_random > 10000 || $seed_for_random < 0 ) {
+   $seed_for_random = $SEED_FOR_RANDOM_DEFAULT; 
+}
+if ( !defined( $sort ) 
+|| $sort > 16 || $sort < 12 ) {
+   $sort = $SORT_DEFAULT; 
+}
+
+if ( defined( $output_up ) && $output_up eq "yes" ) {
+   $RIO_OPTIONS .= " p";
+}
+else {
+   $u_threshold = -1;
+}
+
+
+
+
+
+
+
+
+# User defined species tree is dealt with here
+# --------------------------------------------
+
+if ( $user_defined_tree == 1 ) {
+    &readInFile( $tree_file );
+    $size_d = 0;
+    $size_c = 0;
+    foreach $oneline ( @lines ) {
+        $size_d += length( $oneline );
+        if ( $size_d > $MAX_SIZE ) {
+            &nph_user_error( "user defined species tree file is too long (>$MAX_SIZE)" );
+        }
+        $oneline =~ s/;\|,<>\s//g;
+        $oneline =~ tr/a-z/A-Z/;
+        
+        $size_c += length( $oneline );
+    }
+    if ( $size_c < $MIN_SIZE ) {
+        &nph_user_error( "user defined species tree file is too short (<$MIN_SIZE)" );
+    }
+    
+    open( TREE, ">$TEMPDIR/$$.tree" ) || &nph_fatal_error( "failed to open temp species tree file" );
+    foreach $oneline ( @lines ) {
+        print TREE $oneline;
+    }
+    close( TREE );
+    
+    $speciestree = "$TEMPDIR/$$.tree";
+    system( "$TEST_NHX $speciestree" )
+    && nph_user_error( "user defined species tree is not in proper NHX format (or is unrooted, or contains multifurcations) $!" );
+    
+}
+else {
+    $speciestree = $SPECIESTREE;
+}
+
+
+
+# Join the queue, using queue.pm API
+# ----------------------------------
+
+$entry_time = time;
+
+( $njobs, $njobs_thisuser ) = &queue::CheckQueue( "rioqueue", $remote_addr, $TEMPDIR );
+if ( $njobs > 5 ) { 
+    &nph_user_error("The server is currently swamped, with $njobs searches in the queue.<BR>Please come back later! Sorry.");  
+}
+if ( $njobs_thisuser > 0 ) {
+    &nph_user_error( "We already have $njobs_thisuser searches in the queue from
+    your IP address ($remote_addr). Please wait until some or all of them
+    finish.<BR>If you think you got this message in error, wait a minute or so and
+    resubmit your job. You probably hit your browser's stop button after you
+    started a search - but that doesn't stop our compute cluster, it just breaks
+    your connection to us. You won't be able to start a new search until the
+    cluster's done." );
+}
+if ( $njobs > 0 ) {
+    print_waiting_message( $njobs );
+}
+&queue::WaitInQueue( "rioqueue", $remote_addr, $TEMPDIR, $$, 10 ); # wait with ten-second granularity.
+
+
+
+
+# Prints "waiting" header
+# -----------------------
+
+my $number_of_seqs = &getNumberOfSeqsFromNBDfile( $RIO_NBD_DIRECTORY.$pfam_domain.$ALIGN_NBD_FILE );
+my $estimated_time = &estimateTime( $number_of_seqs );
+
+print( "<H4 class = \"messages\"> RIO: Starting search. Estimated time: $estimated_time seconds per domain (assuming all rio nodes are running). Please wait...</H4>\n" );
+
+
+
+
+# Runs RIO
+# --------
+
+&run_rio( $pfam_domain,           # domain
+          "$TEMPDIR/$$.query",    # query file name
+          "$TEMPDIR/$$.outfile",  # output file name
+          "QUERY_$species",       # name for query
+          $speciestree,           # species tree
+          $RIO_OPTIONS,           # more options
+          "$TEMPDIR/$$",          # temp file
+          $o_threshold,
+          $sn_threshold,
+          $u_threshold,
+          $seed_for_random,
+          $sort );
+          
+
+
+# Done
+# ----
+
+&showATVlinks();
+
+
+
+# Cleanup
+unlink( "$TEMPDIR/$$.query", "$TEMPDIR/$$.tree" );
+
+$output .= "<P> &nbsp </P>\n";
+
+# Leaves the queue in an orderly fashion.
+&queue::RemoveFromQueue( "rioqueue", $remote_addr, $TEMPDIR, $$ );
+
+print( $output );
+
+&print_footer();
+
+&removeFiles( $DIR_FOR_TREES, $TARGET_FILES_IN_DIR_FOR_TREES, $MAX_FILES_IN_DIR_FOR_TREES );
+   
+exit( 0 );
+
+
+
+
+
+
+
+
+# Methods
+# -------
+
+
+
+# Last modified: 02/19/02
+sub run_rio {
+
+    my $pfam_name              = $_[ 0 ];
+    my $query_file             = $_[ 1 ];
+    my $output_file            = $_[ 2 ];
+    my $name_for_query         = $_[ 3 ];
+    my $species_tree_file      = $_[ 4 ];
+    my $more_options           = $_[ 5 ];
+    my $tmp_file_rio           = $_[ 6 ];
+    my $t_o                    = $_[ 7 ];
+    my $t_sn                   = $_[ 8 ];
+    my $t_u                    = $_[ 9 ];
+    my $seed                   = $_[ 10 ];
+    my $sort                   = $_[ 11 ];
+
+    my $start_time = time;
+   
+    my $options_for_rio = "";
+
+    $options_for_rio .= ( " A=".$pfam_name );
+    $options_for_rio .= ( " Q=".$query_file );
+    $options_for_rio .= ( " O=".$output_file );
+    $options_for_rio .= ( " N=".$name_for_query );
+    $options_for_rio .= ( " S=".$species_tree_file );
+    $options_for_rio .= ( " j=".$tmp_file_rio );
+    $options_for_rio .= ( " L=".$t_o );
+    $options_for_rio .= ( " B=".$t_sn );
+    if ( $t_u != -1 ) {
+       $options_for_rio .= ( " v=".$t_u );
+    }
+    $options_for_rio .= ( " y=".$seed );
+    $options_for_rio .= ( " P=".$sort );
+    $options_for_rio .= ( " ".$more_options );
+  
+    $output = `$RIOPL 1 $options_for_rio`;
+    
+    if ( $? != 0 ) {
+        nph_rio_error();
+    }
+    my $finish_time = time;
+    my $wait_time  = $finish_time - $entry_time;
+    my $cpu_time   = $finish_time - $start_time;
+
+    
+
+    # Logs the results.
+    my $date = `date`;
+    chop( $date );
+    open ( LOGFILE, ">>$TEMPDIR/log") || &nph_fatal_error( "could not open log file" );
+    flock( LOGFILE, 2 );
+    print LOGFILE "$date queue: $njobs wait: $wait_time true_cpu: $cpu_time pid: $$ addr: $ENV{'REMOTE_ADDR'} host: $ENV{'REMOTE_HOST'} pfam: $pfam_name\n";
+    flock( LOGFILE, 8 );
+    close ( LOGFILE );
+      
+    return;  
+
+} ## run_rio
+
+
+
+
+# Reads a file into "@lines"
+# Last modified: 02/19/02
+sub readInFile {
+    my $file = $_[ 0 ];
+    my $l    = 0;
+    my $s    = 0;
+    @lines   = ();
+    
+    $file =~ s/;\|,<>&\s//g;
+   
+    while( <$file> ) {
+        $s += length( $_ );
+        if ( $s > $MAX_SIZE ) {
+            &nph_user_error( "query sequence is too long (>$MAX_SIZE)" );
+        }
+        $l++;
+        if ( $l > $MAX_LINES ) {
+            &nph_user_error( "file has too many lines (>$MAX_LINES)" );
+        }
+        
+        push( @lines, $_ );
+       
+    }
+
+} ## readInFile
+
+
+
+
+# Reads in (SWISS-PROT) species names from a file.
+# Names must be separated by newlines.
+# Lines beginning with "#" are ignored.
+# A possible "=" and everything after is ignored.
+# One argument: species-names-file name
+# Last modified: 02/19/02
+sub readSpeciesNamesFile {
+    my $infile = $_[ 0 ];
+    my $return_line = "";
+    my $species     = "";
+
+    open( IN_RSNF, "$infile" ) || &nph_fatal_error( "could not open species list" );
+    while ( $return_line = <IN_RSNF> ) {
+        if ( $return_line !~ /^\s*#/ && $return_line =~ /(\S+)/ ) {
+            $species = $1;
+            $species =~ s/=.+//;
+            $Species_names_hash{ $species } = "";
+        }
+    }
+    close( IN_RSNF );
+
+    return;
+} ## readSpeciesNamesFile
+
+
+
+# Last modified: 02/19/02
+sub checkForNumberBetween0and100 {
+
+    my $x = $_[ 0 ];
+
+    if ( !defined( $x ) || $x !~ /\d/ || $x =~ /\D/ || $x > 100 || $x < 0 ) {
+        return 0; 
+    }
+    else {
+        return 1;
+    }
+
+} ## checkForNumberBetween0and100
+
+
+
+# Last modified: 02/19/02
+sub getNumberOfSeqsFromNBDfile {
+    my $infile             = $_[ 0 ];
+    my $return_line        = "";
+    my $number_of_seqs     = 0;
+
+    open( C, "$infile" ) || &nph_fatal_error( "could not open NBD file" );
+    while ( $return_line = <C> ) {
+        if ( $return_line =~ /^\s*(\d+)\s*$/ ) {
+            $number_of_seqs = $1;
+            last;
+        }
+    }
+    close( C );
+    return $number_of_seqs;
+
+} ## getNumberOfSeqsFromNBDfile
+
+
+
+# Last modified: 02/19/02
+sub print_waiting_message {
+
+    my $njobs = $_[ 0 ];
+
+    print( "<H4 class = \"messages\">\n" ); 
+    print( "RIO: There are $njobs searches queued ahead of you on the RIO server. Please wait...\n" );
+    print( "</H4>\n" );
+
+    return;
+
+} ## print_waiting_message
+
+
+
+# Last modified: 02/19/02
+sub checkForPresenceOfSpecies {
+
+    my $species            = $_[ 0 ];
+
+    &readSpeciesNamesFile( $SPECIESLIST );
+    unless( exists( $Species_names_hash{ $species } ) ) {
+        &nph_user_error( "species \"$species\" not present in currently used species tree" );
+    }
+    
+    return;
+} ## checkForPresenceOfSepecies
+
+
+
+# Last modified: 02/19/02
+sub checkForTextFilePresence {
+
+    my $file = $_[ 0 ];
+    
+    if ( ( -s $file ) && ( -f $file ) && ( -T $file ) ) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+    
+} ## checkForTextFilePresence
+
+
+
+
+
+# Last modified: 02/19/02
+sub print_footer {
+
+    &print_navbar();
+    &print_contact();
+    print( "</BODY>\n" );
+    print( "</HTML>\n" );
+    
+    return;
+
+} ## print_footer 
+
+
+
+# Last modified: 02/19/02
+sub print_navbar {
+
+    print( "<HR NOSHADE COLOR=\"#FF3300\">\n" );
+    print( "<P class = \"nomargins\">\n" );
+    print( "<B>RIO $VERSION</B> \n" );
+    print( "<A HREF=\"http://www.rio.wustl.edu/\">phylogenomic analysis of a protein sequence</A> | " );
+    print( "<A HREF=\"http://www.rio.wustl.edu/help.html\" TARGET=\"_blank\">help</A> | " );
+    print( "<A HREF=\"http://www.genetics.wustl.edu/eddy/forester/\" TARGET=\"_blank\">forester/rio home</A> | " );
+    print( "<A HREF=\"http://pfam.wustl.edu/\" TARGET=\"_blank\">pfam</A>\n" );
+    print( "</P class = \"nomargins\">\n" );
+    print( "<HR NOSHADE COLOR=\"#FF3300\">\n" );
+
+    return;
+
+} ## print_navbar
+
+
+
+# Last modified: 02/19/02
+sub print_contact {
+
+    print( "<P>comments, questions, flames? email <A HREF = \"mailto:$CONTACT\">$CONTACT</A></P>\n" );
+ 
+    return;
+
+} ## print_contact
+
+
+
+# Last modified: 02/19/02
+sub showATVlinks {
+
+    my $domain_no = 0;
+
+    if ( -s "$TEMPDIR/$$.outfile.rio.nhx" ) {
+       $domain_no = 1;
+       system( "mv", "$TEMPDIR/$$.outfile.rio.nhx", $DIR_FOR_TREES )
+       && &nph_fatal_error( "could not mv $TEMPDIR/$$.outfile.rio.nhx" );
+    }
+    elsif ( -s "$TEMPDIR/$$.outfile.rio-1.nhx" ) {
+        $domain_no = 1;
+        while ( -s "$TEMPDIR/$$.outfile.rio-$domain_no.nhx" ) {
+            system( "mv", "$TEMPDIR/$$.outfile.rio-$domain_no.nhx", $DIR_FOR_TREES )
+            && &nph_fatal_error( "could not mv $TEMPDIR/$$.outfile.rio-$domain_no.nhx.nhx" );
+            $domain_no++;
+        }
+
+    }
+
+
+    if ( $domain_no == 1 ) {
+        $output .= "<P>&nbsp</P>\n"; 
+        $output .= "<TABLE BORDER=\"0\" CELLPADDING=\"1\"\n";
+        $output .= "<TR><TD><FORM>\n";
+        $output .= "<INPUT TYPE=BUTTON VALUE=\"view tree\" onClick=\"openWin( '$URL_FOR_TREES$$.outfile.rio.nhx' )\">\n";
+        $output .= "</FORM></TD><TD>\n";
+        $output .= "<A HREF=\"$URL_FOR_TREES$$.outfile.rio.nhx\" TARGET=\"_blank\">download NHX file describing this tree</A></TD></TR>\n";
+        $output .= "</TABLE>\n";
+    }
+    elsif ( $domain_no > 1 ) {
+        $output .= "<P>&nbsp</P>\n";
+        $output .= "<TABLE BORDER=\"0\" CELLPADDING=\"1\"\n";
+        for ( my $x = 1; $x < $domain_no; $x++ ) {
+            $output .= "<TR><TD><FORM>\n";
+            $output .= "<INPUT TYPE=BUTTON VALUE=\"view tree for domain #$x\" onClick=\"openWin( '$URL_FOR_TREES$$.outfile.rio-$x.nhx' )\">\n";
+            $output .= "</FORM></TD><TD>\n";
+            $output .= "<A HREF=\"$URL_FOR_TREES$$.outfile.rio-$x.nhx\" TARGET=\"_blank\">download NHX file for domain #$x</A></TD></TR>\n";
+        }
+        $output .= "</TABLE>\n";
+    }
+
+    return;
+
+} ## showATVlinks
+
+
+# Removes output tree (NHX) files if more than $_[ 2 ] in $_[ 0 ]
+# Removes until  $_[ 1 ] are left
+# Last modified: 02/19/02
+sub removeFiles {
+
+    my $dir    = $_[ 0 ];
+    my $target = $_[ 1 ];
+    my $max    = $_[ 2 ];
+    
+    my $files = &countFilesInDir( $dir );
+    
+    if ( $files > $max ) {
+ 
+       my $diff = $files - $target;
+       
+       for ( my $i = 0; $i < $diff; $i++ ) { 
+           &removeOldestFile( $dir );
+       }
+    }
+    
+    return;
+} ## removeFiles
+
+
+
+# Last modified: 02/19/02
+sub countFilesInDir {
+
+    my $dir  = $_[ 0 ];
+    my $file = "";
+    my $c    = 0;
+   
+    opendir( DIR, $dir ) || &nph_fatal_error( "could not open dir $dir" );
+    while( defined ( $file = readdir( DIR ) ) ) {
+        unless ( $file =~ /\d/ ) {
+            next;
+        }
+        $c++;
+    }
+    closedir( DIR );
+   
+    return( $c );
+
+} ## countFilesInDir
+
+
+
+# Last modified: 02/19/02
+sub removeOldestFile {
+    my $dir           = $_[ 0 ];
+    my $file          = "";
+    my $oldest        = "";
+    my $smallest_time = 0;
+    my $time          = 0;
+    my $first         = 1;
+    
+    opendir( DIR, $dir ) || &nph_fatal_error( "could not open dir $dir" );
+    while( defined ( $file = readdir( DIR ) ) ) {
+        unless ( $file =~ /\d/ ) {
+            next;
+        }
+        $file =~ /(\d+)/;
+        $time = $1;
+        if ( $first == 1 ) {
+            $first = 0;    
+            $smallest_time = $time;
+            $oldest = $file
+        }
+        elsif ( $time < $smallest_time ) {
+            $smallest_time = $time;
+            $oldest = $file;
+        }
+    }
+    closedir( DIR );
+
+    unlink( $dir.$oldest ) || &nph_fatal_error( "could not delete $oldest" );
+    
+    return;
+
+} ## removeOldestFile
+
+
+
+# Last modified: 02/19/02
+sub print_ATV_JavaScript {
+
+print <<END;
+
+<SCRIPT language="JavaScript">
+<!-- hide
+function openWin( u ) {
+  atv_window = open("", "atv_window", "width=300,height=150,status=no,toolbar=no,menubar=no,resizable=yes");
+
+  // open document for further output
+  atv_window.document.open();
+  
+  // create document
+  atv_window.document.writeln( "<HTML><HEAD><TITLE>ATV</TITLE></HEAD>" );
+  atv_window.document.writeln( "<BODY TEXT =\\"#FF3300\\" BGCOLOR =\\"#000000\\">" );
+  atv_window.document.writeln( "<FONT FACE = \\"VERDANA, HELVETICA, ARIAL\\">" );
+  atv_window.document.writeln( "<CENTER><B>" );
+  atv_window.document.writeln( "Please do not close this window<BR>as long as you want to use ATV" );
+  atv_window.document.writeln( "<APPLET CODEBASE = \\"$CODE_BASE_FOR_ATV_APPLET\\" ARCHIVE = \\"ATVapplet.jar\\"" );
+  atv_window.document.writeln( " CODE = \\"forester.atv_awt.ATVapplet.class\\"" );
+  atv_window.document.writeln( " WIDTH = 200 HEIGHT = 50>" );
+  atv_window.document.writeln( "<PARAM NAME = url_of_tree_to_load" );
+  atv_window.document.writeln( " VALUE = " + u + ">" );
+  atv_window.document.writeln( "</APPLET>" );
+  atv_window.document.writeln( "</BODY></HTML>" );
+  
+  
+  // close the document - (not the window! flushes buffer)
+  atv_window.document.close();  
+}
+// -->
+</SCRIPT>
+
+END
+
+    return;
+
+} ## print_ATV_JavaScript
+
+
+
+# Last modified: 02/19/02
+sub estimateTime {
+    my $number_of_seqs = $_[ 0 ];
+    my $estimated_time = 0;
+    if ( $number_of_seqs <= 50 ) {
+        $estimated_time = 15;
+    }
+    elsif ( $number_of_seqs <= 100 ) {
+        $estimated_time = 20;
+    }
+    elsif ( $number_of_seqs <= 150 ) {
+        $estimated_time = 30;
+    }
+    elsif ( $number_of_seqs <= 200 ) {
+        $estimated_time = 35;
+    }
+    elsif ( $number_of_seqs <= 250 ) {
+        $estimated_time = 40;
+    }
+    elsif ( $number_of_seqs <= 300 ) {
+        $estimated_time = 60;
+    }
+    elsif ( $number_of_seqs <= 400 ) {
+        $estimated_time = 100;
+    }
+    elsif ( $number_of_seqs <= 500 ) {
+        $estimated_time = 160;
+    }
+    elsif ( $number_of_seqs <= 600 ) {
+        $estimated_time = 390;
+    }
+    elsif ( $number_of_seqs <= 700 ) {
+        $estimated_time = 530;
+    }
+    elsif ( $number_of_seqs <= 800 ) {
+        $estimated_time = 750;
+    }
+    elsif ( $number_of_seqs <= 900 ) {
+        $estimated_time = 850;
+    }
+    else {
+        $estimated_time = $number_of_seqs;
+    }
+    return $estimated_time;
+} ## estimateTime
+
+
+
+# Last modified: 02/19/02
+sub nph_rio_error {
+
+    my $mesg = $_[ 0 ];
+    
+    &queue::RemoveFromQueue( "rioqueue", $remote_addr, $TEMPDIR, $$ );
+
+    unlink( "$TEMPDIR/$$.query", "$TEMPDIR/$$.tree" );
+   
+
+   
+    if ( $user_defined_tree == 1 ) {
+        print( "<H4 class=\"error\">RIO error</H4>\n" );
+        print( "<P><B>[the RIO analysis appearently died]</B></P>\n" );
+        print( "<P><B>the most likely source of this error is an invalid user defined species tree</B></P>\n" );       
+    }
+    else {
+        print( "<H4 class=\"error\">RIO server fatal error</H4>\n" );
+        print( "<P>[the RIO analysis appearently died for unknown reasons]</P>\n" );
+        print( "<P><B>This type of error should not happen</B></P>\n" );
+        print( "<P>\n" );
+        print( "We may have logged it automatically, but we would appreciate it if you would also notify us at\n" );
+        print( "<A HREF = \"mailto:$CONTACT\">$CONTACT</A>\n" );
+        print( "</P>\n" );
+    }
+    print( "<P> &nbsp</P>\n" );
+    
+    &print_footer();
+    system( "rm -r $TEMPDIR/$$"."0" );
+    die;
+
+} ## nph_fatal_error
+
+
+
+# Last modified: 02/19/02
+sub nph_fatal_error {
+
+    my $mesg = $_[ 0 ];
+    
+    &queue::RemoveFromQueue( "rioqueue", $remote_addr, $TEMPDIR, $$ );
+
+    unlink( "$TEMPDIR/$$.query", "$TEMPDIR/$$.tree" );
+
+    print( "<H4 class=\"error\">RIO server fatal error</H4>\n" );
+    print( "<P>[$mesg : $!]</P>\n" );
+    print( "<P><B>This type of error should not happen</B></P>\n" );
+    print( "<P>\n" );
+    print( "We may have logged it automatically, but we would appreciate it if you would also notify us at\n" );
+    print( "<A HREF = \"mailto:$CONTACT\">$CONTACT</A>\n" );
+    print( "</P>\n" );
+    print( "<P> &nbsp</P>\n" );
+
+   
+    &print_footer();
+    die;
+
+} ## nph_fatal_error
+
+
+
+# Last modified: 02/19/02
+sub nph_user_error {
+
+    my $mesg = $_[ 0 ];
+
+    &queue::RemoveFromQueue( "rioqueue", $remote_addr, $TEMPDIR, $$ );
+
+    unlink( "$TEMPDIR/$$.query", "$TEMPDIR/$$.tree" );
+
+    print( "<H4 class=\"error\">user error</H4>\n" );
+    print( "<P>\n" );
+    print( "<B>$mesg</B>\n" );
+    print( "</P>\n" );
+    print( "<P> &nbsp</P>\n" );
+
+    
+    &print_footer();
+
+    die "nph-riowebserver handled: $mesg";
+
+} ## nph_user_error
+
+
+
+

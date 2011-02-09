@@ -1,0 +1,48 @@
+Overview of the Perl scripts in this directory
+----------------------------------------------
+
+This directory contains a collection of (mostly horrible)
+Perl scripts. Some of them are still maintained, such as 
+phylo_pl.pl. 
+
+Some of the scripts in this directory relay heavily
+on forester.pm.
+
+
+
+RIO pipeline:
+- rio.pl
+- makeTree.pl
+- p7extract.pl
+- multifetch.pl
+
+
+Running a parallelized RIO web server:
+- nph-riowebserver
+- rio_slave.pl
+- rio_slave_driver.pl
+- queue.pm
+
+
+To prepare data to be used by RIO:
+- bootstrap_cz.pl
+- pfam2slx.pl
+- extractSWISS-PROT.pl
+- extractTrembl.pl
+- pfam2pwd.pl
+
+
+To run multiple RIO analyses in an automated fashion:
+- Xrio.pl
+
+
+To analyze RIO results (of Xrio.pl runs):
+- bootstrapCounter.pl
+- bootstrapSelector.pl
+- diffFinder3.pl
+
+
+Counting of species in SWISS-PROT and TrEMBL:
+- countSpeciesSPTrEMBL.pl
+
+

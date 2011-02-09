@@ -1,0 +1,517 @@
+% --------------------------------------------------------------
+% squid:formats.tex
+% SRE, Wed Jul 14 17:54:59 1999
+% $CVS Id$
+% --------------------------------------------------------------
+
+\chapter {Sequence file formats}
+
+\section{Summary}
+
+The software can handle a number of different file formats. By
+default, it autodetects the file format, so you don't have to worry
+about converting formats. Most common file formats are recognized,
+including FASTA, Genbank, EMBL, Swissprot, PIR, and FASTA for
+unaligned sequences, and GCG MSF, Clustal, Phylip, and Stockholm
+format for multiple sequence alignments. Some parts of the source code
+call the autodetector the ``Babelfish''. 
+
+The Babelfish has three drawbacks. First, it takes a small amount of
+time to do the autodetection. Second, the Babelfish is aggressive, and
+it makes mistakes when a file isn't one of the known formats -- in
+particular, it can recognize plain text files as SELEX alignments,
+because the SELEX format is so free-form. Third, because the Babelfish
+works by reading the first part of the file then rewinding it before
+starting to process it, you can't use the Babelfish on a nonrewindable
+stream: e.g. when you're taking sequence input from a UNIX pipe
+instead of a file, or when the file is gzipped and has to be
+decompressed before processing.  In normal use, when you're using the
+software interactively from the command line on sequence files that
+you're familiar with, the Babelfish is very convenient and
+(relatively) safe.
+
+However, you'll find that there are times when you want to override
+the Babelfish -- particularly in high-throughput analysis, when you
+know the format your files are supposed to be in, and you'd rather
+increase robustness and sacrifice interactive flexibility. All the
+programs have an \verb+--informat <format>+ option that lets you
+specify the format and shut off the Babelfish. You \emph{must} use
+\verb+--informat+ to use compressed files, or to read sequence from a
+UNIX pipe... see below for more details on these tricks.
+
+\section{Formats recognized by the Babelfish}
+
+Recognized unaligned sequence file formats:
+
+\begin{tabular}{ll}\hline
+Format name   & Note \\ \hline
+fasta         & BLAST flatfile databases, etc.\\
+genbank       & NCBI Genbank flat file format.\\
+embl          & Includes both EMBL (DNA) and SWISSPROT (protein) databases.\\
+pir           & Protein Information Resource database (NBRF/Georgetown)\\
+gcg           & Wisconsin Genetics Computer Group; only allows one sequence per file.\\
+gcgdata       & I think this GCG database format is obsolete now.\\ \hline
+\end{tabular}
+
+Recognized multiple sequence alignment file formats:
+
+\begin{tabular}{ll}\hline
+Format name   & Note \\ \hline
+stockholm     & Pfam format. Allows databases of more than one alignment per file\\
+selex         & Old NeXagen RNA alignment format, adopted by early HMMER releases.\\
+msf           & GCG's alignment format.\\
+clustal       & ClustalV, ClustalW, and friends.\\
+a2m           & Aligned FASTA format; see comment below.\\
+phylip        & Format used by Felsenstein's PHYLIP phylogenetic inference software\\\hline
+\end{tabular}
+
+Aligned FASTA format (here called ``A2M'', though I believe that what
+Haussler's group at UCSC started calling A2M is yet another variant of
+aligned FASTA that's incompatible with this A2M) is only autodetected
+when an alignment file is expected. Otherwise an A2M file will be
+recognized as unaligned FASTA, and its gap characters (if any) will be
+parsed as sequence characters -- often not what you want.
+
+Alignment files may be used when unaligned files are expected -- the
+sequences will silently be de-aligned and read sequentially. The
+converse is not true; you can't give an unaligned sequence format when
+an alignment is expected (makes sense, right?).
+
+There is no provision for enforcing that single unaligned sequence
+formats really do contain just a single sequence.  An attempt to
+convert a multisequence file to GCG format will silently ``succeed'',
+and the file may look ok to your eye, but that multisequence ``GCG''
+file is illegal. The data will be corrupted if you try to read that
+file back in, possibly without generating any error messages.
+
+It turns out that other formats work too, but they're undocumented,
+not subjected to any quality control testing at software release time,
+and prone to change without notice at my slightest whim. (In other
+words, even less supported than the software already is.) The brave,
+curious, or desperate are invited to peruse
+\prog{seqio.c} and \prog{squid.h}.
+
+\section{Special tricks}
+
+\subsection{Reading from standard input (probably UNIX-only)}
+
+If you give ``-'' as a sequence filename, the software will read the
+sequences from standard input rather than from a file. You will need
+to specify the format of the incoming data using the
+\verb+--informat+ option.
+Any format except SELEX can be read from standard input. This lets you
+use any program downstream in a standard UNIX pipe.
+
+There is one limitation: you can't use ``-'' more than once on a
+command line, for obvious reasons. (How is it supposed to read more
+than one file from one standard input stream?) If you do, behavior of
+the software is undefined -- in other words, the software don't check
+for whether you're making this mistake, so God help you if you do.
+
+\subsection{Reading from gzip'ed files (probably UNIX-only)}
+
+A sequence file in any format except SELEX can be compressed by gzip,
+and read in its compressed form. The software looks for the suffix
+\prog{.gz} to detect gzip'ed files. This allows you to save disk space
+by keeping sequence files gzip'ed, if you like. gzip is not built in;
+the software needs to find a gzip executable in your current PATH.
+
+If for some reason you name a file with a \prog{.gz} suffix and it's
+\emph{not} a gzip-compressed file, the software will still try to
+decompress it, and peculiar things may happen.
+
+\section{FASTA format, the recommended unaligned format}
+
+FASTA is probably the simplest of formats for unaligned sequences.
+FASTA files are easily created in a text editor.  Each sequence is
+preceded by a line starting with \verb+>+. The first word on this line
+is the name of the sequence. The rest of the line is a description of
+the sequence (free format). The remaining lines contain the sequence
+itself. You can put as many letters on a sequence line as you want.
+
+\textbf{Example of a simple FASTA file:}
+\begin{verbatim}
+>seq1 This is the description of my first sequence.
+AGTACGTAGTAGCTGCTGCTACGTGCGCTAGCTAGTACGTCA CGACGTAGATGCTAGCTGACTCGATGC
+>seq2 This is a description of my second sequence.
+CGATCGATCGTACGTCGACTGATCGTAGCTACGTCGTACGTAG CATCGTCAGTTACTGCATGCTCG
+\end{verbatim}
+
+For better or worse, FASTA is not a documented standard. Minor (and
+major) variants are in widespread use in the bioinformatics community,
+all of which are called ``FASTA format''. My software attempts to
+cater to all of them, and is tolerant of common deviations in FASTA
+format. Certainly anything that is accepted by the database formatting
+programs in NCBI BLAST or WU-BLAST (e.g. setdb, pressdb, xdformat)
+will also be accepted by my software. Blank lines in a FASTA file are
+ignored, and so are spaces or other gap symbols (dashes, underscores,
+periods) in a sequence. Other non-amino or non-nucleic acid symbols in
+the sequence are also silently ignored, mostly because some people
+seem to think that ``*'' or ``.'' should be added to protein sequences
+to (redundantly) indicate the end of the sequence. The parser will
+also accept unlimited line lengths, which allows it to accomodate the
+enormous description lines in the NCBI NR databases.
+
+On the other hand, any FASTA files \emph{generated} by my software
+adhere closely to community standards, and should be usable by other
+software packages (BLAST, FASTA, etc.) that are more picky about
+parsing their input files. That means you can run a sloppy FASTA file
+thru \prog{sreformat} to clean it up.
+
+Partly because of this tolerance, the software may have a difficult
+time dealing with files that are \textit{not} in FASTA format,
+especially if you're relying on the Babelfish to do format
+autodetection.  Some (now mercifully uncommon) file formats are so
+similar to FASTA format that they be erroneously called FASTA by the
+Babelfish and then quietly but lethally misparsed. An example is the
+old NBRF file format. If you're using \verb+--informat+, things will
+be more robust, and the software should simply refuse to accept a
+non-FASTA file -- but you shouldn't count on this, because files
+perversely similar to FASTA will still confuse the parser.  (The gist
+of these caveats applies to all formats, not just FASTA.)
+
+\section{SELEX, the quick and dirty alignment format}
+
+An example of a simple SELEX alignment file:
+
+\begin{verbatim}
+# Example selex file
+
+seq1     ACGACGACGACG.
+seq2     ..GGGAAAGG.GA
+seq3     UUU..AAAUUU.A
+
+seq1  ..ACG
+seq2  AAGGG
+seq3  AA...UUU
+\end{verbatim}
+
+SELEX is an interleaved multiple alignment format that arose as a
+simple, intuitive format that was easy to write and manipulate
+manually in a text editor. It is usually easy to convert other
+alignment formats into SELEX format, even with a couple of lines of
+Perl, but it can be harder to go the other way, since SELEX is more
+free-format than other alignment formats. For instance, GCG's MSF
+format and the output of the CLUSTALV multiple alignment program are
+similar interleaved formats that can be converted to SELEX just by
+stripping a small number of non-sequence lines out. Because SELEX
+evolved to accomodate different user input styles, it is very tolerant
+of various inconsistencies such as different gap symbols, varying line
+lengths, etc.
+
+Each line contains a name, followed by the aligned sequence. A space,
+dash, underscore, or period denotes a gap. If the alignment is too
+long to fit on one line, the alignment is split into multiple blocks,
+separated by blank lines. The number of sequences, their order, and
+their names must be the same in every block (even if a sequence has no
+residues in a given block!) Other blank lines are ignored. You can add
+comments to the file on lines starting with a \verb+#+.
+
+SELEX stands for ``Systematic Evolution of Ligands by Exponential
+Enrichment'' -- it refers to the Tuerk and Gold technology for
+evolving families of small RNAs for particular functions
+\cite{Tuerk90b}. SELEX files were what we used to keep track of
+alignments of these small RNA families, at a company then called
+NeXagen, in Boulder. It's an interesting piece of historical baggage.
+With the development of HMMER and more need for annotated alignments
+in Pfam, SELEX format later evolved into ``extended SELEX'', with a
+reserved comment style that allowed structural markup and other
+annotations, but that became unwieldy. We now use Stockholm format
+(see below) for highly annotated alignments. (Extended SELEX is
+deprecated and undocumented.) Still, the basic SELEX format remains a
+useful ``lowest common denominator'' alignment format, and has been
+retained.
+
+\subsubsection {Detailed specification of a SELEX file}
+
+\begin{enumerate}
+\item
+Any line beginning with a \verb+#=+ as the first two characters is a
+parsed machine comment in extended SELEX, and is now deprecated. 
+
+\item
+All other lines beginning with a \verb+%+ or \verb+#+ as the first
+character are user comments.  User comments are ignored by all
+software. Anything may appear on these lines. Any number of comments
+may be included in a SELEX file, and at any point.
+
+\item
+Lines of data consist of a name followed by a sequence. The total
+length of the line must be smaller than 4096 characters.
+
+\item
+Names must be a single word. Any non-whitespace characters are
+accepted.  No spaces are tolerated in names: names MUST be a
+single word. Names must be less than 32 characters long.
+
+\item In the sequence, any of the characters \verb+-_.+ or a space are
+recognized as gaps. Any other characters are interpreted as sequence.
+Sequence is case-sensitive. There is a common assumption by my
+software that upper-case symbols are used for consensus (match)
+positions and lower-case symbols are used for inserts. This language
+of ``match'' versus ``insert'' comes from the hidden Markov model
+formalism \cite{Krogh94}. To almost all of my software, this isn't
+important, and it immediately converts the sequence to all upper-case
+after it's read.
+
+\item
+Multiple different sequences are grouped in a block of data lines.
+Blocks are separated by blank lines. No blank lines are tolerated
+between the sequence lines in a block. Each block in a multi-block
+file of a long alignment must have its sequences in the same order in
+each block. The names are checked to verify that this is the case; if
+not, only a warning is generated. (In manually constructed files, some
+users may wish to use shorthand names in subsequent blocks after an
+initial block with full names -- but this isn't recommended.)
+\end{enumerate}
+
+\section{Stockholm, the recommended multiple sequence alignment format}
+
+While we recommend a community standard format (FASTA) for unaligned
+sequence files, the recommended multiple alignment file format is not
+a community standard.  The Pfam Consortium developed a format (based
+on extended SELEX) called ``Stockholm format''.  The reasons for this
+are two-fold. First, there really is no standard accepted format for
+multiple sequence alignment files, so we don't feel guilty about
+inventing a new one. Second, the formats of popular multiple alignment
+software (e.g. CLUSTAL, GCG MSF, PHYLIP) do not support rich
+documentation and markup of the alignment.  Stockholm format was
+developed to support extensible markup of multiple sequence
+alignments, and we use this capability extensively in both RNA work
+(with structural markup) and the Pfam database (with extensive use of
+both annotation and markup).
+
+\subsection{A minimal Stockholm file}
+\begin{verbatim}
+# STOCKHOLM 1.0
+
+seq1  ACDEF...GHIKL
+seq2  ACDEF...GHIKL
+seq3  ...EFMNRGHIKL
+
+seq1  MNPQTVWY
+seq2  MNPQTVWY
+seq3  MNPQT...
+
+\end{verbatim}
+
+The simplest Stockholm file is pretty intuitive, easily generated in a
+text editor. It is usually easy to convert alignment formats into a
+``least common denominator'' Stockholm format. For instance, SELEX,
+GCG's MSF format, and the output of the CLUSTALV multiple alignment
+program are all similar interleaved formats.
+
+The first line in the file must be \verb+# STOCKHOLM 1.x+, where
+\verb+x+ is a minor version number for the format specification
+(and which currently has no effect on my parsers). This line allows a
+parser to instantly identify the file format.
+
+In the alignment, each line contains a name, followed by the aligned
+sequence. A dash or period denotes a gap. If the alignment is too long
+to fit on one line, the alignment may be split into multiple blocks,
+with blocks separated by blank lines. The number of sequences, their
+order, and their names must be the same in every block. Within a given
+block, each (sub)sequence (and any associated \verb+#=GR+ and
+\verb+#=GC+ markup, see below) is of equal length, called the
+\textit{block length}. Block lengths may differ from block to block;
+the block length must be at least one residue, and there is no
+maximum.  
+
+Other blank lines are ignored. You can add comments to the file on
+lines starting with a \verb+#+.
+
+All other annotation is added using a tag/value comment style. The
+tag/value format is inherently extensible, and readily made
+backwards-compatible; unrecognized tags will simply be ignored. Extra
+annotation includes consensus and individual RNA or protein secondary
+structure, sequence weights, a reference coordinate system for the
+columns, and database source information including name, accession
+number, and coordinates (for subsequences extracted from a longer
+source sequence) See below for details.
+
+\subsection{Syntax of Stockholm markup}
+
+There are four types of Stockholm markup annotation, for per-file,
+per-sequence, per-column, and per-residue annotation:
+
+\begin{wideitem}
+\item {\emprog{#=GF <tag> <s>}}
+	Per-file annotation. \prog{<s>} is a free format text line
+	of annotation type \prog{<tag>}. For example, \prog{#=GF DATE
+	April 1, 2000}. Can occur anywhere in the file, but usually
+	all the \prog{#=GF} markups occur in a header.
+
+\item {\emprog{#=GS <seqname> <tag> <s>}}
+	Per-sequence annotation. \prog{<s>} is a free format text line
+	of annotation type \prog{tag} associated with the sequence
+	named \prog{<seqname>}. For example, \prog{#=GS seq1
+	SPECIES_SOURCE Caenorhabditis elegans}. Can occur anywhere
+	in the file, but in single-block formats (e.g. the Pfam
+	distribution) will typically follow on the line after the
+	sequence itself, and in multi-block formats (e.g. HMMER
+	output), will typically occur in the header preceding the
+	alignment but following the \prog{#=GF} annotation.
+
+\item {\emprog{#=GC <tag> <...s...>}
+	Per-column annotation. \prog{<...s...>} is an aligned text line
+	of annotation type \prog{<tag>}.
+        \verb+#=GC+ lines are
+	associated with a sequence alignment block; \prog{<...s...>}
+	is aligned to the residues in the alignment block, and has
+	the same length as the rest of the block.
+	Typically \verb+#=GC+ lines are placed at the end of each block.
+
+\item {\emprog{#=GR <seqname> <tag> <.....s.....>}
+	Per-residue annotation. \prog{<...s...>} is an aligned text line
+	of annotation type \prog{<tag>}, associated with the sequence
+	named \prog{<seqname>}. 
+	\verb+#=GR+ lines are 
+	associated with one sequence in a sequence alignment block; 
+	\prog{<...s...>}
+	is aligned to the residues in that sequence, and has
+	the same length as the rest of the block.
+	Typically
+        \verb+#=GR+ lines are placed immediately following the
+	aligned	sequence they annotate.
+\end{wideitem}
+
+\subsection{Semantics of Stockholm markup}
+
+Any Stockholm parser will accept syntactically correct files, but is
+not obligated to do anything with the markup lines. It is up to the
+application whether it will attempt to interpret the meaning (the
+semantics) of the markup in a useful way. At the two extremes are the
+Belvu alignment viewer and the HMMER profile hidden Markov model
+software package.
+
+Belvu simply reads Stockholm markup and displays it, without trying to
+interpret it at all. The tag types (\prog{#=GF}, etc.) are sufficient
+to tell Belvu how to display the markup: whether it is attached to the
+whole file, sequences, columns, or residues.
+
+HMMER uses Stockholm markup to pick up a variety of information from
+the Pfam multiple alignment database. The Pfam consortium therefore
+agrees on additional syntax for certain tag types, so HMMER can parse
+some markups for useful information. This additional syntax is imposed
+by Pfam, HMMER, and other software of mine, not by Stockholm format
+per se. You can think of Stockholm as akin to XML, and what my
+software reads as akin to an XML DTD, if you're into that sort of
+structured data format lingo.
+
+The Stockholm markup tags that are parsed semantically by my software
+are as follows:
+
+\subsubsection{Recognized #=GF annotations}
+\begin{wideitem}
+\item [\emprog{ID  <s>}] 
+	Identifier. \emprog{<s>} is a name for the alignment;
+	e.g. ``rrm''. One word. Unique in file.
+
+\item [\emprog{AC  <s>}]
+	Accession. \emprog{<s>} is a unique accession number for the
+	alignment; e.g. 
+	``PF00001''. Used by the Pfam database, for instance. 
+	Often a alphabetical prefix indicating the database
+	(e.g. ``PF'') followed by a unique numerical accession.
+	One word. Unique in file. 
+	
+\item [\emprog{DE  <s>}]
+	Description. \emprog{<s>} is a free format line giving
+	a description of the alignment; e.g.
+	``RNA recognition motif proteins''. One line. Unique in file.
+
+\item [\emprog{AU  <s>}]
+	Author. \emprog{<s>} is a free format line listing the 
+	authors responsible for an alignment; e.g. 
+	``Bateman A''. One line. Unique in file.
+
+\item [\emprog{GA  <f> <f>}]
+	Gathering thresholds. Two real numbers giving HMMER bit score
+	per-sequence and per-domain cutoffs used in gathering the
+	members of Pfam full alignments. See Pfam and HMMER
+	documentation for more detail.
+	
+\item [\emprog{NC  <f> <f>}]
+	Noise cutoffs. Two real numbers giving HMMER bit score
+	per-sequence and per-domain cutoffs, set according to the
+	highest scores seen for unrelated sequences when gathering
+	members of Pfam full alignments. See Pfam and HMMER
+	documentation for more detail.
+
+\item [\emprog{TC  <f> <f>}]
+	Trusted cutoffs. Two real numbers giving HMMER bit score
+	per-sequence and per-domain cutoffs, set according to the
+	lowest scores seen for true homologous sequences that
+	were above the GA gathering thresholds, when gathering
+	members of Pfam full alignments. See Pfam and HMMER
+	documentation for more detail.
+\end{wideitem}
+
+\subsection{Recognized #=GS annotations}
+
+\begin{wideitem}
+\item [\emprog{WT  <f>}]
+	Weight. \emprog{<f>} is a positive real number giving the
+	relative weight for a sequence, usually used to compensate
+	for biased representation by downweighting similar sequences.	
+	Usually the weights average 1.0 (e.g. the weights sum to
+	the number of sequences in the alignment) but this is not
+	required. Either every sequence must have a weight annotated, 
+	or none	of them can.  
+
+\item [\emprog{AC  <s>}]
+	Accession. \emprog{<s>} is a database accession number for 
+	this sequence. (Compare the \prog{#=GF AC} markup, which gives
+	an accession for the whole alignment.) One word. 
+	
+\item [\emprog{DE  <s>}]
+	Description. \emprog{<s>} is one line giving a description for
+	this sequence. (Compare the \prog{#=GF DE} markup, which gives
+	a description for the whole alignment.)
+\end{wideitem}
+
+
+\subsection{Recognized #=GC annotations}
+
+\begin{wideitem}
+\item [\emprog{RF}]
+	Reference line. Any character is accepted as a markup for a
+	column. The intent is to allow labeling the columns with some
+	sort of mark.
+	
+\item [\emprog{SS_cons}]
+	Secondary structure consensus. For protein alignments,
+	DSSP codes or gaps are accepted as markup: [HGIEBTSCX.-_], where
+	H is alpha helix, G is 3/10-helix, I is p-helix, E is extended
+	strand, B is a residue in an isolated b-bridge, T is a turn, 
+	S is a bend, C is a random coil or loop, and X is unknown
+	(for instance, a residue that was not resolved in a crystal
+	structure). For RNA alignments
+	the symbols \verb+>+ and \verb+<+ are
+	used for base pairs (pairs point at each other).  \verb-+- indicate
+	definitely single-stranded positions, and any gap symbol indicates
+	unassigned bases or single-stranded positions.  This description
+	roughly follows \cite{Konings89}. 
+	RNA pseudoknots are represented by alphabetic characters, with upper
+	case letters representing the 5' side of the helix and lower case
+	letters representing the 3' side. Note that this limits the
+	annotation to a maximum of 26 pseudoknots per sequence.
+	
+
+\item [\emprog{SA_cons}]
+	Surface accessibility consensus. 0-9, gap symbols, or X are
+	accepted as markup. 0 means <10\% accessible residue surface
+	area, 1 means <20\%, 9 means <100\%, etc. X means unknown
+	structure.
+\end{wideitem}
+
+\subsection{Recognized #=GR annotations}
+
+\begin{wideitem}
+\item [\emprog{SS}]
+	Secondary structure consensus. See \prog{#=GC SS_cons} above.
+\item [\emprog{SA}]
+	Surface accessibility consensus. See \prog{#=GC SA_cons} above.
+\end{wideitem}
+
+

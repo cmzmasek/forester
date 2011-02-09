@@ -1,0 +1,80 @@
+\newpage
+\section {SQUID format}
+
+SQUID format is a sequence database format similar to the PIR,
+GenBank, and EMBL formats. The primary difference is that SQUID format
+may optionally contain secondary structure annotation information for
+the sequence. No other sequence format allows secondary structure
+annotation, which is why SQUID format became necessary.
+
+An example SQUID format file:
+
+\begin{verbatim}
+NAM  DY9990
+SRC  HSTGYA M27547 76..169::196
+DES  Human Tyr-tRNA gene, clone pM6.
+SEQ  +SS
+       1 ccttcgatagctcagctggtagagcggaggactgtagactgcggaaacgt
+         >>>>>>>..>>>>........<<<<.>>>>>...................
+      51 ttgtggacatccttaggtcgctggttcaattccggctcgaagga
+         .........<<<<<.....>>>>>.......<<<<<<<<<<<<.
+++
+NAM  DY9991
+SRC  HSTRNAYE M55611 1..93::93
+DES  Human Tyr-tRNA precursor.
+SEQ  +SS
+       1 ccttcgatagctcagctggtagagcggaggactgtagcctgtagaaacat
+         >>>>>>>..>>>>........<<<<.>>>>>...................
+      51 ttgtggacatccttaggtcgctggttcgattccggctcgaagg
+         .........<<<<<.....>>>>>.......<<<<<<<<<<<<
+++
+NAM  DA0260
+SEQ
+       1 GGGCGAAUAGUGUCAGCGGGAGCACACCAGACUUGCAAUCUGGUAGGGAG
+      51 GGUUCGAGUCCCUCUUUGUCCACCA
+++
+\end{verbatim}
+
+
+\subsection {Specification of a SQUID file}
+
+\begin{enumerate}
+\item There must be a line of the form \verb+NAM  <sequence name>+.
+
+\item There may be an optional line \verb+SRC <id> <acc>
+<start>..<stop>::<olen>+, which specified a database source for this
+sequence, giving the database identifier (name), accession number,
+start and end position in the database sequence, and the original
+length of the database sequence, respectively.  If a \verb+SRC+ line
+is present, all of these values must be specified.  If any values are
+unknown, they may be set to \verb+-+ in the case of \verb+<id>+ and
+\verb+<acc>+ and \verb+0+ in the case of \verb+<start>+, \verb+<stop>,
+and \verb+<olen>+, and in these cases the values will be ignored.
+
+\item There may be an optional line  \verb+DES <description>+ giving
+a one-line description of the sequence.
+
+\item There must be a line of the form \verb-SEQ +SS- or \verb-SEQ-.
+If the line contains \verb-+SS-, it means that the record contains
+secondary structure annotation interleaved with the sequence.
+
+\item The sequence (and optional structure) immediately follow. There may be
+optional numbering either before or after the sequence. The number of
+characters per line is unimportant. Spaces and tabs are ignored.
+There must be no non-numeric non-space characters on any lines except
+sequence or structure annotation characters. Structure annotation is
+fairly free-form; any alphabetic character or character in the set
+\verb/_.-*?<>{}[]()!@#$%^&=+;:'|`~"\/ is accepted. There must
+be one such character for every sequence character (preferably aligned
+to the sequence, but in fact this is not checked for). Note that
+spaces in the secondary structure annotation are not permitted,
+except where they are aligned to gaps in the sequence.
+
+\item Sequence records are separated by a line of the form \verb-++-.
+\end{enumerate}
+
+
+
+   
+
+

@@ -1,0 +1,310 @@
+GBPRI1.SEQ           Genetic Sequence Data Bank
+                           15 August 2000
+
+                NCBI-GenBank Flat File Release 119.0
+
+                         Primate Sequences (Part 1)
+
+    6395 loci,   170956138 bases, from     6395 reported sequences
+
+
+LOCUS       AAB2MCG1      289 bp    DNA             PRI       06-JUL-1998
+DEFINITION  Aotus azarai beta-2-microglobulin precursor, gene, exon 1.
+ACCESSION   AF032092
+VERSION     AF032092.1  GI:3265027
+KEYWORDS    .
+SEGMENT     1 of 2
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 289)
+  AUTHORS   Canavez,F.C., Ladasky,J.J., Muniz,J.A.C., Seuanez,H.N., Parham,P.
+            and Cavanez,F.C.
+  TITLE     beta2-Microglobulin in neotropical primates (Platyrrhini)
+  JOURNAL   Immunogenetics 48 (2), 133-140 (1998)
+  MEDLINE   98298008
+REFERENCE   2  (bases 1 to 289)
+  AUTHORS   Canavez,F.C., Ladasky,J.J., Seuanez,H.N. and Parham,P.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (31-OCT-1997) Structural Biology, Stanford University,
+            Fairchild Building Campus West Dr. Room D-100, Stanford, CA
+            94305-5126, USA
+FEATURES             Location/Qualifiers
+     source          1..289
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+     exon            <134..200
+                     /number=1
+     sig_peptide     134..193
+     intron          201..>289
+                     /number=1
+BASE COUNT       30 a     99 c     80 g     80 t
+ORIGIN      
+        1 gtccccgcgg gccttgtcct gattggctgt ccctgcgggc cttgtcctga ttggctgtgc
+       61 ccgactccgt ataacataaa tagaggcgtc gagtcgcgcg ggcattactg cagcggacta
+      121 cacttgggtc gagatggctc gcttcgtggt ggtggccctg ctcgtgctac tctctctgtc
+      181 tggcctggag gctatccagc gtaagtctct cctcccgtcc ggcgctggtc cttcccctcc
+      241 cgctcccacc ctctgtagcc gtctctgtgc tctctggttt cgttacctc
+//
+
+LOCUS       AAB2MCG2     1276 bp    DNA             PRI       06-JUL-1998
+DEFINITION  Aotus azarai beta-2-microglobulin precursor, gene, exons 2 and 3
+            and complete cds.
+ACCESSION   AF032093 AF032094
+VERSION     AF032093.1  GI:3287308
+KEYWORDS    .
+SEGMENT     2 of 2
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 1276)
+  AUTHORS   Canavez,F.C., Ladasky,J.J., Muniz,J.A.C., Seuanez,H.N., Parham,P.
+            and Cavanez,F.C.
+  TITLE     beta2-Microglobulin in neotropical primates (Platyrrhini)
+  JOURNAL   Immunogenetics 48 (2), 133-140 (1998)
+  MEDLINE   98298008
+REFERENCE   2  (bases 1 to 1276)
+  AUTHORS   Canavez,F.C., Ladasky,J.J., Seuanez,H.N. and Parham,P.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (31-OCT-1997) Structural Biology, Stanford University,
+            Fairchild Building Campus West Dr. Room D-100, Stanford, CA
+            94305-5126, USA
+COMMENT     On Jul 2, 1998 this sequence version replaced gi:3265029
+            gi:3265028.
+FEATURES             Location/Qualifiers
+     source          1..1276
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+     mRNA            join(AF032092.1:<134..200,66..344,1023..>1050)
+                     /product="beta-2-microglobulin precursor"
+     CDS             join(AF032092.1:134..200,66..344,1023..1036)
+                     /codon_start=1
+                     /product="beta-2-microglobulin precursor"
+                     /protein_id="AAC52107.1"
+                     /db_xref="GI:3289965"
+                     /translation="MARFVVVALLVLLSLSGLEAIQRXPKIQVYSRHPAENGKPNFLN
+                     CYVSGFHPSDIEVDLLKNGKKIEKVEHSDLSFSKDWSFYLLYYTEFTPNEKDEYACRV
+                     SHVTLSTPKTVKWDRNM"
+     mat_peptide     join(AF032092.1:194..200,66..344,1023..1033)
+                     /product="beta-2-microglobulin"
+     intron          <1..65
+                     /number=1
+     variation       3
+                     /note="allele 1"
+                     /replace="g"
+     exon            66..344
+                     /number=2
+     intron          345..1022
+                     /number=2
+     exon            1023..1050
+                     /number=3
+     intron          1051..>1276
+                     /number=3
+BASE COUNT      353 a    253 c    269 g    400 t      1 others
+ORIGIN      
+        1 caagttatcc gtaattgaaa taccctggta attaatattc atttgtcttt tcctgatttt
+       61 ttcaggtrct ccaaagattc aggtttactc acgtcatccg gcagagaatg gaaagccaaa
+      121 ttttctgaat tgctatgtgt ctgggtttca tccgtccgac attgaagttg acttactgaa
+      181 gaatggaaag aaaattgaaa aagtggagca ttcagacttg tctttcagca aggactggtc
+      241 tttctatctc ttgtactaca ccgagtttac ccccaatgaa aaagatgagt atgcctgccg
+      301 tgtgagccat gtgactttat caacacccaa gacagtaaag tggggtaagt cttacgttct
+      361 tttgtaggct gctgaaagtt gtgtatgggt agtcatgtca taaagctgct ttgatataaa
+      421 aaaaattcgt ctatggccat actgccctga atgagtccca tcccgtctga taaaaaaaaa
+      481 tcttcatatt gggattgtca gggaatgtgc ttaaagatca gattagagac aacggctgag
+      541 agagcgctgc acagcattct tctgaaccag cagtttccct gcagctgagc agggagcagc
+      601 agcagcagtt gcacaaatac atatgcactc ctaacacttc ttacctactg acttcctcag
+      661 ctttcgtggc agctttaggt atatttagca ctaatgaaca tcaggaaggt ataggccttt
+      721 ctttgtaaat ccttctatcc tagcatccta taatcctgga ctcctccagt actctctggc
+      781 tggattggta tctgaggcta gtaggtgggg cttgttcctg ctgggtagct ccaaacaagg
+      841 tattcatgga taggaacagc agcctatttt gccagcctta tttcttaata gttttagaaa
+      901 tctgttagta cgtggtgttt tttgttttgt tttgttttaa cacagtgtaa acaaaaagta
+      961 catgtatttt aaaagtaaaa cttaatgtct tcctttttct ttctccactg tctttttcat
+     1021 agatcgaaac atgtaaccag catcatggag gtaagttctt gaccttaatt aaatgttttt
+     1081 tgtttcactg gggactattt atagacagcc ctaacatgat aaccctcact atgtggagaa
+     1141 cattgacaga gtagcatttt agcaggcaaa gaggaatcct atagggttac attccctttt
+     1201 cctgtggagt ggcatgaaaa aggtatgtgg ccccagctgt ggccacatta ctgactctac
+     1261 agggagggca aaggaa
+//
+LOCUS       AACCOSIV1     168 bp    DNA             PRI       26-JAN-1998
+DEFINITION  Aotus azarai cytochrome c oxidase subunit IV gene, exon 3.
+ACCESSION   AF042765
+VERSION     AF042765.1  GI:2809514
+KEYWORDS    .
+SEGMENT     1 of 3
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 168)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Molecular evolution of cytochrome c oxidase subunit IV: evidence
+            for positive selection in simian primates
+  JOURNAL   J. Mol. Evol. 44 (5), 477-491 (1997)
+  MEDLINE   97277139
+REFERENCE   2  (bases 1 to 168)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-JAN-1998) CMMG, Wayne State University, 540 E.
+            Canfield, Detroit, MI 48201, USA
+FEATURES             Location/Qualifiers
+     source          1..168
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+     exon            1..168
+                     /number=3
+BASE COUNT       40 a     42 c     54 g     32 t
+ORIGIN      
+        1 gaagtgttgt gaagagcgaa gactatgcgc tcccaagtta tgtggatcgg cgtgactatc
+       61 ccttgcccga cgtggcccat gtcaggcacc tgtcggccag ccagaaggcc ttgaaggaga
+      121 aggagaaggc ctcctggagc agcctctcca tggatgagaa agtcgagt
+//
+
+LOCUS       AACCOSIV2     132 bp    DNA             PRI       26-JAN-1998
+DEFINITION  Aotus azarai cytochrome c oxidase subunit IV gene, exon 4.
+ACCESSION   AF042766
+VERSION     AF042766.1  GI:2809515
+KEYWORDS    .
+SEGMENT     2 of 3
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 132)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Molecular evolution of cytochrome c oxidase subunit IV: evidence
+            for positive selection in simian primates
+  JOURNAL   J. Mol. Evol. 44 (5), 477-491 (1997)
+  MEDLINE   97277139
+REFERENCE   2  (bases 1 to 132)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-JAN-1998) CMMG, Wayne State University, 540 E.
+            Canfield, Detroit, MI 48201, USA
+FEATURES             Location/Qualifiers
+     source          1..132
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+     exon            1..132
+                     /number=4
+BASE COUNT       30 a     25 c     38 g     39 t
+ORIGIN      
+        1 tgtatcgtat tcagttcaag gagagctttg ctgagatgaa caggggctcc aatgagtgga
+       61 agacggttgt gggtgctgcc atgttcttca tcggcttcac agcaattctt atcatcttgg
+      121 agaagcgcta tg
+//
+
+LOCUS       AACCOSIV3     137 bp    DNA             PRI       26-JAN-1998
+DEFINITION  Aotus azarai cytochrome c oxidase subunit IV gene, exon 5; and
+            partial cds.
+ACCESSION   AF042767
+VERSION     AF042767.1  GI:2809516
+KEYWORDS    .
+SEGMENT     3 of 3
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 137)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Molecular evolution of cytochrome c oxidase subunit IV: evidence
+            for positive selection in simian primates
+  JOURNAL   J. Mol. Evol. 44 (5), 477-491 (1997)
+  MEDLINE   97277139
+REFERENCE   2  (bases 1 to 137)
+  AUTHORS   Wu,W., Goodman,M., Lomax,M.I. and Grossman,L.I.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-JAN-1998) CMMG, Wayne State University, 540 E.
+            Canfield, Detroit, MI 48201, USA
+FEATURES             Location/Qualifiers
+     source          1..137
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+     mRNA            join(AF042765.1:<1..168,AF042766.1:1..132,1..>137)
+                     /product="cytochrome c oxidase subunit IV"
+     CDS             join(AF042765.1:<1..168,AF042766.1:1..132,1..137)
+                     /codon_start=3
+                     /product="cytochrome c oxidase subunit IV"
+                     /protein_id="AAB97755.1"
+                     /db_xref="GI:2809518"
+                     /translation="SVVKSEDYALPSYVDRRDYPLPDVAHVRHLSASQKALKEKEKAS
+                     WSSLSMDEKVELYRIQFKESFAEMNRGSNEWKTVVGAAMFFIGFTAILIILEKRYVYG
+                     PLPHTFDKEWVAMQTKRMLDLKVNPVDGLASKWDYDKKEWKK"
+     exon            1..137
+                     /number=5
+BASE COUNT       36 a     36 c     43 g     22 t
+ORIGIN      
+        1 tgtacggccc cctcccgcac acctttgaca aagagtgggt ggccatgcag accaagagga
+       61 tgctggacct gaaggtgaac cctgtcgatg gcctcgcctc caagtgggac tacgacaaga
+      121 aggagtggaa gaagtga
+//
+LOCUS       AAU18601     1771 bp    DNA             PRI       17-JAN-1997
+DEFINITION  Aotus azarae interphotoreceptor retinoid-binding protein (IRBP)
+            gene, intron 1, complete sequence.
+ACCESSION   U18601
+VERSION     U18601.1  GI:624187
+KEYWORDS    .
+SOURCE      Azara's night monkey.
+  ORGANISM  Aotus azarai
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Platyrrhini; Cebidae; Aotinae; Aotus.
+REFERENCE   1  (bases 1 to 1771)
+  AUTHORS   Harada,M.L., Schneider,H., Schneider,M.P., Sampaio,I.,
+            Czelusniak,J. and Goodman,M.
+  TITLE     DNA evidence on the phylogenetic systematics of New World monkeys:
+            support for the sister-grouping of Cebus and Saimiri from two
+            unlinked nuclear genes
+  JOURNAL   Mol. Phylogenet. Evol. 4 (3), 331-349 (1995)
+  MEDLINE   96111507
+REFERENCE   2  (bases 1 to 1771)
+  AUTHORS   Harada,M.L.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (13-DEC-1994) Universidade Federal do Para, Departamento
+            de Genetica, Campus Universitario do Guama, Belem, Para, 66075-900,
+            Brazil
+FEATURES             Location/Qualifiers
+     source          1..1771
+                     /organism="Aotus azarai"
+                     /db_xref="taxon:30591"
+                     /tissue_type="lymphocytes"
+                     /dev_stage="adult"
+     gene            1..1771
+                     /gene="IRBP"
+     intron          1..1771
+                     /gene="IRBP"
+                     /note="interphotoreceptor retinoid-binding protein"
+                     /number=1
+BASE COUNT      384 a    443 c    533 g    411 t
+ORIGIN      
+        1 gtgagaccca agggagacct ggccgggccc agtcctggga gtgagttgac ctgtcgtttg
+       61 cacatgcagg gctctgtgca caatgcgtga caatggcttt tagatttgtt ctcatgctta
+      121 agttgtggcc agttgagtcc tttcctcttt ccatccactg ttccatccac tctctgggac
+      181 cctggtgctg ctgtagaacc tccgtagaac attcatgtta ggttggtgtg aaagtacttt
+      241 taattgcaaa acccacaatt acttttgcat caacctcacg ggaagccagt ttggaagcct
+      301 cgggatagac agagtttcag ccttggctgg gtggaaggtg agcgttggcg gggcttctca
+      361 tcgtcagtgt gggagaagag gccaacatgt ggcagaggtg gcggtgggct tcaccgcgtg
+      421 ccccaccgca ggccgagagc tccgcccggg cagcactcac tccacgctgt tctcctacct
+      481 gtggctttgc tgcattgtca cagttgggca gggcagcatg tgtcatgaat cccttgcaag
+      541 gagggtctga gactggggtt gggtgcaggc agtttgtctg ggaggtggtt gctgaagcag
+      601 gtgtgaagga gggagcaggg agagtgagat aggaaggtga caggcaggtc cctcaaagct
+      661 gttctgctga agccaggacg ctgacaagtg tggggatgct cccaggcaca gttctctgcg
+      721 ggcgggcccc agggctcctg tcccgctttg gccaagagtt gccctgagga cataactcgg
+      781 ggtggggcag gctcccctct cttggagaag gcctgagctg agggtggaaa gacaggatgg
+      841 tgctgtggga gagcctgtca gtggggccag gtgcagctga aatcagaggg ggctgagagt
+      901 gccaacggca tctgttacag aattctcatc cccattttgc ataactgagg cccagagagg
+      961 tgcagagggg agtggcctgg agccagagag ctgtgactga aggcagggca gggcctggag
+     1021 ggcagtgtct ctgtcagcac aggctccttg ccccagtcca gctcaccaag tcctgccgcc
+     1081 ctcccgcagc cttagagagg gaggaagagg tgcatccaca tggaagtagc ctgtgctagg
+     1141 ctttcagaat acccagtttc caaattaatt gcttcttcct ttctggtata gccaaggttc
+     1201 acaatttgga gtcagatgtg gattcagatg ctggctccac cacttattga ctgtgtaacc
+     1261 tgggactagt tacttaatct cactgtgctt cagtttttcc gtggaaaaga tggggaccat
+     1321 gttatctcct gtacaggtgg ctgtgaggat gacgataagc tctgcaaagt gcttagtaca
+     1381 gggccaggca cctgttaaag gtaactaaca tcttccaatc ctgccccagt ggaggggaag
+     1441 ataagcttag agatgttggg aagtatctgg cgaggttgga cgaatcagag aggagaccat
+     1501 tcctgggcct tccagctctg aacaccagag cagacaggag catcctctgc aaggaggctt
+     1561 cccatggatc acacatgtcc cagtggcatg tcacatccca gacatgccac tgggaaagtc
+     1621 ccaggtgcct actgactcct tcagaaatgt cagttcctgt cccatgccct taatatttcc
+     1681 catgacataa aggcgatcca tggcacctgc tttcctgggc tcgaaaaccg gctgccctcc
+     1741 tgacactgag caggacctcc aactcttgca g
+//
