@@ -1,0 +1,259 @@
+<?xml version="1.0" standalone="yes"?>
+
+<TREE>
+  <NODE EXTINCT="0" ID="16299" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="1" ANCESTORWITHPAGE="16293" ITALICIZENAME="0" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+    <NAME><![CDATA[Hominidae]]></NAME>
+    <DESCRIPTION><![CDATA[(humans, gorilla, chimpanzee, bonobo, orangutan)]]></DESCRIPTION>
+    <AUTHORITY></AUTHORITY>
+    <NAMECOMMENT></NAMECOMMENT>
+    <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+    <AUTHDATE>null</AUTHDATE>
+    <OTHERNAMES>
+      <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="0" ITALICIZENAME="0">
+        <NAME><![CDATA[Humans, great apes, and their extinct relatives]]></NAME>
+        <AUTHORITY></AUTHORITY>
+        <COMMENTS></COMMENTS>
+      </OTHERNAME>
+    </OTHERNAMES>
+    <NODES>
+      <NODE EXTINCT="0" ID="16410" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="1" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+        <NAME><![CDATA[Pongo]]></NAME>
+        <DESCRIPTION><![CDATA[(orangutan)]]></DESCRIPTION>
+        <AUTHORITY></AUTHORITY>
+        <NAMECOMMENT></NAMECOMMENT>
+        <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+        <AUTHDATE>null</AUTHDATE>
+        <OTHERNAMES>
+          <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="null" ITALICIZENAME="0">
+            <NAME><![CDATA[Orangutan]]></NAME>
+            <AUTHORITY></AUTHORITY>
+            <COMMENTS></COMMENTS>
+          </OTHERNAME>
+        </OTHERNAMES>
+        <NODES>
+          <NODE EXTINCT="0" ID="65353" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16410" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+            <NAME><![CDATA[Pongo abelii]]></NAME>
+            <DESCRIPTION></DESCRIPTION>
+            <AUTHORITY></AUTHORITY>
+            <NAMECOMMENT></NAMECOMMENT>
+            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+            <AUTHDATE>null</AUTHDATE>
+          </NODE>
+          <NODE EXTINCT="0" ID="65354" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16410" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+            <NAME><![CDATA[Pongo pygmaeus]]></NAME>
+            <DESCRIPTION></DESCRIPTION>
+            <AUTHORITY></AUTHORITY>
+            <NAMECOMMENT></NAMECOMMENT>
+            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+            <AUTHDATE>null</AUTHDATE>
+          </NODE>
+        </NODES>
+      </NODE>
+      <NODE EXTINCT="0" ID="16411" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="0" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+        <NAME></NAME>
+        <DESCRIPTION></DESCRIPTION>
+        <AUTHORITY></AUTHORITY>
+        <NAMECOMMENT></NAMECOMMENT>
+        <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+        <AUTHDATE>null</AUTHDATE>
+        <NODES>
+          <NODE EXTINCT="0" ID="16412" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="0" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+            <NAME></NAME>
+            <DESCRIPTION></DESCRIPTION>
+            <AUTHORITY></AUTHORITY>
+            <NAMECOMMENT></NAMECOMMENT>
+            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+            <AUTHDATE>null</AUTHDATE>
+            <NODES>
+              <NODE EXTINCT="0" ID="16413" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="1" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+                <NAME><![CDATA[Pan]]></NAME>
+                <DESCRIPTION><![CDATA[(chimpanzee and bonobo)]]></DESCRIPTION>
+                <AUTHORITY></AUTHORITY>
+                <NAMECOMMENT></NAMECOMMENT>
+                <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                <AUTHDATE>null</AUTHDATE>
+                <OTHERNAMES>
+                  <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="null" ITALICIZENAME="0">
+                    <NAME><![CDATA[Chimpanzees]]></NAME>
+                    <AUTHORITY></AUTHORITY>
+                    <COMMENTS></COMMENTS>
+                  </OTHERNAME>
+                </OTHERNAMES>
+                <NODES>
+                  <NODE EXTINCT="0" ID="26564" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16413" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                    <NAME><![CDATA[Pan paniscus]]></NAME>
+                    <DESCRIPTION><![CDATA[(bonobo or pygmy chimpanzee)]]></DESCRIPTION>
+                    <AUTHORITY></AUTHORITY>
+                    <NAMECOMMENT></NAMECOMMENT>
+                    <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                    <AUTHDATE>null</AUTHDATE>
+                    <OTHERNAMES>
+                      <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="null" ITALICIZENAME="0">
+                        <NAME><![CDATA[Bonobo]]></NAME>
+                        <AUTHORITY></AUTHORITY>
+                        <COMMENTS></COMMENTS>
+                      </OTHERNAME>
+                      <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="1" DATE="null" ITALICIZENAME="0">
+                        <NAME><![CDATA[Pygmy chimpanzee]]></NAME>
+                        <AUTHORITY></AUTHORITY>
+                        <COMMENTS></COMMENTS>
+                      </OTHERNAME>
+                      <OTHERNAME ISIMPORTANT="0" ISPREFERRED="0" SEQUENCE="2" DATE="null" ITALICIZENAME="0">
+                        <NAME><![CDATA[Pygmy chimp]]></NAME>
+                        <AUTHORITY></AUTHORITY>
+                        <COMMENTS></COMMENTS>
+                      </OTHERNAME>
+                    </OTHERNAMES>
+                  </NODE>
+                  <NODE EXTINCT="0" ID="26565" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16413" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                    <NAME><![CDATA[Pan troglodytes]]></NAME>
+                    <DESCRIPTION><![CDATA[(chimpanzee)]]></DESCRIPTION>
+                    <AUTHORITY></AUTHORITY>
+                    <NAMECOMMENT></NAMECOMMENT>
+                    <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                    <AUTHDATE>null</AUTHDATE>
+                    <OTHERNAMES>
+                      <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="null" ITALICIZENAME="0">
+                        <NAME><![CDATA[Chimpanzee]]></NAME>
+                        <AUTHORITY></AUTHORITY>
+                        <COMMENTS></COMMENTS>
+                      </OTHERNAME>
+                    </OTHERNAMES>
+                  </NODE>
+                </NODES>
+              </NODE>
+              <NODE EXTINCT="0" ID="16414" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="0" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+                <NAME></NAME>
+                <DESCRIPTION></DESCRIPTION>
+                <AUTHORITY></AUTHORITY>
+                <NAMECOMMENT></NAMECOMMENT>
+                <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                <AUTHDATE>null</AUTHDATE>
+                <NODES>
+                  <NODE EXTINCT="2" ID="16415" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                    <NAME><![CDATA[Ardipithecus]]></NAME>
+                    <DESCRIPTION></DESCRIPTION>
+                    <AUTHORITY></AUTHORITY>
+                    <NAMECOMMENT></NAMECOMMENT>
+                    <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                    <AUTHDATE>null</AUTHDATE>
+                  </NODE>
+                  <NODE EXTINCT="0" ID="16416" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="0" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+                    <NAME></NAME>
+                    <DESCRIPTION></DESCRIPTION>
+                    <AUTHORITY></AUTHORITY>
+                    <NAMECOMMENT></NAMECOMMENT>
+                    <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                    <AUTHDATE>null</AUTHDATE>
+                    <NODES>
+                      <NODE EXTINCT="2" ID="16417" CONFIDENCE="0" PHYLESIS="1" LEAF="0" HASPAGE="0" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                        <NAME><![CDATA[Australopithecus]]></NAME>
+                        <DESCRIPTION></DESCRIPTION>
+                        <AUTHORITY></AUTHORITY>
+                        <NAMECOMMENT></NAMECOMMENT>
+                        <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                        <AUTHDATE>null</AUTHDATE>
+                      </NODE>
+                      <NODE EXTINCT="0" ID="16418" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="1" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="5">
+                        <NAME><![CDATA[Homo]]></NAME>
+                        <DESCRIPTION><![CDATA[(humans)]]></DESCRIPTION>
+                        <AUTHORITY></AUTHORITY>
+                        <NAMECOMMENT></NAMECOMMENT>
+                        <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                        <AUTHDATE>null</AUTHDATE>
+                        <OTHERNAMES>
+                          <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="null" ITALICIZENAME="0">
+                            <NAME><![CDATA[Humans]]></NAME>
+                            <AUTHORITY></AUTHORITY>
+                            <COMMENTS></COMMENTS>
+                          </OTHERNAME>
+                        </OTHERNAMES>
+                        <NODES>
+                          <NODE EXTINCT="0" ID="16421" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="1" ANCESTORWITHPAGE="16418" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                            <NAME><![CDATA[Homo sapiens]]></NAME>
+                            <DESCRIPTION><![CDATA[(modern humans)]]></DESCRIPTION>
+                            <AUTHORITY></AUTHORITY>
+                            <NAMECOMMENT></NAMECOMMENT>
+                            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                            <AUTHDATE>0</AUTHDATE>
+                            <OTHERNAMES>
+                              <OTHERNAME ISIMPORTANT="1" ISPREFERRED="0" SEQUENCE="0" DATE="0" ITALICIZENAME="0">
+                                <NAME><![CDATA[Modern humans]]></NAME>
+                                <AUTHORITY></AUTHORITY>
+                                <COMMENTS></COMMENTS>
+                              </OTHERNAME>
+                            </OTHERNAMES>
+                          </NODE>
+                          <NODE EXTINCT="2" ID="16422" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16418" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                            <NAME><![CDATA[Homo erectus]]></NAME>
+                            <DESCRIPTION></DESCRIPTION>
+                            <AUTHORITY></AUTHORITY>
+                            <NAMECOMMENT></NAMECOMMENT>
+                            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                            <AUTHDATE>0</AUTHDATE>
+                          </NODE>
+                          <NODE EXTINCT="2" ID="16423" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16418" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                            <NAME><![CDATA[Homo ergaster]]></NAME>
+                            <DESCRIPTION></DESCRIPTION>
+                            <AUTHORITY></AUTHORITY>
+                            <NAMECOMMENT></NAMECOMMENT>
+                            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                            <AUTHDATE>0</AUTHDATE>
+                          </NODE>
+                          <NODE EXTINCT="2" ID="16424" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16418" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                            <NAME><![CDATA[Homo rudolfensis]]></NAME>
+                            <DESCRIPTION></DESCRIPTION>
+                            <AUTHORITY></AUTHORITY>
+                            <NAMECOMMENT></NAMECOMMENT>
+                            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                            <AUTHDATE>0</AUTHDATE>
+                          </NODE>
+                          <NODE EXTINCT="2" ID="16425" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16418" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                            <NAME><![CDATA[Homo habilis]]></NAME>
+                            <DESCRIPTION></DESCRIPTION>
+                            <AUTHORITY></AUTHORITY>
+                            <NAMECOMMENT></NAMECOMMENT>
+                            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                            <AUTHDATE>0</AUTHDATE>
+                          </NODE>
+                        </NODES>
+                      </NODE>
+                    </NODES>
+                  </NODE>
+                </NODES>
+              </NODE>
+            </NODES>
+          </NODE>
+          <NODE EXTINCT="0" ID="16419" CONFIDENCE="0" PHYLESIS="0" LEAF="0" HASPAGE="1" ANCESTORWITHPAGE="16299" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="2">
+            <NAME><![CDATA[Gorilla]]></NAME>
+            <DESCRIPTION></DESCRIPTION>
+            <AUTHORITY></AUTHORITY>
+            <NAMECOMMENT></NAMECOMMENT>
+            <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+            <AUTHDATE>null</AUTHDATE>
+            <NODES>
+              <NODE EXTINCT="0" ID="65355" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16419" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                <NAME><![CDATA[Gorilla beringei]]></NAME>
+                <DESCRIPTION></DESCRIPTION>
+                <AUTHORITY></AUTHORITY>
+                <NAMECOMMENT></NAMECOMMENT>
+                <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                <AUTHDATE>null</AUTHDATE>
+              </NODE>
+              <NODE EXTINCT="0" ID="65356" CONFIDENCE="0" PHYLESIS="0" LEAF="1" HASPAGE="0" ANCESTORWITHPAGE="16419" ITALICIZENAME="1" INCOMPLETESUBGROUPS="0" SHOWAUTHORITY="0" SHOWAUTHORITYCONTAINING="0" IS_NEW_COMBINATION="0" COMBINATION_DATE="null" CHILDCOUNT="0">
+                <NAME><![CDATA[Gorilla gorilla]]></NAME>
+                <DESCRIPTION></DESCRIPTION>
+                <AUTHORITY></AUTHORITY>
+                <NAMECOMMENT></NAMECOMMENT>
+                <COMBINATION_AUTHOR></COMBINATION_AUTHOR>
+                <AUTHDATE>null</AUTHDATE>
+              </NODE>
+            </NODES>
+          </NODE>
+        </NODES>
+      </NODE>
+    </NODES>
+  </NODE>
+</TREE>
+
+

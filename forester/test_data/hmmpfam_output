@@ -1,0 +1,128 @@
+hmmpfam - search one or more sequences against HMM database
+HMMER 2.3.2 (Oct 2003)
+Copyright (C) 1992-2003 HHMI/Washington University School of Medicine
+Freely distributed under the GNU General Public License (GPL)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+HMM file:                 /home/yye/db/pfam20.0/Pfam_ls
+Sequence file:            Human.fasta.1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query sequence: ENSP00000285681
+Accession:      acc_ENSP00000285681    
+Description:    pep:known chromosome:NCBI36:21:16024215:16174248:1 gene:ENSG00000155313 transcript:ENST00000285681
+
+Scores for sequence family classification (score includes all domains):
+Model    Description                                    Score    E-value  N 
+-------- -----------                                    -----    ------- ---
+UCH      Ubiquitin carboxyl-terminal hydrolase          176.2    7.7e-50   1
+UIM      Ubiquitin interaction motif                     38.8    1.7e-08   2
+UBA      UBA/TS-N domain                                 23.2    0.00084   1
+
+Parsed for domains:
+Model    Domain  seq-f seq-t    hmm-f hmm-t      score  E-value
+-------- ------- ----- -----    ----- -----      -----  -------
+UBA        1/1      16    57 ..     1    41 []    23.2  0.00084
+UIM        1/2      96   113 ..     1    18 []    24.5  0.00035
+UIM        2/2     123   140 ..     1    18 []    14.3  7.7e-50
+UCH        1/1     166   654 ..     1   318 []   176.2  0.3
+
+Alignments of top-scoring domains:
+UBA: domain 1 of 1, from 16 to 57: score 23.2, E = 0.00084
+                   *->ideeavkqLreMTGf.dreeakkALeatngnverAvewLleh<-*
+                       ++  + qLre TG +d +  ++AL+ +ngn+e Av +L  +   
+  ENSP000002    16    HQQTFLNQLREITGInDTQILQQALKDSNGNLELAVAFLTAK    57   
+
+UIM: domain 1 of 2, from 96 to 113: score 24.5, E = 0.00035
+                   *->mdEEedLqlALalSlqea<-*
+                      +d+ +dLq+A+alSl+e+   
+  ENSP000002    96    GDDKDDLQRAIALSLAES    113  
+
+UIM: domain 2 of 2, from 123 to 140: score 14.3, E = 0.3
+                   *->mdEEedLqlALalSlqea<-*
+                      +dEE+ + + L+ S++e+   
+  ENSP000002   123    TDEEQAISRVLEASIAEN    140  
+
+UCH: domain 1 of 1, from 166 to 654: score 176.2, E = 7.7e-50
+                RF    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   xx
+                   *->pgptGLvNlGNTCYmNSvLQcLfsipplrdyflsdsyesein...es
+                        p+GL+N GNTC+ ++v+Q+Lf+  ++r+ +l++++ s  ++ ++ 
+  ENSP000002   166    KAPVGLKNVGNTCWFSAVIQSLFNLLEFRRLVLNYKPPSNAQdlpRN 212  
+
+                RF xxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxx
+                   nplgskgsllcaladLfnalqsg.yksvapsplkflqfkltlgkineefs
+                   ++++++  + ++l+ Lf+ l   ++k+v ps+     ++ +l+  +++ +
+  ENSP000002   213 QKEHRNLPFMRELRYLFALLVGTkRKYVDPSR-----AVEILKDAFKS-N 256  
+
+                RF xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxx
+                   gymQQDAhEFllfLLdgLhedlnrvnkkpytepessdkrpdkaa.eawkn
+                    ++QQD+ EF   LLd+L+++++                  ka++e ++ 
+  ENSP000002   257 DSQQQDVSEFTHKLLDWLEDAFQM-----------------KAEeETDE- 288  
+
+                RF xxxxxxxxxxxxxxxxxxx                               
+                   hltrnesiitdlFqGqlks...............................
+                     ++ +++ ++lF G++   +  ++++ ++++  ++ + + ++ ++ +++
+  ENSP000002   289 --EKPKNPMVELFYGRFLAvgvlegkkfentemfgqyplqvngfkdlhec 336  
+
+                RF                        xxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   .......................klkikrLPpvLiihLKRFsyngetgln
+                    +    +++ ++ ++++++++++ + ++ LPpvL++ L+RF++n  +g++
+  ENSP000002   337 leaamiegeieslhsensgksgqEHWFTELPPVLTFELSRFEFNQALGRP 386  
+
+                RF xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xx xxxxxxxxxx    
+                   kKiddkVefPleLdlssycnaelkekevlrkd.ek.ieklkeerqr....
+                   +Ki++k+efP  L+l++y+ ++ +   ++r++ ++ ++ l++ +qr ++ 
+  ENSP000002   387 EKIHNKLEFPQVLYLDRYMHRNREITRIKREEiKRlKDYLTVLQQRlery 436  
+
+                RF                                                   
+                   ..................................................
+                    + ++++++ +  +  +   +  ++++  +++ ++ + +++++++ ++++
+  ENSP000002   437 lsygsgpkrfplvdvlqyalefasskpvctspvddidassppsgsipsqt 486  
+
+                RF                                                   
+                   ..................................................
+                    ++++++++  +++ +++++++    ++++  +++ ++++ +++ + ++ 
+  ENSP000002   487 lpstteqqgalsselpstspssvaaissrsvihkpftqsrippdlpmhpa 536  
+
+                RF                                        xxxxx xx xx
+                   .......................................dedgn.ne.ee
+                   +++ ++++ +  ++  ++ +++ ++++++ +++ ++ +++ +++ +++ +
+  ENSP000002   537 prhiteeelsvlesclhrwrteiendtrdlqesisrihrTIELMySDkSM 586  
+
+                RF xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                   peeeekdneegenpptkYeLyaVvvHsGsslssGHYiayikkkkengkWy
+                                 +  Y+L+aV+vH G +++ GHY+ayi  +  +++W 
+  ENSP000002   587 -------------IQVPYRLHAVLVHEG-QANAGHYWAYIF-DHRESRWM 621  
+
+                RF xxxxxxxxxxxxxxxxx      xxxxxxxxxx   
+                   kfDDekVsevteeevle......rsssAYiLFY<-*
+                   k++D  V+ ++ ee  +++ ++ r+ sAY L+Y   
+  ENSP000002   622 KYNDIAVTKSSWEELVRdsfggyRNASAYCLMY    654  
+
+//
+
+hmmpfam - search one or more sequences against HMM database
+HMMER 2.3.2 (Oct 2003)
+Copyright (C) 1992-2003 HHMI/Washington University School of Medicine
+Freely distributed under the GNU General Public License (GPL)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+HMM file:                 /home/yye/db/pfam20.0/Pfam_ls
+Sequence file:            Human.fasta.1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query sequence: ENSP00000310334
+Accession:      [none]
+Description:    pep:known chromosome:NCBI36:21:16364713:16901413:1 gene:ENSG00000174496 transcript:ENST00000308787
+
+Scores for sequence family classification (score includes all domains):
+Model    Description                                    Score    E-value  N 
+-------- -----------                                    -----    ------- ---
+	[no hits above thresholds]
+
+Parsed for domains:
+Model    Domain  seq-f seq-t    hmm-f hmm-t      score  E-value
+-------- ------- ----- -----    ----- -----      -----  -------
+	[no hits above thresholds]
+
+Alignments of top-scoring domains:
+	[no hits above thresholds]
+//

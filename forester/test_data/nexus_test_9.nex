@@ -1,0 +1,33 @@
+#NEXUS
+
+Begin Characters;
+ Dimensions NChar=9;
+ ntax=5;
+ CharStateLabels
+   '14-3-3',
+  2 "2-Hacid_dh ",
+>
+> 3 '14-3-3',
+>  3 '14-3-3',    
+        '2-Hacid_dh_C',
+        4                   2-oxoacid_dh       ,
+        
+  5 '2OG-FeII_Oxy',
+    '3-HAO",  
+       
+  7   '3_5_exonuc'
+  
+  8   'duf'
+  
+  9   'bx'
+  
+  ; 
+  
+  Format DataType=Standard Symbols="01";
+ Matrix
+   MOUSE                101111111
+   NEMVE                111111111
+   MONBE                011110111
+   DICDI                101111111
+   ARATH                111110111;
+ End;

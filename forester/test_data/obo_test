@@ -1,0 +1,293 @@
+format-version: 1.2
+date: 05:10:2007 17:50
+saved-by: midori
+auto-generated-by: OBO-Edit 1.101
+subsetdef: goslim_generic "Generic GO slim"
+subsetdef: goslim_goa "GOA and proteome slim"
+subsetdef: goslim_plant "Plant GO slim"
+subsetdef: goslim_yeast "Yeast GO slim"
+subsetdef: gosubset_prok "Prokaryotic GO subset"
+default-namespace: gene_ontology
+remark: cvs version: $Revision: 1.4 $
+[Term]
+id: GO:0000001
+name: mitochondrion inheritance
+namespace: biological_process
+def: "The distribution of mitochondria, including the mitochondrial genome, into daughter cells after mitosis or meiosis, mediated by interactions between mitochondria and the cytoskeleton." [GOC:mcc, PMID:10873824, PMID:11389764]
+synonym: "mitochondrial inheritance" EXACT []
+is_a: GO:0048308 ! organelle inheritance
+is_a: GO:0048311 ! mitochondrion distribution
+is_obsolete: true
+consider: GO:0009055
+[Term]
+id:GO:0000002
+name:mitochondrial genome maintenance
+namespace:biological_process
+comment:comment
+def:"The maintenance of the structure and integrity of the mitochondrial genome." [GOC:ai]  
+is_a:GO:0007005!mitochondrion organization and biogenesis
+is_obsolete: false
+xref: EC:2.4.1.-
+xref: Reactome:7672
+xref: MetaCyc:SIROHEME-FERROCHELAT-RXN
+xref: RESID:AA02376
+xref: UM-BBD_enzymeID:e0271
+relationship: part_of GO:0007052 ! mitotic spindle organization and biogenesis
+
+
+ [Term]
+id: GO:0000003
+name: reproduction
+namespace: biological_process
+alt_id: GO:0019952
+alt_id: GO:0050876
+def: "The production by an organism of new individuals that contain some portion of their genetic material inherited from that organism." [GOC:go_curators, GOC:isa_complete, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: goslim_generic
+subset: goslim_plant
+subset: gosubset_prok
+synonym: "reproductive physiological process" EXACT []
+is_a: GO:0008150 ! biological_process
+
+[Term]
+id: GO:0000005
+name: ribosomal chaperone activity
+namespace: molecular_function
+def: "OBSOLETE. Assists in the correct assembly of ribosomes or ribosomal subunits in vivo, but is not a component of the assembled ribosome when performing its normal biological function." [GOC:jl, PMID:12150913]
+comment: This term was made obsolete because it refers to a class of gene products and a biological process rather than a molecular function.
+is_obsolete: true
+consider: GO:0042254
+consider: GO:0051082
+
+[Term]
+id: GO:0000006
+name: high affinity zinc uptake transmembrane transporter activity
+namespace: molecular_function
+def: "Catalysis of the transfer of a solute or solutes from one side of a membrane to the other according to the reaction: Zn2+(out) = Zn2+(in), probably powered by proton motive force. In high affinity transport the transporter is able to bind the solute even if it is only present at very low concentrations." [TC:2.A.5.1.1]
+is_a: GO:0005385 ! zinc ion transmembrane transporter activity
+
+[Term]
+id: GO:0000007
+name: low-affinity zinc ion transmembrane transporter activity
+namespace: molecular_function
+def: "Catalysis of the transfer of a solute or solutes from one side of a membrane to the other according to the reaction: Zn2+ = Zn2+, probably powered by proton motive force. In low affinity transport the transporter is able to bind the solute only if it is present at very high concentrations." [GOC:mtg_transport, ISBN:0815340729]
+is_a: GO:0005385 ! zinc ion transmembrane transporter activity
+
+[Term]
+id: GO:0000008
+name: thioredoxin
+namespace: molecular_function
+alt_id: GO:0000013
+def: "OBSOLETE. A small disulfide-containing redox protein that serves as a general protein disulfide oxidoreductase. Interacts with a broad range of proteins by a redox mechanism, based on the reversible oxidation of 2 cysteine thiol groups to a disulfide, accompanied by the transfer of 2 electrons and 2 protons. The net result is the covalent interconversion of a disulfide and a dithiol." [GOC:kd]
+comment: This term was made obsolete because it represents gene products.
+is_obsolete: true
+consider: GO:0030508
+
+[Term]
+id: GO:0000009
+name: alpha-1,6-mannosyltransferase activity
+namespace: molecular_function
+def: "Catalysis of the transfer of a mannose residue from GDP-mannose to an oligosaccharide, forming an alpha-1,6-linkage." [GOC:mcc, PMID:2644248]
+xref: EC:2.4.1.-
+is_a: GO:0000030 ! mannosyltransferase activity
+
+[Term]
+id: GO:0000010
+name: trans-hexaprenyltranstransferase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: all-trans-hexaprenyl diphosphate + isopentenyl diphosphate = diphosphate + all-trans-heptaprenyl diphosphate." [EC:2.5.1.30]
+subset: gosubset_prok
+synonym: "all-trans-heptaprenyl-diphosphate synthase activity" EXACT [EC:2.5.1.30]
+synonym: "heptaprenyl diphosphate synthase activity" EXACT [EC:2.5.1.30]
+synonym: "heptaprenyl pyrophosphate synthetase activity" EXACT [EC:2.5.1.30]
+xref: EC:2.5.1.30
+xref: MetaCyc:TRANS-HEXAPRENYLTRANSTRANSFERASE-RXN
+is_a: GO:0016765 ! transferase activity, transferring alkyl or aryl (other than methyl) groups
+
+[Term]
+id: GO:0000011
+name: vacuole inheritance
+namespace: biological_process
+def: "The distribution of vacuoles into daughter cells after mitosis or meiosis, mediated by interactions between vacuoles and the cytoskeleton." [GOC:mcc, PMID:10873824, PMID:14616069]
+is_a: GO:0007033 ! vacuole organization and biogenesis
+is_a: GO:0048308 ! organelle inheritance
+
+[Term]
+id: GO:0000012
+name: single strand break repair
+namespace: biological_process
+def: "The repair of single strand breaks in DNA. Repair of such breaks is mediated by the same enzyme systems as are used in base excision repair." [http://www.ultranet.com/~jkimball/BiologyPages/D/DNArepair.html]
+subset: gosubset_prok
+is_a: GO:0006281 ! DNA repair
+
+[Term]
+id: GO:0000014
+name: single-stranded DNA specific endodeoxyribonuclease activity
+namespace: molecular_function
+def: "Catalysis of the hydrolysis of ester linkages within a single-stranded deoxyribonucleic acid molecule by creating internal breaks." [GOC:mah]
+is_a: GO:0004520 ! endodeoxyribonuclease activity
+
+[Term]
+id: GO:0000015
+name: phosphopyruvate hydratase complex
+namespace: cellular_component
+def: "A multimeric enzyme complex, usually a dimer or an octamer, that catalyzes the conversion of 2-phospho-D-glycerate to phosphoenolpyruvate and water." [GOC:jl, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: gosubset_prok
+synonym: "enolase complex" EXACT []
+is_a: GO:0043234 ! protein complex
+is_a: GO:0044445 ! cytosolic part
+
+[Term]
+id: GO:0000016
+name: lactase activity
+namespace: molecular_function
+def: "Catalysis of the reaction: lactose + H2O = D-glucose + D-galactose." [EC:3.2.1.108]
+xref: EC:3.2.1.108
+xref: MetaCyc:LACTASE-RXN
+xref: Reactome:20536
+is_a: GO:0004553 ! hydrolase activity, hydrolyzing O-glycosyl compounds
+
+[Term]
+id: GO:0000017
+name: alpha-glucoside transport
+namespace: biological_process
+def: "The directed movement of alpha-glucosides into, out of, within or between cells. Alpha-glucosides are glycosides in which the sugar moiety is a glucose residue, and the anomeric carbon of the bond is in an alpha configuration." [GOC:jl, http://www.biochem.purdue.edu/, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+is_a: GO:0042946 ! glucoside transport
+
+[Term]
+id: GO:0000018
+name: regulation of DNA recombination
+namespace: biological_process
+def: "Any process that modulates the frequency, rate or extent of DNA recombination, a process by which a new genotype is formed by reassortment of genes resulting in gene combinations different from those that were present in the parents." [GOC:go_curators, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: gosubset_prok
+is_a: GO:0051052 ! regulation of DNA metabolic process
+relationship: part_of GO:0006310 ! DNA recombination
+
+[Term]
+id: GO:0000019
+name: regulation of mitotic recombination
+namespace: biological_process
+def: "Any process that modulates the frequency, rate or extent of DNA recombination during mitosis." [GOC:go_curators]
+synonym: "regulation of recombination within rDNA repeats" NARROW []
+is_a: GO:0000018 ! regulation of DNA recombination
+relationship: part_of GO:0006312 ! mitotic recombination
+
+[Term]
+id: GO:0000020
+name: negative regulation of recombination within rDNA repeats
+namespace: biological_process
+def: "OBSOLETE. Any process that stops, prevents or reduces the frequency, rate or extent of genetic recombination within the DNA of the genes coding for ribosomal RNA." [GOC:go_curators, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+comment: This term was made obsolete because it describes a substrate-specific process.
+is_obsolete: true
+consider: GO:0045950
+
+[Term]
+id: GO:0000022
+name: mitotic spindle elongation
+namespace: biological_process
+def: "Lengthening of the distance between poles of the mitotic spindle." [GOC:mah]
+synonym: "spindle elongation during mitosis" EXACT []
+is_a: GO:0051231 ! spindle elongation
+relationship: part_of GO:0007052 ! mitotic spindle organization and biogenesis
+
+[Term]
+id: GO:0000023
+name: maltose metabolic process
+namespace: biological_process
+def: "The chemical reactions and pathways involving the disaccharide maltose (4-O-alpha-D-glucopyranosyl-D-glucopyranose), an intermediate in the catabolism of glycogen and starch." [GOC:jl, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: gosubset_prok
+synonym: "malt sugar metabolic process" EXACT []
+synonym: "malt sugar metabolism" EXACT []
+synonym: "maltose metabolism" EXACT []
+is_a: GO:0005984 ! disaccharide metabolic process
+
+[Term]
+id: GO:0000024
+name: maltose biosynthetic process
+namespace: biological_process
+def: "The chemical reactions and pathways resulting in the formation of the disaccharide maltose (4-O-alpha-D-glucopyranosyl-D-glucopyranose)." [GOC:jl, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: gosubset_prok
+synonym: "malt sugar biosynthesis" EXACT []
+synonym: "malt sugar biosynthetic process" EXACT []
+synonym: "maltose anabolism" EXACT []
+synonym: "maltose biosynthesis" EXACT []
+synonym: "maltose formation" EXACT []
+synonym: "maltose synthesis" EXACT []
+is_a: GO:0000023 ! maltose metabolic process
+is_a: GO:0046351 ! disaccharide biosynthetic process
+
+[Term]
+id: GO:0000025
+name: maltose catabolic process
+namespace: biological_process
+def: "The chemical reactions and pathways resulting in the breakdown of the disaccharide maltose (4-O-alpha-D-glucopyranosyl-D-glucopyranose)." [GOC:jl, ISBN:0198506732 "Oxford Dictionary of Biochemistry and Molecular Biology"]
+subset: gosubset_prok
+synonym: "malt sugar catabolic process" EXACT []
+synonym: "malt sugar catabolism" EXACT []
+synonym: "maltose breakdown" EXACT []
+synonym: "maltose degradation" EXACT []
+synonym: "maltose hydrolysis" NARROW []
+xref: MetaCyc:MALTOSECAT-PWY
+is_a: GO:0000023 ! maltose metabolic process
+is_a: GO:0046352 ! disaccharide catabolic process
+
+[Term]
+id: GO:0000026
+name: alpha-1,2-mannosyltransferase activity
+namespace: molecular_function
+def: "Catalysis of the transfer of a mannose residue from GDP-mannose to an oligosaccharide, forming an alpha-1,2-linkage." [GOC:mcc, PMID:10521541]
+xref: EC:2.4.1.-
+is_a: GO:0000030 ! mannosyltransferase activity
+[Term]
+id: GO:0000027
+name: ribosomal large subunit assembly and maintenance
+namespace: biological_process
+def: "The aggregation and bonding together of constituent RNAs and proteins to form and maintain the large ribosomal subunit." [GOC:jl]
+subset: gosubset_prok
+is_a: GO:0042257 ! ribosomal subunit assembly
+relationship: part_of GO:0042273 ! ribosomal large subunit biogenesis and assembly
+[Term]
+id: GO:0000028
+name: ribosomal small subunit assembly and maintenance
+namespace: biological_process
+def: "The aggregation and bonding together of constituent RNAs and proteins to form and maintain the small ribosomal subunit." [GOC:jl]
+subset: gosubset_prok
+is_a: GO:0042257 ! ribosomal subunit assembly
+relationship: part_of GO:0042274 ! ribosomal small subunit biogenesis and assembly
+
+[Other]
+id: 12
+name: something else
+[Typedef]
+id: part_of
+name: part of
+is_transitive: true
+[Term]
+id: GO:0000030
+name: mannosyltransferase activity
+namespace: molecular_function
+def: "Catalysis of the transfer of a mannosyl group to an acceptor molecule, typically another carbohydrate or a lipid." [GOC:ai]
+subset: gosubset_prok
+xref: EC:2.4.1.-
+xref: Reactome:7672
+is_a: GO:0016758 ! transferase activity, transferring hexosyl groups
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

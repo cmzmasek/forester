@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org" xmlns:d="http://www.different.org" xmlns:o="http://www.other.org">
+   <o:something>foo <value>bar</value>
+   </o:something>
+   <phylogeny rooted="true">
+      <date>2008-12-12T12:12:12</date>
+      <clade>
+         <node_id>a</node_id>
+         <clade id_source="ab">
+            <branch_length>0.2</branch_length>
+            <confidence type="ml">0.99</confidence>
+            <confidence type="prob">0.89</confidence>
+            <node_id>c</node_id>
+            <sequence id_source="s1">
+               <name>bax</name>
+               <mol_seq>acgtddd</mol_seq>
+            </sequence>
+            <events>
+               <type>fusion</type>
+            </events>
+            <o:something>foo <value>bar</value>
+            </o:something>
+         </clade>
+         <clade>
+            <name>223</name>
+            <branch_length>0.1</branch_length>
+            <node_id>b</node_id>
+            <taxonomy>
+               <code>qwerty</code>
+            </taxonomy>
+            <sequence id_source="s2">
+               <accession source="foo">qw-_|</accession>
+               <name>bcl2</name>
+            </sequence>
+         </clade>
+      </clade>
+      <sequence_relation id_ref_0="s1" id_ref_1="s2" type="orthology">
+         <confidence type="ml">0.99</confidence>
+      </sequence_relation>
+      <sequence_relation id_ref_0="s2" id_ref_1="s1" type="orthology"/>
+      <property datatype="xsd:string" applies_to="clade" id_ref="ab" ref="MORPH:size"> big </property>
+   </phylogeny>
+   <d:data>
+      <d:value>12</d:value>
+   </d:data>
+   <o:something type="ru">foobar</o:something>
+   <o:phylogeny>
+      <o:clade length="0.1">
+         <o:tip>tip name</o:tip>
+      </o:clade>
+   </o:phylogeny>
+</phyloxml>

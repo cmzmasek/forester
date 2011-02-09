@@ -1,0 +1,119 @@
+P A U P *
+Version 4.0b10 for 32-bit Microsoft Windows
+Fri Mar 21 18:53:11 2008
+
+      -----------------------------NOTICE-----------------------------
+        This is a beta-test version.  Please report any crashes,
+        apparent calculation errors, or other anomalous results.
+        There are no restrictions on publication of results obtained
+        with this version, but you should check the WWW site
+        frequently for bug announcements and/or updated versions.  
+        See the README file on the distribution media for details.
+      ----------------------------------------------------------------
+
+Tree description:
+
+  Unrooted tree(s) rooted using outgroup method
+  Optimality criterion = parsimony
+    Character-status summary:
+      Of 4978 total characters:
+        All characters are of type 'unord'
+        All characters have equal weight
+        419 characters are constant
+        3179 variable characters are parsimony-uninformative
+        Number of parsimony-informative characters = 1380
+    Character-state optimization: Accelerated transformation (ACCTRAN)
+
+Tree number 1 (rooted using default outgroup)
+
+Data matrix and reconstructed states for internal nodes:
+
+                     111111111122222222223333333333444444444455555555556666666
+Taxon/Node  123456789012345678901234567890123456789012345678901234567890123456
+------------------------------------------------------------------------------
+MOUSE       000001111101100010110110001010111111110001111001001110101110001111
+NEMVE       000001111000000000010100001000000000100001011110110001110101110111
+MONBE       000001100001000100010001011111100000000001011000000000000000000100
+DICDI       111101100000011001010100001000000000001110011000000000000000000000
+ARATH       000011100010000001011000101010100000001000011000000000000000000000
+6           000001100000000001010000001010100000001000011000000000000000000000
+7           000001100000000000010000001010100000000001011000000000000000000100
+8           000001111000000000010100001010100000100001011000000000100100000111
+
+Data matrix and reconstructed states for internal nodes (continued):
+
+
+            444444444444444444444444444444444444444444444444444444444444444444
+            888888888888888999999999999999999999999999999999999999999999999999
+            888889999999999000000000011111111112222222222333333333344444444445
+Taxon/Node  567890123456789012345678901234567890123456789012345678901234567890
+------------------------------------------------------------------------------
+MOUSE       111110110111001001011110100001111101011101011011100111101011111100
+NEMVE       111100100110000001011110101110011100100001111000010001101011011100
+MONBE       011110100100000111011110000000011000000000010100000000101110001000
+DICDI       000101101100010001100010010000011100010011010000000000101010000000
+ARATH       010101101100100011111111001110011110000000010000001000110010000011
+6           010101101100000011111110000000011100000000010000000000101010000000
+7           011100100100000011011110000000011100000000010000000000101010001000
+8           111100100110000001011110100000011100000001011000000001101011011100
+
+Data matrix and reconstructed states for internal nodes (continued):
+
+            4444444444444444444444444444
+            9999999999999999999999999999
+            5555555556666666666777777777
+Taxon/Node  1234567890123456789012345678
+----------------------------------------
+MOUSE       1100111010111111101011011110
+NEMVE       0100001000101101101000010010
+MONBE       1100001100001111000000001010
+DICDI       0110011000101100110001100001
+ARATH       0111111001001100110110001010
+6           0110011000001100110000001010
+7           0100001000001101100000001010
+8           0100001000101101101000011010
+
+Tree length = 5111
+Consistency index (CI) = 0.8920
+Homoplasy index (HI) = 0.1080
+CI excluding uninformative characters = 0.7143
+HI excluding uninformative characters = 0.2857
+Retention index (RI) = 0.6000
+Rescaled consistency index (RC) = 0.5352
+
+/------------------------------------------------------------ MOUSE
+|
++--------------- NEMVE
+8
+|                              /---------------------------- MONBE
+|                              |
+\------------------------------7         /---------------------- DICDI
+                               \---------6
+                                         \------------------------------ ARATH
+
+/----------------------------------------------------------------------- MOUSE
+|
++----------------------------------------------------------------------- NEMVE
+8
+|                       /----------------------------------------------- MONBE
+|                       |
+\-----------------------7                      /------------------------ DICDI
+                        \----------------------6
+                                               \------------------------ ARATH
+
+Character change lists:
+
+Character                                CI  Steps           Changes
+------------------------------------------------------------------------------
+1 (14-3-3=BRCT)                       1.000      1    node_6 0 ==> 1 DICDI
+2 (14-3-3=PARP)                       1.000      1    node_6 0 ==> 1 DICDI
+3 (14-3-3=VIT)                        1.000      1    node_6 0 ==> 1 DICDI
+4 (14-3-3=VWA)                        1.000      1    node_6 0 ==> 1 DICDI
+5 (2-Hacid_dh_C=ACT)                  1.000      1    node_6 0 ==> 1 ARATH
+8 (2OG-FeII_Oxy=Methyltransf_11)      1.000      1    node_8 1 ==> 0 node_7
+9 (2OG-FeII_Oxy=P4Ha_N)               1.000      1    node_8 1 ==> 0 node_7
+10 (2OG-FeII_Oxy=RRM_1)               1.000      1    node_8 0 ==> 1 MOUSE
+11 (2OG-FeII_Oxy=ShK)                 1.000      1    node_6 0 ==> 1 ARATH
+12 (2OG-FeII_Oxy=TPR_2)               0.500      1    node_8 0 --> 1 MOUSE
+                                                 1    node_7 0 --> 1 MONBE
+                                                 

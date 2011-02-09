@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="false">
+  <clade>
+    <clade>
+      <clade>
+        <clade>
+          <clade>
+            <name>   first  </name>
+          </clade>
+          <clade>
+            <name>&lt;&gt;</name>
+          </clade>
+          <clade>
+            <name>&quot;&lt;a&apos;b&amp;c&apos;d&quot;&gt;&quot;</name>
+          </clade>
+        </clade>
+        <clade>
+          <name>&apos;&apos;&apos;&quot;</name>
+        </clade>
+      </clade>
+      <clade>
+        <name>&quot;&quot;&quot;</name>
+      </clade>
+    </clade>
+    <clade>
+      <name>dick &amp; doof</name>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

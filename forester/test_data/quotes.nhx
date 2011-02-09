@@ -1,0 +1,12 @@
+(((A_A:-0.1,B_B:0.12):0.123,C_C:0.1234):0.666,D_D:0.6666666666,E_E:0.9);
+((((DEBIL_ECOLI:-0.1,DEBIL_BACSU/1-33:0):0.1,B:0.1):-0.1,C:0.1),D:0.1,E:0.1);
+((A:0.1,B:0.1):0.1[&&NHX:B=1.23456789],(C:0.1,D:0.1));
+((A:0.1,B:0.1)1.23456789:0.1,(C:0.1,D:0.1)90:0.1);
+(("a name in dou
+ble quotes from tree ((a,b),c)"[comment: ignore(,b,,)"]:0.1[comment],"charles darwin 'origin of species'"[&&NHX:S="hsapiens"]:0.1)[13]:0.1,(should be together ' single quotes':0.1,
+"'single quotes' inside 
+double quotes":0.1,
+'"double quotes" inside 
+single quotes':0.1,
+no quotes:0.1,
+"A   (  B    C '"[comment))))]:0.1)90[another point less "comment"]:0.1);

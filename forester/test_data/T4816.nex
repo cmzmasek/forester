@@ -1,0 +1,64 @@
+#NEXUS
+
+[!This data set was downloaded from TreeBASE, a relational database of phylogenetic knowledge. TreeBASE has been supported by the NSF, Harvard University, Yale University, SDSC and UC Davis. Please do not remove this acknowledgment from the Nexus file.
+
+
+Downloaded on March 30, 2010; 21:54 GMT
+
+TreeBASE (cc) 1994-2008
+
+Study reference:
+Maddison W., Zhang J., & Bodner M. 2007. A basal phylogenetic placement for the salticid
+spider Eupoa, with descriptions of two new species (Araneae: Salticidae).
+Zootaxa, 1432: 23-33.
+
+Study ID = 1787]
+
+BEGIN TAXA;
+        TITLE  Combined;
+        DIMENSIONS NTAX=33;
+        TAXLABELS
+            Zenodorus_cf._orbiculatus
+            Tomocyrba_andasibe
+            Thrandina_paroculus
+            Xysticus_sp.
+            Terralonus_mylothrus
+            Spartaeus_uplandicus
+            Spartaeus_spinimanus
+            Sitticus_palustris
+            Salticus_scenicus
+            Portia_labiata
+            Portia_cf._schultzi
+            Phaeacius_cf._fimbriatus
+            Pellenes_peninsularis
+            Orthrus_bicolor
+            Naphrys_pulex
+            Cheiracanthium
+            Massagris_schisma
+            Massagris_cf._honesta
+            Lyssomanes_viridis
+            Holcolaetis_sp.
+            Hispo_cf._frenata
+            Helvetia_sp.
+            Heliophanus_cupreus
+            Goleba_lyra
+            Cesonia_sp.
+            Ghelna_canadensis
+            Galianora_sacha
+            Galianora_bryicola
+            Evarcha_proszynskii
+            Eupoa_nezha
+            Euophrys_monadnock
+            Dendryphantes_hastatus
+            Hibana_sp.
+            ;
+END;
+
+BEGIN TREES;
+      TITLE Tb8353;
+      LINK TAXA = Combined;
+      TREE Fig._15 = [&R] (Hibana_sp.,(((((((((Dendryphantes_hastatus,(Ghelna_canadensis,Terralonus_mylothrus)),(Euophrys_monadnock,(Naphrys_pulex,Zenodorus_cf._orbiculatus)),(Evarcha_proszynskii,Pellenes_peninsularis)),Salticus_scenicus),(Heliophanus_cupreus,(Helvetia_sp.,Orthrus_bicolor))),Sitticus_palustris),(Hispo_cf._frenata,((Massagris_cf._honesta,Massagris_schisma),Tomocyrba_andasibe))),(Eupoa_nezha,(((Galianora_bryicola,Galianora_sacha),Thrandina_paroculus),((Holcolaetis_sp.,(Portia_cf._schultzi,Portia_labiata)),(Phaeacius_cf._fimbriatus,Spartaeus_spinimanus),Spartaeus_uplandicus)),(Goleba_lyra,Lyssomanes_viridis))),Cheiracanthium),Xysticus_sp.),Cesonia_sp.);
+[!  TreeBASE tree Id = 4816 ]
+
+
+END;

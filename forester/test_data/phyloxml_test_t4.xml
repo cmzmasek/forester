@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns="http://www.phyloxml.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns:px="http://www.phyloxml.org" xmlns:o="http://www.other.org">
+   <o:alignment>
+      <o:seq>atcgt</o:seq>
+      <o:seq>atctt</o:seq>
+   </o:alignment>
+   <o:phylogeny>
+      <o:name size="10">other tree 0</o:name>
+   </o:phylogeny>
+   <px:phylogeny rooted="true">
+      <px:name>tree 4</px:name>
+      <px:clade>
+         <px:name>root node</px:name>
+         <px:clade>
+            <px:name>node a</px:name>
+         </px:clade>
+         <px:clade>
+            <px:name>node b</px:name>
+            <px:clade>
+               <px:name>node b1</px:name>
+               <px:taxonomy>
+                  <px:common_name>b1 species</px:common_name>
+                  <o:common_name>some species wrong</o:common_name>
+                  <o:tip type="the mind boggles">quite unneededly, this is called at "tip"!</o:tip>
+               </px:taxonomy>
+               <px:sequence>
+                  <px:name>b1 gene</px:name>
+                  <o:gene_name>b2 gene wrong</o:gene_name>
+               </px:sequence>
+            </px:clade>
+            <px:clade>
+               <px:name>node b2</px:name>
+            </px:clade>
+            <o:clade size="4">
+               <o:name>other clade</o:name>
+            </o:clade>
+         </px:clade>
+      </px:clade>
+   </px:phylogeny>
+   <o:phylogeny>
+      <o:name size="10">other tree</o:name>
+   </o:phylogeny>
+   <o:alignment>
+      <o:seq>atcgt</o:seq>
+      <o:seq>atctt</o:seq>
+   </o:alignment>
+   <px:phylogeny rooted="true"> </px:phylogeny>
+</phyloxml>

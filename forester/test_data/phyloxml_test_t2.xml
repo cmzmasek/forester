@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org">
+   <phylogeny rooted="true">
+      <clade>
+         <clade>
+            <name>a</name>
+            <clade>
+               <name>a1</name>
+               <clade>
+                  <name>a11</name>
+               </clade>
+               <clade>
+                  <name>a12</name>
+               </clade>
+            </clade>
+            <clade>
+               <name>a2</name>
+               <clade>
+                  <name>a21</name>
+               </clade>
+               <clade>
+                  <name>a22</name>
+               </clade>
+            </clade>
+         </clade>
+         <clade>
+            <name>b</name>
+         </clade>
+         <clade>
+            <name>c</name>
+            <clade>
+               <name>c1</name>
+               <clade>
+                  <name>c2</name>
+                  <clade>
+                     <name>c31</name>
+                  </clade>
+                  <clade>
+                     <name>c32</name>
+                  </clade>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+</phyloxml>

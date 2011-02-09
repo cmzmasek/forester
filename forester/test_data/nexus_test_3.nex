@@ -1,0 +1,4 @@
+#NEXUS
+BEGIN TREES;
+tree=[&U]((a,b),c);
+END;

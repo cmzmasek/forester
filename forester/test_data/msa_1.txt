@@ -1,0 +1,27 @@
+CLUSTAL v2
+12 12
+
+sequence_1 abcdef
+sequence_2 efghix 
+sequence_3 klmnxp
+
+ee
+ff
+hh
+
+sequence_1 ee
+sequence_2 ff
+sequence_3 hh
+ ...::
+sequence_1 ee
+sequence_2 ff
+sequence_3 hh
+  **
+sequence_1 ee
+sequence_2 ff 
+sequence_3 hh
+
+//ee
+xx  
+yy
+zz

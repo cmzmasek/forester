@@ -1,0 +1,16 @@
+#NEXUS
+Begin Taxa;
+ TaxLabels "Scarabaeus"   Drosophila  
+     Aranaeus;
+End;
+Begin Trees;
+ Translate  beetle  Scarabaeus,   fly   
+           Drosophila, spider     
+              'Aranaeus'       ;     
+
+ Tree Tree0=[&U]((1,2),3);
+  Tree Tree1=[&U]((beetle,fly),
+    spider);
+   Tree Tree2=[&R]((Scarabaeus,
+   Drosophila),Aranaeus);
+End; 

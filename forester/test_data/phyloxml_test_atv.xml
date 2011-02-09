@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+    xmlns="http://www.phyloxml.org">
+    <phylogeny branch_length_unit="c" rooted="true">
+        <name>t3</name>
+        <id provider="treebank">1-1</id>
+        <description>test phylogeny</description>
+        <confidence type="ml">0.1</confidence>
+        <clade branch_length="0.1">
+            <name>root node</name>
+            <confidence type="bootstrap">90</confidence>
+            <confidence type="ml">1e-3</confidence>
+            <confidence type="decay">2</confidence>
+            <width>10</width>
+            <color>
+                <red>2</red>
+                <green>22</green>
+                <blue>33</blue>
+            </color>
+            <node_id>root id</node_id>
+            <taxonomy>
+                <id provider="ncbi">1</id>
+                <code>ECDYS</code>
+                <scientific_name>ecdysozoa</scientific_name>
+                <common_name>molting animals</common_name>
+                <rank>phylum</rank>
+                <uri>http://www.ecdysozoa.org/</uri>
+            </taxonomy>
+            <sequence type="protein">
+                <symbol>BCL2L14</symbol>
+                <accession source="UniProtKB">Q9BZR8</accession>
+                <name>Apoptosis facilitator Bcl-2-like 14 protein</name>
+                <location>12p13-p12</location>
+                <mol_seq>MCSTSGCDLEEIPLDDDDLNTIEFKILAYY</mol_seq>
+                <uri type="source" desc="UniProt link">http://www.pir.uniprot.org/cgi-bin/upEntry?id=B2L14_HUMAN</uri>
+                <annotation ref="GO:0006915" source="UniProtKB" evidence="experimental" type="function">
+                    <desc>apoptosis</desc>
+                    <confidence type="ml">1</confidence>
+                    <property datatype="xsd:double" applies_to="annotation" ref="AFFY:expression" unit="AFFY:x">0.2</property>
+                    <property datatype="xsd:string" applies_to="annotation" ref="MED:disease">lymphoma</property>
+                </annotation>
+                <annotation ref="GO:0005829"/>
+                <annotation>
+                    <desc>intracellular organelle</desc>
+                </annotation>
+            </sequence>
+            <events>
+                <type>mixed</type>
+                <duplications>1</duplications>
+                <confidence type="bs">99</confidence>
+            </events>
+            <distribution>
+                <desc>irgendwo</desc>
+                <point geodetic_datum="WGS84">
+                    <lat>35.9296730123456789</lat>
+                    <long>-78.9482370123456789</long>
+                    <alt>0</alt>
+                </point>
+            </distribution>
+            <reference doi="10.1074/jbc.M005889200"/>
+            <property ref="F:foo" datatype="xsd:int" applies_to="clade">bar</property>
+            <clade>
+                <name>node a</name>
+                <branch_length>0.2</branch_length>
+                <color>
+                    <red>12</red>
+                    <green>14</green>
+                    <blue>16</blue>
+                </color>
+                <node_id provider="nodeid">a id</node_id>
+                <taxonomy>
+                    <id provider="ncbi">123</id>
+                    <code>CAEEL</code>
+                    <scientific_name>C elegans</scientific_name>
+                    <common_name>elegant nematode worm</common_name>
+                    <rank>species</rank>
+                    <uri>http://www.wormbase.org/</uri>
+                </taxonomy>
+                <sequence>
+                    <name>CAEEL_XYZ</name>
+                </sequence>
+            </clade>
+            <clade>
+                <name>node b</name>
+                <events>
+                    <duplications>1</duplications>
+                    <confidence type="">80</confidence>
+                </events>
+                <binary_characters type="characters" present_count="2" lost_count="3" gained_count="1">
+                    <gained>
+                        <bc>c</bc>
+                    </gained>
+                    <lost>
+                        <bc>d</bc>
+                        <bc>e</bc>
+                        <bc>f</bc>
+                    </lost>
+                    <present>
+                        <bc>a</bc>
+                        <bc>b</bc>
+                    </present>
+                </binary_characters>
+                <clade>
+                    <name>node ba</name>
+                    <distribution>
+                        <desc>Africa</desc>
+                    </distribution>
+                </clade>
+                <clade>
+                    <name>node bb</name>
+                    <binary_characters type="domains">
+                        <gained>
+                            <bc>A</bc>
+                            <bc>B</bc>
+                            <bc>C</bc>
+                        </gained>
+                        <lost>
+                            <bc>D</bc>
+                        </lost>
+                        <present>
+                            <bc>X</bc>
+                            <bc>M</bc>
+                        </present>
+                    </binary_characters>
+                </clade>
+                <clade>
+                    <name>node bc</name>
+                    <sequence>
+                        <name>bc seq</name>
+                        <domain_architecture length="124">
+                            <domain from="120" to="130" confidence="0.9" id=""> A </domain>
+                            <domain from="21" to="44" confidence="2144" id="pfam"> B </domain>
+                            <domain to="43" confidence="1.0E-89" from="34" id=""> C </domain>
+                            <domain id="123" from="34" to="43" confidence="-1.3e-34"> D </domain>
+                        </domain_architecture>
+                    </sequence>
+                </clade>
+            </clade>
+        </clade>
+    </phylogeny>
+</phyloxml>

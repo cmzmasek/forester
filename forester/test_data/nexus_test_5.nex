@@ -1,0 +1,9 @@
+#NEXUS
+Begin Taxa;
+ TaxLabels "Scarabaeus"  Drosophila  
+     Aranaeus;
+End;
+Begin Trees;
+ Tree Tree0=((1,2),3);
+End; 
+  

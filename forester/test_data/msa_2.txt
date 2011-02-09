@@ -1,0 +1,13 @@
+PROBCONS v44
+
+sequence_1 abcdef
+
+ x
+ x
+ 
+sequence_2 efghix
+ yy
+ ****
+sequence_3 klmnxp
+ z
+  z

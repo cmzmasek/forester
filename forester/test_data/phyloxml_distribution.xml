@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org">
+   <phylogeny rooted="true">
+      <name>t3</name>
+      <id provider="treebank">1-1</id>
+      <description>test of Distribution Element</description>
+      <clade branch_length="0.1">
+         <name>root node</name>
+         <distribution>
+            <desc>Hirschweg 38</desc>
+            <point geodetic_datum="WGS84" alt_unit="m">
+               <lat>47.48148427110029</lat>
+               <long>8.768951296806335</long>
+               <alt>472</alt>
+            </point>
+         </distribution>
+         <clade>
+            <name>node a</name>
+            <distribution>
+               <desc>Nagoya, Aichi, Japan</desc>
+               <point geodetic_datum="WGS84" alt_unit="m">
+                  <lat>35.155904</lat>
+                  <long>136.915863</long>
+                  <alt>10</alt>
+               </point>
+            </distribution>
+            <distribution>
+               <desc>San Diego</desc>
+               <point geodetic_datum="WGS84" alt_unit="m">
+                  <lat>32.880933</lat>
+                  <long>-117.217543</long>
+                  <alt>104</alt>
+               </point>
+            </distribution>
+         </clade>
+         <clade>
+            <clade>
+               <distribution>
+                  <desc>Africa</desc>
+               </distribution>
+            </clade>
+            <clade>
+               <name>node bb</name>
+               <distribution>
+                  <point geodetic_datum="WGS84" alt_unit="m">
+                     <lat>1</lat>
+                     <long>2</long>
+                     <alt>10</alt>
+                  </point>
+                  <point geodetic_datum="WGS84" alt_unit="m">
+                     <lat>3</lat>
+                     <long>4</long>
+                     <alt>20</alt>
+                  </point>
+                  <point geodetic_datum="WGS84" alt_unit="m">
+                     <lat>5</lat>
+                     <long>6</long>
+                     <alt>30</alt>
+                  </point>
+                  <polygon>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>0.1</lat>
+                        <long>0.2</long>
+                        <alt>10</alt>
+                     </point>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>0.3</lat>
+                        <long>0.4</long>
+                        <alt>20</alt>
+                     </point>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>0.5</lat>
+                        <long>0.6</long>
+                        <alt>30</alt>
+                     </point>
+                  </polygon>
+                  <polygon>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>1.49348902489947473</lat>
+                        <long>2.567489393947847492</long>
+                        <alt>10</alt>
+                     </point>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>1.49348902489947473</lat>
+                        <long>2.567489393947847492</long>
+                        <alt>10</alt>
+                     </point>
+                     <point geodetic_datum="WGS84" alt_unit="m">
+                        <lat>1.49348902489947473</lat>
+                        <long>2.567489393947847492</long>
+                        <alt>10</alt>
+                     </point>
+                  </polygon>
+               </distribution>
+            </clade>
+            <clade> </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+</phyloxml>

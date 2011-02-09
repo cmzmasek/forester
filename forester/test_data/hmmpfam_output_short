@@ -1,0 +1,44 @@
+hmmpfam - search one or more sequences against HMM database
+HMMER 2.3.2 (Oct 2003)
+Copyright (C) 1992-2003 HHMI/Washington University School of Medicine
+Freely distributed under the GNU General Public License (GPL)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+HMM file:                 /home/yye/db/pfam20.0/Pfam_ls
+Sequence file:            Human.fasta.1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query sequence: ENSP00000285681
+Accession:      223
+Description:    pep:known chromosome:NCBI36:21:16024215:16174248:1 gene:ENSG00000155313 transcript:ENST00000285681
+
+Scores for sequence family classification (score includes all domains):
+Model    Description                                    Score    E-value  N 
+-------- -----------                                    -----    ------- ---
+UCH      Ubiquitin carboxyl-terminal hydrolase          176.2    7.7e-50   1
+UIM      Ubiquitin interaction motif                     38.8    1.7e-08   2
+UBA      UBA/TS-N domain                                 23.2    0.00084   1
+
+Parsed for domains:
+Model    Domain  seq-f seq-t    hmm-f hmm-t      score  E-value
+-------- ------- ----- -----    ----- -----      -----  -------
+UBA        1/1      16    57 ..     1    41 []    23.2  0.00084
+UIM        1/2      96   113 ..     1    18 []    24.5  0.00035
+UIM        2/2     123   140 ..     1    18 []    14.3  7.7e-50
+UCH        1/1     166   654 ..     1   318 []   176.2  0.3
+//
+
+Query sequence: ENSP00000310334
+Accession:      [none]
+Description:    pep:known chromosome:NCBI36:21:16364713:16901413:1 gene:ENSG00000174496 transcript:ENST00000308787
+
+Scores for sequence family classification (score includes all domains):
+Model    Description                                    Score    E-value  N 
+-------- -----------                                    -----    ------- ---
+	[no hits above thresholds]
+
+Parsed for domains:
+Model    Domain  seq-f seq-t    hmm-f hmm-t      score  E-value
+-------- ------- ----- -----    ----- -----      -----  -------
+	[no hits above thresholds]
+
+//

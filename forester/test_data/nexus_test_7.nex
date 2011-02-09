@@ -1,0 +1,54 @@
+#NEXUS
+Begin Taxa;
+ TaxLabels 
+ "Scarabaeus"   Drosophila
+ 
+ 
+ 
+     Aranaeus
+     
+     ;
+Endblock; 
+Begin Trees;
+ Translate  beetle  Scarabaeus,   fly   
+           Drosophila, spider     
+              'Aranaeus'    
+              
+                 ;     
+
+ UTree Tree0 = [&U] ((1,2),3);
+  
+  
+  UTree Tree1=[&U] ((beetle,fly),
+    spider)
+    
+    ;
+   Tree Tree2=[&R]((Scarabaeus,
+   Drosophila),Aranaeus)
+   
+   ;
+   
+Endblock;
+
+
+Begin Characters;
+ Dimensions NChar=7;
+ CharStateLabels
+  1 '14-3-3',
+  2 "2-Hacid_dh ",
+  3  	'2-Hacid_dh_C' ,
+    	4					2-oxoacid_dh   	   ,
+  5 '2OG-FeII_Oxy',
+    '3-HAO",     
+  7 '3_5_exonuc' ; 
+  
+  Format DataType=Standard Symbols="01";
+ Matrix
+   MOUSE                101111111
+   NEMVE                101111111
+   MONBE                111110111
+   DICDI                101111111
+   ARATH                111110111;
+ End;
+  
+ 

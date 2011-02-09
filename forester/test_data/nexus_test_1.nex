@@ -1,0 +1,5 @@
+#NEXUS
+begin trees;
+tree=(((Hippo,((Horse,(Monkey,Orangutan)),(Donkey,Mule))),((((Zebra,Camel),(Llama,Bison)),Elephant),((Buffalo,
+(Sheep,Fox)),((Pig,GuineaPig),Cat)))),((((Dog,Rat),((Deer,Reindeer),Whale)),Rabbit),(Dolphin,Seal)))
+end;
