@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--                                                -->
+<!-- phyloXML                                       -->
+<!--                                                -->
+<!-- schema in XMLSchema                            -->
+<!-- Version: 0.90                                  -->
+<!-- Last modifed: 2008.03.10 by Christian M Zmasek -->
+<!--                                                -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
+   targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
+   <!-- phyloxml is the root element:-->
+   <xs:element name="phyloxml" type="phy:Phyloxml"/>
+   <!-- phyloXML definition:-->
+   <xs:complexType name="Phyloxml">
+      <xs:sequence maxOccurs="unbounded">
+         <xs:element name="phylogeny" type="phy:Phylogeny" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- Phylogeny:-->
+   <xs:complexType name="Phylogeny">
+      <xs:sequence>
+         <xs:element name="name" type="xs:token" minOccurs="0"/>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="description" type="xs:token" minOccurs="0"/>
+         <xs:element name="date" type="xs:dateTime" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="clade" type="phy:Clade" minOccurs="0"/>
+         <xs:element name="clade_relation" type="phy:CladeRelation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="sequence_relation" type="phy:SequenceRelation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="custom" type="phy:Custom" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="rooted" type="xs:boolean" use="required"/>
+      <xs:attribute name="rerootable" type="xs:boolean"/>
+      <xs:attribute name="distance_unit" type="xs:token"/>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <!-- Clade:-->
+   <xs:complexType name="Clade">
+      <xs:sequence>
+         <xs:element name="name" type="xs:token" minOccurs="0"/>
+         <xs:element name="distance" type="xs:double" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="width" type="xs:double" minOccurs="0"/>
+         <xs:element name="color" type="phy:BranchColor" minOccurs="0"/>
+         <xs:element name="node_id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="taxonomy" type="phy:Taxonomy" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="sequence" type="phy:Sequence" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="event" type="phy:Event" minOccurs="0"/>
+         <xs:element name="binary_characters" type="phy:BinaryCharacters" minOccurs="0"/>
+         <xs:element name="distribution" type="xs:token" minOccurs="0"/>
+         <xs:element name="date" type="xs:token" minOccurs="0"/>
+         <xs:element name="clade" type="phy:Clade" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="custom" type="phy:Custom" minOccurs="0"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="distance" type="xs:double"/>
+      <xs:attribute name="id_source" type="phy:id_source"/>
+   </xs:complexType>
+   <!-- Taxonomy:-->
+   <xs:complexType name="Taxonomy">
+      <xs:sequence>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="code" type="phy:TaxonomyCode" minOccurs="0"/>
+         <xs:element name="scientific_name" type="xs:token" minOccurs="0"/>
+         <xs:element name="common_name" type="xs:token" minOccurs="0"/>
+         <xs:element name="rank" type="phy:Rank" minOccurs="0"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <xs:simpleType name="TaxonomyCode">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z0-9_]{2,20}"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="Rank">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="domain"/>
+         <xs:enumeration value="kingdom"/>
+         <xs:enumeration value="branch"/>
+         <xs:enumeration value="phylum"/>
+         <xs:enumeration value="subphylum"/>
+         <xs:enumeration value="division"/>
+         <xs:enumeration value="superclass"/>
+         <xs:enumeration value="class"/>
+         <xs:enumeration value="subclass"/>
+         <xs:enumeration value="superorder"/>
+         <xs:enumeration value="order"/>
+         <xs:enumeration value="suborder"/>
+         <xs:enumeration value="superfamily"/>
+         <xs:enumeration value="family"/>
+         <xs:enumeration value="subfamily"/>
+         <xs:enumeration value="genus"/>
+         <xs:enumeration value="subgenus"/>
+         <xs:enumeration value="species"/>
+         <xs:enumeration value="subspecies"/>
+         <xs:enumeration value="variety"/>
+         <xs:enumeration value="form"/>
+         <xs:enumeration value="cultivar"/>
+         <xs:enumeration value="unknown"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- Sequence:-->
+   <xs:complexType name="Sequence">
+      <xs:sequence>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="accession" type="xs:token" minOccurs="0"/>
+         <xs:element name="gene_name" type="xs:token" minOccurs="0"/>
+         <xs:element name="location" type="xs:token" minOccurs="0"/>
+         <xs:element name="mol_seq" type="phy:MolSeq" minOccurs="0"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+         <xs:element name="annotation" type="phy:Annotation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="domain_architecture" type="phy:DomainArchitecture" minOccurs="0"/>
+         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
+      </xs:sequence>
+      <xs:attribute name="id_source" type="phy:id_source"/>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <xs:simpleType name="MolSeq">
+      <xs:restriction base="xs:token">
+         <xs:pattern value="[a-zA-Z\.\-\?\*_]+"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- DomainArchitecture: -->
+   <xs:complexType name="DomainArchitecture">
+      <xs:sequence>
+         <xs:element name="domain" type="phy:ProteinDomain" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+   </xs:complexType>
+   <xs:complexType name="ProteinDomain">
+      <xs:simpleContent>
+         <xs:extension base="xs:token">
+            <xs:attribute name="from" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="to" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="confidence" type="xs:double"/>
+            <xs:attribute name="id" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Event:-->
+   <xs:complexType name="Event">
+      <xs:sequence>
+         <xs:element name="type" type="phy:EventType" minOccurs="0"/>
+         <xs:element name="duplications" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="speciations" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="losses" type="xs:nonNegativeInteger" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:simpleType name="EventType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="transfer"/>
+         <xs:enumeration value="fusion"/>
+         <xs:enumeration value="root"/>
+         <xs:enumeration value="speciation_or_duplication"/>
+         <xs:enumeration value="other"/>
+         <xs:enumeration value="mixed"/>
+         <xs:enumeration value="unassigned"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!--BinaryCharacters:-->
+   <xs:complexType name="BinaryCharacters">
+      <xs:sequence>
+         <xs:element name="gained" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="lost" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="present" type="phy:BinaryCharacterList" minOccurs="0"/>
+         <xs:element name="absent" type="phy:BinaryCharacterList" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="type" type="xs:token"/>
+      <xs:attribute name="gained_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="lost_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="present_count" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="absent_count" type="xs:nonNegativeInteger"/>
+   </xs:complexType>
+   <xs:complexType name="BinaryCharacterList">
+      <xs:sequence>
+         <xs:element name="bc" type="xs:token" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- Annotation:-->
+   <xs:complexType mixed="true" name="Annotation">
+      <xs:sequence>
+         <xs:element name="id" type="phy:Id" minOccurs="0"/>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+         <xs:element name="uri" type="phy:Uri" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="type" type="xs:token"/>
+   </xs:complexType>
+   <!-- Custom:-->
+   <xs:complexType name="Custom">
+      <xs:sequence>
+         <xs:element name="name" type="xs:token"/>
+         <xs:element name="value" type="xs:token"/>
+      </xs:sequence>
+      <xs:attribute name="unit" type="xs:token"/>
+      <xs:attribute name="custom_type" type="phy:CustomType" use="required"/>
+      <xs:attribute name="custom_property" type="phy:CustomProperty" use="required"/>
+      <xs:attribute name="id_ref" type="phy:id_ref"/>
+   </xs:complexType>
+   <xs:simpleType name="CustomType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="string"/>
+         <xs:enumeration value="character"/>
+         <xs:enumeration value="decimal"/>
+         <xs:enumeration value="integer"/>
+         <xs:enumeration value="byte"/>
+         <xs:enumeration value="boolean"/>
+         <xs:enumeration value="uri"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <xs:simpleType name="CustomProperty">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="phylogeny"/>
+         <xs:enumeration value="clade"/>
+         <xs:enumeration value="node"/>
+         <xs:enumeration value="sequence"/>
+         <xs:enumeration value="taxonomy"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!--Uri-->
+   <xs:complexType name="Uri">
+      <xs:simpleContent>
+         <xs:extension base="xs:anyURI">
+            <xs:attribute name="desc" type="xs:token"/>
+            <xs:attribute name="type" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Confidence:-->
+   <xs:complexType name="Confidence">
+      <xs:simpleContent>
+         <xs:extension base="xs:double">
+            <xs:attribute name="type" type="xs:token" use="required"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Identifier:-->
+   <xs:complexType name="Id">
+      <xs:simpleContent>
+         <xs:extension base="xs:token">
+            <xs:attribute name="type" type="xs:token"/>
+         </xs:extension>
+      </xs:simpleContent>
+   </xs:complexType>
+   <!-- Distribution:-->
+   <xs:simpleType name="Distribution">
+      <xs:restriction base="xs:token"/>
+   </xs:simpleType>
+   <!-- BranchColor:-->
+   <xs:complexType name="BranchColor">
+      <xs:sequence>
+         <xs:element name="red" type="xs:unsignedByte"/>
+         <xs:element name="green" type="xs:unsignedByte"/>
+         <xs:element name="blue" type="xs:unsignedByte"/>
+      </xs:sequence>
+   </xs:complexType>
+   <!-- SequenceRelation:-->
+   <xs:complexType name="SequenceRelation">
+      <xs:sequence>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="id_ref_0" type="phy:id_ref" use="required"/>
+      <xs:attribute name="id_ref_1" type="phy:id_ref" use="required"/>
+      <xs:attribute name="distance" type="xs:double"/>
+      <xs:attribute name="type" type="phy:SequenceRelationType" use="required"/>
+   </xs:complexType>
+   <xs:simpleType name="SequenceRelationType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="orthology"/>
+         <xs:enumeration value="one_to_one_orthology"/>
+         <xs:enumeration value="super_orthology"/>
+         <xs:enumeration value="paralogy"/>
+         <xs:enumeration value="ultra_paralogy"/>
+         <xs:enumeration value="xenology"/>
+         <xs:enumeration value="unknown"/>
+         <xs:enumeration value="other"/>
+      </xs:restriction>
+   </xs:simpleType>
+   <!-- CladeRelation:-->
+   <xs:complexType name="CladeRelation">
+      <xs:sequence>
+         <xs:element name="confidence" type="phy:Confidence" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="id_ref_0" type="phy:id_ref" use="required"/>
+      <xs:attribute name="id_ref_1" type="phy:id_ref" use="required"/>
+      <xs:attribute name="distance" type="xs:double"/>
+      <xs:attribute name="type" type="xs:token" use="required"/>
+   </xs:complexType>
+   <!-- Used to link elements together on the xml level:-->
+   <xs:simpleType name="id_source">
+      <xs:restriction base="xs:ID"/>
+   </xs:simpleType>
+   <xs:simpleType name="id_ref">
+      <xs:restriction base="xs:IDREF"/>
+   </xs:simpleType>
+</xs:schema>
