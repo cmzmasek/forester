@@ -1,0 +1,6 @@
+Eclipse (3.3 or greater):
+
+
+Two external libraries need to be set (Project|Properties|Java Build Path|Libraries):
+  forester-atv/java/jars/fluorite.jar
+  forester-atv/java/jars/gnujpdf.jar
