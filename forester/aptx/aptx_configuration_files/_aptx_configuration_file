@@ -1,0 +1,406 @@
+#  User Interface Look and Feel
+#  ----------------------------
+#  Possible values for 'native_ui'
+#    'yes' to use native (system) "look and feel"
+#    'no'  to use Archaeopteryx-style "look and feel", can set GUI colors via this file (see below)
+#    '?'   to use native (system) "look and feel" if Mac OS X with Java 1.5 is detected,
+#          Archaeopteryx-style "look and feel" otherwise
+
+native_ui: ?
+
+
+
+#  Default Values for Options
+#  --------------------------
+#  Minimal confidence value to be displayed: 'min_confidence_value':
+#     Example: 'min_confidence_value: 50.0' (a commonly used 
+#     value for bootstrap support)
+#  Font family name: 'font_family':
+#     Example: 'font_family: Arial,Calibri,Helvetica'
+#     It is advisable to use more than one value for font_family (in
+#     decreasing order of preference). Font family names have to be
+#     comma separated (no spaces). Spaces in font names have to be
+#     replaced by underscores (e.g. 'Times_New_Roman').
+#  Font size: 'font_size':
+#     Example: 'font_size: 10'
+#  Screen antialias: 'antialias_screen': values: 'yes'/'no'
+#  Show Scale: 'show_scale': values: 'yes'/'no'
+#  Show branch length branch values: 'show_branch_length_values': values: 'yes'/'no'
+#  Do/do not line up cladogram display: 'non_lined_up_cladogram': values: 'yes'/'no'
+#  Cladogram display type: 'cladogram_type'
+#     Example: 'cladogram_type: ext_node_sum_dep'
+#     The three possible values are: non_lined_up
+#                                    ext_node_sum_dep
+#                                    total_node_sum_dep (for "uniform" branch lengths)
+#  Default size for graphics export and printing: 'graphics_export_x' and 'graphics_export_y':
+#     (Archaeopteryx tries to guess the locale, so setting these is not always necessary)
+#     Example: For A4 (portrait):
+#               'graphics_export_x: 595'
+#               'graphics_export_y: 845'
+#             For US Letter (portrait):
+#               'graphics_export_x: 612'
+#               'graphics_export_y: 792'
+#  Default line width for PDF export: 'pdf_export_line_wdith':
+#     Example: 'pdf_export_line_width: 0.5'
+#  Show overview: 'show_overview': values: 'yes'/'no'
+#  Phylogeny graphics type: 'phylogeny_graphics_type':
+#     Example: 'phylogeny_graphics_type: euro_style'
+#     The eight possible values are: rectangular
+#                                    euro_style
+#                                    rounded
+#                                    curved
+#                                    triangular
+#                                    convex
+#                                    unrooted
+#                                    circular
+#  Node label direction for circular
+#     and unrooted type: 'node_label_direction':
+#     Example: 'node_label_direction: horizontal'
+#     The two possible values are: horizontal
+#                                  radial
+#  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
+#  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
+#  Number of fraction digits for branch length values: 'branch_length_value_digits'
+#  Number of fraction digits for confidence values: 'confidence_value_digits'
+#  To turn on/off background color gradient: background_gradient
+#     Example: 'background_gradient: yes'
+#  To allow/not allow editing (cut, copy, and paste): allow_editing
+#     Example: 'allow_editing: yes'
+#  To replace underscores with spaces during NH/NHX/Nexus file parsing (application only):
+#     'replace_underscores_in_nh_parsing'
+#  To extract taxonomy codes from Pfam-style sequence labels (e.g. 'QW231_HUMAN/129-694')
+#     during NH/NHX/Nexus file parsing (application only): 'extract_pfam_tax_codes_in_nh_parsing'
+#  Internal node labels are confidence values during NH/NHX/Nexus file parsing (application only):
+#     'internal_labels_are_confidence_values'
+
+
+min_confidence_value:                      0.0
+font_family:                               Verdana,Tahoma,Arial,Helvetica,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
+font_size:                                 10
+antialias_screen:                          yes
+show_scale:                                yes
+show_branch_length_values:                 no
+cladogram_type:                            ext_node_sum_dep
+phylogeny_graphics_type:                   rectangular
+#graphics_export_x:                         595
+#graphics_export_y:                         792
+pdf_export_line_width:                     0.5
+show_overview:                             yes
+overview_width:                            120
+overview_height:                           120
+overview_placement_type:                   upper_left
+node_label_direction:                      horizontal
+color_labels_same_as_branch_length_values: no
+show_domain_labels:                        yes
+branch_length_value_digits:                3
+confidence_value_digits:                   3
+background_gradient:                       no
+allow_editing:                             yes
+#  NH/NHX/Nexus file parsing (application only):
+internal_labels_are_confidence_values:     no
+replace_underscores_in_nh_parsing:         no
+extract_taxonomy_codes_in_nh_parsing:      yes
+display_sequence_relations:                no
+
+
+#  phyloXML parsing
+#  ----------------
+#  To ensure compatibility with all current and future 
+#  phyloXML applications and to detect malformatted and
+#  possibly erroneous data, it is strongly recommended
+#  to enable validation of all phyloXML files
+#  against the XSD Schema (see: http://www.phyloxml.org/),
+#  with:
+#  'validate_against_phyloxml_xsd_schema: true'
+
+validate_against_phyloxml_xsd_schema: true
+
+
+
+#  Checkbox Display Selection
+#  --------------------------
+#  This is used to select which checkboxes to display
+#  and what their initial values should be.
+#  Format: 'name: display|nodisplay yes|no'
+#  Note: if an option is not displayed, it will not be enabled
+#
+#  For the following use '?' to let Archaeopteryx decide (depending on tree):
+#  - 'phylogram'
+#  - 'write_confidence_values'
+#  - 'write_events'
+
+phylogram:                      display   ?
+rollover:                       display   yes
+color_according_to_species:     display   yes
+color_according_to_annotation:  display   no
+show_node_names:                display   yes
+show_gene_names:                display   yes
+show_gene_symbols:              display   yes
+show_sequence_acc:              display   no
+show_taxonomy_code:             display   yes
+show_taxonomy_scientific_names: display   yes
+show_taxonomy_common_names:     display   no
+show_taxonomy_images:           display   yes
+show_annotations:               display   no
+show_property:                  nodisplay no
+write_confidence_values:        display   ?
+write_events:                   display   ?
+color_branches:                 display   no
+width_branches:                 display   no
+show_domain_architectures:      display   no
+show_binary_characters:         display   no
+show_binary_character_counts:   display   no
+display_internal_data:          display   yes
+dynamically_hide_data:          display   yes
+show_relation_confidence:       display	  no
+show_vector_data:               display   no
+
+
+#  Combo-box Display Selection
+#  ---------------------------
+#  Format: 'name: display/nodisplay'
+click_to: display_node_data    display
+click_to: collapse_uncollapse  display
+click_to: reroot               display
+click_to: subtree              display
+click_to: swap                 display
+click_to: color_subtree        display
+click_to: open_seq_web         display
+click_to: open_tax_web         display
+click_to: cut_subtree          display
+click_to: copy_subtree         display
+click_to: paste_subtree        display
+click_to: delete               display
+click_to: add_new_node         display
+click_to: edit_node_data       display
+
+#   Default click-to option (any of the above if set to "display")
+default_click_to: display_node_data
+
+
+
+#  Default Tree Display Colors
+#  ---------------------------
+
+display_color: background                 0x000000
+display_color: background_gradient_bottom 0x0000FF
+display_color: sequence                   0xDCDCDC
+display_color: taxonomy                   0xB4B4B4
+display_color: confidence                 0x38B0DE
+display_color: branch_length              0x8C8C8C
+display_color: branch                     0xFFFFFF
+display_color: node_box                   0xFFFFFF
+display_color: collapsed                  0xFFFF00
+display_color: matching_nodes             0x00FF00
+display_color: duplication                0xFF0000
+display_color: speciation                 0x00FF00
+display_color: duplication_or_specation   0xFFFF00
+display_color: domains                    0x7B68EE
+display_color: binary_domain_combinations 0x4169FF
+display_color: annotation                 0xADFF2F
+display_color: overview                   0x828282
+
+
+
+#  GUI (graphical user interface) Colors
+#  -------------------------------------
+#
+#  These are ignored if native (system) "look and feel"
+#  is being used ('native_ui: yes').
+
+gui_background_color:                 0x202020
+gui_checkbox_text_color:              0xDCDCDC
+gui_checkbox_and_button_active_color: 0xFF0000
+gui_button_text_color:                0xFFFFFF
+gui_button_background_color:          0x404040
+gui_menu_background_color:            0x000000
+gui_menu_text_color:                  0xFFFFFF
+gui_button_border_color:              0x000000
+
+
+#  Domain Structure Display Colors
+#  -------------------------------
+domain_structure_base_color:          0x202020
+domain_structure_font_color:          0x909090
+
+
+
+#  Web Links
+#  --------- 
+#  Format: web_link: <URL> <description> <source identifier>
+#  E.g. "http://www.uniprot.org/uniprot/?query= UniProtKB   UniProtKB"
+#  <description> is not used at the moment.
+#  <source identifier> corresponds to the <source> element for <sequence> <accession>,
+#  and to the <type> of <taxonomy> <id> (see www.phyloxml.org).
+ 
+web_link: http://www.uniprot.org/uniprot/?query=                            UniProtKB        UniProtKB
+web_link: http://www.uniprot.org/uniprot/?query=                            SPTREMBL         sptrembl
+web_link: http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?cmd=Retrieve&val=  NCBI             GI
+web_link: http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?cmd=Retrieve&val=  RefSeq           RefSeq
+web_link: http://www.ebi.ac.uk/interpro/IEntry?ac=                          InterPro         InterPro
+web_link: http://www.rcsb.org/pdb/explore.do?structureId=                   PDB              PDB
+web_link: http://pfam.sanger.ac.uk/protein?entry=                           Pfam             pfam
+web_link: http://tolweb.org/                                                ToL              tol
+web_link: http://www.eol.org/pages/                                         EOL              eol
+web_link: http://www.uniprot.org/taxonomy/                                  UniProt-Taxonomy uniprot
+web_link: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=       NCBI-Taxonomy    ncbi
+web_link: http://www.ubio.org/browser/details.php?namebankID=               uBio             namebankID
+# not working at the moment:
+web_link: http://www.ensembl.org/Homo_sapiens/Search/Summary?species=all;idx=;q=  Ensembl  Ensembl
+
+
+
+#  Settings Specific for ArchaeopteryxE
+#  ------------------------------------
+#  To hide controls and menus: 'hide_controls_and_menus: yes'
+#  To use tabbed display     : 'use_tabbed_display: yes'
+
+hide_controls_and_menus: no
+use_tabbed_display:      yes
+
+
+
+#  Settings For Phylogenetic Inference
+#  -----------------------------------
+#  EXPERIMENTAL: DO NOT USE!!
+
+default_number_of_bootstrap_resamples: 100
+
+
+
+#  Application Specific Settings
+#  -----------------------------
+
+#  Species colors
+#  --------------
+#  Format: species_color: speciesname hexcolor
+species_color: BRAFL      0x00FFFF
+species_color: SPHGR      0x9620F0
+species_color: STRPU      0x9620F0
+species_color: CIOIN      0xFF1CAE
+species_color: CIOSA      0xFF2CAE
+species_color: BOVIN      0x5C3317
+species_color: CANFA      0x8B2323
+species_color: HUMAN      0xFF2400
+species_color: PANTR      0xCC2400
+species_color: MOUSE      0xFF7F00
+species_color: RAT        0xFFEF00
+species_color: MONDO      0xEE9A49
+species_color: ORNAN      0xCD853F
+species_color: XENLA      0x6BAA23
+species_color: XENTR      0x6BAA23
+species_color: CHICK      0xFFC125
+species_color: FUGRU      0x0000FF
+species_color: BRARE      0x0000DD
+species_color: DANRE      0x0000BB
+species_color: TETNG      0x0000AA
+species_color: ORYLA      0x000088
+species_color: GASAC      0x000066
+species_color: CAEEL      0xA0A0A0
+species_color: CAEBR      0xB0B0B0
+species_color: DROME      0x706F00
+species_color: DROPS      0x504F00
+species_color: APIME      0x7A7700
+species_color: AEDAE      0x8C5900
+species_color: TRICA      0x918E00
+species_color: NEMVE      0xAABADD
+species_color: HYDAT      0x7C9BCF
+species_color: LUBBA      0xF7B5CB
+species_color: GEOCY      0xF5A0BD
+species_color: SUBDO      0xC790B9
+species_color: MONBE      0xFC0FC0
+species_color: DICPU      0x23238E
+species_color: DICDI      0x4D4DFF
+species_color: ENTHI      0x5959AB
+species_color: ARATH      0x00FF00
+species_color: POPTR      0x006400
+species_color: VITVI      0x00CD00
+species_color: GLYMA      0x00FF7F
+species_color: ORYSA      0x008B00
+species_color: ORYSJ      0x008C00
+species_color: SORBI      0x00EE76
+species_color: SELMO      0x238E23
+species_color: PHYPA      0x09F911
+species_color: OSTLU      0x7FFF00
+species_color: OSTTA      0x7FFF00
+species_color: OSTRC      0x7FFF00
+species_color: MICPU      0x66CD00
+species_color: MIC99      0x66CD00
+species_color: CHLRE      0xB3EE3A
+species_color: VOLCA      0xC0FF3E
+species_color: CHLSP      0x6B8E23
+species_color: CYAME      0xD02090
+species_color: YEAST      0xAAAAAA
+species_color: BACFR      0xFF0000
+species_color: BACTN      0xFFFF00
+species_color: MYXXD      0x0000FF
+species_color: STIAU      0x00FFFF
+species_color: BACOV      0x8C5900
+species_color: BACUN      0x66CD00
+species_color: PORGI      0x918E00
+
+
+#  Domain colors
+#  -------------
+
+domain_color: Cofilin_ADF   0xFC0FC0
+domain_color: TIR           0x900000
+domain_color: NACHT         0x202020
+domain_color: CARD          0xFF0000
+domain_color: Peptidase_C14 0x00FF00
+domain_color: Death         0x0000FF
+domain_color: DED           0x00FFFF
+domain_color: BIR           0xCCFF33
+domain_color: PAAD_DAPIN    0x9999CC
+domain_color: NB-ARC        0x500050
+domain_color: WD40          0x888888
+domain_color: RVT_1         0x999900
+domain_color: NOPS          0x505000
+domain_color: RRM_1         0x004400
+domain_color: fn3           0xFFCC00
+domain_color: Ank           0xCC33FF
+domain_color: Pkinase       0x339900
+domain_color: Pkinase_Tyr   0x336600
+domain_color: ig            0x660066
+domain_color: zf-C3HC4      0x6699FF
+domain_color: zf-CCHC       0x6699EE
+domain_color: zf-C2H2       0x6699CC
+domain_color: zf-B_box      0x6699DD
+domain_color: PDZ           0x66FFCC
+domain_color: SH3_2         0x996600
+domain_color: MIRO          0xCCFF00
+domain_color: Myb_DNA-binding 0xDDDDDD
+domain_color: NHL           0x336666
+domain_color: PKD_channel   0x336666
+domain_color: Ion_trans     0x996666
+domain_color: CAP_GLY       0xCC9900
+domain_color: LRR_1         0xFFFF99
+domain_color: LRR_2         0xFFFF66
+domain_color: LRR_3         0xFFFF33
+domain_color: LRR_adjacent  0xFFFF00
+domain_color: LRRCT         0xFFCC99
+domain_color: LRRNT         0xFFCC66
+domain_color: LRRNT_2       0xFFCC33
+domain_color: Ank           0x990099
+domain_color: Sushi         0x004400
+domain_color: ZU5           0xFF9999
+domain_color: V-set         0x3399FF
+domain_color: TPR_1         0xFF1493
+domain_color: TPR_2         0xFF69B4
+domain_color: TPR_3         0xCD6090
+domain_color: TPR_4         0xFF6A6A
+domain_color: TPR_MLP1_2    0x33FF00
+domain_color: Collagen      0xFF7F00
+domain_color: MIF           0xADD8E6
+
+
+#  Annotation colors
+#  -----------------
+
+annotation_color: dehydrogenase 0x0000FF
+annotation_color: kinase        0xFF00FF
+annotation_color: protease      0x009900
+annotation_color: transcription 0xAAAA00
+
+
+# END

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org">
+   <phylogeny rooted="true">
+      <name>trivial branch width example</name>
+      <clade>
+         <width>10</width>
+         <clade branch_length="0.06">
+            <width>15</width>
+            <clade branch_length="0.102">
+               <name>A</name>
+               <width>20</width>
+            </clade>
+            <clade branch_length="0.23">
+               <name>B</name>
+               <width>5</width>
+            </clade>
+         </clade>
+         <clade branch_length="0.4">
+            <name>C</name>
+            <width>40</width>
+         </clade>
+      </clade>
+   </phylogeny>
+</phyloxml>

@@ -1,0 +1,42 @@
+NEXUS
+BEGIN TAXA;
+  DIMENSIONS ntax=26;
+  TAXLABELS  O_volvulus_AAB64227.1 O_volvulus_AAB64226.1 C_elegans_AAF39759.1 C_elegans_AAA83577.1 
+    S_cerevisiae_CAA89634.1 C_albicans_AAC12872.1 S_pombe_CAB57444.1 N_crassa_AAA63780.1 M_musculus_AAA40121.1 
+    C_capitata_AAA57249.1 D_virilis_CAA32060.1 D_erecta_AAF23595.1 D_orena_AAF23594.1 D_teissieri_AAF23599.1 
+    D_yakuba_AAF23598.1 D_melanogaster_AAF50095.1 D_mauritiana_AAF23597.1 D_sechellia_AAF23596.1 
+    D_simulans_CAA33720.1 Z_mays_AAB49913.1 O_sativa_AAC14464.1 O_sativa_AAC14465.1 A_thaliana_AAF99769.1 
+    P_tremuloides_AAD01605.1 A_thaliana_BAB09468.1 A_thaliana_AAD29823.2;
+END;
+BEGIN CHARACTERS;
+  DIMENSIONS ntax=26 nchar=30;
+  FORMAT  datatype=protein gap=- missing=?;
+  CHARLABELS 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 
+    113 114 115 116 117 118 119 120;
+  MATRIX
+    M_musculus_AAA40121.1       QGTIHFEQKASGE--PVVLSGQITGLTE-G
+    C_capitata_AAA57249.1       KGTVHFEQQDAKS--PVLVTGEVNGLAK-G
+    N_crassa_AAA63780.1         KGTVIFEQESESA--PTTITYDISGNDPNA
+       --stuff deleted here-- 
+    D_simulans_CAA33720.1       KGTVFFEQESSGT--PVKVSGEVCGLAK-G
+    S_cerevisiae_CAA89634.1     SGVVKFEQASESE--PTTVSYEIAGNSPNA
+    S_pombe_CAB57444.1          SGVVTFEQVDQNS--QVSVIVDLVGNDANA;
+END;
+BEGIN ASSUMPTIONS;
+  WTSET MySoapWeights  (VECTOR) = 1 1 1 1 1 1 1 1 0.83 0.8 0.8 0.8 0.8 0.8 0.71 0.71 1 1 1 1 1 1 1 1 
+    1 1 1 1 1 1;
+END;
+BEGIN TREES;
+  TREE "Cu-Zn Superoxide Dismutase" = (((((O_volvulus_AAB64227.1:0.31741,O_volvulus_AAB64226.1:0.13498):
+    0.20268[1],(C_elegans_AAF39759.1:0.14579,C_elegans_AAA83577.1:0.27311):0.2533[1]):0.12655[0.98],
+    ((S_cerevisiae_CAA89634.1:0.28255,C_albicans_AAC12872.1:0.25631):0.08358[0.91],(S_pombe_CAB57444.1:
+    0.3159,N_crassa_AAA63780.1:0.1635):0.11954[0.97]):0.17514[1]):0.08988[0.77],(M_musculus_AAA40121.1:
+    0.49149,(C_capitata_AAA57249.1:0.18945,(D_virilis_CAA32060.1:0.11453,(((D_erecta_AAF23595.1:0.00661,
+    D_orena_AAF23594.1:0.00769):0.00497[0.92],(D_teissieri_AAF23599.1:0.004,D_yakuba_AAF23598.1:0.01012):
+    0.0073[0.87]):0.01271[0.88],(((D_melanogaster_AAF50095.1:0.00836,D_mauritiana_AAF23597.1:0.00552):
+    0.00203[0.28],D_sechellia_AAF23596.1:0.01103):0.00398[0.7],D_simulans_CAA33720.1:0.00595):0.00739[0.75]):
+    0.11795[1]):0.11754[1]):0.12932[1]):0.10326[1]):0.0712[0.9],(((((Z_mays_AAB49913.1:0.05142,
+    O_sativa_AAC14464.1:0.09031):0.02799[0.98],O_sativa_AAC14465.1:0.06915):0.05245[0.99],
+    (A_thaliana_AAF99769.1:0.17064,P_tremuloides_AAD01605.1:0.1075):0.08023[1]):0.08596[1],
+    A_thaliana_BAB09468.1:0.46052):0.06401[0.75],A_thaliana_AAD29823.2:0.42442):0.14252[0.94]);
+END;

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd"
+   xmlns="http://www.phyloxml.org">
+   <phylogeny rooted="true">
+      <name>one</name>
+      <clade branch_length="0.1">
+         <name>A</name>
+         <clade branch_length="0.2">
+            <name>B</name>
+            <clade branch_length="0.3">
+               <name>C</name>
+               <clade branch_length="0.4">
+                  <name>D</name>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+   <phylogeny rooted="true">
+      <name>two</name>
+      <clade>
+         <name>A</name>
+         <clade>
+            <name>B</name>
+            <clade>
+               <name>C</name>
+               <clade>
+                  <name>D</name>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+   <phylogeny rooted="true">
+      <name>three</name>
+      <clade>
+         <name>A</name>
+         <clade>
+            <name>B</name>
+            <clade>
+               <name>C</name>
+               <clade>
+                  <name>D</name>
+                  <clade>
+                     <name>E</name>
+                     <clade>
+                        <name>F</name>
+                     </clade>
+                  </clade>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+   <phylogeny rooted="true">
+      <name>four</name>
+      <clade>
+         <name>A</name>
+         <clade>
+            <name>B</name>
+         </clade>
+      </clade>
+   </phylogeny>
+   <phylogeny rooted="true">
+      <name>four</name>
+      <clade>
+         <name>A</name>
+         <clade>
+            <name>B</name>
+            <clade>
+               <name>C1</name>
+            </clade>
+            <clade>
+               <name>C2</name>
+            </clade>
+            <clade>
+               <name>C3</name>
+               <clade>
+                  <name>D</name>
+                  <clade>
+                     <name>E</name>
+                     <clade>
+                        <name>F</name>
+                     </clade>
+                  </clade>
+               </clade>
+            </clade>
+         </clade>
+      </clade>
+   </phylogeny>
+</phyloxml>
