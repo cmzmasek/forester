@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:phy="http://www.phyloxml.org">
+   <xsl:output method="html" version="4.01"/>
+   <xsl:output doctype-system="http://www.w3c.org/tr/html4/strict.dtd"/>
+   <xsl:output doctype-public="-//W3c//DTD HTML 4.01//EN"/>
+   <xsl:template match="phy:phylogeny">
+      <ul>
+         <xsl:apply-templates select="phy:clade"/>
+      </ul>
+   </xsl:template>
+   <xsl:template match="phy:clade">
+      <ul>
+         <xsl:for-each select="phy:name">
+            <li>
+               <xsl:value-of select="text()"/>
+            </li>
+         </xsl:for-each>
+      </ul>
+      <ul>
+         <xsl:apply-templates select="phy:clade"/>
+      </ul>
+   </xsl:template>
+</xsl:stylesheet>
