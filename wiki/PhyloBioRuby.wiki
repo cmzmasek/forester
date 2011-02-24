@@ -14,8 +14,8 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 == Calculating a Multiple Sequence Alignment  ==
 
 BioRuby can be used to execute a variety of multiple sequence alignment
-programs (such as MAFFT, Probcons, ClustalW, Muscle). 
-In the following, examples for using the MAFFT and 
+programs (such as [http://mafft.cbrc.jp/alignment/software/ MAFFT], Probcons, ClustalW, Muscle). 
+In the following, examples for using the MAFFT and Muscle are shown.
 
 === MAFFT ===
 
