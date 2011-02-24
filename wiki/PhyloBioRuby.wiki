@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby
 
 = Introduction =
 
