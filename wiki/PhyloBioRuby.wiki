@@ -7,7 +7,9 @@ Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -
 
 = Multiple Sequence Alignments =
 
-== Reading in a Multiple Sequence Alignments from a File ==
+== Multiple Sequence Alignment Input and Output ==
+
+=== Reading in a Multiple Sequence Alignments from a File ===
 
 _... to be done_
 
@@ -18,7 +20,7 @@ require 'bio'
 }}}
 
 
-== Writing a Multiple Sequence Alignment to a File ==
+=== Writing a Multiple Sequence Alignment to a File ===
 
 _... to be done_
 
@@ -98,7 +100,21 @@ require 'bio'
 
 = Phylogenetic Trees =
 
-== Reading and Writing of Phylogenetic Trees ==
+== Phylogenetic Tree Input and Output ==
+
+=== Reading in of Phylogenetic Trees ===
+
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
+Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation
+
+=== Writing of Phylogenetic Trees ===
 
 _... to be done_
 
