@@ -18,9 +18,19 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 {{{
 #!/usr/bin/env ruby
 require 'bio'
+
+# Calculates the alignment using the MAFFT program
+# on the local machine, and stores the result in 'report'.
 options = [ '--maxiterate', '1000', '--localpair' ]
-mafft = Bio::MAFFT.new('/home/zma/SOFTWARE/mafft-6.847-without-extensions/scripts/mafft', options )
+mafft = Bio::MAFFT.new('path/to/mafft', options )
 report = mafft.query_align( seqs)
+
+# Accesses the actual alignment
+align = report.alignment
+
+# Prints each sequence to the console.
+report.align.each { |s| puts s.to_s }
+#
 }}}
 
 
