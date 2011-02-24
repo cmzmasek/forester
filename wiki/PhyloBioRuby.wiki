@@ -11,10 +11,17 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 
 ... to be done
 
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
+
 == Calculating a Multiple Sequence Alignment  ==
 
 BioRuby! can be used to execute a variety of multiple sequence alignment
-programs (such as [http://mafft.cbrc.jp/alignment/software/ MAFFT], [http://probcons.stanford.edu/ Probcons], [http://www.drive5.com/muscle/ ClustalW], [http://www.drive5.com/muscle/ Muscle]). 
+programs (such as [http://mafft.cbrc.jp/alignment/software/ MAFFT], [http://probcons.stanford.edu/ Probcons], [http://www.clustal.org/ ClustalW], [http://www.drive5.com/muscle/ Muscle]). 
 In the following, examples for using the MAFFT and Muscle are shown.
 
 === MAFFT ===
@@ -62,8 +69,44 @@ report.align.each { |s| puts s.to_s }
 }}}
 
 
+== Manipulating Multiple Sequence Alignment  ==
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+It is probably a good idea to 'clean up' multiple sequence to be used
+for phylogenetic inference. For instance, columns with more than 50% gaps can be deleted, like so:
+
+
+... to be done
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
+
+= Phylogenetic Inference =
+
+== Maximum Likelihood ==
+
+=== RAxML ===
+
+... to be done
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
+
+== Pairwise Distance Based Methods ==
+
+=== FastME ===
+
+... to be done
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
