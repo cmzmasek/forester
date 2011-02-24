@@ -115,7 +115,8 @@ require 'bio'
 }}}
 
 
----
+----
+
 = Phylogenetic Trees =
 
 == Phylogenetic Tree Input and Output ==
@@ -193,7 +194,8 @@ require 'bio'
 === Bootstrap Resampling? ===
 
 
----
+----
+
 = Analyzing Phylogenetic Trees =
 
 == PAML ==
