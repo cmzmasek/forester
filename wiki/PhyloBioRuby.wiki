@@ -129,7 +129,7 @@ Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_do
 
 == Phylogenetic Inference ==
 
-*Currently !BioRuby does not contain any wrappers for phylogenetic inference, I am progress of writing a RAxML wrapper followed by a wrapper for FastMA.*
+_Currently !BioRuby does not contain wrappers for phylogenetic inference programs, thus I am progress of writing a RAxML wrapper followed by a wrapper for FastMA..._
 
 == Maximum Likelihood ==
 
