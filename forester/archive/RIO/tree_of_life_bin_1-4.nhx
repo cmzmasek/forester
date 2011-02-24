@@ -1,0 +1,523 @@
+(
+(
+(
+([begin of Eukaryota]
+(
+(
+(
+(
+(
+([begin of eukaryote_crown_group]
+(
+(
+(
+([begin of Metazoa]
+([begin of Eumetazoa]
+([begin of Bilateria]
+([begin of Coelomata]
+([begin of Deuterostomia]
+([begin of Chordata]
+(
+([begin of Craniata]
+([begin of Vertebrata]
+([begin of Gnathostomata-jawed_vertebrates]
+([begin of Teleostomi]
+([begin of Tetrapoda]
+([begin of Amniota]
+([begin of Mammalia]
+([begin of Theria]
+([begin of Eutheria]
+(
+([begin of Primates]
+((
+([begin of Catarrhini]
+(((([&&NHX:S=HUMAN],([&&NHX:S=PANPA],[&&NHX:S=PANTR])),([&&NHX:S=GORBE],[&&NHX:S=GORGO])),[&&NHX:S=PONPY])[&&NHX:S=Hominidae],
+((([&&NHX:S=HYLAG],[&&NHX:S=HYLLA]),[&&NHX:S=HYLPI]),[&&NHX:S=HYLSY])[&&NHX:S=Hylobatidae-Gibbons]),
+([begin of Cercopithecidae]
+(
+(
+([&&NHX:S=MANSP-Mandrill],
+([&&NHX:S=PAPHA-Hamadryas_baboon],[&&NHX:S=PAPAN-Olive_baboon])[&&NHX:S=Papio-Baboons:T=9554]
+),
+([&&NHX:S=MACMU-Rhesus_macaque],[&&NHX:S=MACFA-Crab_eating_macaque])[&&NHX:S=Macaca:T=9539]
+),
+[&&NHX:S=CERAE-African-green-monkey:T=9534]
+)[&&NHX:S=Cercopithecinae:T=9528],
+([&&NHX:S=COLGU-Guereza:T=33548],[&&NHX:S=PYGBI-Black_snub_nosed_monkey:T=61621])[&&NHX:S=Colobinae:T=9569]
+)[&&NHX:S=Cercopithecidae-Old_World_monkeys:T=9527]
+)[&&NHX:S=Catarrhini:T=9526],
+([&&NHX:S=SAISC-Common_squirrel_monkey],[&&NHX:S=BRAAR-Woolly_spider_monkey])[&&NHX:S=Platyrrhini-New_World_Monkeys]),
+([&&NHX:S=TARBA],[&&NHX:S=TARSY])[&&NHX:S=Tarsii-Tarsiers]),
+(((([&&NHX:S=CHEMA-Lemur],[&&NHX:S=CHEME-Fattailed_dwarf_lemur]),[&&NHX:S=HAPGR-Gray_gentle_lemur]),[&&NHX:S=LEPMU-Weasel_lemur]),([&&NHX:S=GALCR-Thicktailed_galago],[&&NHX:S=PERPO-Potto]))[&&NHX:S=Strepsirhini-lemurs;etc.]
+)[&&NHX:S=Primates:T=9443],
+(
+([begin of Rodentia]
+(
+([&&NHX:S=MOUSE:T=10090],[&&NHX:S=RAT:T=10116])[&&NHX:S=Murinae-Mice:T=39107],
+(
+([&&NHX:S=MESAU-Golden_hamster:T=10036],[&&NHX:S=MESBR-Turkish_hamster:T=10037]),
+([&&NHX:S=CRIMI-Armenian_hamster:T=10032],[&&NHX:S=CRIGR-Chinese_hamster:T=10029])
+)[&&NHX:S=Cricetinae-Hamsters:T=10026]
+)[&&NHX:S=Muridae:T=10066],
+[&&NHX:S=CAVPO-Guinea_pig:T=10141]
+)[&&NHX:S=Rodentia:T=9989],
+[&&NHX:S=RABIT:T=9986])),
+((([&&NHX:S=CANFA],[&&NHX:S=VULVU-Red_fox]),[&&NHX:S=FELCA-Cat])[&&NHX:S=Carnivora],
+([&&NHX:S=HORSE:T=9796],([&&NHX:S=PIG],([&&NHX:S=CEREL-Red_deer:T=9860],([&&NHX:S=BOVIN:T=9913],([&&NHX:S=SHEEP:T=9940],[&&NHX:S=CAPHI-Goat:T=9925])))[&&NHX:S=Ruminantia:T=9845])))
+)[&&NHX:S=Eutheria],
+(([&&NHX:S=DIDMA-North_American_opossum],[&&NHX:S=MONDO-Shorttailed_grey_opossum]),
+[&&NHX:S=SMIMA-Stripefaced_dunnart:T=9302])[&&NHX:S=Metatheria-Marsupials:T=9263 ]
+)[&&NHX:S=Theria],
+([begin of Prototheria ]
+[&&NHX:S=ORNAN-Duckbill_platypus],
+([&&NHX:S=ZAGBR-Longbeaked_echidna],[&&NHX:S=TACAC-Australian_echidna])[&&NHX:S=Tachyglossidae]
+)[&&NHX:S=Prototheria]
+)[&&NHX:S=Mammalia],
+
+([begin of Sauropsida]
+([begin of Testudines]
+[&&NHX:S=TRASC-Red-eared_slider_turtle],[&&NHX:S=CHESE-Snapping_turtle]
+)[&&NHX:S=Testudines-Turtles],
+
+([begin of Sauria]
+([begin of Archosauria]
+([begin of Aves]
+[&&NHX:S=CHICK],[&&NHX:S=ANAPL-Domestic_duck]
+)[&&NHX:S=Aves],
+([begin of Crocodylidae]
+[&&NHX:S=ALLMI-American_alligator],[&&NHX:S=CRONI-Nile_crocodile]
+)[&&NHX:S=Crocodylidae]
+)[&&NHX:S=Archosauria],
+
+([begin of Lepidosauria]
+(
+([&&NHX:S=BOACO-Boa_constrictor],[&&NHX:S=TRIAB-Green_pit_viper:T=8765])[&&NHX:S=Serpentes:T=8570],
+([&&NHX:S=IGUIG-Common_iguana],[&&NHX:S=ANOCA-Green_anole:T=28377])[&&NHX:S=Iguania:T=8511]
+)[&&NHX:S=Squamata:T=8509],
+[&&NHX:S=SPHPU-Tuatara]
+)[&&NHX:S=Lepidosauria]
+)[&&NHX:S=Sauria]
+)[&&NHX:S=Sauropsida]
+
+)[&&NHX:S=Amniota],
+
+([begin of Amphibia]
+([begin of Batrachia]
+([&&NHX:S=XENLA],[&&NHX:S=RANCA-Bull_frog])[&&NHX:S=Anura],
+([&&NHX:S=CYNPY-Japanese_common_newt],[&&NHX:S=NOTVI-Eastern_newt])[&&NHX:S=Caudata]
+)[&&NHX:S=Batrachia],
+([&&NHX:S=DERME],[&&NHX:S=GRAAL])[&&NHX:S=Gymnophiona]
+)[&&NHX:S=Amphibia]
+
+)[&&NHX:S=Tetrapoda],
+
+(
+([&&NHX:S=ONCMY-Rainbow_trout:T=8022],[&&NHX:S=FUGRU:T=31033]),
+(
+[&&NHX:S=BRARE-Zebrafish:T=7955],([&&NHX:S=CYPCA-Common_carp:T=7962],[&&NHX:S=CARAU-Goldfish:T=7957])[&&NHX:S=Cyprininae:T=39560]
+)[&&NHX:S=Ostariophysi:T=32519]
+)[&&NHX:S=Euteleostei:T=32447]
+)[&&NHX:S=Teleostomi:T=117570],
+
+([&&NHX:S=ALOVU-Thresher_shark],[&&NHX:S=DASSA-Atlantic_stingray])[&&NHX:S=Chondrichthyes:T=7777]
+
+)[&&NHX:S=Gnathostomata-jawed_vertebrates],
+
+([&&NHX:S=LAMFL-River_lamprey],[&&NHX:S=LAMJA-Japanese_lamprey])[&&NHX:S=Hyperoartia-lampreys ]
+
+)[&&NHX:S=Vertebrata],
+([&&NHX:S=EPTBU-Inshore hagfish:T=7764],[&&NHX:S=EPTST-Pacific_hagfish:T=7765])[&&NHX:S=Hyperotreti]
+)[&&NHX:S=Craniata],
+([&&NHX:S=BRAFL-Florida_lancelet:T=7739],[&&NHX:S=BRALA-Amphioxus:T=7740])[&&NHX:S=Cephalochordata]
+),
+([&&NHX:S=CIOIN:T=7719],[&&NHX:S=CIOSA:T=51511])[&&NHX:S=Urochordata-Tunicates:T=7712]
+)[&&NHX:S=Chordata],
+([begin of Echinodermata]
+([&&NHX:S=STRPU-Purple_sea_urchin:T=7668],[&&NHX:S=ANTCR:T=7629])[&&NHX:S=Echinoidea-Sea_urchins:T=7625],
+[&&NHX:S=ASTPE-Starfish:T=7594]
+)[&&NHX:S=Echinodermata:T=7586]
+)[&&NHX:S=Deuterostomia:T=33511],
+([begin of Protostomia]
+(
+[&&NHX:S=APLCA-California_sea_hare:T=6500],[&&NHX:S=LYMST-Great_pond_snail:T=6523]
+)[&&NHX:S=Mollusca:T=6447],
+[&&NHX:S=HIRME-Medicinal_leech:T=6421]
+)[&&NHX:S=Protostomia:T=33317]
+)[&&NHX:S=Coelomata:T=33316],
+
+([begin of arthropod/nematode group]
+
+([begin of Arthropoda]
+(
+(
+([&&NHX:S=DROME:T=7227],[&&NHX:S=DROVI-Drosophila_virilis:T=7244]),
+[&&NHX:S=MUSDO-House_fly:T=7370]
+)
+,[&&NHX:S=BLAGE-German_cockroach:T=6973]
+)[&&NHX:S=Insecta:T=50557],
+(
+([&&NHX:S=HOMAM-American_lobster:T=6706],[&&NHX:S=CARMA-Green_crab:T=6759])[&&NHX:S=Crustacea:T=6657]
+,[&&NHX:S=LIMPO-Atlantic_horseshoe_crab:T=6850]
+)
+)[&&NHX:S=Arthropoda:T=6656],
+
+([begin of Nematoda]
+(
+([&&NHX:S=CAEEL:T=6239],[&&NHX:S=CAEBR:T=6238])[&&NHX:S=Rhabditidae:T=6243],
+[&&NHX:S=HAECO-Haemonchus_contortus:T=6289]
+)[&&NHX:S=Rhabditida:T=6236],
+[&&NHX:S=ASCSU-Pig_roundworm:T=6253]
+)[&&NHX:S=Nematoda:T=6231]
+
+)[arthropod/nematode group]
+
+)[&&NHX:S=Bilateria:T=33213],
+
+(
+([&&NHX:S=ACTEQ-European_sea_anemone:T=6106],[&&NHX:S=ANTEL-Sea_anemone:T=6110])[&&NHX:S=Actiniaria-Sea_anemones:T=6103],
+[&&NHX:S=TRICY-Jellyfish:T=6141] 
+)[&&NHX:S=Cnidaria:T=6073]
+
+
+)[&&NHX:S=Eumetazoa:T=6072],
+
+(
+[&&NHX:S=EPHMU-Muellers_freshwater_sponge:T=6052],[&&NHX:S=GEOCY-Geodia_cydonium:T=6047]
+)[&&NHX:S=Porifera-Sponges:T=6040]
+
+)[&&NHX:S=Metazoa:T=33208],
+
+
+
+([begin of Fungi]
+
+(
+([begin of Basidiomycota]
+(
+([&&NHX:S=LENED-Shiitake_mushroom:T=5353],[&&NHX:S=AGABI-Common_mushroom:T=5341])[&&NHX:S=Agaricales:T=5338],
+[&&NHX:S=PHACH-Phanerochaete_chrysosporium:T=5306]
+)[&&NHX:S=Hymenomycetes:T=5302],
+([&&NHX:S=USTMA-Smut_fungus:T=5270],[&&NHX:S=USTSP-Smut_fungus:T=5271])[&&NHX:S=Ustilago:T=5269]
+)[&&NHX:S=Basidiomycota],
+([begin of Ascomycota]
+(
+(
+(
+([&&NHX:S=YEAST:T=4932],[&&NHX:S=SACKL:T=4934])[&&NHX:S=Saccharomyces:T=4930],
+([&&NHX:S=KLULA:T=28985],[&&NHX:S=KLUMA:T=4911])[&&NHX:S=Kluyveromyces:T=4910][,
+([&&NHX:S=PICPA-Pichia_pastoris:T=4922],[&&NHX:S=PICJA-Pichia_jadinii:T=4903],[&&NHX:S=PICAN-Pichia_angusta:T=4905])[&&NHX:S=Pichia:T=4919]
+,[&&NHX:S=YAMOH-Yamadazyma_ohmeri:T=34356]]
+)[&&NHX:S=Saccharomycetaceae:T=4893],
+(
+[&&NHX:S=CANAL:T=5476],[&&NHX:S=CANTR:T=5482][,[&&NHX:S=CANGA-Candida_glabrata:T=5478],[&&NHX:S=CANMA-Candida_maltosa:T=5479],
+[&&NHX:S=CANBO-Candida boidinii:T=5477]]
+)[&&NHX:S=anamorphic_Saccharomycetales:T=118267]
+)[&&NHX:S=Saccharomycetes:T=4891],
+(
+([&&NHX:S=NEUCR:T=5141],[&&NHX:S=NEUIN:T=5142])[&&NHX:S=Sordariales:T=5139],
+([&&NHX:S=ASPNG:T=5061],[&&NHX:S=EMENI:T=5072])[&&NHX:S=Eurotiales:T=5042])
+),
+([&&NHX:S=SCHPO:T=4896],[&&NHX:S=PNECA-Pneumocystis_carinii:T=4754])
+)[&&NHX:S=Ascomycota]
+),
+(
+[&&NHX:S=MORPI-Mortierella_alpina:T=64518],[&&NHX:S=MUCRO-Mucor_rouxii:T=29923]
+)[&&NHX:S=Zygomycota:T=4825]
+)[&&NHX:S=Fungi]
+),
+
+([begin of Viridiplantae]
+([begin of Streptophyta]
+([begin of Charophyta/Embryophyta group]
+([begin of Embryophyta]
+([begin of Tracheophyta]
+([begin of Spermatophyta]
+(
+([begin of Magnoliophyta]
+([begin of Liliopsida]
+
+(
+([&&NHX:S=MAIZE:T=4577],[&&NHX:S=SORBI-Sorghum_bicolor:T=4558])[&&NHX:S=Panicoideae:T=147369],
+(
+(
+([&&NHX:S=HORVU-Barley:T=4513],[&&NHX:S=WHEAT-Triticum_aestivum:T=4565])[&&NHX:S=Triticeae:T=147389],
+[&&NHX:S=AVESA-Oat:T=4498]
+)[&&NHX:S=Pooideae:T=147368],
+[&&NHX:S=ORYSA-Rice:T=4530]
+)
+)[&&NHX:S=Poaceae-Grasses:T=4479],
+
+(
+[&&NHX:S=ALLCE-Onion:T=4679],[&&NHX:S=ASPOF-Garden_asparagus:T=4686]
+)[&&NHX:S=Asparagales:T=73496]
+
+)[&&NHX:S=Liliopsida-Monocotyledons:T=4447],
+
+([begin of eudicotyledons]
+(([&&NHX:S=TOBAC-Common_tobacco:T=4097],[&&NHX:S=NICPL-Curled_leaved_tobacco:T=4092])[&&NHX:S=Nicotiana:T=4085],
+([&&NHX:S=LYCES-Tomato:T=4081],[&&NHX:S=SOLTU-Potato:T=4113])[&&NHX:S=Solanum:T=4107])[&&NHX:S=Asteridae:T=71274],
+(
+
+([begin of Rosidae]
+
+(
+([&&NHX:S=SOYBN:T=3847],[&&NHX:S=PEA:T=3888][,[&&NHX:S=MEDSA-Alfalfa:T=3879]])[&&NHX:S=Fabales:T=72025],
+([&&NHX:S=CUCSA-Cucumber:T=3659],[&&NHX:S=CUCMA-Winter_squash:T=3661])[&&NHX:S=Cucurbitales:T=71239]
+)[&&NHX:S=eurosids I:T=91835],
+
+(
+(
+([&&NHX:S=BRANA-Rape:T=3708],[&&NHX:S=BRACM-Field_mustard:T=3711])[&&NHX:S=Brassica:T=3705]
+,[&&NHX:S=ARATH:T=3702]
+)[&&NHX:S=Brassicaceae-Mustard_family:T=3700],
+(
+([&&NHX:S=CITSI-Citrus_sinensis:T=2711],[&&NHX:S=CITUN-Citrus_unshiu:T=55188])[&&NHX:S=Sapindales:T=41937],
+([&&NHX:S=GOSHI-Upland_cotton:T=3635],[&&NHX:S=THECC-Cacao:T=3641])[&&NHX:S=Malvales:T=41938]
+)
+)[&&NHX:S=eurosids II:T=91836]
+
+)[&&NHX:S=Rosidae:T=71275],
+
+(
+[&&NHX:S=BETVU-Beet:T=3555],[&&NHX:S=SPIOL-Spinach:T=3562]
+)[&&NHX:S=Caryophyllidae:T=71273]
+
+)
+)[&&NHX:S=eudicotyledons:T=71240]
+)[&&NHX:S=Magnoliophyta-Flowering_plants:T=3398],
+
+(
+[&&NHX:S=EPHTW-Ephedra_tweediana:T=3390],[&&NHX:S=WELMI-Welwitschia_mirabilis:T=3377]
+)[&&NHX:S=Gnetophyta:T=58022]
+
+)[a suspicious grouping], 
+
+(
+
+(
+(
+(
+[&&NHX:S=PSEMZ-Douglas_fir:T=3357],[&&NHX:S=PINTH-Japanese_black_pine:T=3350]
+)[&&NHX:S=Pinaceae:T=3318],
+[&&NHX:S=JUNVI-Red_cedar:T=39584]
+)[&&NHX:S=Coniferales:T=3313],
+[&&NHX:S=GINBI-Ginkgo_biloba:T=3311]
+)[a suspicious grouping],
+
+([&&NHX:S=ZAMFU-Zamia_furfuracea:T=42329],[&&NHX:S=ZAMFI-Zamia_fischeri:T=34342])[&&NHX:S=Cycadales:T=3297]
+)[a suspicious grouping]
+
+)[&&NHX:S=Spermatophyta-Seed_plants:T=58024],
+
+[&&NHX:S=EQUAR-Field_horsetail:T=3258]
+
+)[&&NHX:S=Tracheophyta-Vascular_plants:T=58023],
+
+([begin of Bryophyta]
+[&&NHX:S=CERPU-Ceratodon_purpureus:T=3225],[&&NHX:S=PHYPA-Physcomitrella_patens:T=3218]
+)[&&NHX:S=Bryophyta-Mosses:T=3208]
+
+)[&&NHX:S=Embryophyta-Land_plants:T=3193],
+
+[&&NHX:S=COLOB-Coleochaete_orbicularis:T=3124]
+
+)[&&NHX:S=Charophyta_Embryophyta_group:T=131221],
+
+[&&NHX:S=MESVI-Mesostigma_viride:T=41882]
+
+)[&&NHX:S=Streptophyta:T=35493],
+
+([begin of Chlorophyta]
+(
+[&&NHX:S=VOLCA-Volvox_carteri:T=3067],
+([&&NHX:S=CHLEU-Chlamydomonas_eugametos:T=3053],[&&NHX:S=CHLRE-Chlamydomonas_reinhardtii:T=3055])[&&NHX:S=Chlamydomonas:T=3052]
+)[&&NHX:S=Chlorophyceae:T=3166],
+[&&NHX:S=CHLVU-Chlorella_vulgaris:T=3077]
+)[&&NHX:S=Chlorophyta-Green_algae:T=3041]
+
+)[&&NHX:S=Viridiplantae:T=33090]
+),
+([&&NHX:S=ACHAM-Achlya_ambisexualis:T=4768],[&&NHX:S=COSCS-Costaria_costata:T=2872])[&&NHX:S=Stramenopiles:T=33634]
+),
+(
+([&&NHX:S=BABBO-Babesia_bovis:T=5865],[&&NHX:S=PLAFA-Plasmodium_falciparum:T=5833])
+,[&&NHX:S=PARTE-Paramecium_tetraurelia:T=5888]
+)[&&NHX:S=Alveolata:T=33630]
+),
+([&&NHX:S=PORPU-Porphyra_purpurea:T=2787],[&&NHX:S=CYACA-Cyanidium_caldarium:T=2771])[&&NHX:S=Rhodophyta-Red_algae:T=2763]
+)[&&NHX:S=eukaryote_crown_group:T=33089],
+[&&NHX:S=DICDI-Dictyostelium_discoideum:T=44689]
+),
+[&&NHX:S=ENTHI-Entamoeba_histolytica:T=5759]),
+(
+([&&NHX:S=TRYBB-Trypanosoma_brucei_brucei:T=5702],[&&NHX:S=LEIMA-Leishmania_major:T=5664])
+,[&&NHX:S=EUGGR-Euglena_gracilis:T=3039])[&&NHX:S=Euglenozoa:T=33682]
+),
+[&&NHX:S=PHYPO-Physarum_polycephalum:T=5791]
+),
+([&&NHX:S=GIALA-Giardia_intestinalis:T=5741],[&&NHX:S=SPIVO-Spironucleus_vortens:T=58336])[&&NHX:S=Diplomonadida:T=5738]
+
+)[&&NHX:S=Eukaryota:T=2759],
+
+([begin of Archaea]
+
+([begin of Crenarchaeota]
+([&&NHX:S=SULAC-Sulfolobus_acidocaldarius:T=2285],[&&NHX:S=SULSO-Sulfolobus_solfataricus:T=2287])[&&NHX:S=Sulfolobus:T=2284],
+[&&NHX:S=AERPE-Aeropyrum_pernix:T=56636]
+)[&&NHX:S=Crenarchaeota:T=28889],
+
+([begin of Euryarchaeota]
+(
+(
+([&&NHX:S=METJA-Methanococcus_jannaschii:T=2190],[&&NHX:S=METVA-Methanococcus_vannielii:T=2187])[&&NHX:S=Methanococcales:T=2182],
+(
+[&&NHX:S=ARCFU-Archaeoglobus_fulgidus:T=2234],
+[&&NHX:S=THEAC-Thermoplasma_acidophilum:T=2303]
+)
+),
+([&&NHX:S=PYRFU-Pyrococcus_furiosus:T=2261],[&&NHX:S=PYRHO-Pyrococcus_horikoshii:T=53953])[&&NHX:S=Thermococcales:T=2258]
+),
+([&&NHX:S=METTH-Methanobacterium_thermoautotrophicum:T=2166],[&&NHX:S=METFE-Methanothermus_fervidus:T=2180])[&&NHX:S=Methanobacteriales:T=2158]
+)[&&NHX:S=Euryarchaeota:T=28890]
+
+)[&&NHX:S=Archaea:T=2157]
+
+),
+
+
+([begin of Bacteria]
+
+([&&NHX:S=AQUAE-Aquifex_aeolicus:T=63363],[&&NHX:S=AQUPY-Aquifex_pyrophilus:T=2714])[&&NHX:S=Aquificales:T=32069],
+(
+([&&NHX:S=THEMA-Thermotoga_maritima:T=2336],[&&NHX:S=THENE-Thermotoga_neapolitana:T=2337])[&&NHX:S=Thermotogales:T=2419],
+(
+(([&&NHX:S=THEAQ-Thermus_aquaticus:T=271],[&&NHX:S=THETH-Thermus_thermophilus:T=274])[&&NHX:S=Thermus_group:T=68933],
+[&&NHX:S=DEIRA-Deinococcus_radiodurans:T=1299])[&&NHX:S=Thermus/Deinococcus_group:T=1297],
+
+(
+
+([begin of Firmicutes-grampositive_bacteria]
+([begin of Bacillus/Clostridium_group]
+(
+(
+(
+(
+[&&NHX:S=BACSU-Bacillus_subtilis:T=1423],[&&NHX:S=BACST-Bacillus_stearothermophilus:T=1422][,[&&NHX:S=BACCO-Bacillus_coagulans:T=1398]
+,[&&NHX:S=BACCA-Bacillus_caldotenax:T=1395],[&&NHX:S=BACME-Bacillus megaterium:T=1404]]
+)[&&NHX:S=Bacillus:T=1386],
+[&&NHX:S=STAAU-Staphylococcus_aureus:T=1280]
+)[&&NHX:S=Bacillus/Staphylococcus_group:T=1385],
+(
+([&&NHX:S=STRMU-Streptococcus_mutans:T=1309],[&&NHX:S=STRPN-Streptococcus_pneumoniae:T=1313])[&&NHX:S=Streptococcus:T=1301],
+[&&NHX:S=LACLA-Lactococcus_lactis_lactis:T=1360]
+)[&&NHX:S=Streptococcaceae:T=1300]
+)[&&NHX:S=Bacillus/Lactobacillus/Streptococcus_group:T=91061],
+[&&NHX:S=CLOPA-Clostridium_pasteurianum:T=1501]
+),[these paranthesis are -- even more -- questionable]
+(
+([&&NHX:S=MYCGE-Mycoplasma_genitalium:T=2097],[&&NHX:S=MYCPN-Mycoplasma_pneumoniae:T=2104])[&&NHX:S=Mycoplasmatales:T=2085],
+[&&NHX:S=ACHLA-Acholeplasma_laidlawii:T=2148]
+)[&&NHX:S=Mollicutes:T=31969]
+)[&&NHX:S=Bacillus/Clostridium_group:T=31968],
+([begin of Actinobacteria]
+(
+(
+([&&NHX:S=MYCTU-Mycobacterium_tuberculosis:T=1773],[&&NHX:S=MYCBO-Mycobacterium_bovis:T=1765])[&&NHX:S=Mycobacterium_tuberculosis_complex:T=77643],
+[&&NHX:S=MYCLE-Mycobacterium_leprae:T=1769]
+[,[&&NHX:S=MYCSM-Mycobacterium_smegmatis:T=1772]]
+)[&&NHX:S=Mycobacterium:T=1763],
+[&&NHX:S=CORGL-Corynebacterium_glutamicum:T=1718]
+)[&&NHX:S=Corynebacterineae:T=85007],
+[&&NHX:S=PROFR-Propionibacterium_freudenreichii_shermanii:T=1752]
+)[&&NHX:S=Actinobacteria:T=1760]
+)[&&NHX:S=Firmicutes-grampositive_bacteria:T=1239],
+
+([begin of group of Cyanobacteria, Proteobacteria, Chlamydiales, Green_sulfur, Spirochaetales ?]
+(
+(
+([&&NHX:S=CHLPN-Chlamydophila_pneumoniae:T=83558],[&&NHX:S=CHLTR-Chlamydia_trachomatis:T=813])[&&NHX:S=Chlamydiales/Verrucomicrobia_group:T=51290],
+([&&NHX:S=CHLLI-Chlorobium_limicola:T=1092],[&&NHX:S=CHLVI-Chlorobium_vibrioforme:T=1098])[&&NHX:S=Green_sulfur_bacteria:T=1090]
+),
+([&&NHX:S=LEPIN-Leptospira_interrogans:T=173],[&&NHX:S=BORBU-Borrelia_burgdorferi:T=139])[&&NHX:S=Spirochaetales:T=136]
+),
+
+([begin of group of Cyanobacteria and Proteobacteria ?]
+
+([begin of Cyanobacteria]
+(
+([&&NHX:S=SYNP2-PCC_7002:T=32049],[&&NHX:S=SYNP6-PCC_6301:T=1139][,[&&NHX:S=SYNEL:T=32046],[&&NHX:S=SYNLI:T=33070]])[&&NHX:S=Synechococcus:T=1129],
+([&&NHX:S=SYNY1-PCC_6701:T=1144],[&&NHX:S=SYNY3-PCC_6803:T=1148][,[&&NHX:S=SYNY4-PCC_6714:T=1147],[&&NHX:S=SYNY8-PCC_6308:T=113355]])[&&NHX:S=Synechocystis:T=1142]
+)[&&NHX:S=Chroococcales:T=1118],
+[&&NHX:S=ANASP-Anabaena_PCC_7120:T=1174]
+[,[&&NHX:S=SPIPL-Spirulina_platensis:T=1156]]
+)[&&NHX:S=Cyanobacteria:T=1117],
+
+([begin of Proteobacteria]
+
+(
+(
+
+([begin of gamma_subdivision]
+(
+(
+(
+[&&NHX:S=SALTY-Salmonella_typhimurium:T=602],[&&NHX:S=ECOLI-Escherichia_coli:T=562][,[&&NHX:S=KLEPN-Klebsiella_pneumoniae:T=573]]
+)[&&NHX:S=Enterobacteriaceae:T=91347],
+[&&NHX:S=BUCAP-Buchnera_aphidicola:T=98794]
+)[&&NHX:S=Enterobacteriaceae_and_related_endosymbionts:T=91347],
+[&&NHX:S=HAEIN-Haemophilus_influenzae:T=727]
+[,[&&NHX:S=AZOVI-Azotobacter_vinelandii:T=354]
+,([&&NHX:S=COXBU-Coxiella_burnetii:T=777],[&&NHX:S=LEGPN-Legionella_pneumophila:T=446])[&&NHX:S=Legionellaceae_group:T=118969]]
+),[these paranthesis are -- even more -- questionable]
+(
+[&&NHX:S=PSEPU-Pseudomonas_putida:T=303],[&&NHX:S=PSEAE-Pseudomonas_aeruginosa:T=287]
+)[&&NHX:S=Pseudomonas_group:T=72274]
+)[&&NHX:S=gamma_subdivision:T=1236],
+
+([begin of beta_subdivision]
+[&&NHX:S=ALCEU-Alcaligenes_eutrophus:T=510],
+([&&NHX:S=NEIME-Neisseria_meningitidis:T=487],[&&NHX:S=NEILA-Neisseria_lactamica:T=486])
+)[&&NHX:S=beta_subdivision:T=28216]
+
+),
+
+([begin of alpha_subdivision]
+([?]
+(
+([&&NHX:S=RHOCA-Rhodobacter_capsulatus:T=1061],[&&NHX:S=RHOSH-Rhodobacter_sphaeroides:T=1063])[&&NHX:S=Rhodobacter:T=1060],
+[&&NHX:S=PARDE-Paracoccus_denitrificans:T=266]
+)[&&NHX:S=Rhodobacter_group:T=31989],
+
+(
+(
+([&&NHX:S=RHILE-Rhizobium_leguminosarum:T=384],[&&NHX:S=RHITR-Rhizobium_tropici:T=398])[&&NHX:S=Rhizobium:T=379],
+[&&NHX:S=AGRTU-Agrobacterium_tumefaciens:T=362]
+)[&&NHX:S=Rhizobiaceae:T=82115],
+(
+[&&NHX:S=BARBA-Bartonella_bacilliformis:T=774],[&&NHX:S=BARQU-Bartonella_quintana:T=803]
+)[&&NHX:S=Bartonellaceae:T=772]
+)[&&NHX:S=Rhizobiaceae_group:T=356]
+),
+(
+([&&NHX:S=RICPR-Rickettsia_prowazekii:T=782],[&&NHX:S=RICTY-Rickettsia_typhi:T=785])[&&NHX:S=typhus_group:T=114292],
+[&&NHX:S=RICRI-Rickettsia_rickettsii:T=783]
+)[&&NHX:S=Rickettsiales:T=766]
+)[&&NHX:S=alpha_subdivision:T=28211]
+),
+
+([begin of delta/epsilon_subdivisions]
+([&&NHX:S=MYXXA-Myxococcus_xanthus:T=34],[&&NHX:S=DESDE-Desulfovibrio_desulfuricans:T=876])[&&NHX:S=delta_subdivision:T=28221],
+([&&NHX:S=CAMCO-Campylobacter_coli:T=195],[&&NHX:S=HELPY-Helicobacter_pylori:T=210])[&&NHX:S=epsilon_subdivision:T=29547]
+)[&&NHX:S=delta/epsilon_subdivisions:T=68525]
+
+)[&&NHX:S=Proteobacteria:T=1224]
+
+)[group of Cyanobacteria and Proteobacteria ?]
+
+)[group of Cyanobacteria, Proteobacteria, Chlamydiales, Green_sulfur, Spirochaetales ?]
+
+)
+)
+)
+)[&&NHX:S=Bacteria:T=2]);
+
