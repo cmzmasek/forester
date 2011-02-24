@@ -13,14 +13,22 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 
 == Calculating a Multiple Sequence Alignment  ==
 
+BioRuby can be used to execute a variety of multiple sequence alignment
+programs (such as MAFFT, Probcons, ClustalW, Muscle). 
+In the following, examples for using the MAFFT and 
+
 === MAFFT ===
+
+
 
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
 # Calculates the alignment using the MAFFT program
-# on the local machine, and stores the result in 'report'.
+# on the local machine with options
+# '--maxiterate', '1000', '--localpair'
+# and stores the result in 'report'.
 options = [ '--maxiterate', '1000', '--localpair' ]
 mafft = Bio::MAFFT.new('path/to/mafft', options )
 report = mafft.query_align( seqs)
@@ -33,7 +41,25 @@ report.align.each { |s| puts s.to_s }
 #
 }}}
 
+=== Muscle ===
 
+<ruby>
+#!/usr/bin/env ruby
+require 'bio'
+
+# Calculates the alignment using the MAFFT program
+# on the local machine, and stores the result in 'report'.
+options = [ '-quiet', '-maxiters', '64' ]
+muscle = Bio::Muscle.new('path/to/muscle', options )
+report = muscle.query_align( seqs)
+
+# Accesses the actual alignment
+align = report.alignment
+
+# Prints each sequence to the console.
+report.align.each { |s| puts s.to_s }
+#
+</ruby>
 
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
