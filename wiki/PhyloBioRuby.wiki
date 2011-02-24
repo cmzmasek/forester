@@ -9,7 +9,7 @@ Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -
 
 == Reading in a Multiple Sequence Alignments from a File ==
 
-... to be done
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -20,7 +20,7 @@ require 'bio'
 
 == Writing a Multiple Sequence Alignment to a File ==
 
-... to be done
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -87,7 +87,7 @@ It is probably a good idea to 'clean up' multiple sequence to be used
 for phylogenetic inference. For instance, columns with more than 50% gaps can be deleted, like so:
 
 
-*... to be done*
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -100,7 +100,7 @@ require 'bio'
 
 == Reading and Writing of Phylogenetic Trees ==
 
-*... to be done*
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -119,7 +119,7 @@ Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_do
 
 === RAxML ===
 
-*... to be done*
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -132,7 +132,7 @@ require 'bio'
 
 === FastME ===
 
-... to be done
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -145,7 +145,7 @@ require 'bio'
 
 == Gene Duplication Inference ==
 
-*Need to further test and then import GSoC 'SDI' work.*
+_need to further test and then import GSoC 'SDI' work..._
 
 
 == Others? ==
