@@ -2,7 +2,7 @@
 
 = Introduction =
 
-Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby -- under development!.
+Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby -- under development!
 
 
 = Multiple Sequence Alignments =
