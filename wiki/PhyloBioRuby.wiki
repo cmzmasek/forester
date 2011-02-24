@@ -7,8 +7,9 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 
 = Multiple Sequence Alignments =
 
-== Parsing ==
+== Reading in a Multiple Sequence Alignment from a File ==
 
+== Calculating a Multiple Sequence Alignment  =
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
