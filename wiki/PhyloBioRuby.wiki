@@ -46,8 +46,8 @@ require 'bio'
 # Calculates the alignment using the MAFFT program on the local
 # machine with options '--maxiterate 1000 --localpair'
 # and stores the result in 'report'.
-options = [ '--maxiterate', '1000', '--localpair' ]
-mafft = Bio::MAFFT.new('path/to/mafft', options )
+options = ['--maxiterate', '1000', '--localpair']
+mafft = Bio::MAFFT.new('path/to/mafft', options)
 report = mafft.query_align( seqs)
 
 # Accesses the actual alignment
@@ -68,8 +68,8 @@ require 'bio'
 # Calculates the alignment using the Muscle program on the local
 # machine with options '-quiet -maxiters 64'
 # and stores the result in 'report'.
-options = [ '-quiet', '-maxiters', '64' ]
-muscle = Bio::Muscle.new('path/to/muscle', options )
+options = ['-quiet', '-maxiters', '64']
+muscle = Bio::Muscle.new('path/to/muscle', options)
 report = muscle.query_align( seqs)
 
 # Accesses the actual alignment
