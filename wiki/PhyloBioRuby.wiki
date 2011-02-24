@@ -15,13 +15,13 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 
 === MAFFT ===
 
-'
+{{{
 #!/usr/bin/env ruby
 require 'bio'
 options = [ '--maxiterate', '1000', '--localpair' ]
 mafft = Bio::MAFFT.new('/home/zma/SOFTWARE/mafft-6.847-without-extensions/scripts/mafft', options )
 report = mafft.query_align( seqs)
-'
+}}}
 
 
 
