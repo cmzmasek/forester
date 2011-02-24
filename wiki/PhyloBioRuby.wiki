@@ -1,11 +1,15 @@
 #summary Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby -- under development!
 
+
+
 = Introduction =
 
 Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -- under development!
 
 
+
 = Multiple Sequence Alignments =
+
 
 == Multiple Sequence Alignment Input and Output ==
 
@@ -19,6 +23,7 @@ require 'bio'
 
 }}}
 
+ 
 
 === Writing a Multiple Sequence Alignment to a File ===
 
@@ -93,6 +98,8 @@ References:
 
  * Edgar, R.C. (2004) "MUSCLE: multiple sequence alignment with high accuracy and high throughput" Nucleic Acids Res 32(5):1792-1797
 
+
+
 == Manipulating Multiple Sequence Alignments ==
 
 It is probably a good idea to 'clean up' multiple sequence to be used
@@ -106,6 +113,7 @@ _... to be done_
 require 'bio'
 
 }}}
+
 
 
 = Phylogenetic Trees =
@@ -124,6 +132,8 @@ require 'bio'
 
 Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation
 
+
+
 === Writing of Phylogenetic Trees ===
 
 _... to be done_
@@ -137,11 +147,14 @@ require 'bio'
 Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation
 
 
+
 == Phylogenetic Inference ==
 
 _Currently !BioRuby does not contain wrappers for phylogenetic inference programs, thus I am progress of writing a RAxML wrapper followed by a wrapper for FastME..._
 
 _What about pairwise distance calculation?_
+
+
 
 == Maximum Likelihood ==
 
@@ -156,6 +169,7 @@ require 'bio'
 }}}
 
 
+
 == Pairwise Distance Based Methods ==
 
 === FastME ===
@@ -168,7 +182,10 @@ require 'bio'
 
 }}}
 
+
+
 === PHYLIP? ===
+
 
 
 == Support Calculation? ==
@@ -176,9 +193,11 @@ require 'bio'
 === Bootstrap Resampling? ===
 
 
+
 = Analyzing Phylogenetic Trees =
 
 == PAML ==
+
 
 == Gene Duplication Inference ==
 
@@ -186,3 +205,4 @@ _need to further test and then import GSoC 'SDI' work..._
 
 
 == Others? ==
+
