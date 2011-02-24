@@ -50,6 +50,15 @@ In the following, examples for using the MAFFT and Muscle are shown.
 #!/usr/bin/env ruby
 require 'bio'
 
+# 'seqs' is either an array of sequences or a multiple sequence 
+# alignment. In general this is read in from a file as described in ?.
+# For the purpose of this tutorial, it is generated in code.
+seqs = ["KMLFGVVFFFGG",
+        "LMGGHHF",
+        "GKKKKGHHHGHRRRGR",
+        "KKKKGHHHGHRRRGR"] 
+
+
 # Calculates the alignment using the MAFFT program on the local
 # machine with options '--maxiterate 1000 --localpair'
 # and stores the result in 'report'.
@@ -79,6 +88,14 @@ References:
 #!/usr/bin/env ruby
 require 'bio'
 
+# 'seqs' is either an array of sequences or a multiple sequence 
+# alignment. In general this is read in from a file as described in ?.
+# For the purpose of this tutorial, it is generated in code.
+seqs = ["KMLFGVVFFFGG",
+        "LMGGHHF",
+        "GKKKKGHHHGHRRRGR",
+        "KKKKGHHHGHRRRGR"] 
+
 # Calculates the alignment using the Muscle program on the local
 # machine with options '-quiet -maxiters 64'
 # and stores the result in 'report'.
@@ -100,13 +117,12 @@ References:
 
 === Other Programs ===
 
-[http://probcons.stanford.edu/ Probcons], [http://www.clustal.org/ ClustalW], and [http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html T-Coffee]) can be used in the same manner as the programs above. 
+[http://probcons.stanford.edu/ Probcons], [http://www.clustal.org/ ClustalW], and [http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html T-Coffee] can be used in the same manner as the programs above. 
 
 
 == Manipulating Multiple Sequence Alignments ==
 
-It is probably a good idea to 'clean up' multiple sequence to be used
-for phylogenetic inference. For instance, columns with more than 50% gaps can be deleted, like so:
+Oftentimes, multiple sequence to be used for phylogenetic inference are 'cleaned up' in some manner. For instance, some researchers prefer to delete columns with more than 50% gaps. The following code is an example of how to do that in !BioRuby.
 
 
 _... to be done_
