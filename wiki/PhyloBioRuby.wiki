@@ -7,7 +7,7 @@ Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -
 
 = Multiple Sequence Alignments =
 
-== Reading in Multiple Sequence Alignments from Files ==
+== Reading in a Multiple Sequence Alignments from a File ==
 
 ... to be done
 
@@ -18,7 +18,7 @@ require 'bio'
 }}}
 
 
-== Writing Multiple Sequence Alignments to Files ==
+== Writing a Multiple Sequence Alignment to a File ==
 
 ... to be done
 
@@ -81,13 +81,13 @@ report.align.each { |s| puts s.to_s }
 }}}
 
 
-== Manipulating Multiple Sequence Alignments  ==
+== Manipulating Multiple Sequence Alignments ==
 
 It is probably a good idea to 'clean up' multiple sequence to be used
 for phylogenetic inference. For instance, columns with more than 50% gaps can be deleted, like so:
 
 
-... to be done
+*... to be done*
 
 {{{
 #!/usr/bin/env ruby
