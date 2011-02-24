@@ -1,4 +1,4 @@
-#summary Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby
+#summary Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby -- under development!
 
 = Introduction =
 
