@@ -66,7 +66,7 @@ options = ['--maxiterate', '1000', '--localpair']
 mafft = Bio::MAFFT.new('path/to/mafft', options)
 report = mafft.query_align(seqs)
 
-# Accesses the actual alignment
+# Accesses the actual alignment.
 align = report.alignment
 
 # Prints each sequence to the console.
@@ -103,7 +103,7 @@ options = ['-quiet', '-maxiters', '64']
 muscle = Bio::Muscle.new('path/to/muscle', options)
 report = muscle.query_align(seqs)
 
-# Accesses the actual alignment
+# Accesses the actual alignment.
 align = report.alignment
 
 # Prints each sequence to the console.
