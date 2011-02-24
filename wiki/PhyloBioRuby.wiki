@@ -9,7 +9,22 @@ Tutorial for multiple sequence alignments and phylogenetic methods in BioRuby --
 
 == Reading in a Multiple Sequence Alignment from a File ==
 
-== Calculating a Multiple Sequence Alignment  =
+... to be done
+
+== Calculating a Multiple Sequence Alignment  ==
+
+=== MAFFT ===
+
+'
+#!/usr/bin/env ruby
+require 'bio'
+options = [ '--maxiterate', '1000', '--localpair' ]
+mafft = Bio::MAFFT.new('/home/zma/SOFTWARE/mafft-6.847-without-extensions/scripts/mafft', options )
+report = mafft.query_align( seqs)
+'
+
+
+
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
