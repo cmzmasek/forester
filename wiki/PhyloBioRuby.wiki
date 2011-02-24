@@ -173,6 +173,15 @@ require 'bio'
 }}}
 
 
+=== PhyML ===
+
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
 
 == Pairwise Distance Based Methods ==
 
