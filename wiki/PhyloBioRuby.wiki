@@ -115,7 +115,7 @@ require 'bio'
 }}}
 
 
-
+---
 = Phylogenetic Trees =
 
 == Phylogenetic Tree Input and Output ==
@@ -193,7 +193,7 @@ require 'bio'
 === Bootstrap Resampling? ===
 
 
-
+---
 = Analyzing Phylogenetic Trees =
 
 == PAML ==
@@ -205,4 +205,3 @@ _need to further test and then import GSoC 'SDI' work..._
 
 
 == Others? ==
-
