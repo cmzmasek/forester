@@ -15,20 +15,25 @@ require 'bio'
 
 
 
-seq1 = "KMLFGVVFFFGG"
-seq2 ="LMGGHHF"
-seq3 = "GKKKKGHHHGHRRRGR"
-seq4 = "KKKGHHHGHRERGR"
-seqs = [ seq1, seq2, seq3, seq4 ] 
+seqs = [ "KMLFGVVFFFGG",
+         "LMGGHHF",
+         "GKKKKGHHHGHRRRGR",
+         "KKKKGHHHGHRRRGR" ] 
 
 
 # MAFFT
 options = [ '--maxiterate', '1000', '--localpair' ]
 mafft = Bio::MAFFT.new('/home/zma/SOFTWARE/mafft-6.847-without-extensions/scripts/mafft', options )
 report = mafft.query_align( seqs)
-#puts report.alignment.output_fasta
-report.alignment.each { |x| puts x.to_s }
-puts 'OK'
+
+# Accesses the actual alignment
+align = report.alignment
+
+# Prints each sequence to the console.
+align.each { |s| puts s.to_s }
+
+
+puts 'MAFFT OK'
 puts
 
 #clustalw
