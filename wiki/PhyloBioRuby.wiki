@@ -25,9 +25,8 @@ In the following, examples for using the MAFFT and
 #!/usr/bin/env ruby
 require 'bio'
 
-# Calculates the alignment using the MAFFT program
-# on the local machine with options
-# '--maxiterate', '1000', '--localpair'
+# Calculates the alignment using the MAFFT program on the local
+# machine with options '--maxiterate 1000 --localpair'
 # and stores the result in 'report'.
 options = [ '--maxiterate', '1000', '--localpair' ]
 mafft = Bio::MAFFT.new('path/to/mafft', options )
@@ -43,12 +42,13 @@ report.align.each { |s| puts s.to_s }
 
 === Muscle ===
 
-<ruby>
+{{{
 #!/usr/bin/env ruby
 require 'bio'
 
-# Calculates the alignment using the MAFFT program
-# on the local machine, and stores the result in 'report'.
+# Calculates the alignment using the Muscle program on the local
+# machine with options '-quiet -maxiters 64'
+# and stores the result in 'report'.
 options = [ '-quiet', '-maxiters', '64' ]
 muscle = Bio::Muscle.new('path/to/muscle', options )
 report = muscle.query_align( seqs)
@@ -59,7 +59,9 @@ align = report.alignment
 # Prints each sequence to the console.
 report.align.each { |s| puts s.to_s }
 #
-</ruby>
+}}}
+
+
 
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
