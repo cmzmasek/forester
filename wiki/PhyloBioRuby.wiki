@@ -9,7 +9,7 @@ Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -
 
 == Multiple Sequence Alignment Input and Output ==
 
-=== Reading in a Multiple Sequence Alignments from a File ===
+=== Reading in a Multiple Sequence Alignment from a File ===
 
 _... to be done_
 
@@ -60,6 +60,13 @@ report.align.each { |s| puts s.to_s }
 #
 }}}
 
+References:
+
+* Katoh, Toh (2008) "Recent developments in the MAFFT multiple sequence alignment program" Briefings in Bioinformatics 9:286-298 
+
+* Katoh, Toh 2010 (2010) "Parallelization of the MAFFT multiple sequence alignment program" Bioinformatics 26:1899-1900 
+
+
 
 === Muscle ===
 
@@ -82,6 +89,9 @@ report.align.each { |s| puts s.to_s }
 #
 }}}
 
+References:
+
+* Edgar, R.C. (2004) "MUSCLE: multiple sequence alignment with high accuracy and high throughput" Nucleic Acids Res 32(5):1792-1797
 
 == Manipulating Multiple Sequence Alignments ==
 
