@@ -43,9 +43,9 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-public class Shin {
+public class SDIx {
 
-    public Shin() {
+    public SDIx() {
     }
 
     private void analyze( final Phylogeny gene_tree,

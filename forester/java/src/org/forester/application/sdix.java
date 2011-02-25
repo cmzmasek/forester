@@ -36,16 +36,15 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.sdi.Shin;
+import org.forester.sdi.SDIx;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
-public class shin {
+public class sdix {
 
     final static private String HELP_OPTION_1   = "help";
     final static private String HELP_OPTION_2   = "h";
-    final static private String DEFAULT_OUTFILE = "out";
-    final static private String PRG_NAME        = "shin";
+    final static private String PRG_NAME        = "sdix";
     final static private String PRG_VERSION     = "0.001 alpha";
     final static private String PRG_DATE        = "2009.10.14";
 
@@ -140,7 +139,7 @@ public class shin {
         }
         ForesterUtil.programMessage( PRG_NAME, "going to analyze " + gene_tree_files.size() + " gene trees from ["
                 + gene_trees_dir + "]" );
-        final Shin shin = new Shin();
+        final SDIx shin = new SDIx();
         try {
             shin.method1( gene_tree_files, species_trees, out_dir );
         }

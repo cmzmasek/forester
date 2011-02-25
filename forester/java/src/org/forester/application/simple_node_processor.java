@@ -36,7 +36,7 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.CommandLineArguments;
 
-public class perfume {
+public class simple_node_processor {
 
     private final static String BASE = "b_";
 
