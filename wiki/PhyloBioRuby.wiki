@@ -6,7 +6,7 @@
 
 Under development!
 
-Tutorial for multiple sequence alignments and phylogenetic methods in [http://bioruby.open-bio.org/ !BioRuby].
+Tutorial for multiple sequence alignments and phylogenetic methods in [http://bioruby.open-bio.org/ BioRuby].
 
 Eventually, this is expected to be placed on the official !BioRuby page.
 
