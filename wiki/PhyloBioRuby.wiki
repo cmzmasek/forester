@@ -15,11 +15,15 @@ Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -
 
 === Reading in a Multiple Sequence Alignment from a File ===
 
-_... to be done_
+Reading in a clustalw formatted multiple sequence alignment:
 
 {{{
 #!/usr/bin/env ruby
 require 'bio'
+
+# Reads in a clustalw formatted multiple sequence alignment
+# from a file named "infile_clustalw.aln" and stores it in 'report'.
+report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
 }}}
 
