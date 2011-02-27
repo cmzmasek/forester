@@ -6,10 +6,11 @@
 
 Tutorial for multiple sequence alignments and phylogenetic methods in !BioRuby -- under development!
 
+Eventually, this is expected to be placed on the official !BioRuby page.
+
 Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
 
  
-
 Copyright (C) 2011 Christian M Zmasek
 
 
