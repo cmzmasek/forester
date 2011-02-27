@@ -25,20 +25,46 @@ require 'bio'
 # from a file named "infile_clustalw.aln" and stores it in 'report'.
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
+# Accesses the actual alignment.
+align = report.alignment
+
+# Goes through all sequences in 'align' and prints the
+# actual molecular sequence.
+align.each do |entry|
+  puts entry.seq
+end
 }}}
 
  
 
 === Writing a Multiple Sequence Alignment to a File ===
 
-_... to be done_
+Writing a multiple sequence alignment in fasta format:
 
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
+# Creates a new file named "outfile.fasta" and writes
+# multiple sequence alignment 'align' to it in fasta format.
+File.open('outfile.fasta', 'w') do |f|
+  f.write(align.output(:fasta))
+end
 }}}
 
+
+Writing a multiple sequence alignment in clustalw format:
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+# Creates a new file named "outfile.aln" and writes
+# multiple sequence alignment 'align' to it in clustal format.
+File.open('outfile.aln', 'w') do |f|
+  f.write(align.output(:clustal))
+end
+}}}
 
 
 == Calculating Multiple Sequence Alignments ==
