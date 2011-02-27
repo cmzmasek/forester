@@ -78,7 +78,7 @@ In the following, examples for using the MAFFT and Muscle are shown.
 
 The following example uses the MAFFT program to align four sequences
 and then prints the result to the screen.
-If the path to the MAFFT executable is properly set, `mafft = Bio::MAFFT.new(options)` can be used instead of explicitly giving a path. 
+Please note that if the path to the MAFFT executable is properly set `mafft = Bio::MAFFT.new(options)` can be used instead of explicitly indicating the path as in the example. 
 
 {{{
 #!/usr/bin/env ruby
