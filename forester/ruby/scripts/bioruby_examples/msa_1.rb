@@ -3,7 +3,7 @@ require 'bio'
  
 #############
 
-# Reads in a clustalw formatted multiple sequence alignment
+# Reads in a ClustalW formatted multiple sequence alignment
 # from a file named "infile_clustalw.aln" and stores it in 'report'.
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
@@ -16,6 +16,30 @@ align.each do |entry|
   puts entry.seq
 end
 
+##############
+
+DEFAULT_PARSER = Bio::Alignment::MultiFastaFormat
+puts DEFAULT_PARSER.to_s
+
+#file = Bio::Alignment.readfiles('bcl2.fasta', Bio::Alignment::MultiFastaFormat)
+#file.each do |entry|
+#  puts entry.entry_id           # Gets the identifier, e.g. 'sp|O35147|BAD_RAT'.
+#  puts entry.definition         # Gets the complete fasta description line.
+#  puts entry.seq                # Gets the actual sequence.
+  #puts entry.aaseq.composition  # Gets the amino acid composition.
+#end
+#puts 'OK'
+#puts
+
+file = Bio::FastaFormat.open('bcl2.fasta')
+file.each do |entry|
+   puts entry.entry_id           # Gets the identifier, e.g. 'sp|O35147|BAD_RAT'.
+  puts entry.definition         # Gets the complete fasta description line.
+  puts entry.seq                # Gets the actual sequence.
+  # do something on each fasta sequence entry
+end
+
+##############
 
 # Creates a new file named "outfile.fasta" and writes
 # multiple sequence alignment 'align' to it in fasta format.
