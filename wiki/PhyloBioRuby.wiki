@@ -277,3 +277,11 @@ _need to further test and then import GSoC 'SDI' work..._
 
 
 == Others? ==
+
+
+----
+
+= Putting It All Together =
+
+Example of a small "pipeline"-type program running a mininal phyogenetic analysis: starting with a set of sequences and ending with a phylogenetic tree.
+ 
