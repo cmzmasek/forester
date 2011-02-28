@@ -23,13 +23,13 @@ Copyright (C) 2011 Christian M Zmasek
 
 === Reading in a Multiple Sequence Alignment from a File ===
 
-Reading in a clustalw formatted multiple sequence alignment:
+Reading in a ClustalW-formatted multiple sequence alignment:
 
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
-# Reads in a clustalw formatted multiple sequence alignment
+# Reads in a ClustalW-formatted multiple sequence alignment
 # from a file named "infile_clustalw.aln" and stores it in 'report'.
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
