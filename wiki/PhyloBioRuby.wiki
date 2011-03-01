@@ -16,12 +16,12 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
 Copyright (C) 2011 Christian M Zmasek
 
 
-= Multiple Sequence Alignments =
+=1 Multiple Sequence Alignments =
 
 
-== Multiple Sequence Alignment Input and Output ==
+==1.1 Multiple Sequence Alignment Input and Output ==
 
-=== Reading in a Multiple Sequence Alignment from a File ===
+===1.1.1 Reading in a Multiple Sequence Alignment from a File ===
 
 The following example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
 
@@ -45,7 +45,7 @@ end
 
  
 
-=== Writing a Multiple Sequence Alignment to a File ===
+===1.1.2 Writing a Multiple Sequence Alignment to a File ===
 
 
 The following example shows how to write a multiple sequence alignment in *FASTA*-format. It first creates a file named "outfile.fasta" for writing ('w') and then writes the multiple sequence alignment referred to by variable 'msa' to it in FASTA-format (':fasta').
@@ -61,7 +61,7 @@ File.open('outfile.fasta', 'w') do |f|
 end
 }}}
 
-==== Setting the Output Format ====
+====1.1.2.1 Setting the Output Format ====
 
 The following constants determine the output format.
 
@@ -80,7 +80,7 @@ f.write(align.output(:phylipnon))
 }}}
 
 
-== Formatting of Individual Sequences ==
+===1.1.3 Formatting of Individual Sequences ===
 
 _... to be done_
 
