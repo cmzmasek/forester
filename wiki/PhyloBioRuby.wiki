@@ -80,7 +80,7 @@ f.write(align.output(:phylipnon))
 }}}
 
 
-== Formats for individual sequences ==
+== Formatting of Individual Sequences ==
 
 _... to be done_
 
