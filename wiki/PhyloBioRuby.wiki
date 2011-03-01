@@ -48,7 +48,7 @@ end
 === Writing a Multiple Sequence Alignment to a File ===
 
 
-The follow example shows how to writing a multiple sequence alignment in *Fasta*-format:
+The follow example shows how to writing a multiple sequence alignment in *FASTA*-format:
 
 {{{
 #!/usr/bin/env ruby
@@ -64,18 +64,19 @@ end
 The following constants determine the output format
 
   * ClustalW: `:clustal`
-  * Fasta:    `:fasta`
-  * [http://evolution.genetics.washington.edu/phylip.html PHYLIP] interleaved: `:phylip`
-  * [http://evolution.genetics.washington.edu/phylip.html PHYLIP] non-interleaved: `:phylipnon`
+  * FASTA:    `:fasta`
+  * PHYLIP interleaved: `:phylip` (will truncate sequence names to no more than 10 characters)
+  * PHYLIP non-interleaved: `:phylipnon` (will truncate sequence names to no more than 10 characters)
   * MSF: `:msf`
   * Molphy: `:molphy`
 
 
-For example, the following writes in [http://evolution.genetics.washington.edu/phylip.html PHYLIP]'s non-interleaved format:
+For example, the following writes iPHYLIP's non-interleaved format:
 
 {{{
 f.write(align.output(:phylipnon))
 }}}
+
 
 
 == Calculating Multiple Sequence Alignments ==
