@@ -8,11 +8,11 @@ require 'bio'
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
 # Accesses the actual alignment.
-align = report.alignment
+msa = report.alignment
 
-# Goes through all sequences in 'align' and prints the
+# Goes through all sequences in 'msa' and prints the
 # actual molecular sequence.
-align.each do |entry|
+msa.each do |entry|
   puts entry.seq
 end
 
@@ -42,16 +42,29 @@ end
 ##############
 
 # Creates a new file named "outfile.fasta" and writes
-# multiple sequence alignment 'align' to it in fasta format.
+# multiple sequence alignment 'msa' to it in fasta format.
 File.open('outfile.fasta', 'w') do |f|
-  f.write(align.output(:fasta))
+  f.write(msa.output(:fasta))
 end
 
-# Creates a new file named "outfile.aln" and writes
-# multiple sequence alignment 'align' to it in clustal format.
-File.open('outfile.aln', 'w') do |f|
-  f.write(align.output(:clustal))
+# Other formats
+File.open('outfile.clustal', 'w') do |f|
+  f.write(msa.output(:clustal))
 end
+File.open('outfile.phylip', 'w') do |f|
+  f.write(msa.output(:phylip))
+end
+File.open('outfile.phylipnon', 'w') do |f|
+  f.write(msa.output(:phylipnon))
+end
+File.open('outfile.msf', 'w') do |f|
+  f.write(msa.output(:msf))
+end
+File.open('outfile.molphy', 'w') do |f|
+  f.write(msa.output(:molphy))
+end
+
+
 
 #############
 
@@ -64,15 +77,15 @@ puts seq1.output(:fasta)
 
 
 
-seqs = [ "MFQIPEFEPSEQEDSSSAER",
-         "MGTPKQPSLAPAHALGLRKS",
-         "PKQPSLAPAHALGLRKS",
-         "MCSTSGCDLE" ] 
+seqs = ['MFQIPEFEPSEQEDSSSAER',
+        'MGTPKQPSLAPAHALGLRKS',
+        'PKQPSLAPAHALGLRKS',
+        'MCSTSGCDLE'] 
 
 
 # MAFFT
 options = [ '--maxiterate', '1000', '--localpair' ]
-mafft = Bio::MAFFT.new('/home/zma/SOFTWARE/mafft-6.847-without-extensions/scripts/mafft', options )
+mafft = Bio::MAFFT.new('mafft', options )
 report = mafft.query_align( seqs)
 
 # Accesses the actual alignment
