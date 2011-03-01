@@ -92,7 +92,7 @@ For Sequence objects:
 seq.to_seq.output(:genbank)
 }}}
 
-For Bio::FlatFile entries:
+For Bio::!FlatFile entries:
 {{{
 entry.to_biosequence.output(:genbank)
 }}}
