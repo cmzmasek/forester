@@ -65,13 +65,13 @@ The following constants determine the output format
 
   * ClustalW: `:clustal`
   * Fasta:    `:fasta`
-  * Phylip interleaved: `:phylip`
-  * Phylip non-interleaved: `:phylipnon`
+  * [http://evolution.genetics.washington.edu/phylip.html PHYLIP] interleaved: `:phylip`
+  * [http://evolution.genetics.washington.edu/phylip.html PHYLIP] non-interleaved: `:phylipnon`
   * MSF: `:msf`
   * Molphy: `:molphy`
 
 
-For example, the following writes in Phylip's non-interleaved format:
+For example, the following writes in [http://evolution.genetics.washington.edu/phylip.html PHYLIP]'s non-interleaved format:
 
 {{{
 f.write(align.output(:phylipnon))
