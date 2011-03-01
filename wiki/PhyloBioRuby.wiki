@@ -34,11 +34,11 @@ require 'bio'
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
 
 # Accesses the actual alignment.
-align = report.alignment
+msa = report.alignment
 
-# Goes through all sequences in 'align' and prints the
+# Goes through all sequences in 'msa' and prints the
 # actual molecular sequence.
-align.each do |entry|
+msa.each do |entry|
   puts entry.seq
 end
 }}}
@@ -48,16 +48,16 @@ end
 === Writing a Multiple Sequence Alignment to a File ===
 
 
-The follow example shows how to writing a multiple sequence alignment in *FASTA*-format:
+The following example shows how to write a multiple sequence alignment in *FASTA*-format. It first creates a file named "outfile.fasta" for writing ('w') and then writes the multiple sequence alignment referred to by variable 'msa' to it in FASTA-format (':fasta').
 
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
 # Creates a new file named "outfile.fasta" and writes
-# multiple sequence alignment 'align' to it in fasta format.
+# multiple sequence alignment 'msa' to it in fasta format.
 File.open('outfile.fasta', 'w') do |f|
-  f.write(align.output(:fasta))
+  f.write(msa.output(:fasta))
 end
 }}}
 
