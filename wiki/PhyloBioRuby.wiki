@@ -71,7 +71,7 @@ The following constants determine the output format
   * Molphy: `:molphy`
 
 
-For example, the following writes iPHYLIP's non-interleaved format:
+For example, the following writes PHYLIP's non-interleaved format:
 
 {{{
 f.write(align.output(:phylipnon))
