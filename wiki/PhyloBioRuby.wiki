@@ -23,7 +23,7 @@ Copyright (C) 2011 Christian M Zmasek
 
 === Reading in a Multiple Sequence Alignment from a File ===
 
-The follow example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
+The following example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
 
 {{{
 #!/usr/bin/env ruby
