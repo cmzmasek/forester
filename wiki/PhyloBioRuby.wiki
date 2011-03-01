@@ -365,11 +365,18 @@ Currently no direct support in !BioRuby.
 === Pairwise Sequence Distance Estimation ===
 
 
-=== Optimality Criteria Based Methods ===
+=== Optimality Criteria Based on Pairwise Distances ===
 
 
 ==== Minimal Evolution: FastME ====
 
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
 
 === Algorithmic Methods Based on Pairwise Distances ===
 
