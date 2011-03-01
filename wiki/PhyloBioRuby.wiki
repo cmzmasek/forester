@@ -61,7 +61,9 @@ File.open('outfile.fasta', 'w') do |f|
 end
 }}}
 
-The following constants determine the output format
+==== Setting the Output Format ====
+
+The following constants determine the output format.
 
   * ClustalW: `:clustal`
   * FASTA:    `:fasta`
