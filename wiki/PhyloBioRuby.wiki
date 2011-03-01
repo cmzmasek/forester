@@ -257,6 +257,15 @@ tree = trees[3]
 }}}
 
 
+====Nexus  Format====
+
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
 
 === Writing of Phylogenetic Trees ===
 
@@ -298,6 +307,16 @@ writer.write(tree2)
 
 }}}
 
+
+====Nexus  Format====
+
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
 
 
 == Phylogenetic Inference ==
