@@ -16,12 +16,12 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
 Copyright (C) 2011 Christian M Zmasek
 
 
-=1 Multiple Sequence Alignments =
+= Multiple Sequence Alignment =
 
 
-==1.1 Multiple Sequence Alignment Input and Output ==
+== Multiple Sequence Alignment Input and Output ==
 
-===1.1.1 Reading in a Multiple Sequence Alignment from a File ===
+=== Reading in a Multiple Sequence Alignment from a File ===
 
 The following example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
 
@@ -45,7 +45,7 @@ end
 
  
 
-===1.1.2 Writing a Multiple Sequence Alignment to a File ===
+=== Writing a Multiple Sequence Alignment to a File ===
 
 
 The following example shows how to write a multiple sequence alignment in *FASTA*-format. It first creates a file named "outfile.fasta" for writing ('w') and then writes the multiple sequence alignment referred to by variable 'msa' to it in FASTA-format (':fasta').
@@ -61,7 +61,7 @@ File.open('outfile.fasta', 'w') do |f|
 end
 }}}
 
-====1.1.2.1 Setting the Output Format ====
+==== Setting the Output Format ====
 
 The following constants determine the output format.
 
@@ -80,7 +80,7 @@ f.write(align.output(:phylipnon))
 }}}
 
 
-===1.1.3 Formatting of Individual Sequences ===
+=== Formatting of Individual Sequences ===
 
 _... to be done_
 
@@ -319,17 +319,28 @@ require 'bio'
 }}}
 
 
-== Phylogenetic Inference ==
+= Phylogenetic Inference =
 
 _Currently !BioRuby does not contain wrappers for phylogenetic inference programs, thus I am progress of writing a RAxML wrapper followed by a wrapper for FastME..._
 
-_What about pairwise distance calculation?_
+== Optimality Criteria Based on Character Data ==
+
+Character data based methods work directly on molecular sequences and thus do not require the calculation of pairwise distances but tend to be time consuming and sensitive to errors in the multiple sequence alignment.
+
+=== Maximum Likelihood ===
+
+==== RAxML ====
+
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
 
 
-
-== Maximum Likelihood ==
-
-=== RAxML ===
+==== PhyML ====
 
 _... to be done_
 
@@ -339,20 +350,30 @@ require 'bio'
 
 }}}
 
+=== Maximum Parsimony ===
 
-=== PhyML ===
+Currently no direct support in !BioRuby.
 
-_... to be done_
 
-{{{
-#!/usr/bin/env ruby
-require 'bio'
+=== Bayesian Inference ===
 
-}}}
+Currently no direct support in !BioRuby.
+
 
 == Pairwise Distance Based Methods ==
 
-=== FastME ===
+=== Pairwise Sequence Distance Estimation ===
+
+
+=== Optimality Criteria Based Methods ===
+
+
+==== Minimal Evolution: FastME ====
+
+
+=== Algorithmic Methods Based on Pairwise Distances ===
+
+==== Neighbor Joining and Related Methods ====
 
 _... to be done_
 
@@ -364,7 +385,7 @@ require 'bio'
 
 
 
-=== PHYLIP? ===
+
 
 
 
