@@ -65,8 +65,8 @@ The following constants determine the output format
 
   * ClustalW: `:clustal`
   * FASTA:    `:fasta`
-  * PHYLIP interleaved: `:phylip` (will truncate sequence names to no more than 10 characters)
-  * PHYLIP non-interleaved: `:phylipnon` (will truncate sequence names to no more than 10 characters)
+  * PHYLIP interleaved (will truncate sequence names to no more than 10 characters): `:phylip`
+  * PHYLIP non-interleaved (will truncate sequence names to no more than 10 characters): `:phylipnon`
   * MSF: `:msf`
   * Molphy: `:molphy`
 
