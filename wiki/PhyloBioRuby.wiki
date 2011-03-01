@@ -165,7 +165,10 @@ References:
 
 === Other Programs ===
 
+_need more detail here..._
+
 [http://probcons.stanford.edu/ Probcons], [http://www.clustal.org/ ClustalW], and [http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html T-Coffee] can be used in the same manner as the programs above. 
+
 
 
 == Manipulating Multiple Sequence Alignments ==
@@ -192,13 +195,25 @@ require 'bio'
 
 _... to be done_
 
+====Newick or New Hamphshire Format====
+
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
 }}}
 
-Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation
+====phyloXML Format====
+
+Partially copied from [https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation Diana Jaunzeikare's documentation].
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
+Also, see: 
 
 
 
