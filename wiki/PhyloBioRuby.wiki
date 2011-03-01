@@ -101,10 +101,10 @@ require 'bio'
 # 'seqs' is either an array of sequences or a multiple sequence 
 # alignment. In general this is read in from a file as described in ?.
 # For the purpose of this tutorial, it is generated in code.
-seqs = ["KMLFGVVFFFGG",
-        "LMGGHHF",
-        "GKKKKGHHHGHRRRGR",
-        "KKKKGHHHGHRRRGR"] 
+seqs = ['MFQIPEFEPSEQEDSSSAER',
+        'MGTPKQPSLAPAHALGLRKS',
+        'PKQPSLAPAHALGLRKS',
+        'MCSTSGCDLE'] 
 
 
 # Calculates the alignment using the MAFFT program on the local
@@ -139,10 +139,10 @@ require 'bio'
 # 'seqs' is either an array of sequences or a multiple sequence 
 # alignment. In general this is read in from a file as described in ?.
 # For the purpose of this tutorial, it is generated in code.
-seqs = ["KMLFGVVFFFGG",
-        "LMGGHHF",
-        "GKKKKGHHHGHRRRGR",
-        "KKKKGHHHGHRRRGR"] 
+seqs = ['MFQIPEFEPSEQEDSSSAER',
+        'MGTPKQPSLAPAHALGLRKS',
+        'PKQPSLAPAHALGLRKS',
+        'MCSTSGCDLE']  
 
 # Calculates the alignment using the Muscle program on the local
 # machine with options '-quiet -maxiters 64'
