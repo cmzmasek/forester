@@ -23,7 +23,7 @@ Copyright (C) 2011 Christian M Zmasek
 
 === Reading in a Multiple Sequence Alignment from a File ===
 
-Reading in a ClustalW-formatted multiple sequence alignment:
+The follow example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
 
 {{{
 #!/usr/bin/env ruby
@@ -47,7 +47,8 @@ end
 
 === Writing a Multiple Sequence Alignment to a File ===
 
-Writing a multiple sequence alignment in fasta format:
+
+The follow example shows how to writing a multiple sequence alignment in *Fasta*-format:
 
 {{{
 #!/usr/bin/env ruby
@@ -60,19 +61,19 @@ File.open('outfile.fasta', 'w') do |f|
 end
 }}}
 
+The following constants a
 
-Writing a multiple sequence alignment in clustalw format:
+* ClustalW: :clustal
+* Fasta:    :fasta
+* Phylip interleaved: :phylip
+* Phylip non-interleaved: :phylipnon
+* MSF: :msf
+* Molphy: :molphy
 
-{{{
-#!/usr/bin/env ruby
-require 'bio'
 
-# Creates a new file named "outfile.aln" and writes
-# multiple sequence alignment 'align' to it in clustal format.
-File.open('outfile.aln', 'w') do |f|
-  f.write(align.output(:clustal))
-end
-}}}
+For example, the following writes in Phylip's non-interleaved format:
+
+`f.write(align.output(:phylipnon))`
 
 
 == Calculating Multiple Sequence Alignments ==
