@@ -217,20 +217,22 @@ In addition to !BioRuby, a libxml Ruby binding is also required. This can be ins
 % gem install -r libxml-ruby
 }}}
 
+This example reads file "example.xml" and stores its [http://www.phyloxml.org/ phyloXML]-formatted trees in variable 'trees'.
+
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
 # This creates new phyloXML parser.
-phyloxml = Bio::PhyloXML::Parser.new('example.xml')
+trees = Bio::PhyloXML::Parser.new('example.xml')
 
 # This prints the names of all trees in the file.
-phyloxml.each do |tree|
+trees.each do |tree|
   puts tree.name
 end
 
 # If there are several trees in the file, you can access the one you wish via index.
-tree = phyloxml[3]
+tree = trees[3]
 
 }}}
 
@@ -258,6 +260,7 @@ In addition to !BioRuby, a libxml Ruby binding is also required. This can be ins
 % gem install -r libxml-ruby
 }}}
 
+This example writes trees 'tree1' and 'tree2' to file "tree.xml" in [http://www.phyloxml.org/ phyloXML] format.
 
 {{{
 #!/usr/bin/env ruby
