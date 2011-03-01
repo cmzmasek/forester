@@ -63,12 +63,12 @@ end
 
 The following constants a
 
-* ClustalW: :clustal
-* Fasta:    :fasta
-* Phylip interleaved: :phylip
-* Phylip non-interleaved: :phylipnon
-* MSF: :msf
-* Molphy: :molphy
+  * ClustalW: :clustal
+  * Fasta:    :fasta
+  * Phylip interleaved: :phylip
+  * Phylip non-interleaved: :phylipnon
+  * MSF: :msf
+  * Molphy: :molphy
 
 
 For example, the following writes in Phylip's non-interleaved format:
