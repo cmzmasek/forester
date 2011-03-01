@@ -73,7 +73,9 @@ The following constants determine the output format
 
 For example, the following writes in Phylip's non-interleaved format:
 
-`f.write(align.output(:phylipnon))`
+{{{
+f.write(align.output(:phylipnon))
+}}}
 
 
 == Calculating Multiple Sequence Alignments ==
