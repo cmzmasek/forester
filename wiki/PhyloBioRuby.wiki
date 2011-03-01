@@ -80,6 +80,26 @@ f.write(align.output(:phylipnon))
 }}}
 
 
+== Formats for individual sequences ==
+
+_... to be done_
+
+!BioRuby can format molecular sequences in a variety of formats.
+Individual sequences can be formatted to (e.g.) Genbank format as shown in the following examples.
+
+For Sequence objects:
+{{{
+seq.to_seq.output(:genbank)
+}}}
+
+For !Bio::FlatFile entries:
+{{{
+entry.to_biosequence.output(:genbank)
+}}}
+
+Constants for available formats are:
+  * Genbank :genbank
+
 
 == Calculating Multiple Sequence Alignments ==
 
