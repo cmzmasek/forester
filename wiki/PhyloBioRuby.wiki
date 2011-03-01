@@ -364,6 +364,14 @@ Currently no direct support in !BioRuby.
 
 === Pairwise Sequence Distance Estimation ===
 
+_... to be done_
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+}}}
+
 
 === Optimality Criteria Based on Pairwise Distances ===
 
