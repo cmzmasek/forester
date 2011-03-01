@@ -189,13 +189,17 @@ require 'bio'
 
 = Phylogenetic Trees =
 
+
 == Phylogenetic Tree Input and Output ==
+
 
 === Reading in of Phylogenetic Trees ===
 
-_... to be done_
 
-====Newick or New Hamphshire Format====
+
+====Newick or New Hampshire Format====
+
+_... to be done_
 
 {{{
 #!/usr/bin/env ruby
@@ -207,17 +211,34 @@ require 'bio'
 
 Partially copied from [https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation Diana Jaunzeikare's documentation].
 
+In addition to !BioRuby, a libxml Ruby binding is also required. This can be installed with the following command: 
+
+{{{
+% gem install -r libxml-ruby
+}}}
+
 {{{
 #!/usr/bin/env ruby
 require 'bio'
 
-}}}
+# This creates new phyloXML parser.
+phyloxml = Bio::PhyloXML::Parser.new('example.xml')
 
-Also, see: 
+# This prints the names of all trees in the file.
+phyloxml.each do |tree|
+  puts tree.name
+end
+
+# If there are several trees in the file, you can access the one you wish via index.
+tree = phyloxml[3]
+
+}}}
 
 
 
 === Writing of Phylogenetic Trees ===
+
+====Newick or New Hampshire Format====
 
 _... to be done_
 
@@ -227,7 +248,32 @@ require 'bio'
 
 }}}
 
-Also, see: https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation
+====phyloXML Format====
+
+Partially copied from [https://www.nescent.org/wg_phyloinformatics/BioRuby_PhyloXML_HowTo_documentation Diana Jaunzeikare's documentation].
+
+In addition to !BioRuby, a libxml Ruby binding is also required. This can be installed with the following command: 
+
+{{{
+% gem install -r libxml-ruby
+}}}
+
+
+{{{
+#!/usr/bin/env ruby
+require 'bio'
+
+# this creates new phyloXML writer.
+writer = Bio::PhyloXML::Writer.new('tree.xml')
+
+# Writes tree to the file "tree.xml".
+writer.write(tree1)
+
+# Adds another tree to the file.
+writer.write(tree2)
+
+
+}}}
 
 
 
