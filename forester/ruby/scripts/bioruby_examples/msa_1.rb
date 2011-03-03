@@ -3,6 +3,16 @@ require 'bio'
  
 #############
 
+seqs = Bio::Alignment::MultiFastaFormat.new(File.open('bcl2.fasta').read)
+seqs.entries.each do |seq|
+  puts seq.to_seq.output(:genbank)
+end
+
+
+
+##############
+
+
 # Reads in a ClustalW formatted multiple sequence alignment
 # from a file named "infile_clustalw.aln" and stores it in 'report'.
 report = Bio::ClustalW::Report.new(File.read('infile_clustalw.aln'))
@@ -13,7 +23,7 @@ msa = report.alignment
 # Goes through all sequences in 'msa' and prints the
 # actual molecular sequence.
 msa.each do |entry|
-  puts entry.seq
+ # puts entry.seq
 end
 
 ##############
@@ -39,6 +49,7 @@ file.each do |entry|
   # do something on each fasta sequence entry
 end
 
+exit
 ##############
 
 # Creates a new file named "outfile.fasta" and writes
