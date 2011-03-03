@@ -1182,7 +1182,7 @@ public final class ForesterUtil {
                         String id = name;
                         final int i = name.indexOf( '_' );
                         if ( i > 0 ) {
-                            id = name.substring( i, name.length() );
+                            id = name.substring( 0, i );
                         }
                         else {
                             n.setName( "" );
@@ -1198,7 +1198,7 @@ public final class ForesterUtil {
                         String id = name;
                         final int i = name.indexOf( '_' );
                         if ( i > 0 ) {
-                            id = name.substring( 0, i );
+                            id = name.substring( i + 1, name.length() );
                         }
                         else {
                             n.setName( "" );
