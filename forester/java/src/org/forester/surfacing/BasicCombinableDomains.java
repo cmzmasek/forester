@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -50,6 +50,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         init();
     }
 
+    @Override
     public void addCombinableDomain( final DomainId protein_domain ) {
         if ( getCombiningDomains().containsKey( protein_domain ) ) {
             getCombiningDomains().put( protein_domain, getCombiningDomains().get( protein_domain ) + 1 );
@@ -59,6 +60,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         }
     }
 
+    @Override
     public List<DomainId> getAllDomains() {
         final List<DomainId> domains = getCombinableDomains();
         if ( !domains.contains( getKeyDomain() ) ) {
@@ -67,6 +69,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         return domains;
     }
 
+    @Override
     public List<DomainId> getCombinableDomains() {
         final List<DomainId> domains = new ArrayList<DomainId>( getNumberOfCombinableDomains() );
         for( final DomainId domain : getCombiningDomains().keySet() ) {
@@ -75,6 +78,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         return domains;
     }
 
+    @Override
     public SortedMap<DomainId, Integer> getCombinableDomainsIds() {
         final SortedMap<DomainId, Integer> ids = new TreeMap<DomainId, Integer>();
         for( final DomainId domain : getCombiningDomains().keySet() ) {
@@ -84,6 +88,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         return ids;
     }
 
+    @Override
     public StringBuilder getCombiningDomainIdsAsStringBuilder() {
         final StringBuilder sb = new StringBuilder();
         for( final Iterator<DomainId> iter = getCombiningDomains().keySet().iterator(); iter.hasNext(); ) {
@@ -104,26 +109,32 @@ public class BasicCombinableDomains implements CombinableDomains {
         return _combining_domains;
     }
 
+    @Override
     public DomainId getKeyDomain() {
         return _key_domain;
     }
 
+    @Override
     public DescriptiveStatistics getKeyDomainConfidenceDescriptiveStatistics() {
         return _key_domain_confidence_statistics;
     }
 
+    @Override
     public int getKeyDomainCount() {
         return _key_domain_count;
     }
 
+    @Override
     public int getKeyDomainProteinsCount() {
         return _key_domain_proteins_count;
     }
 
+    @Override
     public int getNumberOfCombinableDomains() {
         return _combining_domains.size();
     }
 
+    @Override
     public int getNumberOfProteinsExhibitingCombination( final DomainId protein_domain ) {
         if ( getCombiningDomains().containsKey( protein_domain ) ) {
             return getCombiningDomains().get( protein_domain );
@@ -133,6 +144,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         }
     }
 
+    @Override
     public Species getSpecies() {
         return _species;
     }
@@ -143,18 +155,22 @@ public class BasicCombinableDomains implements CombinableDomains {
         _key_domain_confidence_statistics = null;
     }
 
+    @Override
     public boolean isCombinable( final DomainId protein_domain ) {
         return getCombiningDomains().containsKey( protein_domain );
     }
 
+    @Override
     public void setKeyDomainConfidenceDescriptiveStatistics( final DescriptiveStatistics key_domain_confidence_statistics ) {
         _key_domain_confidence_statistics = key_domain_confidence_statistics;
     }
 
+    @Override
     public void setKeyDomainCount( final int key_domain_count ) {
         _key_domain_count = key_domain_count;
     }
 
+    @Override
     public void setKeyDomainProteinsCount( final int key_domain_proteins_count ) {
         _key_domain_proteins_count = key_domain_proteins_count;
     }

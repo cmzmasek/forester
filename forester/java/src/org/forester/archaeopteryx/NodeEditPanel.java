@@ -220,12 +220,18 @@ class NodeEditPanel extends JPanel {
         category = new DefaultMutableTreeNode( name );
         top.add( category );
         addSubelementEditable( category, NodePanel.DATE_DESCRIPTION, date.getDesc(), PHYLOXML_TAG.DATE_DESCRIPTION );
-        addSubelementEditable( category, NodePanel.DATE_VALUE, String.valueOf( date.getValue() != null ? date
-                .getValue() : "" ), PHYLOXML_TAG.DATE_VALUE );
-        addSubelementEditable( category, NodePanel.DATE_MIN, String
-                .valueOf( date.getMin() != null ? date.getMin() : "" ), PHYLOXML_TAG.DATE_MIN );
-        addSubelementEditable( category, NodePanel.DATE_MAX, String
-                .valueOf( date.getMax() != null ? date.getMax() : "" ), PHYLOXML_TAG.DATE_MAX );
+        addSubelementEditable( category,
+                               NodePanel.DATE_VALUE,
+                               String.valueOf( date.getValue() != null ? date.getValue() : "" ),
+                               PHYLOXML_TAG.DATE_VALUE );
+        addSubelementEditable( category,
+                               NodePanel.DATE_MIN,
+                               String.valueOf( date.getMin() != null ? date.getMin() : "" ),
+                               PHYLOXML_TAG.DATE_MIN );
+        addSubelementEditable( category,
+                               NodePanel.DATE_MAX,
+                               String.valueOf( date.getMax() != null ? date.getMax() : "" ),
+                               PHYLOXML_TAG.DATE_MAX );
         addSubelementEditable( category, NodePanel.DATE_UNIT, date.getUnit(), PHYLOXML_TAG.DATE_UNIT );
     }
 
@@ -247,14 +253,22 @@ class NodeEditPanel extends JPanel {
                                NodePanel.DIST_GEODETIC_DATUM,
                                p0.getGeodeticDatum(),
                                PHYLOXML_TAG.DIST_GEODETIC );
-        addSubelementEditable( category, NodePanel.DIST_LATITUDE, String.valueOf( p0.getLatitude() != null ? p0
-                .getLatitude() : "" ), PHYLOXML_TAG.DIST_LAT );
-        addSubelementEditable( category, NodePanel.DIST_LONGITUDE, String.valueOf( p0.getLongitude() != null ? p0
-                .getLongitude() : "" ), PHYLOXML_TAG.DIST_LONG );
-        addSubelementEditable( category, NodePanel.DIST_ALTITUDE, String.valueOf( p0.getAltitude() != null ? p0
-                .getAltitude() : "" ), PHYLOXML_TAG.DIST_ALT );
-        addSubelementEditable( category, NodePanel.DIST_ALT_UNIT, String.valueOf( p0.getAltiudeUnit() != null ? p0
-                .getAltiudeUnit() : "" ), PHYLOXML_TAG.DIST_ALT_UNIT );
+        addSubelementEditable( category,
+                               NodePanel.DIST_LATITUDE,
+                               String.valueOf( p0.getLatitude() != null ? p0.getLatitude() : "" ),
+                               PHYLOXML_TAG.DIST_LAT );
+        addSubelementEditable( category,
+                               NodePanel.DIST_LONGITUDE,
+                               String.valueOf( p0.getLongitude() != null ? p0.getLongitude() : "" ),
+                               PHYLOXML_TAG.DIST_LONG );
+        addSubelementEditable( category,
+                               NodePanel.DIST_ALTITUDE,
+                               String.valueOf( p0.getAltitude() != null ? p0.getAltitude() : "" ),
+                               PHYLOXML_TAG.DIST_ALT );
+        addSubelementEditable( category,
+                               NodePanel.DIST_ALT_UNIT,
+                               String.valueOf( p0.getAltiudeUnit() != null ? p0.getAltiudeUnit() : "" ),
+                               PHYLOXML_TAG.DIST_ALT_UNIT );
     }
 
     private void addEvents( final DefaultMutableTreeNode top, Event events, final String name ) {
@@ -275,9 +289,7 @@ class NodeEditPanel extends JPanel {
                                PHYLOXML_TAG.EVENTS_SPECIATIONS );
         addSubelementEditable( category,
                                NodePanel.EVENTS_GENE_LOSSES,
-                               String
-                                       .valueOf( events.getNumberOfGeneLosses() >= 0 ? events.getNumberOfGeneLosses()
-                                               : 0 ),
+                               String.valueOf( events.getNumberOfGeneLosses() >= 0 ? events.getNumberOfGeneLosses() : 0 ),
                                PHYLOXML_TAG.EVENTS_GENE_LOSSES );
     }
 
@@ -911,8 +923,8 @@ class NodeEditPanel extends JPanel {
                                                    p.getLatitude(),
                                                    p.getLongitude(),
                                                    new_value,
-                                                   ForesterUtil.isEmpty( p.getAltiudeUnit() ) ? "?" : p
-                                                           .getAltiudeUnit() );
+                                                   ForesterUtil.isEmpty( p.getAltiudeUnit() ) ? "?"
+                                                           : p.getAltiudeUnit() );
                     ps.set( 0, p_new );
                 }
                 break;
@@ -927,8 +939,11 @@ class NodeEditPanel extends JPanel {
                 if ( !ForesterUtil.isEmpty( value ) ) {
                     final List<Point> ps = obtainPoints();
                     final Point p = ps.get( 0 );
-                    final Point p_new = new Point( value, p.getLatitude(), p.getLongitude(), p.getAltitude(), p
-                            .getAltiudeUnit() );
+                    final Point p_new = new Point( value,
+                                                   p.getLatitude(),
+                                                   p.getLongitude(),
+                                                   p.getAltitude(),
+                                                   p.getAltiudeUnit() );
                     ps.set( 0, p_new );
                 }
                 break;
@@ -937,8 +952,11 @@ class NodeEditPanel extends JPanel {
                 if ( !ForesterUtil.isEmpty( value ) ) {
                     final List<Point> ps = obtainPoints();
                     final Point p = ps.get( 0 );
-                    final Point p_new = new Point( p.getGeodeticDatum(), p.getLatitude(), p.getLongitude(), p
-                            .getAltitude(), value );
+                    final Point p_new = new Point( p.getGeodeticDatum(),
+                                                   p.getLatitude(),
+                                                   p.getLongitude(),
+                                                   p.getAltitude(),
+                                                   value );
                     ps.set( 0, p_new );
                 }
                 break;
@@ -962,8 +980,11 @@ class NodeEditPanel extends JPanel {
                 if ( new_value != null ) {
                     final List<Point> ps = obtainPoints();
                     final Point p = ps.get( 0 );
-                    final Point p_new = new Point( p.getGeodeticDatum(), p.getLatitude(), new_value, p.getAltitude(), p
-                            .getAltiudeUnit() );
+                    final Point p_new = new Point( p.getGeodeticDatum(),
+                                                   p.getLatitude(),
+                                                   new_value,
+                                                   p.getAltitude(),
+                                                   p.getAltiudeUnit() );
                     ps.set( 0, p_new );
                 }
                 break;

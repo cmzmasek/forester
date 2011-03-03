@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -47,6 +47,7 @@ public class BasicProtein implements Protein {
         init();
     }
 
+    @Override
     public void addProteinDomain( final Domain protein_domain ) {
         getProteinDomains().add( protein_domain );
     }
@@ -113,14 +114,17 @@ public class BasicProtein implements Protein {
         return _name;
     }
 
+    @Override
     public int getNumberOfProteinDomains() {
         return getProteinDomains().size();
     }
 
+    @Override
     public Domain getProteinDomain( final int index ) {
         return _protein_domains.get( index );
     }
 
+    @Override
     public int getProteinDomainCount( final DomainId domain_id ) {
         return getProteinDomains( domain_id ).size();
     }
@@ -133,10 +137,12 @@ public class BasicProtein implements Protein {
         return ids;
     }
 
+    @Override
     public List<Domain> getProteinDomains() {
         return _protein_domains;
     }
 
+    @Override
     public List<Domain> getProteinDomains( final DomainId domain_id ) {
         final List<Domain> domains = new ArrayList<Domain>();
         for( final Domain domain : getProteinDomains() ) {
@@ -147,10 +153,12 @@ public class BasicProtein implements Protein {
         return domains;
     }
 
+    @Override
     public ProteinId getProteinId() {
         return _id;
     }
 
+    @Override
     public Species getSpecies() {
         return _species;
     }

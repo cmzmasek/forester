@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -67,21 +67,21 @@ import org.forester.surfacing.DomainId;
 import org.forester.surfacing.DomainLengthsTable;
 import org.forester.surfacing.DomainParsimonyCalculator;
 import org.forester.surfacing.DomainSimilarity;
+import org.forester.surfacing.DomainSimilarity.DomainSimilarityScoring;
+import org.forester.surfacing.DomainSimilarity.DomainSimilaritySortField;
 import org.forester.surfacing.DomainSimilarityCalculator;
+import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.GenomeWideCombinableDomains;
+import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
 import org.forester.surfacing.MappingResults;
 import org.forester.surfacing.PairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.PairwiseGenomeComparator;
 import org.forester.surfacing.PrintableDomainSimilarity;
+import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 import org.forester.surfacing.Protein;
 import org.forester.surfacing.ProteinCountsBasedPairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.Species;
 import org.forester.surfacing.SurfacingUtil;
-import org.forester.surfacing.DomainSimilarity.DomainSimilarityScoring;
-import org.forester.surfacing.DomainSimilarity.DomainSimilaritySortField;
-import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
-import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
-import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.CommandLineArguments;
@@ -517,9 +517,11 @@ public class surfacing_hmmpfam {
                 ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "input tree [" + intree_file + "] is not rooted" );
             }
             if ( intree.getNumberOfExternalNodes() < number_of_genomes ) {
-                ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "number of external nodes ["
-                        + intree.getNumberOfExternalNodes() + "] of input tree [" + intree_file
-                        + "] is smaller than the number of genomes the be analyzed [" + number_of_genomes + "]" );
+                ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME,
+                                         "number of external nodes [" + intree.getNumberOfExternalNodes()
+                                                 + "] of input tree [" + intree_file
+                                                 + "] is smaller than the number of genomes the be analyzed ["
+                                                 + number_of_genomes + "]" );
             }
             final StringBuilder parent_names = new StringBuilder();
             final int nodes_lacking_name = SurfacingUtil.getNumberOfNodesLackingName( intree, parent_names );
@@ -777,8 +779,7 @@ public class surfacing_hmmpfam {
                 ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "no value for negative domains filter: -"
                         + surfacing_hmmpfam.FILTER_NEGATIVE_DOMAINS_OPTION + "=<file>" );
             }
-            negative_domains_filter_file = new File( cla
-                    .getOptionValue( surfacing_hmmpfam.FILTER_NEGATIVE_DOMAINS_OPTION ) );
+            negative_domains_filter_file = new File( cla.getOptionValue( surfacing_hmmpfam.FILTER_NEGATIVE_DOMAINS_OPTION ) );
             final String msg = ForesterUtil.isReadableFile( negative_domains_filter_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
                 ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "can not read from \""
@@ -1119,8 +1120,8 @@ public class surfacing_hmmpfam {
                 }
             }
             catch ( final IOException e ) {
-                ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "cannot read from GO OBO file: "
-                        + e.getLocalizedMessage() );
+                ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME,
+                                         "cannot read from GO OBO file: " + e.getLocalizedMessage() );
             }
         }
         Map<GoId, GoTerm> go_id_to_term_map = null;
@@ -2027,15 +2028,18 @@ public class surfacing_hmmpfam {
                 matrix_output_file = out_dir + ForesterUtil.FILE_SEPARATOR + matrix_output_file;
                 output_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file );
             }
-            SurfacingUtil.writeMatrixToFile( new File( matrix_output_file
-                    + surfacing_hmmpfam.MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                    .getDomainDistanceScoresMeans() );
-            SurfacingUtil.writeMatrixToFile( new File( matrix_output_file
-                    + surfacing_hmmpfam.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                    .getSharedBinaryCombinationsBasedDistances() );
-            SurfacingUtil.writeMatrixToFile( new File( matrix_output_file
-                    + surfacing_hmmpfam.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                    .getSharedDomainsBasedDistances() );
+            SurfacingUtil
+                    .writeMatrixToFile( new File( matrix_output_file
+                                                + surfacing_hmmpfam.MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ),
+                                        pwgc.getDomainDistanceScoresMeans() );
+            SurfacingUtil
+                    .writeMatrixToFile( new File( matrix_output_file
+                                                + surfacing_hmmpfam.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                        pwgc.getSharedBinaryCombinationsBasedDistances() );
+            SurfacingUtil
+                    .writeMatrixToFile( new File( matrix_output_file
+                                                + surfacing_hmmpfam.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                        pwgc.getSharedDomainsBasedDistances() );
             final Phylogeny nj_gd = SurfacingUtil.createNjTreeBasedOnMatrixToFile( new File( matrix_output_file
                     + surfacing_hmmpfam.NJ_TREE_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
                     .getDomainDistanceScoresMeans().get( 0 ) );
@@ -2067,14 +2071,22 @@ public class surfacing_hmmpfam {
                                                           jacknife_resamplings,
                                                           jacknife_ratio,
                                                           random_seed );
-                SurfacingUtil.writeMatrixToFile( new File( matrix_output_file + "_"
-                        + ForesterUtil.round( jacknife_ratio, 2 ) + "_" + jacknife_resamplings
-                        + surfacing_hmmpfam.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                        .getSharedBinaryCombinationsBasedDistances() );
-                SurfacingUtil.writeMatrixToFile( new File( matrix_output_file + "_"
-                        + ForesterUtil.round( jacknife_ratio, 2 ) + "_" + jacknife_resamplings
-                        + surfacing_hmmpfam.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ), pwgc
-                        .getSharedDomainsBasedDistances() );
+                SurfacingUtil
+                        .writeMatrixToFile( new File( matrix_output_file
+                                                    + "_"
+                                                    + ForesterUtil.round( jacknife_ratio, 2 )
+                                                    + "_"
+                                                    + jacknife_resamplings
+                                                    + surfacing_hmmpfam.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                            pwgc.getSharedBinaryCombinationsBasedDistances() );
+                SurfacingUtil
+                        .writeMatrixToFile( new File( matrix_output_file
+                                                    + "_"
+                                                    + ForesterUtil.round( jacknife_ratio, 2 )
+                                                    + "_"
+                                                    + jacknife_resamplings
+                                                    + surfacing_hmmpfam.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
+                                            pwgc.getSharedDomainsBasedDistances() );
                 //                if ( infer_species_trees ) {
                 //                    inferSpeciesTrees( new File( output_file + "_" + jacknife_resamplings
                 //                            + INFERRED_SBC_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc

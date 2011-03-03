@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -92,10 +92,12 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         }
     }
 
+    @Override
     public DomainId getId0() {
         return _id_0;
     }
 
+    @Override
     public DomainId getId1() {
         return _id_1;
     }
@@ -105,6 +107,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         return getId0().hashCode() + ( 19 * getId1().hashCode() );
     }
 
+    @Override
     public StringBuffer toGraphDescribingLanguage( final OutputFormat format,
                                                    final String node_attribute,
                                                    final String edge_attribute ) {

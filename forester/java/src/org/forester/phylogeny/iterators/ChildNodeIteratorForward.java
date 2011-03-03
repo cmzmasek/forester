@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -90,6 +90,7 @@ public class ChildNodeIteratorForward implements PhylogenyNodeIterator {
      * @return true is this iterator has at least one more element, false
      *         otherwise
      */
+    @Override
     public boolean hasNext() {
         return ( getI() < getNode().getNumberOfDescendants() );
     }
@@ -108,6 +109,7 @@ public class ChildNodeIteratorForward implements PhylogenyNodeIterator {
      * @throws NoSuchElementException
      *             if iteration is complete
      */
+    @Override
     public PhylogenyNode next() throws NoSuchElementException {
         if ( !hasNext() ) {
             throw new NoSuchElementException( "Attempt to call \"next()\" on iterator which has no more next elements." );
@@ -121,6 +123,7 @@ public class ChildNodeIteratorForward implements PhylogenyNodeIterator {
      * Not supported.
      * 
      */
+    @Override
     public void remove() {
         throw new UnsupportedOperationException();
     }
@@ -128,6 +131,7 @@ public class ChildNodeIteratorForward implements PhylogenyNodeIterator {
     /**
      * Resets the iterator.
      */
+    @Override
     public void reset() {
         setI( 0 );
     }

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -69,10 +69,12 @@ public class BasicGoTerm implements GoTerm {
         init();
     }
 
+    @Override
     public StringBuffer asSimpleText() {
         return new StringBuffer( getGoId().toString() );
     }
 
+    @Override
     public StringBuffer asText() {
         return new StringBuffer( toString() );
     }
@@ -81,6 +83,7 @@ public class BasicGoTerm implements GoTerm {
      * Compares based on GO id.
      * 
      */
+    @Override
     public int compareTo( final GoTerm go_term ) {
         return getGoId().compareTo( go_term.getGoId() );
     }
@@ -90,6 +93,7 @@ public class BasicGoTerm implements GoTerm {
      * 
      * 
      */
+    @Override
     public PhylogenyData copy() {
         final BasicGoTerm gt = new BasicGoTerm( getGoId(), getName(), getGoNameSpace(), isObsolete() );
         gt.setGoXrefs( getGoXRefs() );
@@ -121,6 +125,7 @@ public class BasicGoTerm implements GoTerm {
         }
     }
 
+    @Override
     public List<GoId> getAltIds() {
         return _alt_ids;
     }
@@ -135,10 +140,12 @@ public class BasicGoTerm implements GoTerm {
         return _definition;
     }
 
+    @Override
     public GoId getGoId() {
         return _id;
     }
 
+    @Override
     public GoNameSpace getGoNameSpace() {
         return _namespace;
     }
@@ -153,14 +160,17 @@ public class BasicGoTerm implements GoTerm {
         return _go_subsets;
     }
 
+    @Override
     public List<GoXRef> getGoXRefs() {
         return _go_xrefs;
     }
 
+    @Override
     public String getName() {
         return _name;
     }
 
+    @Override
     public List<GoId> getSuperGoIds() {
         return _super_go_ids;
     }
@@ -185,10 +195,12 @@ public class BasicGoTerm implements GoTerm {
         setComment( "" );
     }
 
+    @Override
     public boolean isEqual( final PhylogenyData go_term ) {
         return equals( go_term );
     }
 
+    @Override
     public boolean isObsolete() {
         return _is_obsolete;
     }
@@ -221,10 +233,12 @@ public class BasicGoTerm implements GoTerm {
         _super_go_ids = super_terms;
     }
 
+    @Override
     public StringBuffer toNHX() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         throw new UnsupportedOperationException();
     }

@@ -7,7 +7,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -55,6 +55,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
         _combinable_domain_id_to_count_map = new TreeMap<DomainId, Integer>();
     }
 
+    @Override
     public void addProteinsExhibitingCombinationCount( final DomainId domain_id, final int count ) {
         if ( getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " already exists" );
@@ -62,6 +63,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
         getCombinableDomainIdToCountsMap().put( domain_id, count );
     }
 
+    @Override
     public SortedMap<DomainId, Integer> getCombinableDomainIdToCountsMap() {
         return _combinable_domain_id_to_count_map;
     }
@@ -82,6 +84,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
         return _key_domain_proteins_count;
     }
 
+    @Override
     public int getNumberOfProteinsExhibitingCombinationWith( final DomainId domain_id ) {
         if ( !getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " not found" );
@@ -95,6 +98,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
                 .toString();
     }
 
+    @Override
     public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, final boolean html ) {
         final StringBuffer sb = new StringBuffer();
         if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {

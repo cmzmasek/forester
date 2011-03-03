@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -64,12 +64,14 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Distribution;
+import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -1173,6 +1175,38 @@ public final class ForesterUtil {
                         }
                         n.getNodeData().getSequence().setName( name );
                         break;
+                    case TAXONOMY_ID_UNIPROT_1: {
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        String id = name;
+                        final int i = name.indexOf( '_' );
+                        if ( i > 0 ) {
+                            id = name.substring( i, name.length() );
+                        }
+                        else {
+                            n.setName( "" );
+                        }
+                        n.getNodeData().getTaxonomy()
+                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        break;
+                    }
+                    case TAXONOMY_ID_UNIPROT_2: {
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        String id = name;
+                        final int i = name.indexOf( '_' );
+                        if ( i > 0 ) {
+                            id = name.substring( 0, i );
+                        }
+                        else {
+                            n.setName( "" );
+                        }
+                        n.getNodeData().getTaxonomy()
+                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        break;
+                    }
                 }
             }
         }
@@ -1236,7 +1270,14 @@ public final class ForesterUtil {
     }
 
     public static enum PhylogenyNodeField {
-        CLADE_NAME, TAXONOMY_CODE, TAXONOMY_SCIENTIFIC_NAME, TAXONOMY_COMMON_NAME, SEQUENCE_SYMBOL, SEQUENCE_NAME;
+        CLADE_NAME,
+        TAXONOMY_CODE,
+        TAXONOMY_SCIENTIFIC_NAME,
+        TAXONOMY_COMMON_NAME,
+        SEQUENCE_SYMBOL,
+        SEQUENCE_NAME,
+        TAXONOMY_ID_UNIPROT_1,
+        TAXONOMY_ID_UNIPROT_2;
     }
 
     public static enum TAXONOMY_EXTRACTION {

@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -273,6 +273,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
     }
 
+    @Override
     public int compareTo( final DomainSimilarity domain_similarity ) {
         if ( this == domain_similarity ) {
             return PrintableDomainSimilarity.EQUAL;
@@ -418,6 +419,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         throw new AssertionError( "Unknown sort method: " + getSortField() );
     }
 
+    @Override
     public SortedSet<DomainId> getCombinableDomainIds( final Species species_of_combinable_domain ) {
         final SortedSet<DomainId> sorted_ids = new TreeSet<DomainId>();
         if ( getSpeciesData().containsKey( species_of_combinable_domain ) ) {
@@ -437,6 +439,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _detailedness;
     }
 
+    @Override
     public DomainId getDomainId() {
         return getCombinableDomains().getKeyDomain();
     }
@@ -453,6 +456,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _go_namespace_limit;
     }
 
+    @Override
     public int getMaximalDifference() {
         return _max_difference;
     }
@@ -462,18 +466,22 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _max_difference_in_counts;
     }
 
+    @Override
     public double getMaximalSimilarityScore() {
         return _max;
     }
 
+    @Override
     public double getMeanSimilarityScore() {
         return _mean;
     }
 
+    @Override
     public double getMinimalSimilarityScore() {
         return _min;
     }
 
+    @Override
     public int getN() {
         return _n;
     }
@@ -482,6 +490,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _sort_field;
     }
 
+    @Override
     public SortedSet<Species> getSpecies() {
         final SortedSet<Species> species = new TreeSet<Species>();
         for( final Species s : getSpeciesData().keySet() ) {
@@ -494,6 +503,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _species_order;
     }
 
+    @Override
     public SortedMap<Species, SpeciesSpecificDomainSimilariyData> getSpeciesData() {
         return _species_data;
     }
@@ -520,6 +530,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
+    @Override
     public double getStandardDeviationOfSimilarityScore() {
         return _sd;
     }
@@ -566,6 +577,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return toStringBuffer( null ).toString();
     }
 
+    @Override
     public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option ) {
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:

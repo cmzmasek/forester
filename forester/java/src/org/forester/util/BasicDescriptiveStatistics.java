@@ -7,7 +7,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -47,6 +47,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#addValue(double)
      */
+    @Override
     public void addValue( final double d ) {
         _recalc_sigma = true;
         _sum += d;
@@ -62,6 +63,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#arithmeticMean()
      */
+    @Override
     public double arithmeticMean() {
         validate();
         return getSum() / getN();
@@ -70,6 +72,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#asSummary()
      */
+    @Override
     public String asSummary() {
         if ( getN() > 1 ) {
             return arithmeticMean() + DescriptiveStatistics.PLUS_MINUS + sampleStandardDeviation() + " [" + getMin()
@@ -83,6 +86,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#coefficientOfVariation()
      */
+    @Override
     public double coefficientOfVariation() {
         validate();
         return ( sampleStandardDeviation() / arithmeticMean() );
@@ -91,6 +95,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getDataAsDoubleArray()
      */
+    @Override
     public double[] getDataAsDoubleArray() {
         validate();
         final double[] data_array = new double[ getN() ];
@@ -103,6 +108,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getMax()
      */
+    @Override
     public double getMax() {
         validate();
         return _max;
@@ -111,6 +117,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getMin()
      */
+    @Override
     public double getMin() {
         validate();
         return _min;
@@ -119,6 +126,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getN()
      */
+    @Override
     public int getN() {
         return _data.size();
     }
@@ -126,6 +134,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getSum()
      */
+    @Override
     public double getSum() {
         validate();
         return _sum;
@@ -134,6 +143,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getSummaryAsString()
      */
+    @Override
     public String getSummaryAsString() {
         validate();
         final double mean = arithmeticMean();
@@ -144,6 +154,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#getValue(int)
      */
+    @Override
     public double getValue( final int index ) {
         validate();
         return ( ( ( _data.get( index ) ) ).doubleValue() );
@@ -161,6 +172,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#median()
      */
+    @Override
     public double median() {
         validate();
         double median = 0.0;
@@ -185,6 +197,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#midrange()
      */
+    @Override
     public double midrange() {
         validate();
         return ( _min + _max ) / 2.0;
@@ -193,6 +206,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#pearsonianSkewness()
      */
+    @Override
     public double pearsonianSkewness() {
         validate();
         final double mean = arithmeticMean();
@@ -204,6 +218,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#sampleStandardDeviation()
      */
+    @Override
     public double sampleStandardDeviation() {
         return Math.sqrt( sampleVariance() );
     }
@@ -211,6 +226,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#sampleStandardUnit(double)
      */
+    @Override
     public double sampleStandardUnit( final double value ) {
         validate();
         return BasicDescriptiveStatistics.sampleStandardUnit( value, arithmeticMean(), sampleStandardDeviation() );
@@ -219,6 +235,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#sampleVariance()
      */
+    @Override
     public double sampleVariance() {
         validate();
         if ( getN() < 2 ) {
@@ -230,6 +247,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#standardErrorOfMean()
      */
+    @Override
     public double standardErrorOfMean() {
         validate();
         return ( sampleStandardDeviation() / Math.sqrt( getN() ) );
@@ -238,6 +256,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#sumDeviations()
      */
+    @Override
     public double sumDeviations() {
         validate();
         if ( _recalc_sigma ) {

@@ -5,7 +5,7 @@
 // Copyright (C) 2010 Christian M Zmasek
 // Copyright (C) 2010 Sanford-Burnham Medical Research Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -161,23 +161,31 @@ public class PhylogeneticInferrer implements Runnable {
                 msa = inferMsa();
             }
             catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( _mf, "Could not create multiple sequence alignment with "
-                        + _options.getMsaPrg() + "\nand the following parameters:\n\"" + _options.getMsaPrgParameters()
-                        + "\"\nError:" + e.getLocalizedMessage(), "Failed to Calculate MSA", JOptionPane.ERROR_MESSAGE );
+                JOptionPane.showMessageDialog( _mf,
+                                               "Could not create multiple sequence alignment with "
+                                                       + _options.getMsaPrg() + "\nand the following parameters:\n\""
+                                                       + _options.getMsaPrgParameters() + "\"\nError:"
+                                                       + e.getLocalizedMessage(),
+                                               "Failed to Calculate MSA",
+                                               JOptionPane.ERROR_MESSAGE );
                 return;
             }
             if ( msa == null ) {
-                JOptionPane.showMessageDialog( _mf, "Could not create multiple sequence alignment with "
-                        + _options.getMsaPrg() + "\nand the following parameters:\n\"" + _options.getMsaPrgParameters()
-                        + "\"", "Failed to Calculate MSA", JOptionPane.ERROR_MESSAGE );
+                JOptionPane.showMessageDialog( _mf,
+                                               "Could not create multiple sequence alignment with "
+                                                       + _options.getMsaPrg() + "\nand the following parameters:\n\""
+                                                       + _options.getMsaPrgParameters() + "\"",
+                                               "Failed to Calculate MSA",
+                                               JOptionPane.ERROR_MESSAGE );
                 return;
             }
             System.out.println( msa.toString() );
             System.out.println( MsaTools.calcBasicGapinessStatistics( msa ).toString() );
             final MsaTools msa_tools = MsaTools.createInstance();
             if ( _options.isExecuteMsaProcessing() ) {
-                msa = msa_tools.removeGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(), _options
-                        .getMsaProcessingMinAllowedLength(), msa );
+                msa = msa_tools.removeGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(),
+                                                  _options.getMsaProcessingMinAllowedLength(),
+                                                  msa );
                 if ( msa == null ) {
                     JOptionPane.showMessageDialog( _mf,
                                                    "Less than two sequences longer than "
@@ -235,13 +243,11 @@ public class PhylogeneticInferrer implements Runnable {
     private void writeToFiles( final BasicSymmetricalDistanceMatrix m ) {
         if ( !ForesterUtil.isEmpty( _options.getIntermediateFilesBase() ) ) {
             try {
-                final BufferedWriter msa_writer = new BufferedWriter( new FileWriter( _options
-                        .getIntermediateFilesBase()
+                final BufferedWriter msa_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
                         + MSA_FILE_SUFFIX ) );
                 _msa.write( msa_writer );
                 msa_writer.close();
-                final BufferedWriter pwd_writer = new BufferedWriter( new FileWriter( _options
-                        .getIntermediateFilesBase()
+                final BufferedWriter pwd_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
                         + PWD_FILE_SUFFIX ) );
                 m.write( pwd_writer );
                 pwd_writer.close();

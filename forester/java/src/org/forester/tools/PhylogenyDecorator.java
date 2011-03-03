@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -96,13 +96,15 @@ public final class PhylogenyDecorator {
                         if ( new_values.containsKey( TP_TAXONOMY_ID )
                                 && new_values.containsKey( TP_TAXONOMY_ID_PROVIDER ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
-                            node.getNodeData().getTaxonomy().setIdentifier( new Identifier( new_values
-                                    .get( TP_TAXONOMY_ID ), new_values.get( TP_TAXONOMY_ID_PROVIDER ) ) );
+                            node.getNodeData()
+                                    .getTaxonomy()
+                                    .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ),
+                                                                    new_values.get( TP_TAXONOMY_ID_PROVIDER ) ) );
                         }
                         else if ( new_values.containsKey( TP_TAXONOMY_ID ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
-                            node.getNodeData().getTaxonomy().setIdentifier( new Identifier( new_values
-                                    .get( TP_TAXONOMY_ID ) ) );
+                            node.getNodeData().getTaxonomy()
+                                    .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ) ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_SN ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
@@ -119,8 +121,10 @@ public final class PhylogenyDecorator {
                         if ( new_values.containsKey( TP_SEQ_ACCESSION )
                                 && new_values.containsKey( TP_SEQ_ACCESSION_SOURCE ) ) {
                             ForesterUtil.ensurePresenceOfSequence( node );
-                            node.getNodeData().getSequence().setAccession( new Accession( new_values
-                                    .get( TP_SEQ_ACCESSION ), new_values.get( TP_SEQ_ACCESSION_SOURCE ) ) );
+                            node.getNodeData()
+                                    .getSequence()
+                                    .setAccession( new Accession( new_values.get( TP_SEQ_ACCESSION ),
+                                                                  new_values.get( TP_SEQ_ACCESSION_SOURCE ) ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_ANNOTATION_DESC ) ) {
                             ForesterUtil.ensurePresenceOfSequence( node );

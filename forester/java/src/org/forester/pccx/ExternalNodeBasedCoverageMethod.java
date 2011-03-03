@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -47,6 +47,7 @@ public class ExternalNodeBasedCoverageMethod implements CoverageCalculationMetho
     private static final Color MAXIMAL_COV_COLOR   = new Color( 0, 255, 0 );
     private static final Color MINIMAL_COV_COLOR   = new Color( 255, 0, 0 );
 
+    @Override
     public Coverage calculateCoverage( final List<Phylogeny> phylogenies,
                                        final List<String> names,
                                        final CoverageCalculationOptions options,
@@ -89,8 +90,10 @@ public class ExternalNodeBasedCoverageMethod implements CoverageCalculationMetho
         final SortedMap<PhylogenyNode, Double> external_node_scores = ModelingUtils
                 .setUpExternalCoverageHashMap( phylogeny );
         for( final Object element : names ) {
-            scoring_method.calculateScoreForExternalNode( external_node_scores, phylogeny, phylogeny
-                    .getNode( ( String ) element ), options );
+            scoring_method.calculateScoreForExternalNode( external_node_scores,
+                                                          phylogeny,
+                                                          phylogeny.getNode( ( String ) element ),
+                                                          options );
         }
         if ( annotate_phylogeny ) {
             colorizePhylogenyAccordingToCoverage( external_node_scores, phylogeny, normalization_factor );

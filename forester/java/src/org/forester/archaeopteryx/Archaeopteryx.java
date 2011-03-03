@@ -35,7 +35,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.util.ForesterUtil;
 
-// 
+//
 // java -javaagent:shiftone-jrat.jar -cp
 // $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester-atv/java/forester.jar:.
 // org.forester.archaeopteryx.Archaeopteryx
@@ -160,7 +160,9 @@ public final class Archaeopteryx {
             }
             else {
                 MainFrameApplication.createInstance( ParserBasedPhylogenyFactory.getInstance()
-                        .create( s, new PhyloXmlParser() ), conf, title );
+                                                             .create( s, new PhyloXmlParser() ),
+                                                     conf,
+                                                     title );
             }
         }
         // catch ( final IOException ex ) {

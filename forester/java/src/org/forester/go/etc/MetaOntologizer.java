@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -438,22 +438,18 @@ public class MetaOntologizer {
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "a.new_type:link { font-size: 7pt; color : #505050; text-decoration : none; }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
-        w
-                .write( "a.new_type:hover { font-size: 7pt; color : #000000; background-color : #FFFF00; text-decoration : none; }" );
+        w.write( "a.new_type:hover { font-size: 7pt; color : #000000; background-color : #FFFF00; text-decoration : none; }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
-        w
-                .write( "a.new_type:hover { font-size: 7pt; color : #000000; background-color : #FFFF00; text-decoration : none; }" );
+        w.write( "a.new_type:hover { font-size: 7pt; color : #000000; background-color : #FFFF00; text-decoration : none; }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "td { text-align: left; vertical-align: top; font-family: Verdana, Arial, Helvetica; font-size: 8pt}" );
         w.write( ForesterUtil.LINE_SEPARATOR );
-        w
-                .write( "th { text-align: left; vertical-align: top; font-family: Verdana, Arial, Helvetica; font-size: 10pt; font-weight: bold }" );
+        w.write( "th { text-align: left; vertical-align: top; font-family: Verdana, Arial, Helvetica; font-size: 10pt; font-weight: bold }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "h1 { color : #000000; font-family: Verdana, Arial, Helvetica; font-size: 18pt; font-weight: bold }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "h2 { color : #000000; font-family: Verdana, Arial, Helvetica; font-size: 16pt; font-weight: bold }" );
-        w
-                .write( "h3 { margin-top: 12px;  margin-bottom: 0px; color : #000000; font-family: Verdana, Arial, Helvetica; font-size: 12pt; font-weight: bold }" );
+        w.write( "h3 { margin-top: 12px;  margin-bottom: 0px; color : #000000; font-family: Verdana, Arial, Helvetica; font-size: 12pt; font-weight: bold }" );
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( "</style>" );
         w.write( ForesterUtil.LINE_SEPARATOR );
@@ -592,8 +588,11 @@ public class MetaOntologizer {
         writer.write( String.valueOf( ontologizer_result.getStudyTerm() ) );
         writer.write( "</td><td>" );
         if ( domains_per_species != null ) {
-            final StringBuilder sb = obtainDomainsForGoId( pfam_to_go, domains_per_species, go_id_to_terms, go_term
-                    .getGoId(), domain_ids_with_go_annot );
+            final StringBuilder sb = obtainDomainsForGoId( pfam_to_go,
+                                                           domains_per_species,
+                                                           go_id_to_terms,
+                                                           go_term.getGoId(),
+                                                           domain_ids_with_go_annot );
             writer.write( sb.toString() );
         }
         else {

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -305,8 +305,8 @@ public final class decorator {
                 mapping_table = BasicTableParser.parse( mapping_infile, separator, decorator.USE_FIRST_SEPARATOR_ONLY );
             }
             catch ( final Exception e ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME, "failed to read [" + mapping_infile + "] ["
-                        + e.getMessage() + "]" );
+                ForesterUtil.fatalError( decorator.PRG_NAME,
+                                         "failed to read [" + mapping_infile + "] [" + e.getMessage() + "]" );
             }
             if ( ( key_column < 0 ) || ( key_column >= mapping_table.getNumberOfColumns() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for key column" );
@@ -343,8 +343,8 @@ public final class decorator {
                     table = PhylogenyDecorator.parseMappingTable( mapping_infile );
                 }
                 catch ( final IOException e ) {
-                    ForesterUtil.fatalError( decorator.PRG_NAME, "failed to read \"" + mapping_infile + "\" ["
-                            + e.getMessage() + "]" );
+                    ForesterUtil.fatalError( decorator.PRG_NAME,
+                                             "failed to read \"" + mapping_infile + "\" [" + e.getMessage() + "]" );
                 }
                 PhylogenyDecorator.decorate( phylogenies,
                                              table,

@@ -4,7 +4,7 @@
 //
 // Copyright (C) 2008-2010 Christian M. Zmasek
 // Copyright (C) 2008-2010 Burnham Institute for Medical Research
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -54,69 +54,64 @@ public final class WebserviceUtil {
 
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
-        clients
-                .add( new BasicPhylogeniesWebserviceClient( TOL_NAME,
-                                                            "Read Tree from Tree of Life...",
-                                                            "Use ToL webservice to obtain a phylogeny",
-                                                            "Please enter a Tree of Life node identifier\n(Examples: "
-                                                                    + "19386 for Cephalopoda, 2461 for Cnidaria, 2466 for Deuterostomia)",
-                                                            WsPhylogenyFormat.TOL_XML_RESPONSE,
-                                                            PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                            WebserviceUtil.TOL_WEBSERVER,
-                                                            true,
-                                                            "http://tolweb.org",
-                                                            null ) );
-        clients
-                .add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
-                                                            "Read Tree from TreeBASE...",
-                                                            "Use TreeBASE to obtain a phylogeny",
-                                                            "Please enter a TreeBASE tree identifier\n(Examples: 2654, 825, 4931, 2518, 2406, 4934)",
-                                                            WsPhylogenyFormat.NEXUS,
-                                                            PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                            "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr"
-                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                    + "?format=nexus",
-                                                            true,
-                                                            "http://treebase.nescent.org",
-                                                            null ) );
-        clients
-                .add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
-                                                            "Read Gene Tree from Pfam...",
-                                                            "Use  Pfam to obtain a (full) gene tree",
-                                                            "Please enter a Pfam (PF) accession number\n(Examples: 01849 for NAC, 00452 for Bcl-2, 00046 for Homeobox)",
-                                                            WsPhylogenyFormat.PFAM,
-                                                            null,
-                                                            PFAM_SERVER + "/family/tree/download?alnType=full&acc=PF"
-                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER,
-                                                            false,
-                                                            PFAM_SERVER,
-                                                            PFAM_INST ) );
-        clients
-                .add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
-                                                            "Read Full Gene Tree from TreeFam...",
-                                                            "Use TreeFam to obtain a (full) gene tree",
-                                                            "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
-                                                            WsPhylogenyFormat.NHX,
-                                                            null,
-                                                            "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
-                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                    + "&f=full.nhx",
-                                                            true,
-                                                            "http://www.treefam.org",
-                                                            TREE_FAM_INST ) );
-        clients
-                .add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
-                                                            "Read Clean Gene Tree from TreeFam...",
-                                                            "Use TreeFam to obtain a (\"clean\") gene tree",
-                                                            "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
-                                                            WsPhylogenyFormat.NHX,
-                                                            null,
-                                                            "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
-                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                    + "&f=clean.nhx",
-                                                            true,
-                                                            "http://www.treefam.org",
-                                                            TREE_FAM_INST ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TOL_NAME,
+                                                           "Read Tree from Tree of Life...",
+                                                           "Use ToL webservice to obtain a phylogeny",
+                                                           "Please enter a Tree of Life node identifier\n(Examples: "
+                                                                   + "19386 for Cephalopoda, 2461 for Cnidaria, 2466 for Deuterostomia)",
+                                                           WsPhylogenyFormat.TOL_XML_RESPONSE,
+                                                           PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           WebserviceUtil.TOL_WEBSERVER,
+                                                           true,
+                                                           "http://tolweb.org",
+                                                           null ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
+                                                           "Read Tree from TreeBASE...",
+                                                           "Use TreeBASE to obtain a phylogeny",
+                                                           "Please enter a TreeBASE tree identifier\n(Examples: 2654, 825, 4931, 2518, 2406, 4934)",
+                                                           WsPhylogenyFormat.NEXUS,
+                                                           PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "?format=nexus",
+                                                           true,
+                                                           "http://treebase.nescent.org",
+                                                           null ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
+                                                           "Read Gene Tree from Pfam...",
+                                                           "Use  Pfam to obtain a (full) gene tree",
+                                                           "Please enter a Pfam (PF) accession number\n(Examples: 01849 for NAC, 00452 for Bcl-2, 00046 for Homeobox)",
+                                                           WsPhylogenyFormat.PFAM,
+                                                           null,
+                                                           PFAM_SERVER + "/family/tree/download?alnType=full&acc=PF"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER,
+                                                           false,
+                                                           PFAM_SERVER,
+                                                           PFAM_INST ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
+                                                           "Read Full Gene Tree from TreeFam...",
+                                                           "Use TreeFam to obtain a (full) gene tree",
+                                                           "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
+                                                           WsPhylogenyFormat.NHX,
+                                                           null,
+                                                           "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "&f=full.nhx",
+                                                           true,
+                                                           "http://www.treefam.org",
+                                                           TREE_FAM_INST ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
+                                                           "Read Clean Gene Tree from TreeFam...",
+                                                           "Use TreeFam to obtain a (\"clean\") gene tree",
+                                                           "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
+                                                           WsPhylogenyFormat.NHX,
+                                                           null,
+                                                           "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "&f=clean.nhx",
+                                                           true,
+                                                           "http://www.treefam.org",
+                                                           TREE_FAM_INST ) );
         return clients;
     }
 
@@ -160,8 +155,9 @@ public final class WebserviceUtil {
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
             if ( n.getNodeData().isHasTaxonomy() && ( n.getNodeData().getTaxonomy().getIdentifier() != null ) ) {
-                n.getNodeData().getTaxonomy().setIdentifier( new Identifier( n.getNodeData().getTaxonomy()
-                        .getIdentifier().getValue(), type ) );
+                n.getNodeData()
+                        .getTaxonomy()
+                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(), type ) );
             }
         }
     }

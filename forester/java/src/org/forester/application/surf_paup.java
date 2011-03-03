@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -101,8 +101,9 @@ public class surf_paup {
             phylogenies = factory.create( surfacing_nexus_outfile, phylogeny_parser );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "problem with parsing phylogeny [" + surfacing_nexus_outfile + "]: "
-                    + e.getMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "problem with parsing phylogeny [" + surfacing_nexus_outfile + "]: "
+                                             + e.getMessage() );
             e.printStackTrace();
         }
         if ( phylogenies.length != 1 ) {
@@ -121,11 +122,12 @@ public class surf_paup {
             matrix = paup_log_parser.parse();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to parse matrix from  [" + paup_log_file + "]: "
-                    + e.getMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to parse matrix from  [" + paup_log_file + "]: " + e.getMessage() );
         }
-        ForesterUtil.programMessage( PRG_NAME, "read in character state matrix of size "
-                + matrix.getNumberOfIdentifiers() + "x" + matrix.getNumberOfCharacters() );
+        ForesterUtil.programMessage( PRG_NAME,
+                                     "read in character state matrix of size " + matrix.getNumberOfIdentifiers() + "x"
+                                             + matrix.getNumberOfCharacters() );
         final DomainParsimonyCalculator domain_parsimony = DomainParsimonyCalculator.createInstance( phylogeny );
         domain_parsimony.executeOnGivenBinaryStatesMatrix( matrix, labels );
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;

@@ -32,14 +32,17 @@ public final class MafftOLD implements MsaInferrer {
         throw new NoSuchMethodError();
     }
 
+    @Override
     public String getErrorDescription() {
         return _error;
     }
 
+    @Override
     public int getExitCode() {
         return _exit_code;
     }
 
+    @Override
     public Msa infer( final File path_to_input_seqs, final List<String> opts ) throws IOException, InterruptedException {
         init();
         final String[] my_opts = new String[ opts.size() + 1 ];

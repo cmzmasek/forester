@@ -4,7 +4,7 @@
 //
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -172,6 +172,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     /**
      * Handle an action.
      */
+    @Override
     public void actionPerformed( final ActionEvent e ) {
         try {
             final TreePanel tp = getMainPanel().getCurrentTreePanel();
@@ -586,10 +587,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         add( horizGrid );
         add( getSequenceRelationBox() );
         if ( _configuration.doDisplayOption( Configuration.show_relation_confidence ) ) {
-            addCheckbox( Configuration.show_relation_confidence, _configuration
-                    .getDisplayTitle( Configuration.show_relation_confidence ) );
-            setCheckbox( Configuration.show_relation_confidence, _configuration
-                    .doCheckOption( Configuration.show_relation_confidence ) );
+            addCheckbox( Configuration.show_relation_confidence,
+                         _configuration.getDisplayTitle( Configuration.show_relation_confidence ) );
+            setCheckbox( Configuration.show_relation_confidence,
+                         _configuration.doCheckOption( Configuration.show_relation_confidence ) );
         }
     }// addSequenceRelationBlock
 
@@ -1258,8 +1259,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         int cb_index = 0;
         if ( _configuration.doDisplayClickToOption( Configuration.display_node_data ) ) {
             _show_data_item = cb_index;
-            addClickToOption( Configuration.display_node_data, _configuration
-                    .getClickToTitle( Configuration.display_node_data ) );
+            addClickToOption( Configuration.display_node_data,
+                              _configuration.getClickToTitle( Configuration.display_node_data ) );
             if ( default_option == Configuration.display_node_data ) {
                 selected_index = cb_index;
             }
@@ -1267,8 +1268,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.collapse_uncollapse ) ) {
             _collapse_cb_item = cb_index;
-            addClickToOption( Configuration.collapse_uncollapse, _configuration
-                    .getClickToTitle( Configuration.collapse_uncollapse ) );
+            addClickToOption( Configuration.collapse_uncollapse,
+                              _configuration.getClickToTitle( Configuration.collapse_uncollapse ) );
             if ( default_option == Configuration.collapse_uncollapse ) {
                 selected_index = cb_index;
             }
@@ -1333,8 +1334,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( _configuration.doDisplayClickToOption( Configuration.copy_subtree ) ) {
                 _copy_subtree_item = cb_index;
-                addClickToOption( Configuration.copy_subtree, _configuration
-                        .getClickToTitle( Configuration.copy_subtree ) );
+                addClickToOption( Configuration.copy_subtree,
+                                  _configuration.getClickToTitle( Configuration.copy_subtree ) );
                 if ( default_option == Configuration.copy_subtree ) {
                     selected_index = cb_index;
                 }
@@ -1342,8 +1343,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( _configuration.doDisplayClickToOption( Configuration.paste_subtree ) ) {
                 _paste_subtree_item = cb_index;
-                addClickToOption( Configuration.paste_subtree, _configuration
-                        .getClickToTitle( Configuration.paste_subtree ) );
+                addClickToOption( Configuration.paste_subtree,
+                                  _configuration.getClickToTitle( Configuration.paste_subtree ) );
                 if ( default_option == Configuration.paste_subtree ) {
                     selected_index = cb_index;
                 }
@@ -1351,8 +1352,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( _configuration.doDisplayClickToOption( Configuration.delete_subtree_or_node ) ) {
                 _delete_node_or_subtree_item = cb_index;
-                addClickToOption( Configuration.delete_subtree_or_node, _configuration
-                        .getClickToTitle( Configuration.delete_subtree_or_node ) );
+                addClickToOption( Configuration.delete_subtree_or_node,
+                                  _configuration.getClickToTitle( Configuration.delete_subtree_or_node ) );
                 if ( default_option == Configuration.delete_subtree_or_node ) {
                     selected_index = cb_index;
                 }
@@ -1360,8 +1361,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( _configuration.doDisplayClickToOption( Configuration.add_new_node ) ) {
                 _add_new_node_item = cb_index;
-                addClickToOption( Configuration.add_new_node, _configuration
-                        .getClickToTitle( Configuration.add_new_node ) );
+                addClickToOption( Configuration.add_new_node,
+                                  _configuration.getClickToTitle( Configuration.add_new_node ) );
                 if ( default_option == Configuration.add_new_node ) {
                     selected_index = cb_index;
                 }
@@ -1369,8 +1370,8 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             if ( _configuration.doDisplayClickToOption( Configuration.edit_node_data ) ) {
                 _edit_node_data_item = cb_index;
-                addClickToOption( Configuration.edit_node_data, _configuration
-                        .getClickToTitle( Configuration.edit_node_data ) );
+                addClickToOption( Configuration.edit_node_data,
+                                  _configuration.getClickToTitle( Configuration.edit_node_data ) );
                 if ( default_option == Configuration.edit_node_data ) {
                     selected_index = cb_index;
                 }
@@ -1452,38 +1453,38 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private void setupDisplayCheckboxes() {
         if ( _configuration.doDisplayOption( Configuration.display_as_phylogram ) ) {
-            addCheckbox( Configuration.display_as_phylogram, _configuration
-                    .getDisplayTitle( Configuration.display_as_phylogram ) );
-            setCheckbox( Configuration.display_as_phylogram, _configuration
-                    .doCheckOption( Configuration.display_as_phylogram ) );
+            addCheckbox( Configuration.display_as_phylogram,
+                         _configuration.getDisplayTitle( Configuration.display_as_phylogram ) );
+            setCheckbox( Configuration.display_as_phylogram,
+                         _configuration.doCheckOption( Configuration.display_as_phylogram ) );
         }
         if ( _configuration.doDisplayOption( Configuration.dynamically_hide_data ) ) {
-            addCheckbox( Configuration.dynamically_hide_data, _configuration
-                    .getDisplayTitle( Configuration.dynamically_hide_data ) );
-            setCheckbox( Configuration.dynamically_hide_data, _configuration
-                    .doCheckOption( Configuration.dynamically_hide_data ) );
+            addCheckbox( Configuration.dynamically_hide_data,
+                         _configuration.getDisplayTitle( Configuration.dynamically_hide_data ) );
+            setCheckbox( Configuration.dynamically_hide_data,
+                         _configuration.doCheckOption( Configuration.dynamically_hide_data ) );
         }
         if ( _configuration.doDisplayOption( Configuration.node_data_popup ) ) {
             addCheckbox( Configuration.node_data_popup, _configuration.getDisplayTitle( Configuration.node_data_popup ) );
             setCheckbox( Configuration.node_data_popup, _configuration.doCheckOption( Configuration.node_data_popup ) );
         }
         if ( _configuration.doDisplayOption( Configuration.display_internal_data ) ) {
-            addCheckbox( Configuration.display_internal_data, _configuration
-                    .getDisplayTitle( Configuration.display_internal_data ) );
-            setCheckbox( Configuration.display_internal_data, _configuration
-                    .doCheckOption( Configuration.display_internal_data ) );
+            addCheckbox( Configuration.display_internal_data,
+                         _configuration.getDisplayTitle( Configuration.display_internal_data ) );
+            setCheckbox( Configuration.display_internal_data,
+                         _configuration.doCheckOption( Configuration.display_internal_data ) );
         }
         if ( _configuration.doDisplayOption( Configuration.color_according_to_species ) ) {
-            addCheckbox( Configuration.color_according_to_species, _configuration
-                    .getDisplayTitle( Configuration.color_according_to_species ) );
-            setCheckbox( Configuration.color_according_to_species, _configuration
-                    .doCheckOption( Configuration.color_according_to_species ) );
+            addCheckbox( Configuration.color_according_to_species,
+                         _configuration.getDisplayTitle( Configuration.color_according_to_species ) );
+            setCheckbox( Configuration.color_according_to_species,
+                         _configuration.doCheckOption( Configuration.color_according_to_species ) );
         }
         if ( _configuration.doDisplayOption( Configuration.color_according_to_annotation ) ) {
-            addCheckbox( Configuration.color_according_to_annotation, _configuration
-                    .getDisplayTitle( Configuration.color_according_to_annotation ) );
-            setCheckbox( Configuration.color_according_to_annotation, _configuration
-                    .doCheckOption( Configuration.color_according_to_annotation ) );
+            addCheckbox( Configuration.color_according_to_annotation,
+                         _configuration.getDisplayTitle( Configuration.color_according_to_annotation ) );
+            setCheckbox( Configuration.color_according_to_annotation,
+                         _configuration.doCheckOption( Configuration.color_according_to_annotation ) );
         }
         if ( _configuration.doDisplayOption( Configuration.color_branches ) ) {
             addCheckbox( Configuration.color_branches, _configuration.getDisplayTitle( Configuration.color_branches ) );
@@ -1508,74 +1509,74 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.show_tax_code, _configuration.doCheckOption( Configuration.show_tax_code ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_taxonomy_scientific_names ) ) {
-            addCheckbox( Configuration.show_taxonomy_scientific_names, _configuration
-                    .getDisplayTitle( Configuration.show_taxonomy_scientific_names ) );
-            setCheckbox( Configuration.show_taxonomy_scientific_names, _configuration
-                    .doCheckOption( Configuration.show_taxonomy_scientific_names ) );
+            addCheckbox( Configuration.show_taxonomy_scientific_names,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_scientific_names ) );
+            setCheckbox( Configuration.show_taxonomy_scientific_names,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_scientific_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_taxonomy_common_names ) ) {
-            addCheckbox( Configuration.show_taxonomy_common_names, _configuration
-                    .getDisplayTitle( Configuration.show_taxonomy_common_names ) );
-            setCheckbox( Configuration.show_taxonomy_common_names, _configuration
-                    .doCheckOption( Configuration.show_taxonomy_common_names ) );
+            addCheckbox( Configuration.show_taxonomy_common_names,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_common_names ) );
+            setCheckbox( Configuration.show_taxonomy_common_names,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_common_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
-            addCheckbox( Configuration.show_taxonomy_images, _configuration
-                    .getDisplayTitle( Configuration.show_taxonomy_images ) );
-            setCheckbox( Configuration.show_taxonomy_images, _configuration
-                    .doCheckOption( Configuration.show_taxonomy_images ) );
+            addCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_images ) );
+            setCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_images ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_gene_symbols ) ) {
-            addCheckbox( Configuration.show_gene_symbols, _configuration
-                    .getDisplayTitle( Configuration.show_gene_symbols ) );
-            setCheckbox( Configuration.show_gene_symbols, _configuration
-                    .doCheckOption( Configuration.show_gene_symbols ) );
+            addCheckbox( Configuration.show_gene_symbols,
+                         _configuration.getDisplayTitle( Configuration.show_gene_symbols ) );
+            setCheckbox( Configuration.show_gene_symbols,
+                         _configuration.doCheckOption( Configuration.show_gene_symbols ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_gene_names ) ) {
             addCheckbox( Configuration.show_gene_names, _configuration.getDisplayTitle( Configuration.show_gene_names ) );
             setCheckbox( Configuration.show_gene_names, _configuration.doCheckOption( Configuration.show_gene_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_sequence_acc ) ) {
-            addCheckbox( Configuration.show_sequence_acc, _configuration
-                    .getDisplayTitle( Configuration.show_sequence_acc ) );
-            setCheckbox( Configuration.show_sequence_acc, _configuration
-                    .doCheckOption( Configuration.show_sequence_acc ) );
+            addCheckbox( Configuration.show_sequence_acc,
+                         _configuration.getDisplayTitle( Configuration.show_sequence_acc ) );
+            setCheckbox( Configuration.show_sequence_acc,
+                         _configuration.doCheckOption( Configuration.show_sequence_acc ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_annotation ) ) {
             addCheckbox( Configuration.show_annotation, _configuration.getDisplayTitle( Configuration.show_annotation ) );
             setCheckbox( Configuration.show_annotation, _configuration.doCheckOption( Configuration.show_annotation ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_binary_characters ) ) {
-            addCheckbox( Configuration.show_binary_characters, _configuration
-                    .getDisplayTitle( Configuration.show_binary_characters ) );
-            setCheckbox( Configuration.show_binary_characters, _configuration
-                    .doCheckOption( Configuration.show_binary_characters ) );
+            addCheckbox( Configuration.show_binary_characters,
+                         _configuration.getDisplayTitle( Configuration.show_binary_characters ) );
+            setCheckbox( Configuration.show_binary_characters,
+                         _configuration.doCheckOption( Configuration.show_binary_characters ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_binary_character_counts ) ) {
-            addCheckbox( Configuration.show_binary_character_counts, _configuration
-                    .getDisplayTitle( Configuration.show_binary_character_counts ) );
-            setCheckbox( Configuration.show_binary_character_counts, _configuration
-                    .doCheckOption( Configuration.show_binary_character_counts ) );
+            addCheckbox( Configuration.show_binary_character_counts,
+                         _configuration.getDisplayTitle( Configuration.show_binary_character_counts ) );
+            setCheckbox( Configuration.show_binary_character_counts,
+                         _configuration.doCheckOption( Configuration.show_binary_character_counts ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_domain_architectures ) ) {
-            addCheckbox( Configuration.show_domain_architectures, _configuration
-                    .getDisplayTitle( Configuration.show_domain_architectures ) );
-            setCheckbox( Configuration.show_domain_architectures, _configuration
-                    .doCheckOption( Configuration.show_domain_architectures ) );
+            addCheckbox( Configuration.show_domain_architectures,
+                         _configuration.getDisplayTitle( Configuration.show_domain_architectures ) );
+            setCheckbox( Configuration.show_domain_architectures,
+                         _configuration.doCheckOption( Configuration.show_domain_architectures ) );
         }
         if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
-            addCheckbox( Configuration.write_confidence_values, _configuration
-                    .getDisplayTitle( Configuration.write_confidence_values ) );
-            setCheckbox( Configuration.write_confidence_values, _configuration
-                    .doCheckOption( Configuration.write_confidence_values ) );
+            addCheckbox( Configuration.write_confidence_values,
+                         _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
+            setCheckbox( Configuration.write_confidence_values,
+                         _configuration.doCheckOption( Configuration.write_confidence_values ) );
         }
         if ( _configuration.doDisplayOption( Configuration.write_events ) ) {
             addCheckbox( Configuration.write_events, _configuration.getDisplayTitle( Configuration.write_events ) );
             setCheckbox( Configuration.write_events, _configuration.doCheckOption( Configuration.write_events ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_vector_data ) ) {
-            addCheckbox( Configuration.show_vector_data, _configuration
-                    .getDisplayTitle( Configuration.show_vector_data ) );
+            addCheckbox( Configuration.show_vector_data,
+                         _configuration.getDisplayTitle( Configuration.show_vector_data ) );
             setCheckbox( Configuration.show_vector_data, _configuration.doCheckOption( Configuration.show_vector_data ) );
         }
     }
@@ -1694,8 +1695,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         for( final TreePanel tree_panel : _mainpanel.getTreePanels() ) {
             if ( tree_panel != null ) {
                 tree_panel.validate();
-                tree_panel.setParametersForPainting( _mainpanel.getSizeOfViewport().width, _mainpanel
-                        .getSizeOfViewport().height, true );
+                tree_panel.setParametersForPainting( _mainpanel.getSizeOfViewport().width,
+                                                     _mainpanel.getSizeOfViewport().height,
+                                                     true );
                 tree_panel.resetPreferredSize();
                 tree_panel.repaint();
             }

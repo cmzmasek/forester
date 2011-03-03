@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // Copyright (C) 2003-2007 Ethalinda K.S. Cannon
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -94,9 +94,9 @@ import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
-import org.forester.util.WindowsUtils;
 import org.forester.util.ForesterUtil.PhylogenyNodeField;
 import org.forester.util.ForesterUtil.TAXONOMY_EXTRACTION;
+import org.forester.util.WindowsUtils;
 
 class DefaultFilter extends FileFilter {
 
@@ -1098,8 +1098,9 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             return;
         }
-        final MainPanelEdit a = new MainPanelEdit( this, _mainpanel.getCurrentTreePanel(), _mainpanel
-                .getCurrentPhylogeny() );
+        final MainPanelEdit a = new MainPanelEdit( this,
+                                                   _mainpanel.getCurrentTreePanel(),
+                                                   _mainpanel.getCurrentPhylogeny() );
         new Thread( a ).start();
     }
 
@@ -1115,8 +1116,9 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         final Phylogeny phy = _mainpanel.getCurrentPhylogeny().copy();
-        final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer( this, _mainpanel
-                .getCurrentTreePanel(), phy );
+        final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer( this,
+                                                                                  _mainpanel.getCurrentTreePanel(),
+                                                                                  phy );
         new Thread( inferrer ).start();
     }
 
@@ -1130,8 +1132,7 @@ public final class MainFrameApplication extends MainFrame {
                 if ( getMsa() != null ) {
                     final PhylogeneticInferrer inferrer = new PhylogeneticInferrer( getMsa(),
                                                                                     getPhylogeneticInferenceOptions()
-                                                                                            .copy(),
-                                                                                    this );
+                                                                                            .copy(), this );
                     new Thread( inferrer ).start();
                 }
                 else {
@@ -1145,8 +1146,7 @@ public final class MainFrameApplication extends MainFrame {
                 if ( getSeqs() != null ) {
                     final PhylogeneticInferrer inferrer = new PhylogeneticInferrer( getSeqs(),
                                                                                     getPhylogeneticInferenceOptions()
-                                                                                            .copy(),
-                                                                                    this );
+                                                                                            .copy(), this );
                     new Thread( inferrer ).start();
                 }
                 else {
@@ -1374,8 +1374,9 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this, _mainpanel.getCurrentTreePanel(), phy
-                        .copy() );
+                final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this,
+                                                                         _mainpanel.getCurrentTreePanel(),
+                                                                         phy.copy() );
                 new Thread( t ).start();
             }
         }
@@ -1991,8 +1992,11 @@ public final class MainFrameApplication extends MainFrame {
                         ForesterUtil.transferInternalNodeNamesToConfidence( phy );
                     }
                 }
-                Util.addPhylogeniesToTabs( phys, new File( url.getFile() ).getName(), new File( url.getFile() )
-                        .toString(), getConfiguration(), getMainPanel() );
+                Util.addPhylogeniesToTabs( phys,
+                                           new File( url.getFile() ).getName(),
+                                           new File( url.getFile() ).toString(),
+                                           getConfiguration(),
+                                           getMainPanel() );
                 _mainpanel.getControlPanel().showWhole();
             }
         }
@@ -2574,8 +2578,7 @@ class TolFilter extends FileFilter {
     public boolean accept( final File f ) {
         final String file_name = f.getName().trim().toLowerCase();
         return ( file_name.endsWith( ".tol" ) || file_name.endsWith( ".tolxml" ) || file_name.endsWith( ".zip" ) || f
-                .isDirectory() )
-                && ( !file_name.endsWith( ".xml.zip" ) );
+                .isDirectory() ) && ( !file_name.endsWith( ".xml.zip" ) );
     }
 
     @Override

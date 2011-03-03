@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -249,6 +249,7 @@ public final class NHXParser implements PhylogenyParser {
      * @throws NHXFormatException
      * @throws PhylogenyParserException
      */
+    @Override
     public Phylogeny[] parse() throws IOException, NHXFormatException {
         setHasNext( false );
         boolean in_comment = false;
@@ -539,6 +540,7 @@ public final class NHXParser implements PhylogenyParser {
      * @throws IOException
      * @throws PhylogenyParserException
      */
+    @Override
     public void setSource( final Object nhx_source ) throws PhylogenyParserException, IOException {
         if ( nhx_source == null ) {
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
@@ -743,8 +745,8 @@ public final class NHXParser implements PhylogenyParser {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {
                             node_to_annotate.getNodeData().setSequence( new Sequence() );
                         }
-                        node_to_annotate.getNodeData().getSequence().setDomainArchitecture( new DomainArchitecture( s
-                                .substring( 3 ) ) );
+                        node_to_annotate.getNodeData().getSequence()
+                                .setDomainArchitecture( new DomainArchitecture( s.substring( 3 ) ) );
                     }
                     else if ( s.startsWith( NHXtags.NODE_IDENTIFIER ) ) {
                         node_to_annotate.getNodeData().setNodeIdentifier( new Identifier( s.substring( 3 ) ) );

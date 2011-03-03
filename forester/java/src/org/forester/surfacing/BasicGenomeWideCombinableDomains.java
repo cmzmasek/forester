@@ -27,10 +27,10 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     private final static NumberFormat                    FORMATTER                                  = new DecimalFormat( "0.0E0" );
     private static final Comparator<CombinableDomains>   DESCENDING_KEY_DOMAIN_COUNT_ORDER          = new Comparator<CombinableDomains>() {
 
+                                                                                                        @Override
                                                                                                         public int compare( final CombinableDomains d1,
                                                                                                                             final CombinableDomains d2 ) {
-                                                                                                            if ( d1
-                                                                                                                    .getKeyDomainCount() < d2
+                                                                                                            if ( d1.getKeyDomainCount() < d2
                                                                                                                     .getKeyDomainCount() ) {
                                                                                                                 return 1;
                                                                                                             }
@@ -51,10 +51,10 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                                                                                                     };
     private static final Comparator<CombinableDomains>   DESCENDING_KEY_DOMAIN_PROTEINS_COUNT_ORDER = new Comparator<CombinableDomains>() {
 
+                                                                                                        @Override
                                                                                                         public int compare( final CombinableDomains d1,
                                                                                                                             final CombinableDomains d2 ) {
-                                                                                                            if ( d1
-                                                                                                                    .getKeyDomainProteinsCount() < d2
+                                                                                                            if ( d1.getKeyDomainProteinsCount() < d2
                                                                                                                     .getKeyDomainProteinsCount() ) {
                                                                                                                 return 1;
                                                                                                             }
@@ -75,10 +75,10 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                                                                                                     };
     private static final Comparator<CombinableDomains>   DESCENDING_COMBINATIONS_COUNT_ORDER        = new Comparator<CombinableDomains>() {
 
+                                                                                                        @Override
                                                                                                         public int compare( final CombinableDomains d1,
                                                                                                                             final CombinableDomains d2 ) {
-                                                                                                            if ( d1
-                                                                                                                    .getNumberOfCombinableDomains() < d2
+                                                                                                            if ( d1.getNumberOfCombinableDomains() < d2
                                                                                                                     .getNumberOfCombinableDomains() ) {
                                                                                                                 return 1;
                                                                                                             }
@@ -111,14 +111,17 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
         _combinable_domains_map.put( key, cdc );
     }
 
+    @Override
     public boolean contains( final DomainId key_id ) {
         return _combinable_domains_map.containsKey( key_id );
     }
 
+    @Override
     public CombinableDomains get( final DomainId key_id ) {
         return _combinable_domains_map.get( key_id );
     }
 
+    @Override
     public SortedMap<DomainId, CombinableDomains> getAllCombinableDomainsIds() {
         return _combinable_domains_map;
     }
@@ -164,10 +167,12 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
         return stats;
     }
 
+    @Override
     public int getSize() {
         return _combinable_domains_map.size();
     }
 
+    @Override
     public Species getSpecies() {
         return _species;
     }
@@ -191,6 +196,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
 
     // Produces something like: 
     // 2-oxoacid_dh      5       5       2       4.8E-67   Biotin_lipoyl [4], E3_binding [3]
+    @Override
     public StringBuilder toStringBuilder( final GenomeWideCombinableDomainsSortOrder sort_order ) {
         final StringBuilder sb = new StringBuilder();
         final List<CombinableDomains> combinable_domains = new ArrayList<CombinableDomains>();
@@ -213,14 +219,12 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getKeyDomainCount() ), 8, ' ', false ) );
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getKeyDomainProteinsCount() ), 8, ' ', false ) );
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getNumberOfCombinableDomains() ), 8, ' ', false ) );
-            sb
-                    .append( ForesterUtil
-                            .pad( new StringBuffer( ""
-                                          + FORMATTER
-                                                  .format( cb.getKeyDomainConfidenceDescriptiveStatistics().median() ) ),
-                                  10,
-                                  ' ',
-                                  false ) );
+            sb.append( ForesterUtil.pad( new StringBuffer( ""
+                                                 + FORMATTER.format( cb.getKeyDomainConfidenceDescriptiveStatistics()
+                                                         .median() ) ),
+                                         10,
+                                         ' ',
+                                         false ) );
             sb.append( cb.getCombiningDomainIdsAsStringBuilder() );
             sb.append( ForesterUtil.getLineSeparator() );
         }

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -48,10 +48,12 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         setType( type );
     }
 
+    @Override
     public StringBuffer asSimpleText() {
         return new StringBuffer().append( ForesterUtil.FORMATTER_6.format( getValue() ) );
     }
 
+    @Override
     public StringBuffer asText() {
         final StringBuffer sb = new StringBuffer();
         if ( !ForesterUtil.isEmpty( getType() ) ) {
@@ -71,6 +73,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         return getType().compareToIgnoreCase( confidence.getType() );
     }
 
+    @Override
     public PhylogenyData copy() {
         return new Confidence( getValue(), getType() );
     }
@@ -88,6 +91,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         setType( "" );
     }
 
+    @Override
     public boolean isEqual( final PhylogenyData confidence ) {
         if ( confidence == null ) {
             return false;
@@ -113,6 +117,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         _value = value;
     }
 
+    @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
         sb.append( NHXtags.SUPPORT );
@@ -120,6 +125,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         return sb;
     }
 
+    @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         if ( getValue() == CONFIDENCE_DEFAULT_VALUE ) {
             return;

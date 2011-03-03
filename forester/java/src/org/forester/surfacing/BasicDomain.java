@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -120,6 +120,7 @@ public class BasicDomain implements Domain {
         _per_domain_score = per_domain_score;
     }
 
+    @Override
     public void addGoId( final GoId go_id ) {
         getDomainId().getGoIds().add( go_id );
     }
@@ -129,6 +130,7 @@ public class BasicDomain implements Domain {
      * insensitive) and their numbers.
      * 
      */
+    @Override
     public int compareTo( final Domain domain ) {
         if ( domain.getClass() != this.getClass() ) {
             throw new IllegalArgumentException( "attempt to compare [" + domain.getClass() + "] to " + "["
@@ -162,22 +164,27 @@ public class BasicDomain implements Domain {
         }
     }
 
+    @Override
     public DomainId getDomainId() {
         return _id;
     }
 
+    @Override
     public int getFrom() {
         return _from;
     }
 
+    @Override
     public GoId getGoId( final int i ) {
         return getDomainId().getGoIds().get( i );
     }
 
+    @Override
     public short getNumber() {
         return _number;
     }
 
+    @Override
     public int getNumberOfGoIds() {
         return getDomainId().getGoIds().size();
     }
@@ -192,18 +199,22 @@ public class BasicDomain implements Domain {
         return _per_domain_score;
     }
 
+    @Override
     public double getPerSequenceEvalue() {
         return _per_sequence_evalue;
     }
 
+    @Override
     public double getPerSequenceScore() {
         return _per_sequence_score;
     }
 
+    @Override
     public int getTo() {
         return _to;
     }
 
+    @Override
     public short getTotalCount() {
         return _total_count;
     }

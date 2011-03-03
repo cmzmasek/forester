@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -213,8 +213,9 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         top.add( category );
         addSubelement( category, NODE_NAME, phylogeny_node.getName() );
         if ( phylogeny_node.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
-            addSubelement( category, NODE_BRANCH_LENGTH, ForesterUtil.FORMATTER_6.format( phylogeny_node
-                    .getDistanceToParent() ) );
+            addSubelement( category,
+                           NODE_BRANCH_LENGTH,
+                           ForesterUtil.FORMATTER_6.format( phylogeny_node.getDistanceToParent() ) );
         }
         if ( phylogeny_node.getBranchData().isHasConfidences() ) {
             for( final PhylogenyData conf : phylogeny_node.getBranchData().getConfidences() ) {
@@ -223,8 +224,9 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
         if ( !phylogeny_node.isExternal() ) {
             addSubelement( category, "Children", String.valueOf( phylogeny_node.getNumberOfDescendants() ) );
-            addSubelement( category, "External children", String.valueOf( phylogeny_node.getAllExternalDescendants()
-                    .size() ) );
+            addSubelement( category,
+                           "External children",
+                           String.valueOf( phylogeny_node.getAllExternalDescendants().size() ) );
             final SortedMap<Taxonomy, Integer> distinct_tax = PhylogenyMethods
                     .obtainDistinctTaxonomyCounts( phylogeny_node );
             if ( distinct_tax != null ) {

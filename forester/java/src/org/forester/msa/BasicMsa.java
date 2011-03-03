@@ -5,7 +5,7 @@
 // Copyright (C) 2010 Christian M Zmasek
 // Copyright (C) 2010 Sanford-Burnham Medical Research Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -99,10 +99,12 @@ public class BasicMsa implements Msa {
         return _type;
     }
 
+    @Override
     public void setIdentifier( final int row, final Object id ) {
         _identifiers[ row ] = id;
     }
 
+    @Override
     public void setResidueAt( final int row, final int col, final char residue ) {
         _data[ row ][ col ] = residue;
     }
@@ -121,6 +123,7 @@ public class BasicMsa implements Msa {
         return sb.toString();
     }
 
+    @Override
     public void write( final Writer w ) throws IOException {
         final int max = determineMaxIdLength() + 1;
         for( int row = 0; row < _data.length; ++row ) {

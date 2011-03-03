@@ -4,7 +4,7 @@
 //
 // Copyright (C) 2008-2010 Christian M. Zmasek
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -14,7 +14,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -874,9 +874,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
                 && _print_black_and_white_cbmi.isSelected() );
-        options
-                .setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
-                        && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
+        options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
+                && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
         options.setExtractPfamTaxonomyCodesInNhParsing( ( _extract_pfam_style_tax_codes_cbmi != null )
                 && _extract_pfam_style_tax_codes_cbmi.isSelected() );
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
@@ -1064,8 +1063,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
         sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
         sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
-        sb
-                .append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
+        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
         sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
         sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
         sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
@@ -1076,8 +1074,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         sb.append( "Memory problems (Java heap space error)\n" );
         sb.append( "---------------------------------------\n" );
         sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
-        sb
-                .append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
+        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
         sb.append( "the '-Xmx' Java command line option. For example:\n" );
         sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
         if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {

@@ -47,6 +47,7 @@ public class TaxonomyParser implements PhylogenyDataPhyloXmlParser {
     private TaxonomyParser() {
     }
 
+    @Override
     public Taxonomy parse( final XmlElement element ) throws PhylogenyParserException {
         final Taxonomy taxonomy = new Taxonomy();
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {

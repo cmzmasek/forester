@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -72,6 +72,7 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
      * 
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean hasNext() {
         return _has_next;
     }
@@ -79,6 +80,7 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
     /**
      * Advances the Iterator by one.
      */
+    @Override
     public PhylogenyNode next() throws NoSuchElementException {
         if ( !hasNext() ) {
             throw new NoSuchElementException( "Attempt to call \"next()\" on iterator which has no more next elements." );
@@ -109,6 +111,7 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
      * Not supported.
      * 
      */
+    @Override
     public void remove() {
         throw new UnsupportedOperationException();
     }
@@ -116,6 +119,7 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
     /**
      * DOCUMENT ME!
      */
+    @Override
     public void reset() {
         setHasNext( true );
         getStack().clear();

@@ -7,7 +7,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -51,6 +51,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         _treat_as_binary_comparison = treat_as_binary_comparison;
     }
 
+    @Override
     public SortedSet<DomainSimilarity> calculateSimilarities( final PairwiseDomainSimilarityCalculator pairwise_calculator,
                                                               final List<GenomeWideCombinableDomains> cdc_list,
                                                               final boolean ignore_domains_without_combinations_in_any_genome,
@@ -142,8 +143,8 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         }
         final DescriptiveStatistics stat = new BasicDescriptiveStatistics();
         final SortedMap<Species, SpeciesSpecificDomainSimilariyData> species_data = new TreeMap<Species, SpeciesSpecificDomainSimilariyData>();
-        species_data.put( domains_list.get( 0 ).getSpecies(), createSpeciesSpecificDomainSimilariyData( domains_list
-                .get( 0 ) ) );
+        species_data.put( domains_list.get( 0 ).getSpecies(),
+                          createSpeciesSpecificDomainSimilariyData( domains_list.get( 0 ) ) );
         int max_difference_in_counts = 0;
         int max_difference = 0;
         final boolean is_domain_combination_based = pairwise_calculator instanceof CombinationsBasedPairwiseDomainSimilarityCalculator;
@@ -231,9 +232,10 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
     }
 
     private static SpeciesSpecificDomainSimilariyData createSpeciesSpecificDomainSimilariyData( final CombinableDomains cd ) {
-        final SpeciesSpecificDomainSimilariyData sd = new PrintableSpeciesSpecificDomainSimilariyData( cd
-                .getKeyDomainProteinsCount(), cd.getKeyDomainCount(), cd.getNumberOfCombinableDomains(), cd
-                .getKeyDomainConfidenceDescriptiveStatistics() );
+        final SpeciesSpecificDomainSimilariyData sd = new PrintableSpeciesSpecificDomainSimilariyData( cd.getKeyDomainProteinsCount(),
+                                                                                                       cd.getKeyDomainCount(),
+                                                                                                       cd.getNumberOfCombinableDomains(),
+                                                                                                       cd.getKeyDomainConfidenceDescriptiveStatistics() );
         for( final DomainId domain : cd.getCombinableDomains() ) {
             sd.addProteinsExhibitingCombinationCount( domain, cd.getNumberOfProteinsExhibitingCombination( domain ) );
         }

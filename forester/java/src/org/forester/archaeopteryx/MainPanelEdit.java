@@ -5,7 +5,7 @@
 // Copyright (C) 2010 Christian M Zmasek
 // Copyright (C) 2010 Sanford-Burnham Medical Research Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -66,15 +66,13 @@ public class MainPanelEdit implements Runnable {
             if ( ( node.getNodeData().getSequences() != null ) && !node.getNodeData().getSequences().isEmpty() ) {
                 for( final Sequence seq : node.getNodeData().getSequences() ) {
                     if ( ( ( seq.getAccession() != null ) && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) && ( seq
-                            .getAnnotations() == null ) )
-                            || seq.getAnnotations().isEmpty() ) {
+                            .getAnnotations() == null ) ) || seq.getAnnotations().isEmpty() ) {
                         final Accession acc = seq.getAccession();
                         try {
                             final URL url = new URL( "http://www.ebi.ac.uk/QuickGO/GAnnotation?protein="
                                     + acc.getValue() + "&format=tsv" );
                             final HttpURLConnection url_connection = ( HttpURLConnection ) url.openConnection();
-                            final BufferedReader br = new BufferedReader( new InputStreamReader( url_connection
-                                    .getInputStream() ) );
+                            final BufferedReader br = new BufferedReader( new InputStreamReader( url_connection.getInputStream() ) );
                             final List<String> columns = Arrays.asList( br.readLine().split( "\t" ) );
                             System.out.println( columns );
                             final int db_index = columns.indexOf( DB );

@@ -7,7 +7,7 @@
 // Copyright (C) 2000-2001 Washington University School of Medicine
 // and Howard Hughes Medical Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -110,6 +110,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      * @param n
      *            the PhylogenyNode to add
      */
+    @Override
     final public void addAsChild( final PhylogenyNodeI node ) {
         final PhylogenyNode n = ( PhylogenyNode ) node;
         addChildNode( n );
@@ -128,6 +129,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         getDescendants().add( child );
     }
 
+    @Override
     final public int compareTo( final PhylogenyNode o ) {
         final PhylogenyNode n = o;
         if ( ( getName() == null ) || ( n.getName() == null ) ) {
@@ -300,6 +302,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      * @throws IllegalArgumentException
      *             if n is out of bounds
      */
+    @Override
     final public PhylogenyNode getChildNode( final int i ) {
         if ( isExternal() ) {
             throw new UnsupportedOperationException( "attempt to get the child node of an external node." );
@@ -371,6 +374,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      * Returns the length of the branch leading to the _parent of this
      * PhylogenyNode (double).
      */
+    @Override
     final public double getDistanceToParent() {
         return _distance_parent;
     }
@@ -458,6 +462,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     /**
      * Returns the ID (int) of this PhylogenyNode.
      */
+    @Override
     final public int getId() {
         return _id;
     }
@@ -465,6 +470,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     /**
      * Returns the name of this node.
      */
+    @Override
     final public String getName() {
         return getNodeData().getNodeName();
     }
@@ -809,6 +815,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      * Sets the length of the branch leading to the _parent of this
      * PhylogenyNode to double d.
      */
+    @Override
     final public void setDistanceToParent( final double d ) {
         _distance_parent = d;
     }
@@ -845,6 +852,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     /**
      * Sets the name of this node.
      */
+    @Override
     final public void setName( final String node_name ) {
         getNodeData().setNodeName( node_name );
     }
@@ -864,6 +872,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     /**
      * Sets the _parent PhylogenyNode of this PhylogenyNode to n.
      */
+    @Override
     final public void setParent( final PhylogenyNode n ) {
         _parent = n;
     }

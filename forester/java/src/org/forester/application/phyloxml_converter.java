@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -47,29 +47,31 @@ import org.forester.util.ForesterUtil.PhylogenyNodeField;
 
 public class phyloxml_converter {
 
-    final static private String  HELP_OPTION_1                    = "help";
-    final static private String  HELP_OPTION_2                    = "h";
-    final static private String  FIELD_OPTION                     = "f";
-    final static private String  FIELD_CLADE_NAME                 = "nn";
-    final static private String  FIELD_TAXONOMY_CODE              = "tc";
-    final static private String  FIELD_TAXONOMY_SCI_NAME          = "sn";
-    final static private String  FIELD_TAXONOMY_COMM_NAME         = "cn";
-    final static private String  FIELD_SEQUENCE_GENE_NAME         = "gn";
-    final static private String  FIELD_SEQUENCE_SYMBOL            = "sy";
-    final static private String  FIELD_DUMMY                      = "dummy";
-    final static private String  INTERNAL_NAMES_ARE_BOOT_SUPPPORT = "i";
-    final static private String  MIDPOINT_REROOT                  = "m";
-    final static private String  EXTRACT_TAXONOMY                 = "xt";
-    final static private String  EXTRACT_TAXONOMY_PF              = "xp";
-    final static private String  ORDER_SUBTREES                   = "o";
-    final static private String  NO_TREE_LEVEL_INDENDATION        = "ni";
-    final static private String  REPLACE_UNDER_SCORES             = "ru";
-    final static private String  PRG_NAME                         = "phyloxml_converter";
-    final static private String  PRG_VERSION                      = "1.21";
-    final static private String  PRG_DATE                         = "2010.10.02";
-    final static private String  E_MAIL                           = "czmasek@burnham.org";
-    final static private String  WWW                              = "www.phylosoft.org/forester/";
-    final static private boolean SPECIAL                          = false;
+    final static private String  HELP_OPTION_1                     = "help";
+    final static private String  HELP_OPTION_2                     = "h";
+    final static private String  FIELD_OPTION                      = "f";
+    final static private String  FIELD_CLADE_NAME                  = "nn";
+    final static private String  FIELD_TAXONOMY_CODE               = "tc";
+    final static private String  FIELD_TAXONOMY_SCI_NAME           = "sn";
+    final static private String  FIELD_TAXONOMY_COMM_NAME          = "cn";
+    final static private String  FIELD_SEQUENCE_GENE_NAME          = "gn";
+    final static private String  FIELD_SEQUENCE_SYMBOL             = "sy";
+    final static private String  FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1 = "i1";
+    final static private String  FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2 = "i2";
+    final static private String  FIELD_DUMMY                       = "dummy";
+    final static private String  INTERNAL_NAMES_ARE_BOOT_SUPPPORT  = "i";
+    final static private String  MIDPOINT_REROOT                   = "m";
+    final static private String  EXTRACT_TAXONOMY                  = "xt";
+    final static private String  EXTRACT_TAXONOMY_PF               = "xp";
+    final static private String  ORDER_SUBTREES                    = "o";
+    final static private String  NO_TREE_LEVEL_INDENDATION         = "ni";
+    final static private String  REPLACE_UNDER_SCORES              = "ru";
+    final static private String  PRG_NAME                          = "phyloxml_converter";
+    final static private String  PRG_VERSION                       = "1.30";
+    final static private String  PRG_DATE                          = "2011.03.01";
+    final static private String  E_MAIL                            = "phylosoft@gmail.com";
+    final static private String  WWW                               = "www.phylosoft.org/forester/";
+    final static private boolean SPECIAL                           = false;
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
@@ -141,6 +143,12 @@ public class phyloxml_converter {
         }
         else if ( field_option_value.equals( FIELD_SEQUENCE_SYMBOL ) ) {
             field = PhylogenyNodeField.SEQUENCE_SYMBOL;
+        }
+        else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1 ) ) {
+            field = PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1;
+        }
+        else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2 ) ) {
+            field = PhylogenyNodeField.TAXONOMY_ID_UNIPROT_2;
         }
         else if ( field_option_value.equals( FIELD_DUMMY ) ) {
         }
@@ -353,6 +361,14 @@ public class phyloxml_converter {
         System.out.println( "   " + FIELD_TAXONOMY_COMM_NAME + ": transfer name to taxonomy common name" );
         System.out.println( "   " + FIELD_SEQUENCE_GENE_NAME + ": transfer name to sequence name" );
         System.out.println( "   " + FIELD_SEQUENCE_SYMBOL + ": transfer name to sequence symbol" );
+        System.out
+                .println( "   "
+                        + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
+                        + ": transfer/split name to taxonomy uniprot identifier\n       (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")" );
+        System.out
+                .println( "   "
+                        + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
+                        + ": transfer/split name to taxonomy uniprot identifier\n       (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println( " -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT

@@ -7,7 +7,7 @@
 // Copyright (C) 2000-2001 Washington University School of Medicine
 // and Howard Hughes Medical Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -86,14 +86,17 @@ public class NodeData implements PhylogenyData {
         _taxonomies.add( taxonomy );
     }
 
+    @Override
     public StringBuffer asSimpleText() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public StringBuffer asText() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public PhylogenyData copy() {
         final NodeData new_data = new NodeData();
         new_data.setNodeName( getNodeName() );
@@ -237,6 +240,7 @@ public class NodeData implements PhylogenyData {
         return _taxonomies.get( index );
     }
 
+    @Override
     public boolean isEqual( final PhylogenyData data ) {
         throw new UnsupportedOperationException();
     }
@@ -413,6 +417,7 @@ public class NodeData implements PhylogenyData {
         }
     }
 
+    @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
         if ( isHasNodeIdentifier() ) {
@@ -433,6 +438,7 @@ public class NodeData implements PhylogenyData {
         return sb;
     }
 
+    @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         if ( isHasNodeIdentifier() ) {
             writer.write( ForesterUtil.LINE_SEPARATOR );

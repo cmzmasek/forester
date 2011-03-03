@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -85,6 +85,7 @@ public final class SurfacingUtil {
     private final static NumberFormat       FORMATTER_3                      = new DecimalFormat( "0.000" );
     private static final Comparator<Domain> ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
 
+                                                                                 @Override
                                                                                  public int compare( final Domain d1,
                                                                                                      final Domain d2 ) {
                                                                                      if ( d1.getPerSequenceEvalue() < d2
@@ -549,12 +550,16 @@ public final class SurfacingUtil {
             SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(), null, outfile_name
                     + surfacing_old.PARSIMONY_OUTPUT_FITCH_PRESENT_BC, sep, ForesterUtil.LINE_SEPARATOR, null );
             if ( all_binary_domains_combination_gained_fitch != null ) {
-                collectChangedDomainCombinationsFromBinaryStatesMatrixAsListToFile( domain_parsimony
-                        .getGainLossMatrix(), dc_type, all_binary_domains_combination_gained_fitch, true );
+                collectChangedDomainCombinationsFromBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
+                                                                                    dc_type,
+                                                                                    all_binary_domains_combination_gained_fitch,
+                                                                                    true );
             }
             if ( all_binary_domains_combination_lost_fitch != null ) {
-                collectChangedDomainCombinationsFromBinaryStatesMatrixAsListToFile( domain_parsimony
-                        .getGainLossMatrix(), dc_type, all_binary_domains_combination_lost_fitch, false );
+                collectChangedDomainCombinationsFromBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
+                                                                                    dc_type,
+                                                                                    all_binary_domains_combination_lost_fitch,
+                                                                                    false );
             }
             if ( output_binary_domain_combinations_for_graphs ) {
                 SurfacingUtil
@@ -644,8 +649,9 @@ public final class SurfacingUtil {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         System.out.println();
-        writeToNexus( outfile_name + surfacing_old.NEXUS_SECONDARY_FEATURES, secondary_features_parsimony
-                .createMatrixOfSecondaryFeaturePresenceOrAbsence( null ), phylogeny );
+        writeToNexus( outfile_name + surfacing_old.NEXUS_SECONDARY_FEATURES,
+                      secondary_features_parsimony.createMatrixOfSecondaryFeaturePresenceOrAbsence( null ),
+                      phylogeny );
         final Phylogeny local_phylogeny_copy = phylogeny.copy();
         secondary_features_parsimony.executeDolloParsimonyOnSecondaryFeatures( mapping_results_map );
         SurfacingUtil.writeMatrixToFile( secondary_features_parsimony.getGainLossMatrix(), outfile_name
@@ -1027,21 +1033,29 @@ public final class SurfacingUtil {
             ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams without mapping to proc. or func. : "
                     + pfams_without_mappings_to_bp_or_mf_counter + " ["
                     + ( 100 * pfams_without_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with a mapping                    : "
-                    + pfams_with_mappings_counter + " ["
-                    + ( 100 * pfams_with_mappings_counter / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+                                         "Pfams with a mapping                    : " + pfams_with_mappings_counter
+                                                 + " ["
+                                                 + ( 100 * pfams_with_mappings_counter / all_pfams_encountered.size() )
+                                                 + "%]" );
             ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with a mapping to proc. or func.  : "
                     + pfams_with_mappings_to_bp_or_mf_counter + " ["
                     + ( 100 * pfams_with_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with mapping to biological process: "
-                    + biological_process_counter + " ["
-                    + ( 100 * biological_process_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with mapping to molecular function: "
-                    + molecular_function_counter + " ["
-                    + ( 100 * molecular_function_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with mapping to cellular component: "
-                    + cellular_component_counter + " ["
-                    + ( 100 * cellular_component_counter / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+                                         "Pfams with mapping to biological process: " + biological_process_counter
+                                                 + " ["
+                                                 + ( 100 * biological_process_counter / all_pfams_encountered.size() )
+                                                 + "%]" );
+            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+                                         "Pfams with mapping to molecular function: " + molecular_function_counter
+                                                 + " ["
+                                                 + ( 100 * molecular_function_counter / all_pfams_encountered.size() )
+                                                 + "%]" );
+            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+                                         "Pfams with mapping to cellular component: " + cellular_component_counter
+                                                 + " ["
+                                                 + ( 100 * cellular_component_counter / all_pfams_encountered.size() )
+                                                 + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Sum of Pfams encountered                : " + all_pfams_encountered.size() );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
@@ -1662,8 +1676,7 @@ public final class SurfacingUtil {
             }
             else {
                 per_genome_domain_promiscuity_statistics_writer.write( FORMATTER_3.format( stats
-                        .sampleStandardDeviation() )
-                        + "\t" );
+                        .sampleStandardDeviation() ) + "\t" );
             }
             per_genome_domain_promiscuity_statistics_writer.write( FORMATTER_3.format( stats.median() ) + "\t" );
             per_genome_domain_promiscuity_statistics_writer.write( ( int ) stats.getMin() + "\t" );
@@ -2397,18 +2410,20 @@ public final class SurfacingUtil {
     }
 
     private static void writeToNexus( final String outfile_name, final DomainParsimonyCalculator domain_parsimony ) {
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS, domain_parsimony
-                .createMatrixOfDomainPresenceOrAbsence() );
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS, domain_parsimony
-                .createMatrixOfBinaryDomainCombinationPresenceOrAbsence() );
+        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS,
+                      domain_parsimony.createMatrixOfDomainPresenceOrAbsence() );
+        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
+                      domain_parsimony.createMatrixOfBinaryDomainCombinationPresenceOrAbsence() );
     }
 
     private static void writeToNexus( final String outfile_name,
                                       final DomainParsimonyCalculator domain_parsimony,
                                       final Phylogeny phylogeny ) {
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS, domain_parsimony
-                .createMatrixOfDomainPresenceOrAbsence(), phylogeny );
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS, domain_parsimony
-                .createMatrixOfBinaryDomainCombinationPresenceOrAbsence(), phylogeny );
+        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS,
+                      domain_parsimony.createMatrixOfDomainPresenceOrAbsence(),
+                      phylogeny );
+        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
+                      domain_parsimony.createMatrixOfBinaryDomainCombinationPresenceOrAbsence(),
+                      phylogeny );
     }
 }

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -42,11 +42,11 @@ import org.forester.util.ForesterUtil;
 
 public class sdix {
 
-    final static private String HELP_OPTION_1   = "help";
-    final static private String HELP_OPTION_2   = "h";
-    final static private String PRG_NAME        = "sdix";
-    final static private String PRG_VERSION     = "0.001 alpha";
-    final static private String PRG_DATE        = "2009.10.14";
+    final static private String HELP_OPTION_1 = "help";
+    final static private String HELP_OPTION_2 = "h";
+    final static private String PRG_NAME      = "sdix";
+    final static private String PRG_VERSION   = "0.001 alpha";
+    final static private String PRG_DATE      = "2009.10.14";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
@@ -114,8 +114,9 @@ public class sdix {
             species_trees = factory.create( species_trees_file, new PhyloXmlParser() );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to read species trees from [" + species_trees_file + "] ["
-                    + e.getMessage() + "]" );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to read species trees from [" + species_trees_file + "] ["
+                                             + e.getMessage() + "]" );
         }
         if ( ( species_trees == null ) || ( species_trees.length < 1 ) ) {
             ForesterUtil.fatalError( PRG_NAME, "failed to read species trees from [" + species_trees_file + "]" );
@@ -124,6 +125,7 @@ public class sdix {
                 + species_trees_file + "]" );
         final FilenameFilter filter = new FilenameFilter() {
 
+            @Override
             public boolean accept( final File dir, final String name ) {
                 return ( !name.startsWith( "." ) && !name.startsWith( "00_" ) && name.endsWith( ".xml" ) );
             }

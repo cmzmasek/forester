@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -130,8 +130,7 @@ public class DolloParsimony {
     private Map<PhylogenyNode, BinaryStates> getStatesForCharacter( final Phylogeny p,
                                                                     final CharacterStateMatrix<BinaryStates> matrix,
                                                                     final int character_index ) {
-        final Map<PhylogenyNode, BinaryStates> states = new HashMap<PhylogenyNode, BinaryStates>( matrix
-                .getNumberOfIdentifiers() );
+        final Map<PhylogenyNode, BinaryStates> states = new HashMap<PhylogenyNode, BinaryStates>( matrix.getNumberOfIdentifiers() );
         for( int indentifier_index = 0; indentifier_index < matrix.getNumberOfIdentifiers(); ++indentifier_index ) {
             final BinaryStates state = matrix.getState( indentifier_index, character_index );
             if ( state == null ) {

@@ -7,7 +7,7 @@
 // Copyright (C) 2000-2001 Washington University School of Medicine
 // and Howard Hughes Medical Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -89,14 +89,17 @@ public class PhylogenyBranch implements Edge {
         }
     }
 
+    @Override
     public PhylogenyData getData() {
         return _data;
     }
 
+    @Override
     public PhylogenyNode getFirstNode() {
         return _node_1;
     }
 
+    @Override
     public PhylogenyNode getSecondNode() {
         return _node_2;
     }

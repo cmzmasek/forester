@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -116,8 +116,8 @@ final class Util {
                         }
                         String suffix = "";
                         if ( my_name_for_file.indexOf( '.' ) > 0 ) {
-                            suffix = my_name_for_file.substring( my_name_for_file.lastIndexOf( '.' ), my_name_for_file
-                                    .length() );
+                            suffix = my_name_for_file.substring( my_name_for_file.lastIndexOf( '.' ),
+                                                                 my_name_for_file.length() );
                             my_name_for_file = my_name_for_file.substring( 0, my_name_for_file.lastIndexOf( '.' ) );
                         }
                         if ( !ForesterUtil.isEmpty( my_name_for_file ) ) {
@@ -300,8 +300,8 @@ final class Util {
                     n.getBranchData().setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
                     final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
                     for( final PhylogenyNode desc : descs ) {
-                        desc.getBranchData().setBranchColor( new BranchColor( tree_panel
-                                .calculateTaxonomyBasedColor( tax ) ) );
+                        desc.getBranchData()
+                                .setBranchColor( new BranchColor( tree_panel.calculateTaxonomyBasedColor( tax ) ) );
                     }
                 }
             }

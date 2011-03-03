@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -49,6 +49,7 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public int compareTo( final Domain domain ) {
         if ( this == domain ) {
             return 0;
@@ -56,10 +57,12 @@ public class SimpleDomain implements Domain {
         return getDomainId().compareTo( domain.getDomainId() );
     }
 
+    @Override
     public DomainId getDomainId() {
         return _id;
     }
 
+    @Override
     public int getFrom() {
         throw new RuntimeException( "method not implemented" );
     }
@@ -73,6 +76,7 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public short getNumber() {
         throw new RuntimeException( "method not implemented" );
     }
@@ -92,10 +96,12 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public double getPerSequenceEvalue() {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public double getPerSequenceScore() {
         throw new RuntimeException( "method not implemented" );
     }
@@ -104,10 +110,12 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public int getTo() {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public short getTotalCount() {
         throw new RuntimeException( "method not implemented" );
     }

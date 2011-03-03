@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -213,8 +213,7 @@ public class FitchParsimony<STATE_TYPE> {
     private Map<PhylogenyNode, STATE_TYPE> getStatesForCharacterForTraceback( final Phylogeny p,
                                                                               final CharacterStateMatrix<STATE_TYPE> matrix,
                                                                               final int character_index ) {
-        final Map<PhylogenyNode, STATE_TYPE> states = new HashMap<PhylogenyNode, STATE_TYPE>( matrix
-                .getNumberOfIdentifiers() );
+        final Map<PhylogenyNode, STATE_TYPE> states = new HashMap<PhylogenyNode, STATE_TYPE>( matrix.getNumberOfIdentifiers() );
         for( int indentifier_index = 0; indentifier_index < matrix.getNumberOfIdentifiers(); ++indentifier_index ) {
             final STATE_TYPE state = matrix.getState( indentifier_index, character_index );
             if ( state == null ) {
@@ -308,8 +307,7 @@ public class FitchParsimony<STATE_TYPE> {
                                                              .getName() );
             getInternalStatesMatrixPriorToTraceback().setIdentifier( identifier_index,
                                                                      ForesterUtil.isEmpty( node.getName() ) ? node
-                                                                             .getId()
-                                                                             + "" : node.getName() );
+                                                                             .getId() + "" : node.getName() );
             ++identifier_index;
         }
         for( int character_index = 0; character_index < external_node_states_matrix.getNumberOfCharacters(); ++character_index ) {
@@ -416,7 +414,7 @@ public class FitchParsimony<STATE_TYPE> {
                 else if ( current_binary_state == ABSENT ) {//new
                     setGainLossState( character_state_column, current_node, UNCHANGED_ABSENT );//new
                 }//new
-                // setGainLossState( character_state_column, current_node, UNKNOWN_GAIN_LOSS );
+                 // setGainLossState( character_state_column, current_node, UNKNOWN_GAIN_LOSS );
             }
         }
     }

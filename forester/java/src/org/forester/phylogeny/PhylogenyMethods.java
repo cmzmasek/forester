@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -894,8 +894,10 @@ public class PhylogenyMethods {
                         blue += child_color.getBlue();
                     }
                 }
-                setBranchColorValue( node, new Color( ForesterUtil.roundToInt( red / n ), ForesterUtil
-                        .roundToInt( green / n ), ForesterUtil.roundToInt( blue / n ) ) );
+                setBranchColorValue( node,
+                                     new Color( ForesterUtil.roundToInt( red / n ),
+                                                ForesterUtil.roundToInt( green / n ),
+                                                ForesterUtil.roundToInt( blue / n ) ) );
             }
         }
     }
@@ -913,8 +915,8 @@ public class PhylogenyMethods {
             parent.removeChildNode( remove_me );
             for( final PhylogenyNode desc : descs ) {
                 parent.addAsChild( desc );
-                desc.setDistanceToParent( addPhylogenyDistances( remove_me.getDistanceToParent(), desc
-                        .getDistanceToParent() ) );
+                desc.setDistanceToParent( addPhylogenyDistances( remove_me.getDistanceToParent(),
+                                                                 desc.getDistanceToParent() ) );
             }
             remove_me.setParent( null );
             phylogeny.setIdHash( null );

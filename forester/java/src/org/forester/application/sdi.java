@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -130,16 +130,18 @@ public final class sdi {
             species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( sdi.PRG_NAME, "Failed to read species tree from \"" + gene_tree_file + "\" ["
-                    + e.getMessage() + "]" );
+            ForesterUtil.fatalError( sdi.PRG_NAME,
+                                     "Failed to read species tree from \"" + gene_tree_file + "\" [" + e.getMessage()
+                                             + "]" );
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             gene_tree = factory.create( gene_tree_file, new PhyloXmlParser() )[ 0 ];
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( sdi.PRG_NAME, "Failed to read gene tree from \"" + gene_tree_file + "\" ["
-                    + e.getMessage() + "]" );
+            ForesterUtil.fatalError( sdi.PRG_NAME,
+                                     "Failed to read gene tree from \"" + gene_tree_file + "\" [" + e.getMessage()
+                                             + "]" );
         }
         gene_tree.setRooted( true );
         species_tree.setRooted( true );

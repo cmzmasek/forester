@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -148,8 +148,9 @@ public class confadd {
             targets = factory.create( target_file, ForesterUtil.createParserDependingOnFileType( target_file, true ) );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to read target phylogenies from [" + target_file + "]: "
-                    + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to read target phylogenies from [" + target_file + "]: "
+                                             + e.getLocalizedMessage() );
         }
         int counter = 0;
         for( final Phylogeny target : targets ) {
@@ -168,8 +169,8 @@ public class confadd {
             ForesterUtil.programMessage( PRG_NAME, "read in a total of " + targets.length + " targets" );
         }
         try {
-            evaluators = factory.create( evaluators_file, ForesterUtil
-                    .createParserDependingOnFileType( evaluators_file, true ) );
+            evaluators = factory.create( evaluators_file,
+                                         ForesterUtil.createParserDependingOnFileType( evaluators_file, true ) );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME, "failed to read evaluator topologies from [" + evaluators_file + "]: "

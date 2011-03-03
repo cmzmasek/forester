@@ -53,22 +53,22 @@ public class SequenceRelationParser implements PhylogenyDataPhyloXmlParser {
             seqRelation.setType( SequenceRelation.SEQUENCE_RELATION_TYPE.valueOf( sType ) );
         }
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF0 ) && ( _phylogeny != null ) ) {
-            final Sequence ref = PhyloXmlHandler.getSequenceMapByIdForPhylogeny( _phylogeny ).get( element
-                    .getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF0 ) );
+            final Sequence ref = PhyloXmlHandler.getSequenceMapByIdForPhylogeny( _phylogeny )
+                    .get( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF0 ) );
             if ( ref != null ) {
                 seqRelation.setRef0( ref );
             }
         }
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF1 ) && ( _phylogeny != null ) ) {
-            final Sequence ref = PhyloXmlHandler.getSequenceMapByIdForPhylogeny( _phylogeny ).get( element
-                    .getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF1 ) );
+            final Sequence ref = PhyloXmlHandler.getSequenceMapByIdForPhylogeny( _phylogeny )
+                    .get( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_ID_REF1 ) );
             if ( ref != null ) {
                 seqRelation.setRef1( ref );
             }
         }
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) {
-            seqRelation.setDistance( Double
-                    .valueOf( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) );
+            seqRelation
+                    .setDistance( Double.valueOf( element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_DISTANCE ) ) );
         }
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );

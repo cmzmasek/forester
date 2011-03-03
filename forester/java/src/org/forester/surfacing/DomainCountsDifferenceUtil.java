@@ -7,7 +7,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -17,7 +17,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -72,8 +72,8 @@ public final class DomainCountsDifferenceUtil {
         }
         if ( bdc.contains( dc )
                 && ( ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains().get( dc.getId1() ) != null ) ) {
-            final int count = ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains().get( dc
-                    .getId1() );
+            final int count = ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains()
+                    .get( dc.getId1() );
             copy_counts.get( dc ).add( count );
         }
         else {
@@ -220,16 +220,22 @@ public final class DomainCountsDifferenceUtil {
             for( final GenomeWideCombinableDomains genome : genomes ) {
                 final String species = genome.getSpecies().getSpeciesId();
                 if ( high_copy_base_species.contains( species ) ) {
-                    DomainCountsDifferenceUtil.addCounts( high_copy_base_copy_counts_dc, dc, genome, bdcs_per_genome
-                            .get( species ) );
+                    DomainCountsDifferenceUtil.addCounts( high_copy_base_copy_counts_dc,
+                                                          dc,
+                                                          genome,
+                                                          bdcs_per_genome.get( species ) );
                 }
                 if ( high_copy_target_species.contains( species ) ) {
-                    DomainCountsDifferenceUtil.addCounts( high_copy_target_copy_counts_dc, dc, genome, bdcs_per_genome
-                            .get( species ) );
+                    DomainCountsDifferenceUtil.addCounts( high_copy_target_copy_counts_dc,
+                                                          dc,
+                                                          genome,
+                                                          bdcs_per_genome.get( species ) );
                 }
                 if ( low_copy_species.contains( species ) ) {
-                    DomainCountsDifferenceUtil.addCounts( low_copy_copy_counts_dc, dc, genome, bdcs_per_genome
-                            .get( species ) );
+                    DomainCountsDifferenceUtil.addCounts( low_copy_copy_counts_dc,
+                                                          dc,
+                                                          genome,
+                                                          bdcs_per_genome.get( species ) );
                 }
             }
         }
@@ -485,8 +491,8 @@ public final class DomainCountsDifferenceUtil {
         }
         html_writer.write( "</td><td>" );
         if ( bdcs_per_genome.get( species ).contains( bdc ) && ( copy_means.get( bdc ) > 0 ) ) {
-            final int count = ( ( BasicCombinableDomains ) genome.get( bdc.getId0() ) ).getCombiningDomains().get( bdc
-                    .getId1() );
+            final int count = ( ( BasicCombinableDomains ) genome.get( bdc.getId0() ) ).getCombiningDomains()
+                    .get( bdc.getId1() );
             html_writer.write( count + "" );
         }
         else {

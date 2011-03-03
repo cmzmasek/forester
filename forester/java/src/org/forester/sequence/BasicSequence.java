@@ -6,7 +6,7 @@
 // Copyright (C) 2010 Christian M Zmasek
 // Copyright (C) 2010 Sanford-Burnham Medical Research Institute
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -45,22 +45,27 @@ public class BasicSequence implements Sequence {
         _type = type;
     }
 
+    @Override
     public Object getIdentifier() {
         return _identifier;
     }
 
+    @Override
     public int getLength() {
         return _mol_sequence.length;
     }
 
+    @Override
     public char[] getMolecularSequence() {
         return _mol_sequence;
     }
 
+    @Override
     public char getResidueAt( final int position ) {
         return _mol_sequence[ position ];
     }
 
+    @Override
     public TYPE getType() {
         return _type;
     }

@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -47,10 +47,12 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         _identifiers = new String[ size ];
     }
 
+    @Override
     public String getIdentifier( final int i ) {
         return _identifiers[ i ];
     }
 
+    @Override
     public int getIndex( final String identifier ) {
         for( int i = 0; i < _identifiers.length; i++ ) {
             if ( getIdentifier( i ).equals( identifier ) ) {
@@ -60,10 +62,12 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         throw new IllegalArgumentException( "identifier [" + identifier + "] not found in distance matrix" );
     }
 
+    @Override
     public int getSize() {
         return _values.length;
     }
 
+    @Override
     public double getValue( final int col, final int row ) {
         if ( col == row ) {
             if ( col >= getSize() ) {
@@ -86,6 +90,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         }
     }
 
+    @Override
     public void setIdentifier( final int i, final String identifier ) {
         _identifiers[ i ] = identifier;
     }
@@ -99,6 +104,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         }
     }
 
+    @Override
     public void setValue( final int col, final int row, final double d ) {
         if ( ( col == row ) && ( d != 0.0 ) ) {
             throw new IllegalArgumentException( "attempt to set a non-zero value on the diagonal of a symmetrical distance matrix" );
@@ -172,6 +178,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         return toPhylip().toString();
     }
 
+    @Override
     public StringBuffer toStringBuffer( final Format format ) {
         switch ( format ) {
             case PHYLIP:

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -51,14 +51,17 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         init();
     }
 
+    @Override
     public StringBuffer asSimpleText() {
         return asText();
     }
 
+    @Override
     public Uri getUri( final int index ) {
         return getUris().get( index );
     }
 
+    @Override
     public void addUri( final Uri uri ) {
         if ( getUris() == null ) {
             setUris( new ArrayList<Uri>() );
@@ -66,6 +69,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         getUris().add( uri );
     }
 
+    @Override
     public StringBuffer asText() {
         final StringBuffer sb = new StringBuffer();
         if ( getIdentifier() != null ) {
@@ -101,6 +105,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         return sb;
     }
 
+    @Override
     public PhylogenyData copy() {
         final Taxonomy t = new Taxonomy();
         t.setTaxonomyCode( getTaxonomyCode() );
@@ -176,6 +181,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         return _taxonomy_code;
     }
 
+    @Override
     public List<Uri> getUris() {
         return _uris;
     }
@@ -228,6 +234,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
      * (Note. This is important and should not be change without a very good reason.)
      * 
      */
+    @Override
     public boolean isEqual( final PhylogenyData data ) {
         if ( this == data ) {
             return true;
@@ -293,10 +300,12 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         _taxonomy_code = taxonomy_code;
     }
 
+    @Override
     public void setUris( final List<Uri> uris ) {
         _uris = uris;
     }
 
+    @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
         if ( getIdentifier() != null ) {
@@ -322,6 +331,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         return sb;
     }
 
+    @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         if ( isEmpty() ) {
             return;

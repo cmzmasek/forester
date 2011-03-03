@@ -8,7 +8,7 @@
 // and Howard Hughes Medical Institute
 // Copyright (C) 2003-2007 Ethalinda K.S. Cannon
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -18,7 +18,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -81,15 +81,18 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
         _selector.setMaximumRowCount( list.size() );
         _selector.getModel().addListDataListener( new ListDataListener() {
 
+            @Override
             public void contentsChanged( final ListDataEvent e ) {
                 final int selection = _selector.getSelectedIndex();
                 changeDialogColors( selection );
             }
 
+            @Override
             public void intervalAdded( final ListDataEvent e ) {
                 // Not needed.
             }
 
+            @Override
             public void intervalRemoved( final ListDataEvent e ) {
                 // Not needed.
             }
@@ -117,6 +120,7 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
         _ok_btn = new JButton( "OK" );
         _ok_btn.addActionListener( new ActionListener() {
 
+            @Override
             public void actionPerformed( final ActionEvent e ) {
                 ok();
             }
@@ -125,6 +129,7 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
         _cancel_btn = new JButton( "Cancel" );
         _cancel_btn.addActionListener( new ActionListener() {
 
+            @Override
             public void actionPerformed( final ActionEvent e ) {
                 cancel();
             }
@@ -135,6 +140,7 @@ final class ColorSchemeChooser extends JDialog implements ActionListener {
         setCurrentColor( colorset.getCurrentColorScheme() );
     }
 
+    @Override
     public void actionPerformed( final ActionEvent e ) {
         // Not needed.
     }

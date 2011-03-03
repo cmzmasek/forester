@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -115,8 +115,9 @@ public class sdi_r {
             species_tree = factory.create( species_tree_file, pp )[ 0 ];
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to read species tree [" + species_tree_file + "]: "
-                    + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to read species tree [" + species_tree_file + "]: "
+                                             + e.getLocalizedMessage() );
         }
         if ( !species_tree.isRooted() ) {
             ForesterUtil.fatalError( PRG_NAME, "species tree [" + species_tree_file + "] is not rooted" );
@@ -126,8 +127,8 @@ public class sdi_r {
             gene_trees = factory.create( gene_tree_file, pp );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failed to read gene trees [" + gene_tree_file + "]: "
-                    + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failed to read gene trees [" + gene_tree_file + "]: " + e.getLocalizedMessage() );
         }
         // Removes from gene_tree all species not found in species_tree.
         int gene_tree_counter = 0;
@@ -197,8 +198,9 @@ public class sdi_r {
                         + ForesterUtil.FORMATTER_06.format( sdiunrooted.getMinimalTreeHeight() ) );
                 ForesterUtil.programMessage( PRG_NAME, "Minimal difference in subtree heights: "
                         + ForesterUtil.FORMATTER_06.format( sdiunrooted.getMinimalDiffInSubTreeHeights() ) );
-                ForesterUtil.programMessage( PRG_NAME, "Duplications in midpoint rooted tree : "
-                        + sdiunrooted.getMinimalDuplications() );
+                ForesterUtil.programMessage( PRG_NAME,
+                                             "Duplications in midpoint rooted tree : "
+                                                     + sdiunrooted.getMinimalDuplications() );
             }
             else {
                 ForesterUtil.programMessage( PRG_NAME, "No (re) rooting was performed." );
@@ -223,8 +225,8 @@ public class sdi_r {
             w.toPhyloXML( outfile, all_result_trees, 0, ForesterUtil.LINE_SEPARATOR );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "failure to write output to [" + outfile + "]: "
-                    + e.getLocalizedMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "failure to write output to [" + outfile + "]: " + e.getLocalizedMessage() );
         }
         ForesterUtil.programMessage( PRG_NAME, "Wrote: " + outfile );
         ForesterUtil.programMessage( PRG_NAME, "OK." );

@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -96,6 +96,7 @@ public class DomainArchitecture implements PhylogenyData {
         _domains.put( key, pd );
     }
 
+    @Override
     public StringBuffer asSimpleText() {
         final StringBuffer sb = new StringBuffer();
         for( int i = 0; i < getDomains().size(); ++i ) {
@@ -107,6 +108,7 @@ public class DomainArchitecture implements PhylogenyData {
         return sb;
     }
 
+    @Override
     public StringBuffer asText() {
         final StringBuffer sb = new StringBuffer();
         for( int i = 0; i < getDomains().size(); ++i ) {
@@ -118,6 +120,7 @@ public class DomainArchitecture implements PhylogenyData {
         return sb;
     }
 
+    @Override
     public PhylogenyData copy() {
         final List<PhylogenyData> domains = new ArrayList<PhylogenyData>( getDomains().size() );
         for( int i = 0; i < getDomains().size(); ++i ) {
@@ -153,6 +156,7 @@ public class DomainArchitecture implements PhylogenyData {
      * 
      * 
      */
+    @Override
     public boolean isEqual( final PhylogenyData domain_architecture ) {
         if ( domain_architecture == null ) {
             return false;
@@ -176,6 +180,7 @@ public class DomainArchitecture implements PhylogenyData {
         _total_length = total_length;
     }
 
+    @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
         sb.append( ":" );
@@ -196,6 +201,7 @@ public class DomainArchitecture implements PhylogenyData {
         return sb;
     }
 
+    @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );

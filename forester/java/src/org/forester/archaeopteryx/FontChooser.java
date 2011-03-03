@@ -126,6 +126,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         this( new Font( font_name, font_style, size ) );
     }
 
+    @Override
     public void actionPerformed( final ActionEvent e ) {
         if ( e.getSource() == _fonts_tf ) {
             boolean found = false;
@@ -262,6 +263,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
         return _option;
     }
 
+    @Override
     public void valueChanged( final ListSelectionEvent e ) {
         if ( e.getSource() == _font_list ) {
             if ( _font_list.getSelectedValue() != null ) {

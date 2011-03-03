@@ -5,7 +5,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -212,8 +212,7 @@ public class TestGo {
             if ( !g0.getComment().equals( "" ) ) {
                 return false;
             }
-            if ( !g0
-                    .getDefinition()
+            if ( !g0.getDefinition()
                     .equals( "\"The distribution of mitochondria, including the mitochondrial genome, into daughter cells after mitosis or meiosis, mediated by interactions between mitochondria and the cytoskeleton.\" [GOC:mcc, PMID:10873824, PMID:11389764]" ) ) {
                 return false;
             }
@@ -244,8 +243,7 @@ public class TestGo {
             if ( !g1.getComment().equals( "comment" ) ) {
                 return false;
             }
-            if ( !g1
-                    .getDefinition()
+            if ( !g1.getDefinition()
                     .equals( "\"The maintenance of the structure and integrity of the mitochondrial genome.\" [GOC:ai]" ) ) {
                 return false;
             }

@@ -6,7 +6,7 @@
 // Copyright (C) 2008-2009 Christian M. Zmasek
 // Copyright (C) 2008-2009 Burnham Institute for Medical Research
 // All rights reserved
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
@@ -16,7 +16,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
@@ -144,10 +144,12 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         return _domain_structure.getNumberOfDomains();
     }
 
+    @Override
     public Dimension getOriginalSize() {
         return new Dimension( _domain_structure.getTotalLength(), ForesterUtil.roundToInt( _rendering_height ) );
     }
 
+    @Override
     public Object getParameter() {
         return new Integer( _e_value_threshold_exp );
     }
@@ -156,6 +158,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         return _rendering_factor_width;
     }
 
+    @Override
     public Dimension getRenderingSize() {
         return new Dimension( ForesterUtil.roundToInt( _domain_structure.getTotalLength() * _rendering_factor_width ),
                               ForesterUtil.roundToInt( _rendering_height ) );
@@ -171,6 +174,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         return _domain_structure.isEqual( data );
     }
 
+    @Override
     public void render( final double x1,
                         final double y1,
                         final Graphics2D g,
@@ -198,6 +202,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
     }
 
+    @Override
     public void setParameter( final double e_value_threshold_exp ) {
         _e_value_threshold_exp = ( int ) e_value_threshold_exp;
     }
@@ -206,6 +211,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         _rendering_factor_width = rendering_factor_width;
     }
 
+    @Override
     public void setRenderingHeight( final double rendering_height ) {
         _rendering_height = rendering_height;
     }
