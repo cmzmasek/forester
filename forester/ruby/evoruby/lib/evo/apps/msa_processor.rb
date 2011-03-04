@@ -292,8 +292,11 @@ module Evoruby
       end
 
       if ( msa.is_aligned() )
-        Util.print_message( PRG_NAME, "Length of original alignment : " + msa.get_length.to_s )
-        log << "Length of original alignment : " + msa.get_length.to_s + ld
+        Util.print_message( PRG_NAME, "Length of original alignment         : " + msa.get_length.to_s )
+        log << "Length of original alignment         : " + msa.get_length.to_s + ld
+        gp = msa.calculate_gap_proportion
+        Util.print_message( PRG_NAME, "Gap-proportion of original alignment : " + gp.to_s )
+        log << "Gap-proportion of original alignment : " +  gp.to_s + ld
       else
         Util.print_message( PRG_NAME, "the input is not aligned" )
         log << "The input is not aligned" + ld
@@ -472,8 +475,11 @@ module Evoruby
 
         unless ( @rg )
           if ( msa.is_aligned() )
-            Util.print_message( PRG_NAME, "length of processed alignment: " + msa.get_length.to_s )
-            log <<  "length of processed alignment: " + msa.get_length.to_s + ld
+            Util.print_message( PRG_NAME, "Length of processed alignment        : " + msa.get_length.to_s )
+            log <<  "Length of processed alignment        : " + msa.get_length.to_s + ld
+            gp = msa.calculate_gap_proportion
+            Util.print_message( PRG_NAME, "Gap-proportion of processed alignment: " + gp.to_s )
+            log << "Gap-proportion of processed alignment: " +  gp.to_s + ld
           else
             Util.print_warning_message( PRG_NAME, "output is not aligned" )
             log << "output is not aligned" + ld

@@ -225,7 +225,7 @@ module Evoruby
             seq_1 = get_sequence( index_1 )
             seq_2 = get_sequence( index_2 )
             overlap_count = 0
-            for i in 0...seq_1.get_length()
+            for i in 0...seq_1.get_length
                 if !Util.is_aa_gap_character?( seq_1.get_character_code( i ) ) &&
                      !Util.is_aa_gap_character?( seq_2.get_character_code( i ) )
                     overlap_count += 1
@@ -238,7 +238,7 @@ module Evoruby
             seq_1 = get_sequence( index_1 )
             seq_2 = get_sequence( index_2 )
             identities_count = 0
-            for i in 0...seq_1.get_length()
+            for i in 0...seq_1.get_length
                 if !Util.is_aa_gap_character?( seq_1.get_character_code( i ) ) &&
                      !Util.is_aa_gap_character?( seq_2.get_character_code( i ) ) &&
                      seq_1.get_character_code( i ) != 63 &&
@@ -372,6 +372,25 @@ module Evoruby
                 end
             end
             return cols
+        end
+        
+        def calculate_gap_proportion()
+            if ( !is_aligned() )
+                error_msg = "attempt to get gap only columns of unaligned msa"
+                raise StandardError, error_msg, caller
+            end
+            total_sum = 0.0
+            gap_sum = 0.0
+            for c in 0 ... get_length
+                for s in 0 ... get_number_of_seqs
+                    total_sum = total_sum + 1
+                    if Util.is_aa_gap_character?( get_sequence( s ).get_character_code( c ) )
+                        gap_sum = gap_sum  + 1
+                    end
+                end
+               
+            end
+            return gap_sum / total_sum
         end
 
         def get_gap_columns()
