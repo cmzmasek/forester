@@ -52,7 +52,7 @@ import org.forester.util.ForesterUtil;
 public final class Configuration {
 
     public enum UI {
-        NATIVE, SYSTEM, NIMBUS, UNKNOWN
+        NATIVE, CROSSPLATFORM, NIMBUS, UNKNOWN
     }
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static final String             WEB_LINK_KEY                                           = "web_link";
@@ -585,10 +585,8 @@ public final class Configuration {
     }
 
     final boolean isUseNativeUI() {
-        if ( _ui == UI.UNKNOWN ) {
-            if ( Util.isMac() && Util.isJava15() ) {
-                _ui = UI.NATIVE;
-            }
+        if ( ( _ui == UI.UNKNOWN ) && Util.isMac() && Util.isJava15() ) {
+            _ui = UI.NATIVE;
         }
         return _ui == UI.NATIVE;
     }
@@ -792,7 +790,7 @@ public final class Configuration {
                 _ui = UI.NATIVE;
             }
             else if ( my_str.equals( "no" ) || my_str.equals( "false" ) ) {
-                _ui = UI.SYSTEM;
+                _ui = UI.CROSSPLATFORM;
             }
             else if ( my_str.equals( "?" ) ) {
                 _ui = UI.UNKNOWN;

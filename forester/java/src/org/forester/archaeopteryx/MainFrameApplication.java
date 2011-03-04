@@ -230,12 +230,12 @@ public final class MainFrameApplication extends MainFrame {
         }
         try {
             if ( _configuration.isUseNativeUI() ) {
-                //  UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-                UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
+                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
             }
             else {
                 UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
             }
+            //UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
         }
         catch ( final UnsupportedLookAndFeelException e ) {
             Util.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
