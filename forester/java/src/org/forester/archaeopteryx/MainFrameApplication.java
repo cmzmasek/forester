@@ -230,7 +230,8 @@ public final class MainFrameApplication extends MainFrame {
         }
         try {
             if ( _configuration.isUseNativeUI() ) {
-                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+                //  UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+                UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
             }
             else {
                 UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );

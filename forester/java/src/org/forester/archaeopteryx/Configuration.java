@@ -51,11 +51,14 @@ import org.forester.util.ForesterUtil;
 
 public final class Configuration {
 
+    public enum UI {
+        NATIVE, SYSTEM, NIMBUS, UNKNOWN
+    }
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static final String             WEB_LINK_KEY                                           = "web_link";
     private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
     private static final int                DEPRECATED                                             = -2;
-    private TRIPLET                         _native_ui                                             = TRIPLET.FALSE;
+    private UI                              _ui                                                    = UI.UNKNOWN;
     private boolean                         _use_tabbed_display                                    = false;
     private boolean                         _hide_controls_and_menus                               = false;
     private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
@@ -183,7 +186,6 @@ public final class Configuration {
     private static Hashtable<String, Color> _annotation_colors;
     boolean                                 verbose                                                = Constants.VERBOSE_DEFAULT;
     private NODE_LABEL_DIRECTION            _node_label_direction                                  = NODE_LABEL_DIRECTION.HORIZONTAL;
-    private TRIPLET                         _use_native_ui;
     private Color                           _gui_background_color                                  = Constants.GUI_BACKGROUND_DEFAULT;
     private Color                           _gui_checkbox_text_color                               = Constants.CHECKBOX_TEXT_COLOR_DEFAULT;
     private Color                           _gui_checkbox_and_button_active_color                  = Constants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
@@ -583,18 +585,12 @@ public final class Configuration {
     }
 
     final boolean isUseNativeUI() {
-        if ( ( _use_native_ui == null ) || ( _use_native_ui == TRIPLET.UNKNOWN ) ) {
-            if ( ( _native_ui == TRIPLET.UNKNOWN ) && Util.isMac() && Util.isJava15() ) {
-                _use_native_ui = TRIPLET.TRUE;
-            }
-            else if ( _native_ui == TRIPLET.TRUE ) {
-                _use_native_ui = TRIPLET.TRUE;
-            }
-            else {
-                _use_native_ui = TRIPLET.FALSE;
+        if ( _ui == UI.UNKNOWN ) {
+            if ( Util.isMac() && Util.isJava15() ) {
+                _ui = UI.NATIVE;
             }
         }
-        return _use_native_ui == TRIPLET.TRUE;
+        return _ui == UI.NATIVE;
     }
 
     /**
@@ -793,18 +789,18 @@ public final class Configuration {
         else if ( key.equals( "native_ui" ) ) {
             final String my_str = ( ( String ) st.nextElement() ).trim().toLowerCase();
             if ( my_str.equals( "yes" ) || my_str.equals( "true" ) ) {
-                _native_ui = TRIPLET.TRUE;
+                _ui = UI.NATIVE;
             }
             else if ( my_str.equals( "no" ) || my_str.equals( "false" ) ) {
-                _native_ui = TRIPLET.FALSE;
+                _ui = UI.SYSTEM;
             }
             else if ( my_str.equals( "?" ) ) {
-                _native_ui = TRIPLET.UNKNOWN;
+                _ui = UI.UNKNOWN;
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse yes/no/? value from [" + my_str
                         + "]" );
-                _native_ui = TRIPLET.FALSE;
+                _ui = UI.UNKNOWN;
             }
         }
         else if ( key.equals( VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA ) ) {
