@@ -563,6 +563,21 @@ public class Phylogeny {
         return nodes.get( 0 );
     }
 
+    /**
+     * This is time-inefficient since it runs a iterator each time it is called.
+     * 
+     */
+    public int getNodeCount() {
+        if ( isEmpty() ) {
+            return 0;
+        }
+        int c = 0;
+        for( PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); it.next() ) {
+            ++c;
+        }
+        return c;
+    }
+
     public int getNumberOfBranches() {
         if ( isEmpty() ) {
             return 0;

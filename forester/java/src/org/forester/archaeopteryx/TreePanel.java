@@ -228,6 +228,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                                                                        false );
     // expression values menu:
     private DescriptiveStatistics           _statistics_for_vector_data;
+    private PhylogenyNode[]                 _nodes_in_preorder                = null;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -3468,9 +3469,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     getControlPanel().setDynamicHidingIsOn( false );
                 }
             }
-            final PhylogenyNodeIterator it;
-            for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
-                paintNodeRectangular( g, it.next(), to_pdf, getControlPanel().isDynamicallyHideData()
+            if ( _nodes_in_preorder == null ) {
+                _nodes_in_preorder = new PhylogenyNode[ _phylogeny.getNodeCount() ];
+                System.out.println( "total nodes: " + _nodes_in_preorder.length );
+                int i = 0;
+                for( final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+                    _nodes_in_preorder[ i++ ] = it.next();
+                }
+            }
+            //final PhylogenyNodeIterator it;
+            //for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+            //    paintNodeRectangular( g, it.next(), to_pdf, getControlPanel().isDynamicallyHideData()
+            //            && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
+            //}
+            for( int i = 0; i < _nodes_in_preorder.length; ++i ) {
+                paintNodeRectangular( g, _nodes_in_preorder[ i ], to_pdf, getControlPanel().isDynamicallyHideData()
                         && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
             }
             if ( getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && ( getScaleDistance() > 0.0 ) ) {
@@ -3591,9 +3604,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 .setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition() + ( MOVE / ( getVisibleRect().width / getOvRectangle()
                         .getWidth() ) ) ) );
         _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
-        final PhylogenyNodeIterator it;
-        for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
-            paintNodeLite( g, it.next() );
+        //final PhylogenyNodeIterator it;
+        //for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
+        //    paintNodeLite( g, it.next() );
+        //}
+        for( int i = 0; i < _nodes_in_preorder.length; ++i ) {
+            paintNodeLite( g, _nodes_in_preorder[ i ] );
         }
         paintOvRectangle( g );
     }
