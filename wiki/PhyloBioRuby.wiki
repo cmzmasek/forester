@@ -43,6 +43,10 @@ msa.each do |entry|
 end
 }}}
 
+Relevant API documentation
+
+ * [http://bioruby.open-bio.org/rdoc/classes/Bio/ClustalW/Report.html Bio::ClustalW::Report]
+ * 
  
 
 === Writing a Multiple Sequence Alignment to a File ===
