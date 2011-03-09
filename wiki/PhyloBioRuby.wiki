@@ -82,8 +82,6 @@ f.write(align.output(:phylipnon))
 
 === Formatting of Individual Sequences ===
 
-_... to be done_
-
 !BioRuby can format molecular sequences in a variety of formats.
 Individual sequences can be formatted to (e.g.) Genbank format as shown in the following examples.
 
@@ -101,14 +99,12 @@ The following symbols determine the output format:
   * `:genbank` for Genbank
   * `:embl` for EMBL
   * `:fasta` for FASTA
-  * `:fasta_ncbi` for 
-  * `:raw` for
-  * `:fastq` for
-  * `:fastq_sanger` for
-  * `:fastq_solexa` for
-  * `:fastq_illumina` for
-  * `:fasta_numeric` for
-  * `:qual` for
+  * `:fasta_ncbi` for NCBI-type FASTA
+  * `:raw` for raw sequence
+  * `:fastq` for FASTQ (includes quality scores)
+  * `:fastq_sanger` for Sanger-type FASTQ 
+  * `:fastq_solexa` for Solexa-type FASTQ 
+  * `:fastq_illumina` for Illumina-type FASTQ 
 
 == Calculating Multiple Sequence Alignments ==
 
