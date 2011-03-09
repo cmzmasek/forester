@@ -4046,6 +4046,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getPhylogeny().reRoot( node );
         getPhylogeny().recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
+        _nodes_in_preorder = null;
         resetPreferredSize();
         getMainPanel().adjustJScrollPane();
         repaint();
