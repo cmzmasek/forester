@@ -144,6 +144,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int                WIGGLE                            = 2;
     private final static int                HALF_BOX_SIZE_PLUS_WIGGLE         = HALF_BOX_SIZE + WIGGLE;
     private final static int                LIMIT_FOR_HQ_RENDERING            = 1000;
+    private final static int                CONFIDENCE_LEFT_MARGIN            = 4;
     // TODO "rendering_hints" was static before. Need to make sure everything is OK with it not
     // being static anymore (02/20/2009).
     private final RenderingHints            _rendering_hints                  = new RenderingHints( RenderingHints.KEY_RENDERING,
@@ -2838,21 +2839,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && ( node.getNumberOfDescendants() == 1 ) ) {
             down_shift_factor = 1;
         }
+        final double pos_x = node.getXcoord() + x + 2 + TreePanel.HALF_BOX_SIZE;
+        final double pos_y = ( node.getYcoord() + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ) );
+        final String sb_str = _sb.toString();
         // GUILHEM_BEG ______________
-        final double posX = node.getXcoord() + x + 2 + TreePanel.HALF_BOX_SIZE;
-        final double posY = ( node.getYcoord() + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ) );
-        final int CONFIDENCE_LEFT_MARGIN = 4;
-        final String sNodeText = _sb.toString();
         if ( _control_panel.isShowSequenceRelations() && node.getNodeData().isHasSequence()
                 && ( _query_sequence != null ) ) {
             int nodeTextBoundsWidth = 0;
-            if ( sNodeText.length() > 0 ) {
-                final Rectangle2D node_text_bounds = new TextLayout( sNodeText, g.getFont(), _frc ).getBounds(); //would like to remove this 'new', but how...
+            if ( sb_str.length() > 0 ) {
+                final Rectangle2D node_text_bounds = new TextLayout( sb_str, g.getFont(), _frc ).getBounds(); //would like to remove this 'new', but how...
                 nodeTextBoundsWidth = ( int ) node_text_bounds.getWidth();
             }
             if ( node.getNodeData().getSequence().equals( _query_sequence ) ) {
                 if ( nodeTextBoundsWidth > 0 ) { // invert font color and background color to show that this is the query sequence
-                    g.fillRect( ( int ) posX - 1, ( int ) posY - 8, nodeTextBoundsWidth + 5, 11 );
+                    g.fillRect( ( int ) pos_x - 1, ( int ) pos_y - 8, nodeTextBoundsWidth + 5, 11 );
                     g.setColor( getTreeColorSet().getBackgroundColor() );
                 }
             }
@@ -2869,15 +2869,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 .getConfidence() == null ) ) ? null : " (" + seqRelation.getConfidence().getValue()
                                 + ")";
                         if ( sConfidence != null ) {
-                            double confidenceX = posX;
-                            if ( sNodeText.length() > 0 ) {
-                                confidenceX += new TextLayout( sNodeText, g.getFont(), _frc ).getBounds().getWidth()
+                            double confidenceX = pos_x;
+                            if ( sb_str.length() > 0 ) {
+                                confidenceX += new TextLayout( sb_str, g.getFont(), _frc ).getBounds().getWidth()
                                         + CONFIDENCE_LEFT_MARGIN;
                             }
                             if ( confidenceX > linePosX ) { // let's only display confidence value if we are already displaying at least one of Prot/Gene Name and Taxonomy Code 
                                 final int confidenceWidth = ( int ) new TextLayout( sConfidence, g.getFont(), _frc )
                                         .getBounds().getWidth();
-                                TreePanel.drawString( sConfidence, confidenceX, posY, g );
+                                TreePanel.drawString( sConfidence, confidenceX, pos_y, g );
                                 x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
                             }
                         }
@@ -2889,16 +2889,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             else {
                                 nodeTextBoundsWidth += 2;
                             }
-                            g.drawLine( ( int ) linePosX + 1, 3 + ( int ) posY, ( int ) linePosX + x
-                                    + nodeTextBoundsWidth, 3 + ( int ) posY );
+                            g.drawLine( ( int ) linePosX + 1, 3 + ( int ) pos_y, ( int ) linePosX + x
+                                    + nodeTextBoundsWidth, 3 + ( int ) pos_y );
                             break;
                         }
                     }
                 }
             }
         }
-        if ( sNodeText.length() > 0 ) {
-            TreePanel.drawString( sNodeText, posX, posY, g );
+        if ( sb_str.length() > 0 ) {
+            TreePanel.drawString( sb_str, pos_x, pos_y, g );
         }
         // GUILHEM_END _____________
         // COMMENTED_OUT_BY_GUILHEM_BEG _______________
@@ -3403,10 +3403,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                final int graphics_file_height,
                                final int graphics_file_x,
                                final int graphics_file_y ) {
-        /* GUILHEM_BEG */
-        // System.out.println( "p" + ( xxx++ ) );
-        _query_sequence = _control_panel.getSelectedQuerySequence();
-        /* GUILHEM_END */
+        if ( _control_panel.isShowSequenceRelations() ) {
+            _query_sequence = _control_panel.getSelectedQuerySequence();
+        }
         // Color the background
         if ( !to_pdf ) {
             final Rectangle r = getVisibleRect();
@@ -3740,8 +3739,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final String label = _sb.toString();
         /* GUILHEM_BEG */
-        if ( ( label.length() > 0 ) && ( node.getNodeData().isHasSequence() )
-                && node.getNodeData().getSequence().equals( _query_sequence ) ) {
+        if ( _control_panel.isShowSequenceRelations() && ( label.length() > 0 )
+                && ( node.getNodeData().isHasSequence() ) && node.getNodeData().getSequence().equals( _query_sequence ) ) {
             // invert font color and background color to show that this is the query sequence
             final Rectangle2D nodeTextBounds = new TextLayout( label, g.getFont(), new FontRenderContext( null,
                                                                                                           false,
