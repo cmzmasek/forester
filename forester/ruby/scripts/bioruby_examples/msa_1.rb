@@ -7,9 +7,41 @@ seqs = Bio::Alignment::MultiFastaFormat.new(File.open('bcl2.fasta').read)
 seqs.entries.each do |seq|
   puts seq.to_seq.output(:genbank)
 end
-
-
-
+puts
+puts
+puts :genbank
+puts seqs.entries[0].to_seq.output(:genbank)
+puts
+puts :fasta
+puts seqs.entries[0].to_seq.output(:fasta)
+puts
+puts :embl
+puts seqs.entries[0].to_seq.output(:embl)
+puts
+puts :raw
+puts seqs.entries[0].to_seq.output(:raw)
+puts
+puts :fasta_ncbi
+puts seqs.entries[0].to_seq.output(:fasta_ncbi)
+puts
+puts :fastq
+puts seqs.entries[0].to_seq.output(:fastq)
+puts
+puts :fastq_sanger
+puts seqs.entries[0].to_seq.output(:fastq_sanger)
+puts
+puts :fastq_solexa
+puts seqs.entries[0].to_seq.output(:fastq_solexa)
+puts
+puts :fastq_illumina
+puts seqs.entries[0].to_seq.output(:fastq_illumina)
+puts
+puts :fasta_numeric
+puts seqs.entries[0].to_seq.output(:fasta_numeric)
+puts
+puts :qual
+puts seqs.entries[0].to_seq.output(:qual)
+exit
 ##############
 
 
@@ -49,7 +81,7 @@ file.each do |entry|
   # do something on each fasta sequence entry
 end
 
-exit
+
 ##############
 
 # Creates a new file named "outfile.fasta" and writes
