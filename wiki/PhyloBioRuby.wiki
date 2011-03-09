@@ -97,7 +97,7 @@ For Bio::!FlatFile entries:
 entry.to_biosequence.output(:genbank)
 }}}
 
-The following symbols determine the output format.
+The following symbols determine the output format:
   *`:genbank` for Genbank
 
 
