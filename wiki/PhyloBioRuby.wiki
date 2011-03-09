@@ -63,14 +63,14 @@ end
 
 ==== Setting the Output Format ====
 
-The following symbols determine the output format.
+The following symbols determine the output format:
 
-  * ClustalW: `:clustal`
-  * FASTA:    `:fasta`
-  * PHYLIP interleaved (will truncate sequence names to no more than 10 characters): `:phylip`
-  * PHYLIP non-interleaved (will truncate sequence names to no more than 10 characters): `:phylipnon`
-  * MSF: `:msf`
-  * Molphy: `:molphy`
+  * `:clustal` for ClustalW
+  * `:fasta` for FASTA
+  * `:phylip`for PHYLIP interleaved (will truncate sequence names to no more than 10 characters)
+  * `:phylipnon` for PHYLIP non-interleaved (will truncate sequence names to no more than 10 characters)
+  * `:msf` for MSF
+  * `:molphy` for Molphy
 
 
 For example, the following writes in PHYLIP's non-interleaved format:
@@ -97,8 +97,8 @@ For Bio::!FlatFile entries:
 entry.to_biosequence.output(:genbank)
 }}}
 
-Constants for available formats are:
-  * Genbank :genbank
+The following symbols determine the output format.
+  *`:genbank` for Genbank
 
 
 == Calculating Multiple Sequence Alignments ==
