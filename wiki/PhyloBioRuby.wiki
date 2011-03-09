@@ -98,9 +98,9 @@ entry.to_biosequence.output(:genbank)
 }}}
 
 The following symbols determine the output format:
-  *`:genbank` for Genbank
-  *`:fasta` for FASTA
-  *`:embl` for EMBL
+  * `:genbank` for Genbank
+  * `:fasta` for FASTA
+  * `:embl` for EMBL
 
 
 == Calculating Multiple Sequence Alignments ==
