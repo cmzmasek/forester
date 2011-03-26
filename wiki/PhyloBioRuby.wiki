@@ -114,6 +114,13 @@ Relevant API documentation:
  * [http://bioruby.open-bio.org/rdoc/classes/Bio/Alignment.html Bio::Alignment]
  * [http://bioruby.open-bio.org/rdoc/classes/Bio/Sequence.html Bio::Sequence]
 
+=== Creating a Multiple Sequence Alignment ===
+
+
+=== Creating a Multiple Sequence Alignment from a Database ===
+
+?
+
 === Writing a Multiple Sequence Alignment to a File ===
 
 
