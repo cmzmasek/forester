@@ -70,7 +70,7 @@ seqs.each { |seq| puts seq.to_s }
 
 # Writes multiple sequence alignment (possibly unaligned) 'seqs'
 # to a file in PHYLIP format.
-File.open('out1.phylip', 'w') do |f|
+File.open('outfile.phylip', 'w') do |f|
   f.write(seqs.output(:phylip))
 end
 }}}
