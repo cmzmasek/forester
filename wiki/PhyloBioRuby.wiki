@@ -25,13 +25,36 @@ Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 This automatically determines the format
 {{{
+#!/usr/bin/env ruby
+require 'bio'
+
+seq_ary = Array.new
 ff = Bio::FlatFile.auto('bcl2.fasta')
 ff.each_entry do |entry|
-  puts entry.entry_id          # identifier of the entry
-  puts entry.definition        # definition of the entry
-  puts entry.seq               # sequence data of the entry
+  seq_ary.push(entry)
+  puts entry.entry_id          # prints the identifier of the entry
+  puts entry.definition        # prints the definition of the entry
+  puts entry.seq               # prints the sequence data of the entry
+end
+
+# Creates a multiple sequence alignment (possibly unaligned) named
+# 'seqs' from array 'seq_ary'.
+seqs = Bio::Alignment.new(seq_ary)
+seqs.each { |seq| puts seq.to_s }
+
+# Writes multiple sequence alignment (possibly unaligned) 'seqs'
+# to a file in PHYLIP format.
+File.open('out0.phylip', 'w') do |f|
+  f.write(seqs.output(:phylip))
+end
+
+# Writes multiple sequence alignment (possibly unaligned) 'seqs'
+# to a file in FASTA format.
+File.open('out0.fasta', 'w') do |f|
+  f.write(seqs.output(:fasta))
 end
 }}}
+
 
 ==== ClustalW Format ====
 
