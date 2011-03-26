@@ -23,6 +23,16 @@ Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 === Reading in a Multiple Sequence Alignment from a File ===
 
+This automatically determines the format
+{{{
+ff = Bio::FlatFile.auto('bcl2.fasta')
+ff.each_entry do |entry|
+  puts entry.entry_id          # identifier of the entry
+  puts entry.definition        # definition of the entry
+  puts entry.seq               # sequence data of the entry
+end
+}}}
+
 ==== ClustalW Format ====
 
 The following example shows how to read in a *ClustalW*-formatted multiple sequence alignment.
