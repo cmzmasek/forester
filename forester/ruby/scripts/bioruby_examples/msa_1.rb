@@ -1,6 +1,101 @@
 require 'rubygems'
 require 'bio'
- 
+
+seq_ary = Array.new
+ff = Bio::FlatFile.auto('bcl2.fasta')
+ff.each_entry do |entry|
+  seq_ary.push(entry)
+  puts entry.entry_id          # prints the identifier of the entry
+  puts entry.definition        # prints the definition of the entry
+  puts entry.seq               # prints the sequence data of the entry
+end
+
+# Creates a multiple sequence alignment (possibly unaligned) named
+# 'seqs' from array 'seq_ary'.
+seqs = Bio::Alignment.new( seq_ary )
+seqs.each { |seq| puts seq.to_s }
+
+
+puts seqs.consensus
+
+# Writes multiple sequence alignment (possibly unaligned) 'seqs'
+# to a file in PHYLIP format.
+File.open('out0.phylip', 'w') do |f|
+  f.write(seqs.output(:phylip))
+end
+
+File.open('out0.fasta', 'w') do |f|
+  f.write(seqs.output(:fasta))
+end
+
+exit
+#############
+
+# Reads in a FASTA-formatted multiple sequence alignment (which does
+# not have to be aligned, though) and stores its sequences in
+# array 'seq_ary'.
+seq_ary = Array.new
+fasta_seqs = Bio::Alignment::MultiFastaFormat.new(File.open('bcl2.fasta').read)
+fasta_seqs.entries.each do |seq|
+  seq_ary.push( seq )
+end
+
+# Creates a multiple sequence alignment (possibly unaligned) named
+# 'seqs' from array 'seq_ary'.
+seqs = Bio::Alignment.new( seq_ary )
+seqs.each { |seq| puts seq.to_s }
+
+
+puts seqs.consensus
+
+# Writes multiple sequence alignment (possibly unaligned) 'seqs'
+# to a file in PHYLIP format.
+File.open('out1.phylip', 'w') do |f|
+  f.write(seqs.output(:phylip))
+end
+
+File.open('out1.fasta', 'w') do |f|
+  f.write(seqs.output(:fasta))
+end
+
+exit
+#################
+
+#ff = Bio::FlatFile.new(Bio::FastaFormat, 'bcl2.fasta')
+#ff.each_entry do |f|
+#  puts "definition : " + f.definition
+#  puts "nalen      : " + f.nalen.to_s
+#  puts "naseq      : " + f.naseq
+#end
+#exit
+
+seq_ary = Array.new
+Bio::FastaFormat.open('bcl2.fasta') do | file |
+  file.each do |entry|
+    puts entry.entry_id           # Gets the identifier, e.g. 'sp|O35147|BAD_RAT'.
+    # puts entry.definition         # Gets the complete fasta description line.
+    #puts entry.seq                # Gets the actual sequence.
+    seq_ary.push( entry )
+  end
+end
+seqs =Bio::Alignment.new( seq_ary )
+seqs.each { |x| puts x }
+puts seqs.consensus
+exit
+
+
+
+#will be obsolete!
+#seqs =Bio::Alignment.readfiles(File.open('bcl2.fasta'))
+#seqs.entries.each do |seq|
+#  puts seq.to_biosequence
+#end
+
+#Bio::Alignment.
+
+
+
+#exit
 #############
 
 seqs = Bio::Alignment::MultiFastaFormat.new(File.open('bcl2.fasta').read)
@@ -41,7 +136,7 @@ puts seqs.entries[0].to_seq.output(:fasta_numeric)
 puts
 puts :qual
 puts seqs.entries[0].to_seq.output(:qual)
-exit
+#exit
 ##############
 
 
