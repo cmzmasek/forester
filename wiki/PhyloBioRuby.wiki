@@ -43,27 +43,29 @@ msa.each do |entry|
 end
 }}}
 
-Blah
+The following example shows how to read in a *FASTA*-formatted multiple sequence file.
 {{{
-# Reads in a Fasta-formatted multiple sequence alignment (which does
+#!/usr/bin/env ruby
+require 'bio'
+
+# Reads in a FASTA-formatted multiple sequence alignment (which does
 # not have to be aligned, though) and stores its sequences in
 # array 'seq_ary'.
 seq_ary = Array.new
-fasta_seqs = Bio::Alignment::MultiFastaFormat.new(File.open('bcl2.fasta').read)
+fasta_seqs = Bio::Alignment::MultiFastaFormat.new(File.open('infile.fasta').read)
 fasta_seqs.entries.each do |seq|
-  seq_ary.push( seq )
+  seq_ary.push(seq)
 end
 
 # Creates a multiple sequence alignment (possibly unaligned) named
 # 'seqs' from array 'seq_ary'.
-seqs = Bio::Alignment.new( seq_ary )
+seqs = Bio::Alignment.new(seq_ary)
+
+# Prints each sequence to the console.
 seqs.each { |seq| puts seq.to_s }
 
-
-puts seqs.consensus
-
 # Writes multiple sequence alignment (possibly unaligned) 'seqs'
-# to a file in phylip format.
+# to a file in PHYLIP format.
 File.open('out1.phylip', 'w') do |f|
   f.write(seqs.output(:phylip))
 end
