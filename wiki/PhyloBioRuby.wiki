@@ -43,7 +43,8 @@ msa.each do |entry|
 end
 }}}
 
-The following example shows how to read in a *FASTA*-formatted multiple sequence file.
+
+The following example shows how to read in a *FASTA*-formatted multiple sequence file. (_This seems a little clumsy, I wonder if there is a more direct way, avoiding the creation of an array.)
 {{{
 #!/usr/bin/env ruby
 require 'bio'
