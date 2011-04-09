@@ -404,6 +404,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             phy.addAsChild( node );
         }
+        _nodes_in_preorder = null;
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.hashIDs();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
@@ -689,6 +690,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             calculateLongestExtNodeInfo();
+            _nodes_in_preorder = null;
             resetPreferredSize();
             updateOvSizes();
             _main_panel.adjustJScrollPane();
@@ -705,6 +707,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         calculateLongestExtNodeInfo();
+        _nodes_in_preorder = null;
         resetPreferredSize();
         _main_panel.adjustJScrollPane();
         setArrowCursor();
@@ -769,6 +772,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             errorMessageNoCutCopyPasteInUnrootedDisplay();
             return;
         }
+        _nodes_in_preorder = null;
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         final List<PhylogenyNode> nodes = PhylogenyMethods.getAllDescendants( node );
         final Set<Integer> node_ids = new HashSet<Integer>( nodes.size() );
@@ -800,6 +804,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( r != JOptionPane.OK_OPTION ) {
             return;
         }
+        _nodes_in_preorder = null;
         setCopiedAndPastedNodes( null );
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         _phylogeny.deleteSubtree( node, true );
@@ -3971,6 +3976,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         node_ids.add( node.getId() );
         getCopiedAndPastedNodes().addAll( node_ids );
+        _nodes_in_preorder = null;
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.hashIDs();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
