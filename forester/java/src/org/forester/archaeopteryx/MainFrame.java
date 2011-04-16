@@ -173,6 +173,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _view_as_NHX_item;
     JMenuItem                 _view_as_XML_item;
     JMenuItem                 _view_as_nexus_item;
+    JMenuItem                 _display_basic_information_item;
     // help menu:
     JMenuItem                 _about_item;
     JMenuItem                 _help_item;
@@ -247,6 +248,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _switch_colors_mi ) {
             switchColors();
+        }
+        else if ( o == _display_basic_information_item ) {
+            displayBasicInformation();
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();
@@ -503,11 +507,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void buildViewMenu() {
-        _view_jmenu = createMenu( "View as Text", getConfiguration() );
+        _view_jmenu = createMenu( "View", getConfiguration() );
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
         _view_jmenu.add( _view_as_NHX_item = new JMenuItem( "View as NHX" ) );
         _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
+        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
+        customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
         customizeJMenuItem( _view_as_NHX_item );
         customizeJMenuItem( _view_as_XML_item );
@@ -923,6 +929,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void updateTypeCheckboxes( final Options options, final Object o ) {
         setTypeMenuToAllUnselected();
         ( ( JCheckBoxMenuItem ) o ).setSelected( true );
+    }
+
+    void displayBasicInformation() {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            return;
+        }
+        _textframe = TextFrame.instantiate( Util.crateBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
     }
 
     void viewAsNexus() {

@@ -136,10 +136,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         treegraphic_scroll_pane_panel.add( treegraphic_scroll_pane, BorderLayout.CENTER );
         _treegraphic_scroll_pane_panels.add( treegraphic_scroll_pane_panel );
         _treegraphic_scroll_panes.add( treegraphic_scroll_pane );
-        getTabbedPane().addTab( name,
-                                null,
-                                treegraphic_scroll_pane_panel,
-                                Util.createDescriptionForTab( phy, full_path ) );
+        getTabbedPane().addTab( name, null, treegraphic_scroll_pane_panel, "" );
         getTabbedPane().setSelectedIndex( getTabbedPane().getTabCount() - 1 );
         getControlPanel().showWhole();
     }

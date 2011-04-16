@@ -41,6 +41,8 @@ import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.util.BasicDescriptiveStatistics;
+import org.forester.util.DescriptiveStatistics;
 import org.forester.util.FailedConditionCheckException;
 import org.forester.util.ForesterUtil;
 
@@ -271,15 +273,28 @@ public class PhylogenyMethods {
         return max;
     }
 
-    public static int calculateMaximumNumberOfDescendantsPerNode( final Phylogeny phy ) {
-        int max = 0;
+    public static DescriptiveStatistics calculatNumberOfDescendantsPerNodeStatistics( final Phylogeny phy ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( node.getNumberOfDescendants() > max ) {
-                max = node.getNumberOfDescendants();
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() ) {
+                stats.addValue( n.getNumberOfDescendants() );
             }
         }
-        return max;
+        return stats;
+    }
+
+    public static DescriptiveStatistics calculatConfidenceStatistics( final Phylogeny phy ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() ) {
+                if ( n.getBranchData().isHasConfidences() ) {
+                    stats.addValue( n.getBranchData().getConfidence( 0 ).getValue() );
+                }
+            }
+        }
+        return stats;
     }
 
     /**

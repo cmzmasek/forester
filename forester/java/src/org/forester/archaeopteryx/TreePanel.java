@@ -3476,7 +3476,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if ( _nodes_in_preorder == null ) {
                 _nodes_in_preorder = new PhylogenyNode[ _phylogeny.getNodeCount() ];
-                System.out.println( "total nodes: " + _nodes_in_preorder.length );
                 int i = 0;
                 for( final PhylogenyNodeIterator it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
                     _nodes_in_preorder[ i++ ] = it.next();
