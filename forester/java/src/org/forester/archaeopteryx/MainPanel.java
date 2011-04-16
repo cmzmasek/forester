@@ -94,14 +94,13 @@ public class MainPanel extends JPanel implements ComponentListener {
         treepanel.setControlPanel( getControlPanel() );
         _treepanels.add( treepanel );
         String name = "";
-        //  if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
-        //      name = phy.getName();
-        //  }
-        //  else if ( phy.getIdentifier() != null ) {
-        //      name = phy.getIdentifier().toString();
-        //  }
-        /* else */
-        if ( !ForesterUtil.isEmpty( default_name ) ) {
+        if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
+            name = phy.getName();
+        }
+        else if ( phy.getIdentifier() != null ) {
+            name = phy.getIdentifier().toString();
+        }
+        else if ( !ForesterUtil.isEmpty( default_name ) ) {
             name = default_name;
         }
         else {
