@@ -2348,6 +2348,7 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
             if ( !exception ) {
+                getMainPanel().setTitleOfSelectedTab( file.getName() );
                 getMainPanel().getCurrentTreePanel().setTreeFile( file );
                 getMainPanel().getCurrentTreePanel().setEdited( false );
             }

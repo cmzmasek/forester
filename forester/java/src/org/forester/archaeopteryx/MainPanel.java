@@ -94,13 +94,14 @@ public class MainPanel extends JPanel implements ComponentListener {
         treepanel.setControlPanel( getControlPanel() );
         _treepanels.add( treepanel );
         String name = "";
-        if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
-            name = phy.getName();
-        }
-        else if ( phy.getIdentifier() != null ) {
-            name = phy.getIdentifier().toString();
-        }
-        else if ( !ForesterUtil.isEmpty( default_name ) ) {
+        //  if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
+        //      name = phy.getName();
+        //  }
+        //  else if ( phy.getIdentifier() != null ) {
+        //      name = phy.getIdentifier().toString();
+        //  }
+        /* else */
+        if ( !ForesterUtil.isEmpty( default_name ) ) {
             name = default_name;
         }
         else {
@@ -224,7 +225,7 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     JScrollPane getCurrentScrollPane() {
         if ( _treegraphic_scroll_panes.size() > 0 ) {
-            final int selected = _tabbed_pane.getSelectedIndex();
+            final int selected = getTabbedPane().getSelectedIndex();
             if ( selected >= 0 ) {
                 return _treegraphic_scroll_panes.get( selected );
             }
@@ -238,7 +239,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     JPanel getCurrentScrollPanePanel() {
-        final int selected = _tabbed_pane.getSelectedIndex();
+        final int selected = getTabbedPane().getSelectedIndex();
         if ( selected >= 0 ) {
             return _treegraphic_scroll_pane_panels.get( selected );
         }
@@ -248,12 +249,19 @@ public class MainPanel extends JPanel implements ComponentListener {
     }
 
     int getCurrentTabIndex() {
-        final int selected = _tabbed_pane.getSelectedIndex();
+        final int selected = getTabbedPane().getSelectedIndex();
         if ( selected >= 0 ) {
             return selected;
         }
         else {
             return 0;
+        }
+    }
+
+    void setTitleOfSelectedTab( final String title ) {
+        final int selected = getTabbedPane().getSelectedIndex();
+        if ( selected >= 0 ) {
+            getTabbedPane().setTitleAt( selected, title );
         }
     }
 
