@@ -27,18 +27,29 @@ package org.forester.go;
 
 public interface GoSubset extends Comparable<GoSubset> {
 
-    public static final String GOSLIM_GENERIC_STR = "goslim_generic";
-    public static final String GOSLIM_GOA_STR     = "goslim_goa";
-    public static final String GOSLIM_PIR_STR     = "goslim_pir";
-    public static final String GOSUBSET_PROK_STR  = "gosubset_prok";
-    public static final String GOSLIM_CANDIDA_STR = "goslim_candida";
-    public static final String GOSLIM_PLANT_STR   = "goslim_plant";
-    public static final String GOSLIM_YEAST_STR   = "goslim_yeast";
-    public static final String GOSLIM_POMBE_STR   = "goslim_pombe";
+    public static final String GOSLIM_GENERIC_STR           = "goslim_generic";
+    public static final String GOSLIM_GOA_STR               = "goslim_goa";
+    public static final String GOSLIM_PIR_STR               = "goslim_pir";
+    public static final String GOSUBSET_PROK_STR            = "gosubset_prok";
+    public static final String GOSLIM_CANDIDA_STR           = "goslim_candida";
+    public static final String GOSLIM_PLANT_STR             = "goslim_plant";
+    public static final String GOSLIM_YEAST_STR             = "goslim_yeast";
+    public static final String GOSLIM_POMBE_STR             = "goslim_pombe";
+    public static final String HIGH_LEVEL_ANNOTATION_QC_STR = "high_level_annotation_qc";
+    public static final String UNVETTED_STR                 = "unvetted";
 
     public Type getType();
 
     public static enum Type {
-        GOSLIM_GENERIC, GOSLIM_GOA, GOSLIM_PIR, GOSUBSET_PROK, GOSLIM_CANDIDA, GOSLIM_PLANT, GOSLIM_YEAST, GOSLIM_POMBE;
+        GOSLIM_GENERIC,
+        GOSLIM_GOA,
+        GOSLIM_PIR,
+        GOSUBSET_PROK,
+        GOSLIM_CANDIDA,
+        GOSLIM_PLANT,
+        GOSLIM_YEAST,
+        GOSLIM_POMBE,
+        HIGH_LEVEL_ANNOTATION_QC,
+        UNVETTED;
     }
 }

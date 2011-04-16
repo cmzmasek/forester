@@ -572,7 +572,7 @@ public class Phylogeny {
             return 0;
         }
         int c = 0;
-        for( PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); it.next() ) {
+        for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); it.next() ) {
             ++c;
         }
         return c;

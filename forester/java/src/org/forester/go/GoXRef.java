@@ -42,6 +42,11 @@ public interface GoXRef extends Comparable<GoXRef> {
     public static final String GOC_STR               = "GOC";
     public static final String WIKIPEDIA_STR         = "Wikipedia";
     public static final String KEGG_STR              = "KEGG";
+    public static final String RHEA_STR              = "RHEA";
+    public static final String NIF_SUBCELLULAR_STR   = "NIF_Subcellular";
+    public static final String CORUM_STR             = "CORUM";
+    public static final String UNIPATHWAY_STR        = "UniPathway";
+    public static final String PO_STR                = "PO";
 
     public Type getType();
 
@@ -62,6 +67,11 @@ public interface GoXRef extends Comparable<GoXRef> {
         IMG,
         GOC,
         WIKIPEDIA,
-        KEGG;
+        KEGG,
+        RHEA,
+        NIF_SUBCELLULAR,
+        CORUM,
+        UNIPATHWAY,
+        PO;
     }
 }

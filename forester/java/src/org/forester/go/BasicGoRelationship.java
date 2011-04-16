@@ -49,6 +49,9 @@ public class BasicGoRelationship implements GoRelationship {
         else if ( type.toLowerCase().equals( POSITIVELY_REGULATES_STR ) ) {
             _type = Type.POSITIVELY_REGULATES;
         }
+        else if ( type.toLowerCase().equals( HAS_PART_STR ) ) {
+            _type = Type.HAS_PART;
+        }
         else {
             throw new IllegalArgumentException( "unknown GO relationship type: " + type );
         }
@@ -124,8 +127,11 @@ public class BasicGoRelationship implements GoRelationship {
             case REGULATES:
                 sb.append( REGULATES_STR );
                 break;
+            case HAS_PART:
+                sb.append( HAS_PART_STR );
+                break;
             default:
-                new AssertionError( "unknown type: " + getType() );
+                new IllegalStateException( "unknown type: " + getType() );
         }
         sb.append( ": " );
         sb.append( getGoId().toString() );

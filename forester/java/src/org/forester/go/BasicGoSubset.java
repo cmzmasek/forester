@@ -55,6 +55,12 @@ public class BasicGoSubset implements GoSubset {
         else if ( my_s.equals( GOSLIM_POMBE_STR ) ) {
             _type = Type.GOSLIM_POMBE;
         }
+        else if ( my_s.equals( HIGH_LEVEL_ANNOTATION_QC_STR ) ) {
+            _type = Type.HIGH_LEVEL_ANNOTATION_QC;
+        }
+        else if ( my_s.equals( UNVETTED_STR ) ) {
+            _type = Type.UNVETTED;
+        }
         else {
             throw new IllegalArgumentException( "unknown GO subset type: " + my_s );
         }

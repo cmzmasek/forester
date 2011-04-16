@@ -81,6 +81,21 @@ public class BasicGoXRef implements GoXRef {
         else if ( type.equals( WIKIPEDIA_STR ) ) {
             _type = Type.WIKIPEDIA;
         }
+        else if ( type.equals( RHEA_STR ) ) {
+            _type = Type.RHEA;
+        }
+        else if ( type.equals( NIF_SUBCELLULAR_STR ) ) {
+            _type = Type.NIF_SUBCELLULAR;
+        }
+        else if ( type.equals( CORUM_STR ) ) {
+            _type = Type.CORUM;
+        }
+        else if ( type.equals( UNIPATHWAY_STR ) ) {
+            _type = Type.UNIPATHWAY;
+        }
+        else if ( type.equals( PO_STR ) ) {
+            _type = Type.PO;
+        }
         else {
             throw new IllegalArgumentException( "unknown GO xref type: " + type );
         }
