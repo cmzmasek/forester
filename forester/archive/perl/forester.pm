@@ -223,7 +223,7 @@ our $RAXML_VERSION            = "7.0.4";
 # forester.jar. This jar file is currently available at: http://www.phylosoft.org 
 # -------------------------------------------------------------------------------
 
-our $FORESTER_JAR             = $SOFTWARE_DIR."FORESTER/DEV/forester-atv/java/forester.jar";
+our $FORESTER_JAR             = $SOFTWARE_DIR."FORESTER/DEV/forester/forester/java/forester.jar";
 
 
 
