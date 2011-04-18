@@ -859,6 +859,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                     null,
                                                     options,
                                                     options[ 2 ] );
+        _nodes_in_preorder = null;
         boolean node_only = true;
         if ( r == 1 ) {
             node_only = false;
@@ -1701,6 +1702,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.WARNING_MESSAGE );
             return;
         }
+        _nodes_in_preorder = null;
         setWaitCursor();
         PhylogenyMethods.midpointRoot( _phylogeny );
         resetNodeIdToDistToLeafMap();
@@ -4649,6 +4651,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void swap( final PhylogenyNode node ) {
         if ( !node.isExternal() ) {
             _phylogeny.swapChildren( node );
+            _nodes_in_preorder = null;
         }
         repaint();
     }
