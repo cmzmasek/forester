@@ -29,6 +29,8 @@ module Evoruby
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
 
+    SIMPLE = true
+
     EXTRACT_TAXONOMY_OPTION = "t"
 
     def initialize()
@@ -199,6 +201,8 @@ module Evoruby
       my_species = nil
       if desc =~ /^>?\s*\S{1,10}_([0-9A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
+      elsif SIMPLE
+        new_desc = counter.to_s( 16 )
       elsif extract_taxonomy
         if ( desc.count( "[" ) != desc.count( "]" ) )
           Util.fatal_error( PRG_NAME, "illegal bracket count in: " + desc )
