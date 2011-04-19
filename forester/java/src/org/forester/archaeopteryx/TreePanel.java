@@ -3344,6 +3344,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( node ).length() > 0 ) ) {
                     x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( node ) + " " );
                 }
+                if ( getControlPanel().isShowGeneNames() ) {
+                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName() + " " );
+                }
+                if ( getControlPanel().isShowGeneSymbols() ) {
+                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getSymbol() + " " );
+                }
+                if ( getControlPanel().isShowSequenceAcc() ) {
+                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getAccession()
+                            .toString()
+                            + " " );
+                }
                 if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
                     x += getTreeFontSet()._fm_large.stringWidth( node.getName() + " " );
                 }

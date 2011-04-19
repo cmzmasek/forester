@@ -154,6 +154,12 @@ public class UniProtSequenceObtainer implements Runnable {
                 if ( query.indexOf( '/' ) > 0 ) {
                     query = query.substring( 0, query.indexOf( '/' ) );
                 }
+                if ( query.indexOf( '.' ) > 0 ) {
+                    query = query.substring( 0, query.indexOf( '.' ) );
+                }
+                if ( query.indexOf( '_' ) > 0 ) {
+                    query = query.substring( 0, query.indexOf( '_' ) );
+                }
                 final UniProtEntry upe = obtainUniProtEntry( query );
                 if ( upe != null ) {
                     final Sequence seq = new Sequence();
