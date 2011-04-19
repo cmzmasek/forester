@@ -471,6 +471,9 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 obtainDetailedTaxonomicInformation();
             }
+            else if ( o == _obtain_uniprot_seq_information_jmi ) {
+                obtainUniProtSequenceInformation();
+            }
             else if ( o == _read_values_jmi ) {
                 if ( isSubtreeDisplayed() ) {
                     return;
@@ -829,6 +832,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
         _obtain_detailed_taxonomic_information_jmi
                 .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );
+        _tools_menu
+                .add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information (from UniProt)" ) );
+        customizeJMenuItem( _obtain_uniprot_seq_information_jmi );
+        _obtain_uniprot_seq_information_jmi.setToolTipText( "To add additional sequence information (from UniProt)" );
         _tools_menu.addSeparator();
         if ( !Constants.__RELEASE ) {
             _tools_menu.add( _function_analysis = new JMenuItem( "Add UniProtKB Annotations" ) );
@@ -1379,6 +1386,18 @@ public final class MainFrameApplication extends MainFrame {
                                                                          _mainpanel.getCurrentTreePanel(),
                                                                          phy.copy() );
                 new Thread( t ).start();
+            }
+        }
+    }
+
+    private void obtainUniProtSequenceInformation() {
+        if ( getCurrentTreePanel() != null ) {
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final UniProtSequenceObtainer u = new UniProtSequenceObtainer( this,
+                                                                               _mainpanel.getCurrentTreePanel(),
+                                                                               phy.copy() );
+                new Thread( u ).start();
             }
         }
     }

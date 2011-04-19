@@ -113,6 +113,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _collapse_species_specific_subtrees;
     JMenuItem                 _collapse_below_threshold;                                                                                                                                                                               //TODO implememt me
     JMenuItem                 _obtain_detailed_taxonomic_information_jmi;
+    JMenuItem                 _obtain_uniprot_seq_information_jmi;
     JMenuItem                 _move_node_names_to_tax_sn_jmi;
     JMenuItem                 _move_node_names_to_seq_names_jmi;
     JMenuItem                 _extract_tax_code_from_node_names_jmi;
@@ -417,13 +418,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     boolean isSubtreeDisplayed() {
-        if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
-            JOptionPane
-                    .showMessageDialog( this,
-                                        "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
-                                        "Operation can not be exectuted on a sub-tree",
-                                        JOptionPane.WARNING_MESSAGE );
-            return true;
+        if ( getCurrentTreePanel() != null ) {
+            if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
+                JOptionPane
+                        .showMessageDialog( this,
+                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                            "Operation can not be exectuted on a sub-tree",
+                                            JOptionPane.WARNING_MESSAGE );
+                return true;
+            }
         }
         return false;
     }
@@ -508,11 +511,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildViewMenu() {
         _view_jmenu = createMenu( "View", getConfiguration() );
+        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
+        _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
         _view_jmenu.add( _view_as_NHX_item = new JMenuItem( "View as NHX" ) );
         _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
-        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
         customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
         customizeJMenuItem( _view_as_NHX_item );

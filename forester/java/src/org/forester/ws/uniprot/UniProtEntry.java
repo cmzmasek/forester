@@ -27,33 +27,31 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
-public final class UniProtTaxonomyEntry {
+public final class UniProtEntry {
 
-    private String _id;
     private String _ac;
     private String _rec_name;
     private String _os_scientific_name;
-    private String _os_common_name;
     private String _tax_id;
+    private String _symbol;
 
-    private UniProtTaxonomyEntry() {
+    private UniProtEntry() {
     }
 
-    public static UniProtTaxonomyEntry createInstanceFromPlainText( final List<String> lines ) {
-        final UniProtTaxonomyEntry e = new UniProtTaxonomyEntry();
+    public static UniProtEntry createInstanceFromPlainText( final List<String> lines ) {
+        final UniProtEntry e = new UniProtEntry();
         for( final String line : lines ) {
-            if ( line.startsWith( "ID" ) ) {
-                e.setId( line.split( "\\s+" )[ 1 ] );
-            }
-            else if ( line.startsWith( "AC" ) ) {
+            if ( line.startsWith( "AC" ) ) {
                 e.setAc( extract( line, "AC", ";" ) );
             }
             else if ( line.startsWith( "DE" ) ) {
                 if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
                     e.setRecName( extract( line, "Full=", ";" ) );
                 }
-                if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setRecName( extract( line, "Full=", ";" ) );
+            }
+            else if ( line.startsWith( "GN" ) ) {
+                if ( ( line.indexOf( "Name=" ) > 0 ) ) {
+                    e.setSymbol( extract( line, "Name=", ";" ) );
                 }
             }
             else if ( line.startsWith( "OS" ) ) {
@@ -65,7 +63,9 @@ public final class UniProtTaxonomyEntry {
                 }
             }
             else if ( line.startsWith( "OX" ) ) {
-                e.setTaxId( extract( line, "OX", ";" ) );
+                if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
+                    e.setTaxId( extract( line, "NCBI_TaxID=", ";" ) );
+                }
             }
         }
         return e;
@@ -78,15 +78,7 @@ public final class UniProtTaxonomyEntry {
             throw new IllegalArgumentException( "attempt to extract from [" + target + "] between [" + a + "] and ["
                     + b + "]" );
         }
-        return target.substring( i_a + a.length() + 1, i_b - 1 ).trim();
-    }
-
-    public String getId() {
-        return _id;
-    }
-
-    private void setId( final String id ) {
-        _id = id;
+        return target.substring( i_a + a.length(), i_b ).trim();
     }
 
     public String getAc() {
@@ -94,7 +86,9 @@ public final class UniProtTaxonomyEntry {
     }
 
     private void setAc( final String ac ) {
-        _ac = ac;
+        if ( _ac == null ) {
+            _ac = ac;
+        }
     }
 
     public String getRecName() {
@@ -102,7 +96,9 @@ public final class UniProtTaxonomyEntry {
     }
 
     private void setRecName( final String rec_name ) {
-        _rec_name = rec_name;
+        if ( _rec_name == null ) {
+            _rec_name = rec_name;
+        }
     }
 
     public String getOsScientificName() {
@@ -110,15 +106,9 @@ public final class UniProtTaxonomyEntry {
     }
 
     private void setOsScientificName( final String os_scientific_name ) {
-        _os_scientific_name = os_scientific_name;
-    }
-
-    public String getOsCommonName() {
-        return _os_common_name;
-    }
-
-    private void setOsCommonName( final String os_common_name ) {
-        _os_common_name = os_common_name;
+        if ( _os_scientific_name == null ) {
+            _os_scientific_name = os_scientific_name;
+        }
     }
 
     public String getTaxId() {
@@ -126,6 +116,18 @@ public final class UniProtTaxonomyEntry {
     }
 
     private void setTaxId( final String tax_id ) {
-        _tax_id = tax_id;
+        if ( _tax_id == null ) {
+            _tax_id = tax_id;
+        }
+    }
+
+    public String getSymbol() {
+        return _symbol;
+    }
+
+    private void setSymbol( final String symbol ) {
+        if ( _symbol == null ) {
+            _symbol = symbol;
+        }
     }
 }

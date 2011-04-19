@@ -4313,6 +4313,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *            an instance of a Phylogeny
      */
     final void setTree( final Phylogeny t ) {
+        _nodes_in_preorder = null;
         _phylogeny = t;
     }
 
