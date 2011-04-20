@@ -62,6 +62,13 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.Util.GraphicsExportType;
+import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
+import org.forester.archaeopteryx.tools.GoAnnotation;
+import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
+import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
+import org.forester.archaeopteryx.tools.PhylogeneticInferrer;
+import org.forester.archaeopteryx.tools.TaxonomyDataObtainer;
+import org.forester.archaeopteryx.tools.UniProtSequenceObtainer;
 import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
 import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.FastaParser;
@@ -1106,9 +1113,9 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             return;
         }
-        final MainPanelEdit a = new MainPanelEdit( this,
-                                                   _mainpanel.getCurrentTreePanel(),
-                                                   _mainpanel.getCurrentPhylogeny() );
+        final GoAnnotation a = new GoAnnotation( this,
+                                                 _mainpanel.getCurrentTreePanel(),
+                                                 _mainpanel.getCurrentPhylogeny() );
         new Thread( a ).start();
     }
 
@@ -1289,7 +1296,7 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     @Override
-    MainPanel getMainPanel() {
+    public MainPanel getMainPanel() {
         return _mainpanel;
     }
 
@@ -1731,7 +1738,7 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
-    void readSeqsFromFile() {
+    public void readSeqsFromFile() {
         // Set an initial directory if none set yet
         final File my_dir = getCurrentDir();
         _seqs_filechooser.setMultiSelectionEnabled( false );
@@ -1838,7 +1845,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    void readMsaFromFile() {
+    public void readMsaFromFile() {
         // Set an initial directory if none set yet
         final File my_dir = getCurrentDir();
         _msa_filechooser.setMultiSelectionEnabled( false );
@@ -2501,7 +2508,7 @@ public final class MainFrameApplication extends MainFrame {
         return _phylogenetic_inference_options;
     }
 
-    Msa getMsa() {
+    public Msa getMsa() {
         return _msa;
     }
 
@@ -2513,11 +2520,11 @@ public final class MainFrameApplication extends MainFrame {
         _msa_file = msa_file;
     }
 
-    File getMsaFile() {
+    public File getMsaFile() {
         return _msa_file;
     }
 
-    List<Sequence> getSeqs() {
+    public List<Sequence> getSeqs() {
         return _seqs;
     }
 
@@ -2529,7 +2536,7 @@ public final class MainFrameApplication extends MainFrame {
         _seqs_file = seqs_file;
     }
 
-    File getSeqsFile() {
+    public File getSeqsFile() {
         return _seqs_file;
     }
 } // MainFrameApplication.

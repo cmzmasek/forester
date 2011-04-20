@@ -23,7 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +33,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import org.forester.archaeopteryx.MainFrameApplication;
+import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -41,7 +43,7 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-public class MainPanelEdit implements Runnable {
+public class GoAnnotation implements Runnable {
 
     private static final String        SYMBOL   = "Symbol";
     private static final String        ASPECT   = "Aspect";
@@ -53,7 +55,7 @@ public class MainPanelEdit implements Runnable {
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
 
-    MainPanelEdit( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
+    public GoAnnotation( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;

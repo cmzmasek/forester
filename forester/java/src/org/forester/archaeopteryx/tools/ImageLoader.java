@@ -23,7 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -34,6 +34,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.forester.archaeopteryx.Constants;
+import org.forester.archaeopteryx.TreePanel;
+import org.forester.archaeopteryx.Util;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.data.Uri;

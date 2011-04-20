@@ -659,7 +659,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    Configuration getConfiguration() {
+    public Configuration getConfiguration() {
         return _configuration;
     }
 
@@ -794,7 +794,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _circular_type_cbmi.setSelected( false );
     }
 
-    void showWhole() {
+    public void showWhole() {
         _mainpanel.getControlPanel().showWhole();
     }
 

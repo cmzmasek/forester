@@ -23,7 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;

@@ -70,7 +70,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-final class Util {
+public final class Util {
 
     private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
                                                                          .getAvailableFontFamilyNames();
@@ -614,7 +614,7 @@ final class Util {
         System.out.println( "[" + applet_name + "] > " + message );
     }
 
-    final static void printWarningMessage( final String name, final String message ) {
+    public final static void printWarningMessage( final String name, final String message ) {
         System.out.println( "[" + name + "] > " + message );
     }
 

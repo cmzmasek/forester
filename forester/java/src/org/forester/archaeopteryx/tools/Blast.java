@@ -23,7 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class Blast {
     public Blast() {
     }
 
-    void go( final String geneName ) {
+    public void go( final String geneName ) {
         // Retrieve accession number list which has specified gene name from searchByXMLPath of ARSA. Please click here for details of ARSA.
         /*target: Sequence length is between 300bp and 1000bp.
         Feature key is CDS.

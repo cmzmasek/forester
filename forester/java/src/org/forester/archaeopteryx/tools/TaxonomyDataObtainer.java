@@ -1,4 +1,5 @@
-// Exp $
+// $Id:
+//
 // forester -- software libraries and applications
 // for genomics and evolutionary biology research.
 //
@@ -23,24 +24,27 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.SortedSet;
 
 import javax.swing.JOptionPane;
 
 import org.forester.analysis.AncestralTaxonomyInference;
+import org.forester.archaeopteryx.MainFrameApplication;
+import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.ws.uniprot.UniProtWsTools;
 
-public class AncestralTaxonomyInferrer implements Runnable {
+public class TaxonomyDataObtainer implements Runnable {
 
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
 
-    AncestralTaxonomyInferrer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
+    public TaxonomyDataObtainer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;
@@ -50,39 +54,32 @@ public class AncestralTaxonomyInferrer implements Runnable {
         return UniProtWsTools.BASE_URL;
     }
 
-    private void inferTaxonomies() {
+    private void execute() {
         _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
         SortedSet<String> not_found = null;
         try {
-            not_found = AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
-        }
-        catch ( final IllegalArgumentException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
-            JOptionPane.showMessageDialog( _mf,
-                                           e.getMessage(),
-                                           "Error during ancestral taxonomy inference",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
+            not_found = AncestralTaxonomyInference.obtainDetailedTaxonomicInformation( _phy );
         }
         catch ( final UnknownHostException e ) {
             _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             JOptionPane.showMessageDialog( _mf,
                                            "Could not connect to \"" + getBaseUrl() + "\"",
-                                           "Network error during ancestral taxonomy inference",
+                                           "Network error during taxonomic information gathering",
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        catch ( final Exception e ) {
+        catch ( final IOException e ) {
             _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
-                                           "Unexpected error during ancestral taxonomy inference",
+                                           "Failed to obtain taxonomic information",
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
-        _phy.setRerootable( false );
+        finally {
+            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+        }
         _treepanel.setTree( _phy );
         _mf.showWhole();
         _treepanel.setEdited( true );
@@ -95,7 +92,6 @@ public class AncestralTaxonomyInferrer implements Runnable {
             }
             final StringBuffer sb = new StringBuffer();
             sb.append( "Not all taxonomies could be resolved.\n" );
-            sb.append( "The result is incomplete, and, possibly, misleading.\n" );
             if ( not_found.size() == 1 ) {
                 sb.append( "The following taxonomy was not found:\n" );
             }
@@ -117,7 +113,7 @@ public class AncestralTaxonomyInferrer implements Runnable {
             try {
                 JOptionPane.showMessageDialog( _mf,
                                                sb.toString(),
-                                               "Ancestral Taxonomy Inference Completed",
+                                               "Taxonomy Tool Completed",
                                                JOptionPane.WARNING_MESSAGE );
             }
             catch ( final Exception e ) {
@@ -127,8 +123,8 @@ public class AncestralTaxonomyInferrer implements Runnable {
         else {
             try {
                 JOptionPane.showMessageDialog( _mf,
-                                               "Ancestral taxonomy inference successfully completed",
-                                               "Ancestral Taxonomy Inference Completed",
+                                               "Taxonomy tool successfully completed",
+                                               "Taxonomy Tool Completed",
                                                JOptionPane.INFORMATION_MESSAGE );
             }
             catch ( final Exception e ) {
@@ -139,6 +135,6 @@ public class AncestralTaxonomyInferrer implements Runnable {
 
     @Override
     public void run() {
-        inferTaxonomies();
+        execute();
     }
 }

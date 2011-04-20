@@ -95,6 +95,8 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
+import org.forester.archaeopteryx.tools.Blast;
+import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -1097,7 +1099,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * 
      * @return a pointer to the phylogeny
      */
-    final Phylogeny getPhylogeny() {
+    public final Phylogeny getPhylogeny() {
         return _phylogeny;
     }
 
@@ -4108,7 +4110,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setPreferredSize( new Dimension( x, y ) );
     }
 
-    final void setArrowCursor() {
+    public final void setArrowCursor() {
         setCursor( ARROW_CURSOR );
         repaint();
     }
@@ -4125,7 +4127,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getMainPanel().setCutOrCopiedTree( cut_or_copied_tree );
     }
 
-    final void setEdited( final boolean edited ) {
+    public final void setEdited( final boolean edited ) {
         _edited = edited;
     }
 
@@ -4323,7 +4325,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * @param t
      *            an instance of a Phylogeny
      */
-    final void setTree( final Phylogeny t ) {
+    public final void setTree( final Phylogeny t ) {
         _nodes_in_preorder = null;
         _phylogeny = t;
     }
@@ -4358,7 +4360,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _urt_factor_ov = urt_factor_ov;
     }
 
-    final void setWaitCursor() {
+    public final void setWaitCursor() {
         setCursor( WAIT_CURSOR );
         repaint();
     }
@@ -4877,11 +4879,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    synchronized void setImageMap( final Hashtable<String, BufferedImage> image_map ) {
+    public synchronized void setImageMap( final Hashtable<String, BufferedImage> image_map ) {
         getMainPanel().setImageMap( image_map );
     }
 
-    synchronized Hashtable<String, BufferedImage> getImageMap() {
+    public synchronized Hashtable<String, BufferedImage> getImageMap() {
         return getMainPanel().getImageMap();
     }
 }

@@ -37,9 +37,9 @@ import org.forester.util.ForesterConstants;
 public final class Constants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
-    final static boolean        __RELEASE                                                     = false;                                                    // TODO remove me
-    final static boolean        __SNAPSHOT_RELEASE                                            = false;                                                    // TODO remove me
-    final static String         PRG_NAME                                                      = "Archaeopteryx";
+    public final static boolean __RELEASE                                                     = false;                                                    // TODO remove me
+    public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                    // TODO remove me
+    public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.960 beta A48";
     final static String         PRG_DATE                                                      = "2011.03.09";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";

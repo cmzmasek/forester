@@ -85,10 +85,10 @@ public class MainPanel extends JPanel implements ComponentListener {
         getControlPanel().showWhole();
     }
 
-    void addPhylogenyInNewTab( final Phylogeny phy,
-                               final Configuration config,
-                               final String default_name,
-                               final String full_path ) {
+    public void addPhylogenyInNewTab( final Phylogeny phy,
+                                      final Configuration config,
+                                      final String default_name,
+                                      final String full_path ) {
         final TreePanel treepanel = new TreePanel( phy, config, this );
         getControlPanel().phylogenyAdded( config );
         treepanel.setControlPanel( getControlPanel() );
@@ -261,7 +261,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         }
     }
 
-    TreePanel getCurrentTreePanel() {
+    public TreePanel getCurrentTreePanel() {
         final int selected = getTabbedPane().getSelectedIndex();
         if ( selected >= 0 ) {
             return _treepanels.get( selected );

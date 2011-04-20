@@ -24,10 +24,11 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.io.File;
 
+import org.forester.archaeopteryx.Configuration;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.msa.Mafft;
 

@@ -464,7 +464,7 @@ public final class Configuration {
         return _graphics_export_y;
     }
 
-    int getDefaultBootstrapSamples() {
+    public int getDefaultBootstrapSamples() {
         return _default_bootstrap_samples;
     }
 

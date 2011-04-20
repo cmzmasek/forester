@@ -23,7 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx;
+package org.forester.archaeopteryx.tools;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -45,6 +45,8 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import org.forester.archaeopteryx.MainFrameApplication;
+import org.forester.archaeopteryx.Util;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
