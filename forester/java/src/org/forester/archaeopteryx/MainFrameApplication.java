@@ -67,8 +67,8 @@ import org.forester.archaeopteryx.tools.GoAnnotation;
 import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
 import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
 import org.forester.archaeopteryx.tools.PhylogeneticInferrer;
+import org.forester.archaeopteryx.tools.SequenceDataRetriver;
 import org.forester.archaeopteryx.tools.TaxonomyDataObtainer;
-import org.forester.archaeopteryx.tools.UniProtSequenceObtainer;
 import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
 import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.FastaParser;
@@ -1401,9 +1401,9 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final UniProtSequenceObtainer u = new UniProtSequenceObtainer( this,
-                                                                               _mainpanel.getCurrentTreePanel(),
-                                                                               phy.copy() );
+                final SequenceDataRetriver u = new SequenceDataRetriver( this,
+                                                                         _mainpanel.getCurrentTreePanel(),
+                                                                         phy.copy() );
                 new Thread( u ).start();
             }
         }

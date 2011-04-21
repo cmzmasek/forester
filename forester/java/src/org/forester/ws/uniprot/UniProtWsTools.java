@@ -213,4 +213,10 @@ public final class UniProtWsTools {
         in.close();
         return result;
     }
+
+    public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
+        return UniProtEntry.createInstanceFromPlainText( lines );
+    }
 }

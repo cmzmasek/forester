@@ -99,6 +99,7 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
+import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtTaxonomy;
 import org.forester.ws.uniprot.UniProtWsTools;
 import org.forester.ws.wabi.TxSearch;
@@ -645,14 +646,23 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Uniprot Entry Retrieval: " );
+        if ( Test.testUniprotEntryRetrieval() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Uniprot Taxonomy Search: " );
         if ( Test.testUniprotTaxonomySearch() ) {
             System.out.println( "OK." );
             succeeded++;
         }
         else {
-            System.out
-                    .println( "failed [will not count towards failed tests since it might be due to absence internet connection]" );
+            System.out.println( "failed." );
+            failed++;
         }
         if ( Mafft.isInstalled() ) {
             System.out.print( "MAFFT (external program): " );
@@ -7709,10 +7719,44 @@ public final class Test {
                 return false;
             }
         }
-        catch ( final Exception e ) {
+        catch ( final IOException e ) {
             System.out.println();
             System.out.println( "the following might be due to absence internet connection:" );
             e.printStackTrace( System.out );
+            return true;
+        }
+        catch ( final Exception e ) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testUniprotEntryRetrieval() {
+        try {
+            final SequenceDatabaseEntry entry = UniProtWsTools.obtainUniProtEntry( "P12345", 200 );
+            if ( !entry.getAccession().equals( "P12345" ) ) {
+                return false;
+            }
+            if ( !entry.getTaxonomyScientificName().equals( "Oryctolagus cuniculus" ) ) {
+                return false;
+            }
+            if ( !entry.getSequenceName().equals( "Aspartate aminotransferase, mitochondrial" ) ) {
+                return false;
+            }
+            if ( !entry.getSequenceSymbol().equals( "GOT2" ) ) {
+                return false;
+            }
+            if ( !entry.getTaxonomyIdentifier().equals( "9986" ) ) {
+                return false;
+            }
+        }
+        catch ( final IOException e ) {
+            System.out.println();
+            System.out.println( "the following might be due to absence internet connection:" );
+            e.printStackTrace( System.out );
+            return true;
+        }
+        catch ( final Exception e ) {
             return false;
         }
         return true;

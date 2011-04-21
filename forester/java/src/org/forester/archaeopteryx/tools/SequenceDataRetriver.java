@@ -25,11 +25,12 @@
 
 package org.forester.archaeopteryx.tools;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
@@ -43,16 +44,24 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
-import org.forester.ws.uniprot.UniProtEntry;
+import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtWsTools;
 
-public class UniProtSequenceObtainer implements Runnable {
+public final class SequenceDataRetriver implements Runnable {
 
+    // uniprot/expasy accession number format (6 chars):
+    // letter digit letter-or-digit letter-or-digit letter-or-digit digit
+    private final static Pattern       UNIPROT_AC_PATTERN = Pattern.compile( "[A-NR-ZOPQ]\\d[A-Z0-9]{3}\\d" );
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
+    private final static boolean       DEBUG              = true;
 
-    public UniProtSequenceObtainer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
+    private enum Db {
+        UNKNOWN, UNIPROT;
+    }
+
+    public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;
@@ -145,14 +154,33 @@ public class UniProtSequenceObtainer implements Runnable {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
+            Sequence seq = null;
+            Taxonomy tax = null;
             if ( node.getNodeData().isHasSequence() ) {
-                //TODO  Do something
+                seq = node.getNodeData().getSequence();
             }
-            //  else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-            //     not_found.add( node.getName() );
-            //  }
+            else {
+                seq = new Sequence();
+            }
+            if ( node.getNodeData().isHasTaxonomy() ) {
+                tax = node.getNodeData().getTaxonomy();
+            }
+            else {
+                tax = new Taxonomy();
+            }
+            String query = null;
+            Db db = Db.UNKNOWN;
+            if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "uniprot" ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                db = Db.UNIPROT;
+            }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                String query = node.getName();
+                query = node.getName();
+            }
+            if ( !ForesterUtil.isEmpty( query ) ) {
                 if ( query.indexOf( '/' ) > 0 ) {
                     query = query.substring( 0, query.indexOf( '/' ) );
                 }
@@ -162,24 +190,33 @@ public class UniProtSequenceObtainer implements Runnable {
                 if ( query.indexOf( '_' ) > 0 ) {
                     query = query.substring( 0, query.indexOf( '_' ) );
                 }
-                final UniProtEntry upe = obtainUniProtEntry( query );
-                if ( upe != null ) {
-                    final Sequence seq = new Sequence();
-                    final Taxonomy tax = new Taxonomy();
-                    if ( !ForesterUtil.isEmpty( upe.getAc() ) ) {
-                        seq.setAccession( new Accession( upe.getAc(), "uniprot" ) );
+                SequenceDatabaseEntry db_entry = null;
+                if ( ( db == Db.UNIPROT ) || UNIPROT_AC_PATTERN.matcher( query ).matches() ) {
+                    if ( DEBUG ) {
+                        System.out.println( "uniprot: " + query );
                     }
-                    if ( !ForesterUtil.isEmpty( upe.getRecName() ) ) {
-                        seq.setName( upe.getRecName() );
+                    try {
+                        db_entry = UniProtWsTools.obtainUniProtEntry( query, 200 );
                     }
-                    if ( !ForesterUtil.isEmpty( upe.getSymbol() ) ) {
-                        seq.setSymbol( upe.getSymbol() );
+                    catch ( final FileNotFoundException e ) {
+                        // Ignore.
                     }
-                    if ( !ForesterUtil.isEmpty( upe.getOsScientificName() ) ) {
-                        tax.setScientificName( upe.getOsScientificName() );
+                }
+                if ( db_entry != null ) {
+                    if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
+                        seq.setAccession( new Accession( db_entry.getAccession(), "uniprot" ) );
                     }
-                    if ( !ForesterUtil.isEmpty( upe.getTaxId() ) ) {
-                        tax.setIdentifier( new Identifier( upe.getTaxId(), "uniprot" ) );
+                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
+                        seq.setName( db_entry.getSequenceName() );
+                    }
+                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
+                        seq.setSymbol( db_entry.getSequenceSymbol() );
+                    }
+                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
+                        tax.setScientificName( db_entry.getTaxonomyScientificName() );
+                    }
+                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                        tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
                     }
                     node.getNodeData().setTaxonomy( tax );
                     node.getNodeData().setSequence( seq );
@@ -187,15 +224,9 @@ public class UniProtSequenceObtainer implements Runnable {
                 else {
                     not_found.add( node.getName() );
                 }
-                //}
             }
         }
         return not_found;
-    }
-
-    static UniProtEntry obtainUniProtEntry( final String query ) throws IOException {
-        final List<String> lines = UniProtWsTools.queryUniprot( "uniprot/" + query + ".txt", 200 );
-        return UniProtEntry.createInstanceFromPlainText( lines );
     }
 
     @Override

@@ -27,7 +27,7 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
-public final class UniProtEntry {
+public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private String _ac;
     private String _rec_name;
@@ -38,7 +38,7 @@ public final class UniProtEntry {
     private UniProtEntry() {
     }
 
-    public static UniProtEntry createInstanceFromPlainText( final List<String> lines ) {
+    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
         for( final String line : lines ) {
             if ( line.startsWith( "AC" ) ) {
@@ -81,7 +81,11 @@ public final class UniProtEntry {
         return target.substring( i_a + a.length(), i_b ).trim();
     }
 
-    public String getAc() {
+    /* (non-Javadoc)
+     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getAc()
+     */
+    @Override
+    public String getAccession() {
         return _ac;
     }
 
@@ -91,7 +95,11 @@ public final class UniProtEntry {
         }
     }
 
-    public String getRecName() {
+    /* (non-Javadoc)
+     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getRecName()
+     */
+    @Override
+    public String getSequenceName() {
         return _rec_name;
     }
 
@@ -101,7 +109,11 @@ public final class UniProtEntry {
         }
     }
 
-    public String getOsScientificName() {
+    /* (non-Javadoc)
+     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getOsScientificName()
+     */
+    @Override
+    public String getTaxonomyScientificName() {
         return _os_scientific_name;
     }
 
@@ -111,7 +123,11 @@ public final class UniProtEntry {
         }
     }
 
-    public String getTaxId() {
+    /* (non-Javadoc)
+     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getTaxId()
+     */
+    @Override
+    public String getTaxonomyIdentifier() {
         return _tax_id;
     }
 
@@ -121,7 +137,11 @@ public final class UniProtEntry {
         }
     }
 
-    public String getSymbol() {
+    /* (non-Javadoc)
+     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getSymbol()
+     */
+    @Override
+    public String getSequenceSymbol() {
         return _symbol;
     }
 
