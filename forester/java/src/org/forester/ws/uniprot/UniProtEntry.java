@@ -81,9 +81,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         return target.substring( i_a + a.length(), i_b ).trim();
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getAc()
-     */
     @Override
     public String getAccession() {
         return _ac;
@@ -95,9 +92,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getRecName()
-     */
     @Override
     public String getSequenceName() {
         return _rec_name;
@@ -109,9 +103,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getOsScientificName()
-     */
     @Override
     public String getTaxonomyScientificName() {
         return _os_scientific_name;
@@ -123,9 +114,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getTaxId()
-     */
     @Override
     public String getTaxonomyIdentifier() {
         return _tax_id;
@@ -137,9 +125,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.ws.uniprot.SequenceDatabaseEntry#getSymbol()
-     */
     @Override
     public String getSequenceSymbol() {
         return _symbol;

@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 
@@ -49,13 +48,10 @@ import org.forester.ws.uniprot.UniProtWsTools;
 
 public final class SequenceDataRetriver implements Runnable {
 
-    // uniprot/expasy accession number format (6 chars):
-    // letter digit letter-or-digit letter-or-digit letter-or-digit digit
-    private final static Pattern       UNIPROT_AC_PATTERN = Pattern.compile( "[A-NR-ZOPQ]\\d[A-Z0-9]{3}\\d" );
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private final static boolean       DEBUG              = true;
+    private final static boolean       DEBUG = true;
 
     private enum Db {
         UNKNOWN, UNIPROT;
@@ -150,7 +146,7 @@ public final class SequenceDataRetriver implements Runnable {
         }
     }
 
-    synchronized public static SortedSet<String> obtainSeqInformation( final Phylogeny phy ) throws IOException {
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy ) throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
@@ -178,20 +174,14 @@ public final class SequenceDataRetriver implements Runnable {
                 db = Db.UNIPROT;
             }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                query = node.getName();
+                query = UniProtWsTools.parseUniProtAccessor( node.getName() );
+                if ( !ForesterUtil.isEmpty( query ) ) {
+                    db = Db.UNIPROT;
+                }
             }
             if ( !ForesterUtil.isEmpty( query ) ) {
-                if ( query.indexOf( '/' ) > 0 ) {
-                    query = query.substring( 0, query.indexOf( '/' ) );
-                }
-                if ( query.indexOf( '.' ) > 0 ) {
-                    query = query.substring( 0, query.indexOf( '.' ) );
-                }
-                if ( query.indexOf( '_' ) > 0 ) {
-                    query = query.substring( 0, query.indexOf( '_' ) );
-                }
                 SequenceDatabaseEntry db_entry = null;
-                if ( ( db == Db.UNIPROT ) || UNIPROT_AC_PATTERN.matcher( query ).matches() ) {
+                if ( db == Db.UNIPROT ) {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
                     }

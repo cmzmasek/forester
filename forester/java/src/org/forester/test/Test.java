@@ -7732,6 +7732,24 @@ public final class Test {
     }
 
     private static boolean testUniprotEntryRetrieval() {
+        if ( !UniProtWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
+            return false;
+        }
+        if ( !UniProtWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "P1DDDD" ) != null ) {
+            return false;
+        }
+        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X/P12345/12-42" ).equals( "P12345" ) ) {
+            return false;
+        }
+        if ( !UniProtWsTools.parseUniProtAccessor( "P12345/12-42" ).equals( "P12345" ) ) {
+            return false;
+        }
+        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X/P12345" ).equals( "P12345" ) ) {
+            return false;
+        }
         try {
             final SequenceDatabaseEntry entry = UniProtWsTools.obtainUniProtEntry( "P12345", 200 );
             if ( !entry.getAccession().equals( "P12345" ) ) {

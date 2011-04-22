@@ -34,21 +34,46 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.util.ForesterUtil;
 
 public final class UniProtWsTools {
 
-    public final static String   BASE_URL = "http://www.uniprot.org/";
-    private final static String  URL_ENC  = "UTF-8";
-    private final static boolean DEBUG    = false;
+    public enum Db {
+        UNKNOWN, UNIPROT;
+    }
+    public final static String   BASE_URL           = "http://www.uniprot.org/";
+    private final static String  URL_ENC            = "UTF-8";
+    // uniprot/expasy accession number format (6 chars):
+    // letter digit letter-or-digit letter-or-digit letter-or-digit digit
+    private final static Pattern UNIPROT_AC_PATTERN = Pattern
+                                                            .compile( "^.*[^a-zA-Z0-9]?([A-NR-ZOPQ]\\d[A-Z0-9]{3}\\d)[^a-zA-Z0-9]?" );
+    private final static boolean DEBUG              = false;
 
-    synchronized private static String encode( final String str ) throws UnsupportedEncodingException {
+    private static String encode( final String str ) throws UnsupportedEncodingException {
         return URLEncoder.encode( str.trim(), URL_ENC );
     }
 
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn,
-                                                                                  final int max_taxonomies_return )
+    /**
+     * Return null if no match.
+     * 
+     * @param query
+     * @param db 
+     * @return
+     */
+    static public String parseUniProtAccessor( final String query ) {
+        final Matcher m = UNIPROT_AC_PATTERN.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
             throws IOException {
         final List<String> result = getTaxonomyStringFromCommonName( cn, max_taxonomies_return );
         if ( result.size() > 0 ) {
@@ -57,8 +82,8 @@ public final class UniProtWsTools {
         return null;
     }
 
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
-                                                                                        final int max_taxonomies_return )
+    public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
+                                                                           final int max_taxonomies_return )
             throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromCommonName( cn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
@@ -73,8 +98,7 @@ public final class UniProtWsTools {
         return null;
     }
 
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromId( final String id,
-                                                                          final int max_taxonomies_return )
+    public static List<UniProtTaxonomy> getTaxonomiesFromId( final String id, final int max_taxonomies_return )
             throws IOException {
         final List<String> result = getTaxonomyStringFromId( id, max_taxonomies_return );
         if ( result.size() > 0 ) {
@@ -83,8 +107,8 @@ public final class UniProtWsTools {
         return null;
     }
 
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
-                                                                                      final int max_taxonomies_return )
+    public static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
+                                                                         final int max_taxonomies_return )
             throws IOException {
         // Hack!  Craniata? .. 
         if ( sn.equals( "Drosophila" ) ) {
@@ -106,8 +130,8 @@ public final class UniProtWsTools {
      * and not "Mus musculus", "Mus musculus bactrianus", ...
      * 
      */
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromScientificNameStrict( final String sn,
-                                                                                            final int max_taxonomies_return )
+    public static List<UniProtTaxonomy> getTaxonomiesFromScientificNameStrict( final String sn,
+                                                                               final int max_taxonomies_return )
             throws IOException {
         final List<UniProtTaxonomy> taxonomies = getTaxonomiesFromScientificName( sn, max_taxonomies_return );
         if ( ( taxonomies != null ) && ( taxonomies.size() > 0 ) ) {
@@ -122,8 +146,8 @@ public final class UniProtWsTools {
         return null;
     }
 
-    synchronized public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String code,
-                                                                                    final int max_taxonomies_return )
+    public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String code,
+                                                                       final int max_taxonomies_return )
             throws IOException {
         String my_code = new String( code );
         // Hacks!
@@ -140,37 +164,33 @@ public final class UniProtWsTools {
         return null;
     }
 
-    synchronized private static List<String> getTaxonomyStringFromCommonName( final String cn,
-                                                                              final int max_lines_to_return )
+    private static List<String> getTaxonomyStringFromCommonName( final String cn, final int max_lines_to_return )
             throws IOException {
         return queryUniprot( "taxonomy/?query=common%3a%22" + encode( cn ) + "%22&format=tab", max_lines_to_return );
     }
 
-    synchronized private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
+    private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
             throws IOException {
         return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
     }
 
-    synchronized private static List<String> getTaxonomyStringFromScientificName( final String sn,
-                                                                                  final int max_lines_to_return )
+    private static List<String> getTaxonomyStringFromScientificName( final String sn, final int max_lines_to_return )
             throws IOException {
         return queryUniprot( "taxonomy/?query=scientific%3a%22" + encode( sn ) + "%22&format=tab", max_lines_to_return );
     }
 
-    synchronized private static List<String> getTaxonomyStringFromTaxonomyCode( final String code,
-                                                                                final int max_lines_to_return )
+    private static List<String> getTaxonomyStringFromTaxonomyCode( final String code, final int max_lines_to_return )
             throws IOException {
         return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
     }
 
-    synchronized private static List<UniProtTaxonomy> hack( final UniProtTaxonomy tax ) {
+    private static List<UniProtTaxonomy> hack( final UniProtTaxonomy tax ) {
         final List<UniProtTaxonomy> l = new ArrayList<UniProtTaxonomy>();
         l.add( tax );
         return l;
     }
 
-    synchronized private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result )
-            throws IOException {
+    private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {
         final List<UniProtTaxonomy> taxonomies = new ArrayList<UniProtTaxonomy>();
         for( final String line : result ) {
             if ( ForesterUtil.isEmpty( line ) ) {
@@ -188,8 +208,7 @@ public final class UniProtWsTools {
         return taxonomies;
     }
 
-    synchronized public static List<String> queryUniprot( final String query, int max_lines_to_return )
-            throws IOException {
+    public static List<String> queryUniprot( final String query, int max_lines_to_return ) throws IOException {
         if ( ForesterUtil.isEmpty( query ) ) {
             throw new IllegalArgumentException( "illegal attempt to use empty query " );
         }
