@@ -27,8 +27,6 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
@@ -42,8 +40,8 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public Object clone() {
-        throw new NotImplementedException();
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
     }
 
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {

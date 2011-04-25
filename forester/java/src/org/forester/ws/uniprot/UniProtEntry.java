@@ -38,6 +38,11 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     private UniProtEntry() {
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
+
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
         for( final String line : lines ) {
