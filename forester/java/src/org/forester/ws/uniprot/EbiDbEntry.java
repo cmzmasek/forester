@@ -30,9 +30,8 @@ import java.util.List;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
-//http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
-    
-    
+
+    //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
     private String _pa;
     private String _de;
     private String _os;
@@ -42,11 +41,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     private EbiDbEntry() {
     }
 
-    
+    @Override
     public Object clone() {
         throw new NotImplementedException();
     }
-    
+
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
@@ -54,15 +53,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 e.setPA( DatabaseTools.extract( line, "PA", ";" ) );
             }
             else if ( line.startsWith( "DE" ) ) {
-               // if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setDe( DatabaseTools.extract( line, "DE" ) );
+                // if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
+                e.setDe( DatabaseTools.extract( line, "DE" ) );
                 //}
             }
-          //  else if ( line.startsWith( "GN" ) ) {
-          //      if ( ( line.indexOf( "Name=" ) > 0 ) ) {
-          //          e.setSymbol( extract( line, "Name=", ";" ) );
-          //      }
-          //  }
+            //  else if ( line.startsWith( "GN" ) ) {
+            //      if ( ( line.indexOf( "Name=" ) > 0 ) ) {
+            //          e.setSymbol( extract( line, "Name=", ";" ) );
+            //      }
+            //  }
             else if ( line.startsWith( "OS" ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
                     e.setOs( DatabaseTools.extract( line, "OS", "(" ) );
@@ -87,7 +86,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     private void setPA( final String pa ) {
         if ( _pa == null ) {
-            _pa= pa;
+            _pa = pa;
         }
     }
 
@@ -108,7 +107,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     private void setOs( final String os ) {
-        if ( _os== null ) {
+        if ( _os == null ) {
             _os = os;
         }
     }

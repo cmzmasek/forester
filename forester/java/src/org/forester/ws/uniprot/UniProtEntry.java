@@ -71,8 +71,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         return e;
     }
 
-   
-
     @Override
     public String getAccession() {
         return _ac;

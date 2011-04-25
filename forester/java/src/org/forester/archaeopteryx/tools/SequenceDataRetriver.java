@@ -174,21 +174,20 @@ public final class SequenceDataRetriver implements Runnable {
                 query = node.getNodeData().getSequence().getAccession().getValue();
                 db = Db.UNIPROT;
             }
-            else if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+            else if ( node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "embl" ) 
-                     || node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ebi" )      
-                    ) ) {
+                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "embl" ) || node
+                            .getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ebi" ) ) ) {
                 query = node.getNodeData().getSequence().getAccession().getValue();
                 db = Db.EMBL;
             }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-               
-                if (  (query = UniProtWsTools.parseUniProtAccessor( node.getName() ))!=null  ) {
+                if ( ( query = UniProtWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
                     db = Db.UNIPROT;
                 }
-                else if (( query = DatabaseTools.parseGenbankAccessor( node.getName())) !=null ) {
+                else if ( ( query = DatabaseTools.parseGenbankAccessor( node.getName() ) ) != null ) {
                     db = Db.EMBL;
                 }
             }

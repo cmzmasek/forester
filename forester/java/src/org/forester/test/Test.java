@@ -647,7 +647,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
         System.out.print( "EMBL Entry Retrieval: " );
         if ( Test.testEmblEntryRetrieval() ) {
             System.out.println( "OK." );
@@ -657,7 +656,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
         System.out.print( "Uniprot Entry Retrieval: " );
         if ( Test.testUniprotEntryRetrieval() ) {
             System.out.println( "OK." );
@@ -7744,18 +7742,72 @@ public final class Test {
     }
 
     private static boolean testEmblEntryRetrieval() {
+        //The format for GenBank Accession numbers are:
+        //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
+        //Protein:    3 letters + 5 numerals
+        //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
         if ( !DatabaseTools.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
-            System.out.println( DatabaseTools.parseGenbankAccessor( "AY423861" ));
+            return false;
+        }
+        if ( !DatabaseTools.parseGenbankAccessor( ".AY423861." ).equals( "AY423861" ) ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "AAY423861" ) != null ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "AY4238612" ) != null ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "AAY4238612" ) != null ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "Y423861" ) != null ) {
+            return false;
+        }
+        if ( !DatabaseTools.parseGenbankAccessor( "S12345" ).equals( "S12345" ) ) {
+            return false;
+        }
+        if ( !DatabaseTools.parseGenbankAccessor( "|S12345|" ).equals( "S12345" ) ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "|S123456" ) != null ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "ABC123456" ) != null ) {
+            return false;
+        }
+        if ( !DatabaseTools.parseGenbankAccessor( "ABC12345" ).equals( "ABC12345" ) ) {
+            return false;
+        }
+        if ( !DatabaseTools.parseGenbankAccessor( "&ABC12345&" ).equals( "ABC12345" ) ) {
+            return false;
+        }
+        if ( DatabaseTools.parseGenbankAccessor( "ABCD12345" ) != null ) {
             return false;
         }
         return true;
     }
-    
+
     private static boolean testUniprotEntryRetrieval() {
         if ( !UniProtWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
             return false;
         }
         if ( UniProtWsTools.parseUniProtAccessor( "EP12345" ) != null ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "3 4P12345" ) != null ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "P12345E" ) != null ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "P123455" ) != null ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "EP12345E" ) != null ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "AY423861" ) != null ) {
             return false;
         }
         if ( !UniProtWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {
@@ -7765,6 +7817,9 @@ public final class Test {
             return false;
         }
         if ( !UniProtWsTools.parseUniProtAccessor( "P1234X/P12345/12-42" ).equals( "P12345" ) ) {
+            return false;
+        }
+        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X P12345 12-42" ).equals( "P12345" ) ) {
             return false;
         }
         if ( !UniProtWsTools.parseUniProtAccessor( "P12345/12-42" ).equals( "P12345" ) ) {
