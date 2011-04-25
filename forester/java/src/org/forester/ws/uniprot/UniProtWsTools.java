@@ -51,7 +51,7 @@ public final class UniProtWsTools {
     // uniprot/expasy accession number format (6 chars):
     // letter digit letter-or-digit letter-or-digit letter-or-digit digit
     private final static Pattern UNIPROT_AC_PATTERN = Pattern
-                                                            .compile( "^.*[^a-zA-Z0-9]?([A-NR-ZOPQ]\\d[A-Z0-9]{3}\\d)[^a-zA-Z0-9]?" );
+                                                            .compile( "^.*[a-zA-Z0-9]?([A-NR-ZOPQ]\\d[A-Z0-9]{3}\\d)[^a-zA-Z0-9]?" );
     private final static boolean DEBUG              = false;
 
     private static String encode( final String str ) throws UnsupportedEncodingException {
