@@ -45,6 +45,8 @@ public final class UniProtWsTools {
         UNKNOWN, UNIPROT;
     }
     public final static String   BASE_URL           = "http://www.uniprot.org/";
+    
+    public final static String   BASE_EMBL_DB_URL   = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/embl/";
     private final static String  URL_ENC            = "UTF-8";
     // uniprot/expasy accession number format (6 chars):
     // letter digit letter-or-digit letter-or-digit letter-or-digit digit
@@ -57,7 +59,7 @@ public final class UniProtWsTools {
     }
 
     /**
-     * Return null if no match.
+     * Returns null if no match.
      * 
      * @param query
      * @param db 
@@ -72,6 +74,8 @@ public final class UniProtWsTools {
             return null;
         }
     }
+    
+  
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
             throws IOException {
@@ -208,14 +212,33 @@ public final class UniProtWsTools {
         return taxonomies;
     }
 
+    
+    public static List<String> queryEmblDb( final String query, int max_lines_to_return ) throws IOException {
+        return queryDb( query,
+                        max_lines_to_return,
+                        BASE_EMBL_DB_URL ) ;
+    }
+    
+    
+    
     public static List<String> queryUniprot( final String query, int max_lines_to_return ) throws IOException {
+        return queryDb( query,
+                max_lines_to_return,
+                BASE_URL ) ;
+        
+       
+    }
+
+    public static List<String> queryDb( final String query,
+                                        int max_lines_to_return,
+                                        final String base_url ) throws IOException {
         if ( ForesterUtil.isEmpty( query ) ) {
             throw new IllegalArgumentException( "illegal attempt to use empty query " );
         }
         if ( max_lines_to_return < 1 ) {
             max_lines_to_return = 1;
         }
-        final URL url = new URL( BASE_URL + query );
+        final URL url = new URL( base_url + query );
         if ( DEBUG ) {
             System.out.println( "url: " + url.toString() );
         }
@@ -232,10 +255,16 @@ public final class UniProtWsTools {
         in.close();
         return result;
     }
-
+    
+    
     public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
         return UniProtEntry.createInstanceFromPlainText( lines );
+    }
+
+    public static SequenceDatabaseEntry obtainEmblEntry( String query, int max_lines_to_return ) throws IOException {
+        final List<String> lines = queryEmblDb( "query", max_lines_to_return );
+        return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 }

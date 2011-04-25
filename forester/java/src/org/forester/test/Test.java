@@ -99,6 +99,7 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
+import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtTaxonomy;
 import org.forester.ws.uniprot.UniProtWsTools;
@@ -646,6 +647,17 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        
+        System.out.print( "EMBL Entry Retrieval: " );
+        if ( Test.testEmblEntryRetrieval() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        
         System.out.print( "Uniprot Entry Retrieval: " );
         if ( Test.testUniprotEntryRetrieval() ) {
             System.out.println( "OK." );
@@ -7731,8 +7743,19 @@ public final class Test {
         return true;
     }
 
+    private static boolean testEmblEntryRetrieval() {
+        if ( !DatabaseTools.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
+            System.out.println( DatabaseTools.parseGenbankAccessor( "AY423861" ));
+            return false;
+        }
+        return true;
+    }
+    
     private static boolean testUniprotEntryRetrieval() {
         if ( !UniProtWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
+            return false;
+        }
+        if ( UniProtWsTools.parseUniProtAccessor( "EP12345" ) != null ) {
             return false;
         }
         if ( !UniProtWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {

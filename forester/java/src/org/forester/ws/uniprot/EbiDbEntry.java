@@ -27,39 +27,48 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
-public final class UniProtEntry implements SequenceDatabaseEntry {
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-    private String _ac;
-    private String _rec_name;
-    private String _os_scientific_name;
+public final class EbiDbEntry implements SequenceDatabaseEntry {
+//http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
+    
+    
+    private String _pa;
+    private String _de;
+    private String _os;
     private String _tax_id;
     private String _symbol;
 
-    private UniProtEntry() {
+    private EbiDbEntry() {
     }
 
+    
+    public Object clone() {
+        throw new NotImplementedException();
+    }
+    
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
-        final UniProtEntry e = new UniProtEntry();
+        final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
-            if ( line.startsWith( "AC" ) ) {
-                e.setAc( DatabaseTools.extract( line, "AC", ";" ) );
+            if ( line.startsWith( "PA" ) ) {
+                e.setPA( DatabaseTools.extract( line, "PA", ";" ) );
             }
             else if ( line.startsWith( "DE" ) ) {
-                if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setRecName( DatabaseTools.extract( line, "Full=", ";" ) );
-                }
+               // if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
+                    e.setDe( DatabaseTools.extract( line, "DE" ) );
+                //}
             }
-            else if ( line.startsWith( "GN" ) ) {
-                if ( ( line.indexOf( "Name=" ) > 0 ) ) {
-                    e.setSymbol( DatabaseTools.extract( line, "Name=", ";" ) );
-                }
-            }
+          //  else if ( line.startsWith( "GN" ) ) {
+          //      if ( ( line.indexOf( "Name=" ) > 0 ) ) {
+          //          e.setSymbol( extract( line, "Name=", ";" ) );
+          //      }
+          //  }
             else if ( line.startsWith( "OS" ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOsScientificName( DatabaseTools.extract( line, "OS", "(" ) );
+                    e.setOs( DatabaseTools.extract( line, "OS", "(" ) );
                 }
                 else {
-                    e.setOsScientificName( DatabaseTools.extract( line, "OS", "." ) );
+                    e.setOs( DatabaseTools.extract( line, "OS" ) );
                 }
             }
             else if ( line.startsWith( "OX" ) ) {
@@ -71,38 +80,36 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         return e;
     }
 
-   
-
     @Override
     public String getAccession() {
-        return _ac;
+        return _pa;
     }
 
-    private void setAc( final String ac ) {
-        if ( _ac == null ) {
-            _ac = ac;
+    private void setPA( final String pa ) {
+        if ( _pa == null ) {
+            _pa= pa;
         }
     }
 
     @Override
     public String getSequenceName() {
-        return _rec_name;
+        return _de;
     }
 
-    private void setRecName( final String rec_name ) {
-        if ( _rec_name == null ) {
-            _rec_name = rec_name;
+    private void setDe( final String rec_name ) {
+        if ( _de == null ) {
+            _de = rec_name;
         }
     }
 
     @Override
     public String getTaxonomyScientificName() {
-        return _os_scientific_name;
+        return _os;
     }
 
-    private void setOsScientificName( final String os_scientific_name ) {
-        if ( _os_scientific_name == null ) {
-            _os_scientific_name = os_scientific_name;
+    private void setOs( final String os ) {
+        if ( _os== null ) {
+            _os = os;
         }
     }
 

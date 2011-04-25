@@ -43,6 +43,7 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtWsTools;
 
@@ -54,7 +55,7 @@ public final class SequenceDataRetriver implements Runnable {
     private final static boolean       DEBUG = true;
 
     private enum Db {
-        UNKNOWN, UNIPROT;
+        UNKNOWN, UNIPROT, EMBL;
     }
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
@@ -173,10 +174,22 @@ public final class SequenceDataRetriver implements Runnable {
                 query = node.getNodeData().getSequence().getAccession().getValue();
                 db = Db.UNIPROT;
             }
+            else if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "embl" ) 
+                     || node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ebi" )      
+                    ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                db = Db.EMBL;
+            }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                query = UniProtWsTools.parseUniProtAccessor( node.getName() );
-                if ( !ForesterUtil.isEmpty( query ) ) {
+               
+                if (  (query = UniProtWsTools.parseUniProtAccessor( node.getName() ))!=null  ) {
                     db = Db.UNIPROT;
+                }
+                else if (( query = DatabaseTools.parseGenbankAccessor( node.getName())) !=null ) {
+                    db = Db.EMBL;
                 }
             }
             if ( !ForesterUtil.isEmpty( query ) ) {
@@ -187,6 +200,17 @@ public final class SequenceDataRetriver implements Runnable {
                     }
                     try {
                         db_entry = UniProtWsTools.obtainUniProtEntry( query, 200 );
+                    }
+                    catch ( final FileNotFoundException e ) {
+                        // Ignore.
+                    }
+                }
+                else if ( db == Db.EMBL ) {
+                    if ( DEBUG ) {
+                        System.out.println( "embl: " + query );
+                    }
+                    try {
+                        db_entry = UniProtWsTools.obtainEmblEntry( query, 200 );
                     }
                     catch ( final FileNotFoundException e ) {
                         // Ignore.
