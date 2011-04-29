@@ -27,6 +27,8 @@ package org.forester.ws.uniprot;
 
 public interface SequenceDatabaseEntry {
 
+    public boolean isEmpty();
+
     public String getAccession();
 
     public String getSequenceName();

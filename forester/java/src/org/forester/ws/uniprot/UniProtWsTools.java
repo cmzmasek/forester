@@ -54,7 +54,7 @@ public final class UniProtWsTools {
     // \Z => end of String
     private final static Pattern UNIPROT_AC_PATTERN = Pattern
                                                             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d[A-Z0-9]{3}\\d)(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static boolean DEBUG              = false;
+    private final static boolean DEBUG              = true;
 
     private static String encode( final String str ) throws UnsupportedEncodingException {
         return URLEncoder.encode( str.trim(), URL_ENC );
@@ -237,6 +237,7 @@ public final class UniProtWsTools {
         String line;
         final List<String> result = new ArrayList<String>();
         while ( ( line = in.readLine() ) != null ) {
+            System.out.println( line );
             result.add( line );
             if ( result.size() > max_lines_to_return ) {
                 break;
@@ -254,7 +255,7 @@ public final class UniProtWsTools {
 
     public static SequenceDatabaseEntry obtainEmblEntry( final String query, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( "query", max_lines_to_return );
+        final List<String> lines = queryEmblDb( query, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 }

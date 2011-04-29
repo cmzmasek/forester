@@ -52,7 +52,7 @@ public final class SequenceDataRetriver implements Runnable {
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private final static boolean       DEBUG = true;
+    private final static boolean       DEBUG = false;
 
     private enum Db {
         UNKNOWN, UNIPROT, EMBL;
@@ -105,12 +105,12 @@ public final class SequenceDataRetriver implements Runnable {
                 max = 20;
             }
             final StringBuffer sb = new StringBuffer();
-            sb.append( "Not all identifiers could be resolved.\n" );
             if ( not_found.size() == 1 ) {
-                sb.append( "The following identifier was not found:\n" );
+                sb.append( "Data for the following sequence identifier was not found:\n" );
             }
             else {
-                sb.append( "The following identifiers were not found (total: " + not_found.size() + "):\n" );
+                sb.append( "Data for the following sequence identifiers was not found (total: " + not_found.size()
+                        + "):\n" );
             }
             int i = 0;
             for( final String string : not_found ) {
@@ -127,7 +127,7 @@ public final class SequenceDataRetriver implements Runnable {
             try {
                 JOptionPane.showMessageDialog( _mf,
                                                sb.toString(),
-                                               "UniProt Sequence Tool Completed",
+                                               "Sequence Tool Completed",
                                                JOptionPane.WARNING_MESSAGE );
             }
             catch ( final Exception e ) {
@@ -204,7 +204,7 @@ public final class SequenceDataRetriver implements Runnable {
                         // Ignore.
                     }
                 }
-                else if ( db == Db.EMBL ) {
+                if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
@@ -214,10 +214,20 @@ public final class SequenceDataRetriver implements Runnable {
                     catch ( final FileNotFoundException e ) {
                         // Ignore.
                     }
+                    if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
+                        db = Db.EMBL;
+                    }
                 }
-                if ( db_entry != null ) {
+                if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                     if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
-                        seq.setAccession( new Accession( db_entry.getAccession(), "uniprot" ) );
+                        String type = null;
+                        if ( db == Db.EMBL ) {
+                            type = "embl";
+                        }
+                        else if ( db == Db.UNIPROT ) {
+                            type = "uniprot";
+                        }
+                        seq.setAccession( new Accession( db_entry.getAccession(), type ) );
                     }
                     if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
                         seq.setName( db_entry.getSequenceName() );

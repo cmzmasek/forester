@@ -27,6 +27,8 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
+import org.forester.util.ForesterUtil;
+
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private String _ac;
@@ -129,5 +131,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         if ( _symbol == null ) {
             _symbol = symbol;
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
+                && ForesterUtil.isEmpty( getTaxonomyScientificName() )
+                && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
     }
 }

@@ -27,6 +27,8 @@ package org.forester.ws.uniprot;
 
 import java.util.List;
 
+import org.forester.util.ForesterUtil;
+
 public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
@@ -48,7 +50,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
             if ( line.startsWith( "PA" ) ) {
-                e.setPA( DatabaseTools.extract( line, "PA", ";" ) );
+                e.setPA( DatabaseTools.extract( line, "PA" ) );
             }
             else if ( line.startsWith( "DE" ) ) {
                 // if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
@@ -130,5 +132,12 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         if ( _symbol == null ) {
             _symbol = symbol;
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
+                && ForesterUtil.isEmpty( getTaxonomyScientificName() )
+                && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
     }
 }
