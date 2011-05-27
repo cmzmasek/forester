@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="java/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="java/resources/iText-2.1.7.jar"/>
+	<classpathentry kind="lib" path="java/resources/itextpdf-5.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
