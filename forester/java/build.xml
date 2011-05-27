@@ -5,7 +5,6 @@
 	<property name="classes.dir" value="classes" />
 	<property name="jars.dir" value="resources" />
 	<property name="itextjar" value="${jars.dir}/iText-2.1.7.jar" />
-	<!--<property name="fluorite_jar" value="${jars.dir}/fluorite.jar"/>-->
 	<property name="forester_jar" value="forester.jar" />
 	<property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar" />
 
