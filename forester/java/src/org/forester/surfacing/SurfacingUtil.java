@@ -1145,6 +1145,7 @@ public final class SurfacingUtil {
                     counts.put( id, 1 );
                 }
             }
+            final Set<String> dcs = new HashSet<String>();
             for( int i = 1; i < domains.size(); ++i ) {
                 for( int j = 0; j < i; ++j ) {
                     Domain domain_n = domains.get( i );
@@ -1153,22 +1154,26 @@ public final class SurfacingUtil {
                         domain_n = domains.get( j );
                         domain_c = domains.get( i );
                     }
-                    sb.append( protein.getSpecies() );
-                    sb.append( separator );
-                    sb.append( protein_id );
-                    sb.append( separator );
-                    sb.append( domain_n.getDomainId().getId() );
-                    sb.append( separator );
-                    sb.append( domain_c.getDomainId().getId() );
-                    sb.append( separator );
-                    sb.append( domain_n.getPerDomainEvalue() );
-                    sb.append( separator );
-                    sb.append( domain_c.getPerDomainEvalue() );
-                    sb.append( separator );
-                    sb.append( counts.get( domain_n.getDomainId().getId() ) );
-                    sb.append( separator );
-                    sb.append( counts.get( domain_c.getDomainId().getId() ) );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                    final String dc = domain_n.getDomainId().getId() + domain_c.getDomainId().getId();
+                    if ( !dcs.contains( dc ) ) {
+                        dcs.add( dc );
+                        sb.append( protein.getSpecies() );
+                        sb.append( separator );
+                        sb.append( protein_id );
+                        sb.append( separator );
+                        sb.append( domain_n.getDomainId().getId() );
+                        sb.append( separator );
+                        sb.append( domain_c.getDomainId().getId() );
+                        sb.append( separator );
+                        sb.append( domain_n.getPerDomainEvalue() );
+                        sb.append( separator );
+                        sb.append( domain_c.getPerDomainEvalue() );
+                        sb.append( separator );
+                        sb.append( counts.get( domain_n.getDomainId().getId() ) );
+                        sb.append( separator );
+                        sb.append( counts.get( domain_c.getDomainId().getId() ) );
+                        sb.append( ForesterUtil.LINE_SEPARATOR );
+                    }
                 }
             }
         }
