@@ -10,7 +10,7 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
 Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 
-= Reading in Trees and Displaying them with Archaeopteryx =
+= Parsing of Phylogenetic Trees and Displaying them with Archaeopteryx =
 
 This needs file "forester.jar" to be in the class-path.
 
