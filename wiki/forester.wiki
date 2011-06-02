@@ -31,7 +31,7 @@ public class Example1 {
 
     public static void main( final String[] args ) {
         // Reads in (a) tree(s) from a file.
-        final File treefile = new File( "/home/czmasek/tol_117_TEST.xml" );
+        final File treefile = new File( "/path/to/trees.xml" );
         PhylogenyParser parser = null;
         try {
             parser = ForesterUtil.createParserDependingOnFileType( treefile, true );
