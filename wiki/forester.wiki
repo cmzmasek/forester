@@ -16,7 +16,7 @@ This needs file "forester.jar" to be in the class-path.
 
 {{{
 
-package com.examples.my;
+package examples;
 
 import java.io.File;
 import java.io.IOException;
