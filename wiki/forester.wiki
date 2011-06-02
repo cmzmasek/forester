@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.forester.archaeopteryx.Archaeopteryx;
-import org.forester.archaeopteryx.Util;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
@@ -31,7 +30,7 @@ public class Example1 {
 
     public static void main( final String[] args ) {
         // Reads in (a) tree(s) from a file.
-        final File treefile = new File( "/path/to/trees.xml" );
+        final File treefile = new File( "/path/to/tree.xml" );
         PhylogenyParser parser = null;
         try {
             parser = ForesterUtil.createParserDependingOnFileType( treefile, true );
@@ -41,7 +40,7 @@ public class Example1 {
         }
         Phylogeny[] phys = null;
         try {
-            phys = Util.readPhylogenies( parser, treefile );
+            phys = ForesterUtil.readPhylogenies( parser, treefile );
         }
         catch ( final IOException e ) {
             e.printStackTrace();
