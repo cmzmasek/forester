@@ -1,13 +1,54 @@
-#summary One-sentence summary of this page.
-
 = Introduction =
 
-Add your content here.
+Under development!
+
+Documentation, tutorial, and examples for [http://www.phylosoft.org/forester/ forester].
+
+Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
+
+ 
+Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 
-= Details =
+= Reading in Trees and Displaying them with Archaeopteryx =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+This needs file "forester.jar" to be in the class-path.
+
+{{{
+
+package my.examples;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.forester.archaeopteryx.Archaeopteryx;
+import org.forester.archaeopteryx.Util;
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.phylogeny.Phylogeny;
+import org.forester.util.ForesterUtil;
+
+public class Example1 {
+
+    public static void main( final String[] args ) {
+        // Reads in (a) tree(s) from a file.
+        final File treefile = new File( "/home/czmasek/tol_117_TEST.xml" );
+        PhylogenyParser parser = null;
+        try {
+            parser = ForesterUtil.createParserDependingOnFileType( treefile, true );
+        }
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+        Phylogeny[] phys = null;
+        try {
+            phys = Util.readPhylogenies( parser, treefile );
+        }
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+        // Display of the tree(s) with Archaeopteryx.
+        Archaeopteryx.createApplication( phys );
+    }
+}
+
+}}}
