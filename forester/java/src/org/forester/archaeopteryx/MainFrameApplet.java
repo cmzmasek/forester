@@ -208,7 +208,7 @@ public final class MainFrameApplet extends MainFrame {
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_node_boxes_cbmi, getOptions().isShowNodeBoxes() );
+        customizeCheckBoxMenuItem( _show_node_boxes_cbmi, getOptions().getDefaultNodeShape() );
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );

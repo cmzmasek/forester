@@ -35,7 +35,7 @@ import org.forester.util.ForesterUtil;
 final public class Options {
 
     static final double             MIN_CONFIDENCE_DEFAULT = 0.0;
-    private boolean                 _show_node_boxes;
+    private NodeShape                 _default_node_shape;
     private boolean                 _show_branch_length_values;
     private boolean                 _internal_number_are_confidence_for_nh_parsing;
     private boolean                 _show_scale;
@@ -68,6 +68,14 @@ final public class Options {
     private boolean                 _show_domain_labels;
     private boolean                 _color_labels_same_as_parent_branch;
     private boolean                 _abbreviate_scientific_names;
+    
+    enum NodeShape {
+        NONE, 
+        CIRCLE_WITH_GRADIENT,
+        CIRCLE_SOLID,
+        RECTANGLE_WITH_GRADIENT,
+        RECTANGLE_SOLID;
+    }
 
     private Options() {
         init();
@@ -122,7 +130,7 @@ final public class Options {
     }
 
     final private void init() {
-        _show_node_boxes = false;
+        _default_node_shape = NodeShape.RECTANGLE_WITH_GRADIENT;
         _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
@@ -231,8 +239,8 @@ final public class Options {
         return _show_branch_length_values;
     }
 
-    final boolean isShowNodeBoxes() {
-        return _show_node_boxes;
+    final NodeShape getDefaultNodeShape() {
+        return _default_node_shape;
     }
 
     final boolean isShowOverview() {
@@ -365,8 +373,8 @@ final public class Options {
         _show_branch_length_values = show_branch_length_values;
     }
 
-    final void setShowNodeBoxes( final boolean show_node_boxes ) {
-        _show_node_boxes = show_node_boxes;
+    final void setDefaultNodeShape( final NodeShape default_node_shape ) {
+        _default_node_shape = default_node_shape;
     }
 
     final void setShowOverview( final boolean show_overview ) {
@@ -475,7 +483,11 @@ final public class Options {
     }
 
     boolean isAllowMagnificationOfTaxonomyImages() {
-        // TODO Auto-generated method stub
         return true;
+    }
+
+   int getDefaultNodeBoxSize() {
+        // TODO make variable ~~
+        return 8;
     }
 }
