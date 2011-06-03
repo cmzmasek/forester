@@ -66,6 +66,7 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
+import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -74,6 +75,8 @@ import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 public final class ForesterUtil {
@@ -103,6 +106,15 @@ public final class ForesterUtil {
     }
 
     private ForesterUtil() {
+    }
+
+    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny[] trees = factory.create( file, parser );
+        if ( ( trees == null ) || ( trees.length == 0 ) ) {
+            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
+        }
+        return trees;
     }
 
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {

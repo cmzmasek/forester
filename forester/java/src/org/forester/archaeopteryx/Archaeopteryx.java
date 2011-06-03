@@ -110,7 +110,7 @@ public final class Archaeopteryx {
                     else if ( p instanceof PhyloXmlParser ) {
                         MainFrameApplication.warnIfNotPhyloXmlValidation( conf );
                     }
-                    phylogenies = Util.readPhylogenies( p, f );
+                    phylogenies = ForesterUtil.readPhylogenies( p, f );
                     if ( nhx_or_nexus && conf.isInternalNumberAreConfidenceForNhParsing() ) {
                         for( final Phylogeny phy : phylogenies ) {
                             ForesterUtil.transferInternalNodeNamesToConfidence( phy );

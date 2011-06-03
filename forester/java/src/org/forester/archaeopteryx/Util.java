@@ -57,7 +57,6 @@ import javax.swing.text.MaskFormatter;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.tol.TolParser;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -616,15 +615,6 @@ public final class Util {
 
     public final static void printWarningMessage( final String name, final String message ) {
         System.out.println( "[" + name + "] > " + message );
-    }
-
-    final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final Phylogeny[] trees = factory.create( file, parser );
-        if ( ( trees == null ) || ( trees.length == 0 ) ) {
-            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
-        }
-        return trees;
     }
 
     final static Phylogeny[] readPhylogeniesFromUrl( final URL url, final boolean phyloxml_validate_against_xsd )

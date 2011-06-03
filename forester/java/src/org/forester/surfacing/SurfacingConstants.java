@@ -40,7 +40,7 @@ public class SurfacingConstants {
     static final boolean       SECONDARY_FEATURES_ARE_SCOP  = true;
     static final String        SECONDARY_FEATURES_SCOP_LINK = "http://scop.mrc-lmb.cam.ac.uk/scop/search.cgi?key=";
     public static final String NONE                         = "[none]";
-    public static final String UNIPROT_LINK                 = "http://beta.uniprot.org/taxonomy/?query=";
+    public static final String UNIPROT_LINK                 = "http://www.uniprot.org/taxonomy/?query=";
     public static final String GO_LINK                      = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
     public static final String EOL_LINK                     = "http://www.eol.org/search?q=";
     public static final String TOL_LINK                     = "http://www.googlesyndicatedsearch.com/u/TreeofLife?q=";

@@ -1630,7 +1630,7 @@ public final class MainFrameApplication extends MainFrame {
                         try {
                             final NHXParser nhx = new NHXParser();
                             setSpecialOptionsForNhxParser( nhx );
-                            phys = Util.readPhylogenies( nhx, file );
+                            phys = ForesterUtil.readPhylogenies( nhx, file );
                             nhx_or_nexus = true;
                         }
                         catch ( final Exception e ) {
@@ -1642,7 +1642,7 @@ public final class MainFrameApplication extends MainFrame {
                         warnIfNotPhyloXmlValidation( getConfiguration() );
                         try {
                             final PhyloXmlParser xml_parser = createPhyloXmlParser();
-                            phys = Util.readPhylogenies( xml_parser, file );
+                            phys = ForesterUtil.readPhylogenies( xml_parser, file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -1651,7 +1651,7 @@ public final class MainFrameApplication extends MainFrame {
                     }
                     else if ( _open_filechooser.getFileFilter() == MainFrameApplication.tolfilter ) {
                         try {
-                            phys = Util.readPhylogenies( new TolParser(), file );
+                            phys = ForesterUtil.readPhylogenies( new TolParser(), file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -1662,7 +1662,7 @@ public final class MainFrameApplication extends MainFrame {
                         try {
                             final NexusPhylogeniesParser nex = new NexusPhylogeniesParser();
                             setSpecialOptionsForNexParser( nex );
-                            phys = Util.readPhylogenies( nex, file );
+                            phys = ForesterUtil.readPhylogenies( nex, file );
                             nhx_or_nexus = true;
                         }
                         catch ( final Exception e ) {
@@ -1689,7 +1689,7 @@ public final class MainFrameApplication extends MainFrame {
                             else if ( parser instanceof PhyloXmlParser ) {
                                 warnIfNotPhyloXmlValidation( getConfiguration() );
                             }
-                            phys = Util.readPhylogenies( parser, file );
+                            phys = ForesterUtil.readPhylogenies( parser, file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -2044,7 +2044,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrameApplication.xmlfilter ) {
                 try {
-                    final Phylogeny[] trees = Util.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new PhyloXmlParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2054,7 +2054,7 @@ public final class MainFrameApplication extends MainFrame {
             }
             else if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrameApplication.tolfilter ) {
                 try {
-                    final Phylogeny[] trees = Util.readPhylogenies( new TolParser(), file );
+                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new TolParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2065,7 +2065,7 @@ public final class MainFrameApplication extends MainFrame {
             // "*.*":
             else {
                 try {
-                    final Phylogeny[] trees = Util.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new PhyloXmlParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
