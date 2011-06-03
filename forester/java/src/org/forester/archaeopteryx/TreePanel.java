@@ -2457,7 +2457,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.draw( _arc );
             }
         }
-        paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
+        //TODO new *****
+        if ( node.isExternal() ) {
+        //TODO new *****
+            paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
+        }
     }
 
     final void paintCircular( final Phylogeny phy,
@@ -2472,8 +2476,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _root = phy.getRoot();
         _root.setXcoord( center_x );
         _root.setYcoord( center_y );
-        paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
-        final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
+         final boolean radial_labels = getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL;
         double current_angle = starting_angle;
         int i = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
@@ -2485,6 +2488,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             current_angle += ( TWO_PI / _circ_num_ext_nodes );
         }
         paintCirculars( phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file );
+        paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
+        
     }
 
     final void paintCircularLite( final Phylogeny phy,
@@ -3354,6 +3359,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 child_node.setYcoord( y2 );
                 y2 += _y_distance * child_node.getNumberOfExternalNodes();
             }
+            //TODO new *****
+            paintNodeBox(  node.getXcoord(),  node.getYcoord(), node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
+            //TODO new *****
         }
         if ( dynamically_hide
                 && !is_in_found_nodes
