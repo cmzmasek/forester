@@ -2793,7 +2793,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
                 if ( to_pdf || to_graphics_file ) {
                     if ( node.isDuplication() || !getOptions().isPrintBlackAndWhite() ) {
-                        drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                        //TODO FIXME
+                        //drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                        drawOvalGradient( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g
+                                          ,Color.BLACK,
+                                           g.getColor(), g.getColor()); 
                     }
                 }
                 else {
@@ -3870,7 +3874,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( n.isRoot() ) {
             n.setXcoord( getWidth() / 2 );
             n.setYcoord( getHeight() / 2 );
-            paintNodeBox( n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file, isInFoundNodes( n ) );
         }
         if ( n.isExternal() ) {
             paintNodeDataUnrootedCirc( g,
@@ -3923,11 +3926,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float new_y = ( float ) ( y + Math.sin( mid_angle ) * length );
             desc.setXcoord( new_x );
             desc.setYcoord( new_y );
-            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file, isInFoundNodes( desc ) );
+
             paintUnrooted( desc, current_angle, current_angle + arc_size, radial_labels, g, to_pdf, to_graphics_file );
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch( desc, false, g, to_pdf, to_graphics_file );
             drawLine( x, y, new_x, new_y, g );
+
+            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file, isInFoundNodes( desc ) );
+
+        }
+        if ( n.isRoot() ) {
+            paintNodeBox( n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file, isInFoundNodes( n ) );
         }
     }
 
