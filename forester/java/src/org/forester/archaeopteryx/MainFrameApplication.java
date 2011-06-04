@@ -764,7 +764,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _overview_placment_mi );
         //TODO FIXME ~~
         //customizeCheckBoxMenuItem( _show_node_boxes_cbmi, getOptions().getDefaultNodeShape() );
-      //TODO FIXME ~~
+        //TODO FIXME ~~
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
