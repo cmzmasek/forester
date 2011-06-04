@@ -44,12 +44,6 @@
                 <exclude name="**/*Test*.class" />
             </patternset>
         </unjar>
-		<!--<unjar src="${fluorite_jar}" dest="${classes.dir}">
-    	            <patternset>
-    	                 <include name="**/*.class"/>
-    	                 <exclude name="**/*Test*.class"/>
-    	            </patternset>
-    	 </unjar>-->
 		<jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail" index="true">
 			<manifest>
 				<attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx" />
@@ -60,6 +54,7 @@
 	<target name="jar_applets_only" description="JARs the classes files" depends="compile_applets_only,copy_resources">
 		<jar level="9" destfile="${archaeopteryx_applets_jar}" basedir="${classes.dir}" excludes="org/forester/application/** 
 			          org/forester/development/**
+			          org/forester/evoinference/**
 			          org/forester/go/**
 			          org/forester/go/etc/**
 			          org/forester/pccx/**
