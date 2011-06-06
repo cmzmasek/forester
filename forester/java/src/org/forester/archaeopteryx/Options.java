@@ -35,7 +35,6 @@ import org.forester.util.ForesterUtil;
 final public class Options {
 
     static final double             MIN_CONFIDENCE_DEFAULT = 0.0;
-    private NodeShape               _default_node_shape;
     private boolean                 _show_branch_length_values;
     private boolean                 _internal_number_are_confidence_for_nh_parsing;
     private boolean                 _show_scale;
@@ -68,9 +67,18 @@ final public class Options {
     private boolean                 _show_domain_labels;
     private boolean                 _color_labels_same_as_parent_branch;
     private boolean                 _abbreviate_scientific_names;
+    private NodeShape               _default_node_shape;
+    private short                   _default_node_shape_size;
+    private boolean                 _taxonomy_colorize_node_shapes_instead_of_labels;
 
     enum NodeShape {
-        NONE, CIRCLE_WITH_GRADIENT, CIRCLE_SOLID, RECTANGLE_WITH_GRADIENT, RECTANGLE_SOLID;
+        NONE,
+        CIRCLE_WITH_GRADIENT,
+        CIRCLE_SOLID,
+        CIRCLE_HOLLOW,
+        RECTANGLE_WITH_GRADIENT,
+        RECTANGLE_SOLID,
+        RECTANGLE_HOLLOW;
     }
 
     private Options() {

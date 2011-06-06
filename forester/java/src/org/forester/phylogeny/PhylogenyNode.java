@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.iterators.ChildNodeIteratorForward;
@@ -65,39 +64,6 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      */
     public PhylogenyNode() {
         init();
-        setId( PhylogenyNode.getNodeCount() );
-        PhylogenyNode.increaseNodeCount();
-        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
-    }
-
-    public PhylogenyNode( final String nhx ) throws NHXFormatException {
-        this( nhx, ForesterUtil.TAXONOMY_EXTRACTION.NO );
-    }
-
-    public PhylogenyNode( final String nhx, final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws NHXFormatException {
-        init();
-        NHXParser.parseNHX( nhx, this, taxonomy_extraction, false );
-        setId( PhylogenyNode.getNodeCount() );
-        PhylogenyNode.increaseNodeCount();
-        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
-    }
-
-    /**
-     * Constructor for PhylogenyNode.
-     * <p>
-     * 
-     * @param s
-     *            String representing one PhylogenyNode in New Hampshire (NH) or
-     *            New Hampshire X (NHX) format.
-     * @throws NHXFormatException
-     * @throws PhylogenyParserException
-     */
-    public PhylogenyNode( final String nhx,
-                          final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
-                          final boolean replace_underscores ) throws NHXFormatException {
-        init();
-        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
         setId( PhylogenyNode.getNodeCount() );
         PhylogenyNode.increaseNodeCount();
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
@@ -1037,5 +1003,32 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
      */
     synchronized final static void setNodeCount( final int i ) {
         PhylogenyNode._node_count = i;
+    }
+
+    public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException {
+        return new PhylogenyNode( nhx, ForesterUtil.TAXONOMY_EXTRACTION.NO, false );
+    }
+
+    public static PhylogenyNode createInstanceFromNhxString( final String nhx,
+                                                             final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction )
+            throws NHXFormatException {
+        return new PhylogenyNode( nhx, taxonomy_extraction, false );
+    }
+
+    public static PhylogenyNode createInstanceFromNhxString( final String nhx,
+                                                             final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                             final boolean replace_underscores )
+            throws NHXFormatException {
+        return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
+    }
+
+    private PhylogenyNode( final String nhx,
+                           final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
+                           final boolean replace_underscores ) throws NHXFormatException {
+        init();
+        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
+        setId( PhylogenyNode.getNodeCount() );
+        PhylogenyNode.increaseNodeCount();
+        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
     }
 }
