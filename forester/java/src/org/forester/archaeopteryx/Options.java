@@ -68,18 +68,9 @@ final public class Options {
     private boolean                 _color_labels_same_as_parent_branch;
     private boolean                 _abbreviate_scientific_names;
     private NodeShape               _default_node_shape;
+    private NodeFill                _default_node_fill;
     private short                   _default_node_shape_size;
     private boolean                 _taxonomy_colorize_node_shapes_instead_of_labels;
-
-    enum NodeShape {
-        NONE,
-        CIRCLE_WITH_GRADIENT,
-        CIRCLE_SOLID,
-        CIRCLE_HOLLOW,
-        RECTANGLE_WITH_GRADIENT,
-        RECTANGLE_SOLID,
-        RECTANGLE_HOLLOW;
-    }
 
     private Options() {
         init();
@@ -91,6 +82,23 @@ final public class Options {
 
     final CLADOGRAM_TYPE getCladogramType() {
         return _cladogram_type;
+    }
+
+    int getDefaultNodeBoxSize() {
+        // TODO make variable ~~
+        return 8;
+    }
+
+    final NodeFill getDefaultNodeFill() {
+        return _default_node_fill;
+    }
+
+    final NodeShape getDefaultNodeShape() {
+        return _default_node_shape;
+    }
+
+    final short getDefaultNodeShapeSize() {
+        return _default_node_shape_size;
     }
 
     final double getMinConfidenceValue() {
@@ -134,7 +142,10 @@ final public class Options {
     }
 
     final private void init() {
-        _default_node_shape = NodeShape.RECTANGLE_WITH_GRADIENT;
+        _default_node_shape = NodeShape.NONE;
+        _default_node_fill = NodeFill.GRADIENT;
+        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+        _taxonomy_colorize_node_shapes_instead_of_labels = false;
         _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
@@ -175,6 +186,14 @@ final public class Options {
         _color_labels_same_as_parent_branch = false;
     }
 
+    final boolean isAbbreviateScientificTaxonNames() {
+        return _abbreviate_scientific_names;
+    }
+
+    boolean isAllowMagnificationOfTaxonomyImages() {
+        return true;
+    }
+
     final boolean isAntialiasPrint() {
         return _antialias_print;
     }
@@ -185,10 +204,6 @@ final public class Options {
 
     final boolean isBackgroundColorGradient() {
         return _background_color_gradient;
-    }
-
-    public final boolean isShowDomainLabels() {
-        return _show_domain_labels;
     }
 
     final boolean isColorLabelsSameAsParentBranch() {
@@ -243,8 +258,8 @@ final public class Options {
         return _show_branch_length_values;
     }
 
-    final NodeShape getDefaultNodeShape() {
-        return _default_node_shape;
+    public final boolean isShowDomainLabels() {
+        return _show_domain_labels;
     }
 
     final boolean isShowOverview() {
@@ -253,6 +268,14 @@ final public class Options {
 
     final boolean isShowScale() {
         return _show_scale;
+    }
+
+    boolean isTaxonomyColorizeNodeShapesInsteadOfLabels() {
+        return _taxonomy_colorize_node_shapes_instead_of_labels;
+    }
+
+    final void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
+        _abbreviate_scientific_names = abbreviate_scientific_names;
     }
 
     final void setAntialiasPrint( final boolean antialias_print ) {
@@ -267,20 +290,28 @@ final public class Options {
         _background_color_gradient = background_color_gradient;
     }
 
-    public void setShowDomainLabels( final boolean show_domain_labels ) {
-        _show_domain_labels = show_domain_labels;
-    }
-
-    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
-        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
-    }
-
     final void setBaseFont( final Font base_font ) {
         _base_font = base_font;
     }
 
     final void setCladogramType( final CLADOGRAM_TYPE cladogram_type ) {
         _cladogram_type = cladogram_type;
+    }
+
+    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
+        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
+    }
+
+    final void setDefaultNodeFill( final NodeFill default_node_fill ) {
+        _default_node_fill = default_node_fill;
+    }
+
+    final void setDefaultNodeShape( final NodeShape default_node_shape ) {
+        _default_node_shape = default_node_shape;
+    }
+
+    final void setDefaultNodeShapeSize( final short default_node_shape_size ) {
+        _default_node_shape_size = default_node_shape_size;
     }
 
     final void setEditable( final boolean editable ) {
@@ -377,8 +408,8 @@ final public class Options {
         _show_branch_length_values = show_branch_length_values;
     }
 
-    final void setDefaultNodeShape( final NodeShape default_node_shape ) {
-        _default_node_shape = default_node_shape;
+    public void setShowDomainLabels( final boolean show_domain_labels ) {
+        _show_domain_labels = show_domain_labels;
     }
 
     final void setShowOverview( final boolean show_overview ) {
@@ -387,6 +418,10 @@ final public class Options {
 
     final void setShowScale( final boolean show_scale ) {
         _show_scale = show_scale;
+    }
+
+    void setTaxonomyColorizeNodeShapesInsteadOfLabels( final boolean taxonomy_colorize_node_shapes_instead_of_labels ) {
+        _taxonomy_colorize_node_shapes_instead_of_labels = taxonomy_colorize_node_shapes_instead_of_labels;
     }
 
     final static Options createDefaultInstance() {
@@ -440,16 +475,19 @@ final public class Options {
             if ( configuration.getPhylogenyGraphicsType() != null ) {
                 instance.setPhylogenyGraphicsType( configuration.getPhylogenyGraphicsType() );
             }
+            if ( configuration.getDefaultNodeFill() != null ) {
+                instance.setDefaultNodeFill( configuration.getDefaultNodeFill() );
+            }
+            if ( configuration.getDefaultNodeShape() != null ) {
+                instance.setDefaultNodeShape( configuration.getDefaultNodeShape() );
+            }
+            if ( configuration.getDefaultNodeShapeSize() >= 0 ) {
+                instance.setDefaultNodeShapeSize( configuration.getDefaultNodeShapeSize() );
+            }
+            instance.setTaxonomyColorizeNodeShapesInsteadOfLabels( configuration
+                    .isTaxonomyColorizeNodeShapesInsteadOfLabels() );
         }
         return instance;
-    }
-
-    final void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
-        _abbreviate_scientific_names = abbreviate_scientific_names;
-    }
-
-    final boolean isAbbreviateScientificTaxonNames() {
-        return _abbreviate_scientific_names;
     }
 
     static enum CLADOGRAM_TYPE {
@@ -458,6 +496,14 @@ final public class Options {
 
     static enum NODE_LABEL_DIRECTION {
         HORIZONTAL, RADIAL;
+    }
+
+    enum NodeFill {
+        NONE, GRADIENT, SOLID
+    }
+
+    enum NodeShape {
+        NONE, CIRCLE, RECTANGLE
     }
 
     static enum OVERVIEW_PLACEMENT_TYPE {
@@ -484,14 +530,5 @@ final public class Options {
 
     static enum PHYLOGENY_GRAPHICS_TYPE {
         RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
-    }
-
-    boolean isAllowMagnificationOfTaxonomyImages() {
-        return true;
-    }
-
-    int getDefaultNodeBoxSize() {
-        // TODO make variable ~~
-        return 8;
     }
 }

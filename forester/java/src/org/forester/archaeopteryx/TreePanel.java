@@ -92,6 +92,8 @@ import javax.swing.PopupFactory;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
+import org.forester.archaeopteryx.Options.NodeFill;
+import org.forester.archaeopteryx.Options.NodeShape;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
@@ -2816,14 +2818,36 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 else {
                     //TODO FIXME
                     //drawRectFilled( x - HALF_BOX_SIZE, y - HALF_BOX_SIZE, BOX_SIZE, BOX_SIZE, g );
-                    drawOvalGradient( x - _half_box_size,
-                                      y - _half_box_size,
-                                      _box_size,
-                                      _box_size,
-                                      g,
-                                      Color.BLACK,
-                                      g.getColor(),
-                                      g.getColor() );
+                    if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
+                        if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                            drawOvalGradient( x - _half_box_size,
+                                              y - _half_box_size,
+                                              _box_size,
+                                              _box_size,
+                                              g,
+                                              Color.BLACK,
+                                              g.getColor(),
+                                              g.getColor() );
+                        }
+                        else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                            drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                        }
+                    }
+                    else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
+                        if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                            drawRectGradient( x - _half_box_size,
+                                              y - _half_box_size,
+                                              _box_size,
+                                              _box_size,
+                                              g,
+                                              Color.BLACK,
+                                              g.getColor(),
+                                              g.getColor() );
+                        }
+                        else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                            drawRectFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                        }
+                    }
                 }
             }
         }

@@ -45,6 +45,8 @@ import java.util.TreeMap;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
+import org.forester.archaeopteryx.Options.NodeFill;
+import org.forester.archaeopteryx.Options.NodeShape;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.util.ForesterUtil;
@@ -91,6 +93,10 @@ public final class Configuration {
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private int                             _default_bootstrap_samples                             = -1;
+    private NodeShape                       _default_node_shape                                    = NodeShape.NONE;
+    private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
+    private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+    private boolean                         _taxonomy_colorize_node_shapes_instead_of_labels       = false;
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -1056,6 +1062,46 @@ public final class Configuration {
         else if ( key.equals( "domain_structure_base_color" ) ) {
             _domain_structure_base_color = Color.decode( ( String ) st.nextElement() );
         }
+        //
+        else if ( key.equals( "default_node_size" ) ) {
+            final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
+            setDefaultNodeShapeSize( i );
+        }
+        else if ( key.equals( "default_node_fill" ) ) {
+            final String fill_str = ( ( String ) st.nextElement() ).trim();
+            if ( fill_str.equalsIgnoreCase( Options.NodeFill.NONE.toString() ) ) {
+                setDefaultNodeFill( NodeFill.NONE );
+            }
+            else if ( fill_str.equalsIgnoreCase( Options.NodeFill.GRADIENT.toString() ) ) {
+                setDefaultNodeFill( NodeFill.GRADIENT );
+            }
+            else if ( fill_str.equalsIgnoreCase( Options.NodeFill.SOLID.toString() ) ) {
+                setDefaultNodeFill( NodeFill.SOLID );
+            }
+            else {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + fill_str
+                        + "] for [default_node_fill]" );
+            }
+        }
+        else if ( key.equals( "default_node_shape" ) ) {
+            final String shape_str = ( ( String ) st.nextElement() ).trim();
+            if ( shape_str.equalsIgnoreCase( Options.NodeShape.NONE.toString() ) ) {
+                setDefaultNodeShape( NodeShape.NONE );
+            }
+            else if ( shape_str.equalsIgnoreCase( Options.NodeShape.CIRCLE.toString() ) ) {
+                setDefaultNodeShape( NodeShape.CIRCLE );
+            }
+            else if ( shape_str.equalsIgnoreCase( Options.NodeShape.RECTANGLE.toString() ) ) {
+                setDefaultNodeShape( NodeShape.RECTANGLE );
+            }
+            else {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + shape_str
+                        + "] for [default_node_shape]" );
+            }
+        }
+        else if ( key.equals( "taxonomy_colorize_node_shapes" ) ) {
+            setTaxonomyColorizeNodeShapesInsteadOfLabels( parseBoolean( ( String ) st.nextElement() ) );
+        }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1336,5 +1382,37 @@ public final class Configuration {
 
     public boolean isAbbreviateScientificTaxonNames() {
         return _abbreviate_scientific_names;
+    }
+
+    public NodeShape getDefaultNodeShape() {
+        return _default_node_shape;
+    }
+
+    private void setDefaultNodeShape( final NodeShape default_node_shape ) {
+        _default_node_shape = default_node_shape;
+    }
+
+    private void setDefaultNodeFill( final NodeFill default_node_fill ) {
+        _default_node_fill = default_node_fill;
+    }
+
+    public NodeFill getDefaultNodeFill() {
+        return _default_node_fill;
+    }
+
+    private void setDefaultNodeShapeSize( final short default_node_shape_size ) {
+        _default_node_shape_size = default_node_shape_size;
+    }
+
+    public short getDefaultNodeShapeSize() {
+        return _default_node_shape_size;
+    }
+
+    private void setTaxonomyColorizeNodeShapesInsteadOfLabels( final boolean taxonomy_colorize_node_shapes_instead_of_labels ) {
+        _taxonomy_colorize_node_shapes_instead_of_labels = taxonomy_colorize_node_shapes_instead_of_labels;
+    }
+
+    public boolean isTaxonomyColorizeNodeShapesInsteadOfLabels() {
+        return _taxonomy_colorize_node_shapes_instead_of_labels;
     }
 }

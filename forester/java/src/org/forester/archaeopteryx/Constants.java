@@ -106,4 +106,5 @@ public final class Constants {
                                                                                                            144,
                                                                                                            144 );
     final static String         NCBI_ALL_DATABASE_SEARCH                                      = "http://www.ncbi.nlm.nih.gov/gquery/?term=";
+    final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 6;
 }

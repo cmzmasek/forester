@@ -32,7 +32,6 @@ import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.util.ForesterUtil;
 
 //
@@ -42,8 +41,6 @@ import org.forester.util.ForesterUtil;
 // -c $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester-atv/_aptx_configuration_file
 //
 public final class Archaeopteryx {
-
-    private final static boolean TEST = false; //TODO remove me!
 
     public static MainFrame createApplication( final Phylogeny phylogeny ) {
         final Phylogeny[] phylogenies = new Phylogeny[ 1 ];
@@ -116,21 +113,6 @@ public final class Archaeopteryx {
                             ForesterUtil.transferInternalNodeNamesToConfidence( phy );
                         }
                     }
-                    //
-                    //                                        Phylogeny py = phylogenies[ 0 ];
-                    //                                        for( final PhylogenyNodeIterator iter = py.iteratorExternalForward(); iter.hasNext(); ) {
-                    //                                            final PhylogenyNode node = iter.next();
-                    //                                            System.out.println( node.getNodeData().getTaxonomy().getScientificName() + "\t"
-                    //                                                    + node.getNodeData().getBinaryCharacters().getPresentCount() );
-                    //                                        }
-                    //                                        for( final PhylogenyNodeIterator iter = py.iteratorPreorder(); iter.hasNext(); ) {
-                    //                                            final PhylogenyNode node = iter.next();
-                    //                                            if ( !node.isExternal() ) {
-                    //                                                System.out.println( node.getNodeData().getTaxonomy().getScientificName() + "\t"
-                    //                                                        + node.getNodeData().getBinaryCharacters().getPresentCount() );
-                    //                                            }
-                    //                                        }
-                    //
                 }
             }
         }
@@ -142,32 +124,8 @@ public final class Archaeopteryx {
             title = f.getName();
         }
         try {
-            String s = "";
-            if ( TEST ) {
-                s = "/home/czmasek/888.xml";
-                if ( ForesterUtil.isReadableFile( s ) != null ) {
-                    s = "/Users/zma/888.xml";
-                    if ( ForesterUtil.isReadableFile( s ) != null ) {
-                        s = "C:\\888.xml";
-                        if ( ForesterUtil.isReadableFile( s ) != null ) {
-                            s = "C:\\Documents and Settings\\czmasek\\";
-                        }
-                    }
-                }
-            }
-            if ( !TEST ) {
-                MainFrameApplication.createInstance( phylogenies, conf, title );
-            }
-            else {
-                MainFrameApplication.createInstance( ParserBasedPhylogenyFactory.getInstance()
-                                                             .create( s, new PhyloXmlParser() ),
-                                                     conf,
-                                                     title );
-            }
+            MainFrameApplication.createInstance( phylogenies, conf, title );
         }
-        // catch ( final IOException ex ) {
-        //     ForesterUtil.fatalError( Constants.PRG_NAME, "failed to start: " + ex.getLocalizedMessage() );
-        // }
         catch ( final Exception ex ) {
             Util.unexpectedException( ex );
         }
