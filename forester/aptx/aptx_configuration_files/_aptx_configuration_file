@@ -53,11 +53,23 @@ native_ui: ?
 #                                    convex
 #                                    unrooted
 #                                    circular
-#  Node label direction for circular
-#     and unrooted type: 'node_label_direction':
+#  Node label direction for circular and unrooted type: 'node_label_direction':
 #     Example: 'node_label_direction: horizontal'
 #     The two possible values are: horizontal
 #                                  radial
+#  Default node (shape) size: 'default_node_size'
+#     Example: 'default_node_size: 6'
+#  Default node shape: 'default_node_shape'
+#     Example: 'default_node_shape: '
+#     Possible values: circle
+#                      rectangle
+#                      none
+#  Default node (shape) fill: 'default_node_fill'
+#     Example: 'default_node_fill: '
+#     Possible values: solid
+#                      gradient
+#                      none
+#  Taxonomy colorization of nodes (shapes) instead of labels: 'taxonomy_colorize_node_shapes': values: 'yes'/'no'
 #  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
 #  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
 #  Number of fraction digits for branch length values: 'branch_length_value_digits'
@@ -82,6 +94,11 @@ show_scale:                                yes
 show_branch_length_values:                 no
 cladogram_type:                            ext_node_sum_dep
 phylogeny_graphics_type:                   rectangular
+node_label_direction:                      horizontal
+default_node_size:                         4
+default_node_shape:                        rectangle
+default_node_fill:                         gradient
+taxonomy_colorize_node_shapes:             yes
 #graphics_export_x:                         595
 #graphics_export_y:                         792
 pdf_export_line_width:                     0.5
@@ -89,7 +106,6 @@ show_overview:                             yes
 overview_width:                            120
 overview_height:                           120
 overview_placement_type:                   upper_left
-node_label_direction:                      horizontal
 color_labels_same_as_branch_length_values: no
 show_domain_labels:                        yes
 branch_length_value_digits:                3
