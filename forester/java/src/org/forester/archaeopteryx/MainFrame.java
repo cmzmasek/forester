@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -82,13 +83,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String       SCREEN_ANTIALIAS_LABEL             = "Antialias";
     static final String       COLOR_LABELS_LABEL                 = "Colorize Labels Same as Parent Branch";
     static final String       BG_GRAD_LABEL                      = "Background Color Gradient";
-    static final String       DISPLAY_NODE_BOXES_LABEL           = "Display Node Boxes";
+    static final String       DISPLAY_NODE_BOXES_LABEL           = "Display Node Shapes";
     static final String       SHOW_OVERVIEW_LABEL                = "Show Overview";
     static final String       FONT_SIZE_MENU_LABEL               = "Font Size";
     static final String       NONUNIFORM_CLADOGRAMS_LABEL        = "External Node Sum Dependent Cladograms";
     static final String       SHOW_DOMAIN_LABELS_LABEL           = "Show Domain Labels";
     static final String       COLOR_LABELS_TIP                   = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String       ABBREV_SN_LABEL                    = "Abbreviate Scientific Taxonomic Names";
+     static final String TAXONOMY_COLORIZE_NODE_SHAPES_LABEL = "Colorize Node Shapes According to Taxonomy";
+     static final String CYCLE_NODE_SHAPE_LABEL = "Cycle Node Shapes";
+     static final String CYCLE_NODE_FILL_LABEL = "Cycle Node Fill Type";
+     static final String CHOOSE_NODE_SIZE_LABEL = "Choose Node Shape Size";
     JMenuBar                  _jmenubar;
     JMenu                     _file_jmenu;
     JMenu                     _tools_menu;
@@ -131,7 +136,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     // _  screen display
     JCheckBoxMenuItem         _screen_antialias_cbmi;
     JCheckBoxMenuItem         _background_gradient_cbmi;
-    JCheckBoxMenuItem         _show_node_boxes_cbmi;
+   
     JRadioButtonMenuItem      _non_lined_up_cladograms_rbmi;
     JRadioButtonMenuItem      _uniform_cladograms_rbmi;
     JRadioButtonMenuItem      _ext_node_dependent_cladogram_rbmi;
@@ -143,6 +148,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem         _color_labels_same_as_parent_branch;
     JMenuItem                 _overview_placment_mi;
     JMenuItem                 _choose_minimal_confidence_mi;
+    
+    JCheckBoxMenuItem         _show_default_node_shapes_cbmi;
+    JMenuItem                 _cycle_node_shape_mi;
+    JMenuItem                 _cycle_node_fill_mi;
+    JMenuItem                 _choose_node_size_mi;
+    JCheckBoxMenuItem                 _taxonomy_colorize_node_shapes_cbmi;
     // _  print
     JCheckBoxMenuItem         _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem         _antialias_print_cbmi;
@@ -320,9 +331,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _color_labels_same_as_parent_branch ) {
             updateOptions( getOptions() );
         }
-        else if ( o == _show_node_boxes_cbmi ) {
+        else if ( o == _show_default_node_shapes_cbmi ) {
             updateOptions( getOptions() );
         }
+        else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        
         else if ( o == _non_lined_up_cladograms_rbmi ) {
             updateOptions( getOptions() );
             showWhole();
@@ -851,7 +866,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
                 && _color_labels_same_as_parent_branch.isSelected() );
         //TODO FIXME ~~
-        //options.setShowNodeBoxes( ( _show_node_boxes_cbmi != null ) && _show_node_boxes_cbmi.isSelected() );
+        options.setShowDefaultNodeShapes( ( _show_default_node_shapes_cbmi != null ) && _show_default_node_shapes_cbmi.isSelected() );
+        options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null ) && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
+        
         //TODO FIXME ~~
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );

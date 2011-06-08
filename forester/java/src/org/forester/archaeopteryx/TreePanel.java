@@ -268,8 +268,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _configuration = configuration;
         _phylogeny = t;
         _phy_has_branch_lengths = ForesterUtil.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
-        _box_size = tjp.getOptions().getDefaultNodeBoxSize();
-        _half_box_size = tjp.getOptions().getDefaultNodeBoxSize() / 2;
+        _box_size = tjp.getOptions().getDefaultNodeShapeSize();
+        _half_box_size = tjp.getOptions().getDefaultNodeShapeSize() / 2;
         _half_box_size_plus_wiggle = _half_box_size + WIGGLE;
         init();
         // if ( !_phylogeny.isEmpty() ) {

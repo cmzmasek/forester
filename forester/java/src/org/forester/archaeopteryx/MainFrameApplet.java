@@ -178,7 +178,7 @@ public final class MainFrameApplet extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        _options_jmenu.add( _show_node_boxes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
+        _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
@@ -208,7 +208,7 @@ public final class MainFrameApplet extends MainFrame {
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_node_boxes_cbmi, getOptions().getDefaultNodeShape() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().getDefaultNodeShape() );
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );

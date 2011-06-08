@@ -70,7 +70,8 @@ final public class Options {
     private NodeShape               _default_node_shape;
     private NodeFill                _default_node_fill;
     private short                   _default_node_shape_size;
-    private boolean                 _taxonomy_colorize_node_shapes_instead_of_labels;
+    private boolean                 _taxonomy_colorize_node_shapes;
+    private boolean                  _show_default_node_shapes;
 
     private Options() {
         init();
@@ -82,11 +83,6 @@ final public class Options {
 
     final CLADOGRAM_TYPE getCladogramType() {
         return _cladogram_type;
-    }
-
-    int getDefaultNodeBoxSize() {
-        // TODO make variable ~~
-        return 8;
     }
 
     final NodeFill getDefaultNodeFill() {
@@ -145,7 +141,7 @@ final public class Options {
         _default_node_shape = NodeShape.NONE;
         _default_node_fill = NodeFill.GRADIENT;
         _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _taxonomy_colorize_node_shapes_instead_of_labels = false;
+        _taxonomy_colorize_node_shapes = false;
         _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
@@ -154,6 +150,7 @@ final public class Options {
         _graphics_export_visible_only = false;
         _editable = true;
         _background_color_gradient = false;
+        _show_default_node_shapes = false;
         if ( Util.isUsOrCanada() ) {
             _print_size_x = Constants.US_LETTER_SIZE_X;
             _print_size_y = Constants.US_LETTER_SIZE_Y;
@@ -270,8 +267,8 @@ final public class Options {
         return _show_scale;
     }
 
-    boolean isTaxonomyColorizeNodeShapesInsteadOfLabels() {
-        return _taxonomy_colorize_node_shapes_instead_of_labels;
+    boolean isTaxonomyColorizeNodeShapes() {
+        return _taxonomy_colorize_node_shapes;
     }
 
     final void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
@@ -420,14 +417,20 @@ final public class Options {
         _show_scale = show_scale;
     }
 
-    void setTaxonomyColorizeNodeShapesInsteadOfLabels( final boolean taxonomy_colorize_node_shapes_instead_of_labels ) {
-        _taxonomy_colorize_node_shapes_instead_of_labels = taxonomy_colorize_node_shapes_instead_of_labels;
+    void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
+        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
     final static Options createDefaultInstance() {
         return new Options();
     }
 
+     boolean isShowDefaultNodeShapes() {
+        return                  _show_default_node_shapes;   
+    }    
+     void setShowDefaultNodeShapes(boolean show_default_node_shapes) {
+         _show_default_node_shapes = show_default_node_shapes;
+    }
     final static Options createInstance( final Configuration configuration ) {
         final Options instance = createDefaultInstance();
         if ( configuration != null ) {
@@ -484,8 +487,9 @@ final public class Options {
             if ( configuration.getDefaultNodeShapeSize() >= 0 ) {
                 instance.setDefaultNodeShapeSize( configuration.getDefaultNodeShapeSize() );
             }
-            instance.setTaxonomyColorizeNodeShapesInsteadOfLabels( configuration
-                    .isTaxonomyColorizeNodeShapesInsteadOfLabels() );
+            instance.setTaxonomyColorizeNodeShapes( configuration
+                    .isTaxonomyColorizeNodeShapes() );
+            instance.setShowDefaultNodeShapes( configuration.isShowDefaultNodeShapes() );
         }
         return instance;
     }

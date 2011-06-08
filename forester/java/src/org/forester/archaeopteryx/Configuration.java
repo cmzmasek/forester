@@ -93,10 +93,11 @@ public final class Configuration {
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private int                             _default_bootstrap_samples                             = -1;
+    private boolean                         _show_default_node_shapes                              = false;
     private NodeShape                       _default_node_shape                                    = NodeShape.NONE;
     private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-    private boolean                         _taxonomy_colorize_node_shapes_instead_of_labels       = false;
+    private boolean                         _taxonomy_colorize_node_shapes       = false;
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -106,22 +107,23 @@ public final class Configuration {
     final static int                        color_according_to_species                             = 6;
     final static int                        color_branches                                         = 7;
     final static int                        width_branches                                         = 8;
-    final static int                        show_domain_architectures                              = 9;
-    final static int                        show_binary_characters                                 = 10;
-    final static int                        show_binary_character_counts                           = 11;
-    final static int                        show_gene_names                                        = 12;
-    final static int                        show_sequence_acc                                      = 13;
-    final static int                        display_internal_data                                  = 14;
-    final static int                        dynamically_hide_data                                  = 15;
-    final static int                        show_taxonomy_scientific_names                         = 16;
-    final static int                        show_taxonomy_common_names                             = 17;
-    final static int                        color_according_to_annotation                          = 18;
-    final static int                        show_property                                          = 19;
-    final static int                        show_gene_symbols                                      = 20;
-    final static int                        node_data_popup                                        = 21;
-    final static int                        show_relation_confidence                               = 22;
-    final static int                        show_vector_data                                       = 23;
-    final static int                        show_taxonomy_images                                   = 24;
+    final static int                        show_custom_node_shapes                                = 9;
+    final static int                        show_domain_architectures                              = 10;
+    final static int                        show_binary_characters                                 = 11;
+    final static int                        show_binary_character_counts                           = 12;
+    final static int                        show_gene_names                                        = 13;
+    final static int                        show_sequence_acc                                      = 14;
+    final static int                        display_internal_data                                  = 15;
+    final static int                        dynamically_hide_data                                  = 16;
+    final static int                        show_taxonomy_scientific_names                         = 17;
+    final static int                        show_taxonomy_common_names                             = 18;
+    final static int                        color_according_to_annotation                          = 19;
+    final static int                        show_property                                          = 20;
+    final static int                        show_gene_symbols                                      = 21;
+    final static int                        node_data_popup                                        = 22;
+    final static int                        show_relation_confidence                               = 23;
+    final static int                        show_vector_data                                       = 24;
+    final static int                        show_taxonomy_images                                   = 25;
     // ------------------
     // Click-to options
     // ------------------
@@ -153,7 +155,7 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Annotation", "nodisplay", "no" }, { "Confidence Value", "display", "?" }, { "Event", "display", "?" },
             { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
-            { "Use Branch-Width", "nodisplay", "no" }, { "Domains", "nodisplay", "no" },
+            { "Use Branch-Width", "nodisplay", "no" }, { "Show Custom Nodes", "display", "yes"}, { "Domains", "nodisplay", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
             { "Prot/Gene Name", "display", "no" }, { "Prot/Gene Acc", "display", "no" },
             { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
@@ -364,6 +366,7 @@ public final class Configuration {
         return _cladogram_type;
     }
 
+    
     private int getClickToIndex( final String name ) {
         int index = -1;
         if ( name.equals( "edit_info" ) ) {
@@ -1063,6 +1066,9 @@ public final class Configuration {
             _domain_structure_base_color = Color.decode( ( String ) st.nextElement() );
         }
         //
+        else if ( key.equals( "show_default_node_shapes" ) ) {
+            setShowDefaultNodeShapes( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
+        }
         else if ( key.equals( "default_node_size" ) ) {
             final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
             setDefaultNodeShapeSize( i );
@@ -1100,7 +1106,7 @@ public final class Configuration {
             }
         }
         else if ( key.equals( "taxonomy_colorize_node_shapes" ) ) {
-            setTaxonomyColorizeNodeShapesInsteadOfLabels( parseBoolean( ( String ) st.nextElement() ) );
+            setTaxonomyColorizeNodeShapes( parseBoolean( ( String ) st.nextElement() ) );
         }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
@@ -1231,6 +1237,9 @@ public final class Configuration {
             }
             else if ( key.equals( "show_relation_confidence" ) ) {
                 key_index = Configuration.show_relation_confidence;
+            }
+            else if ( key.equals( "show_custom_node_shapes" ) ) {
+                key_index = Configuration.show_custom_node_shapes;
             }
             // If we've found the key, set the values
             if ( key_index >= 0 ) {
@@ -1408,11 +1417,19 @@ public final class Configuration {
         return _default_node_shape_size;
     }
 
-    private void setTaxonomyColorizeNodeShapesInsteadOfLabels( final boolean taxonomy_colorize_node_shapes_instead_of_labels ) {
-        _taxonomy_colorize_node_shapes_instead_of_labels = taxonomy_colorize_node_shapes_instead_of_labels;
+    private void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
+        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
-    public boolean isTaxonomyColorizeNodeShapesInsteadOfLabels() {
-        return _taxonomy_colorize_node_shapes_instead_of_labels;
+    public boolean isTaxonomyColorizeNodeShapes() {
+        return _taxonomy_colorize_node_shapes;
     }
+    
+    public boolean isShowDefaultNodeShapes() {
+        return _show_default_node_shapes;   
+    }    
+    private void setShowDefaultNodeShapes(boolean show_default_node_shapes) {
+         _show_default_node_shapes =show_default_node_shapes;   
+    } 
+    
 }
