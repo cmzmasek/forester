@@ -26,7 +26,7 @@ import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
-public class Example4 {
+public class Example0 {
 
     public static void main( final String[] args ) {
         // Reading-in of (a) tree(s) from a file.
