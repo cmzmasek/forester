@@ -29,12 +29,12 @@ package org.forester.test.examples;
 import java.io.File;
 import java.io.IOException;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
-public class Example1 {
+public class Example4 {
 
     public static void main( final String[] args ) {
         // Reading-in of (a) tree(s) from a file.
@@ -53,7 +53,14 @@ public class Example1 {
         catch ( final IOException e ) {
             e.printStackTrace();
         }
-        // Display of the tree(s) with Archaeopteryx.
-        Archaeopteryx.createApplication( phys );
+        // Writing trees to a file.
+        final File outfile = new File( "/home/czmasek/tol_117_TEST_out.xml" );
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            writer.toPhyloXML( phys, 0, outfile, ForesterUtil.LINE_SEPARATOR );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
     }
 }
