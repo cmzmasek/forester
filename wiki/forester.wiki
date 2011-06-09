@@ -10,8 +10,58 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
 Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 
+= Reading and writing of phylogenetic trees =
 
-= Parsing of phylogenetic trees and displaying them with Archaeopteryx =
+This needs file "forester.jar" to be in the class-path.
+
+{{{
+
+package examples;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.writers.PhylogenyWriter;
+import org.forester.phylogeny.Phylogeny;
+import org.forester.util.ForesterUtil;
+
+public class Example4 {
+
+    public static void main( final String[] args ) {
+        // Reading-in of (a) tree(s) from a file.
+        final File treefile = new File( "/path/to/tree.xml" );
+        PhylogenyParser parser = null;
+        try {
+            parser = ForesterUtil.createParserDependingOnFileType( treefile, true );
+        }
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+        Phylogeny[] phys = null;
+        try {
+            phys = ForesterUtil.readPhylogenies( parser, treefile );
+        }
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+        // Writing trees to a file.
+        final File outfile = new File( "/path/to/out_tree.xml" );
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            writer.toPhyloXML( phys, 0, outfile, ForesterUtil.LINE_SEPARATOR );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+    }
+}
+
+}}}
+
+
+
+= Reading of phylogenetic trees and displaying them with Archaeopteryx =
 
 This needs file "forester.jar" to be in the class-path.
 
@@ -30,7 +80,7 @@ import org.forester.util.ForesterUtil;
 public class Example1 {
 
     public static void main( final String[] args ) {
-        // Reads in (a) tree(s) from a file.
+        // Reading-in of (a) tree(s) from a file.
         final File treefile = new File( "/path/to/tree.xml" );
         PhylogenyParser parser = null;
         try {
