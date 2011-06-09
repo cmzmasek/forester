@@ -247,6 +247,11 @@ public class Example5 {
         final Sequence s2 = new Sequence();
         s2.setName( "Bcl-2" );
         d2.getNodeData().addSequence( s2 );
+        // Root is a speciation.
+        final Event ev = new Event();
+        ev.setSpeciations( 1 );
+        ev.setDuplications( 0 );
+        root.getNodeData().setEvent( ev );
         // Putting the tree together.
         root.addAsChild( d1 );
         root.addAsChild( d2 );
@@ -258,4 +263,3 @@ public class Example5 {
 }
 
 }}}
-
