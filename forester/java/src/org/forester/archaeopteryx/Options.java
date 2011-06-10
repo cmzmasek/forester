@@ -71,7 +71,7 @@ final public class Options {
     private NodeFill                _default_node_fill;
     private short                   _default_node_shape_size;
     private boolean                 _taxonomy_colorize_node_shapes;
-    private boolean                  _show_default_node_shapes;
+    private boolean                 _show_default_node_shapes;
 
     private Options() {
         init();
@@ -138,7 +138,7 @@ final public class Options {
     }
 
     final private void init() {
-        _default_node_shape = NodeShape.NONE;
+        _default_node_shape = NodeShape.CIRCLE;
         _default_node_fill = NodeFill.GRADIENT;
         _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
         _taxonomy_colorize_node_shapes = false;
@@ -425,12 +425,14 @@ final public class Options {
         return new Options();
     }
 
-     boolean isShowDefaultNodeShapes() {
-        return                  _show_default_node_shapes;   
-    }    
-     void setShowDefaultNodeShapes(boolean show_default_node_shapes) {
-         _show_default_node_shapes = show_default_node_shapes;
+    boolean isShowDefaultNodeShapes() {
+        return _show_default_node_shapes;
     }
+
+    void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
+        _show_default_node_shapes = show_default_node_shapes;
+    }
+
     final static Options createInstance( final Configuration configuration ) {
         final Options instance = createDefaultInstance();
         if ( configuration != null ) {
@@ -487,8 +489,7 @@ final public class Options {
             if ( configuration.getDefaultNodeShapeSize() >= 0 ) {
                 instance.setDefaultNodeShapeSize( configuration.getDefaultNodeShapeSize() );
             }
-            instance.setTaxonomyColorizeNodeShapes( configuration
-                    .isTaxonomyColorizeNodeShapes() );
+            instance.setTaxonomyColorizeNodeShapes( configuration.isTaxonomyColorizeNodeShapes() );
             instance.setShowDefaultNodeShapes( configuration.isShowDefaultNodeShapes() );
         }
         return instance;
@@ -507,7 +508,7 @@ final public class Options {
     }
 
     enum NodeShape {
-        NONE, CIRCLE, RECTANGLE
+        CIRCLE, RECTANGLE
     }
 
     static enum OVERVIEW_PLACEMENT_TYPE {

@@ -94,10 +94,10 @@ public final class Configuration {
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private int                             _default_bootstrap_samples                             = -1;
     private boolean                         _show_default_node_shapes                              = false;
-    private NodeShape                       _default_node_shape                                    = NodeShape.NONE;
+    private NodeShape                       _default_node_shape                                    = NodeShape.CIRCLE;
     private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-    private boolean                         _taxonomy_colorize_node_shapes       = false;
+    private boolean                         _taxonomy_colorize_node_shapes                         = false;
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -155,15 +155,15 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Annotation", "nodisplay", "no" }, { "Confidence Value", "display", "?" }, { "Event", "display", "?" },
             { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
-            { "Use Branch-Width", "nodisplay", "no" }, { "Show Custom Nodes", "display", "yes"}, { "Domains", "nodisplay", "no" },
-            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
-            { "Prot/Gene Name", "display", "no" }, { "Prot/Gene Acc", "display", "no" },
-            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
-            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
-            { "Annotation Colorize", "nodisplay", "no" }, { "Property", "nodisplay", "no" },
-            { "Prot/Gene Symbol", "display", "no" }, { "Rollover", "display", "yes" },
-            { "Relation Confidence", "display", "no" }, { "Vector Data", "display", "no" },
-            { "Taxonomy Images", "display", "no" }                                                };
+            { "Use Branch-Width", "nodisplay", "no" }, { "Show Custom Nodes", "display", "yes" },
+            { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
+            { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "no" },
+            { "Prot/Gene Acc", "display", "no" }, { "Show Internal Data", "display", "yes" },
+            { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
+            { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
+            { "Property", "nodisplay", "no" }, { "Prot/Gene Symbol", "display", "no" },
+            { "Rollover", "display", "yes" }, { "Relation Confidence", "display", "no" },
+            { "Vector Data", "display", "no" }, { "Taxonomy Images", "display", "no" }            };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
@@ -366,7 +366,6 @@ public final class Configuration {
         return _cladogram_type;
     }
 
-    
     private int getClickToIndex( final String name ) {
         int index = -1;
         if ( name.equals( "edit_info" ) ) {
@@ -1065,7 +1064,6 @@ public final class Configuration {
         else if ( key.equals( "domain_structure_base_color" ) ) {
             _domain_structure_base_color = Color.decode( ( String ) st.nextElement() );
         }
-        //
         else if ( key.equals( "show_default_node_shapes" ) ) {
             setShowDefaultNodeShapes( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
         }
@@ -1091,10 +1089,7 @@ public final class Configuration {
         }
         else if ( key.equals( "default_node_shape" ) ) {
             final String shape_str = ( ( String ) st.nextElement() ).trim();
-            if ( shape_str.equalsIgnoreCase( Options.NodeShape.NONE.toString() ) ) {
-                setDefaultNodeShape( NodeShape.NONE );
-            }
-            else if ( shape_str.equalsIgnoreCase( Options.NodeShape.CIRCLE.toString() ) ) {
+            if ( shape_str.equalsIgnoreCase( Options.NodeShape.CIRCLE.toString() ) ) {
                 setDefaultNodeShape( NodeShape.CIRCLE );
             }
             else if ( shape_str.equalsIgnoreCase( Options.NodeShape.RECTANGLE.toString() ) ) {
@@ -1424,12 +1419,12 @@ public final class Configuration {
     public boolean isTaxonomyColorizeNodeShapes() {
         return _taxonomy_colorize_node_shapes;
     }
-    
+
     public boolean isShowDefaultNodeShapes() {
-        return _show_default_node_shapes;   
-    }    
-    private void setShowDefaultNodeShapes(boolean show_default_node_shapes) {
-         _show_default_node_shapes =show_default_node_shapes;   
-    } 
-    
+        return _show_default_node_shapes;
+    }
+
+    private void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
+        _show_default_node_shapes = show_default_node_shapes;
+    }
 }

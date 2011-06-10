@@ -448,12 +448,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final void assignGraphicsForNodeBoxWithColorForParentBranch( final PhylogenyNode node, final Graphics g ) {
+    final Color getGraphicsForNodeBoxWithColorForParentBranch( final PhylogenyNode node ) {
         if ( getControlPanel().isColorBranches() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
-            g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
+            return ( PhylogenyMethods.getBranchColorValue( node ) );
         }
         else {
-            g.setColor( getTreeColorSet().getBranchColor() );
+            return ( getTreeColorSet().getBranchColor() );
         }
     }
 
@@ -2307,7 +2307,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private void paintBranchRectangular( final Graphics2D g,
                                                final float x1,
                                                final float x2,
-                                               float y1,
+                                               final float y1,
                                                final float y2,
                                                final PhylogenyNode node,
                                                final boolean to_pdf,
@@ -2328,88 +2328,89 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.draw( _cubic_curve );
         }
         else {
-            float x2a = x2;
-            float x1a = x1;
+            final float x2a = x2;
+            final float x1a = x1;
             // draw the vertical line
-            boolean draw_horizontal = true;
+            // boolean draw_horizontal = true;
             float y2_r = 0;
             if ( node.isFirstChildNode() || node.isLastChildNode()
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
-                boolean draw_vertical = true;
-                final PhylogenyNode parent = node.getParent();
-                if ( ( ( ( getOptions().getDefaultNodeShape() != Options.NodeShape.NONE ) && !to_pdf && !to_graphics_file ) || ( ( getControlPanel()
-                        .isEvents() ) && ( parent != null ) && parent.isHasAssignedEvent() ) )
-                        && ( _phylogeny.isRooted() || !( ( parent != null ) && parent.isRoot() ) )
-                        && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !parent
-                                .isDuplication() ) ) {
-                    if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
-                            && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
-                        if ( Math.abs( y2 - y1 ) <= _half_box_size ) {
-                            draw_vertical = false;
+                //boolean draw_vertical = true;
+                //   final PhylogenyNode parent = node.getParent();
+                //TODO fix below -- actually this might not be necessay anymore? test pdf, though!
+                //                if ( ( ( ( getOptions().isShowDefaultNodeShapes() ) && !to_pdf && !to_graphics_file ) || ( ( getControlPanel()
+                //                        .isEvents() ) && ( parent != null ) && parent.isHasAssignedEvent() ) )
+                //                        && ( _phylogeny.isRooted() || !( ( parent != null ) && parent.isRoot() ) )
+                //                        && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !parent
+                //                                .isDuplication() ) ) {
+                //                    if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
+                //                            && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
+                //                        if ( Math.abs( y2 - y1 ) <= _half_box_size ) {
+                //                            draw_vertical = false;
+                //                        }
+                //                        else {
+                //                            if ( y1 < y2 ) {
+                //                                y1 += _half_box_size;
+                //                            }
+                //                            else {
+                //                                if ( !to_pdf ) {
+                //                                    y1 -= _half_box_size + 1;
+                //                                }
+                //                                else {
+                //                                    y1 -= _half_box_size;
+                //                                }
+                //                            }
+                //                        }
+                //                    }
+                //                    if ( ( x2 - x1 ) <= _half_box_size ) {
+                //                        draw_horizontal = false;
+                //                    }
+                //                    else if ( !draw_vertical ) {
+                //                        x1a += _half_box_size;
+                //                    }
+                //                    if ( ( ( x2 - x1a ) > _half_box_size )
+                //                            && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !node
+                //                                    .isDuplication() ) ) {
+                //                        x2a -= _half_box_size;
+                //                    }
+                //                }
+                //if ( draw_vertical ) {
+                if ( !to_graphics_file
+                        && !to_pdf
+                        && ( ( ( y2 < getVisibleRect().getMinY() - 20 ) && ( y1 < getVisibleRect().getMinY() - 20 ) ) || ( ( y2 > getVisibleRect()
+                                .getMaxY() + 20 ) && ( y1 > getVisibleRect().getMaxY() + 20 ) ) ) ) {
+                    // Do nothing.
+                }
+                else {
+                    if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
+                        float x2c = x1 + EURO_D;
+                        if ( x2c > x2a ) {
+                            x2c = x2a;
+                        }
+                        drawLine( x1, y1, x2c, y2, g );
+                    }
+                    else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
+                        if ( y2 > y1 ) {
+                            y2_r = y2 - ROUNDED_D;
+                            if ( y2_r < y1 ) {
+                                y2_r = y1;
+                            }
+                            drawLine( x1, y1, x1, y2_r, g );
                         }
                         else {
-                            if ( y1 < y2 ) {
-                                y1 += _half_box_size;
+                            y2_r = y2 + ROUNDED_D;
+                            if ( y2_r > y1 ) {
+                                y2_r = y1;
                             }
-                            else {
-                                if ( !to_pdf ) {
-                                    y1 -= _half_box_size + 1;
-                                }
-                                else {
-                                    y1 -= _half_box_size;
-                                }
-                            }
+                            drawLine( x1, y1, x1, y2_r, g );
                         }
-                    }
-                    if ( ( x2 - x1 ) <= _half_box_size ) {
-                        draw_horizontal = false;
-                    }
-                    else if ( !draw_vertical ) {
-                        x1a += _half_box_size;
-                    }
-                    if ( ( ( x2 - x1a ) > _half_box_size )
-                            && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !node
-                                    .isDuplication() ) ) {
-                        x2a -= _half_box_size;
-                    }
-                }
-                if ( draw_vertical ) {
-                    if ( !to_graphics_file
-                            && !to_pdf
-                            && ( ( ( y2 < getVisibleRect().getMinY() - 20 ) && ( y1 < getVisibleRect().getMinY() - 20 ) ) || ( ( y2 > getVisibleRect()
-                                    .getMaxY() + 20 ) && ( y1 > getVisibleRect().getMaxY() + 20 ) ) ) ) {
-                        // Do nothing.
                     }
                     else {
-                        if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
-                            float x2c = x1 + EURO_D;
-                            if ( x2c > x2a ) {
-                                x2c = x2a;
-                            }
-                            drawLine( x1, y1, x2c, y2, g );
-                        }
-                        else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
-                            if ( y2 > y1 ) {
-                                y2_r = y2 - ROUNDED_D;
-                                if ( y2_r < y1 ) {
-                                    y2_r = y1;
-                                }
-                                drawLine( x1, y1, x1, y2_r, g );
-                            }
-                            else {
-                                y2_r = y2 + ROUNDED_D;
-                                if ( y2_r > y1 ) {
-                                    y2_r = y1;
-                                }
-                                drawLine( x1, y1, x1, y2_r, g );
-                            }
-                        }
-                        else {
-                            drawLine( x1, y1, x1, y2, g );
-                        }
+                        drawLine( x1, y1, x1, y2, g );
                     }
                 }
+                //}
             }
             // draw the horizontal line
             if ( !to_graphics_file && !to_pdf
@@ -2417,43 +2418,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return;
             }
             float x1_r = 0;
-            if ( draw_horizontal ) {
-                if ( !getControlPanel().isWidthBranches() || ( PhylogenyMethods.getBranchWidthValue( node ) == 1 ) ) {
-                    if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
-                        x1_r = x1a + ROUNDED_D;
-                        if ( x1_r < x2a ) {
-                            drawLine( x1_r, y2, x2a, y2, g );
-                        }
+            //  if ( draw_horizontal ) {
+            if ( !getControlPanel().isWidthBranches() || ( PhylogenyMethods.getBranchWidthValue( node ) == 1 ) ) {
+                if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
+                    x1_r = x1a + ROUNDED_D;
+                    if ( x1_r < x2a ) {
+                        drawLine( x1_r, y2, x2a, y2, g );
                     }
-                    else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
-                        final float x1c = x1a + EURO_D;
-                        if ( x1c < x2a ) {
-                            drawLine( x1c, y2, x2a, y2, g );
-                        }
-                    }
-                    else {
-                        drawLine( x1a, y2, x2a, y2, g );
+                }
+                else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
+                    final float x1c = x1a + EURO_D;
+                    if ( x1c < x2a ) {
+                        drawLine( x1c, y2, x2a, y2, g );
                     }
                 }
                 else {
-                    final double w = PhylogenyMethods.getBranchWidthValue( node );
-                    if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
-                        x1_r = x1a + ROUNDED_D;
-                        if ( x1_r < x2a ) {
-                            drawRectFilled( x1_r, y2 - ( w / 2 ), x2a - x1_r, w, g );
-                        }
-                    }
-                    else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
-                        final float x1c = x1a + EURO_D;
-                        if ( x1c < x2a ) {
-                            drawRectFilled( x1c, y2 - ( w / 2 ), x2a - x1c, w, g );
-                        }
-                    }
-                    else {
-                        drawRectFilled( x1a, y2 - ( w / 2 ), x2a - x1a, w, g );
-                    }
+                    drawLine( x1a, y2, x2a, y2, g );
                 }
             }
+            else {
+                final double w = PhylogenyMethods.getBranchWidthValue( node );
+                if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
+                    x1_r = x1a + ROUNDED_D;
+                    if ( x1_r < x2a ) {
+                        drawRectFilled( x1_r, y2 - ( w / 2 ), x2a - x1_r, w, g );
+                    }
+                }
+                else if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) {
+                    final float x1c = x1a + EURO_D;
+                    if ( x1c < x2a ) {
+                        drawRectFilled( x1c, y2 - ( w / 2 ), x2a - x1c, w, g );
+                    }
+                }
+                else {
+                    drawRectFilled( x1a, y2 - ( w / 2 ), x2a - x1a, w, g );
+                }
+            }
+            //}
             if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
                 if ( x1_r > x2a ) {
                     x1_r = x2a;
@@ -2781,25 +2782,29 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             paintFoundNode( ForesterUtil.roundToInt( x ), ForesterUtil.roundToInt( y ), g );
         }
         else {
+            Color outline_color = null;
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
-                g.setColor( Color.BLACK );
+                outline_color = Color.BLACK;
             }
             else if ( getControlPanel().isEvents() && Util.isHasAssignedEvent( node ) ) {
                 final Event event = node.getNodeData().getEvent();
                 if ( event.isDuplication() ) {
-                    g.setColor( getTreeColorSet().getDuplicationBoxColor() );
+                    outline_color = getTreeColorSet().getDuplicationBoxColor();
                 }
                 else if ( event.isSpeciation() ) {
-                    g.setColor( getTreeColorSet().getSpecBoxColor() );
+                    outline_color = getTreeColorSet().getSpecBoxColor();
                 }
                 else if ( event.isSpeciationOrDuplication() ) {
-                    g.setColor( getTreeColorSet().getDuplicationOrSpeciationColor() );
+                    outline_color = getTreeColorSet().getDuplicationOrSpeciationColor();
                 }
             }
-            else {
-                assignGraphicsForNodeBoxWithColorForParentBranch( node, g );
+            else if ( getOptions().isTaxonomyColorizeNodeShapes() ) {
+                outline_color = getTaxonomyBasedColor( node );
             }
-            if ( ( ( getOptions().getDefaultNodeShape() != Options.NodeShape.NONE ) && !to_pdf && !to_graphics_file )
+            else {
+                outline_color = getGraphicsForNodeBoxWithColorForParentBranch( node );
+            }
+            if ( ( ( getOptions().isShowDefaultNodeShapes() ) /*&& !to_pdf && !to_graphics_file*/)
                     || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
                 if ( to_pdf || to_graphics_file ) {
                     if ( node.isDuplication() || !getOptions().isPrintBlackAndWhite() ) {
@@ -2810,9 +2815,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           _box_size,
                                           _box_size,
                                           g,
-                                          Color.BLACK,
-                                          g.getColor(),
-                                          g.getColor() );
+                                          outline_color,
+                                          getBackground(),
+                                          outline_color );
                     }
                 }
                 else {
@@ -2825,11 +2830,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               _box_size,
                                               _box_size,
                                               g,
-                                              Color.BLACK,
-                                              g.getColor(),
-                                              g.getColor() );
+                                              outline_color,
+                                              getBackground(),
+                                              outline_color );
+                        }
+                        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                            drawOvalGradient( x - _half_box_size,
+                                              y - _half_box_size,
+                                              _box_size,
+                                              _box_size,
+                                              g,
+                                              getBackground(),
+                                              getBackground(),
+                                              outline_color );
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                            g.setColor( outline_color );
                             drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
                         }
                     }
@@ -2840,11 +2856,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               _box_size,
                                               _box_size,
                                               g,
-                                              Color.BLACK,
-                                              g.getColor(),
-                                              g.getColor() );
+                                              outline_color,
+                                              getBackground(),
+                                              outline_color );
+                        }
+                        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                            drawRectGradient( x - _half_box_size,
+                                              y - _half_box_size,
+                                              _box_size,
+                                              _box_size,
+                                              g,
+                                              getBackground(),
+                                              getBackground(),
+                                              outline_color );
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                            g.setColor( outline_color );
                             drawRectFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
                         }
                     }

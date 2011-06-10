@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -188,7 +187,6 @@ public final class MainFrameApplication extends MainFrame {
     private final static SequencesFileFilter seqsfilter                      = new SequencesFileFilter();
     private final static DefaultFilter       defaultfilter                   = new DefaultFilter();
     private static final long                serialVersionUID                = -799735726778865234L;
-  
     private final JFileChooser               _values_filechooser;
     private final JFileChooser               _open_filechooser;
     private final JFileChooser               _msa_filechooser;
@@ -713,17 +711,14 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        
         //
         _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL ) );
-        
-        
-        _options_jmenu.add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL) );
-        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL));
-        _options_jmenu.add( _cycle_node_fill_mi  = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ));
-        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL )); 
+        _options_jmenu
+                .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
+        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
+        _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
+        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
         //
-        
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
