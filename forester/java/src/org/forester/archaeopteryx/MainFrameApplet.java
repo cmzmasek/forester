@@ -142,7 +142,6 @@ public final class MainFrameApplet extends MainFrame {
         setFocusable( true );
         requestFocus();
         requestFocusInWindow();
-        // All done: hello, world!
         setVisible( true );
         System.gc();
     }
@@ -153,7 +152,7 @@ public final class MainFrameApplet extends MainFrame {
 
             @Override
             public void stateChanged( final ChangeEvent e ) {
-                MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getCurrentTreePanel() );
+                MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getOptions() );
                 MainFrame.setTextColorChooseMenuItem( _switch_colors_mi, getCurrentTreePanel() );
                 MainFrame
                         .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
@@ -166,6 +165,9 @@ public final class MainFrameApplet extends MainFrame {
                                                                      _uniform_cladograms_rbmi,
                                                                      _ext_node_dependent_cladogram_rbmi,
                                                                      _label_direction_cbmi );
+                MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
+                MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
+                MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
             }
         } );
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.DISPLAY_SUBHEADER ),
@@ -178,8 +180,12 @@ public final class MainFrameApplet extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+        _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL ) );
         _options_jmenu
-                .add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
+                .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
+        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
+        _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
+        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
@@ -209,7 +215,11 @@ public final class MainFrameApplet extends MainFrame {
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().getDefaultNodeShape() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().isShowDefaultNodeShapes() );
+        customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
+        customizeJMenuItem( _cycle_node_shape_mi );
+        customizeJMenuItem( _cycle_node_fill_mi );
+        customizeJMenuItem( _choose_node_size_mi );
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );

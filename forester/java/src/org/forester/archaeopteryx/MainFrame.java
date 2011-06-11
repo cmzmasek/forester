@@ -24,6 +24,7 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -309,8 +310,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _choose_minimal_confidence_mi ) {
             chooseMinimalConfidence();
         }
+        else if ( o == _choose_node_size_mi ) {
+            chooseNodeSize( getOptions(), this );
+        }
         else if ( o == _overview_placment_mi ) {
             MainFrame.cycleOverview( getOptions(), getCurrentTreePanel() );
+        }
+        else if ( o == _cycle_node_fill_mi ) {
+            MainFrame.cycleNodeFill( getOptions(), getCurrentTreePanel() );
+        }
+        else if ( o == _cycle_node_shape_mi ) {
+            MainFrame.cycleNodeShape( getOptions(), getCurrentTreePanel() );
         }
         else if ( o == _screen_antialias_cbmi ) {
             updateOptions( getOptions() );
@@ -570,6 +580,40 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             if ( success && ( m >= 0.0 ) ) {
                 getOptions().setMinConfidenceValue( m );
+            }
+        }
+    }
+
+    static void chooseNodeSize( final Options options, final Component parent ) {
+        final String s = ( String ) JOptionPane.showInputDialog( parent,
+                                                                 "Please enter the default size for node shapes.\n"
+                                                                         + "[current value: "
+                                                                         + options.getDefaultNodeShapeSize() + "]\n",
+                                                                 "Node Shape Size",
+                                                                 JOptionPane.QUESTION_MESSAGE,
+                                                                 null,
+                                                                 null,
+                                                                 options.getDefaultNodeShapeSize() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                final short size = ForesterUtil.roundToShort( m );
+                if ( size >= 0.0 ) {
+                    options.setDefaultNodeShapeSize( size );
+                }
             }
         }
     }
@@ -861,12 +905,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
                 && _color_labels_same_as_parent_branch.isSelected() );
-        //TODO FIXME ~~
         options.setShowDefaultNodeShapes( ( _show_default_node_shapes_cbmi != null )
                 && _show_default_node_shapes_cbmi.isSelected() );
         options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
                 && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
-        //TODO FIXME ~~
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
@@ -1068,7 +1110,38 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             default:
                 throw new RuntimeException( "unknown placement: " + op.getOvPlacement() );
         }
-        tree_panel.updateOvSettings();
+        if ( tree_panel != null ) {
+            tree_panel.updateOvSettings();
+        }
+    }
+
+    static void cycleNodeFill( final Options op, final TreePanel tree_panel ) {
+        switch ( op.getDefaultNodeFill() ) {
+            case GRADIENT:
+                op.setDefaultNodeFill( Options.NodeFill.SOLID );
+                break;
+            case NONE:
+                op.setDefaultNodeFill( Options.NodeFill.GRADIENT );
+                break;
+            case SOLID:
+                op.setDefaultNodeFill( Options.NodeFill.NONE );
+                break;
+            default:
+                throw new RuntimeException( "unknown fill: " + op.getDefaultNodeFill() );
+        }
+    }
+
+    static void cycleNodeShape( final Options op, final TreePanel tree_panel ) {
+        switch ( op.getDefaultNodeShape() ) {
+            case CIRCLE:
+                op.setDefaultNodeShape( Options.NodeShape.RECTANGLE );
+                break;
+            case RECTANGLE:
+                op.setDefaultNodeShape( Options.NodeShape.CIRCLE );
+                break;
+            default:
+                throw new RuntimeException( "unknown shape: " + op.getDefaultNodeShape() );
+        }
     }
 
     static void help( final Map<String, WebLink> weblinks ) {
@@ -1169,12 +1242,32 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         TextFrame.instantiate( sb.toString() );
     }
 
-    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final TreePanel tree_panel ) {
-        if ( ( tree_panel != null ) && ( tree_panel.getTreeColorSet() != null ) ) {
-            mi.setText( "Overview Placement... (current: " + tree_panel.getOptions().getOvPlacement() + ")" );
+    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
+            mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
         }
         else {
-            mi.setText( "Overview Placement..." );
+            mi.setText( "Cycle Overview Placement..." );
+        }
+    }
+
+    static void setCycleNodeFillMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getDefaultNodeFill() != null ) ) {
+            mi.setText( "Cycle Node Shape Fill Type... (current: "
+                    + options.getDefaultNodeFill().toString().toLowerCase() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Shape Fill Type..." );
+        }
+    }
+
+    static void setCycleNodeShapeMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getDefaultNodeShape() != null ) ) {
+            mi.setText( "Cycle Node Shape Fill Type... (current: "
+                    + options.getDefaultNodeShape().toString().toLowerCase() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Node Shape Fill Type..." );
         }
     }
 
@@ -1202,6 +1295,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             mi.setEnabled( false );
         }
         mi.setText( "Enter Min Confidence Value... (current: " + options.getMinConfidenceValue() + ")" );
+    }
+
+    static void setTextNodeSizeMenuItem( final JMenuItem mi, final Options options ) {
+        mi.setText( "Enter Default Node Shape Size... (current: " + options.getDefaultNodeShapeSize() + ")" );
     }
 
     static void updateOptionsMenuDependingOnPhylogenyType( final MainPanel main_panel,

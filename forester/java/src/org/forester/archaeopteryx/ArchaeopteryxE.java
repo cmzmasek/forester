@@ -98,7 +98,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _choose_font_mi;
     private JMenuItem            _switch_colors_mi;
     JCheckBoxMenuItem            _label_direction_cbmi;
-    private JCheckBoxMenuItem    _show_node_boxes_cbmi;
     private JCheckBoxMenuItem    _show_scale_cbmi;
     private JCheckBoxMenuItem    _search_case_senstive_cbmi;
     private JCheckBoxMenuItem    _search_whole_words_only_cbmi;
@@ -109,6 +108,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _collapse_species_specific_subtrees;
     private JMenuItem            _overview_placment_mi;
     private ButtonGroup          _radio_group_1;
+    private JCheckBoxMenuItem    _show_default_node_shapes_cbmi;
+    private JMenuItem            _cycle_node_shape_mi;
+    private JMenuItem            _cycle_node_fill_mi;
+    private JMenuItem            _choose_node_size_mi;
+    private JCheckBoxMenuItem    _taxonomy_colorize_node_shapes_cbmi;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -186,11 +190,17 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _choose_minimal_confidence_mi ) {
             chooseMinimalConfidence();
         }
+        else if ( o == _choose_node_size_mi ) {
+            MainFrame.chooseNodeSize( getOptions(), this );
+        }
         else if ( o == _overview_placment_mi ) {
             MainFrame.cycleOverview( getOptions(), getCurrentTreePanel() );
         }
-        else if ( o == _show_node_boxes_cbmi ) {
-            updateOptions( getOptions() );
+        else if ( o == _cycle_node_fill_mi ) {
+            MainFrame.cycleNodeFill( getOptions(), getCurrentTreePanel() );
+        }
+        else if ( o == _cycle_node_shape_mi ) {
+            MainFrame.cycleNodeShape( getOptions(), getCurrentTreePanel() );
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
             updateOptions( getOptions() );
@@ -247,6 +257,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _color_labels_same_as_parent_branch ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_default_node_shapes_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _about_item ) {
@@ -331,7 +347,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
             @Override
             public void stateChanged( final ChangeEvent e ) {
-                MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getCurrentTreePanel() );
+                MainFrame.setOvPlacementColorChooseMenuItem( _overview_placment_mi, getOptions() );
                 MainFrame.setTextColorChooseMenuItem( _switch_colors_mi, getCurrentTreePanel() );
                 MainFrame
                         .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
@@ -344,6 +360,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                                      _uniform_cladograms_rbmi,
                                                                      _ext_node_dependent_cladogram_rbmi,
                                                                      _label_direction_cbmi );
+                MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
+                MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
+                MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
             }
         } );
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.DISPLAY_SUBHEADER ),
@@ -357,7 +376,15 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        _options_jmenu.add( _show_node_boxes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
+        //
+        _options_jmenu
+                .add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
+        _options_jmenu
+                .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
+        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
+        _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
+        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
+        //
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
@@ -389,13 +416,17 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_node_boxes_cbmi, getOptions().getDefaultNodeShape() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
         customizeCheckBoxMenuItem( _show_domain_labels, getOptions().isShowDomainLabels() );
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().isShowDefaultNodeShapes() );
+        customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
+        customizeJMenuItem( _cycle_node_shape_mi );
+        customizeJMenuItem( _cycle_node_fill_mi );
+        customizeJMenuItem( _choose_node_size_mi );
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
         customizeCheckBoxMenuItem( _search_case_senstive_cbmi, getOptions().isSearchCaseSensitive() );
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );
@@ -894,7 +925,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
                 && _color_labels_same_as_parent_branch.isSelected() );
-        options.setShowNodeBoxes( ( _show_node_boxes_cbmi != null ) && _show_node_boxes_cbmi.isSelected() );
+        options.setShowDefaultNodeShapes( ( _show_default_node_shapes_cbmi != null )
+                && _show_default_node_shapes_cbmi.isSelected() );
+        options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
+                && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }

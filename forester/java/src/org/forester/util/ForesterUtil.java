@@ -1066,6 +1066,10 @@ public final class ForesterUtil {
         return ( int ) ( d + 0.5 );
     }
 
+    final public static short roundToShort( final double d ) {
+        return ( short ) ( d + 0.5 );
+    }
+
     final public static int roundToInt( final float f ) {
         return ( int ) ( f + 0.5f );
     }

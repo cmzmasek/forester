@@ -144,7 +144,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static NumberFormat       FORMATTER_CONFIDENCE;
     private final static NumberFormat       FORMATTER_BRANCH_LENGTH;
     private final static int                WIGGLE                            = 2;
-    private final int                       _half_box_size_plus_wiggle;
+    //private final int                       _half_box_size_plus_wiggle;
     private final static int                LIMIT_FOR_HQ_RENDERING            = 1000;
     private final static int                CONFIDENCE_LEFT_MARGIN            = 4;
     // TODO "rendering_hints" was static before. Need to make sure everything is OK with it not
@@ -218,8 +218,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean                         _edited                           = false;
     private Popup                           _node_desc_popup;
     private JTextArea                       _rollover_popup;
-    private final int                       _box_size;
-    private final int                       _half_box_size;
+    // private final int                       _box_size;
+    // private final int                       _half_box_size;
     //private final short                     _skip_counter                     = 0;
     private final StringBuffer              _popup_buffer                     = new StringBuffer();
     final private static Font               POPUP_FONT                        = new Font( Configuration.getDefaultFontFamilyName(),
@@ -268,9 +268,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _configuration = configuration;
         _phylogeny = t;
         _phy_has_branch_lengths = ForesterUtil.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
-        _box_size = tjp.getOptions().getDefaultNodeShapeSize();
-        _half_box_size = tjp.getOptions().getDefaultNodeShapeSize() / 2;
-        _half_box_size_plus_wiggle = _half_box_size + WIGGLE;
         init();
         // if ( !_phylogeny.isEmpty() ) {
         _phylogeny.recalculateNumberOfExternalDescendants( true );
@@ -945,7 +942,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.fill( _rectangle );
     }
 
-    //TODO FIXME
     final private void drawRectGradient( final double x,
                                          final double y,
                                          final double width,
@@ -969,7 +965,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    //TODO FIXME
     final private void drawOvalGradient( final double x,
                                          final double y,
                                          final double width,
@@ -1011,13 +1006,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return null;
         }
+        final int half_box_size_plus_wiggle = getOptions().getDefaultNodeShapeSize() / 2 + WIGGLE;
         for( final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( ( _phylogeny.isRooted() || !node.isRoot() || ( node.getNumberOfDescendants() > 2 ) )
-                    && ( ( node.getXcoord() - _half_box_size_plus_wiggle ) <= x )
-                    && ( ( node.getXcoord() + _half_box_size_plus_wiggle ) >= x )
-                    && ( ( node.getYcoord() - _half_box_size_plus_wiggle ) <= y )
-                    && ( ( node.getYcoord() + _half_box_size_plus_wiggle ) >= y ) ) {
+                    && ( ( node.getXcoord() - half_box_size_plus_wiggle ) <= x )
+                    && ( ( node.getXcoord() + half_box_size_plus_wiggle ) >= x )
+                    && ( ( node.getYcoord() - half_box_size_plus_wiggle ) <= y )
+                    && ( ( node.getYcoord() + half_box_size_plus_wiggle ) >= y ) ) {
                 return node;
             }
         }
@@ -2469,9 +2465,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.draw( _arc );
             }
         }
-        //TODO new *****
         if ( node.isExternal() ) {
-            //TODO new *****
             paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
         }
     }
@@ -2600,21 +2594,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            final boolean to_graphics_file,
                                            final boolean to_pdf,
                                            final boolean is_in_found_nodes ) {
+        Color c = null;
         if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
-            g.setColor( Color.BLACK );
+            c = Color.BLACK;
         }
         else if ( is_in_found_nodes ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            c = getTreeColorSet().getFoundColor();
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
-            g.setColor( getTaxonomyBasedColor( node ) );
+            c = getTaxonomyBasedColor( node );
         }
         else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
-            g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
+            c = PhylogenyMethods.getBranchColorValue( node );
         }
         else {
-            g.setColor( getTreeColorSet().getCollapseFillColor() );
+            c = getTreeColorSet().getCollapseFillColor();
         }
         double d = node.getAllExternalDescendants().size();
         if ( d > 1000 ) {
@@ -2623,17 +2618,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             d = ( Math.log10( d ) * _y_distance ) / 2.5;
         }
-        if ( d < _box_size ) {
-            d = _box_size;
+        final int box_size = getOptions().getDefaultNodeShapeSize();
+        if ( d < box_size ) {
+            d = box_size;
         }
         _polygon.reset();
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() - _box_size ),
+        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() - box_size ),
                            ForesterUtil.roundToInt( node.getYcoord() ) );
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + _box_size ),
+        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + box_size ),
                            ForesterUtil.roundToInt( node.getYcoord() - d ) );
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + _box_size ),
+        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + box_size ),
                            ForesterUtil.roundToInt( node.getYcoord() + d ) );
-        g.fillPolygon( _polygon );
+        if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+            g.setColor( c );
+            g.fillPolygon( _polygon );
+        }
+        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+            g.setColor( getBackground() );
+            g.fillPolygon( _polygon );
+            g.setColor( c );
+            g.drawPolygon( _polygon );
+        }
+        else if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+            g.setPaint( new GradientPaint( node.getXcoord() - box_size, node.getYcoord(), getBackground(), ( node
+                    .getXcoord() + box_size ), ( float ) ( node.getYcoord() - d ), c, false ) );
+            g.fill( _polygon );
+            g.setPaint( c );
+            g.draw( _polygon );
+        }
         paintNodeData( g, node, to_graphics_file, to_pdf, is_in_found_nodes );
     }
 
@@ -2724,8 +2736,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintFoundNode( final int x, final int y, final Graphics2D g ) {
+        final int box_size = getOptions().getDefaultNodeShapeSize();
+        final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
         g.setColor( getTreeColorSet().getFoundColor() );
-        g.fillRect( x - _half_box_size, y - _half_box_size, _box_size, _box_size );
+        g.fillRect( x - half_box_size, y - half_box_size, box_size, box_size );
     }
 
     final private void paintGainedAndLostCharacters( final Graphics2D g,
@@ -2804,16 +2818,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 outline_color = getGraphicsForNodeBoxWithColorForParentBranch( node );
             }
+            final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
+            final int box_size = getOptions().getDefaultNodeShapeSize();
             if ( ( ( getOptions().isShowDefaultNodeShapes() ) /*&& !to_pdf && !to_graphics_file*/)
                     || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
                 if ( to_pdf || to_graphics_file ) {
                     if ( node.isDuplication() || !getOptions().isPrintBlackAndWhite() ) {
-                        //TODO FIXME
-                        //drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
-                        drawOvalGradient( x - _half_box_size,
-                                          y - _half_box_size,
-                                          _box_size,
-                                          _box_size,
+                        drawOvalGradient( x - half_box_size,
+                                          y - half_box_size,
+                                          box_size,
+                                          box_size,
                                           g,
                                           outline_color,
                                           getBackground(),
@@ -2821,24 +2835,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
                 else {
-                    //TODO FIXME
-                    //drawRectFilled( x - HALF_BOX_SIZE, y - HALF_BOX_SIZE, BOX_SIZE, BOX_SIZE, g );
                     if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
                         if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-                            drawOvalGradient( x - _half_box_size,
-                                              y - _half_box_size,
-                                              _box_size,
-                                              _box_size,
+                            drawOvalGradient( x - half_box_size,
+                                              y - half_box_size,
+                                              box_size,
+                                              box_size,
                                               g,
                                               outline_color,
                                               getBackground(),
                                               outline_color );
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
-                            drawOvalGradient( x - _half_box_size,
-                                              y - _half_box_size,
-                                              _box_size,
-                                              _box_size,
+                            drawOvalGradient( x - half_box_size,
+                                              y - half_box_size,
+                                              box_size,
+                                              box_size,
                                               g,
                                               getBackground(),
                                               getBackground(),
@@ -2846,25 +2858,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
                             g.setColor( outline_color );
-                            drawOvalFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                            drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                         }
                     }
                     else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
                         if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-                            drawRectGradient( x - _half_box_size,
-                                              y - _half_box_size,
-                                              _box_size,
-                                              _box_size,
+                            drawRectGradient( x - half_box_size,
+                                              y - half_box_size,
+                                              box_size,
+                                              box_size,
                                               g,
                                               outline_color,
                                               getBackground(),
                                               outline_color );
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
-                            drawRectGradient( x - _half_box_size,
-                                              y - _half_box_size,
-                                              _box_size,
-                                              _box_size,
+                            drawRectGradient( x - half_box_size,
+                                              y - half_box_size,
+                                              box_size,
+                                              box_size,
                                               g,
                                               getBackground(),
                                               getBackground(),
@@ -2872,7 +2884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
                             g.setColor( outline_color );
-                            drawRectFilled( x - _half_box_size, y - _half_box_size, _box_size, _box_size, g );
+                            drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                         }
                     }
                 }
@@ -2898,13 +2910,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         int x = 0;
+        final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
         if ( getControlPanel().isShowTaxonomyImages()
                 && ( getImageMap() != null )
                 && !getImageMap().isEmpty()
                 && node.getNodeData().isHasTaxonomy()
                 && ( ( node.getNodeData().getTaxonomy().getUris() != null ) && !node.getNodeData().getTaxonomy()
                         .getUris().isEmpty() ) ) {
-            x += drawTaxonomyImage( node.getXcoord() + 2 + _half_box_size, node.getYcoord(), node, g );
+            x += drawTaxonomyImage( node.getXcoord() + 2 + half_box_size, node.getYcoord(), node, g );
         }
         if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
                 .isShowTaxonomyCommonNames() ) && node.getNodeData().isHasTaxonomy() ) {
@@ -2973,7 +2986,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && ( node.getNumberOfDescendants() == 1 ) ) {
             down_shift_factor = 1;
         }
-        final double pos_x = node.getXcoord() + x + 2 + _half_box_size;
+        final double pos_x = node.getXcoord() + x + 2 + half_box_size;
         final double pos_y = ( node.getYcoord() + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ) );
         final String sb_str = _sb.toString();
         // GUILHEM_BEG ______________
@@ -2998,7 +3011,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             && seqRelation.getType().equals( getControlPanel().getSequenceRelationTypeBox()
                                     .getSelectedItem() );
                     if ( fGotRelationWithQuery ) { // we will underline the text to show that this sequence is ortholog to the query
-                        final double linePosX = node.getXcoord() + 2 + _half_box_size;
+                        final double linePosX = node.getXcoord() + 2 + half_box_size;
                         final String sConfidence = ( !getControlPanel().isShowSequenceRelationConfidence() || ( seqRelation
                                 .getConfidence() == null ) ) ? null : " (" + seqRelation.getConfidence().getValue()
                                 + ")";
@@ -3056,7 +3069,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
             final String ann_str = ann.asSimpleText().toString();
-            TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + _half_box_size, node.getYcoord()
+            TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
             _sb.setLength( 0 );
             _sb.append( ann_str );
@@ -3077,7 +3090,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 if ( getControlPanel().isShowBinaryCharacters() ) {
                     TreePanel.drawString( node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringBuffer()
-                            .toString(), node.getXcoord() + x + 1 + _half_box_size, node.getYcoord()
+                            .toString(), node.getXcoord() + x + 1 + half_box_size, node.getYcoord()
                             + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
                     paintGainedAndLostCharacters( g, node, node.getNodeData().getBinaryCharacters()
                             .getGainedCharactersAsStringBuffer().toString(), node.getNodeData().getBinaryCharacters()
@@ -3096,12 +3109,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         final double mean = ForesterUtil.round( sum / count, 1 );
                         TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount() + " ["
-                                + mean + "]", node.getXcoord() + x + 4 + _half_box_size, node.getYcoord()
+                                + mean + "]", node.getXcoord() + x + 4 + half_box_size, node.getYcoord()
                                 + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
                     }
                     else {
                         TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount(),
-                                              node.getXcoord() + x + 4 + _half_box_size,
+                                              node.getXcoord() + x + 4 + half_box_size,
                                               node.getYcoord()
                                                       + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ),
                                               g );
@@ -3432,9 +3445,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 child_node.setYcoord( y2 );
                 y2 += _y_distance * child_node.getNumberOfExternalNodes();
             }
-            //TODO new *****
             paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
-            //TODO new *****
         }
         if ( dynamically_hide
                 && !is_in_found_nodes
@@ -3844,7 +3855,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             g.setColor( getTreeColorSet().getTaxonomyColor() );
         }
-        final double start_x = node.getXcoord() + 3 + _half_box_size + x_shift;
+        final double start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
         final double start_y = node.getYcoord()
                 + ( getTreeFontSet()._fm_large.getAscent() / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0 ) );
         _sb.setLength( 0 );
