@@ -2326,52 +2326,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             final float x2a = x2;
             final float x1a = x1;
-            // draw the vertical line
-            // boolean draw_horizontal = true;
             float y2_r = 0;
             if ( node.isFirstChildNode() || node.isLastChildNode()
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
-                //boolean draw_vertical = true;
-                //   final PhylogenyNode parent = node.getParent();
-                //TODO fix below -- actually this might not be necessay anymore? test pdf, though!
-                //                if ( ( ( ( getOptions().isShowDefaultNodeShapes() ) && !to_pdf && !to_graphics_file ) || ( ( getControlPanel()
-                //                        .isEvents() ) && ( parent != null ) && parent.isHasAssignedEvent() ) )
-                //                        && ( _phylogeny.isRooted() || !( ( parent != null ) && parent.isRoot() ) )
-                //                        && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !parent
-                //                                .isDuplication() ) ) {
-                //                    if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE )
-                //                            && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
-                //                        if ( Math.abs( y2 - y1 ) <= _half_box_size ) {
-                //                            draw_vertical = false;
-                //                        }
-                //                        else {
-                //                            if ( y1 < y2 ) {
-                //                                y1 += _half_box_size;
-                //                            }
-                //                            else {
-                //                                if ( !to_pdf ) {
-                //                                    y1 -= _half_box_size + 1;
-                //                                }
-                //                                else {
-                //                                    y1 -= _half_box_size;
-                //                                }
-                //                            }
-                //                        }
-                //                    }
-                //                    if ( ( x2 - x1 ) <= _half_box_size ) {
-                //                        draw_horizontal = false;
-                //                    }
-                //                    else if ( !draw_vertical ) {
-                //                        x1a += _half_box_size;
-                //                    }
-                //                    if ( ( ( x2 - x1a ) > _half_box_size )
-                //                            && !( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() && !node
-                //                                    .isDuplication() ) ) {
-                //                        x2a -= _half_box_size;
-                //                    }
-                //                }
-                //if ( draw_vertical ) {
                 if ( !to_graphics_file
                         && !to_pdf
                         && ( ( ( y2 < getVisibleRect().getMinY() - 20 ) && ( y1 < getVisibleRect().getMinY() - 20 ) ) || ( ( y2 > getVisibleRect()
@@ -2406,7 +2364,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         drawLine( x1, y1, x1, y2, g );
                     }
                 }
-                //}
             }
             // draw the horizontal line
             if ( !to_graphics_file && !to_pdf
@@ -2414,7 +2371,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return;
             }
             float x1_r = 0;
-            //  if ( draw_horizontal ) {
             if ( !getControlPanel().isWidthBranches() || ( PhylogenyMethods.getBranchWidthValue( node ) == 1 ) ) {
                 if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) {
                     x1_r = x1a + ROUNDED_D;
@@ -2450,7 +2406,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     drawRectFilled( x1a, y2 - ( w / 2 ), x2a - x1a, w, g );
                 }
             }
-            //}
             if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
                 if ( x1_r > x2a ) {
                     x1_r = x2a;
@@ -2817,75 +2772,71 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             else {
                 outline_color = getGraphicsForNodeBoxWithColorForParentBranch( node );
+                if ( to_pdf && ( outline_color == getTreeColorSet().getBranchColor() ) ) {
+                    outline_color = getTreeColorSet().getBranchColorForPdf();
+                }
             }
-            final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
             final int box_size = getOptions().getDefaultNodeShapeSize();
-            if ( ( ( getOptions().isShowDefaultNodeShapes() ) /*&& !to_pdf && !to_graphics_file*/)
-                    || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
-                if ( to_pdf || to_graphics_file ) {
-                    if ( node.isDuplication() || !getOptions().isPrintBlackAndWhite() ) {
+            final int half_box_size = box_size / 2;
+            if ( getOptions().isShowDefaultNodeShapes() || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
+                if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
+                    if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
                         drawOvalGradient( x - half_box_size,
                                           y - half_box_size,
                                           box_size,
                                           box_size,
                                           g,
-                                          outline_color,
-                                          getBackground(),
+                                          to_pdf ? Color.WHITE : outline_color,
+                                          to_pdf ? outline_color : getBackground(),
                                           outline_color );
                     }
-                }
-                else {
-                    if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
-                        if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-                            drawOvalGradient( x - half_box_size,
-                                              y - half_box_size,
-                                              box_size,
-                                              box_size,
-                                              g,
-                                              outline_color,
-                                              getBackground(),
-                                              outline_color );
+                    else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                        Color background = getBackground();
+                        if ( to_pdf ) {
+                            background = Color.WHITE;
                         }
-                        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
-                            drawOvalGradient( x - half_box_size,
-                                              y - half_box_size,
-                                              box_size,
-                                              box_size,
-                                              g,
-                                              getBackground(),
-                                              getBackground(),
-                                              outline_color );
-                        }
-                        else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
-                            g.setColor( outline_color );
-                            drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
-                        }
+                        drawOvalGradient( x - half_box_size,
+                                          y - half_box_size,
+                                          box_size,
+                                          box_size,
+                                          g,
+                                          background,
+                                          background,
+                                          outline_color );
                     }
-                    else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
-                        if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-                            drawRectGradient( x - half_box_size,
-                                              y - half_box_size,
-                                              box_size,
-                                              box_size,
-                                              g,
-                                              outline_color,
-                                              getBackground(),
-                                              outline_color );
+                    else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                        g.setColor( outline_color );
+                        drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
+                    }
+                }
+                else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
+                    if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                        drawRectGradient( x - half_box_size,
+                                          y - half_box_size,
+                                          box_size,
+                                          box_size,
+                                          g,
+                                          to_pdf ? Color.WHITE : outline_color,
+                                          to_pdf ? outline_color : getBackground(),
+                                          outline_color );
+                    }
+                    else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                        Color background = getBackground();
+                        if ( to_pdf ) {
+                            background = Color.WHITE;
                         }
-                        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
-                            drawRectGradient( x - half_box_size,
-                                              y - half_box_size,
-                                              box_size,
-                                              box_size,
-                                              g,
-                                              getBackground(),
-                                              getBackground(),
-                                              outline_color );
-                        }
-                        else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
-                            g.setColor( outline_color );
-                            drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
-                        }
+                        drawRectGradient( x - half_box_size,
+                                          y - half_box_size,
+                                          box_size,
+                                          box_size,
+                                          g,
+                                          background,
+                                          background,
+                                          outline_color );
+                    }
+                    else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                        g.setColor( outline_color );
+                        drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                     }
                 }
             }
