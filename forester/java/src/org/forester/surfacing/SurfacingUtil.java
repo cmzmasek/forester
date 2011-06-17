@@ -48,7 +48,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forester.application.surfacing_old;
+import org.forester.application.surfacing;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -174,7 +174,7 @@ public final class SurfacingUtil {
     public static void checkForOutputFileWriteability( final File outfile ) {
         final String error = ForesterUtil.isWritableFile( outfile );
         if ( !ForesterUtil.isEmpty( error ) ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, error );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, error );
         }
     }
 
@@ -437,24 +437,23 @@ public final class SurfacingUtil {
             domain_parsimony.executeDolloParsimonyOnDomainPresence();
         }
         SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossMatrix(), outfile_name
-                + surfacing_old.PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_DOMAINS, Format.FORESTER );
+                + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_DOMAINS, Format.FORESTER );
         SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossCountsMatrix(), outfile_name
-                + surfacing_old.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_DOMAINS, Format.FORESTER );
+                + surfacing.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_DOMAINS, Format.FORESTER );
         SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
                                                            CharacterStateMatrix.GainLossStates.GAIN,
-                                                           outfile_name + surfacing_old.PARSIMONY_OUTPUT_DOLLO_GAINS_D,
+                                                           outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_GAINS_D,
                                                            sep,
                                                            ForesterUtil.LINE_SEPARATOR,
                                                            null );
-        SurfacingUtil
-                .writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
-                                                      CharacterStateMatrix.GainLossStates.LOSS,
-                                                      outfile_name + surfacing_old.PARSIMONY_OUTPUT_DOLLO_LOSSES_D,
-                                                      sep,
-                                                      ForesterUtil.LINE_SEPARATOR,
-                                                      null );
+        SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
+                                                           CharacterStateMatrix.GainLossStates.LOSS,
+                                                           outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_LOSSES_D,
+                                                           sep,
+                                                           ForesterUtil.LINE_SEPARATOR,
+                                                           null );
         SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(), null, outfile_name
-                + surfacing_old.PARSIMONY_OUTPUT_DOLLO_PRESENT_D, sep, ForesterUtil.LINE_SEPARATOR, null );
+                + surfacing.PARSIMONY_OUTPUT_DOLLO_PRESENT_D, sep, ForesterUtil.LINE_SEPARATOR, null );
         //HTML:
         writeBinaryStatesMatrixToList( domain_id_to_go_ids_map,
                                        go_id_to_term_map,
@@ -462,7 +461,7 @@ public final class SurfacingUtil {
                                        false,
                                        domain_parsimony.getGainLossMatrix(),
                                        CharacterStateMatrix.GainLossStates.GAIN,
-                                       outfile_name + surfacing_old.PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D,
+                                       outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D,
                                        sep,
                                        ForesterUtil.LINE_SEPARATOR,
                                        "Dollo Parsimony | Gains | Domains",
@@ -477,7 +476,7 @@ public final class SurfacingUtil {
                                        false,
                                        domain_parsimony.getGainLossMatrix(),
                                        CharacterStateMatrix.GainLossStates.LOSS,
-                                       outfile_name + surfacing_old.PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D,
+                                       outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D,
                                        sep,
                                        ForesterUtil.LINE_SEPARATOR,
                                        "Dollo Parsimony | Losses | Domains",
@@ -492,7 +491,7 @@ public final class SurfacingUtil {
                                        false,
                                        domain_parsimony.getGainLossMatrix(),
                                        null,
-                                       outfile_name + surfacing_old.PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D,
+                                       outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D,
                                        sep,
                                        ForesterUtil.LINE_SEPARATOR,
                                        "Dollo Parsimony | Present | Domains",
@@ -508,14 +507,14 @@ public final class SurfacingUtil {
                           "dollo_on_domains_" + outfile_name,
                           parameters_str );
         SurfacingUtil.writePhylogenyToFile( local_phylogeny_l, outfile_name
-                + surfacing_old.DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
+                + surfacing.DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
         try {
             writeAllDomainsChangedOnAllSubtrees( local_phylogeny_l, true, outfile_name, "_dollo_all_gains_d" );
             writeAllDomainsChangedOnAllSubtrees( local_phylogeny_l, false, outfile_name, "_dollo_all_losses_d" );
         }
         catch ( final IOException e ) {
             e.printStackTrace();
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getLocalizedMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
         }
         if ( domain_parsimony.calculateNumberOfBinaryDomainCombination() > 0 ) {
             // FITCH DOMAIN COMBINATIONS
@@ -530,25 +529,25 @@ public final class SurfacingUtil {
                 domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( false );
             }
             SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossMatrix(), outfile_name
-                    + surfacing_old.PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
+                    + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
             SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossCountsMatrix(), outfile_name
-                    + surfacing_old.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
-            SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
-                                                               CharacterStateMatrix.GainLossStates.GAIN,
-                                                               outfile_name
-                                                                       + surfacing_old.PARSIMONY_OUTPUT_FITCH_GAINS_BC,
-                                                               sep,
-                                                               ForesterUtil.LINE_SEPARATOR,
-                                                               null );
+                    + surfacing.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
             SurfacingUtil
                     .writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
-                                                          CharacterStateMatrix.GainLossStates.LOSS,
-                                                          outfile_name + surfacing_old.PARSIMONY_OUTPUT_FITCH_LOSSES_BC,
+                                                          CharacterStateMatrix.GainLossStates.GAIN,
+                                                          outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_GAINS_BC,
                                                           sep,
                                                           ForesterUtil.LINE_SEPARATOR,
                                                           null );
+            SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
+                                                               CharacterStateMatrix.GainLossStates.LOSS,
+                                                               outfile_name
+                                                                       + surfacing.PARSIMONY_OUTPUT_FITCH_LOSSES_BC,
+                                                               sep,
+                                                               ForesterUtil.LINE_SEPARATOR,
+                                                               null );
             SurfacingUtil.writeBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(), null, outfile_name
-                    + surfacing_old.PARSIMONY_OUTPUT_FITCH_PRESENT_BC, sep, ForesterUtil.LINE_SEPARATOR, null );
+                    + surfacing.PARSIMONY_OUTPUT_FITCH_PRESENT_BC, sep, ForesterUtil.LINE_SEPARATOR, null );
             if ( all_binary_domains_combination_gained_fitch != null ) {
                 collectChangedDomainCombinationsFromBinaryStatesMatrixAsListToFile( domain_parsimony.getGainLossMatrix(),
                                                                                     dc_type,
@@ -567,7 +566,7 @@ public final class SurfacingUtil {
                                                                                                            .getGainLossMatrix(),
                                                                                                    null,
                                                                                                    outfile_name
-                                                                                                           + surfacing_old.PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS,
+                                                                                                           + surfacing.PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS,
                                                                                                    sep,
                                                                                                    ForesterUtil.LINE_SEPARATOR,
                                                                                                    BinaryDomainCombination.OutputFormat.DOT );
@@ -579,7 +578,7 @@ public final class SurfacingUtil {
                                            true,
                                            domain_parsimony.getGainLossMatrix(),
                                            CharacterStateMatrix.GainLossStates.GAIN,
-                                           outfile_name + surfacing_old.PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC,
+                                           outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC,
                                            sep,
                                            ForesterUtil.LINE_SEPARATOR,
                                            "Fitch Parsimony | Gains | Domain Combinations",
@@ -594,7 +593,7 @@ public final class SurfacingUtil {
                                            true,
                                            domain_parsimony.getGainLossMatrix(),
                                            CharacterStateMatrix.GainLossStates.LOSS,
-                                           outfile_name + surfacing_old.PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC,
+                                           outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC,
                                            sep,
                                            ForesterUtil.LINE_SEPARATOR,
                                            "Fitch Parsimony | Losses | Domain Combinations",
@@ -609,7 +608,7 @@ public final class SurfacingUtil {
                                            true,
                                            domain_parsimony.getGainLossMatrix(),
                                            null,
-                                           outfile_name + surfacing_old.PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC,
+                                           outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC,
                                            sep,
                                            ForesterUtil.LINE_SEPARATOR,
                                            "Fitch Parsimony | Present | Domain Combinations",
@@ -622,13 +621,11 @@ public final class SurfacingUtil {
                                             go_id_to_term_map,
                                             outfile_name,
                                             all_pfams_encountered );
-            writePfamsToFile( outfile_name + surfacing_old.ALL_PFAMS_GAINED_AS_DOMAINS_SUFFIX,
-                              all_pfams_gained_as_domains );
-            writePfamsToFile( outfile_name + surfacing_old.ALL_PFAMS_LOST_AS_DOMAINS_SUFFIX, all_pfams_lost_as_domains );
-            writePfamsToFile( outfile_name + surfacing_old.ALL_PFAMS_GAINED_AS_DC_SUFFIX,
+            writePfamsToFile( outfile_name + surfacing.ALL_PFAMS_GAINED_AS_DOMAINS_SUFFIX, all_pfams_gained_as_domains );
+            writePfamsToFile( outfile_name + surfacing.ALL_PFAMS_LOST_AS_DOMAINS_SUFFIX, all_pfams_lost_as_domains );
+            writePfamsToFile( outfile_name + surfacing.ALL_PFAMS_GAINED_AS_DC_SUFFIX,
                               all_pfams_gained_as_dom_combinations );
-            writePfamsToFile( outfile_name + surfacing_old.ALL_PFAMS_LOST_AS_DC_SUFFIX,
-                              all_pfams_lost_as_dom_combinations );
+            writePfamsToFile( outfile_name + surfacing.ALL_PFAMS_LOST_AS_DC_SUFFIX, all_pfams_lost_as_dom_combinations );
             preparePhylogeny( local_phylogeny_l,
                               domain_parsimony,
                               date_time,
@@ -637,8 +634,63 @@ public final class SurfacingUtil {
                               "fitch_on_binary_domain_combinations_" + outfile_name,
                               parameters_str );
             SurfacingUtil.writePhylogenyToFile( local_phylogeny_l, outfile_name
-                    + surfacing_old.BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH );
+                    + surfacing.BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH );
+            calculateIndependentDomainCombinationGains( local_phylogeny_l, outfile_name
+                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX, outfile_name
+                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX );
         }
+    }
+
+    private static void calculateIndependentDomainCombinationGains( final Phylogeny local_phylogeny_l,
+                                                                    final String outfilename_for_counts,
+                                                                    final String outfilename_for_dc ) {
+        try {
+            final BufferedWriter out_counts = new BufferedWriter( new FileWriter( outfilename_for_counts ) );
+            final BufferedWriter out_dc = new BufferedWriter( new FileWriter( outfilename_for_dc ) );
+            final SortedMap<String, Integer> dc_gain_counts = new TreeMap<String, Integer>();
+            for( final PhylogenyNodeIterator it = local_phylogeny_l.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                final Set<String> gained_dc = n.getNodeData().getBinaryCharacters().getGainedCharacters();
+                for( final String dc : gained_dc ) {
+                    if ( dc_gain_counts.containsKey( dc ) ) {
+                        dc_gain_counts.put( dc, dc_gain_counts.get( dc ) + 1 );
+                    }
+                    else {
+                        dc_gain_counts.put( dc, 1 );
+                    }
+                }
+            }
+            final SortedMap<Integer, Integer> histogram = new TreeMap<Integer, Integer>();
+            final SortedMap<Integer, StringBuilder> domain_lists = new TreeMap<Integer, StringBuilder>();
+            final Set<String> dcs = dc_gain_counts.keySet();
+            for( final String dc : dcs ) {
+                final int count = dc_gain_counts.get( dc );
+                if ( histogram.containsKey( count ) ) {
+                    histogram.put( count, histogram.get( count ) + 1 );
+                    domain_lists.put( count, domain_lists.get( count ).append( ", " + dc ) );
+                }
+                else {
+                    histogram.put( count, 1 );
+                    domain_lists.put( count, new StringBuilder( dc ) );
+                }
+            }
+            final Set<Integer> histogram_keys = histogram.keySet();
+            for( final Integer histogram_key : histogram_keys ) {
+                final int count = histogram.get( histogram_key );
+                final StringBuilder dc = domain_lists.get( histogram_key );
+                out_counts.write( histogram_key + "\t" + count + ForesterUtil.LINE_SEPARATOR );
+                out_dc.write( histogram_key + "\t" + dc + ForesterUtil.LINE_SEPARATOR );
+            }
+            out_counts.close();
+            out_dc.close();
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "Failure to write: " + e );
+        }
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote independent domain combination gains fitch counts to ["
+                + outfilename_for_counts + "]" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote independent domain combination gains fitch lists to ["
+                + outfilename_for_dc + "]" );
     }
 
     public static void executeParsimonyAnalysisForSecondaryFeatures( final String outfile_name,
@@ -649,20 +701,20 @@ public final class SurfacingUtil {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         System.out.println();
-        writeToNexus( outfile_name + surfacing_old.NEXUS_SECONDARY_FEATURES,
+        writeToNexus( outfile_name + surfacing.NEXUS_SECONDARY_FEATURES,
                       secondary_features_parsimony.createMatrixOfSecondaryFeaturePresenceOrAbsence( null ),
                       phylogeny );
         final Phylogeny local_phylogeny_copy = phylogeny.copy();
         secondary_features_parsimony.executeDolloParsimonyOnSecondaryFeatures( mapping_results_map );
         SurfacingUtil.writeMatrixToFile( secondary_features_parsimony.getGainLossMatrix(), outfile_name
-                + surfacing_old.PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_SECONDARY_FEATURES, Format.FORESTER );
+                + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_SECONDARY_FEATURES, Format.FORESTER );
         SurfacingUtil.writeMatrixToFile( secondary_features_parsimony.getGainLossCountsMatrix(), outfile_name
-                + surfacing_old.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_SECONDARY_FEATURES, Format.FORESTER );
+                + surfacing.PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_SECONDARY_FEATURES, Format.FORESTER );
         SurfacingUtil
                 .writeBinaryStatesMatrixAsListToFile( secondary_features_parsimony.getGainLossMatrix(),
                                                       CharacterStateMatrix.GainLossStates.GAIN,
                                                       outfile_name
-                                                              + surfacing_old.PARSIMONY_OUTPUT_DOLLO_GAINS_SECONDARY_FEATURES,
+                                                              + surfacing.PARSIMONY_OUTPUT_DOLLO_GAINS_SECONDARY_FEATURES,
                                                       sep,
                                                       ForesterUtil.LINE_SEPARATOR,
                                                       null );
@@ -670,7 +722,7 @@ public final class SurfacingUtil {
                 .writeBinaryStatesMatrixAsListToFile( secondary_features_parsimony.getGainLossMatrix(),
                                                       CharacterStateMatrix.GainLossStates.LOSS,
                                                       outfile_name
-                                                              + surfacing_old.PARSIMONY_OUTPUT_DOLLO_LOSSES_SECONDARY_FEATURES,
+                                                              + surfacing.PARSIMONY_OUTPUT_DOLLO_LOSSES_SECONDARY_FEATURES,
                                                       sep,
                                                       ForesterUtil.LINE_SEPARATOR,
                                                       null );
@@ -678,7 +730,7 @@ public final class SurfacingUtil {
                 .writeBinaryStatesMatrixAsListToFile( secondary_features_parsimony.getGainLossMatrix(),
                                                       null,
                                                       outfile_name
-                                                              + surfacing_old.PARSIMONY_OUTPUT_DOLLO_PRESENT_SECONDARY_FEATURES,
+                                                              + surfacing.PARSIMONY_OUTPUT_DOLLO_PRESENT_SECONDARY_FEATURES,
                                                       sep,
                                                       ForesterUtil.LINE_SEPARATOR,
                                                       null );
@@ -689,7 +741,7 @@ public final class SurfacingUtil {
                           "dollo_on_secondary_features_" + outfile_name,
                           parameters_str );
         SurfacingUtil.writePhylogenyToFile( local_phylogeny_copy, outfile_name
-                + surfacing_old.SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
+                + surfacing.SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
     }
 
     public static void extractProteinNames( final List<Protein> proteins,
@@ -921,7 +973,7 @@ public final class SurfacingUtil {
         if ( !get_gains ) {
             state = CharacterStateMatrix.GainLossStates.LOSS;
         }
-        final File base_dir = createBaseDirForPerNodeDomainFiles( surfacing_old.BASE_DIRECTORY_PER_SUBTREE_DOMAIN_GAIN_LOSS_FILES,
+        final File base_dir = createBaseDirForPerNodeDomainFiles( surfacing.BASE_DIRECTORY_PER_SUBTREE_DOMAIN_GAIN_LOSS_FILES,
                                                                   false,
                                                                   state,
                                                                   outdir );
@@ -946,11 +998,10 @@ public final class SurfacingUtil {
                                                         final Map<GoId, GoTerm> go_id_to_term_map,
                                                         final String outfile_name,
                                                         final SortedSet<String> all_pfams_encountered ) {
-        final File all_pfams_encountered_file = new File( outfile_name + surfacing_old.ALL_PFAMS_ENCOUNTERED_SUFFIX );
+        final File all_pfams_encountered_file = new File( outfile_name + surfacing.ALL_PFAMS_ENCOUNTERED_SUFFIX );
         final File all_pfams_encountered_with_go_annotation_file = new File( outfile_name
-                + surfacing_old.ALL_PFAMS_ENCOUNTERED_WITH_GO_ANNOTATION_SUFFIX );
-        final File encountered_pfams_summary_file = new File( outfile_name
-                + surfacing_old.ENCOUNTERED_PFAMS_SUMMARY_SUFFIX );
+                + surfacing.ALL_PFAMS_ENCOUNTERED_WITH_GO_ANNOTATION_SUFFIX );
+        final File encountered_pfams_summary_file = new File( outfile_name + surfacing.ENCOUNTERED_PFAMS_SUMMARY_SUFFIX );
         int biological_process_counter = 0;
         int cellular_component_counter = 0;
         int molecular_function_counter = 0;
@@ -1017,41 +1068,41 @@ public final class SurfacingUtil {
             }
             all_pfams_encountered_writer.close();
             all_pfams_encountered_with_go_annotation_writer.close();
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote all [" + all_pfams_encountered.size()
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote all [" + all_pfams_encountered.size()
                     + "] encountered Pfams to: \"" + all_pfams_encountered_file + "\"" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote all [" + pfams_with_mappings_counter
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote all [" + pfams_with_mappings_counter
                     + "] encountered Pfams with GO mappings to: \"" + all_pfams_encountered_with_go_annotation_file
                     + "\"" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote summary (including all ["
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote summary (including all ["
                     + pfams_without_mappings_counter + "] encountered Pfams without GO mappings) to: \""
                     + encountered_pfams_summary_file + "\"" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Sum of Pfams encountered                : "
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Sum of Pfams encountered                : "
                     + all_pfams_encountered.size() );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams without a mapping                 : "
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams without a mapping                 : "
                     + pfams_without_mappings_counter + " ["
                     + ( 100 * pfams_without_mappings_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams without mapping to proc. or func. : "
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams without mapping to proc. or func. : "
                     + pfams_without_mappings_to_bp_or_mf_counter + " ["
                     + ( 100 * pfams_without_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Pfams with a mapping                    : " + pfams_with_mappings_counter
                                                  + " ["
                                                  + ( 100 * pfams_with_mappings_counter / all_pfams_encountered.size() )
                                                  + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Pfams with a mapping to proc. or func.  : "
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with a mapping to proc. or func.  : "
                     + pfams_with_mappings_to_bp_or_mf_counter + " ["
                     + ( 100 * pfams_with_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Pfams with mapping to biological process: " + biological_process_counter
                                                  + " ["
                                                  + ( 100 * biological_process_counter / all_pfams_encountered.size() )
                                                  + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Pfams with mapping to molecular function: " + molecular_function_counter
                                                  + " ["
                                                  + ( 100 * molecular_function_counter / all_pfams_encountered.size() )
                                                  + "%]" );
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME,
+            ForesterUtil.programMessage( surfacing.PRG_NAME,
                                          "Pfams with mapping to cellular component: " + cellular_component_counter
                                                  + " ["
                                                  + ( 100 * cellular_component_counter / all_pfams_encountered.size() )
@@ -1085,7 +1136,7 @@ public final class SurfacingUtil {
             summary_writer.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.printWarningMessage( surfacing_old.PRG_NAME, "Failure to write: " + e );
+            ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "Failure to write: " + e );
         }
     }
 
@@ -1095,7 +1146,7 @@ public final class SurfacingUtil {
                                                                           final int i,
                                                                           final GenomeWideCombinableDomainsSortOrder dc_sort_order ) {
         File dc_outfile_dot = new File( input_file_properties[ i ][ 0 ]
-                + surfacing_old.DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS );
+                + surfacing.DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS );
         if ( output_dir != null ) {
             dc_outfile_dot = new File( output_dir + ForesterUtil.FILE_SEPARATOR + dc_outfile_dot );
         }
@@ -1111,9 +1162,9 @@ public final class SurfacingUtil {
             out_dot.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote binary domain combination for \""
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote binary domain combination for \""
                 + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ", "
                 + input_file_properties[ i ][ 2 ] + ") to: \"" + dc_outfile_dot + "\"" );
     }
@@ -1245,9 +1296,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote characters list: \"" + filename + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters list: \"" + filename + "\"" );
     }
 
     public static void writeBinaryStatesMatrixAsListToFileForBinaryCombinationsForGraphAnalysis( final CharacterStateMatrix<CharacterStateMatrix.GainLossStates> matrix,
@@ -1279,7 +1330,7 @@ public final class SurfacingUtil {
                             bdc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( c ) );
                         }
                         catch ( final Exception e ) {
-                            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getLocalizedMessage() );
+                            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
                         }
                         out.write( bdc.toGraphDescribingLanguage( bc_output_format, null, null ).toString() );
                         out.write( character_separator );
@@ -1290,9 +1341,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote characters list: \"" + filename + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters list: \"" + filename + "\"" );
     }
 
     public static void writeBinaryStatesMatrixToList( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
@@ -1327,7 +1378,7 @@ public final class SurfacingUtil {
         }
         try {
             final Writer out = new BufferedWriter( new FileWriter( outfile ) );
-            final File per_node_go_mapped_domain_gain_loss_files_base_dir = createBaseDirForPerNodeDomainFiles( surfacing_old.BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES,
+            final File per_node_go_mapped_domain_gain_loss_files_base_dir = createBaseDirForPerNodeDomainFiles( surfacing.BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES,
                                                                                                                 domain_combinations,
                                                                                                                 state,
                                                                                                                 filename );
@@ -1470,10 +1521,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote characters detailed HTML list: \"" + filename
-                + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters detailed HTML list: \"" + filename + "\"" );
     }
 
     public static void writeBinaryStatesMatrixToListORIGIG( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
@@ -1508,7 +1558,7 @@ public final class SurfacingUtil {
         }
         try {
             final Writer out = new BufferedWriter( new FileWriter( outfile ) );
-            final File per_node_go_mapped_domain_gain_loss_files_base_dir = createBaseDirForPerNodeDomainFiles( surfacing_old.BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES,
+            final File per_node_go_mapped_domain_gain_loss_files_base_dir = createBaseDirForPerNodeDomainFiles( surfacing.BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES,
                                                                                                                 domain_combinations,
                                                                                                                 state,
                                                                                                                 filename );
@@ -1646,10 +1696,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote characters detailed HTML list: \"" + filename
-                + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters detailed HTML list: \"" + filename + "\"" );
     }
 
     public static void writeDomainCombinationsCountsFile( final String[][] input_file_properties,
@@ -1659,7 +1708,7 @@ public final class SurfacingUtil {
                                                           final int i,
                                                           final GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder dc_sort_order ) {
         File dc_outfile = new File( input_file_properties[ i ][ 0 ]
-                + surfacing_old.DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX );
+                + surfacing.DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX );
         if ( output_dir != null ) {
             dc_outfile = new File( output_dir + ForesterUtil.FILE_SEPARATOR + dc_outfile );
         }
@@ -1670,7 +1719,7 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
         final DescriptiveStatistics stats = gwcd.getPerGenomeDomainPromiscuityStatistics();
         try {
@@ -1694,15 +1743,15 @@ public final class SurfacingUtil {
             per_genome_domain_promiscuity_statistics_writer.write( ForesterUtil.LINE_SEPARATOR );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
         if ( input_file_properties[ i ].length == 3 ) {
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote domain combination counts for \""
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote domain combination counts for \""
                     + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ", "
                     + input_file_properties[ i ][ 2 ] + ") to: \"" + dc_outfile + "\"" );
         }
         else {
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote domain combination counts for \""
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote domain combination counts for \""
                     + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ") to: \""
                     + dc_outfile + "\"" );
         }
@@ -2273,9 +2322,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote matrix: \"" + filename + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote matrix: \"" + filename + "\"" );
     }
 
     public static void writeMatrixToFile( final File matrix_outfile, final List<DistanceMatrix> matrices ) {
@@ -2290,9 +2339,9 @@ public final class SurfacingUtil {
             out.close();
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote distance matrices to \"" + matrix_outfile + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote distance matrices to \"" + matrix_outfile + "\"" );
     }
 
     private static void writePfamsToFile( final String outfile_name, final SortedSet<String> pfams ) {
@@ -2303,11 +2352,11 @@ public final class SurfacingUtil {
                 writer.write( ForesterUtil.LINE_SEPARATOR );
             }
             writer.close();
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote " + pfams.size() + " pfams to [" + outfile_name
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote " + pfams.size() + " pfams to [" + outfile_name
                     + "]" );
         }
         catch ( final IOException e ) {
-            ForesterUtil.printWarningMessage( surfacing_old.PRG_NAME, "Failure to write: " + e );
+            ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "Failure to write: " + e );
         }
     }
 
@@ -2317,10 +2366,10 @@ public final class SurfacingUtil {
             writer.toPhyloXML( new File( filename ), phylogeny, 1 );
         }
         catch ( final IOException e ) {
-            ForesterUtil.printWarningMessage( surfacing_old.PRG_NAME, "failed to write phylogeny to \"" + filename
-                    + "\": " + e );
+            ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "failed to write phylogeny to \"" + filename + "\": "
+                    + e );
         }
-        ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote phylogeny to \"" + filename + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote phylogeny to \"" + filename + "\"" );
     }
 
     public static void writeTaxonomyLinks( final Writer writer, final String species ) throws IOException {
@@ -2381,10 +2430,10 @@ public final class SurfacingUtil {
             my_matrix.writeNexusBinaryChractersBlock( w );
             w.flush();
             w.close();
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
     }
 
@@ -2407,27 +2456,27 @@ public final class SurfacingUtil {
             PhylogenyWriter.writeNexusTreesBlock( w, phylogenies );
             w.flush();
             w.close();
-            ForesterUtil.programMessage( surfacing_old.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing_old.PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
     }
 
     private static void writeToNexus( final String outfile_name, final DomainParsimonyCalculator domain_parsimony ) {
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS,
+        writeToNexus( outfile_name + surfacing.NEXUS_EXTERNAL_DOMAINS,
                       domain_parsimony.createMatrixOfDomainPresenceOrAbsence() );
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
+        writeToNexus( outfile_name + surfacing.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
                       domain_parsimony.createMatrixOfBinaryDomainCombinationPresenceOrAbsence() );
     }
 
     private static void writeToNexus( final String outfile_name,
                                       final DomainParsimonyCalculator domain_parsimony,
                                       final Phylogeny phylogeny ) {
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAINS,
+        writeToNexus( outfile_name + surfacing.NEXUS_EXTERNAL_DOMAINS,
                       domain_parsimony.createMatrixOfDomainPresenceOrAbsence(),
                       phylogeny );
-        writeToNexus( outfile_name + surfacing_old.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
+        writeToNexus( outfile_name + surfacing.NEXUS_EXTERNAL_DOMAIN_COMBINATIONS,
                       domain_parsimony.createMatrixOfBinaryDomainCombinationPresenceOrAbsence(),
                       phylogeny );
     }

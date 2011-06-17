@@ -110,20 +110,20 @@ public class surfacing {
     public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_DOMAINS                        = "_fitch_glc_d";
     public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_BINARY_COMBINATIONS            = "_fitch_glc_dc";
     // tables:
-    //  public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_BC                                        = "_fitch_gains_dc";
-    //  public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC                                   = "_fitch_gains_dc.html";
-    //  public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_BC                                       = "_fitch_losses_dc";
-    // public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC                                  = "_fitch_losses_dc.html";
-    // public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC                                      = "_fitch_present_dc";
-    // public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC                                 = "_fitch_present_dc.html";
-    // public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_D                                         = "_dollo_gains_d";
-    // public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_GOID_D                                    = "_dollo_gains_goid_d";
-    //  public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D                                    = "_dollo_gains_d.html";
-    // public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_D                                        = "_dollo_losses_d";
-    //public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D                                   = "_dollo_losses_d.html";
-    // public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_D                                       = "_dollo_present_d";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_BC                                        = "_fitch_gains_dc";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC                                   = "_fitch_gains_dc.html";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_BC                                       = "_fitch_losses_dc";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC                                  = "_fitch_losses_dc.html";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC                                      = "_fitch_present_dc";
+    public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC                                 = "_fitch_present_dc.html";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_D                                         = "_dollo_gains_d";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_GOID_D                                    = "_dollo_gains_goid_d";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D                                    = "_dollo_gains_d.html";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_D                                        = "_dollo_losses_d";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D                                   = "_dollo_losses_d.html";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_D                                       = "_dollo_present_d";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_GOID_D                                  = "_dollo_present_goid_d";
-    //public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D                                  = "_dollo_present_d.html";
+    public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D                                  = "_dollo_present_d.html";
     public final static String                                DOMAINS_PRESENT_NEXUS                                                  = "_dom.nex";
     public final static String                                BDC_PRESENT_NEXUS                                                      = "_dc.nex";
     // ---
@@ -281,6 +281,8 @@ public class surfacing {
     private static final String                               DATA_FILE_SUFFIX                                                       = "_domain_combination_data.txt";
     private static final String                               DATA_FILE_DESC                                                         = "#SPECIES\tPRTEIN_ID\tN_TERM_DOMAIN\tC_TERM_DOMAIN\tN_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tC_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tN_TERM_DOMAIN_COUNTS_PER_PROTEIN\tC_TERM_DOMAIN_COUNTS_PER_PROTEIN";
     private static final INDIVIDUAL_SCORE_CUTOFF              INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                        = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;
+    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                   = "_indep_dc_gains_fitch_counts.txt";
+    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists.txt";
 
     // final String error = ForesterUtil.isReadableFile( new File(
     // input_file_properties[ i ][ 0 ] ) );
@@ -2472,7 +2474,7 @@ public class surfacing {
         System.out.println();
         System.out.println();
         System.out.println( "Example: java -Xms128m -Xmx512m -cp path/to/forester.jar"
-                + "org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
+                + " org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
                 + " -cos=Pfam_ls_22_TC2 -p2g=pfam2go -obo=gene_ontology_edit.obo "
                 + "-dc_sort=dom -ignore_with_self -no_singles -e=0.001 -mo=1 -no_eo "
                 + "-ds_output=detailed_html -scoring=domains -sort=alpha -" + JACKNIFE_OPTION
