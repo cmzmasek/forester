@@ -272,6 +272,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                   = "_indep_dc_gains_fitch_counts.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
+    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique.txt";
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,

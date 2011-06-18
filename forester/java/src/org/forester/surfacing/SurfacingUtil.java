@@ -34,6 +34,7 @@ import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -164,11 +165,13 @@ public final class SurfacingUtil {
     private static void calculateIndependentDomainCombinationGains( final Phylogeny local_phylogeny_l,
                                                                     final String outfilename_for_counts,
                                                                     final String outfilename_for_dc,
-                                                                    final String outfilename_for_dc_for_go_mapping ) {
+                                                                    final String outfilename_for_dc_for_go_mapping,
+                                                                    final String outfilename_for_dc_for_go_mapping_unique ) {
         try {
             final BufferedWriter out_counts = new BufferedWriter( new FileWriter( outfilename_for_counts ) );
             final BufferedWriter out_dc = new BufferedWriter( new FileWriter( outfilename_for_dc ) );
             final BufferedWriter out_dc_for_go_mapping = new BufferedWriter( new FileWriter( outfilename_for_dc_for_go_mapping ) );
+            final BufferedWriter out_dc_for_go_mapping_unique = new BufferedWriter( new FileWriter( outfilename_for_dc_for_go_mapping_unique ) );
             final SortedMap<String, Integer> dc_gain_counts = new TreeMap<String, Integer>();
             for( final PhylogenyNodeIterator it = local_phylogeny_l.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode n = it.next();
@@ -185,20 +188,25 @@ public final class SurfacingUtil {
             final SortedMap<Integer, Integer> histogram = new TreeMap<Integer, Integer>();
             final SortedMap<Integer, StringBuilder> domain_lists = new TreeMap<Integer, StringBuilder>();
             final SortedMap<Integer, PriorityQueue<String>> domain_lists_go = new TreeMap<Integer, PriorityQueue<String>>();
+            final SortedMap<Integer, SortedSet<String>> domain_lists_go_unique = new TreeMap<Integer, SortedSet<String>>();
             final Set<String> dcs = dc_gain_counts.keySet();
             for( final String dc : dcs ) {
                 final int count = dc_gain_counts.get( dc );
                 if ( histogram.containsKey( count ) ) {
                     histogram.put( count, histogram.get( count ) + 1 );
-                    domain_lists.put( count, domain_lists.get( count ).append( ", " + dc ) );
-                    domain_lists_go.get( count ).add( dc );
+                    domain_lists.get( count ).append( ", " + dc );
+                    domain_lists_go.get( count ).addAll( splitDomainCombination( dc ) );
+                    domain_lists_go_unique.get( count ).addAll( splitDomainCombination( dc ) );
                 }
                 else {
                     histogram.put( count, 1 );
                     domain_lists.put( count, new StringBuilder( dc ) );
                     final PriorityQueue<String> q = new PriorityQueue<String>();
-                    q.add( dc );
+                    q.addAll( splitDomainCombination( dc ) );
                     domain_lists_go.put( count, q );
+                    final SortedSet<String> set = new TreeSet<String>();
+                    set.addAll( splitDomainCombination( dc ) );
+                    domain_lists_go_unique.put( count, set );
                 }
             }
             final Set<Integer> histogram_keys = histogram.keySet();
@@ -207,10 +215,21 @@ public final class SurfacingUtil {
                 final StringBuilder dc = domain_lists.get( histogram_key );
                 out_counts.write( histogram_key + "\t" + count + ForesterUtil.LINE_SEPARATOR );
                 out_dc.write( histogram_key + "\t" + dc + ForesterUtil.LINE_SEPARATOR );
+                out_dc_for_go_mapping.write( "#" + histogram_key + ForesterUtil.LINE_SEPARATOR );
+                final Object[] sorted = domain_lists_go.get( histogram_key ).toArray();
+                Arrays.sort( sorted );
+                for( final Object domain : sorted ) {
+                    out_dc_for_go_mapping.write( domain + ForesterUtil.LINE_SEPARATOR );
+                }
+                out_dc_for_go_mapping_unique.write( "#" + histogram_key + ForesterUtil.LINE_SEPARATOR );
+                for( final String domain : domain_lists_go_unique.get( histogram_key ) ) {
+                    out_dc_for_go_mapping_unique.write( domain + ForesterUtil.LINE_SEPARATOR );
+                }
             }
             out_counts.close();
             out_dc.close();
             out_dc_for_go_mapping.close();
+            out_dc_for_go_mapping_unique.close();
         }
         catch ( final IOException e ) {
             ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "Failure to write: " + e );
@@ -222,6 +241,9 @@ public final class SurfacingUtil {
         ForesterUtil.programMessage( surfacing.PRG_NAME,
                                      "Wrote independent domain combination gains fitch lists to (for GO mapping) ["
                                              + outfilename_for_dc_for_go_mapping + "]" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME,
+                                     "Wrote independent domain combination gains fitch lists to (for GO mapping, unique) ["
+                                             + outfilename_for_dc_for_go_mapping_unique + "]" );
     }
 
     public static int calculateOverlap( final Domain domain, final List<Boolean> covered_positions ) {
@@ -701,7 +723,8 @@ public final class SurfacingUtil {
             calculateIndependentDomainCombinationGains( local_phylogeny_l, outfile_name
                     + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX, outfile_name
                     + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX, outfile_name
-                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX );
+                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX, outfile_name
+                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX );
         }
     }
 
@@ -1064,6 +1087,19 @@ public final class SurfacingUtil {
         }
         Collections.sort( domains, SurfacingUtil.ASCENDING_CONFIDENCE_VALUE_ORDER );
         return domains;
+    }
+
+    private static List<String> splitDomainCombination( final String dc ) {
+        final String[] s = dc.split( "=" );
+        if ( s.length != 2 ) {
+            ForesterUtil.printErrorMessage( surfacing.PRG_NAME, "Stringyfied domain combination has illegal format: "
+                    + dc );
+            System.exit( -1 );
+        }
+        final List<String> l = new ArrayList<String>( 2 );
+        l.add( s[ 0 ] );
+        l.add( s[ 1 ] );
+        return l;
     }
 
     public static void writeAllDomainsChangedOnAllSubtrees( final Phylogeny p,
