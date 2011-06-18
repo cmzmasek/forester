@@ -99,7 +99,6 @@ public class PairwiseGenomeComparator {
                                             final boolean verbose,
                                             final String automated_pairwise_comparison_prefix,
                                             final String command_line_prg_name,
-                                            final boolean display_histograms,
                                             final File out_dir,
                                             final boolean write_pairwise_comparisons ) {
         init();
@@ -164,7 +163,6 @@ public class PairwiseGenomeComparator {
                                                                                                                                                               list_of_genome_wide_combinable_domains
                                                                                                                                                                       .get( j ) );
                 genome_similarity_calculator.setAllowDomainsToBeIgnored( false );
-                // TODO make histos for these 5 values
                 double dissimilarity_score_mean;
                 if ( stats.getN() < 1 ) {
                     // No domains in common
@@ -229,8 +227,6 @@ public class PairwiseGenomeComparator {
                                 + pairwise_similarities_output_file_str + "\" [" + e.getMessage() + "]" );
                     }
                 }
-                // pairwise_matrix.setValue( i, j, cdc_list.get( cdc_list.size()
-                // - 1 ) );
                 if ( pw_stats != null ) {
                     if ( pw_stats.getMin() >= pw_stats.getMax() ) {
                         ForesterUtil
@@ -238,16 +234,6 @@ public class PairwiseGenomeComparator {
                                         + "] score minimum is [" + pw_stats.getMin() + "] while score maximum is ["
                                         + pw_stats.getMax()
                                         + "], possibly indicating that a genome is compared to itself" );
-                    }
-                    if ( display_histograms && ( pw_stats.getMin() < pw_stats.getMax() ) ) {
-                        //final double[] values = pw_stats.getDataAsDoubleArray();
-                        // List<HistogramDataItem> data_items = new
-                        // ArrayList<HistogramDataItem>( values.length );
-                        // for( int n = 0; n < values.length; i++ ) {
-                        // data_items.add( new BasicHistogramDataItem( "", values[ n ] )
-                        // );
-                        // }
-                        //~   _histogram_datas.add( new HistogramData( species_i + "-" + species_j, values, null, 20 ) );
                     }
                 }
             }

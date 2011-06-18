@@ -2017,7 +2017,6 @@ public class surfacing_hmmpfam {
                                              true,
                                              surfacing_hmmpfam.PAIRWISE_DOMAIN_COMPARISONS_PREFIX,
                                              surfacing_hmmpfam.PRG_NAME,
-                                             display_histograms,
                                              out_dir,
                                              write_pwc_files );
             String matrix_output_file = new String( output_file.toString() );

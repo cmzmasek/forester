@@ -117,12 +117,10 @@ public class surfacing {
     public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC                                      = "_fitch_present_dc";
     public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC                                 = "_fitch_present_dc.html";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_D                                         = "_dollo_gains_d";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_GOID_D                                    = "_dollo_gains_goid_d";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D                                    = "_dollo_gains_d.html";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_D                                        = "_dollo_losses_d";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D                                   = "_dollo_losses_d.html";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_D                                       = "_dollo_present_d";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_GOID_D                                  = "_dollo_present_goid_d";
     public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D                                  = "_dollo_present_d.html";
     public final static String                                DOMAINS_PRESENT_NEXUS                                                  = "_dom.nex";
     public final static String                                BDC_PRESENT_NEXUS                                                      = "_dc.nex";
@@ -146,13 +144,7 @@ public class surfacing {
     public static final String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_SECONDARY_FEATURES                      = "_dollo_present_secondary_features";
     public static final String                                SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                  = "_secondary_features_dollo"
                                                                                                                                              + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_BIOLOGICAL_PROCESS                   = "_dollo_biol_proc_goid_d";
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_CELLULAR_COMPONENT                   = "_dollo_cell_comp_goid_d";
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_MOLECULAR_FUNCTION                   = "_dollo_mol_funct_goid_d";
     public static final String                                PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_ALL_NAMESPACES                       = "_dollo_goid_d";
-    public static final String                                PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_BIOLOGICAL_PROCESS                  = "_fitch_biol_proc_goid_dc";
-    public static final String                                PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_CELLULAR_COMPONENT                  = "_fitch_cell_comp_goid_dc";
-    public static final String                                PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_MOLECULAR_FUNCTION                  = "_fitch_mol_funct_goid_dc";
     public static final String                                PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_ALL_NAMESPACES                      = "_fitch_goid_dc";
     final static private String                               HELP_OPTION_1                                                          = "help";
     final static private String                               HELP_OPTION_2                                                          = "h";
@@ -221,8 +213,6 @@ public class surfacing {
                                                                                                                                              + ForesterConstants.PHYLO_XML_SUFFIX;
     final static private String                               NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX           = "_bin_combinations_NJ"
                                                                                                                                              + ForesterConstants.PHYLO_XML_SUFFIX;
-    final static private String                               DISPLAY_M_HISTOGRAMS_OPTION                                            = "mhisto";
-    //  final static private boolean DISPLAY_M_HISTOGRAMS_OPTION_DEFAULT                                    = false;
     final static private String                               JACKNIFE_OPTION                                                        = "jack";
     final static private String                               JACKNIFE_RANDOM_SEED_OPTION                                            = "seed";
     final static private String                               JACKNIFE_RATIO_OPTION                                                  = "jack_ratio";
@@ -239,16 +229,14 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                              = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                     = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                             = '#';
-    final static private String                               PRG_VERSION                                                            = "2.003";
-    final static private String                               PRG_DATE                                                               = "2010.12.03";
+    final static private String                               PRG_VERSION                                                            = "2.100";
+    final static private String                               PRG_DATE                                                               = "2011.06.17";
     final static private String                               E_MAIL                                                                 = "czmasek@burnham.org";
     final static private String                               WWW                                                                    = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                    = true;
     final static private boolean                              IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                  = false;
     final static private double                               MAX_E_VALUE_DEFAULT                                                    = -1;
     final static private int                                  MAX_ALLOWED_OVERLAP_DEFAULT                                            = -1;
-    final static private String                               DEFAULT_SEARCH_PARAMETER                                               = "ls";
-    final private static boolean                              VERBOSE_DEFAULT                                                        = true;
     private static final String                               RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION                                 = "random_seed";
     private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS                               = "consider_bdc_direction";
     private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY                 = "consider_bdc_adj";
@@ -283,12 +271,8 @@ public class surfacing {
     private static final INDIVIDUAL_SCORE_CUTOFF              INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                        = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                   = "_indep_dc_gains_fitch_counts.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists.txt";
+    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
 
-    // final String error = ForesterUtil.isReadableFile( new File(
-    // input_file_properties[ i ][ 0 ] ) );
-    // if ( !ForesterUtil.isEmpty( error ) ) {
-    // ForesterUtil.fatalError( surfacing.PRG_NAME, error );
-    // }
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
                                                                  final String automated_pairwise_comparison_suffix,
@@ -353,7 +337,7 @@ public class surfacing {
     }
 
     /**
-     * Warning: This sideeffects 'all_bin_domain_combinations_encountered'!
+     * Warning: This side-effects 'all_bin_domain_combinations_encountered'!
      * 
      * 
      * @param output_file
@@ -621,7 +605,6 @@ public class surfacing {
         allowed_options.add( surfacing.GO_NAMESPACE_LIMIT_OPTION );
         allowed_options.add( surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION );
         allowed_options.add( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION );
-        allowed_options.add( surfacing.DISPLAY_M_HISTOGRAMS_OPTION );
         allowed_options.add( surfacing.CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS );
         allowed_options.add( JACKNIFE_OPTION );
         allowed_options.add( JACKNIFE_RANDOM_SEED_OPTION );
@@ -1335,10 +1318,6 @@ public class surfacing {
             ForesterUtil.fatalError( surfacing.PRG_NAME,
                                      "no (acceptable) go id to term mapping file provided ('GO OBO file') (-"
                                              + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>)" );
-        }
-        boolean display_histograms = false;
-        if ( cla.isOptionSet( surfacing.DISPLAY_M_HISTOGRAMS_OPTION ) ) {
-            display_histograms = true;
         }
         System.out.println( "Output directory            : " + out_dir );
         if ( input_file_names_from_file != null ) {
@@ -2074,7 +2053,6 @@ public class surfacing {
                                              true,
                                              surfacing.PAIRWISE_DOMAIN_COMPARISONS_PREFIX,
                                              surfacing.PRG_NAME,
-                                             display_histograms,
                                              out_dir,
                                              write_pwc_files );
             String matrix_output_file = new String( output_file.toString() );
@@ -2107,16 +2085,6 @@ public class surfacing {
             inferred_trees.add( nj_gd );
             inferred_trees.add( nj_bc );
             inferred_trees.add( nj_d );
-            // final List<HistogramData> histogram_datas = pwgc.getHistogramDatas();
-            //            if ( infer_species_trees ) {
-            //                inferred_trees = new ArrayList<Phylogeny>();
-            //                final List<Phylogeny> inferred_trees_bc =  inferSpeciesTrees( new File( output_file + INFERRED_SBC_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc
-            //                        .getSharedBinaryCombinationsBasedDistances() );
-            //                final List<Phylogeny> inferred_trees_d =  inferSpeciesTrees( new File( output_file + INFERRED_SD_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc
-            //                        .getSharedDomainsBasedDistances() );
-            //                inferred_trees.addAll( inferred_trees_bc );
-            //                inferred_trees.addAll( inferred_trees_d );
-            //            }
             if ( jacknifed_distances ) {
                 pwgc.performPairwiseComparisonsJacknifed( species,
                                                           number_of_genomes,
@@ -2145,17 +2113,6 @@ public class surfacing {
                 //                    inferSpeciesTrees( new File( output_file + "_" + jacknife_resamplings
                 //                            + INFERRED_SD_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc.getSharedDomainsBasedDistances() );
                 //                }
-            }
-            if ( display_histograms ) {
-                //                final List<HistogramData> histogram_datas_all = new ArrayList<HistogramData>();
-                //                histogram_datas_all.add( new HistogramData( "all",
-                //                                                            values_for_all_scores_histogram,
-                //                                                            null,
-                //                                                            20 ) );
-                //                final HistogramsFrame hf_all = new HistogramsFrame( histogram_datas_all );
-                //                final HistogramsFrame hf = new HistogramsFrame( histogram_datas );
-                //                hf_all.setVisible( true );
-                //                hf.setVisible( true );
             }
         } // if ( ( output_file != null ) && ( number_of_genomes > 2 ) && !isEmpty( automated_pairwise_comparison_suffix ) )
         if ( ( out_dir != null ) && ( !perform_pwc ) ) {
@@ -2432,8 +2389,6 @@ public class surfacing {
                 + "[=<suffix for pairwise comparison output files>]: to perform pairwise comparison based analyses" );
         System.out.println( surfacing.INPUT_SPECIES_TREE_OPTION
                 + ": species tree, to perform (Dollo, Fitch) parismony analyses" );
-        System.out
-                .println( surfacing.DISPLAY_M_HISTOGRAMS_OPTION + ": to display multiple histograms (using fluorite)" );
         System.out
                 .println( JACKNIFE_OPTION
                         + ": perform jacknife resampling for domain and binary domain combination based distance matrices [default resamplings: "

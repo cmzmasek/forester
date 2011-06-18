@@ -42,7 +42,7 @@ public class pfam_go {
 
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
-    final static private String PRG_NAME      = "pfam2go";
+    final static private String PRG_NAME      = "pfam_go";
     final static private String PRG_VERSION   = "1.00";
     final static private String PRG_DATE      = "2010.02.02";
     final static private String E_MAIL        = "czmasek@burnham.org";
