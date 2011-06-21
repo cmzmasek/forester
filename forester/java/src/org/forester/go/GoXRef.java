@@ -47,6 +47,7 @@ public interface GoXRef extends Comparable<GoXRef> {
     public static final String CORUM_STR             = "CORUM";
     public static final String UNIPATHWAY_STR        = "UniPathway";
     public static final String PO_STR                = "PO";
+    public static final String SABIO_RK_STR          = "SABIO-RK";
 
     public Type getType();
 
@@ -72,6 +73,7 @@ public interface GoXRef extends Comparable<GoXRef> {
         NIF_SUBCELLULAR,
         CORUM,
         UNIPATHWAY,
-        PO;
+        PO,
+        SABIO_RK;
     }
 }

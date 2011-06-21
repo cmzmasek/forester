@@ -96,6 +96,9 @@ public class BasicGoXRef implements GoXRef {
         else if ( type.equals( PO_STR ) ) {
             _type = Type.PO;
         }
+        else if ( type.equals( SABIO_RK_STR ) ) {
+            _type = Type.SABIO_RK;
+        }
         else {
             throw new IllegalArgumentException( "unknown GO xref type: " + type );
         }

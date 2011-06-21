@@ -47,6 +47,8 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.data.NodeVisualization.NodeFill;
+import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
@@ -1118,13 +1120,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void cycleNodeFill( final Options op, final TreePanel tree_panel ) {
         switch ( op.getDefaultNodeFill() ) {
             case GRADIENT:
-                op.setDefaultNodeFill( Options.NodeFill.SOLID );
+                op.setDefaultNodeFill( NodeFill.SOLID );
                 break;
             case NONE:
-                op.setDefaultNodeFill( Options.NodeFill.GRADIENT );
+                op.setDefaultNodeFill( NodeFill.GRADIENT );
                 break;
             case SOLID:
-                op.setDefaultNodeFill( Options.NodeFill.NONE );
+                op.setDefaultNodeFill( NodeFill.NONE );
                 break;
             default:
                 throw new RuntimeException( "unknown fill: " + op.getDefaultNodeFill() );
@@ -1134,10 +1136,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static void cycleNodeShape( final Options op, final TreePanel tree_panel ) {
         switch ( op.getDefaultNodeShape() ) {
             case CIRCLE:
-                op.setDefaultNodeShape( Options.NodeShape.RECTANGLE );
+                op.setDefaultNodeShape( NodeShape.RECTANGLE );
                 break;
             case RECTANGLE:
-                op.setDefaultNodeShape( Options.NodeShape.CIRCLE );
+                op.setDefaultNodeShape( NodeShape.CIRCLE );
                 break;
             default:
                 throw new RuntimeException( "unknown shape: " + op.getDefaultNodeShape() );

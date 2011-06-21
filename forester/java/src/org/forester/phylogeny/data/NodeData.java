@@ -38,17 +38,18 @@ import org.forester.util.ForesterUtil;
 
 public class NodeData implements PhylogenyData {
 
-    private String             _node_name;
-    private Event              _event;
-    private List<Sequence>     _sequences;
-    private Identifier         _node_identifier;
-    private List<Taxonomy>     _taxonomies;
-    private List<Distribution> _distributions;
-    private Date               _date;
-    private BinaryCharacters   _binary_characters;
-    private PropertiesMap      _properties;
-    private List<Reference>    _references;
-    private List<Double>       _vector;
+    private String                  _node_name;
+    private Event                   _event;
+    private List<Sequence>          _sequences;
+    private Identifier              _node_identifier;
+    private List<Taxonomy>          _taxonomies;
+    private List<Distribution>      _distributions;
+    private Date                    _date;
+    private BinaryCharacters        _binary_characters;
+    private PropertiesMap           _properties;
+    private List<Reference>         _references;
+    private List<Double>            _vector;
+    private List<NodeVisualization> _node_visualizations;
 
     public NodeData() {
         init();
@@ -138,6 +139,14 @@ public class NodeData implements PhylogenyData {
             for( final Distribution d : getDistributions() ) {
                 if ( d != null ) {
                     new_data.addDistribution( ( Distribution ) d.copy() );
+                }
+            }
+        }
+        if ( ( getNodeVisualizations() != null ) && ( getNodeVisualizations().size() > 0 ) ) {
+            new_data.setNodeVisualizations( new ArrayList<NodeVisualization>() );
+            for( final NodeVisualization v : getNodeVisualizations() ) {
+                if ( v != null ) {
+                    new_data.getNodeVisualizations().add( ( NodeVisualization ) v.copy() );
                 }
             }
         }
@@ -526,5 +535,13 @@ public class NodeData implements PhylogenyData {
 
     public void setNodeName( final String node_name ) {
         _node_name = node_name;
+    }
+
+    public void setNodeVisualizations( final List<NodeVisualization> _node_visualizations ) {
+        this._node_visualizations = _node_visualizations;
+    }
+
+    public List<NodeVisualization> getNodeVisualizations() {
+        return _node_visualizations;
     }
 }

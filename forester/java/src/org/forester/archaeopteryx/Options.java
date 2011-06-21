@@ -27,6 +27,9 @@ package org.forester.archaeopteryx;
 
 import java.awt.Font;
 
+import org.forester.phylogeny.data.NodeVisualization;
+import org.forester.phylogeny.data.NodeVisualization.NodeFill;
+import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.util.ForesterUtil;
 
 /*
@@ -34,44 +37,44 @@ import org.forester.util.ForesterUtil;
  */
 final public class Options {
 
-    static final double             MIN_CONFIDENCE_DEFAULT = 0.0;
-    private boolean                 _show_branch_length_values;
-    private boolean                 _internal_number_are_confidence_for_nh_parsing;
-    private boolean                 _show_scale;
-    private boolean                 _show_overview;
-    private boolean                 _antialias_screen;
-    private boolean                 _antialias_print;
-    private boolean                 _graphics_export_visible_only;
-    private int                     _print_size_x;
-    private int                     _print_size_y;
-    private double                  _min_confidence_value;
-    private boolean                 _print_black_and_white;
-    private boolean                 _print_using_actual_size;
-    private boolean                 _graphics_export_using_actual_size;
-    private PHYLOGENY_GRAPHICS_TYPE _phylogeny_graphics_type;
-    private CLADOGRAM_TYPE          _cladogram_type;
-    private OVERVIEW_PLACEMENT_TYPE _ov_placement;
-    private NODE_LABEL_DIRECTION    _node_label_direction;
-    private Font                    _base_font;
-    private boolean                 _match_whole_terms_only;
-    private boolean                 _search_case_sensitive;
-    private float                   _print_line_width;
-    private boolean                 _inverse_search_result;
-    private double                  _scale_bar_length;
-    private short                   _number_of_digits_after_comma_for_confidence_values;
-    private short                   _number_of_digits_after_comma_for_branch_length_values;
-    private boolean                 _nh_parsing_replace_underscores;
-    private boolean                 _nh_parsing_extract_pfam_taxonomy_codes;
-    private boolean                 _editable;
-    private boolean                 _background_color_gradient;
-    private boolean                 _show_domain_labels;
-    private boolean                 _color_labels_same_as_parent_branch;
-    private boolean                 _abbreviate_scientific_names;
-    private NodeShape               _default_node_shape;
-    private NodeFill                _default_node_fill;
-    private short                   _default_node_shape_size;
-    private boolean                 _taxonomy_colorize_node_shapes;
-    private boolean                 _show_default_node_shapes;
+    static final double                 MIN_CONFIDENCE_DEFAULT = 0.0;
+    private boolean                     _show_branch_length_values;
+    private boolean                     _internal_number_are_confidence_for_nh_parsing;
+    private boolean                     _show_scale;
+    private boolean                     _show_overview;
+    private boolean                     _antialias_screen;
+    private boolean                     _antialias_print;
+    private boolean                     _graphics_export_visible_only;
+    private int                         _print_size_x;
+    private int                         _print_size_y;
+    private double                      _min_confidence_value;
+    private boolean                     _print_black_and_white;
+    private boolean                     _print_using_actual_size;
+    private boolean                     _graphics_export_using_actual_size;
+    private PHYLOGENY_GRAPHICS_TYPE     _phylogeny_graphics_type;
+    private CLADOGRAM_TYPE              _cladogram_type;
+    private OVERVIEW_PLACEMENT_TYPE     _ov_placement;
+    private NODE_LABEL_DIRECTION        _node_label_direction;
+    private Font                        _base_font;
+    private boolean                     _match_whole_terms_only;
+    private boolean                     _search_case_sensitive;
+    private float                       _print_line_width;
+    private boolean                     _inverse_search_result;
+    private double                      _scale_bar_length;
+    private short                       _number_of_digits_after_comma_for_confidence_values;
+    private short                       _number_of_digits_after_comma_for_branch_length_values;
+    private boolean                     _nh_parsing_replace_underscores;
+    private boolean                     _nh_parsing_extract_pfam_taxonomy_codes;
+    private boolean                     _editable;
+    private boolean                     _background_color_gradient;
+    private boolean                     _show_domain_labels;
+    private boolean                     _color_labels_same_as_parent_branch;
+    private boolean                     _abbreviate_scientific_names;
+    private NodeVisualization.NodeShape _default_node_shape;
+    private NodeVisualization.NodeFill  _default_node_fill;
+    private short                       _default_node_shape_size;
+    private boolean                     _taxonomy_colorize_node_shapes;
+    private boolean                     _show_default_node_shapes;
 
     private Options() {
         init();
@@ -501,14 +504,6 @@ final public class Options {
 
     static enum NODE_LABEL_DIRECTION {
         HORIZONTAL, RADIAL;
-    }
-
-    enum NodeFill {
-        NONE, GRADIENT, SOLID
-    }
-
-    enum NodeShape {
-        CIRCLE, RECTANGLE
     }
 
     static enum OVERVIEW_PLACEMENT_TYPE {

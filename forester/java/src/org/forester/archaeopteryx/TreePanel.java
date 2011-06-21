@@ -92,8 +92,6 @@ import javax.swing.PopupFactory;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
-import org.forester.archaeopteryx.Options.NodeFill;
-import org.forester.archaeopteryx.Options.NodeShape;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
@@ -107,6 +105,9 @@ import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
+import org.forester.phylogeny.data.NodeVisualization;
+import org.forester.phylogeny.data.NodeVisualization.NodeFill;
+import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -2584,11 +2585,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                            ForesterUtil.roundToInt( node.getYcoord() - d ) );
         _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + box_size ),
                            ForesterUtil.roundToInt( node.getYcoord() + d ) );
-        if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+        if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
             g.setColor( c );
             g.fillPolygon( _polygon );
         }
-        else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+        else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
             g.setColor( getBackground() );
             g.fillPolygon( _polygon );
             g.setColor( c );
@@ -2804,13 +2805,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           background,
                                           outline_color );
                     }
-                    else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
                         g.setColor( outline_color );
                         drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                     }
                 }
-                else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
-                    if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                else if ( getOptions().getDefaultNodeShape() == NodeVisualization.NodeShape.RECTANGLE ) {
+                    if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.GRADIENT ) {
                         drawRectGradient( x - half_box_size,
                                           y - half_box_size,
                                           box_size,
@@ -2820,7 +2821,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           to_pdf ? outline_color : getBackground(),
                                           outline_color );
                     }
-                    else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
                         Color background = getBackground();
                         if ( to_pdf ) {
                             background = Color.WHITE;
@@ -2834,7 +2835,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           background,
                                           outline_color );
                     }
-                    else if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
                         g.setColor( outline_color );
                         drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                     }
