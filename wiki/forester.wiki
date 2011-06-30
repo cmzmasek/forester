@@ -1,3 +1,5 @@
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 Under development!
