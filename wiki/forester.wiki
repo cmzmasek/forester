@@ -1,4 +1,4 @@
-= Contents =
+= forester Tutorial and Examples =
 <wiki:toc max_depth="3" />
 
 = Introduction =
