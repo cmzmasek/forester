@@ -31,6 +31,8 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.util.ForesterUtil;
+import org.forester.util.ForesterConstants;
+
 
 // Use like this:
 // <applet archive="forester.jar"
@@ -305,6 +307,35 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         repaint();
     }
+
+    /**
+     * This method returns the current phylogeny as a string in the chosen format
+     * 
+     * @param format must be NH, NHX, NEXUS or PHYLOXML
+     * @return the phylogeny string
+     * @author Hervé Ménager
+     */
+    public String getCurrentPhylogeny( final String format ) {
+        removeTextFrame();
+        if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
+                || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
+            return new String();
+        }
+        switch ( ForesterConstants.PhylogeneticTreeFormats.valueOf( format ) ) {
+            case NH:
+                return getMainPanel().getCurrentPhylogeny().toNewHampshire();
+            case NHX:
+                return getMainPanel().getCurrentPhylogeny().toNewHampshireX();
+            case NEXUS:
+                return getMainPanel().getCurrentPhylogeny().toNexus();
+            case PHYLOXML:
+                return getMainPanel().getCurrentPhylogeny().toPhyloXML(-1);
+            default:
+                break;
+        }
+        return new String();
+    }
+
 
     void buildFontSizeMenu() {
         _font_size_menu = MainFrame.createMenu( MainFrame.FONT_SIZE_MENU_LABEL, getConfiguration() );
