@@ -49,8 +49,9 @@ public class pfam_go {
     final static private String E_MAIL                  = "czmasek@burnham.org";
     final static private String WWW                     = "www.phylosoft.org";
 
-    private static void process( final File pfams_file, final List<PfamToGoMapping> mappings, boolean allow_duplicates )
-            throws IOException {
+    private static void process( final File pfams_file,
+                                 final List<PfamToGoMapping> mappings,
+                                 final boolean allow_duplicates ) throws IOException {
         final BufferedReader reader = ForesterUtil.obtainReader( pfams_file );
         String line = "";
         int found_count = 0;
@@ -113,7 +114,7 @@ public class pfam_go {
         }
         final List<String> allowed_options = new ArrayList<String>();
         allowed_options.add( ALLOW_DUPLICATES_OPTION );
-        if ( cla.getNumberOfNames() != 2 && cla.getNumberOfNames() != 3 ) {
+        if ( ( cla.getNumberOfNames() != 2 ) && ( cla.getNumberOfNames() != 3 ) ) {
             printHelp();
             System.exit( -1 );
         }

@@ -83,8 +83,8 @@ public class simple_node_processor {
     //    }
     private static void processNode( final PhylogenyNode node, final int i ) {
         if ( node.isExternal() ) {
-            String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
-            String s = node.getNodeData().getTaxonomy().getScientificName();
+            final String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
+            final String s = node.getNodeData().getTaxonomy().getScientificName();
             System.out.println( s + "\t" + c );
         }
     }

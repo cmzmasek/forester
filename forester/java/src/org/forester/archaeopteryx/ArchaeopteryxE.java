@@ -30,9 +30,8 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.SequenceRelation;
-import org.forester.util.ForesterUtil;
 import org.forester.util.ForesterConstants;
-
+import org.forester.util.ForesterUtil;
 
 // Use like this:
 // <applet archive="forester.jar"
@@ -313,7 +312,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
      * 
      * @param format must be NH, NHX, NEXUS or PHYLOXML
      * @return the phylogeny string
-     * @author Hervé Ménager
+     * @author Herve Menager
      */
     public String getCurrentPhylogeny( final String format ) {
         removeTextFrame();
@@ -329,13 +328,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             case NEXUS:
                 return getMainPanel().getCurrentPhylogeny().toNexus();
             case PHYLOXML:
-                return getMainPanel().getCurrentPhylogeny().toPhyloXML(-1);
+                return getMainPanel().getCurrentPhylogeny().toPhyloXML( -1 );
             default:
                 break;
         }
         return new String();
     }
-
 
     void buildFontSizeMenu() {
         _font_size_menu = MainFrame.createMenu( MainFrame.FONT_SIZE_MENU_LABEL, getConfiguration() );
