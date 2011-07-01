@@ -28,40 +28,36 @@ package org.forester.phylogeny.data;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.forester.phylogeny.data.Property.AppliesTo;
 
 public class NodeVisualization implements PhylogenyData {
 
-    public enum NodeFill {
-        NONE, GRADIENT, SOLID
-    }
-
-    public enum NodeShape {
-        CIRCLE, RECTANGLE
-    }
     private NodeShape _shape;
     private NodeFill  _fill_type;
     private Color     _border_color;
     private Color     _fill_color;
     private double    _size;
+    private double    _transparancy;
 
     public NodeVisualization() {
-        _shape = NodeShape.CIRCLE;
-        _fill_type = NodeFill.SOLID;
-        _border_color = null;
-        _fill_color = null;
-        _size = 0;
+        init();
     }
 
     public NodeVisualization( final NodeShape shape,
                               final NodeFill fill_type,
                               final Color border_color,
                               final Color fill_color,
-                              final double size ) {
-        _shape = shape;
-        _fill_type = fill_type;
-        _border_color = border_color;
-        _fill_color = fill_color;
-        _size = size;
+                              final double size,
+                              final double transparancy ) {
+        setShape( shape );
+        setFillType( fill_type );
+        setBorderColor( border_color );
+        setFillColor( fill_color );
+        setSize( size );
+        setTransparancy( transparancy );
     }
 
     @Override
@@ -83,7 +79,8 @@ public class NodeVisualization implements PhylogenyData {
                                               .getGreen(), getBorderColor().getBlue() ) : null,
                                       getFillColor() != null ? new Color( getFillColor().getRed(), getFillColor()
                                               .getGreen(), getFillColor().getBlue() ) : null,
-                                      getSize() );
+                                      getSize(),
+                                      getTransparancy() );
     }
 
     public Color getBorderColor() {
@@ -104,6 +101,19 @@ public class NodeVisualization implements PhylogenyData {
 
     public double getSize() {
         return _size;
+    }
+
+    public double getTransparancy() {
+        return _transparancy;
+    }
+
+    private void init() {
+        setShape( NodeShape.CIRCLE );
+        setFillType( NodeFill.SOLID );
+        setBorderColor( null );
+        setFillColor( null );
+        setSize( 0 );
+        setTransparancy( 1 );
     }
 
     @Override
@@ -131,6 +141,10 @@ public class NodeVisualization implements PhylogenyData {
         _size = size;
     }
 
+    public void setTransparancy( final double transparancy ) {
+        _transparancy = transparancy;
+    }
+
     @Override
     public StringBuffer toNHX() {
         throw new UnsupportedOperationException();
@@ -145,4 +159,25 @@ public class NodeVisualization implements PhylogenyData {
     public String toString() {
         return asText().toString();
     }
+
+    public enum NodeFill {
+        NONE, GRADIENT, SOLID
+    }
+
+    public enum NodeShape {
+        CIRCLE, RECTANGLE
+    }
+
+    private List<Property> toProperties() {
+        final List<Property> properties = new ArrayList<Property>();
+        properties.add( new Property( SIZE_REF, String.valueOf( getSize() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        properties.add( new Property( SIZE_REF, String.valueOf( getShape() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        properties.add( new Property( SIZE_REF, String.valueOf( getFillType() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        properties.add( new Property( SIZE_REF, String.valueOf( getTransparancy() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        properties.add( new Property( SIZE_REF, String.valueOf( getFillColor() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        properties.add( new Property( SIZE_REF, String.valueOf( getBorderColor() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        return properties;
+    }
+    public static final String SIZE_REF  = "aptx_visualiation:node_sise";
+    public static final String SIZE_TYPE = "xsd:decimal";
 }

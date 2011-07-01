@@ -66,7 +66,10 @@ public class MetaOntologizer {
     final static private String       PRG_NAME                         = "meta_ontologizer";
     private static final boolean      VERBOSE                          = true;
     //table-a_41_dollo_all_gains_d-Topology-Elim-Bonferroni.txt:
-    private final static Pattern      PATTERN_ONTOLOGIZER_TABLE_OUTPUT = Pattern.compile( ".*table-(.+)_dollo_.*",
+    //TODO change back
+    // private final static Pattern      PATTERN_ONTOLOGIZER_TABLE_OUTPUT = Pattern.compile( ".*table-(.+)_dollo_.*",
+    //                                                                                      Pattern.CASE_INSENSITIVE ); //TODO this might need some work...
+    private final static Pattern      PATTERN_ONTOLOGIZER_TABLE_OUTPUT = Pattern.compile( ".*table-(.+)\\.txt",
                                                                                           Pattern.CASE_INSENSITIVE ); //TODO this might need some work...
 
     private static boolean hasResultsForSpecies( final Map<GoId, GoTerm> go_id_to_terms,
@@ -146,6 +149,9 @@ public class MetaOntologizer {
                 else if ( line.startsWith( "#" ) ) {
                     current_species = new BasicSpecies( line.substring( 1 ) );
                     speciesto_to_domain_id.put( current_species, new TreeSet<DomainId>() );
+                    if ( VERBOSE ) {
+                        ForesterUtil.programMessage( PRG_NAME, "saw " + current_species );
+                    }
                 }
                 else {
                     if ( current_species == null ) {

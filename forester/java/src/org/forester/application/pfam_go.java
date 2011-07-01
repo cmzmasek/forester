@@ -29,9 +29,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
@@ -40,20 +40,28 @@ import org.forester.util.ForesterUtil;
 
 public class pfam_go {
 
-    final static private String HELP_OPTION_1 = "help";
-    final static private String HELP_OPTION_2 = "h";
-    final static private String PRG_NAME      = "pfam_go";
-    final static private String PRG_VERSION   = "1.00";
-    final static private String PRG_DATE      = "2010.02.02";
-    final static private String E_MAIL        = "czmasek@burnham.org";
-    final static private String WWW           = "www.phylosoft.org";
+    private static final String ALLOW_DUPLICATES_OPTION = "d";
+    final static private String HELP_OPTION_1           = "help";
+    final static private String HELP_OPTION_2           = "h";
+    final static private String PRG_NAME                = "pfam_go";
+    final static private String PRG_VERSION             = "1.10";
+    final static private String PRG_DATE                = "2011.06.26";
+    final static private String E_MAIL                  = "czmasek@burnham.org";
+    final static private String WWW                     = "www.phylosoft.org";
 
-    private static void doit( final File pfams_file, final List<PfamToGoMapping> mappings ) throws IOException {
+    private static void process( final File pfams_file, final List<PfamToGoMapping> mappings, boolean allow_duplicates )
+            throws IOException {
         final BufferedReader reader = ForesterUtil.obtainReader( pfams_file );
         String line = "";
         int found_count = 0;
         int not_found_count = 0;
-        final Set<String> encountered_domains = new HashSet<String>();
+        Collection<String> encountered_domains = null;
+        if ( allow_duplicates ) {
+            encountered_domains = new ArrayList<String>();
+        }
+        else {
+            encountered_domains = new HashSet<String>();
+        }
         while ( ( line = reader.readLine() ) != null ) {
             line = line.trim();
             if ( ForesterUtil.isEmpty( line ) || line.startsWith( "##" ) ) {
@@ -65,7 +73,7 @@ public class pfam_go {
                 System.out.println( line );
             }
             else {
-                if ( !encountered_domains.contains( line ) ) {
+                if ( allow_duplicates || !encountered_domains.contains( line ) ) {
                     encountered_domains.add( line );
                     boolean found = false;
                     for( final PfamToGoMapping mapping : mappings ) {
@@ -104,7 +112,8 @@ public class pfam_go {
             System.exit( 0 );
         }
         final List<String> allowed_options = new ArrayList<String>();
-        if ( cla.getNumberOfNames() != 2 ) {
+        allowed_options.add( ALLOW_DUPLICATES_OPTION );
+        if ( cla.getNumberOfNames() != 2 && cla.getNumberOfNames() != 3 ) {
             printHelp();
             System.exit( -1 );
         }
@@ -114,6 +123,10 @@ public class pfam_go {
         }
         final File pfam2go_file = cla.getFile( 0 );
         final File pfams_file = cla.getFile( 1 );
+        boolean allow_duplicates = false;
+        if ( cla.isOptionSet( ALLOW_DUPLICATES_OPTION ) ) {
+            allow_duplicates = true;
+        }
         final PfamToGoParser pfam2go_parser = new PfamToGoParser( pfam2go_file );
         List<PfamToGoMapping> mappings = null;
         try {
@@ -123,7 +136,7 @@ public class pfam_go {
             e.printStackTrace();
         }
         try {
-            doit( pfams_file, mappings );
+            process( pfams_file, mappings, allow_duplicates );
         }
         catch ( final IOException e ) {
             e.printStackTrace();
@@ -135,7 +148,8 @@ public class pfam_go {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( PRG_NAME + " <pfam2go file> <file with pfams>" );
+        System.out.println( PRG_NAME + " [-" + ALLOW_DUPLICATES_OPTION
+                + " to allow duplicates] <pfam2go file> <file with pfams>" );
         System.out.println();
         System.out.println();
     }

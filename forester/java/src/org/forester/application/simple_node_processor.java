@@ -28,7 +28,6 @@ package org.forester.application;
 import java.io.File;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -64,8 +63,8 @@ public class simple_node_processor {
                 processNode( node, i );
                 i++;
             }
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( out, phylogeny_0, 0 );
+            //  final PhylogenyWriter writer = new PhylogenyWriter();
+            //  writer.toPhyloXML( out, phylogeny_0, 0 );
         }
         catch ( final Exception e ) {
             System.out.println( e.getLocalizedMessage() );
@@ -74,12 +73,19 @@ public class simple_node_processor {
         }
     }
 
+    //    private static void processNode( final PhylogenyNode node, final int i ) {
+    //        node.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+    //        if ( !node.isExternal() ) {
+    //            if ( ( node.getName() == null ) || node.getName().isEmpty() ) {
+    //                node.setName( BASE + i );
+    //            }
+    //        }
+    //    }
     private static void processNode( final PhylogenyNode node, final int i ) {
-        node.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
-        if ( !node.isExternal() ) {
-            if ( ( node.getName() == null ) || node.getName().isEmpty() ) {
-                node.setName( BASE + i );
-            }
+        if ( node.isExternal() ) {
+            String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
+            String s = node.getNodeData().getTaxonomy().getScientificName();
+            System.out.println( s + "\t" + c );
         }
     }
 }
