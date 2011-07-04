@@ -47,7 +47,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
      */
     public ExternalForwardIterator( final Phylogeny phylogeny ) throws IllegalArgumentException {
         if ( phylogeny.isEmpty() ) {
-            throw new IllegalArgumentException( "Attempt to use ExternalForwardIterator on an empty phylogeny." );
+            throw new IllegalArgumentException( "attempt to use ExternalForwardIterator on an empty phylogeny" );
         }
         PhylogenyNode n = phylogeny.getRoot();
         while ( !n.isExternal() ) {
@@ -88,7 +88,7 @@ public class ExternalForwardIterator implements PhylogenyNodeIterator {
     @Override
     public PhylogenyNode next() throws NoSuchElementException {
         if ( !hasNext() ) {
-            throw new NoSuchElementException( "Attempt to call \"next()\" on iterator which has no more next elements." );
+            throw new NoSuchElementException( "attempt to call \"next()\" on iterator which has no more next elements" );
         }
         final PhylogenyNode n = getCurrentNode();
         if ( n == getLastExtNode() ) {

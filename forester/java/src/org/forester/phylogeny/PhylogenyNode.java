@@ -411,6 +411,30 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         return current_node;
     }
 
+    public final PhylogenyNode getNextExternalNodeWhileTakingIntoAccountCollapsedNodes() {
+        //TODO work on me ~~
+        if ( isInternal() ) {
+            throw new UnsupportedOperationException( "attempt to get next external node of an internal node" );
+        }
+        else if ( isLastExternalNode() ) {
+            return null;
+        }
+        int index = getChildNodeIndex();
+        PhylogenyNode previous_node = this;
+        PhylogenyNode current_node = getParent();
+        while ( !current_node.isRoot()
+                && ( ( current_node.getNumberOfDescendants() == 1 ) || previous_node.isLastChildNode() ) ) {
+            index = current_node.getChildNodeIndex();
+            previous_node = current_node;
+            current_node = current_node.getParent();
+        }
+        current_node = current_node.getChildNode( index + 1 );
+        while ( current_node.isInternal() ) {
+            current_node = current_node.getFirstChildNode();
+        }
+        return current_node;
+    }
+    
     public final NodeData getNodeData() {
         if ( _node_data == null ) {
             _node_data = new NodeData();

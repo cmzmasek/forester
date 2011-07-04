@@ -145,7 +145,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static NumberFormat       FORMATTER_CONFIDENCE;
     private final static NumberFormat       FORMATTER_BRANCH_LENGTH;
     private final static int                WIGGLE                            = 2;
-    //private final int                       _half_box_size_plus_wiggle;
     private final static int                LIMIT_FOR_HQ_RENDERING            = 1000;
     private final static int                CONFIDENCE_LEFT_MARGIN            = 4;
     // TODO "rendering_hints" was static before. Need to make sure everything is OK with it not
@@ -207,11 +206,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private static double             _180_OVER_PI                      = 180.0 / Math.PI;
     private static final float              ROUNDED_D                         = 8;
     private int                             _circ_max_depth;
-    private int                             _circ_num_ext_nodes;
     private PhylogenyNode                   _root;
     final private Arc2D                     _arc                              = new Arc2D.Double();
     final private HashMap<Integer, Double>  _urt_nodeid_angle_map             = new HashMap<Integer, Double>();
     final private HashMap<Integer, Integer> _urt_nodeid_index_map             = new HashMap<Integer, Integer>();
+    final private Set<Integer>              _collapsed_external_nodeid_set    = new HashSet<Integer>();
     HashMap<Integer, Short>                 _nodeid_dist_to_leaf              = new HashMap<Integer, Short>();
     private AffineTransform                 _at;
     private double                          _max_distance_to_root             = -1;
@@ -692,6 +691,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && !node.isRoot() ) {
             final boolean collapse = !node.isCollapse();
             Util.collapseSubtree( node, collapse );
+            updateSetOfCollapsedExternalNodes( _phylogeny );
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             calculateLongestExtNodeInfo();
@@ -709,6 +709,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setWaitCursor();
         Util.collapseSpeciesSpecificSubtrees( _phylogeny );
+        updateSetOfCollapsedExternalNodes( _phylogeny );
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         calculateLongestExtNodeInfo();
@@ -2434,7 +2435,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                               final Graphics2D g,
                               final boolean to_pdf,
                               final boolean to_graphics_file ) {
-        _circ_num_ext_nodes = phy.getNumberOfExternalNodes();
+        final int circ_num_ext_nodes = phy.getNumberOfExternalNodes() - _collapsed_external_nodeid_set.size();
+        System.out.println( "# collapsed external = " +  _collapsed_external_nodeid_set.size() );
         _root = phy.getRoot();
         _root.setXcoord( center_x );
         _root.setYcoord( center_y );
@@ -2443,14 +2445,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         int i = 0;
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            n.setXcoord( ( float ) ( center_x + ( radius * Math.cos( current_angle ) ) ) );
-            n.setYcoord( ( float ) ( center_y + ( radius * Math.sin( current_angle ) ) ) );
-            _urt_nodeid_angle_map.put( n.getId(), current_angle );
-            _urt_nodeid_index_map.put( n.getId(), i++ );
-            current_angle += ( TWO_PI / _circ_num_ext_nodes );
+            if ( !n.isCollapse() ) {
+                n.setXcoord( ( float ) ( center_x + ( radius * Math.cos( current_angle ) ) ) );
+                n.setYcoord( ( float ) ( center_y + ( radius * Math.sin( current_angle ) ) ) );
+                _urt_nodeid_angle_map.put( n.getId(), current_angle );
+                _urt_nodeid_index_map.put( n.getId(), i++ );
+                current_angle += ( TWO_PI / circ_num_ext_nodes );
+            }
+            else {
+                //TODO remove me
+                System.out.println( "is collapse" + n.getName() );
+            }
         }
         paintCirculars( phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file );
         paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
+    }
+
+    private void updateSetOfCollapsedExternalNodes( final Phylogeny phy ) {
+        _collapsed_external_nodeid_set.clear();
+        E: for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode ext_node = it.next();
+            PhylogenyNode n = ext_node;
+            while ( !n.isRoot() ) {
+                if ( n.isCollapse() ) {
+                    _collapsed_external_nodeid_set.add( ext_node.getId() );
+                    continue E;
+                }
+                n = n.getParent();
+            }
+        }
     }
 
     final void paintCircularLite( final Phylogeny phy,
@@ -2459,7 +2482,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                   final int center_y,
                                   final int radius,
                                   final Graphics2D g ) {
-        _circ_num_ext_nodes = phy.getNumberOfExternalNodes();
+        final int circ_num_ext_nodes = phy.getNumberOfExternalNodes();
         _root = phy.getRoot();
         _root.setXSecondary( center_x );
         _root.setYSecondary( center_y );
@@ -2469,7 +2492,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             n.setXSecondary( ( float ) ( center_x + radius * Math.cos( current_angle ) ) );
             n.setYSecondary( ( float ) ( center_y + radius * Math.sin( current_angle ) ) );
             _urt_nodeid_angle_map.put( n.getId(), current_angle );
-            current_angle += ( TWO_PI / _circ_num_ext_nodes );
+            current_angle += ( TWO_PI / circ_num_ext_nodes );
         }
         paintCircularsLite( phy.getRoot(), phy, center_x, center_y, radius, g );
     }
@@ -2483,9 +2506,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                          final Graphics2D g,
                                          final boolean to_pdf,
                                          final boolean to_graphics_file ) {
-        if ( n.isExternal() ) {
+        if ( n.isExternal() || n.isCollapse() ) { //~~circ collapse
             if ( !_urt_nodeid_angle_map.containsKey( n.getId() ) ) {
-                System.out.println( "no " + n + ", ERROR!" );//TODO
+                System.out.println( "no " + n + " =====>>>>>>> ERROR!" );//TODO
             }
             return _urt_nodeid_angle_map.get( n.getId() );
         }
