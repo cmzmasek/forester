@@ -241,7 +241,7 @@ public final class MainFrameApplication extends MainFrame {
             if ( Constants.__SYNTH_LF ) {
                 try {
                     final SynthLookAndFeel synth = new SynthLookAndFeel();
-                    synth.load( MainFrameApplication.class.getResourceAsStream( "synth_look_and_feel_1.xml" ),
+                    synth.load( MainFrameApplication.class.getResourceAsStream( "/resources/synth_look_and_feel_1.xml" ),
                                 MainFrameApplication.class );
                     UIManager.setLookAndFeel( synth );
                 }
