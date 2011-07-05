@@ -39,6 +39,9 @@ public final class Constants {
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
     public final static boolean __RELEASE                                                     = true;                                                     // TODO remove me
     public final static boolean __SNAPSHOT_RELEASE                                            = true;                                                     // TODO remove me
+    public final static boolean __SYNTH_LF                                              = true;                                                     // TODO remove me
+    
+    
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.962 beta B48";
     final static String         PRG_DATE                                                      = "2011.05.27";

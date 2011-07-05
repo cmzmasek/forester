@@ -57,6 +57,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.synth.SynthLookAndFeel;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -236,25 +237,42 @@ public final class MainFrameApplication extends MainFrame {
             throw new IllegalArgumentException( "configuration is null" );
         }
         try {
-            if ( _configuration.isUseNativeUI() ) {
-                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+            boolean synth_exception = false;
+            if ( Constants.__SYNTH_LF ) {
+                try {
+                    final SynthLookAndFeel synth = new SynthLookAndFeel();
+                    synth.load( MainFrameApplication.class.getResourceAsStream( "synth_look_and_feel_1.xml" ),
+                                MainFrameApplication.class );
+                    UIManager.setLookAndFeel( synth );
+                }
+                catch ( Exception ex ) {
+                    synth_exception = true;
+                    ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+                                                      "could not create synth look and feel: "
+                                                              + ex.getLocalizedMessage() );
+                }
             }
-            else {
-                UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+            if ( !Constants.__SYNTH_LF || synth_exception ) {
+                if ( _configuration.isUseNativeUI() ) {
+                    UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+                }
+                else {
+                    UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+                }
             }
             //UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
         }
         catch ( final UnsupportedLookAndFeelException e ) {
-            Util.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
+            Util.dieWithSystemError( "unsupported look and feel: " + e.toString() );
         }
         catch ( final ClassNotFoundException e ) {
-            Util.dieWithSystemError( "ClassNotFoundException: " + e.toString() );
+            Util.dieWithSystemError( "class not found exception: " + e.toString() );
         }
         catch ( final InstantiationException e ) {
-            Util.dieWithSystemError( "InstantiationException: " + e.toString() );
+            Util.dieWithSystemError( "instantiation exception: " + e.toString() );
         }
         catch ( final IllegalAccessException e ) {
-            Util.dieWithSystemError( "IllegalAccessException: " + e.toString() );
+            Util.dieWithSystemError( "illegal access exception: " + e.toString() );
         }
         catch ( final Exception e ) {
             Util.dieWithSystemError( e.toString() );
