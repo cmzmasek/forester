@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
+import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -683,6 +684,15 @@ public final class Test {
             else {
                 System.out.println( "failed [will not count towards failed tests]" );
             }
+        }
+        System.out.print( "Next nodes with collapsed: " );
+        if ( Test.testNextNodeWithCollapsing() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
         }
         //        System.out.print( "WABI TxSearch: " );
         //        if ( Test.testWabiTxSearch() ) {
@@ -8091,6 +8101,567 @@ public final class Test {
             final MsaInferrer mafft = Mafft.createInstance();
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi.fasta" ), opts );
             if ( ( msa == null ) || ( msa.getLength() < 10 ) || ( msa.getNumberOfSequences() != 19 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testNextNodeWithCollapsing() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            PhylogenyNode n;
+            List<PhylogenyNode> ext = new ArrayList<PhylogenyNode>();
+            final StringBuffer sb0 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t0 = factory.create( sb0, new NHXParser() )[ 0 ];
+            t0.getNode( "cd" ).setCollapse( true );
+            t0.getNode( "cde" ).setCollapse( true );
+            n = t0.getFirstExternalNode();
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "cde" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            ext.clear();
+            final StringBuffer sb1 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t1 = factory.create( sb1, new NHXParser() )[ 0 ];
+            t1.getNode( "ab" ).setCollapse( true );
+            t1.getNode( "cd" ).setCollapse( true );
+            t1.getNode( "cde" ).setCollapse( true );
+            n = t1.getNode( "ab" );
+            ext = new ArrayList<PhylogenyNode>();
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            //
+            //
+            ext.clear();
+            final StringBuffer sb2 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t2 = factory.create( sb2, new NHXParser() )[ 0 ];
+            t2.getNode( "ab" ).setCollapse( true );
+            t2.getNode( "cd" ).setCollapse( true );
+            t2.getNode( "cde" ).setCollapse( true );
+            t2.getNode( "c" ).setCollapse( true );
+            t2.getNode( "d" ).setCollapse( true );
+            t2.getNode( "e" ).setCollapse( true );
+            t2.getNode( "gh" ).setCollapse( true );
+            n = t2.getNode( "ab" );
+            ext = new ArrayList<PhylogenyNode>();
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "gh" ) ) {
+                return false;
+            }
+            //
+            //
+            ext.clear();
+            final StringBuffer sb3 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t3 = factory.create( sb3, new NHXParser() )[ 0 ];
+            t3.getNode( "ab" ).setCollapse( true );
+            t3.getNode( "cd" ).setCollapse( true );
+            t3.getNode( "cde" ).setCollapse( true );
+            t3.getNode( "c" ).setCollapse( true );
+            t3.getNode( "d" ).setCollapse( true );
+            t3.getNode( "e" ).setCollapse( true );
+            t3.getNode( "gh" ).setCollapse( true );
+            t3.getNode( "fgh" ).setCollapse( true );
+            n = t3.getNode( "ab" );
+            ext = new ArrayList<PhylogenyNode>();
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            ext.clear();
+            final StringBuffer sb4 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t4 = factory.create( sb4, new NHXParser() )[ 0 ];
+            t4.getNode( "ab" ).setCollapse( true );
+            t4.getNode( "cd" ).setCollapse( true );
+            t4.getNode( "cde" ).setCollapse( true );
+            t4.getNode( "c" ).setCollapse( true );
+            t4.getNode( "d" ).setCollapse( true );
+            t4.getNode( "e" ).setCollapse( true );
+            t4.getNode( "gh" ).setCollapse( true );
+            t4.getNode( "fgh" ).setCollapse( true );
+            t4.getNode( "abcdefgh" ).setCollapse( true );
+            n = t4.getNode( "abcdefgh" );
+            if ( n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes() != null ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb5 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t5 = factory.create( sb5, new NHXParser() )[ 0 ];
+            ext.clear();
+            n = t5.getFirstExternalNode();
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 8 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 7 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb6 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t6 = factory.create( sb6, new NHXParser() )[ 0 ];
+            ext.clear();
+            t6.getNode( "ab" ).setCollapse( true );
+            n = t6.getNode( "ab" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 7 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb7 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t7 = factory.create( sb7, new NHXParser() )[ 0 ];
+            ext.clear();
+            t7.getNode( "cd" ).setCollapse( true );
+            n = t7.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 7 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "cd" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb8 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
+            final Phylogeny t8 = factory.create( sb8, new NHXParser() )[ 0 ];
+            ext.clear();
+            t8.getNode( "cd" ).setCollapse( true );
+            t8.getNode( "c" ).setCollapse( true );
+            t8.getNode( "d" ).setCollapse( true );
+            n = t8.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 7 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "cd" ) ) {
+                System.out.println( "2 fail" );
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "g" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "h" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb9 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t9 = factory.create( sb9, new NHXParser() )[ 0 ];
+            ext.clear();
+            t9.getNode( "gh" ).setCollapse( true );
+            n = t9.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 7 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "gh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb10 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t10 = factory.create( sb10, new NHXParser() )[ 0 ];
+            ext.clear();
+            t10.getNode( "gh" ).setCollapse( true );
+            t10.getNode( "g" ).setCollapse( true );
+            t10.getNode( "h" ).setCollapse( true );
+            n = t10.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 7 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "f" ) ) {
+                return false;
+            }
+            if ( !ext.get( 6 ).getName().equals( "gh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb11 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t11 = factory.create( sb11, new NHXParser() )[ 0 ];
+            ext.clear();
+            t11.getNode( "gh" ).setCollapse( true );
+            t11.getNode( "fgh" ).setCollapse( true );
+            n = t11.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 6 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb12 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t12 = factory.create( sb12, new NHXParser() )[ 0 ];
+            ext.clear();
+            t12.getNode( "gh" ).setCollapse( true );
+            t12.getNode( "fgh" ).setCollapse( true );
+            t12.getNode( "g" ).setCollapse( true );
+            t12.getNode( "h" ).setCollapse( true );
+            t12.getNode( "f" ).setCollapse( true );
+            n = t12.getNode( "a" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 6 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb13 = new StringBuffer( "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t13 = factory.create( sb13, new NHXParser() )[ 0 ];
+            ext.clear();
+            t13.getNode( "ab" ).setCollapse( true );
+            t13.getNode( "b" ).setCollapse( true );
+            t13.getNode( "fgh" ).setCollapse( true );
+            t13.getNode( "gh" ).setCollapse( true );
+            n = t13.getNode( "ab" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 5 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb14 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t14 = factory.create( sb14, new NHXParser() )[ 0 ];
+            ext.clear();
+            t14.getNode( "ab" ).setCollapse( true );
+            t14.getNode( "a" ).setCollapse( true );
+            t14.getNode( "fgh" ).setCollapse( true );
+            t14.getNode( "gh" ).setCollapse( true );
+            n = t14.getNode( "ab" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 5 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb15 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t15 = factory.create( sb15, new NHXParser() )[ 0 ];
+            ext.clear();
+            t15.getNode( "ab" ).setCollapse( true );
+            t15.getNode( "a" ).setCollapse( true );
+            t15.getNode( "fgh" ).setCollapse( true );
+            t15.getNode( "gh" ).setCollapse( true );
+            n = t15.getNode( "ab" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 6 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "c" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "d" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "e" ) ) {
+                return false;
+            }
+            if ( !ext.get( 4 ).getName().equals( "x" ) ) {
+                return false;
+            }
+            if ( !ext.get( 5 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+            //
+            //
+            final StringBuffer sb16 = new StringBuffer( "((a,b,0)ab,(((c,d)cd,e)cde,x,(f,(g,h,1,2)gh,0)fgh)cdefgh)abcdefgh" );
+            final Phylogeny t16 = factory.create( sb16, new NHXParser() )[ 0 ];
+            ext.clear();
+            t16.getNode( "ab" ).setCollapse( true );
+            t16.getNode( "a" ).setCollapse( true );
+            t16.getNode( "fgh" ).setCollapse( true );
+            t16.getNode( "gh" ).setCollapse( true );
+            t16.getNode( "cd" ).setCollapse( true );
+            t16.getNode( "cde" ).setCollapse( true );
+            t16.getNode( "d" ).setCollapse( true );
+            t16.getNode( "x" ).setCollapse( true );
+            n = t16.getNode( "ab" );
+            while ( n != null ) {
+                ext.add( n );
+                n = n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
+            }
+            if ( ext.size() != 4 ) {
+                return false;
+            }
+            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
+                return false;
+            }
+            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
+                return false;
+            }
+            if ( !ext.get( 2 ).getName().equals( "x" ) ) {
+                return false;
+            }
+            if ( !ext.get( 3 ).getName().equals( "fgh" ) ) {
                 return false;
             }
         }

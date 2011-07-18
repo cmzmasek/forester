@@ -420,7 +420,23 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         if ( isInternal() && !isCollapse() ) {
             throw new UnsupportedOperationException( "attempt to get next external node of an uncollapsed internal node" );
         }
-        else if ( isLastExternalNode() ) {
+        if ( isRoot() ) {
+            return null;
+        }
+        if ( getParent().isCollapse() ) {
+            throw new UnsupportedOperationException( "attempt to get next external node of node with a collapsed parent" );
+        }
+        // This checks if last node.
+        PhylogenyNode n = this;
+        boolean last = true;
+        while ( !n.isRoot() ) {
+            if ( !n.isLastChildNode() ) {
+                last = false;
+                break;
+            }
+            n = n.getParent();
+        }
+        if ( last ) {
             return null;
         }
         int index = getChildNodeIndex();
@@ -431,146 +447,18 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
                         .isLastChildNode() ) ) {
             index = current_node.getChildNodeIndex();
             previous_node = current_node;
-            System.out.println("       " + previous_node.getName());
             current_node = current_node.getParent();
         }
-       // if ( !current_node.isCollapse() ) {
-         current_node = current_node.getChildNode( index + 1 );
-        //}
+        if ( index < current_node.getNumberOfDescendants() - 1 ) {
+            current_node = current_node.getChildNode( index + 1 );
+        }
         while ( current_node.isInternal() && !current_node.isCollapse() ) {
             current_node = current_node.getFirstChildNode();
         }
         return current_node;
     }
     
-    public static void main( final String[] args ) {
-        try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            PhylogenyNode n;
-            List<PhylogenyNode> ext = new ArrayList<PhylogenyNode>();
-//            final StringBuffer sb0 = new StringBuffer( 
-//            "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-//            final Phylogeny t0 = factory.create( sb0, new NHXParser() )[ 0 ];
-//            
-//            t0.getNode( "cd" ).setCollapse( true );
-//            t0.getNode( "cde" ).setCollapse( true );
-     //      n = t0.getFirstExternalNode();
-            
-//            while ( n != null ) {
-//                System.out.println( n.getName() );
-//                ext.add( n );
-//                n =  n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
-//            }
-//            
-//           // Archaeopteryx.createApplication( t );
-//            if ( !ext.get( 0 ).getName().equals( "a" ) ) {
-//                System.out.println( "0 fail" );
-//            }
-//            if ( !ext.get( 1 ).getName().equals( "b" ) ) {
-//                System.out.println( "1 fail" );
-//            }
-//            if ( !ext.get( 2 ).getName().equals( "cde" ) ) {
-//                System.out.println( "2 fail" );
-//            }
-//            if ( !ext.get( 3 ).getName().equals( "f" ) ) {
-//                System.out.println( "3 fail" );
-//            }
-//            if ( !ext.get( 4 ).getName().equals( "g" ) ) {
-//                System.out.println( "4 fail" );
-//            }
-//            if ( !ext.get( 5 ).getName().equals( "h" ) ) {
-//                System.out.println( "5 fail" );
-//            }
-          //  if ( !ext.get( 6 ).getName().equals( "a" ) ) {
-          //      System.out.println( "6 fail" );
-           // }
-          //  if ( !ext.get( 7 ).getName().equals( "a" ) ) {
-          //      System.out.println( "7 fail" );
-          //  }
-            
-            
-            final StringBuffer sb1 = new StringBuffer( 
-            "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h))fgh)cdefgh)abcdefgh" );
-            final Phylogeny t1 = factory.create( sb1, new NHXParser() )[ 0 ];
-           
-            t1.getNode( "ab" ).setCollapse( true );
-            t1.getNode( "cd" ).setCollapse( true );
-            t1.getNode( "cde" ).setCollapse( true );
-           // n = t1.getFirstExternalNode();
-            n = t1.getNode( "ab" );
-            ext = new ArrayList<PhylogenyNode>();
-            while ( n != null ) {
-                System.out.println( n.getName() );
-                ext.add( n );
-                n =  n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
-            }
-            
-           // Archaeopteryx.createApplication( t1 );
-            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
-                System.out.println( "0 fail" );
-            }
-           
-            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
-                System.out.println( "1 fail" );
-            }
-            if ( !ext.get( 2 ).getName().equals( "f" ) ) {
-                System.out.println( "2 fail" );
-            }
-            if ( !ext.get( 3 ).getName().equals( "g" ) ) {
-                System.out.println( "3 fail" );
-            }
-            if ( !ext.get( 4 ).getName().equals( "h" ) ) {
-                System.out.println( "4 fail" );
-            }
-            
-            //
-            //
-            final StringBuffer sb2 = new StringBuffer( 
-            "((a,b)ab,(((c,d)cd,e)cde,(f,(g,h)gh)fgh)cdefgh)abcdefgh" );
-            final Phylogeny t2 = factory.create( sb2, new NHXParser() )[ 0 ];
-           
-            t2.getNode( "ab" ).setCollapse( true );
-            t2.getNode( "cd" ).setCollapse( true );
-            t2.getNode( "cde" ).setCollapse( true );
-            t2.getNode( "c" ).setCollapse( true );
-            t2.getNode( "d" ).setCollapse( true );
-            t2.getNode( "e" ).setCollapse( true );
-            t2.getNode( "gh" ).setCollapse( true );
-           // t2.getNode( "h" ).setCollapse( true );
-           // n = t1.getFirstExternalNode();
-            n = t2.getNode( "ab" );
-            ext = new ArrayList<PhylogenyNode>();
-            while ( n != null ) {
-                System.out.println( n.getName() );
-                ext.add( n );
-                n =  n.getNextExternalNodeWhileTakingIntoAccountCollapsedNodes();
-            }
-            
-           // Archaeopteryx.createApplication( t1 );
-            if ( !ext.get( 0 ).getName().equals( "ab" ) ) {
-                System.out.println( "0 fail" );
-            }
-           
-            if ( !ext.get( 1 ).getName().equals( "cde" ) ) {
-                System.out.println( "1 fail" );
-            }
-            if ( !ext.get( 2 ).getName().equals( "f" ) ) {
-                System.out.println( "2 fail" );
-            }
-            if ( !ext.get( 3 ).getName().equals( "g" ) ) {
-                System.out.println( "3 fail" );
-            }
-            if ( !ext.get( 4 ).getName().equals( "h" ) ) {
-                System.out.println( "4 fail" );
-            }
-            
-            
-        }
-        catch ( IOException e ) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+  
     
     
     public final NodeData getNodeData() {

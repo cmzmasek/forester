@@ -158,11 +158,11 @@ public final class Configuration {
             { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
             { "Use Branch-Width", "nodisplay", "no" }, { "Show Custom Nodes", "display", "yes" },
             { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
-            { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "no" },
+            { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "yes" },
             { "Prot/Gene Acc", "display", "no" }, { "Show Internal Data", "display", "yes" },
             { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
             { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
-            { "Property", "nodisplay", "no" }, { "Prot/Gene Symbol", "display", "no" },
+            { "Property", "nodisplay", "no" }, { "Prot/Gene Symbol", "display", "yes" },
             { "Rollover", "display", "yes" }, { "Relation Confidence", "display", "no" },
             { "Vector Data", "display", "no" }, { "Taxonomy Images", "display", "no" }            };
     final static String                     clickto_options[][]                                    = {
