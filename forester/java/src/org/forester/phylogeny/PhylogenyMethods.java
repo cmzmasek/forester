@@ -1011,6 +1011,15 @@ public class PhylogenyMethods {
                     }
                 }
             }
+            else if ( node.getNodeData().getBinaryCharacters() != null ) {
+                final String[] bc_ary = node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringArray();
+                I: for( final String bc : bc_ary ) {
+                    if ( match( bc, query, case_sensitive, partial ) ) {
+                        match = true;
+                        break I;
+                    }
+                }
+            }
             if ( match ) {
                 nodes.add( node );
             }
@@ -1088,6 +1097,16 @@ public class PhylogenyMethods {
                     final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                     I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
                         if ( match( da.getDomain( i ).getName(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break I;
+                        }
+                    }
+                }
+                else if ( node.getNodeData().getBinaryCharacters() != null ) {
+                    final String[] bc_ary = node.getNodeData().getBinaryCharacters()
+                            .getPresentCharactersAsStringArray();
+                    I: for( final String bc : bc_ary ) {
+                        if ( match( bc, query, case_sensitive, partial ) ) {
                             match = true;
                             break I;
                         }
