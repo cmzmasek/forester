@@ -985,15 +985,16 @@ public class PhylogenyMethods {
                     }
                 }
             }
-            else if ( node.getNodeData().isHasSequence()
+            if ( !match && node.getNodeData().isHasSequence()
                     && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasSequence()
+            if ( !match && node.getNodeData().isHasSequence()
                     && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasSequence()
+            if ( !match
+                    && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getAccession() != null )
                     && match( node.getNodeData().getSequence().getAccession().getValue(),
                               query,
@@ -1001,7 +1002,7 @@ public class PhylogenyMethods {
                               partial ) ) {
                 match = true;
             }
-            else if ( node.getNodeData().isHasSequence()
+            if ( !match && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                 I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
@@ -1011,9 +1012,16 @@ public class PhylogenyMethods {
                     }
                 }
             }
-            else if ( node.getNodeData().getBinaryCharacters() != null ) {
-                final String[] bc_ary = node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringArray();
-                I: for( final String bc : bc_ary ) {
+            if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
+                final String[] bcp_ary = node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringArray();
+                I: for( final String bc : bcp_ary ) {
+                    if ( match( bc, query, case_sensitive, partial ) ) {
+                        match = true;
+                        break I;
+                    }
+                }
+                final String[] bcg_ary = node.getNodeData().getBinaryCharacters().getGainedCharactersAsStringArray();
+                I: for( final String bc : bcg_ary ) {
                     if ( match( bc, query, case_sensitive, partial ) ) {
                         match = true;
                         break I;
@@ -1076,15 +1084,16 @@ public class PhylogenyMethods {
                         }
                     }
                 }
-                else if ( node.getNodeData().isHasSequence()
+                if ( !match && node.getNodeData().isHasSequence()
                         && match( node.getNodeData().getSequence().getName(), query, case_sensitive, partial ) ) {
                     match = true;
                 }
-                else if ( node.getNodeData().isHasSequence()
+                if ( !match && node.getNodeData().isHasSequence()
                         && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
                     match = true;
                 }
-                else if ( node.getNodeData().isHasSequence()
+                if ( !match
+                        && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getAccession() != null )
                         && match( node.getNodeData().getSequence().getAccession().getValue(),
                                   query,
@@ -1092,7 +1101,7 @@ public class PhylogenyMethods {
                                   partial ) ) {
                     match = true;
                 }
-                else if ( node.getNodeData().isHasSequence()
+                if ( !match && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                     final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                     I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
@@ -1102,10 +1111,18 @@ public class PhylogenyMethods {
                         }
                     }
                 }
-                else if ( node.getNodeData().getBinaryCharacters() != null ) {
-                    final String[] bc_ary = node.getNodeData().getBinaryCharacters()
+                if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
+                    final String[] bcp_ary = node.getNodeData().getBinaryCharacters()
                             .getPresentCharactersAsStringArray();
-                    I: for( final String bc : bc_ary ) {
+                    I: for( final String bc : bcp_ary ) {
+                        if ( match( bc, query, case_sensitive, partial ) ) {
+                            match = true;
+                            break I;
+                        }
+                    }
+                    final String[] bcg_ary = node.getNodeData().getBinaryCharacters()
+                            .getGainedCharactersAsStringArray();
+                    I: for( final String bc : bcg_ary ) {
                         if ( match( bc, query, case_sensitive, partial ) ) {
                             match = true;
                             break I;
