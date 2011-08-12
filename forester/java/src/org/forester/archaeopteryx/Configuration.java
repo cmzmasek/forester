@@ -156,7 +156,7 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Annotation", "nodisplay", "no" }, { "Confidence Value", "display", "?" }, { "Event", "display", "?" },
             { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
-            { "Use Branch-Width", "nodisplay", "no" }, { "Show Custom Nodes", "display", "yes" },
+            { "Use Branch-Widths", "display", "no" }, { "Show Custom Nodes", "display", "yes" },
             { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
             { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "yes" },
             { "Prot/Gene Acc", "display", "no" }, { "Show Internal Data", "display", "yes" },

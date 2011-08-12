@@ -52,6 +52,7 @@ import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Distribution;
@@ -183,6 +184,15 @@ class NodeEditPanel extends JPanel {
                                "",
                                PHYLOXML_TAG.CONFIDENCE_TYPE,
                                counter );
+        String bw = "1";
+        if ( phylogeny_node.getBranchData().getBranchWidth() != null
+                && phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
+        )
+        {
+            bw = ForesterUtil.FORMATTER_3.format( phylogeny_node.getBranchData().getBranchWidth().getValue() );
+        }
+        addSubelementEditable( category, NodePanel.NODE_BRANCH_WIDTH, bw, PHYLOXML_TAG.NODE_BRANCH_WIDTH );
+        
     }
 
     //    private void addAnnotation( final DefaultMutableTreeNode top, final Annotation ann, final String name ) {
@@ -659,6 +669,28 @@ class NodeEditPanel extends JPanel {
                     }
                 }
                 break;
+            case NODE_BRANCH_WIDTH:
+                if ( ForesterUtil.isEmpty( value ) || value.equals( "1" ) ) {
+                    if ( getMyNode().getBranchData().getBranchWidth() != null ) {
+                        getMyNode().getBranchData().setBranchWidth( new BranchWidth() );
+                    }
+                }
+                else {
+                    try {
+                        final double bw = ForesterUtil.parseDouble( value );
+                        if ( bw >= 0 ) {
+                            getMyNode().getBranchData().setBranchWidth( new BranchWidth(bw ) );
+                        }
+                    }
+                    catch ( final ParseException e ) {
+                        JOptionPane.showMessageDialog( this,
+                                                       "failed to parse branch width from: " + value,
+                                                       "Error",
+                                                       JOptionPane.ERROR_MESSAGE );
+                        mtn.setUserObject( "" );
+                    }
+                }
+                break;    
             case CONFIDENCE_VALUE:
                 double confidence = Confidence.CONFIDENCE_DEFAULT_VALUE;
                 if ( !ForesterUtil.isEmpty( value ) ) {
@@ -1020,6 +1052,7 @@ class NodeEditPanel extends JPanel {
     private enum PHYLOXML_TAG {
         NODE_NAME,
         NODE_BRANCH_LENGTH,
+        NODE_BRANCH_WIDTH,
         TAXONOMY_CODE,
         TAXONOMY_SCIENTIFIC_NAME,
         TAXONOMY_AUTHORITY,

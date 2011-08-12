@@ -25,6 +25,7 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Color;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -44,6 +45,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BinaryCharacters;
+import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Event;
@@ -92,6 +94,8 @@ class NodePanel extends JPanel implements TreeSelectionListener {
     static final String       SEQ_SYMBOL               = "Symbol";
     static final String       SEQ_URI                  = "URI";
     static final String       NODE_BRANCH_LENGTH       = "Branch length";
+    static final String       NODE_BRANCH_WIDTH        = "Branch width";
+    static final String       NODE_BRANCH_COLOR        = "Branch color";
     static final String       NODE_NAME                = "Name";
     static final String       TAXONOMY_URI             = "URI";
     static final String       TAXONOMY_RANK            = "Rank";
@@ -221,6 +225,18 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             for( final PhylogenyData conf : phylogeny_node.getBranchData().getConfidences() ) {
                 addSubelement( category, CONFIDENCE, conf.asText().toString() );
             }
+        }
+        if ( ( phylogeny_node.getBranchData().getBranchWidth() != null )
+                && ( phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE ) ) {
+            addSubelement( category,
+                           NODE_BRANCH_WIDTH,
+                           ForesterUtil.FORMATTER_3.format( phylogeny_node.getBranchData().getBranchWidth().getValue() ) );
+        }
+        if ( ( phylogeny_node.getBranchData().getBranchColor() != null ) ) {
+            Color c = phylogeny_node.getBranchData().getBranchColor().getValue();
+            addSubelement( category,
+                           NODE_BRANCH_COLOR,
+                            c.getRed() + ", " + c.getGreen() + ", "+ c.getBlue() );
         }
         if ( !phylogeny_node.isExternal() ) {
             addSubelement( category, "Children", String.valueOf( phylogeny_node.getNumberOfDescendants() ) );
