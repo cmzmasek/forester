@@ -218,7 +218,7 @@ public final class Configuration {
         }
     }
 
-    Configuration( final String cf, final boolean is_url, final boolean is_applet ) {
+    public Configuration( final String cf, final boolean is_url, final boolean is_applet ) {
         if ( ForesterUtil.isEmpty( cf ) ) {
             config_filename = default_config_filename;
         }

@@ -70,7 +70,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     MainPanel() {
     }
 
-    MainPanel( final Configuration configuration, final MainFrame parent ) {
+    public MainPanel( final Configuration configuration, final MainFrame parent ) {
         if ( configuration == null ) {
             throw new IllegalArgumentException( "configuration is null" );
         }
@@ -299,7 +299,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         return getCurrentScrollPane().getViewport().getExtentSize();
     }
 
-    JTabbedPane getTabbedPane() {
+    public JTabbedPane getTabbedPane() {
         return _tabbed_pane;
     }
 

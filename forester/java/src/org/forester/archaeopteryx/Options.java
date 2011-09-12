@@ -436,7 +436,7 @@ final public class Options {
         _show_default_node_shapes = show_default_node_shapes;
     }
 
-    final static Options createInstance( final Configuration configuration ) {
+    public final static Options createInstance( final Configuration configuration ) {
         final Options instance = createDefaultInstance();
         if ( configuration != null ) {
             instance.setAntialiasScreen( configuration.isAntialiasScreen() );

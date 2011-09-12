@@ -1013,16 +1013,16 @@ public class PhylogenyMethods {
                 }
             }
             if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
-                final String[] bcp_ary = node.getNodeData().getBinaryCharacters().getPresentCharactersAsStringArray();
-                I: for( final String bc : bcp_ary ) {
-                    if ( match( bc, query, case_sensitive, partial ) ) {
+                Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
+                I: while ( it.hasNext() ) {
+                    if ( match( it.next(), query, case_sensitive, partial ) ) {
                         match = true;
                         break I;
                     }
                 }
-                final String[] bcg_ary = node.getNodeData().getBinaryCharacters().getGainedCharactersAsStringArray();
-                I: for( final String bc : bcg_ary ) {
-                    if ( match( bc, query, case_sensitive, partial ) ) {
+                it = node.getNodeData().getBinaryCharacters().getGainedCharacters().iterator();
+                I: while ( it.hasNext() ) {
+                    if ( match( it.next(), query, case_sensitive, partial ) ) {
                         match = true;
                         break I;
                     }
@@ -1112,22 +1112,36 @@ public class PhylogenyMethods {
                     }
                 }
                 if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
-                    final String[] bcp_ary = node.getNodeData().getBinaryCharacters()
-                            .getPresentCharactersAsStringArray();
-                    I: for( final String bc : bcp_ary ) {
-                        if ( match( bc, query, case_sensitive, partial ) ) {
+                    Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
+                    I: while ( it.hasNext() ) {
+                        if ( match( it.next(), query, case_sensitive, partial ) ) {
                             match = true;
                             break I;
                         }
                     }
-                    final String[] bcg_ary = node.getNodeData().getBinaryCharacters()
-                            .getGainedCharactersAsStringArray();
-                    I: for( final String bc : bcg_ary ) {
-                        if ( match( bc, query, case_sensitive, partial ) ) {
+                    it = node.getNodeData().getBinaryCharacters().getGainedCharacters().iterator();
+                    I: while ( it.hasNext() ) {
+                        if ( match( it.next(), query, case_sensitive, partial ) ) {
                             match = true;
                             break I;
                         }
                     }
+                    //                    final String[] bcp_ary = node.getNodeData().getBinaryCharacters()
+                    //                            .getPresentCharactersAsStringArray();
+                    //                    I: for( final String bc : bcp_ary ) {
+                    //                        if ( match( bc, query, case_sensitive, partial ) ) {
+                    //                            match = true;
+                    //                            break I;
+                    //                        }
+                    //                    }
+                    //                    final String[] bcg_ary = node.getNodeData().getBinaryCharacters()
+                    //                            .getGainedCharactersAsStringArray();
+                    //                    I: for( final String bc : bcg_ary ) {
+                    //                        if ( match( bc, query, case_sensitive, partial ) ) {
+                    //                            match = true;
+                    //                            break I;
+                    //                        }
+                    //                    }
                 }
                 if ( !match ) {
                     all_matched = false;
