@@ -59,7 +59,7 @@ module Evoruby
       cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  ~/DATA/PFAM/PFAM250/PFAM_A_HMMs/#{hmm}.hmm #{base_name}.fasta"
       run_command( cmd )
 
-      cmd = "#{dsx} -dd -e=1e-#{e_value_exp.to_s} -l=#{length} #{base_name}.hmmsearch_#{hmm} #{base_name}.fasta #{base_name}_e#{e_value_exp.to_s}_#{length}"
+      cmd = "#{dsx} -dd -e=1e-#{e_value_exp.to_s} -l=#{length} #{base_name}.hmmsearch_#{hmm} #{base_name}.fasta #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
       run_command( cmd )
 
     end
