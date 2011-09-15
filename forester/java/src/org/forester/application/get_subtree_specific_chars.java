@@ -59,7 +59,7 @@ public class get_subtree_specific_chars {
         }
         final SortedSet<Integer> all_external_ids = getAllExternalDescendantsNodeIds( phy.getRoot() );
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
-        System.out.println( "Sum of all external characters" + all_chars.size() );
+        System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         System.out.println();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
