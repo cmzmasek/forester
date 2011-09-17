@@ -201,7 +201,13 @@ public final class UniProtWsTools {
                 // Ignore empty lines.
             }
             else if ( line.startsWith( "Taxon" ) ) {
-                //TODO next the check format FIXME
+                final String[] items = line.split( "\t" );
+                if ( !( items[ 1 ].equalsIgnoreCase( "Mnemonic" ) && items[ 2 ].equalsIgnoreCase( "Scientific name" )
+                        && items[ 3 ].equalsIgnoreCase( "Common name" ) && items[ 4 ].equalsIgnoreCase( "Synonym" )
+                        && items[ 5 ].equalsIgnoreCase( "Other Names" ) && items[ 6 ].equalsIgnoreCase( "Reviewed" )
+                        && items[ 7 ].equalsIgnoreCase( "Rank" ) && items[ 8 ].equalsIgnoreCase( "Lineage" ) ) ) {
+                    throw new IOException( "Unreconized UniProt Taxonomy format: " + line );
+                }
             }
             else {
                 if ( line.split( "\t" ).length > 4 ) {
@@ -237,7 +243,9 @@ public final class UniProtWsTools {
         String line;
         final List<String> result = new ArrayList<String>();
         while ( ( line = in.readLine() ) != null ) {
-            System.out.println( line );
+            if ( DEBUG ) {
+                System.out.println( line );
+            }
             result.add( line );
             if ( result.size() > max_lines_to_return ) {
                 break;

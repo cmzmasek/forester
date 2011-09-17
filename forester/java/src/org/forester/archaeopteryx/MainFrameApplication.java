@@ -876,7 +876,7 @@ public final class MainFrameApplication extends MainFrame {
         _obtain_detailed_taxonomic_information_jmi
                 .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );
         _tools_menu
-                .add( _obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information (Delete Nodes)" ) );
+                .add( _obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information (deletes nodes!)" ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
@@ -1171,10 +1171,10 @@ public final class MainFrameApplication extends MainFrame {
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        final Phylogeny phy = _mainpanel.getCurrentPhylogeny().copy();
         final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer( this,
                                                                                   _mainpanel.getCurrentTreePanel(),
-                                                                                  phy );
+                                                                                  _mainpanel.getCurrentPhylogeny()
+                                                                                          .copy() );
         new Thread( inferrer ).start();
     }
 

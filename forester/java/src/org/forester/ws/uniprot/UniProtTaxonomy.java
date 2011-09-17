@@ -32,27 +32,38 @@ import org.forester.util.ForesterUtil;
 
 public final class UniProtTaxonomy {
 
-    private final String[]              _lineage;
+    private static final String         ARCHAEA                  = "Archaea";
+    private static final String         BACTERIA                 = "Bacteria";
+    private static final String         EUKARYOTA                = "Eukaryota";
+    private final List<String>          _lineage;
     private final String                _code;
     private final String                _scientific_name;
     private final String                _common_name;
     private final String                _synonym;
     private final String                _rank;
     private final String                _id;
-    public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] { "Eukaryota",
-            "Metazoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota", "Neoptera", "Endopterygota", "Diptera",
-            "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae"                },
+    public final static String          CELLULAR_ORGANISMS       = "cellular organisms";
+    public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] {
+            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota", "Neoptera",
+            "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae" },
                                                                                         "",
                                                                                         "fruit flies",
                                                                                         "Drosophila",
                                                                                         "",
                                                                                         "genus",
                                                                                         "7215" );
-    public final static UniProtTaxonomy XENOPUS_GENUS            = new UniProtTaxonomy( new String[] { "Eukaryota",
-            "Metazoa", "Chordata", "Craniata", "Vertebrata", "Euteleostomi", "Amphibia", "Batrachia", "Anura",
-            "Mesobatrachia", "Pipoidea", "Pipidae", "Xenopodinae" }, "", "", "Xenopus", "", "genus", "8353" );
-    public final static UniProtTaxonomy CAPITELLA_TELATA_SPECIES = new UniProtTaxonomy( new String[] { "Eukaryota",
-            "Metazoa", "Annelida", "Polychaeta", "Scolecida", "Capitellida", "Capitellidae", "Capitella" },
+    public final static UniProtTaxonomy XENOPUS_GENUS            = new UniProtTaxonomy( new String[] {
+            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Chordata", "Craniata", "Vertebrata", "Euteleostomi", "Amphibia",
+            "Batrachia", "Anura", "Mesobatrachia", "Pipoidea", "Pipidae", "Xenopodinae" },
+                                                                                        "",
+                                                                                        "",
+                                                                                        "Xenopus",
+                                                                                        "",
+                                                                                        "genus",
+                                                                                        "8353" );
+    public final static UniProtTaxonomy CAPITELLA_TELATA_SPECIES = new UniProtTaxonomy( new String[] {
+            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Annelida", "Polychaeta", "Scolecida", "Capitellida",
+            "Capitellidae", "Capitella"                                                },
                                                                                         "",
                                                                                         "",
                                                                                         "Capitella teleta",
@@ -80,6 +91,7 @@ public final class UniProtTaxonomy {
         if ( items.length > 7 ) {
             lin = items[ 8 ].split( "; " );
         }
+        _lineage = new ArrayList<String>();
         if ( ( lin != null ) && ( lin.length > 0 ) ) {
             final List<String> temp = new ArrayList<String>();
             for( final String t : lin ) {
@@ -87,14 +99,41 @@ public final class UniProtTaxonomy {
                     temp.add( t.trim() );
                 }
             }
-            _lineage = new String[ temp.size() ];
             for( int i = 0; i < temp.size(); ++i ) {
-                _lineage[ i ] = temp.get( i );
+                if ( i == 0
+                        && ( temp.get( i ).equalsIgnoreCase( EUKARYOTA ) || temp.get( i ).equalsIgnoreCase( BACTERIA ) || temp
+                                .get( i ).equalsIgnoreCase( ARCHAEA ) ) ) {
+                    _lineage.add( CELLULAR_ORGANISMS );
+                }
+                _lineage.add( temp.get( i ) );
             }
         }
-        else {
-            _lineage = new String[ 0 ];
+        if ( _lineage.isEmpty()
+                && ( _scientific_name.equalsIgnoreCase( EUKARYOTA ) || _scientific_name.equalsIgnoreCase( BACTERIA ) || _scientific_name
+                        .equalsIgnoreCase( ARCHAEA ) ) ) {
+            System.out.println( "  >>>>>>>>>>>>>>>>>>>>>>>>>        did it!" );
+            _lineage.add( CELLULAR_ORGANISMS );
         }
+        _lineage.add( _scientific_name );
+        if ( _lineage.isEmpty() ) {
+            throw new IllegalArgumentException( "lineage in a UniProt Taxonomy can not be empty\n: " + line );
+        }
+    }
+
+    public UniProtTaxonomy( final List<String> lineage,
+                            final String code,
+                            final String common_name,
+                            final String scientific_name,
+                            final String synonym,
+                            final String rank,
+                            final String id ) {
+        _lineage = lineage;
+        _code = code;
+        _scientific_name = scientific_name;
+        _common_name = common_name;
+        _synonym = synonym;
+        _rank = rank;
+        _id = id;
     }
 
     public UniProtTaxonomy( final String[] lineage,
@@ -104,7 +143,10 @@ public final class UniProtTaxonomy {
                             final String synonym,
                             final String rank,
                             final String id ) {
-        _lineage = lineage;
+        _lineage = new ArrayList<String>();
+        for( String l : lineage ) {
+            _lineage.add( l );
+        }
         _code = code;
         _scientific_name = scientific_name;
         _common_name = common_name;
@@ -140,8 +182,17 @@ public final class UniProtTaxonomy {
         return _id;
     }
 
-    public String[] getLineage() {
+    public List<String> getLineage() {
         return _lineage;
+    }
+
+    public String[] getLineageAsArray() {
+        String[] str = new String[ _lineage.size() ];
+        int i = 0;
+        for( String l : _lineage ) {
+            str[ i++ ] = l;
+        }
+        return str;
     }
 
     public String getRank() {

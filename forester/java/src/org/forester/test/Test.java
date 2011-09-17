@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -7753,13 +7752,15 @@ public final class Test {
             if ( !results.get( 0 ).getScientificName().equals( "Nematostella vectensis" ) ) {
                 return false;
             }
-            if ( !results.get( 0 ).getLineage()[ 0 ].equals( "Eukaryota" ) ) {
+            if ( !results.get( 0 ).getLineage().get( 1 ).equals( "Eukaryota" ) ) {
                 return false;
             }
-            if ( !results.get( 0 ).getLineage()[ 1 ].equals( "Metazoa" ) ) {
+            if ( !results.get( 0 ).getLineage().get( 2 ).equals( "Metazoa" ) ) {
                 return false;
             }
-            if ( !results.get( 0 ).getLineage()[ results.get( 0 ).getLineage().length - 1 ].equals( "Nematostella" ) ) {
+            if ( !results.get( 0 ).getLineage().get( results.get( 0 ).getLineage().size() - 1 )
+                    .equals( "Nematostella vectensis" ) ) {
+                System.out.println( results.get( 0 ).getLineage() );
                 return false;
             }
         }
