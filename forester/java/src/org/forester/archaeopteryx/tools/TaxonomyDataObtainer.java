@@ -43,11 +43,23 @@ public class TaxonomyDataObtainer implements Runnable {
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
+    private final boolean              _delete;
+
+    public TaxonomyDataObtainer( final MainFrameApplication mf,
+                                 final TreePanel treepanel,
+                                 final Phylogeny phy,
+                                 boolean delete ) {
+        _phy = phy;
+        _mf = mf;
+        _treepanel = treepanel;
+        _delete = delete;
+    }
 
     public TaxonomyDataObtainer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;
+        _delete = false;
     }
 
     private String getBaseUrl() {
@@ -58,7 +70,7 @@ public class TaxonomyDataObtainer implements Runnable {
         _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
         SortedSet<String> not_found = null;
         try {
-            not_found = AncestralTaxonomyInference.obtainDetailedTaxonomicInformation( _phy );
+            not_found = AncestralTaxonomyInference.obtainDetailedTaxonomicInformation( _phy, _delete );
         }
         catch ( final UnknownHostException e ) {
             _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
@@ -93,10 +105,21 @@ public class TaxonomyDataObtainer implements Runnable {
             final StringBuffer sb = new StringBuffer();
             sb.append( "Not all taxonomies could be resolved.\n" );
             if ( not_found.size() == 1 ) {
-                sb.append( "The following taxonomy was not found:\n" );
+                if ( _delete ) {
+                    sb.append( "The following taxonomy was not found and deleted (if external):\n" );
+                }
+                else {
+                    sb.append( "The following taxonomy was not found:\n" );
+                }
             }
             else {
-                sb.append( "The following taxonomies were not found (total: " + not_found.size() + "):\n" );
+                if ( _delete ) {
+                    sb.append( "The following taxonomies were not found and deleted (if external) (total: "
+                            + not_found.size() + "):\n" );
+                }
+                else {
+                    sb.append( "The following taxonomies were not found (total: " + not_found.size() + "):\n" );
+                }
             }
             int i = 0;
             for( final String string : not_found ) {

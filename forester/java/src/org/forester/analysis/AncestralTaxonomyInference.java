@@ -275,10 +275,15 @@ public final class AncestralTaxonomyInference {
                 .equalsIgnoreCase( "uniprotkb" ) ) ) );
     }
 
-    synchronized public static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy )
+    synchronized public static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
+                                                                                     final boolean delete )
             throws IOException {
         clearCachesIfTooLarge();
         final SortedSet<String> not_found = new TreeSet<String>();
+        List<PhylogenyNode> not_found_external_nodes = null;
+        if ( delete ) {
+            not_found_external_nodes = new ArrayList<PhylogenyNode>();
+        }
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final QUERY_TYPE qt = null;
@@ -293,6 +298,9 @@ public final class AncestralTaxonomyInference {
                 else {
                     not_found.add( node.toString() );
                 }
+                if ( delete ) {
+                    not_found_external_nodes.add( node );
+                }
             }
             UniProtTaxonomy up_tax = null;
             if ( ( tax != null )
@@ -305,8 +313,17 @@ public final class AncestralTaxonomyInference {
                 }
                 else {
                     not_found.add( tax.toString() );
+                    if ( delete && node.isExternal() ) {
+                        not_found_external_nodes.add( node );
+                    }
                 }
             }
+        }
+        if ( delete ) {
+            for( PhylogenyNode node : not_found_external_nodes ) {
+                phy.deleteSubtree( node, false );
+            }
+            phy.recalculateNumberOfExternalDescendants( true );
         }
         return not_found;
     }

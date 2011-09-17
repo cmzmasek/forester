@@ -61,8 +61,12 @@ public class get_subtree_specific_chars {
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
         System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         System.out.println();
+        final boolean SIMPLE = false;
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
+            if ( !SIMPLE && node.isExternal() ) {
+                continue;
+            }
             if ( !node.isRoot() ) {
                 System.out.println();
                 if ( node.getNodeData().isHasTaxonomy()
@@ -84,7 +88,24 @@ public class get_subtree_specific_chars {
                 final SortedSet<String> unique_chars = new TreeSet<String>();
                 for( final String node_char : node_chars ) {
                     if ( !not_node_chars.contains( node_char ) ) {
-                        unique_chars.add( node_char );
+                        if ( SIMPLE ) {
+                            unique_chars.add( node_char );
+                        }
+                        else {
+                            boolean found = true;
+                            for( final int external_id : external_ids ) {
+                                if ( !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
+                                        .getGainedCharacters().contains( node_char )
+                                        && !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
+                                                .getPresentCharacters().contains( node_char ) ) {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            if ( found ) {
+                                unique_chars.add( node_char );
+                            }
+                        }
                     }
                 }
                 System.out.println( "\tSUM:\t" + unique_chars.size() );

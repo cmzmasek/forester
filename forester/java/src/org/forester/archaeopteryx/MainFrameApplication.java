@@ -496,6 +496,12 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 obtainDetailedTaxonomicInformation();
             }
+            else if ( o == _obtain_detailed_taxonomic_information_deleting_jmi ) {
+                if ( isSubtreeDisplayed() ) {
+                    return;
+                }
+                obtainDetailedTaxonomicInformationDelete();
+            }
             else if ( o == _obtain_uniprot_seq_information_jmi ) {
                 obtainUniProtSequenceInformation();
             }
@@ -869,6 +875,11 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
         _obtain_detailed_taxonomic_information_jmi
                 .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );
+        _tools_menu
+                .add( _obtain_detailed_taxonomic_information_deleting_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information (Delete Nodes)" ) );
+        customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
+        _obtain_detailed_taxonomic_information_deleting_jmi
+                .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
         _tools_menu
                 .add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information (from UniProt)" ) );
         customizeJMenuItem( _obtain_uniprot_seq_information_jmi );
@@ -1422,6 +1433,19 @@ public final class MainFrameApplication extends MainFrame {
                 final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this,
                                                                          _mainpanel.getCurrentTreePanel(),
                                                                          phy.copy() );
+                new Thread( t ).start();
+            }
+        }
+    }
+
+    private void obtainDetailedTaxonomicInformationDelete() {
+        if ( getCurrentTreePanel() != null ) {
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this,
+                                                                         _mainpanel.getCurrentTreePanel(),
+                                                                         phy.copy(),
+                                                                         true );
                 new Thread( t ).start();
             }
         }
