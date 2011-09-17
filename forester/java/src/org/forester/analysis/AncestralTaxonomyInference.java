@@ -242,9 +242,6 @@ public final class AncestralTaxonomyInference {
             }
             return;
         }
-        // if ( !n.getNodeData().isHasTaxonomy() ) {
-        // n.getNodeData().setTaxonomy( new Taxonomy() );
-        // }
         final Taxonomy tax = new Taxonomy();
         n.getNodeData().setTaxonomy( tax );
         tax.setScientificName( last_common_lineage );
@@ -329,8 +326,10 @@ public final class AncestralTaxonomyInference {
         }
         if ( delete ) {
             for( final PhylogenyNode node : not_found_external_nodes ) {
-                phy.deleteSubtree( node, false );
+                phy.deleteSubtree( node, true );
             }
+            phy.externalNodesHaveChanged();
+            phy.hashIDs();
             phy.recalculateNumberOfExternalDescendants( true );
         }
         return not_found;
