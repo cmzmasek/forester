@@ -245,7 +245,7 @@ public final class MainFrameApplication extends MainFrame {
                                 MainFrameApplication.class );
                     UIManager.setLookAndFeel( synth );
                 }
-                catch ( Exception ex ) {
+                catch ( final Exception ex ) {
                     synth_exception = true;
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME,
                                                       "could not create synth look and feel: "

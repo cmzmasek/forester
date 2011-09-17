@@ -43,22 +43,22 @@ public class simple_node_processor {
         File in = null;
         File out = null;
         if ( ( args.length != 2 ) ) {
-           // System.exit( -1 );
+            // System.exit( -1 );
             if ( ( args.length == 0 ) ) {
-                in = new File("C:\\Users\\zma\\dollo.xml");
+                in = new File( "C:\\Users\\zma\\dollo.xml" );
                 out = null;
             }
         }
         try {
-            System.out.println( "...");
+            System.out.println( "..." );
             CommandLineArguments cla = null;
             cla = new CommandLineArguments( args );
-           // in = cla.getFile( 0 );
-           // out = cla.getFile( 1 );
-           // if ( out.exists() ) {
-          //      System.out.println( out + " already exists" );
-          //      System.exit( -1 );
-          //  }
+            // in = cla.getFile( 0 );
+            // out = cla.getFile( 1 );
+            // if ( out.exists() ) {
+            //      System.out.println( out + " already exists" );
+            //      System.exit( -1 );
+            //  }
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final PhyloXmlParser xml_parser = new PhyloXmlParser();
             final Phylogeny[] phylogenies_0 = factory.create( in, xml_parser );

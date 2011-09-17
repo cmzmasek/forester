@@ -27,17 +27,13 @@
 
 package org.forester.phylogeny;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.NodeData;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.ChildNodeIteratorForward;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
@@ -457,10 +453,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         }
         return current_node;
     }
-    
-  
-    
-    
+
     public final NodeData getNodeData() {
         if ( _node_data == null ) {
             _node_data = new NodeData();

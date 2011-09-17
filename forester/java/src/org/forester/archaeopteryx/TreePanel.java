@@ -2436,7 +2436,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                               final boolean to_pdf,
                               final boolean to_graphics_file ) {
         final int circ_num_ext_nodes = phy.getNumberOfExternalNodes() - _collapsed_external_nodeid_set.size();
-        System.out.println( "# collapsed external = " +  _collapsed_external_nodeid_set.size() );
+        System.out.println( "# collapsed external = " + _collapsed_external_nodeid_set.size() );
         _root = phy.getRoot();
         _root.setXcoord( center_x );
         _root.setYcoord( center_y );

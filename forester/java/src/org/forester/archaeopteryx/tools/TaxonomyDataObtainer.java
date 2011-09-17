@@ -48,7 +48,7 @@ public class TaxonomyDataObtainer implements Runnable {
     public TaxonomyDataObtainer( final MainFrameApplication mf,
                                  final TreePanel treepanel,
                                  final Phylogeny phy,
-                                 boolean delete ) {
+                                 final boolean delete ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;

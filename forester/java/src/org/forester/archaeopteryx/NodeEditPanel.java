@@ -185,14 +185,11 @@ class NodeEditPanel extends JPanel {
                                PHYLOXML_TAG.CONFIDENCE_TYPE,
                                counter );
         String bw = "1";
-        if ( phylogeny_node.getBranchData().getBranchWidth() != null
-                && phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE
-        )
-        {
+        if ( ( phylogeny_node.getBranchData().getBranchWidth() != null )
+                && ( phylogeny_node.getBranchData().getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE ) ) {
             bw = ForesterUtil.FORMATTER_3.format( phylogeny_node.getBranchData().getBranchWidth().getValue() );
         }
         addSubelementEditable( category, NodePanel.NODE_BRANCH_WIDTH, bw, PHYLOXML_TAG.NODE_BRANCH_WIDTH );
-        
     }
 
     //    private void addAnnotation( final DefaultMutableTreeNode top, final Annotation ann, final String name ) {
@@ -679,7 +676,7 @@ class NodeEditPanel extends JPanel {
                     try {
                         final double bw = ForesterUtil.parseDouble( value );
                         if ( bw >= 0 ) {
-                            getMyNode().getBranchData().setBranchWidth( new BranchWidth(bw ) );
+                            getMyNode().getBranchData().setBranchWidth( new BranchWidth( bw ) );
                         }
                     }
                     catch ( final ParseException e ) {
@@ -690,7 +687,7 @@ class NodeEditPanel extends JPanel {
                         mtn.setUserObject( "" );
                     }
                 }
-                break;    
+                break;
             case CONFIDENCE_VALUE:
                 double confidence = Confidence.CONFIDENCE_DEFAULT_VALUE;
                 if ( !ForesterUtil.isEmpty( value ) ) {

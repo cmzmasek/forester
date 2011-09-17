@@ -226,7 +226,6 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                 addSubelement( category, CONFIDENCE, conf.asText().toString() );
             }
         }
-       
         if ( !phylogeny_node.isExternal() ) {
             addSubelement( category, "Children", String.valueOf( phylogeny_node.getNumberOfDescendants() ) );
             addSubelement( category,
@@ -261,10 +260,8 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                            ForesterUtil.FORMATTER_3.format( phylogeny_node.getBranchData().getBranchWidth().getValue() ) );
         }
         if ( ( phylogeny_node.getBranchData().getBranchColor() != null ) ) {
-            Color c = phylogeny_node.getBranchData().getBranchColor().getValue();
-            addSubelement( category,
-                           NODE_BRANCH_COLOR,
-                            c.getRed() + ", " + c.getGreen() + ", "+ c.getBlue() );
+            final Color c = phylogeny_node.getBranchData().getBranchColor().getValue();
+            addSubelement( category, NODE_BRANCH_COLOR, c.getRed() + ", " + c.getGreen() + ", " + c.getBlue() );
         }
     }
 

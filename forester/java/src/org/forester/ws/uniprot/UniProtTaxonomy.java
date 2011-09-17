@@ -100,7 +100,7 @@ public final class UniProtTaxonomy {
                 }
             }
             for( int i = 0; i < temp.size(); ++i ) {
-                if ( i == 0
+                if ( ( i == 0 )
                         && ( temp.get( i ).equalsIgnoreCase( EUKARYOTA ) || temp.get( i ).equalsIgnoreCase( BACTERIA ) || temp
                                 .get( i ).equalsIgnoreCase( ARCHAEA ) ) ) {
                     _lineage.add( CELLULAR_ORGANISMS );
@@ -144,7 +144,7 @@ public final class UniProtTaxonomy {
                             final String rank,
                             final String id ) {
         _lineage = new ArrayList<String>();
-        for( String l : lineage ) {
+        for( final String l : lineage ) {
             _lineage.add( l );
         }
         _code = code;
@@ -187,9 +187,9 @@ public final class UniProtTaxonomy {
     }
 
     public String[] getLineageAsArray() {
-        String[] str = new String[ _lineage.size() ];
+        final String[] str = new String[ _lineage.size() ];
         int i = 0;
-        for( String l : _lineage ) {
+        for( final String l : _lineage ) {
             str[ i++ ] = l;
         }
         return str;

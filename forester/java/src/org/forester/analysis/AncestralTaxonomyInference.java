@@ -203,11 +203,11 @@ public final class AncestralTaxonomyInference {
                     node = "[" + desc.getId() + "]";
                 }
                 msg = "Node " + node + " has no or inappropriate taxonomic information";
-                List<PhylogenyNode> e = desc.getAllExternalDescendants();
+                final List<PhylogenyNode> e = desc.getAllExternalDescendants();
                 //TODO remove me!
                 System.out.println();
                 int x = 0;
-                for( PhylogenyNode object : e ) {
+                for( final PhylogenyNode object : e ) {
                     System.out.println( x + ":" );
                     System.out.println( object.getName() + "  " );
                     x++;
@@ -232,10 +232,10 @@ public final class AncestralTaxonomyInference {
         if ( last_common_lineage == null ) {
             System.out.println( "No common lineage for:" );
             int counter = 0;
-            for( String[] strings : lineages ) {
+            for( final String[] strings : lineages ) {
                 System.out.print( counter + ": " );
                 ++counter;
-                for( String string : strings ) {
+                for( final String string : strings ) {
                     System.out.print( string + " " );
                 }
                 System.out.println();
@@ -328,7 +328,7 @@ public final class AncestralTaxonomyInference {
             }
         }
         if ( delete ) {
-            for( PhylogenyNode node : not_found_external_nodes ) {
+            for( final PhylogenyNode node : not_found_external_nodes ) {
                 phy.deleteSubtree( node, false );
             }
             phy.recalculateNumberOfExternalDescendants( true );
