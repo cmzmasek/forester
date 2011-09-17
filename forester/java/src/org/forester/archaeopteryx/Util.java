@@ -45,6 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -286,6 +288,39 @@ public final class Util {
                 }
             }
         }
+    }
+
+    final static void colorPhylogenyAccordingToRanks( final Phylogeny tree,
+                                                      final String rank,
+                                                      final TreePanel tree_panel ) {
+        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy()
+                    && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) && n.getNodeData()
+                            .getTaxonomy().getRank().equalsIgnoreCase( rank ) )
+                    && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() )
+                            || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) || !ForesterUtil
+                            .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( n.getNodeData()
+                        .getTaxonomy() ) );
+                n.getBranchData().setBranchColor( c );
+                final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
+                for( final PhylogenyNode desc : descs ) {
+                    desc.getBranchData().setBranchColor( c );
+                }
+            }
+        }
+    }
+
+    final static String[] getAllRanks( final Phylogeny tree ) {
+        final SortedSet<String> ranks = new TreeSet<String>();
+        for( final PhylogenyNodeIterator it = tree.iteratorPreorder(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy() && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) ) {
+                ranks.add( n.getNodeData().getTaxonomy().getRank() );
+            }
+        }
+        return ForesterUtil.stringSetToArray( ranks );
     }
 
     final static void colorPhylogenyAccordingToExternalTaxonomy( final Phylogeny tree, final TreePanel tree_panel ) {

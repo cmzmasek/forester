@@ -773,6 +773,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    final void colorRank( final String rank ) {
+        if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
+            return;
+        }
+        setWaitCursor();
+        Util.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
+        _control_panel.setColorBranches( true );
+        if ( _control_panel.getColorBranchesCb() != null ) {
+            _control_panel.getColorBranchesCb().setSelected( true );
+        }
+        setArrowCursor();
+        repaint();
+    }
+
     final private void copySubtree( final PhylogenyNode node ) {
         if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
             errorMessageNoCutCopyPasteInUnrootedDisplay();

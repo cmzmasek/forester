@@ -836,6 +836,9 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu = createMenu( "Tools", getConfiguration() );
         _tools_menu.add( _confcolor_item = new JMenuItem( "Colorize Branches Depending on Confidence" ) );
         customizeJMenuItem( _confcolor_item );
+        _tools_menu.add( _color_rank_jmi = new JMenuItem( "Colorize Subtrees via Taxonomic Rank" ) );
+        customizeJMenuItem( _color_rank_jmi );
+        _color_rank_jmi.setToolTipText( "for example, at \"Class\" level, colorize mammal specific subtree red" );
         _tools_menu.add( _taxcolor_item = new JMenuItem( "Taxonomy Colorize Branches" ) );
         customizeJMenuItem( _taxcolor_item );
         _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete Branch Colors" ) );

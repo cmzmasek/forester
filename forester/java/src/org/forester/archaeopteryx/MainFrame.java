@@ -116,6 +116,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _midpoint_root_item;
     JMenuItem                 _taxcolor_item;
     JMenuItem                 _confcolor_item;
+    JMenuItem                 _color_rank_jmi;
     JMenuItem                 _infer_common_sn_names_item;
     JMenuItem                 _collapse_species_specific_subtrees;
     JMenuItem                 _collapse_below_threshold;                                                                                                                                                                                //TODO implememt me
@@ -230,6 +231,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _confcolor_item ) {
             confColor();
+        }
+        else if ( o == _color_rank_jmi ) {
+            colorRank();
         }
         else if ( o == _infer_common_sn_names_item ) {
             if ( isSubtreeDisplayed() ) {
@@ -636,6 +640,30 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void confColor() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
             _mainpanel.getCurrentTreePanel().confColor();
+        }
+    }
+
+    void colorRank() {
+        if ( _mainpanel.getCurrentTreePanel() != null ) {
+            final String[] ranks = Util.getAllRanks( _mainpanel.getCurrentTreePanel().getPhylogeny() );
+            if ( ranks.length < 1 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "No rank information was found",
+                                               "No Rank Inoformation",
+                                               JOptionPane.WARNING_MESSAGE );
+                return;
+            }
+            final String rank = ( String ) JOptionPane
+                    .showInputDialog( this,
+                                      "What rank should the colorization be based on",
+                                      "Rank Selection",
+                                      JOptionPane.PLAIN_MESSAGE,
+                                      null,
+                                      ranks,
+                                      null );
+            if ( !ForesterUtil.isEmpty( rank ) ) {
+                _mainpanel.getCurrentTreePanel().colorRank( rank );
+            }
         }
     }
 

@@ -168,9 +168,9 @@ public final class Configuration {
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
-            { "Open Sequence Web", "nodisplay" }, { "Open Taxonomy Web", "nodisplay" }, { "Cut Subtree", "display" },
+            { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Cut Subtree", "display" },
             { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Blast", "display" } };
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Blast", "nodisplay" } };
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
     // --------------

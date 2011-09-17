@@ -108,43 +108,10 @@ public final class ForesterUtil {
     private ForesterUtil() {
     }
 
-    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final Phylogeny[] trees = factory.create( file, parser );
-        if ( ( trees == null ) || ( trees.length == 0 ) ) {
-            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
-        }
-        return trees;
-    }
-
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {
         if ( sb.length() > 0 ) {
             sb.append( separator );
         }
-    }
-
-    final public static boolean isEmpty( final List<?> l ) {
-        if ( ( l == null ) || l.isEmpty() ) {
-            return true;
-        }
-        for( final Object o : l ) {
-            if ( o != null ) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    final public static boolean isEmpty( final Set<?> s ) {
-        if ( ( s == null ) || s.isEmpty() ) {
-            return true;
-        }
-        for( final Object o : s ) {
-            if ( o != null ) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -688,6 +655,34 @@ public final class ForesterUtil {
         return true;
     }
 
+    final public static boolean isContainsParanthesesableNhCharacter( final String nh ) {
+        return PARANTHESESABLE_NH_CHARS_PATTERN.matcher( nh ).find();
+    }
+
+    final public static boolean isEmpty( final List<?> l ) {
+        if ( ( l == null ) || l.isEmpty() ) {
+            return true;
+        }
+        for( final Object o : l ) {
+            if ( o != null ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    final public static boolean isEmpty( final Set<?> s ) {
+        if ( ( s == null ) || s.isEmpty() ) {
+            return true;
+        }
+        for( final Object o : s ) {
+            if ( o != null ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     final public static boolean isEmpty( final String s ) {
         return ( ( s == null ) || ( s.length() < 1 ) );
     }
@@ -1010,6 +1005,15 @@ public final class ForesterUtil {
         System.out.println( "[" + prg_name + "] > " + message );
     }
 
+    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny[] trees = factory.create( file, parser );
+        if ( ( trees == null ) || ( trees.length == 0 ) ) {
+            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
+        }
+        return trees;
+    }
+
     final public static String removeSuffix( final String file_name ) {
         final int i = file_name.lastIndexOf( '.' );
         if ( i > 1 ) {
@@ -1033,10 +1037,6 @@ public final class ForesterUtil {
             }
         }
         return s;
-    }
-
-    final public static boolean isContainsParanthesesableNhCharacter( final String nh ) {
-        return PARANTHESESABLE_NH_CHARS_PATTERN.matcher( nh ).find();
     }
 
     final public static String replaceIllegalNhCharacters( final String nh ) {
@@ -1066,12 +1066,12 @@ public final class ForesterUtil {
         return ( int ) ( d + 0.5 );
     }
 
-    final public static short roundToShort( final double d ) {
-        return ( short ) ( d + 0.5 );
-    }
-
     final public static int roundToInt( final float f ) {
         return ( int ) ( f + 0.5f );
+    }
+
+    final public static short roundToShort( final double d ) {
+        return ( short ) ( d + 0.5 );
     }
 
     final public static String sanitizeString( final String s ) {
@@ -1097,6 +1097,15 @@ public final class ForesterUtil {
             sb.append( a[ a.length - 1 ] );
         }
         return sb.toString();
+    }
+
+    final public static String[] stringSetToArray( final Set<String> strings ) {
+        final String[] str_array = new String[ strings.size() ];
+        int i = 0;
+        for( final String e : strings ) {
+            str_array[ i++ ] = e;
+        }
+        return str_array;
     }
 
     final static public void transferInternalNamesToBootstrapSupport( final Phylogeny phy ) {
