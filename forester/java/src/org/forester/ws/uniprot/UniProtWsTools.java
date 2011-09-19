@@ -175,6 +175,7 @@ public final class UniProtWsTools {
 
     private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
             throws IOException {
+        System.out.println( "getting tax from ID" );
         return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
     }
 

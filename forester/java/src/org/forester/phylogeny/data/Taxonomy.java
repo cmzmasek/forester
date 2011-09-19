@@ -46,6 +46,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     private String       _taxonomy_code;
     private String       _rank;
     private List<Uri>    _uris;
+    private List<String> _lineage;
 
     public Taxonomy() {
         init();
@@ -127,6 +128,14 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
             for( final Uri uri : getUris() ) {
                 if ( uri != null ) {
                     t.getUris().add( uri );
+                }
+            }
+        }
+        if ( getLineage() != null ) {
+            t.setLineage( new ArrayList<String>() );
+            for( final String l : getLineage() ) {
+                if ( l != null ) {
+                    t.getLineage().add( l );
                 }
             }
         }
@@ -214,13 +223,14 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         setAuthority( "" );
         setSynonyms( null );
         setUris( null );
+        setLineage( null );
     }
 
     public boolean isEmpty() {
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
                 && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() )
                 && ForesterUtil.isEmpty( getRank() ) && ForesterUtil.isEmpty( _uris )
-                && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) );
+                && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) && ForesterUtil.isEmpty( _lineage ) );
     }
 
     /**
@@ -400,5 +410,13 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
             return getTaxonomyCode().compareToIgnoreCase( o.getTaxonomyCode() );
         }
         return 0;
+    }
+
+    public void setLineage( List<String> lineage ) {
+        _lineage = lineage;
+    }
+
+    public List<String> getLineage() {
+        return _lineage;
     }
 }

@@ -209,6 +209,30 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             }
         }
     }
+    
+    private static void addLineage( final DefaultMutableTreeNode top,
+                                 final List<String> lineage,
+                                 final DefaultMutableTreeNode category ) {
+        if ( ( lineage != null ) && (  lineage.size() > 0 ) ) {
+          
+            StringBuilder sb = new StringBuilder();
+            for( final String lin : lineage ) {
+                if ( !ForesterUtil.isEmpty( lin ) ) {
+                    sb.append( lin );
+                    sb.append( " > " );
+                }
+            }
+            String str = null;
+            if (sb.length() > 1 ) {
+                str = sb.substring( 0, sb.length() - 3 );
+            }
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                addSubelement( category, "Lineage", str );
+            }
+        }
+    }
+    
+    
 
     private static void addBasics( final DefaultMutableTreeNode top,
                                    final PhylogenyNode phylogeny_node,
@@ -240,10 +264,10 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                 if ( no_tax > 0 ) {
                     addSubelement( category, "External nodes without taxonomy", String.valueOf( no_tax ) );
                 }
-                //TODO remove me...
-                for( final Taxonomy taxonomy : distinct_tax.keySet() ) {
-                    System.out.println( taxonomy + ": " + distinct_tax.get( taxonomy ) );
-                }
+                //TODO remove me... maybe make me into a method?
+                //for( final Taxonomy taxonomy : distinct_tax.keySet() ) {
+                //    System.out.println( taxonomy + ": " + distinct_tax.get( taxonomy ) );
+                //}
             }
         }
         if ( !phylogeny_node.isRoot() ) {
@@ -390,6 +414,9 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         addSubelement( category, TAXONOMY_RANK, tax.getRank() );
         if ( ( tax.getUris() != null ) && !tax.getUris().isEmpty() ) {
             addUris( top, tax.getUris(), category );
+        }
+        if ( ( tax.getLineage() != null ) && !tax.getLineage().isEmpty() ) {
+            addLineage( top, tax.getLineage(), category );
         }
     }
 

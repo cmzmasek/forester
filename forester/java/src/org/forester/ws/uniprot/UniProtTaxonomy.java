@@ -111,7 +111,6 @@ public final class UniProtTaxonomy {
         if ( _lineage.isEmpty()
                 && ( _scientific_name.equalsIgnoreCase( EUKARYOTA ) || _scientific_name.equalsIgnoreCase( BACTERIA ) || _scientific_name
                         .equalsIgnoreCase( ARCHAEA ) ) ) {
-            System.out.println( "  >>>>>>>>>>>>>>>>>>>>>>>>>        did it!" );
             _lineage.add( CELLULAR_ORGANISMS );
         }
         _lineage.add( _scientific_name );
