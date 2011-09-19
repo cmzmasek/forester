@@ -216,7 +216,8 @@ public final class AncestralTaxonomyInference {
                 throw new IllegalArgumentException( msg );
             }
         }
-        String last_common_lineage = null;
+        List<String> last_common_lineage = new ArrayList<String>();
+        String last_common = null;
         if ( shortest_lin_length > 0 ) {
             I: for( int i = 0; i < shortest_lin_length; ++i ) {
                 final String lineage_0 = lineages.get( 0 )[ i ];
@@ -225,10 +226,13 @@ public final class AncestralTaxonomyInference {
                         break I;
                     }
                 }
-                last_common_lineage = lineage_0;
+               // last_common_lineage = lineage_0;
+                last_common_lineage.add( lineage_0 ) ;
+                last_common =lineage_0;
             }
         }
-        if ( last_common_lineage == null ) {
+       // if ( last_common_lineage == null ) {
+        if ( last_common_lineage.isEmpty() ) {
             System.out.println( "No common lineage for:" );
             int counter = 0;
             for( final String[] strings : lineages ) {
@@ -243,8 +247,8 @@ public final class AncestralTaxonomyInference {
         }
         final Taxonomy tax = new Taxonomy();
         n.getNodeData().setTaxonomy( tax );
-        tax.setScientificName( last_common_lineage );
-        final UniProtTaxonomy up_tax = obtainUniProtTaxonomyFromSn( last_common_lineage, lineage );
+        tax.setScientificName( last_common );
+        final UniProtTaxonomy up_tax = obtainUniProtTaxonomyFromCommonLineage( last_common_lineage );
         if ( up_tax != null ) {
             if ( !ForesterUtil.isEmpty( up_tax.getRank() ) ) {
                 try {
@@ -379,7 +383,7 @@ public final class AncestralTaxonomyInference {
         }
     }
 
-    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromSn( final String sn, List<String> lineage ) throws IOException {
+    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromSn( final String sn) throws IOException {
         UniProtTaxonomy up_tax = null;
         if ( getSnTaxCacheMap().containsKey( sn ) ) {
             up_tax = getSnTaxCacheMap().get( sn ).copy();
@@ -401,6 +405,53 @@ public final class AncestralTaxonomyInference {
                 
             }
         }
+        return up_tax;
+    }
+    
+    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromCommonLineage( List<String> lineage ) throws IOException {
+        UniProtTaxonomy up_tax = null;
+      // -- if ( getSnTaxCacheMap().containsKey( sn ) ) {
+      // --     up_tax = getSnTaxCacheMap().get( sn ).copy();
+      // -- }
+      //  else {
+            final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( lineage.get(lineage.size() -1 ) );
+            //-- if ( ( up_taxonomies != null ) && ( up_taxonomies.size() == 1 ) ) {
+           
+            if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
+                for( UniProtTaxonomy up_taxonomy : up_taxonomies ) {
+                    boolean match = true;
+
+                    I: for( int i = 0; i < lineage.size(); ++i ) {
+                        if ( !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) )  ) { 
+                            match = false;
+                            break I;
+                        }
+                    }
+                    if ( match ) {
+                        if ( up_tax != null ) {
+                            throw new IOException( "not unique!");
+                        }
+                        up_tax = up_taxonomy;
+                    }
+                }
+
+                if ( up_tax == null ) {
+                    throw new IOException( "not found!");
+                }
+                //-- up_tax = up_taxonomies.get( 0 );
+               //-- getSnTaxCacheMap().put( sn, up_tax );
+                if ( !ForesterUtil.isEmpty( up_tax.getCode() ) ) {
+                    getCodeTaxCacheMap().put( up_tax.getCode(), up_tax );
+                }
+                if ( !ForesterUtil.isEmpty( up_tax.getCommonName() ) ) {
+                    getCnTaxCacheMap().put( up_tax.getCommonName(), up_tax );
+                }
+                if ( !ForesterUtil.isEmpty( up_tax.getId() ) ) {
+                    getIdTaxCacheMap().put( up_tax.getId(), up_tax );
+                }
+                
+            }
+      //  }
         return up_tax;
     }
 

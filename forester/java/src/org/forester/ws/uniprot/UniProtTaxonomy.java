@@ -88,7 +88,7 @@ public final class UniProtTaxonomy {
             _rank = "";
         }
         String[] lin = null;
-        if ( items.length > 7 ) {
+        if ( items.length > 8 ) {
             lin = items[ 8 ].split( "; " );
         }
         _lineage = new ArrayList<String>();
