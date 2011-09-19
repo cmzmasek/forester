@@ -209,13 +209,12 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             }
         }
     }
-    
+
     private static void addLineage( final DefaultMutableTreeNode top,
-                                 final List<String> lineage,
-                                 final DefaultMutableTreeNode category ) {
-        if ( ( lineage != null ) && (  lineage.size() > 0 ) ) {
-          
-            StringBuilder sb = new StringBuilder();
+                                    final List<String> lineage,
+                                    final DefaultMutableTreeNode category ) {
+        if ( ( lineage != null ) && ( lineage.size() > 0 ) ) {
+            final StringBuilder sb = new StringBuilder();
             for( final String lin : lineage ) {
                 if ( !ForesterUtil.isEmpty( lin ) ) {
                     sb.append( lin );
@@ -223,7 +222,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                 }
             }
             String str = null;
-            if (sb.length() > 1 ) {
+            if ( sb.length() > 1 ) {
                 str = sb.substring( 0, sb.length() - 3 );
             }
             if ( !ForesterUtil.isEmpty( str ) ) {
@@ -231,8 +230,6 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             }
         }
     }
-    
-    
 
     private static void addBasics( final DefaultMutableTreeNode top,
                                    final PhylogenyNode phylogeny_node,

@@ -1088,15 +1088,30 @@ public final class ForesterUtil {
         return str.split( regex );
     }
 
-    final public static String stringArrayToString( final String[] a ) {
-        final StringBuffer sb = new StringBuffer();
+    final public static String stringArrayToString( final String[] a, final String separator ) {
+        final StringBuilder sb = new StringBuilder();
         if ( ( a != null ) && ( a.length > 0 ) ) {
             for( int i = 0; i < a.length - 1; ++i ) {
-                sb.append( a[ i ] + ", " );
+                sb.append( a[ i ] + separator );
             }
             sb.append( a[ a.length - 1 ] );
         }
         return sb.toString();
+    }
+
+    final public static String stringListToString( final List<String> l, final String separator ) {
+        final StringBuilder sb = new StringBuilder();
+        if ( ( l != null ) && ( l.size() > 0 ) ) {
+            for( int i = 0; i < l.size() - 1; ++i ) {
+                sb.append( l.get( i ) + separator );
+            }
+            sb.append( l.get( l.size() - 1 ) );
+        }
+        return sb.toString();
+    }
+
+    final public static String stringArrayToString( final String[] a ) {
+        return stringArrayToString( a, ", " );
     }
 
     final public static String[] stringSetToArray( final Set<String> strings ) {

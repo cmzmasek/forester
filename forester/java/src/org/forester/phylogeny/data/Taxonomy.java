@@ -230,7 +230,8 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
                 && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() )
                 && ForesterUtil.isEmpty( getRank() ) && ForesterUtil.isEmpty( _uris )
-                && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) && ForesterUtil.isEmpty( _lineage ) );
+                && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) && ForesterUtil
+                .isEmpty( _lineage ) );
     }
 
     /**
@@ -412,7 +413,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         return 0;
     }
 
-    public void setLineage( List<String> lineage ) {
+    public void setLineage( final List<String> lineage ) {
         _lineage = lineage;
     }
 

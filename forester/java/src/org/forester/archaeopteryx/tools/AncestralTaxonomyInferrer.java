@@ -26,7 +26,6 @@
 package org.forester.archaeopteryx.tools;
 
 import java.net.UnknownHostException;
-import java.util.SortedSet;
 
 import javax.swing.JOptionPane;
 
@@ -54,11 +53,10 @@ public class AncestralTaxonomyInferrer implements Runnable {
 
     private void inferTaxonomies() {
         _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
-        SortedSet<String> not_found = null;
         try {
-            not_found = AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
+            AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
         }
-        catch ( final IllegalArgumentException e ) {
+        catch ( final AncestralTaxonomyInferenceException e ) {
             _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             JOptionPane.showMessageDialog( _mf,
                                            e.getMessage(),
@@ -88,54 +86,14 @@ public class AncestralTaxonomyInferrer implements Runnable {
         _treepanel.setTree( _phy );
         _mf.showWhole();
         _treepanel.setEdited( true );
-        if ( ( not_found != null ) && ( not_found.size() > 0 ) ) {
-            int max = not_found.size();
-            boolean more = false;
-            if ( max > 20 ) {
-                more = true;
-                max = 20;
-            }
-            final StringBuffer sb = new StringBuffer();
-            sb.append( "Not all taxonomies could be resolved.\n" );
-            sb.append( "The result is incomplete, and, possibly, misleading.\n" );
-            if ( not_found.size() == 1 ) {
-                sb.append( "The following taxonomy was not found:\n" );
-            }
-            else {
-                sb.append( "The following taxonomies were not found (total: " + not_found.size() + "):\n" );
-            }
-            int i = 0;
-            for( final String string : not_found ) {
-                if ( i > 19 ) {
-                    break;
-                }
-                sb.append( string );
-                sb.append( "\n" );
-                ++i;
-            }
-            if ( more ) {
-                sb.append( "..." );
-            }
-            try {
-                JOptionPane.showMessageDialog( _mf,
-                                               sb.toString(),
-                                               "Ancestral Taxonomy Inference Completed",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // Not important if this fails, do nothing. 
-            }
+        try {
+            JOptionPane.showMessageDialog( _mf,
+                                           "Ancestral taxonomy inference successfully completed",
+                                           "Ancestral Taxonomy Inference Completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
         }
-        else {
-            try {
-                JOptionPane.showMessageDialog( _mf,
-                                               "Ancestral taxonomy inference successfully completed",
-                                               "Ancestral Taxonomy Inference Completed",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                // Not important if this fails, do nothing.
-            }
+        catch ( final Exception e ) {
+            // Not important if this fails, do nothing.
         }
     }
 
