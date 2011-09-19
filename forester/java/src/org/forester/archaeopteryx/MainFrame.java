@@ -649,7 +649,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( ranks.length < 1 ) {
                 JOptionPane.showMessageDialog( this,
                                                "No rank information was found",
-                                               "No Rank Inoformation",
+                                               "No Rank Information",
                                                JOptionPane.WARNING_MESSAGE );
                 return;
             }
@@ -657,7 +657,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     .showInputDialog( this,
                                       "What rank should the colorization be based on",
                                       "Rank Selection",
-                                      JOptionPane.PLAIN_MESSAGE,
+                                      JOptionPane.QUESTION_MESSAGE,
                                       null,
                                       ranks,
                                       null );

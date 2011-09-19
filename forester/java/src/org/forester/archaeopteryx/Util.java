@@ -41,9 +41,11 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -293,20 +295,43 @@ public final class Util {
     final static void colorPhylogenyAccordingToRanks( final Phylogeny tree,
                                                       final String rank,
                                                       final TreePanel tree_panel ) {
+        final Map<String, Color> m = new HashMap<String, Color>();
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.getNodeData().isHasTaxonomy()
-                    && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() ) && n.getNodeData()
-                            .getTaxonomy().getRank().equalsIgnoreCase( rank ) )
                     && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) || !ForesterUtil
                             .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
-                final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( n.getNodeData()
-                        .getTaxonomy() ) );
-                n.getBranchData().setBranchColor( c );
-                final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
-                for( final PhylogenyNode desc : descs ) {
-                    desc.getBranchData().setBranchColor( c );
+                if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() )
+                        && n.getNodeData().getTaxonomy().getRank().equalsIgnoreCase( rank ) ) {
+                    final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( n.getNodeData()
+                            .getTaxonomy() ) );
+                    n.getBranchData().setBranchColor( c );
+                    final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
+                    for( final PhylogenyNode desc : descs ) {
+                        desc.getBranchData().setBranchColor( c );
+                    }
+                    if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        m.put( n.getNodeData().getTaxonomy().getScientificName(), c.getValue() );
+                    }
+                }
+            }
+        }
+        if ( !m.isEmpty() ) {
+            for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+                final PhylogenyNode n = it.next();
+                if ( ( n.getBranchData().getBranchColor() == null ) && n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getLineage() ) ) {
+                    for( final String lin : n.getNodeData().getTaxonomy().getLineage() ) {
+                        if ( m.containsKey( lin ) ) {
+                            final BranchColor c = new BranchColor( m.get( lin ) );
+                            n.getBranchData().setBranchColor( c );
+                            final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
+                            for( final PhylogenyNode desc : descs ) {
+                                desc.getBranchData().setBranchColor( c );
+                            }
+                        }
+                    }
                 }
             }
         }
