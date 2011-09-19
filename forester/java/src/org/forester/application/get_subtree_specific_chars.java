@@ -39,6 +39,8 @@ import org.forester.util.ForesterUtil;
 
 public class get_subtree_specific_chars {
 
+    final static boolean SIMPLE = true;
+
     public static void main( final String args[] ) {
         if ( args.length != 1 ) {
             System.err.println();
@@ -61,7 +63,6 @@ public class get_subtree_specific_chars {
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
         System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         System.out.println();
-        final boolean SIMPLE = false;
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( !SIMPLE && node.isExternal() ) {
