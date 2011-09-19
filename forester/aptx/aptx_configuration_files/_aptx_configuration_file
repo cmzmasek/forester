@@ -362,6 +362,11 @@ species_color: mammals       0xFF0000
 species_color: Metazoa       0xFF00FF
 species_color: animals       0xFF00FF
 species_color: Fungi         0xFF9912
+species_color: Viruses       0xFFD700
+species_color: Bacteria      0x00FF00
+species_color: Archaea       0x0000FF
+species_color: Eukaryota     0xFF0000
+species_color: eukaryotes    0xFF0000
 
 #  Domain colors
 #  -------------
