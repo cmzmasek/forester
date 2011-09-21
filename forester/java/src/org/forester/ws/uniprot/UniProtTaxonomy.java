@@ -43,6 +43,7 @@ public final class UniProtTaxonomy {
     private final String                _rank;
     private final String                _id;
     public final static String          CELLULAR_ORGANISMS       = "cellular organisms";
+    public final static String          VIRUSES                  = "Viruses";
     public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] {
             CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota", "Neoptera",
             "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae", "Drosophila" },

@@ -44,7 +44,7 @@ import org.forester.ws.uniprot.UniProtWsTools;
 public final class AncestralTaxonomyInference {
 
     private static final int                              MAX_CACHE_SIZE           = 100000;
-    private static final int                              MAX_TAXONOMIES_TO_RETURN = 1000;
+    private static final int                              MAX_TAXONOMIES_TO_RETURN = 10;
     private static final HashMap<String, UniProtTaxonomy> _sn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _lineage_up_cache_map    = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
@@ -250,17 +250,38 @@ public final class AncestralTaxonomyInference {
             }
         }
         if ( last_common_lineage.isEmpty() ) {
-            String msg = "no common lineage for:\n";
-            int counter = 0;
-            for( final String[] strings : lineages ) {
-                msg += counter + ": ";
-                ++counter;
-                for( final String string : strings ) {
-                    msg += string + " ";
+            boolean saw_viruses = false;
+            boolean saw_cellular_organism = false;
+            for( final String[] lineage : lineages ) {
+                if ( lineage.length > 0 ) {
+                    if ( lineage[ 0 ].equalsIgnoreCase( UniProtTaxonomy.VIRUSES ) ) {
+                        saw_viruses = true;
+                    }
+                    else if ( lineage[ 0 ].equalsIgnoreCase( UniProtTaxonomy.CELLULAR_ORGANISMS ) ) {
+                        saw_cellular_organism = true;
+                    }
+                    if ( saw_cellular_organism && saw_viruses ) {
+                        break;
+                    }
                 }
-                msg += "\n";
             }
-            throw new AncestralTaxonomyInferenceException( msg );
+            if ( saw_cellular_organism && saw_viruses ) {
+                last_common_lineage.add( UniProtTaxonomy.CELLULAR_ORGANISMS );
+                last_common = UniProtTaxonomy.CELLULAR_ORGANISMS;
+            }
+            else {
+                String msg = "no common lineage for:\n";
+                int counter = 0;
+                for( final String[] strings : lineages ) {
+                    msg += counter + ": ";
+                    ++counter;
+                    for( final String string : strings ) {
+                        msg += string + " ";
+                    }
+                    msg += "\n";
+                }
+                throw new AncestralTaxonomyInferenceException( msg );
+            }
         }
         final Taxonomy tax = new Taxonomy();
         n.getNodeData().setTaxonomy( tax );
@@ -459,7 +480,7 @@ public final class AncestralTaxonomyInference {
                 && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             tax.setScientificName( up_tax.getScientificName() );
         }
-        if ( ( qt != QUERY_TYPE.CODE ) && !ForesterUtil.isEmpty( up_tax.getCode() )
+        if ( node.isExternal() && ( qt != QUERY_TYPE.CODE ) && !ForesterUtil.isEmpty( up_tax.getCode() )
                 && ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             tax.setTaxonomyCode( up_tax.getCode() );
         }

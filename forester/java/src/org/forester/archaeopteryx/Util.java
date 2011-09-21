@@ -313,7 +313,6 @@ public final class Util {
                     }
                     if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                         m.put( n.getNodeData().getTaxonomy().getScientificName(), c.getValue() );
-                        System.out.println( n.getNodeData().getTaxonomy().getScientificName() + "->" + c.getValue() );
                     }
                 }
             }
