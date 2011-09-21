@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
 
 import org.forester.analysis.AncestralTaxonomyInference;
+import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;

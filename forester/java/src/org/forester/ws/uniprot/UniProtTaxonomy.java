@@ -45,7 +45,7 @@ public final class UniProtTaxonomy {
     public final static String          CELLULAR_ORGANISMS       = "cellular organisms";
     public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] {
             CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota", "Neoptera",
-            "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae" },
+            "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae", "Drosophila" },
                                                                                         "",
                                                                                         "fruit flies",
                                                                                         "Drosophila",
@@ -54,7 +54,7 @@ public final class UniProtTaxonomy {
                                                                                         "7215" );
     public final static UniProtTaxonomy XENOPUS_GENUS            = new UniProtTaxonomy( new String[] {
             CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Chordata", "Craniata", "Vertebrata", "Euteleostomi", "Amphibia",
-            "Batrachia", "Anura", "Mesobatrachia", "Pipoidea", "Pipidae", "Xenopodinae" },
+            "Batrachia", "Anura", "Mesobatrachia", "Pipoidea", "Pipidae", "Xenopodinae", "Xenopus" },
                                                                                         "",
                                                                                         "",
                                                                                         "Xenopus",
@@ -63,7 +63,7 @@ public final class UniProtTaxonomy {
                                                                                         "8353" );
     public final static UniProtTaxonomy CAPITELLA_TELATA_SPECIES = new UniProtTaxonomy( new String[] {
             CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Annelida", "Polychaeta", "Scolecida", "Capitellida",
-            "Capitellidae", "Capitella"                                                },
+            "Capitellidae", "Capitella", "Capitella teleta"                            },
                                                                                         "",
                                                                                         "",
                                                                                         "Capitella teleta",
@@ -71,6 +71,8 @@ public final class UniProtTaxonomy {
                                                                                         "species",
                                                                                         "283909" );
 
+    // public final static UniProtTaxonomy NUCLEARIIDAE_AND_FONTICULA = new UniProtTaxonomy( new String[] {
+    //         CELLULAR_ORGANISMS, EUKARYOTA, "Nucleariidae and Fonticula group" }, "", "", "", "", "", "1001604" );
     public UniProtTaxonomy( final String line ) {
         final String[] items = line.split( "\t" );
         if ( items.length < 5 ) {
@@ -133,6 +135,9 @@ public final class UniProtTaxonomy {
         _synonym = synonym;
         _rank = rank;
         _id = id;
+        if ( ( _lineage != null ) && !_lineage.get( _lineage.size() - 1 ).equalsIgnoreCase( _scientific_name ) ) {
+            _lineage.add( _scientific_name );
+        }
     }
 
     public UniProtTaxonomy( final String[] lineage,
@@ -143,8 +148,10 @@ public final class UniProtTaxonomy {
                             final String rank,
                             final String id ) {
         _lineage = new ArrayList<String>();
-        for( final String l : lineage ) {
-            _lineage.add( l );
+        if ( lineage != null ) {
+            for( final String l : lineage ) {
+                _lineage.add( l );
+            }
         }
         _code = code;
         _scientific_name = scientific_name;
@@ -152,6 +159,9 @@ public final class UniProtTaxonomy {
         _synonym = synonym;
         _rank = rank;
         _id = id;
+        if ( ( _lineage != null ) && !_lineage.get( _lineage.size() - 1 ).equalsIgnoreCase( _scientific_name ) ) {
+            _lineage.add( _scientific_name );
+        }
     }
 
     /**
@@ -183,15 +193,6 @@ public final class UniProtTaxonomy {
 
     public List<String> getLineage() {
         return _lineage;
-    }
-
-    public String[] getLineageAsArray() {
-        final String[] str = new String[ _lineage.size() ];
-        int i = 0;
-        for( final String l : _lineage ) {
-            str[ i++ ] = l;
-        }
-        return str;
     }
 
     public String getRank() {

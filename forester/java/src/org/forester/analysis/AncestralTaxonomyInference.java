@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.forester.archaeopteryx.tools.AncestralTaxonomyInferenceException;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -45,8 +44,9 @@ import org.forester.ws.uniprot.UniProtWsTools;
 public final class AncestralTaxonomyInference {
 
     private static final int                              MAX_CACHE_SIZE           = 100000;
-    private static final int                              MAX_TAXONOMIES_TO_RETURN = 100;
+    private static final int                              MAX_TAXONOMIES_TO_RETURN = 1000;
     private static final HashMap<String, UniProtTaxonomy> _sn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
+    private static final HashMap<String, UniProtTaxonomy> _lineage_up_cache_map    = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _cn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _id_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
@@ -54,6 +54,9 @@ public final class AncestralTaxonomyInference {
     synchronized private static void clearCachesIfTooLarge() {
         if ( getSnTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getSnTaxCacheMap().clear();
+        }
+        if ( getLineageTaxCacheMap().size() > MAX_CACHE_SIZE ) {
+            getLineageTaxCacheMap().clear();
         }
         if ( getCnTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getCnTaxCacheMap().clear();
@@ -82,9 +85,14 @@ public final class AncestralTaxonomyInference {
         return _sn_up_cache_map;
     }
 
+    synchronized private static HashMap<String, UniProtTaxonomy> getLineageTaxCacheMap() {
+        return _lineage_up_cache_map;
+    }
+
     synchronized private static UniProtTaxonomy getTaxonomies( final HashMap<String, UniProtTaxonomy> cache,
-                                                               final String query,
-                                                               final QUERY_TYPE qt ) throws IOException {
+                                                               final Object query,
+                                                               final QUERY_TYPE qt ) throws IOException,
+            AncestralTaxonomyInferenceException {
         if ( cache.containsKey( query ) ) {
             return cache.get( query ).copy();
         }
@@ -92,17 +100,19 @@ public final class AncestralTaxonomyInference {
             List<UniProtTaxonomy> up_taxonomies = null;
             switch ( qt ) {
                 case ID:
-                    up_taxonomies = getTaxonomiesFromId( query );
+                    up_taxonomies = getTaxonomiesFromId( ( String ) query );
                     break;
                 case CODE:
-                    up_taxonomies = getTaxonomiesFromTaxonomyCode( query );
+                    up_taxonomies = getTaxonomiesFromTaxonomyCode( ( String ) query );
                     break;
                 case SN:
-                    up_taxonomies = getTaxonomiesFromScientificName( query );
+                    up_taxonomies = getTaxonomiesFromScientificName( ( String ) query );
                     break;
                 case CN:
-                    up_taxonomies = getTaxonomiesFromCommonName( query );
+                    up_taxonomies = getTaxonomiesFromCommonName( ( String ) query );
                     break;
+                case LIN:
+                    return obtainUniProtTaxonomyFromLineage( ( List<String> ) query );
                 default:
                     throw new RuntimeException();
             }
@@ -171,16 +181,31 @@ public final class AncestralTaxonomyInference {
             if ( desc.getNodeData().isHasTaxonomy()
                     && ( isHasAppropriateId( desc.getNodeData().getTaxonomy() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getScientificName() )
+                            || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getTaxonomyCode() ) || !ForesterUtil
                             .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
                 final UniProtTaxonomy up_tax = obtainUniProtTaxonomy( desc.getNodeData().getTaxonomy(), null, null );
-                String[] lineage = null;
-                if ( up_tax != null ) {
-                    lineage = up_tax.getLineageAsArray();
+                if ( ( up_tax == null ) && ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() ) ) {
+                    String desc_str = "";
+                    if ( !ForesterUtil.isEmpty( desc.getName() ) ) {
+                        desc_str = "\"" + desc.getName() + "\"";
+                    }
+                    else {
+                        desc_str = "[" + desc.getId() + "]";
+                    }
+                    System.out.println( desc.getNodeData().getTaxonomy().toString() );
+                    System.out.println( ForesterUtil.stringListToString( desc.getNodeData().getTaxonomy().getLineage(),
+                                                                         "  >  " ) );
+                    throw new AncestralTaxonomyInferenceException( "a taxonomy for node " + desc_str
+                            + " could not be established from the database" );
+                }
+                String[] lineage = ForesterUtil.stringListToArray( desc.getNodeData().getTaxonomy().getLineage() );
+                if ( ( lineage == null ) || ( lineage.length < 1 ) ) {
+                    lineage = ForesterUtil.stringListToArray( up_tax.getLineage() );
                 }
                 if ( ( lineage == null ) || ( lineage.length < 1 ) ) {
                     throw new AncestralTaxonomyInferenceException( "a taxonomic lineage for node \""
-                            + desc.getNodeData().getTaxonomy().toString() + "\" could not be found" );
+                            + desc.getNodeData().getTaxonomy().toString() + "\" could not be established" );
                 }
                 if ( lineage.length < shortest_lin_length ) {
                     shortest_lin_length = lineage.length;
@@ -220,12 +245,10 @@ public final class AncestralTaxonomyInference {
                         break I;
                     }
                 }
-                // last_common_lineage = lineage_0;
                 last_common_lineage.add( lineage_0 );
                 last_common = lineage_0;
             }
         }
-        // if ( last_common_lineage == null ) {
         if ( last_common_lineage.isEmpty() ) {
             String msg = "no common lineage for:\n";
             int counter = 0;
@@ -242,7 +265,7 @@ public final class AncestralTaxonomyInference {
         final Taxonomy tax = new Taxonomy();
         n.getNodeData().setTaxonomy( tax );
         tax.setScientificName( last_common );
-        final UniProtTaxonomy up_tax = obtainUniProtTaxonomyFromCommonLineage( last_common_lineage );
+        final UniProtTaxonomy up_tax = obtainUniProtTaxonomyFromLineage( last_common_lineage );
         if ( up_tax != null ) {
             if ( !ForesterUtil.isEmpty( up_tax.getRank() ) ) {
                 try {
@@ -270,6 +293,14 @@ public final class AncestralTaxonomyInference {
                 }
             }
         }
+        if ( ForesterUtil.isEmpty( tax.getLineage() ) ) {
+            tax.setLineage( new ArrayList<String>() );
+            for( final String lin : last_common_lineage ) {
+                if ( !ForesterUtil.isEmpty( lin ) ) {
+                    tax.getLineage().add( lin );
+                }
+            }
+        }
         for( final PhylogenyNode desc : descs ) {
             if ( !desc.isExternal() && desc.getNodeData().isHasTaxonomy()
                     && desc.getNodeData().getTaxonomy().isEqual( tax ) ) {
@@ -287,7 +318,7 @@ public final class AncestralTaxonomyInference {
 
     synchronized public static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
                                                                                      final boolean delete )
-            throws IOException {
+            throws IOException, AncestralTaxonomyInferenceException {
         clearCachesIfTooLarge();
         final SortedSet<String> not_found = new TreeSet<String>();
         List<PhylogenyNode> not_found_external_nodes = null;
@@ -340,29 +371,24 @@ public final class AncestralTaxonomyInference {
         return not_found;
     }
 
-    // TODO this might not be needed anymore
-    //  synchronized private static String[] obtainLineagePlusOwnScientificName( final UniProtTaxonomy up_tax ) {
-    //      final String[] lineage = up_tax.getLineageAsArray();
-    //      final String[] lin_plus_self = new String[ lineage.length + 1 ];
-    //      for( int i = 0; i < lineage.length; ++i ) {
-    //          lin_plus_self[ i ] = lineage[ i ];
-    //      }
-    //      lin_plus_self[ lineage.length ] = up_tax.getScientificName();
-    //      return lin_plus_self;
-    //  }
-    synchronized private static UniProtTaxonomy obtainUniProtTaxonomy( final Taxonomy tax, String query, QUERY_TYPE qt )
-            throws IOException {
+    synchronized private static UniProtTaxonomy obtainUniProtTaxonomy( final Taxonomy tax, Object query, QUERY_TYPE qt )
+            throws IOException, AncestralTaxonomyInferenceException {
         if ( isHasAppropriateId( tax ) ) {
             query = tax.getIdentifier().getValue();
             qt = QUERY_TYPE.ID;
-            System.out.println( "query by id: " + query );
             return getTaxonomies( getIdTaxCacheMap(), query, qt );
         }
         else if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
-            query = tax.getScientificName();
-            qt = QUERY_TYPE.SN;
-            System.out.println( "query by sn: " + query );
-            return getTaxonomies( getSnTaxCacheMap(), query, qt );
+            if ( !ForesterUtil.isEmpty( tax.getLineage() ) ) {
+                query = tax.getLineage();
+                qt = QUERY_TYPE.LIN;
+                return getTaxonomies( getLineageTaxCacheMap(), query, qt );
+            }
+            else {
+                query = tax.getScientificName();
+                qt = QUERY_TYPE.SN;
+                return getTaxonomies( getSnTaxCacheMap(), query, qt );
+            }
         }
         else if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             query = tax.getTaxonomyCode();
@@ -376,16 +402,41 @@ public final class AncestralTaxonomyInference {
         }
     }
 
-    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromSn( final String sn ) throws IOException {
+    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromLineage( final List<String> lineage )
+            throws AncestralTaxonomyInferenceException, IOException {
+        final String lineage_str = ForesterUtil.stringListToString( lineage, ">" );
         UniProtTaxonomy up_tax = null;
-        if ( getSnTaxCacheMap().containsKey( sn ) ) {
-            up_tax = getSnTaxCacheMap().get( sn ).copy();
+        if ( getLineageTaxCacheMap().containsKey( lineage_str ) ) {
+            up_tax = getLineageTaxCacheMap().get( lineage_str ).copy();
         }
         else {
-            final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( sn );
-            if ( ( up_taxonomies != null ) && ( up_taxonomies.size() == 1 ) ) {
-                up_tax = up_taxonomies.get( 0 );
-                getSnTaxCacheMap().put( sn, up_tax );
+            final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( lineage
+                    .get( lineage.size() - 1 ) );
+            if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
+                for( final UniProtTaxonomy up_taxonomy : up_taxonomies ) {
+                    boolean match = true;
+                    I: for( int i = 0; i < lineage.size(); ++i ) {
+                        if ( !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) ) ) {
+                            match = false;
+                            break I;
+                        }
+                    }
+                    if ( match ) {
+                        if ( up_tax != null ) {
+                            throw new AncestralTaxonomyInferenceException( "lineage \""
+                                    + ForesterUtil.stringListToString( lineage, " > " ) + "\" is not unique" );
+                        }
+                        up_tax = up_taxonomy;
+                    }
+                }
+                if ( up_tax == null ) {
+                    throw new AncestralTaxonomyInferenceException( "lineage \""
+                            + ForesterUtil.stringListToString( lineage, " > " ) + "\" not found" );
+                }
+                getLineageTaxCacheMap().put( lineage_str, up_tax );
+                if ( !ForesterUtil.isEmpty( up_tax.getScientificName() ) ) {
+                    getSnTaxCacheMap().put( up_tax.getScientificName(), up_tax );
+                }
                 if ( !ForesterUtil.isEmpty( up_tax.getCode() ) ) {
                     getCodeTaxCacheMap().put( up_tax.getCode(), up_tax );
                 }
@@ -400,52 +451,6 @@ public final class AncestralTaxonomyInference {
         return up_tax;
     }
 
-    synchronized private static UniProtTaxonomy obtainUniProtTaxonomyFromCommonLineage( final List<String> lineage )
-            throws AncestralTaxonomyInferenceException, IOException {
-        UniProtTaxonomy up_tax = null;
-        // -- if ( getSnTaxCacheMap().containsKey( sn ) ) {
-        // --     up_tax = getSnTaxCacheMap().get( sn ).copy();
-        // -- }
-        //  else {
-        final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( lineage.get( lineage.size() - 1 ) );
-        //-- if ( ( up_taxonomies != null ) && ( up_taxonomies.size() == 1 ) ) {
-        if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
-            for( final UniProtTaxonomy up_taxonomy : up_taxonomies ) {
-                boolean match = true;
-                I: for( int i = 0; i < lineage.size(); ++i ) {
-                    if ( !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) ) ) {
-                        match = false;
-                        break I;
-                    }
-                }
-                if ( match ) {
-                    if ( up_tax != null ) {
-                        throw new AncestralTaxonomyInferenceException( "lineage \""
-                                + ForesterUtil.stringListToString( lineage, " > " ) + "\" is not unique" );
-                    }
-                    up_tax = up_taxonomy;
-                }
-            }
-            if ( up_tax == null ) {
-                throw new AncestralTaxonomyInferenceException( "lineage \""
-                        + ForesterUtil.stringListToString( lineage, " > " ) + "\" not found" );
-            }
-            //-- up_tax = up_taxonomies.get( 0 );
-            //-- getSnTaxCacheMap().put( sn, up_tax );
-            if ( !ForesterUtil.isEmpty( up_tax.getCode() ) ) {
-                getCodeTaxCacheMap().put( up_tax.getCode(), up_tax );
-            }
-            if ( !ForesterUtil.isEmpty( up_tax.getCommonName() ) ) {
-                getCnTaxCacheMap().put( up_tax.getCommonName(), up_tax );
-            }
-            if ( !ForesterUtil.isEmpty( up_tax.getId() ) ) {
-                getIdTaxCacheMap().put( up_tax.getId(), up_tax );
-            }
-        }
-        //  }
-        return up_tax;
-    }
-
     synchronized private static void updateTaxonomy( final QUERY_TYPE qt,
                                                      final PhylogenyNode node,
                                                      final Taxonomy tax,
@@ -454,7 +459,6 @@ public final class AncestralTaxonomyInference {
                 && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             tax.setScientificName( up_tax.getScientificName() );
         }
-        //  if ( node.isExternal()
         if ( ( qt != QUERY_TYPE.CODE ) && !ForesterUtil.isEmpty( up_tax.getCode() )
                 && ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             tax.setTaxonomyCode( up_tax.getCode() );
@@ -488,6 +492,6 @@ public final class AncestralTaxonomyInference {
     }
 
     private enum QUERY_TYPE {
-        CODE, SN, CN, ID;
+        CODE, SN, CN, ID, LIN;
     }
 }

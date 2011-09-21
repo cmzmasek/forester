@@ -54,7 +54,7 @@ public final class UniProtWsTools {
     // \Z => end of String
     private final static Pattern UNIPROT_AC_PATTERN = Pattern
                                                             .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d[A-Z0-9]{3}\\d)(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static boolean DEBUG              = true;
+    private final static boolean DEBUG              = false;
 
     private static String encode( final String str ) throws UnsupportedEncodingException {
         return URLEncoder.encode( str.trim(), URL_ENC );
@@ -121,6 +121,9 @@ public final class UniProtWsTools {
         else if ( sn.equals( "Xenopus" ) ) {
             return hack( UniProtTaxonomy.XENOPUS_GENUS );
         }
+        // else if ( sn.equals( "Nucleariidae and Fonticula group" ) ) {
+        //     return hack( UniProtTaxonomy.NUCLEARIIDAE_AND_FONTICULA );
+        // }
         final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
@@ -175,7 +178,6 @@ public final class UniProtWsTools {
 
     private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
             throws IOException {
-        System.out.println( "getting tax from ID" );
         return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
     }
 

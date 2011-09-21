@@ -1123,6 +1123,18 @@ public final class ForesterUtil {
         return str_array;
     }
 
+    final public static String[] stringListToArray( final List<String> list ) {
+        if ( list != null ) {
+            final String[] str = new String[ list.size() ];
+            int i = 0;
+            for( final String l : list ) {
+                str[ i++ ] = l;
+            }
+            return str;
+        }
+        return null;
+    }
+
     final static public void transferInternalNamesToBootstrapSupport( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {

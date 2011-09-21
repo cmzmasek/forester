@@ -24,7 +24,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.archaeopteryx.tools;
+package org.forester.analysis;
 
 public class AncestralTaxonomyInferenceException extends Exception {
 

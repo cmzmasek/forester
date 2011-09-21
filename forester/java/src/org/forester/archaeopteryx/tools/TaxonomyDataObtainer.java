@@ -33,6 +33,7 @@ import java.util.SortedSet;
 import javax.swing.JOptionPane;
 
 import org.forester.analysis.AncestralTaxonomyInference;
+import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
@@ -81,6 +82,15 @@ public class TaxonomyDataObtainer implements Runnable {
             return;
         }
         catch ( final IOException e ) {
+            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+            e.printStackTrace();
+            JOptionPane.showMessageDialog( _mf,
+                                           e.toString(),
+                                           "Failed to obtain taxonomic information",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final AncestralTaxonomyInferenceException e ) {
             _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
