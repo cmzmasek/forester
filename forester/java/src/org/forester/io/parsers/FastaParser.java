@@ -28,6 +28,8 @@ package org.forester.io.parsers;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -92,6 +94,10 @@ public class FastaParser {
         return false;
     }
 
+    static public Msa parseMsa( final File f ) throws IOException {
+        return parseMsa( new FileInputStream( f ) );
+    }
+
     static public Msa parseMsa( final InputStream is ) throws IOException {
         return BasicMsa.createInstance( parse( is ) );
     }
@@ -102,6 +108,10 @@ public class FastaParser {
 
     static public Msa parseMsa( final byte[] bytes ) throws IOException {
         return parseMsa( new ByteArrayInputStream( bytes ) );
+    }
+
+    static public List<Sequence> parse( final File f ) throws IOException {
+        return parse( new FileInputStream( f ) );
     }
 
     static public List<Sequence> parse( final InputStream is ) throws IOException {

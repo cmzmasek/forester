@@ -575,6 +575,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     sum += getTreeFontSet()._fm_large_italic.stringWidth( tax.getCommonName() + " ()" );
                 }
             }
+            if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
+                sum += getTreeFontSet()._fm_large.stringWidth( propertiesToString( node ).toString() );
+            }
             if ( getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters() ) {
                 sum += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getBinaryCharacters()
                         .getGainedCharactersAsStringBuffer().toString() );
@@ -2967,6 +2970,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append( node.getNodeData().getSequence().getAccession().getValue() );
             }
         }
+        if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
+            if ( _sb.length() > 0 ) {
+                _sb.append( " " );
+            }
+            _sb.append( propertiesToString( node ) );
+        }
         g.setFont( getTreeFontSet().getLargeFont() );
         if ( is_in_found_nodes ) {
             g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
@@ -3114,6 +3123,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
+    }
+
+    private StringBuffer propertiesToString( final PhylogenyNode node ) {
+        final PropertiesMap properties = node.getNodeData().getProperties();
+        final StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for( final String ref : properties.getPropertyRefs() ) {
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( " " );
+            }
+            sb.append( properties.getProperty( ref ).asText() );
+        }
+        return sb;
     }
 
     private double drawTaxonomyImage( final double x, final double y, final PhylogenyNode node, final Graphics2D g ) {

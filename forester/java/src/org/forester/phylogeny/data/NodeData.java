@@ -281,7 +281,7 @@ public class NodeData implements PhylogenyData {
     }
 
     public boolean isHasProperties() {
-        return getProperties() != null;
+        return ( getProperties() != null ) && ( getProperties().size() > 0 );
     }
 
     public boolean isHasReference() {

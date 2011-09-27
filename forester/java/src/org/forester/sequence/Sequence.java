@@ -41,6 +41,8 @@ public interface Sequence {
 
     public abstract int getLength();
 
+    public abstract int getNumberOfGapResidues();
+
     public abstract char[] getMolecularSequence();
 
     public abstract char getResidueAt( final int position );

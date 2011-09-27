@@ -41,19 +41,11 @@ public class simple_node_processor {
 
     public static void main( final String args[] ) {
         File in = null;
-        File out = null;
-        if ( ( args.length != 2 ) ) {
-            // System.exit( -1 );
-            if ( ( args.length == 0 ) ) {
-                in = new File( "C:\\Users\\zma\\dollo.xml" );
-                out = null;
-            }
-        }
+        final File out = null;
         try {
-            System.out.println( "..." );
             CommandLineArguments cla = null;
             cla = new CommandLineArguments( args );
-            // in = cla.getFile( 0 );
+            in = cla.getFile( 0 );
             // out = cla.getFile( 1 );
             // if ( out.exists() ) {
             //      System.out.println( out + " already exists" );

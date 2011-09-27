@@ -71,6 +71,17 @@ public class BasicSequence implements Sequence {
     }
 
     @Override
+    public int getNumberOfGapResidues() {
+        int gaps = 0;
+        for( int i = 0; i < _mol_sequence.length; ++i ) {
+            if ( _mol_sequence[ i ] == GAP ) {
+                ++gaps;
+            }
+        }
+        return gaps;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer();
         sb.append( _identifier.toString() );

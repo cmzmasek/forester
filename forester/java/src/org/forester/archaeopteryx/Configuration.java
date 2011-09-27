@@ -119,12 +119,12 @@ public final class Configuration {
     final static int                        show_taxonomy_scientific_names                         = 17;
     final static int                        show_taxonomy_common_names                             = 18;
     final static int                        color_according_to_annotation                          = 19;
-    final static int                        show_property                                          = 20;
-    final static int                        show_gene_symbols                                      = 21;
-    final static int                        node_data_popup                                        = 22;
-    final static int                        show_relation_confidence                               = 23;
-    final static int                        show_vector_data                                       = 24;
-    final static int                        show_taxonomy_images                                   = 25;
+    final static int                        show_gene_symbols                                      = 20;
+    final static int                        node_data_popup                                        = 21;
+    final static int                        show_relation_confidence                               = 22;
+    final static int                        show_vector_data                                       = 23;
+    final static int                        show_taxonomy_images                                   = 24;
+    final static int                        show_properties                                        = 25;
     // ------------------
     // Click-to options
     // ------------------
@@ -162,9 +162,9 @@ public final class Configuration {
             { "Prot/Gene Acc", "display", "no" }, { "Show Internal Data", "display", "yes" },
             { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
             { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
-            { "Property", "nodisplay", "no" }, { "Prot/Gene Symbol", "display", "yes" },
-            { "Rollover", "display", "yes" }, { "Relation Confidence", "display", "no" },
-            { "Vector Data", "display", "no" }, { "Taxonomy Images", "display", "no" }            };
+            { "Prot/Gene Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
+            { "Relation Confidence", "display", "no" }, { "Vector Data", "display", "no" },
+            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" }             };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
@@ -1225,11 +1225,11 @@ public final class Configuration {
             else if ( key.equals( "color_according_to_annotation" ) ) {
                 key_index = Configuration.color_according_to_annotation;
             }
-            else if ( key.equals( "show_property" ) ) {
-                key_index = Configuration.show_property;
-            }
             else if ( key.equals( "show_vector_data" ) ) {
                 key_index = Configuration.show_vector_data;
+            }
+            else if ( key.equals( "show_properties" ) ) {
+                key_index = Configuration.show_properties;
             }
             else if ( key.equals( "show_relation_confidence" ) ) {
                 key_index = Configuration.show_relation_confidence;

@@ -109,6 +109,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JComboBox            _show_sequence_relations;
     private JComboBox            _sequence_relation_type_box;
     private JCheckBox            _show_vector_data_cb;
+    private JCheckBox            _show_properties_cb;
     private JLabel               _click_to_label;
     private JLabel               _zoom_label;
     private JLabel               _domain_display_label;
@@ -495,6 +496,11 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( _show_vector_data_cb, ch_panel );
                 add( ch_panel );
                 break;
+            case Configuration.show_properties:
+                _show_properties_cb = new JCheckBox( title );
+                addJCheckBox( _show_properties_cb, ch_panel );
+                add( ch_panel );
+                break;
             default:
                 throw new RuntimeException( "unknown checkbox: " + which );
         }
@@ -816,6 +822,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _show_vector_data_cb != null ) && _show_vector_data_cb.isSelected() );
     }
 
+    public boolean isShowProperties() {
+        return ( ( _show_properties_cb != null ) && _show_properties_cb.isSelected() );
+    }
+
     boolean isShowGeneSymbols() {
         return ( ( _show_gene_symbols != null ) && _show_gene_symbols.isSelected() );
     }
@@ -826,10 +836,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowNodeNames() {
         return ( ( _show_node_names != null ) && _show_node_names.isSelected() );
-    }
-
-    boolean isShowProperty() {
-        return ( ( _show_annotation != null ) && _show_annotation.isSelected() );
     }
 
     boolean isShowSequenceAcc() {
@@ -1063,6 +1069,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_vector_data:
                 if ( _show_vector_data_cb != null ) {
                     _show_vector_data_cb.setSelected( state );
+                }
+                break;
+            case Configuration.show_properties:
+                if ( _show_properties_cb != null ) {
+                    _show_properties_cb.setSelected( state );
                 }
                 break;
             case Configuration.show_sequence_acc:
@@ -1578,6 +1589,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             addCheckbox( Configuration.show_vector_data,
                          _configuration.getDisplayTitle( Configuration.show_vector_data ) );
             setCheckbox( Configuration.show_vector_data, _configuration.doCheckOption( Configuration.show_vector_data ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_properties ) ) {
+            addCheckbox( Configuration.show_properties, _configuration.getDisplayTitle( Configuration.show_properties ) );
+            setCheckbox( Configuration.show_properties, _configuration.doCheckOption( Configuration.show_properties ) );
         }
     }
 
