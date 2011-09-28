@@ -59,6 +59,7 @@ import javax.swing.JApplet;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
+import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
@@ -72,6 +73,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
+import org.forester.ws.uniprot.UniProtTaxonomy;
 
 public final class Util {
 
@@ -295,7 +297,7 @@ public final class Util {
     final static void colorPhylogenyAccordingToRanks( final Phylogeny tree,
                                                       final String rank,
                                                       final TreePanel tree_panel ) {
-        final Map<String, Color> m = new HashMap<String, Color>();
+        final Map<String, Color> true_lineage_to_color_map = new HashMap<String, Color>();
         for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( n.getNodeData().isHasTaxonomy()
@@ -312,24 +314,52 @@ public final class Util {
                         desc.getBranchData().setBranchColor( c );
                     }
                     if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        m.put( n.getNodeData().getTaxonomy().getScientificName(), c.getValue() );
+                        true_lineage_to_color_map.put( n.getNodeData().getTaxonomy().getScientificName(), c.getValue() );
                     }
                 }
             }
         }
-        if ( !m.isEmpty() ) {
-            for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-                final PhylogenyNode n = it.next();
-                if ( ( n.getBranchData().getBranchColor() == null ) && n.getNodeData().isHasTaxonomy()
-                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getLineage() ) ) {
-                    for( final String lin : n.getNodeData().getTaxonomy().getLineage() ) {
-                        if ( m.containsKey( lin ) ) {
-                            final BranchColor c = new BranchColor( m.get( lin ) );
-                            n.getBranchData().setBranchColor( c );
-                            final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( n );
+        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( ( node.getBranchData().getBranchColor() == null ) && node.getNodeData().isHasTaxonomy()
+                    && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getLineage() ) ) {
+                boolean success = false;
+                if ( !true_lineage_to_color_map.isEmpty() ) {
+                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
+                        if ( true_lineage_to_color_map.containsKey( lin ) ) {
+                            final BranchColor c = new BranchColor( true_lineage_to_color_map.get( lin ) );
+                            node.getBranchData().setBranchColor( c );
+                            final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( node );
                             for( final PhylogenyNode desc : descs ) {
                                 desc.getBranchData().setBranchColor( c );
                             }
+                            success = true;
+                            break;
+                        }
+                    }
+                }
+                //TODO refactor refactor refactor refactor refactor refactor 
+                if ( !success ) {
+                    for( final String lin : node.getNodeData().getTaxonomy().getLineage() ) {
+                        final Taxonomy temp_tax = new Taxonomy();
+                        temp_tax.setScientificName( lin );
+                        UniProtTaxonomy up = null;
+                        try {
+                            up = AncestralTaxonomyInference.obtainUniProtTaxonomy( temp_tax, null, null );
+                        }
+                        catch ( final Exception e ) {
+                            e.printStackTrace();
+                        }
+                        if ( ( up != null ) && !ForesterUtil.isEmpty( up.getRank() )
+                                && up.getRank().equalsIgnoreCase( rank ) ) {
+                            final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( temp_tax ) );
+                            node.getBranchData().setBranchColor( c );
+                            final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( node );
+                            for( final PhylogenyNode desc : descs ) {
+                                desc.getBranchData().setBranchColor( c );
+                            }
+                            true_lineage_to_color_map.put( lin, c.getValue() );
+                            break;
                         }
                     }
                 }

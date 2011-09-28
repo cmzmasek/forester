@@ -392,7 +392,7 @@ public final class AncestralTaxonomyInference {
         return not_found;
     }
 
-    synchronized private static UniProtTaxonomy obtainUniProtTaxonomy( final Taxonomy tax, Object query, QUERY_TYPE qt )
+    synchronized public static UniProtTaxonomy obtainUniProtTaxonomy( final Taxonomy tax, Object query, QUERY_TYPE qt )
             throws IOException, AncestralTaxonomyInferenceException {
         if ( isHasAppropriateId( tax ) ) {
             query = tax.getIdentifier().getValue();
@@ -499,7 +499,8 @@ public final class AncestralTaxonomyInference {
                 tax.setRank( "" );
             }
         }
-        if ( ( qt != QUERY_TYPE.ID ) && !ForesterUtil.isEmpty( up_tax.getId() ) && ( tax.getIdentifier() == null ) ) {
+        if ( ( qt != QUERY_TYPE.ID ) && !ForesterUtil.isEmpty( up_tax.getId() )
+                && ( ( tax.getIdentifier() == null ) || ForesterUtil.isEmpty( tax.getIdentifier().getValue() ) ) ) {
             tax.setIdentifier( new Identifier( up_tax.getId(), "uniprot" ) );
         }
         if ( up_tax.getLineage() != null ) {

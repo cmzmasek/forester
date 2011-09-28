@@ -767,6 +767,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
+        Util.removeBranchColors( _phylogeny );
         Util.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
@@ -781,6 +782,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
+        Util.removeBranchColors( _phylogeny );
         Util.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
