@@ -159,7 +159,6 @@ show_taxonomy_scientific_names: display   yes
 show_taxonomy_common_names:     display   no
 show_taxonomy_images:           display   yes
 show_annotations:               display   no
-show_property:                  nodisplay no
 write_confidence_values:        display   ?
 write_events:                   display   ?
 color_branches:                 display   no
@@ -170,6 +169,7 @@ show_binary_character_counts:   display   no
 display_internal_data:          display   yes
 dynamically_hide_data:          display   yes
 show_relation_confidence:       display	  no
+show_properties:                display   no
 show_vector_data:               display   no
 
 
@@ -355,18 +355,39 @@ species_color: STIAU      0x00FFFF
 species_color: BACOV      0x8C5900
 species_color: BACUN      0x66CD00
 species_color: PORGI      0x918E00
-species_color: Viridiplantae 0x00FF00
-species_color: plants        0x00FF00
-species_color: Mammalia      0xFF0000
-species_color: mammals       0xFF0000
-species_color: Metazoa       0x0000FF
-species_color: animals       0x0000FF
-species_color: Fungi         0xFF9912
-species_color: Viruses       0xFFD700
-species_color: Bacteria      0x00FF00
-species_color: Archaea       0x0000FF
-species_color: Eukaryota     0xFF0000
-species_color: eukaryotes    0xFF0000
+# rank: Class
+species_color: Mammalia       0xFF0000
+species_color: mammals        0xFF0000
+# rank: Phylum
+species_color: Chordata       0x8470FF
+species_color: Echinodermata  0x6495ED
+species_color: Hemichordata   0x7EC0EE
+species_color: Arthropoda     0x7AC5CD 
+species_color: Nematoda       0x7171C6
+species_color: Tardigrada     0x388E8E
+species_color: Annelida       0xC67171
+species_color: Mollusca       0x00F5FF
+species_color: Ctenophora     0xBBFFFF
+species_color: Cnidaria       0xFF83FA
+species_color: Placozoa       0xEED2EE
+species_color: Porifera       0xFF3E96
+species_color: Microsporidia  0x8B8378
+species_color: Ascomycota     0xFF6347
+species_color: Basidiomycota  0xFFD700
+species_color: Chlorophyta    0x00C78C
+species_color: Streptophyta   0x00C957
+# rank: Kingdom
+species_color: Viridiplantae  0x00FF00
+species_color: plants         0x00FF00
+species_color: Metazoa        0x0000FF
+species_color: animals        0x0000FF
+species_color: Fungi          0xFF9912
+# rank: Superkingdom
+species_color: Viruses        0xFFD700
+species_color: Bacteria       0x00FF00
+species_color: Archaea        0x0000FF
+species_color: Eukaryota      0xFF0000
+species_color: eukaryotes     0xFF0000
 
 #  Domain colors
 #  -------------
