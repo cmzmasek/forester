@@ -783,13 +783,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setWaitCursor();
         Util.removeBranchColors( _phylogeny );
-        Util.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
-        _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
+        final int colorizations = Util.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
+        if ( colorizations > 0 ) {
+            _control_panel.setColorBranches( true );
+            if ( _control_panel.getColorBranchesCb() != null ) {
+                _control_panel.getColorBranchesCb().setSelected( true );
+            }
+            if ( _control_panel.getColorAccSpeciesCb() != null ) {
+                _control_panel.getColorAccSpeciesCb().setSelected( false );
+            }
+            _options.setColorLabelsSameAsParentBranch( true );
+            _control_panel.repaint();
         }
         setArrowCursor();
         repaint();
+        if ( colorizations > 0 ) {
+            String msg = "Taxonomy colorization via " + rank + " completed:\n";
+            if ( colorizations > 1 ) {
+                msg += "colorized " + colorizations + " subtrees";
+            }
+            else {
+                msg += "colorized one subtree";
+            }
+            JOptionPane.showMessageDialog( this,
+                                           msg,
+                                           "Taxonomy Colorization Completed (" + rank + ")",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+        else {
+            String msg = "Could not taxonomy colorize any subtree via " + rank + ".\n";
+            msg += "Possible solutions (given that suitable taxonomic information is present):\n";
+            msg += "select a different rank (e.g. phylum, genus, ...)\n";
+            msg += "  and/or\n";
+            msg += "execute:\n";
+            msg += "1. \"" + MainFrameApplication.OBTAIN_DETAILED_TAXONOMIC_INFORMATION + "\" (Tools)\n";
+            msg += "2. \"" + MainFrameApplication.INFER_ANCESTOR_TAXONOMIES + "\" (Analysis)";
+            JOptionPane.showMessageDialog( this, msg, "Taxonomy Colorization Failed", JOptionPane.WARNING_MESSAGE );
+        }
     }
 
     final private void copySubtree( final PhylogenyNode node ) {

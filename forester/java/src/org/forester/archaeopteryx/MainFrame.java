@@ -645,14 +645,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void colorRank() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
-            final String[] ranks = Util.getAllRanks( _mainpanel.getCurrentTreePanel().getPhylogeny() );
-            if ( ranks.length < 1 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "No rank information was found",
-                                               "No Rank Information",
-                                               JOptionPane.WARNING_MESSAGE );
-                return;
-            }
+            final String[] ranks = Util.getAllPossibleRanks();
             final String rank = ( String ) JOptionPane
                     .showInputDialog( this,
                                       "What rank should the colorization be based on",

@@ -36,8 +36,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JPanel;
@@ -66,6 +68,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     private Phylogeny                        _cut_or_copied_tree;
     private Set<Integer>                     _copied_and_pasted_nodes;
     private Hashtable<String, BufferedImage> _image_map;
+    private static Map<String, String>       _lineage_to_rank_map;
 
     MainPanel() {
     }
@@ -408,5 +411,12 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     synchronized Hashtable<String, BufferedImage> getImageMap() {
         return _image_map;
+    }
+
+    public synchronized static Map<String, String> getLineageToRankMap() {
+        if ( _lineage_to_rank_map == null ) {
+            _lineage_to_rank_map = new HashMap<String, String>();
+        }
+        return _lineage_to_rank_map;
     }
 }

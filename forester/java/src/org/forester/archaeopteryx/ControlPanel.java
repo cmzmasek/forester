@@ -397,11 +397,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( _show_node_names, ch_panel );
                 add( ch_panel );
                 break;
-            case Configuration.show_tax_code:
-                _show_taxo_code = new JCheckBox( title );
-                addJCheckBox( _show_taxo_code, ch_panel );
-                add( ch_panel );
-                break;
             case Configuration.show_taxonomy_scientific_names:
                 _show_taxo_scientific_names = new JCheckBox( title );
                 addJCheckBox( _show_taxo_scientific_names, ch_panel );
@@ -410,6 +405,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_taxonomy_common_names:
                 _show_taxo_common_names = new JCheckBox( title );
                 addJCheckBox( _show_taxo_common_names, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_tax_code:
+                _show_taxo_code = new JCheckBox( title );
+                addJCheckBox( _show_taxo_code, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.show_taxonomy_images:
@@ -649,6 +649,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     public JCheckBox getColorBranchesCb() {
         return _color_branches_cb;
+    }
+
+    public JCheckBox getColorAccSpeciesCb() {
+        return _color_acc_species;
     }
 
     Configuration getConfiguration() {
@@ -996,11 +1000,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _show_node_names.setSelected( state );
                 }
                 break;
-            case Configuration.show_tax_code:
-                if ( _show_taxo_code != null ) {
-                    _show_taxo_code.setSelected( state );
-                }
-                break;
             case Configuration.show_taxonomy_scientific_names:
                 if ( _show_taxo_scientific_names != null ) {
                     _show_taxo_scientific_names.setSelected( state );
@@ -1009,6 +1008,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_taxonomy_common_names:
                 if ( _show_taxo_common_names != null ) {
                     _show_taxo_common_names.setSelected( state );
+                }
+                break;
+            case Configuration.show_tax_code:
+                if ( _show_taxo_code != null ) {
+                    _show_taxo_code.setSelected( state );
                 }
                 break;
             case Configuration.show_taxonomy_images:

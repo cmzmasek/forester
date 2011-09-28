@@ -174,20 +174,22 @@ class SequencesFileFilter extends FileFilter {
 
 public final class MainFrameApplication extends MainFrame {
 
-    private final static int                 FRAME_X_SIZE                    = 800;
-    private final static int                 FRAME_Y_SIZE                    = 800;
+    static final String                      INFER_ANCESTOR_TAXONOMIES             = "Infer Ancestor Taxonomies";
+    static final String                      OBTAIN_DETAILED_TAXONOMIC_INFORMATION = "Obtain Detailed Taxonomic Information";
+    private final static int                 FRAME_X_SIZE                          = 800;
+    private final static int                 FRAME_Y_SIZE                          = 800;
     // Filters for the file-open dialog (classes defined in this file)
-    private final static NHFilter            nhfilter                        = new NHFilter();
-    private final static NHXFilter           nhxfilter                       = new NHXFilter();
-    private final static XMLFilter           xmlfilter                       = new XMLFilter();
-    private final static TolFilter           tolfilter                       = new TolFilter();
-    private final static NexusFilter         nexusfilter                     = new NexusFilter();
-    private final static PdfFilter           pdffilter                       = new PdfFilter();
-    private final static GraphicsFileFilter  graphicsfilefilter              = new GraphicsFileFilter();
-    private final static MsaFileFilter       msafilter                       = new MsaFileFilter();
-    private final static SequencesFileFilter seqsfilter                      = new SequencesFileFilter();
-    private final static DefaultFilter       defaultfilter                   = new DefaultFilter();
-    private static final long                serialVersionUID                = -799735726778865234L;
+    private final static NHFilter            nhfilter                              = new NHFilter();
+    private final static NHXFilter           nhxfilter                             = new NHXFilter();
+    private final static XMLFilter           xmlfilter                             = new XMLFilter();
+    private final static TolFilter           tolfilter                             = new TolFilter();
+    private final static NexusFilter         nexusfilter                           = new NexusFilter();
+    private final static PdfFilter           pdffilter                             = new PdfFilter();
+    private final static GraphicsFileFilter  graphicsfilefilter                    = new GraphicsFileFilter();
+    private final static MsaFileFilter       msafilter                             = new MsaFileFilter();
+    private final static SequencesFileFilter seqsfilter                            = new SequencesFileFilter();
+    private final static DefaultFilter       defaultfilter                         = new DefaultFilter();
+    private static final long                serialVersionUID                      = -799735726778865234L;
     private final JFileChooser               _values_filechooser;
     private final JFileChooser               _open_filechooser;
     private final JFileChooser               _msa_filechooser;
@@ -217,17 +219,17 @@ public final class MainFrameApplication extends MainFrame {
     private File                             _current_dir;
     private ButtonGroup                      _radio_group_1;
     // Others:
-    double                                   _min_not_collapse               = Constants.MIN_NOT_COLLAPSE_DEFAULT;
+    double                                   _min_not_collapse                     = Constants.MIN_NOT_COLLAPSE_DEFAULT;
     // Phylogeny Inference menu
     private JMenu                            _inference_menu;
     private JMenuItem                        _inference_from_msa_item;
     private JMenuItem                        _inference_from_seqs_item;
     // Phylogeny Inference
-    private PhylogeneticInferenceOptions     _phylogenetic_inference_options = null;
-    private Msa                              _msa                            = null;
-    private File                             _msa_file                       = null;
-    private List<Sequence>                   _seqs                           = null;
-    private File                             _seqs_file                      = null;
+    private PhylogeneticInferenceOptions     _phylogenetic_inference_options       = null;
+    private Msa                              _msa                                  = null;
+    private File                             _msa_file                             = null;
+    private List<Sequence>                   _seqs                                 = null;
+    private File                             _seqs_file                            = null;
     // expression values menu:
     JMenuItem                                _read_values_jmi;
 
@@ -613,7 +615,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _root_min_cost_l_item );
         customizeJMenuItem( _load_species_tree_item );
         _analysis_menu.addSeparator();
-        _analysis_menu.add( _lineage_inference = new JMenuItem( "Infer Ancestor Taxonomies" ) );
+        _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
         customizeJMenuItem( _lineage_inference );
         _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
         _jmenubar.add( _analysis_menu );
@@ -874,7 +876,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _infer_common_sn_names_item );
         _tools_menu.addSeparator();
         _tools_menu
-                .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( "Obtain Detailed Taxonomic Information" ) );
+                .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
         _obtain_detailed_taxonomic_information_jmi
                 .setToolTipText( "To add additional taxonomic information (from UniProt Taxonomy)" );

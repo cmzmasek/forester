@@ -289,7 +289,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     }
 
     public void setRank( final String rank ) {
-        if ( !ForesterUtil.isEmpty( rank ) && !PhyloXmlUtil.TAXONOMY_RANKS.contains( rank ) ) {
+        if ( !ForesterUtil.isEmpty( rank ) && !PhyloXmlUtil.TAXONOMY_RANKS_SET.contains( rank ) ) {
             throw new PhyloXmlDataFormatException( "illegal rank: [" + rank + "]" );
         }
         _rank = rank;
