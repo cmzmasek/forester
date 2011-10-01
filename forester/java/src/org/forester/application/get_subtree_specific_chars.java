@@ -39,7 +39,7 @@ import org.forester.util.ForesterUtil;
 
 public class get_subtree_specific_chars {
 
-    final static boolean SIMPLE = true;
+    final static boolean SIMPLE = false;
 
     public static void main( final String args[] ) {
         if ( args.length != 1 ) {
