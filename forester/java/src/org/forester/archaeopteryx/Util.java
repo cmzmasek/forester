@@ -32,6 +32,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -851,6 +852,71 @@ public final class Util {
         return msg;
     }
 
+    final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,
+                                                                       int width,
+                                                                       int height,
+                                                                       final TreePanel tree_panel,
+                                                                       final ControlPanel ac,
+                                                                       final GraphicsExportType type,
+                                                                       final Options options ) throws IOException{
+        if ( !options.isGraphicsExportUsingActualSize() ) {
+            if ( options.isGraphicsExportVisibleOnly() ) {
+                throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
+            }
+            tree_panel.setParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
+            tree_panel.resetPreferredSize();
+            tree_panel.repaint();
+        }
+        final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
+                                                                   RenderingHints.VALUE_RENDER_QUALITY );
+        rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
+        if ( options.isAntialiasPrint() ) {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        }
+        else {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
+        }
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
+            return "";
+        }
+        Rectangle visible = null;
+        if ( !options.isGraphicsExportUsingActualSize() ) {
+            width = options.getPrintSizeX();
+            height = options.getPrintSizeY();
+        }
+        else if ( options.isGraphicsExportVisibleOnly() ) {
+            visible = tree_panel.getVisibleRect();
+            width = visible.width;
+            height = visible.height;
+        }
+        final BufferedImage buffered_img = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
+        Graphics2D g2d = buffered_img.createGraphics();
+        g2d.setRenderingHints( rendering_hints );
+        int x = 0;
+        int y = 0;
+        if ( options.isGraphicsExportVisibleOnly() ) {
+            g2d = ( Graphics2D ) g2d.create( -visible.x, -visible.y, visible.width, visible.height );
+            g2d.setClip( null );
+            x = visible.x;
+            y = visible.y;
+        }
+        tree_panel.paintPhylogeny( g2d, false, true, width, height, x, y );
+        ImageIO.write( buffered_img, type.toString(), baos );
+        g2d.dispose();
+        System.gc();
+        if ( !options.isGraphicsExportUsingActualSize() ) {
+            tree_panel.getMainPanel().getControlPanel().showWhole();
+        }
+        String msg = baos.toString();
+        if ( ( width > 0 ) && ( height > 0 ) ) {
+            msg += " [size: " + width + ", " + height + "]";
+        }
+        return msg;
+    }
+    
     final static void writeToTiff( final File file, final BufferedImage image ) throws IOException {
         // See: http://log.robmeek.com/2005/08/write-tiff-in-java.html
         ImageWriter writer = null;

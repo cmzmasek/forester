@@ -5,6 +5,7 @@
 	<property name="classes.dir" value="classes" />
 	<property name="jars.dir" value="resources" />
 	<property name="itextjar" value="${jars.dir}/itextpdf-5.1.0.jar" />
+	<property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar" />
 	<property name="forester_jar" value="forester.jar" />
 	<property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar" />
 
@@ -33,7 +34,7 @@
 
 	<target name="compile_applets_only" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.5" target="1.5" debug="false" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar}">
+		<javac source="1.5" target="1.5" debug="false" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
@@ -55,6 +56,14 @@
 	</target>
 
 	<target name="jar_applets_only" description="JARs the classes files" depends="compile_applets_only,copy_resources">
+		<unjar src="${commonscodecjar}" dest="${classes.dir}">
+        <patternset>
+            <include name="**/*.class" />
+            <include name="**/*.afm" />
+            <include name="**/*.txt" />
+            <exclude name="**/*Test*.class" />
+        </patternset>
+    </unjar>
 		<jar level="9" destfile="${archaeopteryx_applets_jar}" basedir="${classes.dir}" excludes="org/forester/application/** 
 			          org/forester/development/**
 			          org/forester/evoinference/**

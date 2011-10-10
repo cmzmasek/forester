@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -28,10 +29,12 @@ import javax.swing.event.ChangeListener;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.Util.GraphicsExportType;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
+import org.apache.commons.codec.binary.Base64;
 
 // Use like this:
 // <applet archive="forester.jar"
@@ -335,6 +338,39 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return new String();
     }
 
+    /**
+     * This method returns a view of the current phylogeny in a chosen 
+     * graphics format, base64-encoded in a string so that in can be used
+     * from javascript.
+     * 
+     * @param format must be GraphicsExportType (gif, jpg, pdf, png, tif, bmp)
+     * @return the phylogeny string
+     * @author Herve Menager
+     */
+    public String getCurrentPhylogenyGraphicsAsBase64EncodedString( final String format ) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try{
+            Util.writePhylogenyToGraphicsByteArrayOutputStream( baos, 
+                                                                _main_panel.getWidth(),
+                                                                _main_panel.getHeight(),
+                                                                this.getCurrentTreePanel(),
+                                                                getCurrentTreePanel().getControlPanel(),
+                                                                GraphicsExportType.valueOf(format),
+                                                                getOptions());            
+        }catch(IOException ioe){
+            ForesterUtil.printErrorMessage( NAME, ioe.toString() );
+            ioe.printStackTrace();
+            JOptionPane.showMessageDialog( this,
+                                           NAME + ": Failed to generate graphics: " + "\nException: " + ioe,
+                                           "Failed to generate graphics",
+                                           JOptionPane.ERROR_MESSAGE );
+            return null;
+        }
+        byte[] bytes = baos.toByteArray();
+        String dataImg = Base64.encodeBase64String(bytes);
+        return dataImg;
+    }
+    
     void buildFontSizeMenu() {
         _font_size_menu = MainFrame.createMenu( MainFrame.FONT_SIZE_MENU_LABEL, getConfiguration() );
         _font_size_menu.add( _super_tiny_fonts_mi = new JMenuItem( "Super tiny fonts" ) );
