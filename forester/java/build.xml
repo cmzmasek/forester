@@ -10,9 +10,9 @@
 	<property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar" />
 
 	<target name="clean" description="Delete all generated files">
-		<delete dir="${classes.dir}" failonerror="false" />
-		<delete file="${forester_jar}" />
-		<delete file="${archaeopteryx_applets_jar}" />
+	    <delete dir="${classes.dir}" failonerror="false" />
+	    <delete file="${forester_jar}" />
+	    <delete file="${archaeopteryx_applets_jar}" />
 	</target>
 
     <target name="copy_resources" description="Copies resources">
@@ -27,7 +27,7 @@
 
 	<target name="compile" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.5" target="1.5" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar}">
+		<javac source="1.5" target="1.5" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
@@ -48,6 +48,12 @@
                 <exclude name="**/*Test*.class" />
             </patternset>
         </unjar>
+        <unjar src="${commonscodecjar}" dest="${classes.dir}">
+            <patternset>
+                <include name="**/*.class" />
+                <exclude name="**/*Test*.class" />
+            </patternset>
+        </unjar>
 		<jar level="9" destfile="${forester_jar}" basedir="${classes.dir}" excludes="**/Test.class" duplicate="fail" index="true">
 			<manifest>
 				<attribute name="Main-Class" value="org.forester.archaeopteryx.Archaeopteryx" />
@@ -57,13 +63,11 @@
 
 	<target name="jar_applets_only" description="JARs the classes files" depends="compile_applets_only,copy_resources">
 		<unjar src="${commonscodecjar}" dest="${classes.dir}">
-        <patternset>
-            <include name="**/*.class" />
-            <include name="**/*.afm" />
-            <include name="**/*.txt" />
-            <exclude name="**/*Test*.class" />
-        </patternset>
-    </unjar>
+            <patternset>
+                <include name="**/*.class" />
+                <exclude name="**/*Test*.class" />
+            </patternset>
+        </unjar>
 		<jar level="9" destfile="${archaeopteryx_applets_jar}" basedir="${classes.dir}" excludes="org/forester/application/** 
 			          org/forester/development/**
 			          org/forester/evoinference/**
@@ -72,8 +76,8 @@
 			          org/forester/pccx/**
 			          org/forester/surfacing/**
 			          org/forester/test/**
-			          org/forester/tools/**
-			          " duplicate="fail" index="true">
+			          org/forester/tools/**"
+			          duplicate="fail" index="true">
 		</jar>
 	</target>
 
