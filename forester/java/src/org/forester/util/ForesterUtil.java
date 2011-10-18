@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.DateFormat;
@@ -47,10 +48,12 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -218,6 +221,27 @@ public final class ForesterUtil {
 
     final public static String collapseWhiteSpace( final String s ) {
         return s.replaceAll( "[\\s]+", " " );
+    }
+
+    final public static void collection2file( final File file, final Collection<?> data, final String separator )
+            throws IOException {
+        final Writer writer = new BufferedWriter( new FileWriter( file ) );
+        collection2writer( writer, data, separator );
+        writer.close();
+    }
+
+    final public static void collection2writer( final Writer writer, final Collection<?> data, final String separator )
+            throws IOException {
+        boolean first = true;
+        for( final Object object : data ) {
+            if ( !first ) {
+                writer.write( separator );
+            }
+            else {
+                first = false;
+            }
+            writer.write( object.toString() );
+        }
     }
 
     final public static String colorToHex( final Color color ) {
@@ -536,6 +560,33 @@ public final class ForesterUtil {
         return map;
     }
 
+    final public static void map2file( final File file,
+                                       final Map<?, ?> data,
+                                       final String entry_separator,
+                                       final String data_separator ) throws IOException {
+        final Writer writer = new BufferedWriter( new FileWriter( file ) );
+        map2writer( writer, data, entry_separator, data_separator );
+        writer.close();
+    }
+
+    final public static void map2writer( final Writer writer,
+                                         final Map<?, ?> data,
+                                         final String entry_separator,
+                                         final String data_separator ) throws IOException {
+        for( final Entry<?, ?> entry : data.entrySet() ) {
+            boolean first = true;
+            if ( !first ) {
+                writer.write( data_separator );
+            }
+            else {
+                first = false;
+            }
+            writer.write( entry.getKey().toString() );
+            writer.write( entry_separator );
+            writer.write( entry.getValue().toString() );
+        }
+    }
+
     final public static StringBuffer mapToStringBuffer( final Map map, final String key_value_separator ) {
         final StringBuffer sb = new StringBuffer();
         for( final Iterator iter = map.keySet().iterator(); iter.hasNext(); ) {
@@ -772,6 +823,10 @@ public final class ForesterUtil {
         return str.split( regex );
     }
 
+    final public static String stringArrayToString( final String[] a ) {
+        return stringArrayToString( a, ", " );
+    }
+
     final public static String stringArrayToString( final String[] a, final String separator ) {
         final StringBuilder sb = new StringBuilder();
         if ( ( a != null ) && ( a.length > 0 ) ) {
@@ -781,6 +836,18 @@ public final class ForesterUtil {
             sb.append( a[ a.length - 1 ] );
         }
         return sb.toString();
+    }
+
+    final public static String[] stringListToArray( final List<String> list ) {
+        if ( list != null ) {
+            final String[] str = new String[ list.size() ];
+            int i = 0;
+            for( final String l : list ) {
+                str[ i++ ] = l;
+            }
+            return str;
+        }
+        return null;
     }
 
     final public static String stringListToString( final List<String> l, final String separator ) {
@@ -794,10 +861,6 @@ public final class ForesterUtil {
         return sb.toString();
     }
 
-    final public static String stringArrayToString( final String[] a ) {
-        return stringArrayToString( a, ", " );
-    }
-
     final public static String[] stringSetToArray( final Set<String> strings ) {
         final String[] str_array = new String[ strings.size() ];
         int i = 0;
@@ -805,18 +868,6 @@ public final class ForesterUtil {
             str_array[ i++ ] = e;
         }
         return str_array;
-    }
-
-    final public static String[] stringListToArray( final List<String> list ) {
-        if ( list != null ) {
-            final String[] str = new String[ list.size() ];
-            int i = 0;
-            for( final String l : list ) {
-                str[ i++ ] = l;
-            }
-            return str;
-        }
-        return null;
     }
 
     final public static void unexpectedFatalError( final String prg_name, final Exception e ) {

@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -232,8 +231,8 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                              = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                     = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                             = '#';
-    final static private String                               PRG_VERSION                                                            = "2.100";
-    final static private String                               PRG_DATE                                                               = "2011.06.17";
+    final static private String                               PRG_VERSION                                                            = "2.200";
+    final static private String                               PRG_DATE                                                               = "2011.10.18";
     final static private String                               E_MAIL                                                                 = "czmasek@burnham.org";
     final static private String                               WWW                                                                    = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                    = true;
@@ -1727,14 +1726,8 @@ public class surfacing {
         final SortedSet<String> domains_which_are_always_single = new TreeSet<String>();
         final SortedSet<String> domains_which_are_sometimes_single_sometimes_not = new TreeSet<String>();
         final SortedSet<String> domains_which_never_single = new TreeSet<String>();
-        final BufferedWriter domains_which_are_always_single_writer = null;
-        final BufferedWriter domains_which_are_sometimes_single_sometimes_not_writer = null;
-        final BufferedWriter domains_which_never_single_writer = null;
-        BufferedWriter all_genomes_domains_per_potein_histo_writer = null;
         BufferedWriter domains_per_potein_stats_writer = null;
         try {
-            all_genomes_domains_per_potein_histo_writer = new BufferedWriter( new FileWriter( out_dir
-                    + ForesterUtil.FILE_SEPARATOR + output_file + "__all_genomes_domains_per_potein_histo.txt" ) );
             domains_per_potein_stats_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
                     + output_file + "__domains_per_potein_stats.txt" ) );
             domains_per_potein_stats_writer.write( "Genome" );
@@ -1990,16 +1983,18 @@ public class surfacing {
             domains_per_potein_stats_writer.write( "\n" );
             domains_per_potein_stats_writer.flush();
             domains_per_potein_stats_writer.close();
-            for( final Entry<Integer, Integer> entry : all_genomes_domains_per_potein_histo.entrySet() ) {
-                all_genomes_domains_per_potein_histo_writer.write( entry.getKey() + "\t" + entry.getValue() + "\n" );
-            }
-            all_genomes_domains_per_potein_histo_writer.flush();
-            all_genomes_domains_per_potein_histo_writer.close();
+            ForesterUtil.map2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                    + "__all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
+            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                    + "__domains_always_single_.txt" ), domains_which_are_always_single, "\n" );
+            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                    + "__domains_single_or_combined.txt" ), domains_which_are_sometimes_single_sometimes_not, "\n" );
+            ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
+                    + "__domains_always_combined.txt" ), domains_which_never_single, "\n" );
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
         }
-        //
         if ( query_domains_writer_ary != null ) {
             for( int j = 0; j < query_domain_ids_array.length; j++ ) {
                 try {
