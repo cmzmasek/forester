@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -145,7 +146,7 @@ public class confadd {
         Phylogeny[] evaluators = null;
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         try {
-            targets = factory.create( target_file, ForesterUtil.createParserDependingOnFileType( target_file, true ) );
+            targets = factory.create( target_file, ParserUtils.createParserDependingOnFileType( target_file, true ) );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME,
@@ -170,7 +171,7 @@ public class confadd {
         }
         try {
             evaluators = factory.create( evaluators_file,
-                                         ForesterUtil.createParserDependingOnFileType( evaluators_file, true ) );
+                                         ParserUtils.createParserDependingOnFileType( evaluators_file, true ) );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME, "failed to read evaluator topologies from [" + evaluators_file + "]: "

@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -54,6 +55,7 @@ import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTOFF;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -86,6 +88,7 @@ import org.forester.surfacing.Protein;
 import org.forester.surfacing.ProteinCountsBasedPairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.Species;
 import org.forester.surfacing.SurfacingUtil;
+import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.CommandLineArguments;
@@ -487,7 +490,7 @@ public class surfacing {
             }
             try {
                 final Phylogeny[] p_array = ParserBasedPhylogenyFactory.getInstance()
-                        .create( intree_file, ForesterUtil.createParserDependingOnFileType( intree_file, true ) );
+                        .create( intree_file, ParserUtils.createParserDependingOnFileType( intree_file, true ) );
                 if ( p_array.length < 1 ) {
                     ForesterUtil.fatalError( surfacing.PRG_NAME, "file [" + intree_file
                             + "] does not contain any phylogeny in phyloXML format" );
@@ -1636,7 +1639,7 @@ public class surfacing {
             }
         } // if ( perform_pwc ) {
         System.out.println();
-        html_desc.append( "<tr><td>Command line:</td><td>" + cla.getCommandLineArgsAsString() + "</td></tr>" + nl );
+        html_desc.append( "<tr><td>Command line:</td><td>\n" + cla.getCommandLineArgsAsString() + "\n</td></tr>" + nl );
         System.out.println( "Command line                : " + cla.getCommandLineArgsAsString() );
         BufferedWriter[] query_domains_writer_ary = null;
         List<DomainId>[] query_domain_ids_array = null;
@@ -1718,6 +1721,39 @@ public class surfacing {
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getMessage() );
+        }
+        final DescriptiveStatistics all_genomes_domains_per_potein_stats = new BasicDescriptiveStatistics();
+        final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo = new TreeMap<Integer, Integer>();
+        final SortedSet<String> domains_which_are_always_single = new TreeSet<String>();
+        final SortedSet<String> domains_which_are_sometimes_single_sometimes_not = new TreeSet<String>();
+        final SortedSet<String> domains_which_never_single = new TreeSet<String>();
+        final BufferedWriter domains_which_are_always_single_writer = null;
+        final BufferedWriter domains_which_are_sometimes_single_sometimes_not_writer = null;
+        final BufferedWriter domains_which_never_single_writer = null;
+        BufferedWriter all_genomes_domains_per_potein_histo_writer = null;
+        BufferedWriter domains_per_potein_stats_writer = null;
+        try {
+            all_genomes_domains_per_potein_histo_writer = new BufferedWriter( new FileWriter( out_dir
+                    + ForesterUtil.FILE_SEPARATOR + output_file + "__all_genomes_domains_per_potein_histo.txt" ) );
+            domains_per_potein_stats_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
+                    + output_file + "__domains_per_potein_stats.txt" ) );
+            domains_per_potein_stats_writer.write( "Genome" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "Mean" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "SD" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "Median" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "N" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "Min" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( "Max" );
+            domains_per_potein_stats_writer.write( "\n" );
+        }
+        catch ( final IOException e3 ) {
+            e3.printStackTrace();
         }
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();
@@ -1865,6 +1901,14 @@ public class surfacing {
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, e.toString() );
             }
+            SurfacingUtil.domainsPerProteinsStatistics( input_file_properties[ i ][ 0 ],
+                                                        protein_list,
+                                                        all_genomes_domains_per_potein_stats,
+                                                        all_genomes_domains_per_potein_histo,
+                                                        domains_which_are_always_single,
+                                                        domains_which_are_sometimes_single_sometimes_not,
+                                                        domains_which_never_single,
+                                                        domains_per_potein_stats_writer );
             gwcd_list.add( BasicGenomeWideCombinableDomains
                     .createInstance( protein_list,
                                      ignore_combination_with_same,
@@ -1928,6 +1972,34 @@ public class surfacing {
         }
         ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
                 + per_genome_domain_promiscuity_statistics_file );
+        //
+        try {
+            domains_per_potein_stats_writer.write( "ALL" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.arithmeticMean() + "" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.sampleStandardDeviation() + "" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.median() + "" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getN() + "" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getMin() + "" );
+            domains_per_potein_stats_writer.write( "\t" );
+            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getMax() + "" );
+            domains_per_potein_stats_writer.write( "\n" );
+            domains_per_potein_stats_writer.flush();
+            domains_per_potein_stats_writer.close();
+            for( final Entry<Integer, Integer> entry : all_genomes_domains_per_potein_histo.entrySet() ) {
+                all_genomes_domains_per_potein_histo_writer.write( entry.getKey() + "\t" + entry.getValue() + "\n" );
+            }
+            all_genomes_domains_per_potein_histo_writer.flush();
+            all_genomes_domains_per_potein_histo_writer.close();
+        }
+        catch ( final IOException e2 ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
+        }
+        //
         if ( query_domains_writer_ary != null ) {
             for( int j = 0; j < query_domain_ids_array.length; j++ ) {
                 try {

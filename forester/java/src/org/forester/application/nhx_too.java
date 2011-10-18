@@ -31,8 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.util.CommandLineArguments;
@@ -79,7 +81,7 @@ public class nhx_too {
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( phylogeny_infile, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( phylogeny_infile, true );
             p = factory.create( phylogeny_infile, pp )[ 0 ];
         }
         catch ( final Exception e ) {
@@ -88,7 +90,7 @@ public class nhx_too {
         }
         if ( int_node_name_is_support ) {
             try {
-                ForesterUtil.transferInternalNodeNamesToConfidence( p );
+                PhylogenyMethods.transferInternalNodeNamesToConfidence( p );
             }
             catch ( final Exception e ) {
                 ForesterUtil.unexpectedFatalError( nhx_too.PRG_NAME,

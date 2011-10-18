@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -127,7 +128,7 @@ public class ta {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( species_tree_file, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
             species_tree = factory.create( species_tree_file, pp )[ 0 ];
         }
         catch ( final IOException e ) {
@@ -137,7 +138,7 @@ public class ta {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( gene_tree_file, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( gene_tree_file, true );
             gene_tree = factory.create( gene_tree_file, pp )[ 0 ];
         }
         catch ( final IOException e ) {

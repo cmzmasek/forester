@@ -64,10 +64,13 @@ import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.Distribution;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -83,6 +86,66 @@ public final class Util {
                                                                          .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
+    }
+
+    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasTaxonomy() ) {
+            node.getNodeData().setTaxonomy( new Taxonomy() );
+        }
+    }
+
+    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasSequence() ) {
+            node.getNodeData().setSequence( new Sequence() );
+        }
+    }
+
+    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDistribution() ) {
+            node.getNodeData().setDistribution( new Distribution( "" ) );
+        }
+    }
+
+    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDate() ) {
+            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
+        }
+    }
+
+    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getBranchData().isHasConfidences() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if at least one branch has a length larger than zero.
+     * 
+     * 
+     * @param phy
+     */
+    final static public boolean isHasAtLeastOneBranchLengthLargerThanZero( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getDistanceToParent() > 0.0 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastNodeWithEvent( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getNodeData().isHasEvent() ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static MaskFormatter createMaskFormatter( final String s ) {
@@ -634,13 +697,13 @@ public final class Util {
                                                                       final ControlPanel atv_control,
                                                                       final Configuration configuration ) {
         if ( ( t != null ) && !t.isEmpty() ) {
-            if ( !ForesterUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+            if ( !Util.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
                 atv_control.setDrawPhylogram( false );
                 atv_control.setDrawPhylogramEnabled( false );
             }
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
                 if ( atv_control.getDisplayAsPhylogramCb() != null ) {
-                    if ( ForesterUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+                    if ( Util.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
                         atv_control.setDrawPhylogram( true );
                         atv_control.setDrawPhylogramEnabled( true );
                     }
@@ -651,7 +714,7 @@ public final class Util {
             }
             if ( configuration.doGuessCheckOption( Configuration.write_confidence_values ) ) {
                 if ( atv_control.getWriteConfidenceCb() != null ) {
-                    if ( ForesterUtil.isHasAtLeastOneBranchWithSupportValues( t ) ) {
+                    if ( Util.isHasAtLeastOneBranchWithSupportValues( t ) ) {
                         atv_control.setCheckbox( Configuration.write_confidence_values, true );
                     }
                     else {
@@ -661,7 +724,7 @@ public final class Util {
             }
             if ( configuration.doGuessCheckOption( Configuration.write_events ) ) {
                 if ( atv_control.getShowEventsCb() != null ) {
-                    if ( ForesterUtil.isHasAtLeastNodeWithEvent( t ) ) {
+                    if ( Util.isHasAtLeastNodeWithEvent( t ) ) {
                         atv_control.setCheckbox( Configuration.write_events, true );
                     }
                     else {
@@ -735,7 +798,7 @@ public final class Util {
             parser = new TolParser();
         }
         else {
-            parser = ForesterUtil.createParserDependingOnUrlContents( url, phyloxml_validate_against_xsd );
+            parser = ParserUtils.createParserDependingOnUrlContents( url, phyloxml_validate_against_xsd );
         }
         return factory.create( url.openStream(), parser );
     }
@@ -858,7 +921,7 @@ public final class Util {
                                                                        final TreePanel tree_panel,
                                                                        final ControlPanel ac,
                                                                        final GraphicsExportType type,
-                                                                       final Options options ) throws IOException{
+                                                                       final Options options ) throws IOException {
         if ( !options.isGraphicsExportUsingActualSize() ) {
             if ( options.isGraphicsExportVisibleOnly() ) {
                 throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
@@ -916,7 +979,7 @@ public final class Util {
         }
         return msg;
     }
-    
+
     final static void writeToTiff( final File file, final BufferedImage image ) throws IOException {
         // See: http://log.robmeek.com/2005/08/write-tiff-in-java.html
         ImageWriter writer = null;

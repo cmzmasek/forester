@@ -52,6 +52,7 @@ import org.forester.go.OBOparser;
 import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
 import org.forester.io.parsers.HmmPfamOutputParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -495,7 +496,7 @@ public class surfacing_hmmpfam {
             }
             try {
                 final Phylogeny[] p_array = ParserBasedPhylogenyFactory.getInstance()
-                        .create( intree_file, ForesterUtil.createParserDependingOnFileType( intree_file, true ) );
+                        .create( intree_file, ParserUtils.createParserDependingOnFileType( intree_file, true ) );
                 if ( p_array.length < 1 ) {
                     ForesterUtil.fatalError( surfacing_hmmpfam.PRG_NAME, "file [" + intree_file
                             + "] does not contain any phylogeny in phyloXML format" );

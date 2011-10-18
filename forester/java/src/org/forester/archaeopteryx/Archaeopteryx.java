@@ -31,7 +31,9 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.util.ForesterUtil;
 
 //
@@ -85,16 +87,16 @@ public final class Archaeopteryx {
                         ForesterUtil.fatalError( Constants.PRG_NAME, err );
                     }
                     boolean nhx_or_nexus = false;
-                    final PhylogenyParser p = ForesterUtil.createParserDependingOnFileType( f, conf
+                    final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( f, conf
                             .isValidatePhyloXmlAgainstSchema() );
                     if ( p instanceof NHXParser ) {
                         nhx_or_nexus = true;
                         final NHXParser nhx = ( NHXParser ) p;
                         nhx.setReplaceUnderscores( conf.isReplaceUnderscoresInNhParsing() );
                         nhx.setIgnoreQuotes( false );
-                        ForesterUtil.TAXONOMY_EXTRACTION te = ForesterUtil.TAXONOMY_EXTRACTION.NO;
+                        PhylogenyMethods.TAXONOMY_EXTRACTION te = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
                         if ( conf.isExtractPfamTaxonomyCodesInNhParsing() ) {
-                            te = ForesterUtil.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
+                            te = PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
                         }
                         nhx.setTaxonomyExtraction( te );
                     }
@@ -107,10 +109,10 @@ public final class Archaeopteryx {
                     else if ( p instanceof PhyloXmlParser ) {
                         MainFrameApplication.warnIfNotPhyloXmlValidation( conf );
                     }
-                    phylogenies = ForesterUtil.readPhylogenies( p, f );
+                    phylogenies = PhylogenyMethods.readPhylogenies( p, f );
                     if ( nhx_or_nexus && conf.isInternalNumberAreConfidenceForNhParsing() ) {
                         for( final Phylogeny phy : phylogenies ) {
-                            ForesterUtil.transferInternalNodeNamesToConfidence( phy );
+                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
                         }
                     }
                 }

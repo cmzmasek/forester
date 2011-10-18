@@ -26,6 +26,8 @@
 package org.forester.phylogeny;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -35,11 +37,18 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
+import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
@@ -168,6 +177,145 @@ public class PhylogenyMethods {
 
     public boolean isAreOrthologous( final PhylogenyNode node1, final PhylogenyNode node2 ) {
         return !obtainLCA( node1, node2 ).isDuplication();
+    }
+
+    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final Phylogeny[] trees = factory.create( file, parser );
+        if ( ( trees == null ) || ( trees.length == 0 ) ) {
+            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
+        }
+        return trees;
+    }
+
+    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isRoot() && !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
+                if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                    double d = -1.0;
+                    try {
+                        d = Double.parseDouble( n.getName() );
+                    }
+                    catch ( final Exception e ) {
+                        d = -1.0;
+                    }
+                    if ( d >= 0.0 ) {
+                        n.getBranchData().addConfidence( new Confidence( d, "" ) );
+                        n.setName( "" );
+                    }
+                }
+            }
+        }
+    }
+
+    final static public void transferInternalNamesToBootstrapSupport( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( !n.isExternal() && !ForesterUtil.isEmpty( n.getName() ) ) {
+                double value = -1;
+                try {
+                    value = Double.parseDouble( n.getName() );
+                }
+                catch ( final NumberFormatException e ) {
+                    throw new IllegalArgumentException( "failed to parse number from [" + n.getName() + "]: "
+                            + e.getLocalizedMessage() );
+                }
+                if ( value >= 0.0 ) {
+                    n.getBranchData().addConfidence( new Confidence( value, "bootstrap" ) );
+                    n.setName( "" );
+                }
+            }
+        }
+    }
+
+    final static public void transferNodeNameToField( final Phylogeny phy,
+                                                      final PhylogenyMethods.PhylogenyNodeField field ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            final String name = n.getName().trim();
+            if ( !ForesterUtil.isEmpty( name ) ) {
+                switch ( field ) {
+                    case TAXONOMY_CODE:
+                        //temp hack
+                        //                        if ( name.length() > 5 ) {
+                        //                            n.setName( "" );
+                        //                            if ( !n.getNodeData().isHasTaxonomy() ) {
+                        //                                n.getNodeData().setTaxonomy( new Taxonomy() );
+                        //                            }
+                        //                            n.getNodeData().getTaxonomy().setScientificName( name );
+                        //                            break;
+                        //                        }
+                        //
+                        n.setName( "" );
+                        setTaxonomyCode( n, name );
+                        break;
+                    case TAXONOMY_SCIENTIFIC_NAME:
+                        n.setName( "" );
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        n.getNodeData().getTaxonomy().setScientificName( name );
+                        break;
+                    case TAXONOMY_COMMON_NAME:
+                        n.setName( "" );
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        n.getNodeData().getTaxonomy().setCommonName( name );
+                        break;
+                    case SEQUENCE_SYMBOL:
+                        n.setName( "" );
+                        if ( !n.getNodeData().isHasSequence() ) {
+                            n.getNodeData().setSequence( new Sequence() );
+                        }
+                        n.getNodeData().getSequence().setSymbol( name );
+                        break;
+                    case SEQUENCE_NAME:
+                        n.setName( "" );
+                        if ( !n.getNodeData().isHasSequence() ) {
+                            n.getNodeData().setSequence( new Sequence() );
+                        }
+                        n.getNodeData().getSequence().setName( name );
+                        break;
+                    case TAXONOMY_ID_UNIPROT_1: {
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        String id = name;
+                        final int i = name.indexOf( '_' );
+                        if ( i > 0 ) {
+                            id = name.substring( 0, i );
+                        }
+                        else {
+                            n.setName( "" );
+                        }
+                        n.getNodeData().getTaxonomy()
+                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        break;
+                    }
+                    case TAXONOMY_ID_UNIPROT_2: {
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        String id = name;
+                        final int i = name.indexOf( '_' );
+                        if ( i > 0 ) {
+                            id = name.substring( i + 1, name.length() );
+                        }
+                        else {
+                            n.setName( "" );
+                        }
+                        n.getNodeData().getTaxonomy()
+                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     static double addPhylogenyDistances( final double a, final double b ) {
@@ -1249,5 +1397,20 @@ public class PhylogenyMethods {
             to_be_stripped.deleteSubtree( phylogenyNode, true );
         }
         return nodes_to_delete.size();
+    }
+
+    public static enum PhylogenyNodeField {
+        CLADE_NAME,
+        TAXONOMY_CODE,
+        TAXONOMY_SCIENTIFIC_NAME,
+        TAXONOMY_COMMON_NAME,
+        SEQUENCE_SYMBOL,
+        SEQUENCE_NAME,
+        TAXONOMY_ID_UNIPROT_1,
+        TAXONOMY_ID_UNIPROT_2;
+    }
+
+    public static enum TAXONOMY_EXTRACTION {
+        NO, YES, PFAM_STYLE_ONLY;
     }
 }

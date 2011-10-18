@@ -1312,7 +1312,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( current_tree_panel == null ) || ( current_tree_panel.getPhylogeny() == null ) ) {
             mi.setEnabled( true );
         }
-        else if ( ForesterUtil.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
+        else if ( Util.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
             mi.setEnabled( true );
         }
         else {

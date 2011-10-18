@@ -29,12 +29,12 @@ import java.io.File;
 import java.io.IOException;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.util.ForesterUtil;
 
 public class strip {
 
@@ -55,7 +55,7 @@ public class strip {
         Phylogeny p = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( infile, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( infile, true );
             p = factory.create( infile, pp )[ 0 ];
         }
         catch ( final Exception e ) {
@@ -109,7 +109,7 @@ public class strip {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final File f = new File( file );
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( f, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( f, true );
             p0 = factory.create( f, pp )[ 0 ];
         }
         catch ( final Exception e ) {

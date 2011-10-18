@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.Identifier;
@@ -291,7 +292,7 @@ public final class decorator {
         Phylogeny[] phylogenies = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( phylogenies_infile, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( phylogenies_infile, true );
             phylogenies = factory.create( phylogenies_infile, pp );
         }
         catch ( final Exception e ) {

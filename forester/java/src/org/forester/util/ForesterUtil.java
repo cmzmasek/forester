@@ -48,7 +48,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,27 +56,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.forester.io.parsers.PhylogenyParser;
-import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
-import org.forester.io.parsers.nhx.NHXParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
-import org.forester.io.parsers.tol.TolParser;
-import org.forester.io.parsers.util.PhylogenyParserException;
-import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyMethods;
-import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Confidence;
-import org.forester.phylogeny.data.Distribution;
-import org.forester.phylogeny.data.Identifier;
-import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.Taxonomy;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 public final class ForesterUtil {
 
@@ -298,203 +277,6 @@ public final class ForesterUtil {
         return file;
     }
 
-    final public static PhylogenyParser createParserDependingFileContents( final File file,
-                                                                           final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
-        PhylogenyParser parser = null;
-        final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
-        if ( first_line.startsWith( "<" ) ) {
-            parser = new PhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
-        }
-        else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
-                || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-            parser = new NexusPhylogeniesParser();
-        }
-        else {
-            parser = new NHXParser();
-        }
-        return parser;
-    }
-
-    final public static PhylogenyParser createParserDependingOnFileType( final File file,
-                                                                         final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
-        PhylogenyParser parser = null;
-        parser = createParserDependingOnSuffix( file.getName(), phyloxml_validate_against_xsd );
-        if ( parser == null ) {
-            parser = createParserDependingFileContents( file, phyloxml_validate_against_xsd );
-        }
-        return parser;
-    }
-
-    /**
-     * Return null if it can not guess the parser to use based on name suffix.
-     * 
-     * @param filename
-     * @return
-     */
-    final public static PhylogenyParser createParserDependingOnSuffix( final String filename,
-                                                                       final boolean phyloxml_validate_against_xsd ) {
-        PhylogenyParser parser = null;
-        final String filename_lc = filename.toLowerCase();
-        if ( filename_lc.endsWith( ".tol" ) || filename_lc.endsWith( ".tolxml" ) || filename_lc.endsWith( ".tol.zip" ) ) {
-            parser = new TolParser();
-        }
-        else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( ".px" ) || filename_lc.endsWith( "phyloxml" )
-                || filename_lc.endsWith( ".zip" ) ) {
-            parser = new PhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
-        }
-        else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" ) ) {
-            parser = new NexusPhylogeniesParser();
-        }
-        else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" ) ) {
-            parser = new NHXParser();
-        }
-        return parser;
-    }
-
-    final public static PhylogenyParser createParserDependingOnUrlContents( final URL url,
-                                                                            final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
-        final String lc_filename = url.getFile().toString().toLowerCase();
-        PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
-        if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
-            if ( parser instanceof PhyloXmlParser ) {
-                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
-            }
-            else if ( parser instanceof TolParser ) {
-                ( ( TolParser ) parser ).setZippedInputstream( true );
-            }
-        }
-        if ( parser == null ) {
-            final String first_line = getFirstLine( url ).trim().toLowerCase();
-            if ( first_line.startsWith( "<" ) ) {
-                parser = new PhyloXmlParser();
-                if ( phyloxml_validate_against_xsd ) {
-                    final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                    final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                    if ( xsd_url != null ) {
-                        ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                    }
-                    else {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
-            else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
-                    || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-                parser = new NexusPhylogeniesParser();
-            }
-            else {
-                parser = new NHXParser();
-            }
-        }
-        return parser;
-    }
-
-    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDate() ) {
-            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
-        }
-    }
-
-    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDistribution() ) {
-            node.getNodeData().setDistribution( new Distribution( "" ) );
-        }
-    }
-
-    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasSequence() ) {
-            node.getNodeData().setSequence( new Sequence() );
-        }
-    }
-
-    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasTaxonomy() ) {
-            node.getNodeData().setTaxonomy( new Taxonomy() );
-        }
-    }
-
-    /**
-     * Extracts a code if and only if:
-     * one and only one _, 
-     * shorter than 25, 
-     * no |, 
-     * no ., 
-     * if / present it has to be after the _, 
-     * if PFAM_STYLE_ONLY: / must be present,
-     * tax code can only contain uppercase letters and numbers,
-     * and must contain at least one uppercase letter.
-     * Return null if no code extractable.
-     * 
-     * @param name
-     * @param limit_to_five
-     * @return
-     */
-    public static String extractTaxonomyCodeFromNodeName( final String name,
-                                                          final boolean limit_to_five,
-                                                          final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction ) {
-        if ( ( name.indexOf( "_" ) > 0 )
-                && ( name.length() < 25 )
-                && ( name.lastIndexOf( "_" ) == name.indexOf( "_" ) )
-                && ( name.indexOf( "|" ) < 0 )
-                && ( name.indexOf( "." ) < 0 )
-                && ( ( taxonomy_extraction != ForesterUtil.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name
-                        .indexOf( "/" ) >= 0 ) )
-                && ( ( ( name.indexOf( "/" ) ) < 0 ) || ( name.indexOf( "/" ) > name.indexOf( "_" ) ) ) ) {
-            final String[] s = name.split( "[_/]" );
-            if ( s.length > 1 ) {
-                String str = s[ 1 ];
-                if ( limit_to_five ) {
-                    if ( str.length() > 5 ) {
-                        str = str.substring( 0, 5 );
-                    }
-                    else if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
-                        str = str.substring( 0, 3 );
-                    }
-                }
-                final Matcher letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
-                if ( !letters_and_numbers.matches() ) {
-                    return null;
-                }
-                final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
-                if ( numbers_only.matches() ) {
-                    return null;
-                }
-                return str;
-            }
-        }
-        return null;
-    }
-
     public static void fatalError( final String prg_name, final String message ) {
         System.err.println();
         System.err.println( "[" + prg_name + "] > " + message );
@@ -603,27 +385,6 @@ public final class ForesterUtil {
         return ForesterUtil.LINE_SEPARATOR;
     }
 
-    /**
-     * Returns all custom data tag names of this Phylogeny as Hashtable. Tag
-     * names are keys, values are Boolean set to false.
-     */
-    final public static Hashtable<String, Boolean> getPropertyRefs( final Phylogeny phylogeny ) {
-        final Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
-        if ( phylogeny.isEmpty() ) {
-            return ht;
-        }
-        for( final PhylogenyNodeIterator iter = phylogeny.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode current_node = iter.next();
-            if ( current_node.getNodeData().isHasProperties() ) {
-                final String[] tags = current_node.getNodeData().getProperties().getPropertyRefs();
-                for( int i = 0; i < tags.length; ++i ) {
-                    ht.put( tags[ i ], new Boolean( false ) );
-                }
-            }
-        }
-        return ht;
-    }
-
     final public static void increaseCountingMap( final Map<String, Integer> counting_map, final String item_name ) {
         if ( !counting_map.containsKey( item_name ) ) {
             counting_map.put( item_name, 1 );
@@ -631,28 +392,6 @@ public final class ForesterUtil {
         else {
             counting_map.put( item_name, counting_map.get( item_name ) + 1 );
         }
-    }
-
-    final static public boolean isAllNonEmptyInternalLabelsArePositiveNumbers( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isRoot() && !n.isExternal() ) {
-                if ( !ForesterUtil.isEmpty( n.getName() ) ) {
-                    double d = -1.0;
-                    try {
-                        d = Double.parseDouble( n.getName() );
-                    }
-                    catch ( final Exception e ) {
-                        d = -1.0;
-                    }
-                    if ( d < 0.0 ) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
     }
 
     final public static boolean isContainsParanthesesableNhCharacter( final String nh ) {
@@ -693,42 +432,6 @@ public final class ForesterUtil {
 
     final public static boolean isEven( final int n ) {
         return n % 2 == 0;
-    }
-
-    final static public boolean isHasAtLeastNodeWithEvent( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getNodeData().isHasEvent() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if at least one branch has a length larger than zero.
-     * 
-     * 
-     * @param phy
-     */
-    final static public boolean isHasAtLeastOneBranchLengthLargerThanZero( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getDistanceToParent() > 0.0 ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getBranchData().isHasConfidences() ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -939,16 +642,6 @@ public final class ForesterUtil {
         return Integer.parseInt( str );
     }
 
-    final public static void postOrderRelabelInternalNodes( final Phylogeny phylogeny, final int starting_number ) {
-        int i = starting_number;
-        for( final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
-            final PhylogenyNode node = it.next();
-            if ( !node.isExternal() ) {
-                node.setName( String.valueOf( i++ ) );
-            }
-        }
-    }
-
     final public static void printArray( final Object[] a ) {
         for( int i = 0; i < a.length; ++i ) {
             System.out.println( "[" + i + "]=" + a[ i ] );
@@ -1003,15 +696,6 @@ public final class ForesterUtil {
 
     final public static void programMessage( final String prg_name, final String message ) {
         System.out.println( "[" + prg_name + "] > " + message );
-    }
-
-    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final Phylogeny[] trees = factory.create( file, parser );
-        if ( ( trees == null ) || ( trees.length == 0 ) ) {
-            throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
-        }
-        return trees;
     }
 
     final public static String removeSuffix( final String file_name ) {
@@ -1135,135 +819,6 @@ public final class ForesterUtil {
         return null;
     }
 
-    final static public void transferInternalNamesToBootstrapSupport( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isExternal() && !ForesterUtil.isEmpty( n.getName() ) ) {
-                double value = -1;
-                try {
-                    value = Double.parseDouble( n.getName() );
-                }
-                catch ( final NumberFormatException e ) {
-                    throw new IllegalArgumentException( "failed to parse number from [" + n.getName() + "]: "
-                            + e.getLocalizedMessage() );
-                }
-                if ( value >= 0.0 ) {
-                    n.getBranchData().addConfidence( new Confidence( value, "bootstrap" ) );
-                    n.setName( "" );
-                }
-            }
-        }
-    }
-
-    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isRoot() && !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
-                if ( !ForesterUtil.isEmpty( n.getName() ) ) {
-                    double d = -1.0;
-                    try {
-                        d = Double.parseDouble( n.getName() );
-                    }
-                    catch ( final Exception e ) {
-                        d = -1.0;
-                    }
-                    if ( d >= 0.0 ) {
-                        n.getBranchData().addConfidence( new Confidence( d, "" ) );
-                        n.setName( "" );
-                    }
-                }
-            }
-        }
-    }
-
-    final static public void transferNodeNameToField( final Phylogeny phy, final PhylogenyNodeField field ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            final String name = n.getName().trim();
-            if ( !ForesterUtil.isEmpty( name ) ) {
-                switch ( field ) {
-                    case TAXONOMY_CODE:
-                        //temp hack
-                        //                        if ( name.length() > 5 ) {
-                        //                            n.setName( "" );
-                        //                            if ( !n.getNodeData().isHasTaxonomy() ) {
-                        //                                n.getNodeData().setTaxonomy( new Taxonomy() );
-                        //                            }
-                        //                            n.getNodeData().getTaxonomy().setScientificName( name );
-                        //                            break;
-                        //                        }
-                        //
-                        n.setName( "" );
-                        PhylogenyMethods.setTaxonomyCode( n, name );
-                        break;
-                    case TAXONOMY_SCIENTIFIC_NAME:
-                        n.setName( "" );
-                        if ( !n.getNodeData().isHasTaxonomy() ) {
-                            n.getNodeData().setTaxonomy( new Taxonomy() );
-                        }
-                        n.getNodeData().getTaxonomy().setScientificName( name );
-                        break;
-                    case TAXONOMY_COMMON_NAME:
-                        n.setName( "" );
-                        if ( !n.getNodeData().isHasTaxonomy() ) {
-                            n.getNodeData().setTaxonomy( new Taxonomy() );
-                        }
-                        n.getNodeData().getTaxonomy().setCommonName( name );
-                        break;
-                    case SEQUENCE_SYMBOL:
-                        n.setName( "" );
-                        if ( !n.getNodeData().isHasSequence() ) {
-                            n.getNodeData().setSequence( new Sequence() );
-                        }
-                        n.getNodeData().getSequence().setSymbol( name );
-                        break;
-                    case SEQUENCE_NAME:
-                        n.setName( "" );
-                        if ( !n.getNodeData().isHasSequence() ) {
-                            n.getNodeData().setSequence( new Sequence() );
-                        }
-                        n.getNodeData().getSequence().setName( name );
-                        break;
-                    case TAXONOMY_ID_UNIPROT_1: {
-                        if ( !n.getNodeData().isHasTaxonomy() ) {
-                            n.getNodeData().setTaxonomy( new Taxonomy() );
-                        }
-                        String id = name;
-                        final int i = name.indexOf( '_' );
-                        if ( i > 0 ) {
-                            id = name.substring( 0, i );
-                        }
-                        else {
-                            n.setName( "" );
-                        }
-                        n.getNodeData().getTaxonomy()
-                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
-                        break;
-                    }
-                    case TAXONOMY_ID_UNIPROT_2: {
-                        if ( !n.getNodeData().isHasTaxonomy() ) {
-                            n.getNodeData().setTaxonomy( new Taxonomy() );
-                        }
-                        String id = name;
-                        final int i = name.indexOf( '_' );
-                        if ( i > 0 ) {
-                            id = name.substring( i + 1, name.length() );
-                        }
-                        else {
-                            n.setName( "" );
-                        }
-                        n.getNodeData().getTaxonomy()
-                                .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     final public static void unexpectedFatalError( final String prg_name, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
@@ -1319,20 +874,5 @@ public final class ForesterUtil {
             i++;
         }
         return sb.toString();
-    }
-
-    public static enum PhylogenyNodeField {
-        CLADE_NAME,
-        TAXONOMY_CODE,
-        TAXONOMY_SCIENTIFIC_NAME,
-        TAXONOMY_COMMON_NAME,
-        SEQUENCE_SYMBOL,
-        SEQUENCE_NAME,
-        TAXONOMY_ID_UNIPROT_1,
-        TAXONOMY_ID_UNIPROT_2;
-    }
-
-    public static enum TAXONOMY_EXTRACTION {
-        NO, YES, PFAM_STYLE_ONLY;
     }
 }

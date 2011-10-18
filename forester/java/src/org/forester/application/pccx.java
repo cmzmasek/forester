@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.pccx.BasicExternalNodeBasedCoverageExtender;
 import org.forester.pccx.Coverage;
@@ -144,7 +145,7 @@ public class pccx {
         Phylogeny[] phylogenies = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( phylogenies_infile, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( phylogenies_infile, true );
             phylogenies = factory.create( phylogenies_infile, pp );
         }
         catch ( final IOException e ) {

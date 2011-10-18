@@ -39,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -57,34 +58,34 @@ import org.forester.util.ForesterUtil;
 
 public final class NHXParser implements PhylogenyParser {
 
-    public static final boolean                          LIMIT_SPECIES_NAMES_TO_FIVE_CHARS = true;
-    public static final ForesterUtil.TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT       = ForesterUtil.TAXONOMY_EXTRACTION.NO;
-    final static private boolean                         GUESS_ROOTEDNESS_DEFAULT          = true;
-    final static private boolean                         GUESS_IF_SUPPORT_VALUES           = true;
-    final static private boolean                         IGNORE_QUOTES_DEFAULT             = false;
-    final static public boolean                          REPLACE_UNDERSCORES_DEFAULT       = false;
-    private boolean                                      _saw_closing_paren;
-    final static private byte                            STRING                            = 0;
-    final static private byte                            STRING_BUFFER                     = 1;
-    final static private byte                            CHAR_ARRAY                        = 2;
-    final static private byte                            BUFFERED_READER                   = 3;
-    private boolean                                      _guess_rootedness;
-    private boolean                                      _has_next;
-    private boolean                                      _ignore_quotes;
-    private byte                                         _input_type;
-    private int                                          _source_length;
-    private PhylogenyNode                                _current_node;
-    private StringBuilder                                _current_anotation;
-    private Object                                       _nhx_source;
-    private int                                          _clade_level;
-    private List<Phylogeny>                              _phylogenies;
-    private Phylogeny                                    _current_phylogeny;
-    private ForesterUtil.TAXONOMY_EXTRACTION             _taxonomy_extraction;
-    private boolean                                      _replace_underscores;
-    public final static Pattern                          UC_LETTERS_NUMBERS_PATTERN        = Pattern
-                                                                                                   .compile( "^[A-Z0-9]+$" );
-    public final static Pattern                          NUMBERS_ONLY_PATTERN              = Pattern
-                                                                                                   .compile( "^[0-9]+$" );
+    public static final boolean                              LIMIT_SPECIES_NAMES_TO_FIVE_CHARS = true;
+    public static final PhylogenyMethods.TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT       = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
+    final static private boolean                             GUESS_ROOTEDNESS_DEFAULT          = true;
+    final static private boolean                             GUESS_IF_SUPPORT_VALUES           = true;
+    final static private boolean                             IGNORE_QUOTES_DEFAULT             = false;
+    final static public boolean                              REPLACE_UNDERSCORES_DEFAULT       = false;
+    private boolean                                          _saw_closing_paren;
+    final static private byte                                STRING                            = 0;
+    final static private byte                                STRING_BUFFER                     = 1;
+    final static private byte                                CHAR_ARRAY                        = 2;
+    final static private byte                                BUFFERED_READER                   = 3;
+    private boolean                                          _guess_rootedness;
+    private boolean                                          _has_next;
+    private boolean                                          _ignore_quotes;
+    private byte                                             _input_type;
+    private int                                              _source_length;
+    private PhylogenyNode                                    _current_node;
+    private StringBuilder                                    _current_anotation;
+    private Object                                           _nhx_source;
+    private int                                              _clade_level;
+    private List<Phylogeny>                                  _phylogenies;
+    private Phylogeny                                        _current_phylogeny;
+    private PhylogenyMethods.TAXONOMY_EXTRACTION             _taxonomy_extraction;
+    private boolean                                          _replace_underscores;
+    public final static Pattern                              UC_LETTERS_NUMBERS_PATTERN        = Pattern
+                                                                                                       .compile( "^[A-Z0-9]+$" );
+    public final static Pattern                              NUMBERS_ONLY_PATTERN              = Pattern
+                                                                                                       .compile( "^[0-9]+$" );
 
     public NHXParser() {
         init();
@@ -187,7 +188,7 @@ public final class NHXParser implements PhylogenyParser {
         return _source_length;
     }
 
-    public ForesterUtil.TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+    public PhylogenyMethods.TAXONOMY_EXTRACTION getTaxonomyExtraction() {
         return _taxonomy_extraction;
     }
 
@@ -588,7 +589,7 @@ public final class NHXParser implements PhylogenyParser {
         _source_length = source_length;
     }
 
-    public void setTaxonomyExtraction( final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction ) {
+    public void setTaxonomyExtraction( final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
     }
 
@@ -628,9 +629,9 @@ public final class NHXParser implements PhylogenyParser {
 
     public static void parseNHX( String s,
                                  final PhylogenyNode node_to_annotate,
-                                 final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
+                                 final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                                  final boolean replace_underscores ) throws NHXFormatException {
-        if ( ( taxonomy_extraction != ForesterUtil.TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
+        if ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }
         if ( ( s != null ) && ( s.length() > 0 ) ) {
@@ -674,8 +675,8 @@ public final class NHXParser implements PhylogenyParser {
                 if ( !s.startsWith( ":" ) ) {
                     node_to_annotate.setName( t.nextToken() );
                     if ( !replace_underscores
-                            && ( !is_nhx && ( taxonomy_extraction != ForesterUtil.TAXONOMY_EXTRACTION.NO ) ) ) {
-                        final String tax = ForesterUtil
+                            && ( !is_nhx && ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) ) ) {
+                        final String tax = ParserUtils
                                 .extractTaxonomyCodeFromNodeName( node_to_annotate.getName(),
                                                                   LIMIT_SPECIES_NAMES_TO_FIVE_CHARS,
                                                                   taxonomy_extraction );

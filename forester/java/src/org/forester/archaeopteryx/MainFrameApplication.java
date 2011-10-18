@@ -80,6 +80,7 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.msa.Msa;
@@ -102,8 +103,6 @@ import org.forester.util.BasicTable;
 import org.forester.util.BasicTableParser;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
-import org.forester.util.ForesterUtil.PhylogenyNodeField;
-import org.forester.util.ForesterUtil.TAXONOMY_EXTRACTION;
 import org.forester.util.WindowsUtils;
 
 class DefaultFilter extends FileFilter {
@@ -1303,9 +1302,8 @@ public final class MainFrameApplication extends MainFrame {
                     final PhylogenyNode n = it.next();
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
-                        final String code = ForesterUtil.extractTaxonomyCodeFromNodeName( name,
-                                                                                          false,
-                                                                                          TAXONOMY_EXTRACTION.YES );
+                        final String code = ParserUtils
+                                .extractTaxonomyCodeFromNodeName( name, false, PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
                         if ( !ForesterUtil.isEmpty( code ) ) {
                             PhylogenyMethods.setTaxonomyCode( n, code );
                         }
@@ -1394,7 +1392,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                ForesterUtil.transferNodeNameToField( phy, PhylogenyNodeField.SEQUENCE_NAME );
+                PhylogenyMethods.transferNodeNameToField( phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME );
             }
         }
     }
@@ -1403,7 +1401,8 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                ForesterUtil.transferNodeNameToField( phy, PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
+                PhylogenyMethods.transferNodeNameToField( phy,
+                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
             }
         }
     }
@@ -1689,7 +1688,7 @@ public final class MainFrameApplication extends MainFrame {
                         try {
                             final NHXParser nhx = new NHXParser();
                             setSpecialOptionsForNhxParser( nhx );
-                            phys = ForesterUtil.readPhylogenies( nhx, file );
+                            phys = PhylogenyMethods.readPhylogenies( nhx, file );
                             nhx_or_nexus = true;
                         }
                         catch ( final Exception e ) {
@@ -1701,7 +1700,7 @@ public final class MainFrameApplication extends MainFrame {
                         warnIfNotPhyloXmlValidation( getConfiguration() );
                         try {
                             final PhyloXmlParser xml_parser = createPhyloXmlParser();
-                            phys = ForesterUtil.readPhylogenies( xml_parser, file );
+                            phys = PhylogenyMethods.readPhylogenies( xml_parser, file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -1710,7 +1709,7 @@ public final class MainFrameApplication extends MainFrame {
                     }
                     else if ( _open_filechooser.getFileFilter() == MainFrameApplication.tolfilter ) {
                         try {
-                            phys = ForesterUtil.readPhylogenies( new TolParser(), file );
+                            phys = PhylogenyMethods.readPhylogenies( new TolParser(), file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -1721,7 +1720,7 @@ public final class MainFrameApplication extends MainFrame {
                         try {
                             final NexusPhylogeniesParser nex = new NexusPhylogeniesParser();
                             setSpecialOptionsForNexParser( nex );
-                            phys = ForesterUtil.readPhylogenies( nex, file );
+                            phys = PhylogenyMethods.readPhylogenies( nex, file );
                             nhx_or_nexus = true;
                         }
                         catch ( final Exception e ) {
@@ -1732,7 +1731,7 @@ public final class MainFrameApplication extends MainFrame {
                     // "*.*":
                     else {
                         try {
-                            final PhylogenyParser parser = ForesterUtil
+                            final PhylogenyParser parser = ParserUtils
                                     .createParserDependingOnFileType( file, getConfiguration()
                                             .isValidatePhyloXmlAgainstSchema() );
                             if ( parser instanceof NexusPhylogeniesParser ) {
@@ -1748,7 +1747,7 @@ public final class MainFrameApplication extends MainFrame {
                             else if ( parser instanceof PhyloXmlParser ) {
                                 warnIfNotPhyloXmlValidation( getConfiguration() );
                             }
-                            phys = ForesterUtil.readPhylogenies( parser, file );
+                            phys = PhylogenyMethods.readPhylogenies( parser, file );
                         }
                         catch ( final Exception e ) {
                             exception = true;
@@ -1766,7 +1765,7 @@ public final class MainFrameApplication extends MainFrame {
                         if ( nhx_or_nexus ) {
                             for( final Phylogeny phy : phys ) {
                                 if ( getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
-                                    ForesterUtil.transferInternalNodeNamesToConfidence( phy );
+                                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
                                 }
                                 if ( PhylogenyMethods.getMinimumDescendentsPerInternalNodes( phy ) == 1 ) {
                                     one_desc = true;
@@ -2027,7 +2026,7 @@ public final class MainFrameApplication extends MainFrame {
                     parser = new TolParser();
                 }
                 else {
-                    parser = ForesterUtil.createParserDependingOnUrlContents( url, getConfiguration()
+                    parser = ParserUtils.createParserDependingOnUrlContents( url, getConfiguration()
                             .isValidatePhyloXmlAgainstSchema() );
                 }
                 if ( parser instanceof NexusPhylogeniesParser ) {
@@ -2075,7 +2074,7 @@ public final class MainFrameApplication extends MainFrame {
             if ( ( phys != null ) && ( phys.length > 0 ) ) {
                 if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
                     for( final Phylogeny phy : phys ) {
-                        ForesterUtil.transferInternalNodeNamesToConfidence( phy );
+                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
                     }
                 }
                 Util.addPhylogeniesToTabs( phys,
@@ -2103,7 +2102,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrameApplication.xmlfilter ) {
                 try {
-                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new PhyloXmlParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2113,7 +2112,7 @@ public final class MainFrameApplication extends MainFrame {
             }
             else if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrameApplication.tolfilter ) {
                 try {
-                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new TolParser(), file );
+                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new TolParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2124,7 +2123,7 @@ public final class MainFrameApplication extends MainFrame {
             // "*.*":
             else {
                 try {
-                    final Phylogeny[] trees = ForesterUtil.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new PhyloXmlParser(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2198,9 +2197,9 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
         nhx.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
-        ForesterUtil.TAXONOMY_EXTRACTION te = ForesterUtil.TAXONOMY_EXTRACTION.NO;
+        PhylogenyMethods.TAXONOMY_EXTRACTION te = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
         if ( getOptions().isExtractPfamTaxonomyCodesInNhParsing() ) {
-            te = ForesterUtil.TAXONOMY_EXTRACTION.YES;
+            te = PhylogenyMethods.TAXONOMY_EXTRACTION.YES;
         }
         nhx.setTaxonomyExtraction( te );
     }

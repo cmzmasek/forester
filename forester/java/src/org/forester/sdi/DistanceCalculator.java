@@ -33,11 +33,11 @@ import java.util.ListIterator;
 import java.util.Vector;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.util.ForesterUtil;
 
 /*
  * @author Christian M. Zmasek
@@ -480,7 +480,7 @@ public class DistanceCalculator {
         tree_file = new File( args[ 0 ] );
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( tree_file, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( tree_file, true );
             tree = factory.create( tree_file, pp )[ 0 ];
         }
         catch ( final Exception e ) {

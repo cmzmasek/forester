@@ -38,8 +38,10 @@ import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nexus.PaupLogParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.surfacing.DomainParsimonyCalculator;
 import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.CommandLineArguments;
@@ -114,7 +116,7 @@ public class surf_paup {
         if ( !phylogeny.isRooted() ) {
             ForesterUtil.fatalError( PRG_NAME, "phylogeny from [" + surfacing_nexus_outfile + "] is not rooted" );
         }
-        ForesterUtil.postOrderRelabelInternalNodes( phylogeny, phylogeny.getNumberOfExternalNodes() + 1 );
+        postOrderRelabelInternalNodes( phylogeny, phylogeny.getNumberOfExternalNodes() + 1 );
         CharacterStateMatrix<BinaryStates> matrix = null;
         final PaupLogParser paup_log_parser = new PaupLogParser();
         try {
@@ -156,6 +158,16 @@ public class surf_paup {
                 + outfile_name, "" );
         SurfacingUtil.writePhylogenyToFile( phylogeny, outfile_name + "_paup.xml" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
+    }
+
+    final private static void postOrderRelabelInternalNodes( final Phylogeny phylogeny, final int starting_number ) {
+        int i = starting_number;
+        for( final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            if ( !node.isExternal() ) {
+                node.setName( String.valueOf( i++ ) );
+            }
+        }
     }
 
     private static void printHelp() {

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.forester.archaeopteryx.Util;
 import org.forester.msa.BasicMsa;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaFormatException;
@@ -202,15 +203,15 @@ public class FastaParser {
                     final String seq_name = name_m.group( 3 );
                     final String tax_sn = name_m.group( 4 );
                     if ( !ForesterUtil.isEmpty( acc_source ) && !ForesterUtil.isEmpty( acc ) ) {
-                        ForesterUtil.ensurePresenceOfSequence( node );
+                        Util.ensurePresenceOfSequence( node );
                         node.getNodeData().getSequence( 0 ).setAccession( new Accession( acc, acc_source ) );
                     }
                     if ( !ForesterUtil.isEmpty( seq_name ) ) {
-                        ForesterUtil.ensurePresenceOfSequence( node );
+                        Util.ensurePresenceOfSequence( node );
                         node.getNodeData().getSequence( 0 ).setName( seq_name );
                     }
                     if ( !ForesterUtil.isEmpty( tax_sn ) ) {
-                        ForesterUtil.ensurePresenceOfTaxonomy( node );
+                        Util.ensurePresenceOfTaxonomy( node );
                         node.getNodeData().getTaxonomy( 0 ).setScientificName( tax_sn );
                     }
                 }

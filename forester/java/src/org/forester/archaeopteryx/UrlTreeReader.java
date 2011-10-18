@@ -42,6 +42,7 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -101,27 +102,27 @@ public class UrlTreeReader implements Runnable {
                         break;
                     case NH:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.NO );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( true );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case NH_EXTRACT_TAXONOMY:
                         parser = new NHXParser();
                         ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                .setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case PFAM:
                         parser = new NHXParser();
                         ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                .setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case NHX:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.NO );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
@@ -183,13 +184,13 @@ public class UrlTreeReader implements Runnable {
                         if ( client.getName().equals( WebserviceUtil.PFAM_NAME ) ) {
                             phylogeny.setRerootable( false );
                             phylogeny.setRooted( true );
-                            ForesterUtil.transferInternalNodeNamesToConfidence( phylogeny );
+                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny );
                         }
                         if ( client.getProcessingInstructions() != null ) {
                             WebserviceUtil.processInstructions( client, phylogeny );
                         }
                         if ( client.getNodeField() != null ) {
-                            ForesterUtil.transferNodeNameToField( phylogeny, client.getNodeField() );
+                            PhylogenyMethods.transferNodeNameToField( phylogeny, client.getNodeField() );
                         }
                         phylogeny.setIdentifier( new Identifier( identifier, client.getName() ) );
                         _main_frame.getJMenuBar().remove( _main_frame.getHelpMenu() );

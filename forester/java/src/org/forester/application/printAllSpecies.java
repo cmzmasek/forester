@@ -30,12 +30,12 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.util.ForesterUtil;
 
 public class printAllSpecies {
 
@@ -53,7 +53,7 @@ public class printAllSpecies {
         outfile = new File( args[ 1 ] );
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( infile, true );
+            final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( infile, true );
             tree = factory.create( infile, pp )[ 0 ];
         }
         catch ( final Exception e ) {

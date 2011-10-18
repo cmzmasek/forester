@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -350,7 +351,7 @@ public class ORcount {
         for( int i = 0; i < trees.length; ++i ) {
             try {
                 System.out.println( "Reading tree #" + i + "  [" + args[ i ] + "]" );
-                final PhylogenyParser pp = ForesterUtil.createParserDependingOnFileType( new File( args[ i ] ), true );
+                final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( new File( args[ i ] ), true );
                 trees[ i ] = factory.create( new File( args[ i ] ), pp )[ 0 ];
             }
             catch ( final Exception e ) {

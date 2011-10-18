@@ -267,7 +267,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _main_panel = tjp;
         _configuration = configuration;
         _phylogeny = t;
-        _phy_has_branch_lengths = ForesterUtil.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
+        _phy_has_branch_lengths = Util.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
         init();
         // if ( !_phylogeny.isEmpty() ) {
         _phylogeny.recalculateNumberOfExternalDescendants( true );

@@ -2285,4 +2285,72 @@ public final class SurfacingUtil {
                       domain_parsimony.createMatrixOfBinaryDomainCombinationPresenceOrAbsence(),
                       phylogeny );
     }
+
+    public static void domainsPerProteinsStatistics( final String genome,
+                                                     final List<Protein> protein_list,
+                                                     final DescriptiveStatistics all_genomes_domains_per_potein_stats,
+                                                     final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo,
+                                                     final SortedSet<String> domains_which_are_always_single,
+                                                     final SortedSet<String> domains_which_are_sometimes_single_sometimes_not,
+                                                     final SortedSet<String> domains_which_never_single,
+                                                     final Writer writer ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( final Protein protein : protein_list ) {
+            final int domains = protein.getNumberOfProteinDomains();
+            stats.addValue( domains );
+            all_genomes_domains_per_potein_stats.addValue( domains );
+            if ( !all_genomes_domains_per_potein_histo.containsKey( domains ) ) {
+                all_genomes_domains_per_potein_histo.put( domains, 1 );
+            }
+            else {
+                all_genomes_domains_per_potein_histo.put( domains,
+                                                          1 + all_genomes_domains_per_potein_histo.get( domains ) );
+            }
+            if ( domains == 1 ) {
+                final String domain = protein.getProteinDomain( 0 ).getDomainId().getId();
+                if ( !domains_which_are_sometimes_single_sometimes_not.contains( domain ) ) {
+                    if ( domains_which_never_single.contains( domain ) ) {
+                        domains_which_never_single.remove( domain );
+                        domains_which_are_sometimes_single_sometimes_not.add( domain );
+                    }
+                    else {
+                        domains_which_are_always_single.add( domain );
+                    }
+                }
+            }
+            else if ( domains > 1 ) {
+                for( final Domain d : protein.getProteinDomains() ) {
+                    final String domain = d.getDomainId().getId();
+                    if ( !domains_which_are_sometimes_single_sometimes_not.contains( domain ) ) {
+                        if ( domains_which_are_always_single.contains( domain ) ) {
+                            domains_which_are_always_single.remove( domain );
+                            domains_which_are_sometimes_single_sometimes_not.add( domain );
+                        }
+                        else {
+                            domains_which_never_single.add( domain );
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            writer.write( genome );
+            writer.write( "\t" );
+            writer.write( stats.arithmeticMean() + "" );
+            writer.write( "\t" );
+            writer.write( stats.sampleStandardDeviation() + "" );
+            writer.write( "\t" );
+            writer.write( stats.median() + "" );
+            writer.write( "\t" );
+            writer.write( stats.getN() + "" );
+            writer.write( "\t" );
+            writer.write( stats.getMin() + "" );
+            writer.write( "\t" );
+            writer.write( stats.getMax() + "" );
+            writer.write( "\n" );
+        }
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+    }
 }

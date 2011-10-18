@@ -26,27 +26,27 @@
 package org.forester.archaeopteryx.webservices;
 
 import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
-import org.forester.util.ForesterUtil.PhylogenyNodeField;
+import org.forester.phylogeny.PhylogenyMethods;
 
 public class BasicPhylogeniesWebserviceClient implements PhylogeniesWebserviceClient {
 
-    private final String             _desc;
-    private final String             _instructions;
-    private final String             _menu_name;
-    private final String             _name;
-    private final WsPhylogenyFormat  _format;
-    private final String             _url;
-    private final boolean            _integer;
-    private final PhylogenyNodeField _node_field;
-    private final Object             _proc_inst;
-    private final String             _ref;
+    private final String                              _desc;
+    private final String                              _instructions;
+    private final String                              _menu_name;
+    private final String                              _name;
+    private final WsPhylogenyFormat                   _format;
+    private final String                              _url;
+    private final boolean                             _integer;
+    private final PhylogenyMethods.PhylogenyNodeField _node_field;
+    private final Object                              _proc_inst;
+    private final String                              _ref;
 
     public BasicPhylogeniesWebserviceClient( final String name,
                                              final String menu_name,
                                              final String desc,
                                              final String instructions,
                                              final WsPhylogenyFormat format,
-                                             final PhylogenyNodeField node_field,
+                                             final PhylogenyMethods.PhylogenyNodeField node_field,
                                              final String url,
                                              final boolean integer,
                                              final String ref,
@@ -85,7 +85,7 @@ public class BasicPhylogeniesWebserviceClient implements PhylogeniesWebserviceCl
     }
 
     @Override
-    public PhylogenyNodeField getNodeField() {
+    public PhylogenyMethods.PhylogenyNodeField getNodeField() {
         return _node_field;
     }
 

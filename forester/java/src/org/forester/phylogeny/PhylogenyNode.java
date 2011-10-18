@@ -1049,24 +1049,24 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException {
-        return new PhylogenyNode( nhx, ForesterUtil.TAXONOMY_EXTRACTION.NO, false );
+        return new PhylogenyNode( nhx, PhylogenyMethods.TAXONOMY_EXTRACTION.NO, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
-                                                             final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction )
+                                                             final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction )
             throws NHXFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
-                                                             final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                             final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                                                              final boolean replace_underscores )
             throws NHXFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
     }
 
     private PhylogenyNode( final String nhx,
-                           final ForesterUtil.TAXONOMY_EXTRACTION taxonomy_extraction,
+                           final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                            final boolean replace_underscores ) throws NHXFormatException {
         init();
         NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );

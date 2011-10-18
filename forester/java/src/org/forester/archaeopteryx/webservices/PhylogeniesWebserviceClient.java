@@ -25,7 +25,7 @@
 package org.forester.archaeopteryx.webservices;
 
 import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
-import org.forester.util.ForesterUtil.PhylogenyNodeField;
+import org.forester.phylogeny.PhylogenyMethods;
 
 /*
  * Webservices which return phylogenies.
@@ -69,7 +69,7 @@ public interface PhylogeniesWebserviceClient {
      * 
      * @return the field code
      */
-    public PhylogenyNodeField getNodeField();
+    public PhylogenyMethods.PhylogenyNodeField getNodeField();
 
     /**
      * This is used to indicate any kind of special processing.

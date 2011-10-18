@@ -31,8 +31,9 @@ import java.io.IOException;
 
 import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.util.ForesterUtil;
+import org.forester.phylogeny.PhylogenyMethods;
 
 public class Example1 {
 
@@ -41,14 +42,14 @@ public class Example1 {
         final File treefile = new File( "/home/czmasek/tol_117_TEST.xml" );
         PhylogenyParser parser = null;
         try {
-            parser = ForesterUtil.createParserDependingOnFileType( treefile, true );
+            parser = ParserUtils.createParserDependingOnFileType( treefile, true );
         }
         catch ( final IOException e ) {
             e.printStackTrace();
         }
         Phylogeny[] phys = null;
         try {
-            phys = ForesterUtil.readPhylogenies( parser, treefile );
+            phys = PhylogenyMethods.readPhylogenies( parser, treefile );
         }
         catch ( final IOException e ) {
             e.printStackTrace();

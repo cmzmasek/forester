@@ -30,6 +30,7 @@ import java.util.List;
 import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
@@ -37,7 +38,6 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
-import org.forester.util.ForesterUtil.PhylogenyNodeField;
 
 public final class WebserviceUtil {
 
@@ -60,7 +60,7 @@ public final class WebserviceUtil {
                                                            "Please enter a Tree of Life node identifier\n(Examples: "
                                                                    + "19386 for Cephalopoda, 2461 for Cnidaria, 2466 for Deuterostomia)",
                                                            WsPhylogenyFormat.TOL_XML_RESPONSE,
-                                                           PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
                                                            WebserviceUtil.TOL_WEBSERVER,
                                                            true,
                                                            "http://tolweb.org",
@@ -70,7 +70,7 @@ public final class WebserviceUtil {
                                                            "Use TreeBASE to obtain a phylogeny",
                                                            "Please enter a TreeBASE tree identifier\n(Examples: 2654, 825, 4931, 2518, 2406, 4934)",
                                                            WsPhylogenyFormat.NEXUS,
-                                                           PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
                                                            "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr"
                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
                                                                    + "?format=nexus",

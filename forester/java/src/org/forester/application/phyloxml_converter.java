@@ -34,6 +34,7 @@ import java.util.List;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -43,7 +44,6 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
-import org.forester.util.ForesterUtil.PhylogenyNodeField;
 
 public class phyloxml_converter {
 
@@ -125,30 +125,30 @@ public class phyloxml_converter {
             System.exit( -1 );
         }
         final String field_option_value = cla.getOptionValue( FIELD_OPTION );
-        PhylogenyNodeField field = null;
+        PhylogenyMethods.PhylogenyNodeField field = null;
         if ( field_option_value.equals( FIELD_CLADE_NAME ) ) {
-            field = PhylogenyNodeField.CLADE_NAME;
+            field = PhylogenyMethods.PhylogenyNodeField.CLADE_NAME;
         }
         else if ( field_option_value.equals( FIELD_TAXONOMY_CODE ) ) {
-            field = PhylogenyNodeField.TAXONOMY_CODE;
+            field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE;
         }
         else if ( field_option_value.equals( FIELD_TAXONOMY_SCI_NAME ) ) {
-            field = PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME;
+            field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME;
         }
         else if ( field_option_value.equals( FIELD_TAXONOMY_COMM_NAME ) ) {
-            field = PhylogenyNodeField.TAXONOMY_COMMON_NAME;
+            field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME;
         }
         else if ( field_option_value.equals( FIELD_SEQUENCE_GENE_NAME ) ) {
-            field = PhylogenyNodeField.SEQUENCE_NAME;
+            field = PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME;
         }
         else if ( field_option_value.equals( FIELD_SEQUENCE_SYMBOL ) ) {
-            field = PhylogenyNodeField.SEQUENCE_SYMBOL;
+            field = PhylogenyMethods.PhylogenyNodeField.SEQUENCE_SYMBOL;
         }
         else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1 ) ) {
-            field = PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1;
+            field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1;
         }
         else if ( field_option_value.equals( FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2 ) ) {
-            field = PhylogenyNodeField.TAXONOMY_ID_UNIPROT_2;
+            field = PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_2;
         }
         else if ( field_option_value.equals( FIELD_DUMMY ) ) {
         }
@@ -195,23 +195,23 @@ public class phyloxml_converter {
         Phylogeny[] phys = null;
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser parser = ForesterUtil.createParserDependingOnFileType( infile, true );
+            final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( infile, true );
             if ( parser instanceof NHXParser ) {
-                if ( ( field != PhylogenyNodeField.TAXONOMY_CODE )
-                        && ( field != PhylogenyNodeField.TAXONOMY_COMMON_NAME )
-                        && ( field != PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME ) ) {
+                if ( ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE )
+                        && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME )
+                        && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME ) ) {
                     if ( extr_taxonomy_pf_only ) {
                         ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                .setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
                         replace_underscores = false;
                     }
                     else if ( extr_taxonomy ) {
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.YES );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
                         replace_underscores = false;
                     }
                 }
                 else {
-                    ( ( NHXParser ) parser ).setTaxonomyExtraction( ForesterUtil.TAXONOMY_EXTRACTION.NO );
+                    ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
                 }
                 ( ( NHXParser ) parser ).setReplaceUnderscores( replace_underscores );
                 ( ( NHXParser ) parser ).setIgnoreQuotes( false );
@@ -232,12 +232,12 @@ public class phyloxml_converter {
         }
         if ( int_values_are_boots ) {
             for( final Phylogeny phy : phys ) {
-                ForesterUtil.transferInternalNamesToBootstrapSupport( phy );
+                PhylogenyMethods.transferInternalNamesToBootstrapSupport( phy );
             }
         }
         if ( field != null ) {
             for( final Phylogeny phy : phys ) {
-                ForesterUtil.transferNodeNameToField( phy, field );
+                PhylogenyMethods.transferNodeNameToField( phy, field );
             }
         }
         if ( midpoint_reroot ) {

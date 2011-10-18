@@ -26,6 +26,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.commons.codec.binary.Base64;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
@@ -34,7 +35,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
-import org.apache.commons.codec.binary.Base64;
 
 // Use like this:
 // <applet archive="forester.jar"
@@ -348,16 +348,17 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
      * @author Herve Menager
      */
     public String getCurrentPhylogenyGraphicsAsBase64EncodedString( final String format ) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try{
-            Util.writePhylogenyToGraphicsByteArrayOutputStream( baos, 
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            Util.writePhylogenyToGraphicsByteArrayOutputStream( baos,
                                                                 _main_panel.getWidth(),
                                                                 _main_panel.getHeight(),
-                                                                this.getCurrentTreePanel(),
+                                                                getCurrentTreePanel(),
                                                                 getCurrentTreePanel().getControlPanel(),
-                                                                GraphicsExportType.valueOf(format),
-                                                                getOptions());            
-        }catch(IOException ioe){
+                                                                GraphicsExportType.valueOf( format ),
+                                                                getOptions() );
+        }
+        catch ( final IOException ioe ) {
             ForesterUtil.printErrorMessage( NAME, ioe.toString() );
             ioe.printStackTrace();
             JOptionPane.showMessageDialog( this,
@@ -366,11 +367,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                            JOptionPane.ERROR_MESSAGE );
             return null;
         }
-        byte[] bytes = baos.toByteArray();
-        String dataImg = Base64.encodeBase64String(bytes);
+        final byte[] bytes = baos.toByteArray();
+        final String dataImg = Base64.encodeBase64String( bytes );
         return dataImg;
     }
-    
+
     void buildFontSizeMenu() {
         _font_size_menu = MainFrame.createMenu( MainFrame.FONT_SIZE_MENU_LABEL, getConfiguration() );
         _font_size_menu.add( _super_tiny_fonts_mi = new JMenuItem( "Super tiny fonts" ) );

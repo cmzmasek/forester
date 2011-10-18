@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -176,8 +177,7 @@ public final class support_statistics {
         for( int i = 0; i < phylogenies_infiles.length; i++ ) {
             try {
                 final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                final PhylogenyParser pp = ForesterUtil
-                        .createParserDependingOnFileType( phylogenies_infiles[ i ], true );
+                final PhylogenyParser pp = ParserUtils.createParserDependingOnFileType( phylogenies_infiles[ i ], true );
                 phylogenies[ i ] = factory.create( phylogenies_infiles[ i ], pp )[ 0 ];
             }
             catch ( final IOException e ) {
