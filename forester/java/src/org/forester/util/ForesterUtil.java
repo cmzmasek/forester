@@ -573,8 +573,8 @@ public final class ForesterUtil {
                                          final Map<?, ?> data,
                                          final String entry_separator,
                                          final String data_separator ) throws IOException {
+        boolean first = true;
         for( final Entry<?, ?> entry : data.entrySet() ) {
-            boolean first = true;
             if ( !first ) {
                 writer.write( data_separator );
             }

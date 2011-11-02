@@ -81,6 +81,7 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_LIST.add( "superorder" );
         TAXONOMY_RANKS_LIST.add( "order" );
         TAXONOMY_RANKS_LIST.add( "suborder" );
+        TAXONOMY_RANKS_LIST.add( "infraorder" );
         TAXONOMY_RANKS_LIST.add( "superfamily" );
         TAXONOMY_RANKS_LIST.add( "family" );
         TAXONOMY_RANKS_LIST.add( "subfamily" );
@@ -132,6 +133,7 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_SET.add( "superorder" );
         TAXONOMY_RANKS_SET.add( "order" );
         TAXONOMY_RANKS_SET.add( "suborder" );
+        TAXONOMY_RANKS_SET.add( "infraorder" );
         TAXONOMY_RANKS_SET.add( "superfamily" );
         TAXONOMY_RANKS_SET.add( "family" );
         TAXONOMY_RANKS_SET.add( "subfamily" );

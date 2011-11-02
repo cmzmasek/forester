@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -1721,6 +1722,7 @@ public class surfacing {
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getMessage() );
         }
+        final DescriptiveStatistics protein_coverage_stats = new BasicDescriptiveStatistics();
         final DescriptiveStatistics all_genomes_domains_per_potein_stats = new BasicDescriptiveStatistics();
         final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo = new TreeMap<Integer, Integer>();
         final SortedSet<String> domains_which_are_always_single = new TreeSet<String>();
@@ -1748,6 +1750,7 @@ public class surfacing {
         catch ( final IOException e3 ) {
             e3.printStackTrace();
         }
+        // Main loop:
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();
             System.out.println( ( i + 1 ) + "/" + number_of_genomes );
@@ -1811,10 +1814,16 @@ public class surfacing {
                 System.out.println( "Domains ignored due to virus like id: " );
                 ForesterUtil.printCountingMap( parser.getDomainsIgnoredDueToVirusLikeIdCountsMap() );
             }
+            final double coverage = ( double ) protein_list.size() / parser.getProteinsEncountered();
+            protein_coverage_stats.addValue( coverage );
             System.out.println( "Number of proteins encountered                 : " + parser.getProteinsEncountered() );
             log( "Number of proteins encountered                 : " + parser.getProteinsEncountered(), log_writer );
             System.out.println( "Number of proteins stored                      : " + protein_list.size() );
             log( "Number of proteins stored                      : " + protein_list.size(), log_writer );
+            System.out.println( "Coverage                                       : "
+                    + ForesterUtil.roundToInt( 100.0 * coverage ) + "%" );
+            log( "Coverage                                       : " + ForesterUtil.roundToInt( 100.0 * coverage )
+                    + "%", log_writer );
             System.out.println( "Domains encountered                            : " + parser.getDomainsEncountered() );
             log( "Domains encountered                            : " + parser.getDomainsEncountered(), log_writer );
             System.out.println( "Domains stored                                 : " + parser.getDomainsStored() );
@@ -1894,7 +1903,7 @@ public class surfacing {
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, e.toString() );
             }
-            SurfacingUtil.domainsPerProteinsStatistics( input_file_properties[ i ][ 0 ],
+            SurfacingUtil.domainsPerProteinsStatistics( input_file_properties[ i ][ 1 ],
                                                         protein_list,
                                                         all_genomes_domains_per_potein_stats,
                                                         all_genomes_domains_per_potein_histo,
@@ -1952,17 +1961,6 @@ public class surfacing {
             }
             System.gc();
         } // for( int i = 0; i < number_of_genomes; ++i ) {
-        try {
-            per_genome_domain_promiscuity_statistics_writer.flush();
-            per_genome_domain_promiscuity_statistics_writer.close();
-            dc_data_writer.flush();
-            dc_data_writer.close();
-            log_writer.flush();
-            log_writer.close();
-        }
-        catch ( final IOException e2 ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
-        }
         ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
                 + per_genome_domain_promiscuity_statistics_file );
         //
@@ -1981,8 +1979,8 @@ public class surfacing {
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getMax() + "" );
             domains_per_potein_stats_writer.write( "\n" );
-            domains_per_potein_stats_writer.flush();
             domains_per_potein_stats_writer.close();
+            printOutPercentageOfMultidomainProteins( all_genomes_domains_per_potein_histo, log_writer );
             ForesterUtil.map2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
                     + "__all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
             ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
@@ -1991,6 +1989,16 @@ public class surfacing {
                     + "__domains_single_or_combined.txt" ), domains_which_are_sometimes_single_sometimes_not, "\n" );
             ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
                     + "__domains_always_combined.txt" ), domains_which_never_single, "\n" );
+            ForesterUtil.programMessage( PRG_NAME,
+                                         "Average of proteins with a least one domain assigned: "
+                                                 + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
+                                                 + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)" );
+            ForesterUtil.programMessage( PRG_NAME, "Range of proteins with a least one domain assigned: " + 100
+                    * protein_coverage_stats.getMin() + "%-" + 100 * protein_coverage_stats.getMax() + "%" );
+            log( "Average of prot with a least one dom assigned  : " + ( 100 * protein_coverage_stats.arithmeticMean() )
+                    + "% (+/-" + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)", log_writer );
+            log( "Range of prot with a least one dom assigned    : " + 100 * protein_coverage_stats.getMin() + "%-"
+                    + 100 * protein_coverage_stats.getMax() + "%", log_writer );
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
@@ -2004,6 +2012,14 @@ public class surfacing {
                     ForesterUtil.fatalError( surfacing.PRG_NAME, e.toString() );
                 }
             }
+        }
+        try {
+            per_genome_domain_promiscuity_statistics_writer.close();
+            dc_data_writer.close();
+            log_writer.close();
+        }
+        catch ( final IOException e2 ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
         }
         if ( PERFORM_DOMAIN_LENGTH_ANALYSIS ) {
             try {
@@ -2343,6 +2359,17 @@ public class surfacing {
         System.out.println();
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
+    }
+
+    private static void printOutPercentageOfMultidomainProteins( final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo,
+                                                                 final Writer log_writer ) {
+        int sum = 0;
+        for( final Entry<Integer, Integer> entry : all_genomes_domains_per_potein_histo.entrySet() ) {
+            sum += entry.getValue();
+        }
+        final double percentage = 100.0 * ( sum - all_genomes_domains_per_potein_histo.get( 1 ) ) / sum;
+        ForesterUtil.programMessage( PRG_NAME, "Percentage of multidomain proteins: " + percentage + "%" );
+        log( "Percentage of multidomain proteins:            : " + percentage + "%", log_writer );
     }
 
     private static void preparePhylogenyForParsimonyAnalyses( final Phylogeny intree,

@@ -2297,6 +2297,7 @@ public final class SurfacingUtil {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final Protein protein : protein_list ) {
             final int domains = protein.getNumberOfProteinDomains();
+            //System.out.println( domains );
             stats.addValue( domains );
             all_genomes_domains_per_potein_stats.addValue( domains );
             if ( !all_genomes_domains_per_potein_histo.containsKey( domains ) ) {
@@ -2321,6 +2322,7 @@ public final class SurfacingUtil {
             else if ( domains > 1 ) {
                 for( final Domain d : protein.getProteinDomains() ) {
                     final String domain = d.getDomainId().getId();
+                    // System.out.println( domain );
                     if ( !domains_which_are_sometimes_single_sometimes_not.contains( domain ) ) {
                         if ( domains_which_are_always_single.contains( domain ) ) {
                             domains_which_are_always_single.remove( domain );

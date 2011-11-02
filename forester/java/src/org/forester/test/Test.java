@@ -3402,11 +3402,11 @@ public final class Test {
             parser1.parse();
             final HmmscanPerDomainTableParser parser2 = new HmmscanPerDomainTableParser( new File( test_dir
                     + ForesterUtil.getFileSeparator() + "hmmscan30b3_output_2" ), "MONBR", INDIVIDUAL_SCORE_CUTOFF.NONE );
-            final List<Protein> domain_collections = parser2.parse();
+            final List<Protein> proteins = parser2.parse();
             if ( parser2.getProteinsEncountered() != 4 ) {
                 return false;
             }
-            if ( domain_collections.size() != 4 ) {
+            if ( proteins.size() != 4 ) {
                 return false;
             }
             if ( parser2.getDomainsEncountered() != 69 ) {
@@ -3418,11 +3418,19 @@ public final class Test {
             if ( parser2.getDomainsIgnoredDueToEval() != 0 ) {
                 return false;
             }
-            final Protein p1 = domain_collections.get( 0 );
+            final Protein p1 = proteins.get( 0 );
             if ( p1.getNumberOfProteinDomains() != 15 ) {
                 return false;
             }
-            final Protein p4 = domain_collections.get( 3 );
+            final Protein p2 = proteins.get( 1 );
+            if ( p2.getNumberOfProteinDomains() != 51 ) {
+                return false;
+            }
+            final Protein p3 = proteins.get( 2 );
+            if ( p3.getNumberOfProteinDomains() != 2 ) {
+                return false;
+            }
+            final Protein p4 = proteins.get( 3 );
             if ( p4.getNumberOfProteinDomains() != 1 ) {
                 return false;
             }

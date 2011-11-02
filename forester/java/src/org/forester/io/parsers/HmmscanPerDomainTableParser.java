@@ -482,11 +482,11 @@ public final class HmmscanPerDomainTableParser {
         _domains_ignored_due_to_duf = domains_ignored_due_to_duf;
     }
 
-    public void setDomainsIgnoredDueToEval( final int domains_ignored_due_to_e_value ) {
+    private void setDomainsIgnoredDueToEval( final int domains_ignored_due_to_e_value ) {
         _domains_ignored_due_to_e_value = domains_ignored_due_to_e_value;
     }
 
-    public void setDomainsIgnoredDueToIndividualScoreCutoff( final int domains_ignored_due_to_individual_score_cutoff ) {
+    private void setDomainsIgnoredDueToIndividualScoreCutoff( final int domains_ignored_due_to_individual_score_cutoff ) {
         _domains_ignored_due_to_individual_score_cutoff = domains_ignored_due_to_individual_score_cutoff;
     }
 
