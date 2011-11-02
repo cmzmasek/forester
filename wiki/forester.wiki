@@ -7,15 +7,18 @@ Under development!
 
 Documentation, tutorial, and examples for [http://www.phylosoft.org/forester/ forester].
 
+*All examples require jar-file "forester.jar" (_actually, as of now, it requires the development version "forester_dev.jar"_) to be in the class-path.*
+
 Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
 
  
 Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 
+
 = Reading and writing of phylogenetic trees =
 
-*This needs file "forester.jar" (actually, as of now, it requires the development version "forester_dev.jar") to be in the class-path.*
+
 
 {{{
 
