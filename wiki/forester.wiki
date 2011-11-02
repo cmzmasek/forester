@@ -15,7 +15,7 @@ Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 = Reading and writing of phylogenetic trees =
 
-This needs file "forester.jar" to be in the class-path.
+*This needs file "forester.jar" (actually, as of now, it requires the development version "forester_dev.jar") to be in the class-path.*
 
 {{{
 
