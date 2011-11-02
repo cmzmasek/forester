@@ -9,6 +9,8 @@ Documentation, tutorial, and examples for [http://www.phylosoft.org/forester/ fo
 
 *All examples require jar-file "forester.jar" (_actually, as of now, it requires the development version "forester_dev.jar"_) to be in the class-path.*
 
+Download: http://code.google.com/p/forester/downloads/list
+
 Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
 
  
