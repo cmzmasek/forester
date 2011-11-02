@@ -71,7 +71,6 @@ public class Example {
 
 = Reading of phylogenetic trees and displaying them with Archaeopteryx =
 
-This needs file "forester.jar" to be in the class-path.
 
 {{{
 
@@ -117,7 +116,6 @@ public class Example {
 
 = Creating a new tree and displaying it with Archaeopteryx =
 
-This needs file "forester.jar" to be in the class-path.
 
 {{{
 
@@ -155,8 +153,6 @@ public class Example {
 
 
 = Using iterators to visit tree nodes in certain orders =
-
-This needs file "forester.jar" to be in the class-path.
 
 {{{
 
@@ -219,7 +215,6 @@ public class Example {
 
 = Creating a basic gene tree (with branch lengths) =
 
-This needs file "forester.jar" to be in the class-path.
 
 {{{
 
