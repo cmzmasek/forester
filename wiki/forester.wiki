@@ -271,7 +271,7 @@ public class Example {
 
 }}}
 
-= ddd =
+= Writing a phylogenetic tree to a graphics file (e.g. png, jpg) =
 
 {{{
 
