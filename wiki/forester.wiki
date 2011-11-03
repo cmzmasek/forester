@@ -310,8 +310,7 @@ public class phylo2graphics {
 
            // If the tree 'phy' already exists, can also use this:
            // AptxUtil.writePhylogenyToGraphicsFile(phy,
-           //                                       new File(
-           //                                       "out.png"),
+           //                                       new File("out.png"),
            //                                       800,
            //                                       1000,
            //                                       GraphicsExportType.PNG,
