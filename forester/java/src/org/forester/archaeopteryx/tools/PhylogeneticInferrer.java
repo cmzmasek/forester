@@ -31,9 +31,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import javax.swing.JOptionPane;
 
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
@@ -49,6 +51,9 @@ import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaTools;
 import org.forester.msa.ResampleableMsa;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
@@ -147,7 +152,7 @@ public class PhylogeneticInferrer implements Runnable {
         }
         final NeighborJoining nj = new NeighborJoining();
         final Phylogeny phy = nj.execute( m );
-        FastaParser.extractFastaInformation( phy );
+        PhylogeneticInferrer.extractFastaInformation( phy );
         return phy;
     }
 
@@ -255,6 +260,38 @@ public class PhylogeneticInferrer implements Runnable {
             }
             catch ( final Exception e ) {
                 System.out.println( "Error: " + e.getMessage() );
+            }
+        }
+    }
+
+    public static void extractFastaInformation( final Phylogeny phy ) {
+        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+                final Matcher name_m = FastaParser.FASTA_DESC_LINE.matcher( node.getName() );
+                if ( name_m.lookingAt() ) {
+                    System.out.println();
+                    // System.out.println( name_m.group( 1 ) );
+                    // System.out.println( name_m.group( 2 ) );
+                    // System.out.println( name_m.group( 3 ) );
+                    // System.out.println( name_m.group( 4 ) );
+                    final String acc_source = name_m.group( 1 );
+                    final String acc = name_m.group( 2 );
+                    final String seq_name = name_m.group( 3 );
+                    final String tax_sn = name_m.group( 4 );
+                    if ( !ForesterUtil.isEmpty( acc_source ) && !ForesterUtil.isEmpty( acc ) ) {
+                        AptxUtil.ensurePresenceOfSequence( node );
+                        node.getNodeData().getSequence( 0 ).setAccession( new Accession( acc, acc_source ) );
+                    }
+                    if ( !ForesterUtil.isEmpty( seq_name ) ) {
+                        AptxUtil.ensurePresenceOfSequence( node );
+                        node.getNodeData().getSequence( 0 ).setName( seq_name );
+                    }
+                    if ( !ForesterUtil.isEmpty( tax_sn ) ) {
+                        AptxUtil.ensurePresenceOfTaxonomy( node );
+                        node.getNodeData().getTaxonomy( 0 ).setScientificName( tax_sn );
+                    }
+                }
             }
         }
     }

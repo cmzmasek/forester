@@ -207,7 +207,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         return _configuration;
     }
 
-    ControlPanel getControlPanel() {
+    public ControlPanel getControlPanel() {
         return _control_panel;
     }
 

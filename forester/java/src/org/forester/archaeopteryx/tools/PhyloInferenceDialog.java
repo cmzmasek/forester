@@ -45,8 +45,8 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.MainFrameApplication;
-import org.forester.archaeopteryx.Util;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -213,7 +213,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         bootstrap_pnl.setLayout( new FlowLayout() );
         bootstrap_pnl.add( _bootstrap_cb = new JCheckBox( "Perform Bootstrap Resampling" ) );
         bootstrap_pnl.add( new JLabel( "Number of Bootstrap Samples:" ) );
-        bootstrap_pnl.add( _bootstrap_tf = new JFormattedTextField( Util.createMaskFormatter( "###" ) ) );
+        bootstrap_pnl.add( _bootstrap_tf = new JFormattedTextField( AptxUtil.createMaskFormatter( "###" ) ) );
         _bootstrap_tf.setColumns( 4 );
         // TODO see
         // http://download.oracle.com/javase/tutorial/uiswing/components/formattedtextfield.html

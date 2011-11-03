@@ -267,7 +267,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _main_panel = tjp;
         _configuration = configuration;
         _phylogeny = t;
-        _phy_has_branch_lengths = Util.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
+        _phy_has_branch_lengths = AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( _phylogeny );
         init();
         // if ( !_phylogeny.isEmpty() ) {
         _phylogeny.recalculateNumberOfExternalDescendants( true );
@@ -664,7 +664,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // Look in species hash
         Color c = getControlPanel().getSpeciesColors().get( species );
         if ( c == null ) {
-            c = Util.calculateColorFromString( species );
+            c = AptxUtil.calculateColorFromString( species );
             getControlPanel().getSpeciesColors().put( species, c );
         }
         return c;
@@ -693,7 +693,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( !node.isExternal() && !node.isRoot() ) {
             final boolean collapse = !node.isCollapse();
-            Util.collapseSubtree( node, collapse );
+            AptxUtil.collapseSubtree( node, collapse );
             updateSetOfCollapsedExternalNodes( _phylogeny );
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
@@ -711,7 +711,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        Util.collapseSpeciesSpecificSubtrees( _phylogeny );
+        AptxUtil.collapseSpeciesSpecificSubtrees( _phylogeny );
         updateSetOfCollapsedExternalNodes( _phylogeny );
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
@@ -767,8 +767,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        Util.removeBranchColors( _phylogeny );
-        Util.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
+        AptxUtil.removeBranchColors( _phylogeny );
+        AptxUtil.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
             _control_panel.getColorBranchesCb().setSelected( true );
@@ -782,8 +782,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        Util.removeBranchColors( _phylogeny );
-        final int colorizations = Util.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
+        AptxUtil.removeBranchColors( _phylogeny );
+        final int colorizations = AptxUtil.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
         if ( colorizations > 0 ) {
             _control_panel.setColorBranches( true );
             if ( _control_panel.getColorBranchesCb() != null ) {
@@ -1342,7 +1342,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        Util.inferCommonPartOfScientificNames( _phylogeny );
+        AptxUtil.inferCommonPartOfScientificNames( _phylogeny );
         setArrowCursor();
         repaint();
     }
@@ -2117,7 +2117,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
         }
         catch ( final UnsupportedEncodingException e ) {
-            Util.showErrorMessage( this, e.toString() );
+            AptxUtil.showErrorMessage( this, e.toString() );
             e.printStackTrace();
         }
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
@@ -2126,14 +2126,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( isApplet() ) {
                     applet = obtainApplet();
                 }
-                Util.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_seq" );
+                AptxUtil.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_seq" );
             }
             catch ( final IOException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
             catch ( final URISyntaxException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2157,7 +2157,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 uri_str = weblink.getUrl() + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2167,7 +2167,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 uri_str = new URI( tax.getIdentifier().getValue() ).toString();
             }
             catch ( final URISyntaxException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 uri_str = null;
                 e.printStackTrace();
             }
@@ -2178,7 +2178,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         + URLEncoder.encode( tax.getScientificName(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2188,7 +2188,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         + URLEncoder.encode( tax.getTaxonomyCode(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2198,7 +2198,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         + URLEncoder.encode( tax.getCommonName(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2208,14 +2208,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( isApplet() ) {
                     applet = obtainApplet();
                 }
-                Util.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_tax" );
+                AptxUtil.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_tax" );
             }
             catch ( final IOException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
             catch ( final URISyntaxException e ) {
-                Util.showErrorMessage( this, e.toString() );
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
@@ -2828,7 +2828,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 outline_color = Color.BLACK;
             }
-            else if ( getControlPanel().isEvents() && Util.isHasAssignedEvent( node ) ) {
+            else if ( getControlPanel().isEvents() && AptxUtil.isHasAssignedEvent( node ) ) {
                 final Event event = node.getNodeData().getEvent();
                 if ( event.isDuplication() ) {
                     outline_color = getTreeColorSet().getDuplicationBoxColor();
@@ -4391,7 +4391,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * @param x
      * @param y
      */
-    final void setParametersForPainting( final int x, final int y, final boolean recalc_longest_ext_node_info ) {
+    public final void setParametersForPainting( final int x, final int y, final boolean recalc_longest_ext_node_info ) {
         // updateStyle(); not needed?
         if ( ( _phylogeny != null ) && !_phylogeny.isEmpty() ) {
             initNodeData();
@@ -4924,7 +4924,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        Util.colorPhylogenyAccordingToExternalTaxonomy( _phylogeny, this );
+        AptxUtil.colorPhylogenyAccordingToExternalTaxonomy( _phylogeny, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
             _control_panel.getColorBranchesCb().setSelected( true );

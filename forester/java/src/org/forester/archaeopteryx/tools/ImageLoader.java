@@ -34,9 +34,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.Constants;
 import org.forester.archaeopteryx.TreePanel;
-import org.forester.archaeopteryx.Util;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.data.Uri;
@@ -89,11 +89,11 @@ public class ImageLoader implements Runnable {
                                 bi = ImageIO.read( uri.getValue().toURL() );
                             }
                             catch ( final MalformedURLException e ) {
-                                Util.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
+                                AptxUtil.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
                                         + "\": Malformed URL Exception: " + e.getLocalizedMessage() );
                             }
                             catch ( final IOException e ) {
-                                Util.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
+                                AptxUtil.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
                                         + "\": IO Exception: " + e.getLocalizedMessage() );
                             }
                             if ( bi != null ) {

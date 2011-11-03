@@ -275,10 +275,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             tp.requestFocus();
         }
         catch ( final Exception ex ) {
-            Util.unexpectedException( ex );
+            AptxUtil.unexpectedException( ex );
         }
         catch ( final Error err ) {
-            Util.unexpectedError( err );
+            AptxUtil.unexpectedError( err );
         }
     }
 
@@ -330,7 +330,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+Up]" );
         _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+Left]" );
         _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+Down]" );
-        if ( getConfiguration().isUseNativeUI() && Util.isMac() ) {
+        if ( getConfiguration().isUseNativeUI() && AptxUtil.isMac() ) {
             _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
             _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );
         }

@@ -68,7 +68,7 @@ public final class Archaeopteryx {
         try {
             int filename_index = 0;
             if ( args.length == 0 ) {
-                conf = new Configuration( null, false, false );
+                conf = new Configuration( null, false, false, true );
             }
             else if ( args.length > 0 ) {
                 // check for a config file
@@ -79,7 +79,7 @@ public final class Archaeopteryx {
                 if ( args[ 0 ].startsWith( "-open" ) ) {
                     filename_index += 1;
                 }
-                conf = new Configuration( config_filename, false, false );
+                conf = new Configuration( config_filename, false, false, true );
                 if ( args.length > filename_index ) {
                     f = new File( args[ filename_index ] );
                     final String err = ForesterUtil.isReadableFile( f );
@@ -129,10 +129,10 @@ public final class Archaeopteryx {
             MainFrameApplication.createInstance( phylogenies, conf, title );
         }
         catch ( final Exception ex ) {
-            Util.unexpectedException( ex );
+            AptxUtil.unexpectedException( ex );
         }
         catch ( final Error err ) {
-            Util.unexpectedError( err );
+            AptxUtil.unexpectedError( err );
         }
     }
 }

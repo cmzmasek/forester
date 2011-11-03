@@ -213,7 +213,7 @@ public class UrlTreeReader implements Runnable {
                             my_name_for_file = new String( sb.toString().replaceAll( " ", "_" ) );
                         }
                         _main_frame.getMainPanel().getCurrentTreePanel().setTreeFile( new File( my_name_for_file ) );
-                        Util.lookAtSomeTreePropertiesForAptxControlSettings( phylogeny, _main_frame.getMainPanel()
+                        AptxUtil.lookAtSomeTreePropertiesForAptxControlSettings( phylogeny, _main_frame.getMainPanel()
                                 .getControlPanel(), _main_frame.getConfiguration() );
                         _main_frame.getMainPanel().getControlPanel().showWhole();
                     }

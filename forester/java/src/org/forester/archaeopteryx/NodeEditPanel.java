@@ -565,7 +565,7 @@ class NodeEditPanel extends JPanel {
     }
 
     private List<Point> obtainPoints() {
-        Util.ensurePresenceOfDistribution( getMyNode() );
+        AptxUtil.ensurePresenceOfDistribution( getMyNode() );
         Distribution d = getMyNode().getNodeData().getDistribution();
         if ( d.getPoints() == null ) {
             d = new Distribution( d.getDesc(), new ArrayList<Point>(), d.getPolygons() );
@@ -731,7 +731,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case TAXONOMY_CODE:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 try {
                     getMyNode().getNodeData().getTaxonomy().setTaxonomyCode( value );
                 }
@@ -741,15 +741,15 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case TAXONOMY_SCIENTIFIC_NAME:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 getMyNode().getNodeData().getTaxonomy().setScientificName( value );
                 break;
             case TAXONOMY_COMMON_NAME:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 getMyNode().getNodeData().getTaxonomy().setCommonName( value );
                 break;
             case TAXONOMY_RANK:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 try {
                     getMyNode().getNodeData().getTaxonomy().setRank( value.toLowerCase() );
                 }
@@ -759,7 +759,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case TAXONOMY_AUTHORITY:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 getMyNode().getNodeData().getTaxonomy().setAuthority( value );
                 break;
             case TAXONOMY_URI: {
@@ -777,7 +777,7 @@ class NodeEditPanel extends JPanel {
                     }
                 }
                 if ( uri != null ) {
-                    Util.ensurePresenceOfTaxonomy( getMyNode() );
+                    AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 }
                 addUri( mtn, uri, number, getMyNode().getNodeData().getTaxonomy() );
                 break;
@@ -788,7 +788,7 @@ class NodeEditPanel extends JPanel {
                 }
                 else if ( getMyNode().getNodeData().getTaxonomy().getSynonyms().size() == number ) {
                     if ( !ForesterUtil.isEmpty( value ) ) {
-                        Util.ensurePresenceOfTaxonomy( getMyNode() );
+                        AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                         getMyNode().getNodeData().getTaxonomy().getSynonyms().add( value );
                     }
                 }
@@ -797,7 +797,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case TAXONOMY_ID_VALUE:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 if ( getMyNode().getNodeData().getTaxonomy().getIdentifier() == null ) {
                     getMyNode().getNodeData().getTaxonomy().setIdentifier( new Identifier( value ) );
                 }
@@ -807,7 +807,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case TAXONOMY_ID_PROVIDER:
-                Util.ensurePresenceOfTaxonomy( getMyNode() );
+                AptxUtil.ensurePresenceOfTaxonomy( getMyNode() );
                 if ( getMyNode().getNodeData().getTaxonomy().getIdentifier() == null ) {
                     getMyNode().getNodeData().getTaxonomy().setIdentifier( new Identifier( "", value ) );
                 }
@@ -817,19 +817,19 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case SEQ_LOCATION:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 getMyNode().getNodeData().getSequence().setLocation( value );
                 break;
             case SEQ_MOL_SEQ:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 getMyNode().getNodeData().getSequence().setMolecularSequence( value );
                 break;
             case SEQ_NAME:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 getMyNode().getNodeData().getSequence().setName( value );
                 break;
             case SEQ_SYMBOL:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 try {
                     getMyNode().getNodeData().getSequence().setSymbol( value );
                 }
@@ -839,7 +839,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case SEQ_TYPE:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 try {
                     getMyNode().getNodeData().getSequence().setType( value.toLowerCase() );
                 }
@@ -849,7 +849,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case SEQ_ACC_SOURCE:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 if ( getMyNode().getNodeData().getSequence().getAccession() == null ) {
                     getMyNode().getNodeData().getSequence().setAccession( new Accession( "", value ) );
                 }
@@ -859,7 +859,7 @@ class NodeEditPanel extends JPanel {
                 }
                 break;
             case SEQ_ACC_VALUE:
-                Util.ensurePresenceOfSequence( getMyNode() );
+                AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 if ( getMyNode().getNodeData().getSequence().getAccession() == null ) {
                     getMyNode().getNodeData().getSequence().setAccession( new Accession( value, "" ) );
                 }
@@ -883,7 +883,7 @@ class NodeEditPanel extends JPanel {
                     }
                 }
                 if ( uri != null ) {
-                    Util.ensurePresenceOfSequence( getMyNode() );
+                    AptxUtil.ensurePresenceOfSequence( getMyNode() );
                 }
                 addUri( mtn, uri, number, getMyNode().getNodeData().getSequence() );
                 break;
@@ -925,23 +925,23 @@ class NodeEditPanel extends JPanel {
                 getMyNode().getNodeData().getEvent().setGeneLosses( parsePositiveInt( mtn, value ) );
                 break;
             case DATE_DESCRIPTION:
-                Util.ensurePresenceOfDate( getMyNode() );
+                AptxUtil.ensurePresenceOfDate( getMyNode() );
                 getMyNode().getNodeData().getDate().setDesc( value );
                 break;
             case DATE_MAX:
-                Util.ensurePresenceOfDate( getMyNode() );
+                AptxUtil.ensurePresenceOfDate( getMyNode() );
                 getMyNode().getNodeData().getDate().setMax( parseBigDecimal( mtn, value ) );
                 break;
             case DATE_MIN:
-                Util.ensurePresenceOfDate( getMyNode() );
+                AptxUtil.ensurePresenceOfDate( getMyNode() );
                 getMyNode().getNodeData().getDate().setMin( parseBigDecimal( mtn, value ) );
                 break;
             case DATE_UNIT:
-                Util.ensurePresenceOfDate( getMyNode() );
+                AptxUtil.ensurePresenceOfDate( getMyNode() );
                 getMyNode().getNodeData().getDate().setUnit( value );
                 break;
             case DATE_VALUE:
-                Util.ensurePresenceOfDate( getMyNode() );
+                AptxUtil.ensurePresenceOfDate( getMyNode() );
                 getMyNode().getNodeData().getDate().setValue( parseBigDecimal( mtn, value ) );
                 break;
             case DIST_ALT: {
@@ -960,7 +960,7 @@ class NodeEditPanel extends JPanel {
                 break;
             }
             case DIST_DESC: {
-                Util.ensurePresenceOfDistribution( getMyNode() );
+                AptxUtil.ensurePresenceOfDistribution( getMyNode() );
                 final Distribution d = getMyNode().getNodeData().getDistribution();
                 getMyNode().getNodeData().setDistribution( new Distribution( value, d.getPoints(), d.getPolygons() ) );
                 break;

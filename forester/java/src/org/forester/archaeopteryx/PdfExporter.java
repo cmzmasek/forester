@@ -92,10 +92,10 @@ final class PdfExporter {
         document.open();
         final DefaultFontMapper mapper = new DefaultFontMapper();
         FontFactory.registerDirectories();
-        if ( Util.isWindows() ) {
+        if ( AptxUtil.isWindows() ) {
             mapper.insertDirectory( "C:\\WINDOWS\\Fonts\\" );
         }
-        else if ( Util.isMac() ) {
+        else if ( AptxUtil.isMac() ) {
             mapper.insertDirectory( "/Library/Fonts/" );
             mapper.insertDirectory( "/System/Library/Fonts/" );
         }
@@ -111,7 +111,7 @@ final class PdfExporter {
             tree_panel.paintPhylogeny( g2, true, false, width, height, 0, 0 );
         }
         catch ( final Exception e ) {
-            Util.unexpectedException( e );
+            AptxUtil.unexpectedException( e );
         }
         finally {
             try {

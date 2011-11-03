@@ -84,7 +84,7 @@ public final class MainFrameApplet extends MainFrame {
         // Load the tree from URL
         if ( url != null ) {
             try {
-                phys = Util.readPhylogeniesFromUrl( url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
+                phys = AptxUtil.readPhylogeniesFromUrl( url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );
@@ -100,7 +100,7 @@ public final class MainFrameApplet extends MainFrame {
                     + "] are null or empty", "Failed to read phylogenies", JOptionPane.ERROR_MESSAGE );
         }
         else {
-            Util.printAppletMessage( ArchaeopteryxA.NAME, "loaded " + phys.length + " phylogenies from: " + url );
+            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "loaded " + phys.length + " phylogenies from: " + url );
         }
         _mainpanel = new MainPanelApplets( _configuration, this );
         // build the menu bar

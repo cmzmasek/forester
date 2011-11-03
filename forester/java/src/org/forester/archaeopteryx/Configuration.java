@@ -54,9 +54,6 @@ import org.forester.util.ForesterUtil;
 
 public final class Configuration {
 
-    public enum UI {
-        NATIVE, CROSSPLATFORM, NIMBUS, UNKNOWN
-    }
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static final String             WEB_LINK_KEY                                           = "web_link";
     private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
@@ -155,7 +152,7 @@ public final class Configuration {
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Annotation", "nodisplay", "no" }, { "Confidence Value", "display", "?" }, { "Event", "display", "?" },
-            { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
+            { "Taxonomy Colorize", "display", "no" }, { "Colorize Branches", "display", "no" },
             { "Use Branch-Widths", "display", "no" }, { "Show Custom Nodes", "display", "yes" },
             { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
             { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "yes" },
@@ -208,7 +205,7 @@ public final class Configuration {
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
-            if ( Arrays.binarySearch( Util.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
+            if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
                 DEFAULT_FONT_FAMILY = font_name;
                 break;
             }
@@ -218,7 +215,11 @@ public final class Configuration {
         }
     }
 
-    public Configuration( final String cf, final boolean is_url, final boolean is_applet ) {
+    public Configuration() {
+        this( null, false, false, false );
+    }
+
+    public Configuration( final String cf, final boolean is_url, final boolean is_applet, final boolean verbose ) {
         if ( ForesterUtil.isEmpty( cf ) ) {
             config_filename = default_config_filename;
         }
@@ -264,13 +265,17 @@ public final class Configuration {
                     bf.close();
                 }
                 catch ( final Exception e ) {
-                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, "failed to read configuration from ["
-                            + config_filename + "]: " + e );
+                    if ( verbose ) {
+                        ForesterUtil.printWarningMessage( Constants.PRG_NAME, "failed to read configuration from ["
+                                + config_filename + "]: " + e );
+                    }
                 }
             }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "cannot find or open configuration file ["
-                        + config_filename + "]" );
+                if ( verbose ) {
+                    ForesterUtil.printWarningMessage( Constants.PRG_NAME, "cannot find or open configuration file ["
+                            + config_filename + "]" );
+                }
             }
         }
     }
@@ -288,38 +293,6 @@ public final class Configuration {
         if ( !ex && ( weblink != null ) ) {
             getWebLinks().put( weblink.getSourceIdentifier().toLowerCase(), weblink );
         }
-    }
-
-    Color getGuiBackgroundColor() {
-        return _gui_background_color;
-    }
-
-    Color getGuiCheckboxTextColor() {
-        return _gui_checkbox_text_color;
-    }
-
-    Color getGuiCheckboxAndButtonActiveColor() {
-        return _gui_checkbox_and_button_active_color;
-    }
-
-    Color getGuiButtonTextColor() {
-        return _gui_button_text_color;
-    }
-
-    Color getGuiButtonBackgroundColor() {
-        return _gui_button_background_color;
-    }
-
-    Color getGuiMenuBackgroundColor() {
-        return _gui_menu_background_color;
-    }
-
-    Color getGuiMenuTextColor() {
-        return _gui_menu_text_color;
-    }
-
-    Color getGuiButtonBorderColor() {
-        return _gui_button_border_color;
     }
 
     boolean displaySequenceRelations() {
@@ -446,8 +419,24 @@ public final class Configuration {
         return clickto_options[ which ][ 0 ];
     }
 
+    public int getDefaultBootstrapSamples() {
+        return _default_bootstrap_samples;
+    }
+
     int getDefaultDisplayClicktoOption() {
         return default_clickto;
+    }
+
+    public NodeFill getDefaultNodeFill() {
+        return _default_node_fill;
+    }
+
+    public NodeShape getDefaultNodeShape() {
+        return _default_node_shape;
+    }
+
+    public short getDefaultNodeShapeSize() {
+        return _default_node_shape_size;
     }
 
     SortedMap<String, Color> getDisplayColors() {
@@ -465,6 +454,14 @@ public final class Configuration {
         return _domain_colors;
     }
 
+    public Color getDomainStructureBaseColor() {
+        return _domain_structure_base_color;
+    }
+
+    public Color getDomainStructureFontColor() {
+        return _domain_structure_font_color;
+    }
+
     int getGraphicsExportX() {
         return _graphics_export_x;
     }
@@ -473,8 +470,36 @@ public final class Configuration {
         return _graphics_export_y;
     }
 
-    public int getDefaultBootstrapSamples() {
-        return _default_bootstrap_samples;
+    Color getGuiBackgroundColor() {
+        return _gui_background_color;
+    }
+
+    Color getGuiButtonBackgroundColor() {
+        return _gui_button_background_color;
+    }
+
+    Color getGuiButtonBorderColor() {
+        return _gui_button_border_color;
+    }
+
+    Color getGuiButtonTextColor() {
+        return _gui_button_text_color;
+    }
+
+    Color getGuiCheckboxAndButtonActiveColor() {
+        return _gui_checkbox_and_button_active_color;
+    }
+
+    Color getGuiCheckboxTextColor() {
+        return _gui_checkbox_text_color;
+    }
+
+    Color getGuiMenuBackgroundColor() {
+        return _gui_menu_background_color;
+    }
+
+    Color getGuiMenuTextColor() {
+        return _gui_menu_text_color;
     }
 
     double getMinConfidenceValue() {
@@ -536,12 +561,20 @@ public final class Configuration {
         return _weblinks;
     }
 
+    public boolean isAbbreviateScientificTaxonNames() {
+        return _abbreviate_scientific_names;
+    }
+
     boolean isAntialiasScreen() {
         return _antialias_screen;
     }
 
     public boolean isBackgroundColorGradient() {
         return _background_color_gradient;
+    }
+
+    public boolean isColorLabelsSameAsParentBranch() {
+        return _color_labels_same_as_parent_branch;
     }
 
     /**
@@ -585,6 +618,14 @@ public final class Configuration {
         return _show_branch_length_values;
     }
 
+    public boolean isShowDefaultNodeShapes() {
+        return _show_default_node_shapes;
+    }
+
+    public boolean isShowDomainLabels() {
+        return _show_domain_labels;
+    }
+
     boolean isShowOverview() {
         return _show_overview;
     }
@@ -593,8 +634,12 @@ public final class Configuration {
         return _show_scale;
     }
 
+    public boolean isTaxonomyColorizeNodeShapes() {
+        return _taxonomy_colorize_node_shapes;
+    }
+
     final boolean isUseNativeUI() {
-        if ( ( _ui == UI.UNKNOWN ) && Util.isMac() && Util.isJava15() ) {
+        if ( ( _ui == UI.UNKNOWN ) && AptxUtil.isMac() && AptxUtil.isJava15() ) {
             _ui = UI.NATIVE;
         }
         return _ui == UI.NATIVE;
@@ -680,11 +725,15 @@ public final class Configuration {
         final String[] fonts = font_str.split( ",+" );
         for( String font : fonts ) {
             font = font.replace( '_', ' ' ).trim();
-            if ( Arrays.binarySearch( Util.getAvailableFontFamiliesSorted(), font ) >= 0 ) {
+            if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font ) >= 0 ) {
                 setBaseFontFamilyName( font );
                 break;
             }
         }
+    }
+
+    public void putDisplayColors( final String key, final Color color ) {
+        getDisplayColors().put( key, color );
     }
 
     /**
@@ -708,6 +757,10 @@ public final class Configuration {
         } while ( line != null );
     }
 
+    public void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
+        _abbreviate_scientific_names = abbreviate_scientific_names;
+    }
+
     private void setAntialiasScreen( final boolean antialias_screen ) {
         _antialias_screen = antialias_screen;
     }
@@ -716,35 +769,43 @@ public final class Configuration {
         _background_color_gradient = background_color_gradient;
     }
 
-    private void setBaseFontFamilyName( final String base_font_family_name ) {
+    public void setBaseFontFamilyName( final String base_font_family_name ) {
         _base_font_family_name = base_font_family_name;
     }
 
-    private void setBaseFontSize( final int base_font_size ) {
+    public void setBaseFontSize( final int base_font_size ) {
         _base_font_size = base_font_size;
-    }
-
-    private void setShowDomainLabels( final boolean show_domain_labels ) {
-        _show_domain_labels = show_domain_labels;
-    }
-
-    private void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
-        _abbreviate_scientific_names = abbreviate_scientific_names;
-    }
-
-    private void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
-        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
     }
 
     private void setCladogramType( final CLADOGRAM_TYPE cladogram_type ) {
         _cladogram_type = cladogram_type;
     }
 
-    void setDisplayColors( final SortedMap<String, Color> display_colors ) {
+    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
+        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
+    }
+
+    private void setDefaultBootstrapSamples( final int default_bootstrap_samples ) {
+        _default_bootstrap_samples = default_bootstrap_samples;
+    }
+
+    public void setDefaultNodeFill( final NodeFill default_node_fill ) {
+        _default_node_fill = default_node_fill;
+    }
+
+    public void setDefaultNodeShape( final NodeShape default_node_shape ) {
+        _default_node_shape = default_node_shape;
+    }
+
+    public void setDefaultNodeShapeSize( final short default_node_shape_size ) {
+        _default_node_shape_size = default_node_shape_size;
+    }
+
+    public void setDisplayColors( final SortedMap<String, Color> display_colors ) {
         _display_colors = display_colors;
     }
 
-    private void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
+    public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
         _display_sequence_relations = display_sequence_relations;
     }
 
@@ -752,7 +813,7 @@ public final class Configuration {
         _editable = editable;
     }
 
-    private void setExtractPfamTaxonomyCodesInNhParsing( final boolean nh_parsing_extract_pfam_taxonomy_codes ) {
+    public void setExtractPfamTaxonomyCodesInNhParsing( final boolean nh_parsing_extract_pfam_taxonomy_codes ) {
         _nh_parsing_extract_pfam_taxonomy_codes = nh_parsing_extract_pfam_taxonomy_codes;
     }
 
@@ -762,10 +823,6 @@ public final class Configuration {
 
     private void setGraphicsExportY( final int graphics_export_y ) {
         _graphics_export_y = graphics_export_y;
-    }
-
-    private void setDefaultBootstrapSamples( final int default_bootstrap_samples ) {
-        _default_bootstrap_samples = default_bootstrap_samples;
     }
 
     private void setInternalNumberAreConfidenceForNhParsing( final boolean internal_number_are_confidence_for_nh_parsing ) {
@@ -1276,7 +1333,7 @@ public final class Configuration {
                                                       "configuration key [function_color] is deprecated" );
                 }
                 else if ( key.equals( DISPLAY_COLOR_KEY ) ) {
-                    getDisplayColors().put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
+                    putDisplayColors( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( WEB_LINK_KEY ) ) {
                     if ( st.countTokens() == 3 ) {
@@ -1301,19 +1358,19 @@ public final class Configuration {
         }
     }
 
-    private void setMinConfidenceValue( final double min_confidence_value ) {
+    public void setMinConfidenceValue( final double min_confidence_value ) {
         _min_confidence_value = min_confidence_value;
     }
 
-    void setNodeLabelDirection( final NODE_LABEL_DIRECTION node_label_direction ) {
+    public void setNodeLabelDirection( final NODE_LABEL_DIRECTION node_label_direction ) {
         _node_label_direction = node_label_direction;
     }
 
-    private void setNumberOfDigitsAfterCommaForBranchLengthValue( final short _number_of_digits_after_comma_for_branch_length_values ) {
+    public void setNumberOfDigitsAfterCommaForBranchLengthValue( final short _number_of_digits_after_comma_for_branch_length_values ) {
         this._number_of_digits_after_comma_for_branch_length_values = _number_of_digits_after_comma_for_branch_length_values;
     }
 
-    private void setNumberOfDigitsAfterCommaForConfidenceValues( final short _number_of_digits_after_comma_for_confidence_values ) {
+    public void setNumberOfDigitsAfterCommaForConfidenceValues( final short _number_of_digits_after_comma_for_confidence_values ) {
         this._number_of_digits_after_comma_for_confidence_values = _number_of_digits_after_comma_for_confidence_values;
     }
 
@@ -1329,28 +1386,40 @@ public final class Configuration {
         _ov_placement = ov_placement;
     }
 
-    void setPhylogenyGraphicsType( final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type ) {
+    public void setPhylogenyGraphicsType( final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type ) {
         _phylogeny_graphics_type = phylogeny_graphics_type;
     }
 
-    private void setPrintLineWidth( final float print_line_width ) {
+    public void setPrintLineWidth( final float print_line_width ) {
         _print_line_width = print_line_width;
     }
 
-    private void setReplaceUnderscoresInNhParsing( final boolean nh_parsing_replace_underscores ) {
+    public void setReplaceUnderscoresInNhParsing( final boolean nh_parsing_replace_underscores ) {
         _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
     }
 
-    private void setShowBranchLengthValues( final boolean show_branch_length_values ) {
+    public void setShowBranchLengthValues( final boolean show_branch_length_values ) {
         _show_branch_length_values = show_branch_length_values;
+    }
+
+    public void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
+        _show_default_node_shapes = show_default_node_shapes;
+    }
+
+    public void setShowDomainLabels( final boolean show_domain_labels ) {
+        _show_domain_labels = show_domain_labels;
     }
 
     private void setShowOverview( final boolean show_overview ) {
         _show_overview = show_overview;
     }
 
-    private void setShowScale( final boolean show_scale ) {
+    public void setShowScale( final boolean show_scale ) {
         _show_scale = show_scale;
+    }
+
+    public void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
+        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
     private void setValidatePhyloXmlAgainstSchema( final boolean validate_against_phyloxml_xsd_schema ) {
@@ -1369,63 +1438,7 @@ public final class Configuration {
         TRUE, FALSE, UNKNOWN
     }
 
-    public Color getDomainStructureFontColor() {
-        return _domain_structure_font_color;
-    }
-
-    public Color getDomainStructureBaseColor() {
-        return _domain_structure_base_color;
-    }
-
-    public boolean isColorLabelsSameAsParentBranch() {
-        return _color_labels_same_as_parent_branch;
-    }
-
-    public boolean isShowDomainLabels() {
-        return _show_domain_labels;
-    }
-
-    public boolean isAbbreviateScientificTaxonNames() {
-        return _abbreviate_scientific_names;
-    }
-
-    public NodeShape getDefaultNodeShape() {
-        return _default_node_shape;
-    }
-
-    private void setDefaultNodeShape( final NodeShape default_node_shape ) {
-        _default_node_shape = default_node_shape;
-    }
-
-    private void setDefaultNodeFill( final NodeFill default_node_fill ) {
-        _default_node_fill = default_node_fill;
-    }
-
-    public NodeFill getDefaultNodeFill() {
-        return _default_node_fill;
-    }
-
-    private void setDefaultNodeShapeSize( final short default_node_shape_size ) {
-        _default_node_shape_size = default_node_shape_size;
-    }
-
-    public short getDefaultNodeShapeSize() {
-        return _default_node_shape_size;
-    }
-
-    private void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
-        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
-    }
-
-    public boolean isTaxonomyColorizeNodeShapes() {
-        return _taxonomy_colorize_node_shapes;
-    }
-
-    public boolean isShowDefaultNodeShapes() {
-        return _show_default_node_shapes;
-    }
-
-    private void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
-        _show_default_node_shapes = show_default_node_shapes;
+    public enum UI {
+        NATIVE, CROSSPLATFORM, NIMBUS, UNKNOWN
     }
 }

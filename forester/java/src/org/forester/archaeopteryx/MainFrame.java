@@ -403,7 +403,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _website_item ) {
             try {
-                Util.openWebsite( Constants.APTX_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( Constants.APTX_WEB_SITE, is_applet, applet );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -411,7 +411,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _phyloxml_website_item ) {
             try {
-                Util.openWebsite( Constants.PHYLOXML_WEB_SITE, is_applet, applet );
+                AptxUtil.openWebsite( Constants.PHYLOXML_WEB_SITE, is_applet, applet );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -419,7 +419,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _aptx_ref_item ) {
             try {
-                Util.openWebsite( Constants.APTX_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( Constants.APTX_REFERENCE_URL, is_applet, applet );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -427,7 +427,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _phyloxml_ref_item ) {
             try {
-                Util.openWebsite( Constants.PHYLOXML_REFERENCE_URL, is_applet, applet );
+                AptxUtil.openWebsite( Constants.PHYLOXML_REFERENCE_URL, is_applet, applet );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -645,7 +645,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void colorRank() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
-            final String[] ranks = Util.getAllPossibleRanks();
+            final String[] ranks = AptxUtil.getAllPossibleRanks();
             final String rank = ( String ) JOptionPane
                     .showInputDialog( this,
                                       "What rank should the colorization be based on",
@@ -762,7 +762,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _jmenubar;
     }
 
-    Options getOptions() {
+    public Options getOptions() {
         return _options;
     }
 
@@ -811,7 +811,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void removeBranchColors() {
         if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            Util.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
         }
     }
 
@@ -1021,7 +1021,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
             return;
         }
-        _textframe = TextFrame.instantiate( Util.crateBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
+        _textframe = TextFrame.instantiate( AptxUtil.crateBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
     }
 
     void viewAsNexus() {
@@ -1312,7 +1312,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( current_tree_panel == null ) || ( current_tree_panel.getPhylogeny() == null ) ) {
             mi.setEnabled( true );
         }
-        else if ( Util.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
+        else if ( AptxUtil.isHasAtLeastOneBranchWithSupportValues( current_tree_panel.getPhylogeny() ) ) {
             mi.setEnabled( true );
         }
         else {

@@ -27,10 +27,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.apache.commons.codec.binary.Base64;
+import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
-import org.forester.archaeopteryx.Util.GraphicsExportType;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.util.ForesterConstants;
@@ -277,7 +277,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _website_item ) {
             try {
-                Util.openWebsite( Constants.APTX_WEB_SITE, true, this );
+                AptxUtil.openWebsite( Constants.APTX_WEB_SITE, true, this );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -285,7 +285,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _phyloxml_website_item ) {
             try {
-                Util.openWebsite( Constants.PHYLOXML_WEB_SITE, true, this );
+                AptxUtil.openWebsite( Constants.PHYLOXML_WEB_SITE, true, this );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -293,7 +293,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _aptx_ref_item ) {
             try {
-                Util.openWebsite( Constants.APTX_REFERENCE_URL, true, this );
+                AptxUtil.openWebsite( Constants.APTX_REFERENCE_URL, true, this );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -301,7 +301,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _phyloxml_ref_item ) {
             try {
-                Util.openWebsite( Constants.PHYLOXML_REFERENCE_URL, true, this );
+                AptxUtil.openWebsite( Constants.PHYLOXML_REFERENCE_URL, true, this );
             }
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
@@ -350,13 +350,13 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     public String getCurrentPhylogenyGraphicsAsBase64EncodedString( final String format ) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            Util.writePhylogenyToGraphicsByteArrayOutputStream( baos,
-                                                                _main_panel.getWidth(),
-                                                                _main_panel.getHeight(),
-                                                                getCurrentTreePanel(),
-                                                                getCurrentTreePanel().getControlPanel(),
-                                                                GraphicsExportType.valueOf( format ),
-                                                                getOptions() );
+            AptxUtil.writePhylogenyToGraphicsByteArrayOutputStream( baos,
+                                                                    _main_panel.getWidth(),
+                                                                    _main_panel.getHeight(),
+                                                                    getCurrentTreePanel(),
+                                                                    getCurrentTreePanel().getControlPanel(),
+                                                                    GraphicsExportType.valueOf( format ),
+                                                                    getOptions() );
         }
         catch ( final IOException ioe ) {
             ForesterUtil.printErrorMessage( NAME, ioe.toString() );
@@ -640,7 +640,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     @Override
     public void destroy() {
-        Util.printAppletMessage( NAME, "going to be destroyed " );
+        AptxUtil.printAppletMessage( NAME, "going to be destroyed " );
         removeTextFrame();
         if ( getMainPanel() != null ) {
             getMainPanel().terminate();
@@ -674,15 +674,15 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     @Override
     public void init() {
         final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
-        Util.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
-        final Configuration configuration = new Configuration( config_filename, true, true );
+        AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
+        final Configuration configuration = new Configuration( config_filename, true, true, true );
         setConfiguration( configuration );
         setOptions( Options.createInstance( configuration ) );
         setupUI();
         URL phys_url = null;
         Phylogeny[] phys = null;
         final String phys_url_string = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
-        Util.printAppletMessage( NAME, "URL for phylogenies is " + phys_url_string );
+        AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + phys_url_string );
         // Get URL to tree file
         if ( phys_url_string != null ) {
             try {
@@ -698,7 +698,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         // Load the tree from URL
         if ( phys_url != null ) {
             try {
-                phys = Util.readPhylogeniesFromUrl( phys_url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
+                phys = AptxUtil.readPhylogeniesFromUrl( phys_url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( NAME, e.toString() );
@@ -718,7 +718,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             return;
         }
         else {
-            Util.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
+            AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
         }
         setVisible( false );
         setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
@@ -752,23 +752,23 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
         } );
         if ( getConfiguration().isUseTabbedDisplay() ) {
-            Util.printAppletMessage( NAME, "using tabbed display" );
-            Util.addPhylogeniesToTabs( phys,
-                                       new File( phys_url.getFile() ).getName(),
-                                       phys_url.toString(),
-                                       getConfiguration(),
-                                       getMainPanel() );
+            AptxUtil.printAppletMessage( NAME, "using tabbed display" );
+            AptxUtil.addPhylogeniesToTabs( phys,
+                                           new File( phys_url.getFile() ).getName(),
+                                           phys_url.toString(),
+                                           getConfiguration(),
+                                           getMainPanel() );
         }
         else {
-            Util.printAppletMessage( NAME, "not using tabbed display" );
-            Util.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
+            AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
+            AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
         }
         validate();
         setName( NAME );
         getMainPanel().getControlPanel().showWholeAll();
         getMainPanel().getControlPanel().showWhole();
         System.gc();
-        Util.printAppletMessage( NAME, "successfully initialized" );
+        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
         /* GUILHEM_BEG */
         getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
         for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
@@ -828,7 +828,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     private void removeBranchColors() {
         if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            Util.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
         }
     }
 
@@ -925,19 +925,19 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
         }
         catch ( final UnsupportedLookAndFeelException e ) {
-            Util.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
+            AptxUtil.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
         }
         catch ( final ClassNotFoundException e ) {
-            Util.dieWithSystemError( "ClassNotFoundException: " + e.toString() );
+            AptxUtil.dieWithSystemError( "ClassNotFoundException: " + e.toString() );
         }
         catch ( final InstantiationException e ) {
-            Util.dieWithSystemError( "InstantiationException: " + e.toString() );
+            AptxUtil.dieWithSystemError( "InstantiationException: " + e.toString() );
         }
         catch ( final IllegalAccessException e ) {
-            Util.dieWithSystemError( "IllegalAccessException: " + e.toString() );
+            AptxUtil.dieWithSystemError( "IllegalAccessException: " + e.toString() );
         }
         catch ( final Exception e ) {
-            Util.dieWithSystemError( e.toString() );
+            AptxUtil.dieWithSystemError( e.toString() );
         }
     }
 
@@ -949,7 +949,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         requestFocus();
         requestFocusInWindow();
         requestFocus();
-        Util.printAppletMessage( NAME, "started" );
+        AptxUtil.printAppletMessage( NAME, "started" );
     }
 
     void switchColors() {

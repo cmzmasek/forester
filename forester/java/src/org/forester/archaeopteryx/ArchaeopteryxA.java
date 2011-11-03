@@ -54,7 +54,7 @@ public class ArchaeopteryxA extends JApplet {
 
     @Override
     public void destroy() {
-        Util.printAppletMessage( NAME, "going to be destroyed" );
+        AptxUtil.printAppletMessage( NAME, "going to be destroyed" );
         if ( getMainFrameApplet() != null ) {
             getMainFrameApplet().close();
         }
@@ -81,7 +81,7 @@ public class ArchaeopteryxA extends JApplet {
         boolean has_exception = false;
         setName( NAME );
         setUrlString( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
-        Util.printAppletMessage( NAME, "URL of phylogenies to load: \"" + getUrlString() + "\"" );
+        AptxUtil.printAppletMessage( NAME, "URL of phylogenies to load: \"" + getUrlString() + "\"" );
         setBackground( background_color );
         setForeground( font_color );
         setFont( font );
@@ -98,8 +98,8 @@ public class ArchaeopteryxA extends JApplet {
             repaint();
         }
         final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
-        Util.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
-        final Configuration configuration = new Configuration( config_filename, true, true );
+        AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
+        final Configuration configuration = new Configuration( config_filename, true, true, true );
         try {
             if ( configuration.isUseNativeUI() ) {
                 UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
@@ -111,9 +111,13 @@ public class ArchaeopteryxA extends JApplet {
             _mainframe_applet = new MainFrameApplet( this, configuration );
             URL url = null;
             url = new URL( getUrlString() );
-            final Phylogeny[] phys = Util.readPhylogeniesFromUrl( url, configuration.isValidatePhyloXmlAgainstSchema() );
-            Util.addPhylogeniesToTabs( phys, new File( url.getFile() ).getName(), getUrlString(), getMainFrameApplet()
-                    .getConfiguration(), getMainFrameApplet().getMainPanel() );
+            final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( url,
+                                                                      configuration.isValidatePhyloXmlAgainstSchema() );
+            AptxUtil.addPhylogeniesToTabs( phys,
+                                           new File( url.getFile() ).getName(),
+                                           getUrlString(),
+                                           getMainFrameApplet().getConfiguration(),
+                                           getMainFrameApplet().getMainPanel() );
             getMainFrameApplet().getMainPanel().getControlPanel().showWholeAll();
             getMainFrameApplet().getMainPanel().getControlPanel().showWhole();
             setVisible( true );
@@ -130,7 +134,7 @@ public class ArchaeopteryxA extends JApplet {
         if ( !has_exception ) {
             setMessage1( NAME + " is now ready!" );
             repaint();
-            Util.printAppletMessage( NAME, "successfully initialized" );
+            AptxUtil.printAppletMessage( NAME, "successfully initialized" );
         }
         KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
         getMainFrameApplet().requestFocus();
@@ -183,6 +187,6 @@ public class ArchaeopteryxA extends JApplet {
         getMainFrameApplet().requestFocus();
         getMainFrameApplet().requestFocusInWindow();
         getMainFrameApplet().requestFocus();
-        Util.printAppletMessage( NAME, "started" );
+        AptxUtil.printAppletMessage( NAME, "started" );
     }
 }

@@ -154,7 +154,7 @@ final public class Options {
         _editable = true;
         _background_color_gradient = false;
         _show_default_node_shapes = false;
-        if ( Util.isUsOrCanada() ) {
+        if ( AptxUtil.isUsOrCanada() ) {
             _print_size_x = Constants.US_LETTER_SIZE_X;
             _print_size_y = Constants.US_LETTER_SIZE_Y;
         }
@@ -498,11 +498,11 @@ final public class Options {
         return instance;
     }
 
-    static enum CLADOGRAM_TYPE {
+    public static enum CLADOGRAM_TYPE {
         NON_LINED_UP, EXT_NODE_SUM_DEP, TOTAL_NODE_SUM_DEP;
     }
 
-    static enum NODE_LABEL_DIRECTION {
+    public static enum NODE_LABEL_DIRECTION {
         HORIZONTAL, RADIAL;
     }
 
@@ -528,7 +528,7 @@ final public class Options {
         }
     }
 
-    static enum PHYLOGENY_GRAPHICS_TYPE {
+    public static enum PHYLOGENY_GRAPHICS_TYPE {
         RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
     }
 }

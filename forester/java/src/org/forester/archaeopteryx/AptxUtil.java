@@ -80,7 +80,7 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 import org.forester.ws.uniprot.UniProtTaxonomy;
 
-public final class Util {
+public final class AptxUtil {
 
     private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
                                                                          .getAvailableFontFamilyNames();
@@ -120,6 +120,21 @@ public final class Util {
             }
         }
         return false;
+    }
+
+    public static void writePhylogenyToGraphicsFileNonInteractive( final File intree,
+                                                                   final File outfile,
+                                                                   final int width,
+                                                                   final int height,
+                                                                   final GraphicsExportType type,
+                                                                   final Configuration config ) throws IOException {
+        final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
+        Phylogeny[] phys = null;
+        phys = PhylogenyMethods.readPhylogenies( parser, intree );
+        final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
+        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
+                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+        mf.end();
     }
 
     /**
@@ -276,9 +291,9 @@ public final class Util {
                 }
             }
         }
-        first = Util.normalizeCharForRGB( first );
-        second = Util.normalizeCharForRGB( second );
-        third = Util.normalizeCharForRGB( third );
+        first = AptxUtil.normalizeCharForRGB( first );
+        second = AptxUtil.normalizeCharForRGB( second );
+        third = AptxUtil.normalizeCharForRGB( third );
         if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
             first = 0;
         }
@@ -301,7 +316,7 @@ public final class Util {
             if ( !n.isExternal() && !n.isCollapse() && ( n.getNumberOfDescendants() > 1 ) ) {
                 final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( n );
                 if ( ( taxs != null ) && ( taxs.size() == 1 ) ) {
-                    Util.collapseSubtree( n, true );
+                    AptxUtil.collapseSubtree( n, true );
                     if ( !n.getNodeData().isHasTaxonomy() ) {
                         n.getNodeData().setTaxonomy( ( Taxonomy ) n.getAllExternalDescendants().get( 0 ).getNodeData()
                                 .getTaxonomy().copy() );
@@ -697,13 +712,13 @@ public final class Util {
                                                                       final ControlPanel atv_control,
                                                                       final Configuration configuration ) {
         if ( ( t != null ) && !t.isEmpty() ) {
-            if ( !Util.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+            if ( !AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
                 atv_control.setDrawPhylogram( false );
                 atv_control.setDrawPhylogramEnabled( false );
             }
             if ( configuration.doGuessCheckOption( Configuration.display_as_phylogram ) ) {
                 if ( atv_control.getDisplayAsPhylogramCb() != null ) {
-                    if ( Util.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
+                    if ( AptxUtil.isHasAtLeastOneBranchLengthLargerThanZero( t ) ) {
                         atv_control.setDrawPhylogram( true );
                         atv_control.setDrawPhylogramEnabled( true );
                     }
@@ -714,7 +729,7 @@ public final class Util {
             }
             if ( configuration.doGuessCheckOption( Configuration.write_confidence_values ) ) {
                 if ( atv_control.getWriteConfidenceCb() != null ) {
-                    if ( Util.isHasAtLeastOneBranchWithSupportValues( t ) ) {
+                    if ( AptxUtil.isHasAtLeastOneBranchWithSupportValues( t ) ) {
                         atv_control.setCheckbox( Configuration.write_confidence_values, true );
                     }
                     else {
@@ -724,7 +739,7 @@ public final class Util {
             }
             if ( configuration.doGuessCheckOption( Configuration.write_events ) ) {
                 if ( atv_control.getShowEventsCb() != null ) {
-                    if ( Util.isHasAtLeastNodeWithEvent( t ) ) {
+                    if ( AptxUtil.isHasAtLeastNodeWithEvent( t ) ) {
                         atv_control.setCheckbox( Configuration.write_events, true );
                     }
                     else {
@@ -775,7 +790,7 @@ public final class Util {
 
     final static void openWebsite( final String url, final boolean is_applet, final JApplet applet ) throws IOException {
         try {
-            Util.launchWebBrowser( new URI( url ), is_applet, applet, Constants.PRG_NAME );
+            AptxUtil.launchWebBrowser( new URI( url ), is_applet, applet, Constants.PRG_NAME );
         }
         catch ( final Exception e ) {
             throw new IOException( e );
@@ -915,6 +930,56 @@ public final class Util {
         return msg;
     }
 
+    public final static void writePhylogenyToGraphicsFileNonInteractive( final File outfile,
+                                                                         final int width,
+                                                                         final int height,
+                                                                         final TreePanel tree_panel,
+                                                                         final ControlPanel ac,
+                                                                         final GraphicsExportType type,
+                                                                         final Options options ) throws IOException {
+        tree_panel.setParametersForPainting( width, height, true );
+        tree_panel.resetPreferredSize();
+        tree_panel.repaint();
+        final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
+                                                                   RenderingHints.VALUE_RENDER_QUALITY );
+        rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
+        if ( options.isAntialiasPrint() ) {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        }
+        else {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
+        }
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
+            return;
+        }
+        if ( outfile.isDirectory() ) {
+            throw new IOException( "\"" + outfile + "\" is a directory" );
+        }
+        //Rectangle visible = null;
+        final BufferedImage buffered_img = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g2d = buffered_img.createGraphics();
+        g2d.setRenderingHints( rendering_hints );
+        final int x = 0;
+        final int y = 0;
+        //if ( options.isGraphicsExportVisibleOnly() ) {
+        //    g2d = ( Graphics2D ) g2d.create( -visible.x, -visible.y, visible.width, visible.height );
+        //    g2d.setClip( null );
+        //    x = visible.x;
+        //    y = visible.y;
+        //}
+        tree_panel.paintPhylogeny( g2d, false, true, width, height, x, y );
+        if ( type == GraphicsExportType.TIFF ) {
+            writeToTiff( outfile, buffered_img );
+        }
+        else {
+            ImageIO.write( buffered_img, type.toString(), outfile );
+        }
+        g2d.dispose();
+    }
+
     final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,
                                                                        int width,
                                                                        int height,
@@ -1033,7 +1098,7 @@ public final class Util {
     // }
     // br.close();
     // }
-    static enum GraphicsExportType {
+    public static enum GraphicsExportType {
         GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" ), BMP( "bmp" );
 
         private final String _suffix;

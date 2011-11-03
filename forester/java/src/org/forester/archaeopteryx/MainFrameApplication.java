@@ -59,10 +59,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 
+import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
-import org.forester.archaeopteryx.Util.GraphicsExportType;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.GoAnnotation;
 import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
@@ -264,19 +264,19 @@ public final class MainFrameApplication extends MainFrame {
             //UIManager.setLookAndFeel( "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel" );
         }
         catch ( final UnsupportedLookAndFeelException e ) {
-            Util.dieWithSystemError( "unsupported look and feel: " + e.toString() );
+            AptxUtil.dieWithSystemError( "unsupported look and feel: " + e.toString() );
         }
         catch ( final ClassNotFoundException e ) {
-            Util.dieWithSystemError( "class not found exception: " + e.toString() );
+            AptxUtil.dieWithSystemError( "class not found exception: " + e.toString() );
         }
         catch ( final InstantiationException e ) {
-            Util.dieWithSystemError( "instantiation exception: " + e.toString() );
+            AptxUtil.dieWithSystemError( "instantiation exception: " + e.toString() );
         }
         catch ( final IllegalAccessException e ) {
-            Util.dieWithSystemError( "illegal access exception: " + e.toString() );
+            AptxUtil.dieWithSystemError( "illegal access exception: " + e.toString() );
         }
         catch ( final Exception e ) {
-            Util.dieWithSystemError( e.toString() );
+            AptxUtil.dieWithSystemError( e.toString() );
         }
         // hide until everything is ready
         setVisible( false );
@@ -409,7 +409,7 @@ public final class MainFrameApplication extends MainFrame {
         // addKeyListener( this );
         setVisible( true );
         if ( ( phys != null ) && ( phys.length > 0 ) ) {
-            Util.addPhylogeniesToTabs( phys, title, null, _configuration, _mainpanel );
+            AptxUtil.addPhylogeniesToTabs( phys, title, null, _configuration, _mainpanel );
             validate();
             getMainPanel().getControlPanel().showWholeAll();
             getMainPanel().getControlPanel().showWhole();
@@ -420,9 +420,54 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
+    private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
+        _configuration = config;
+        if ( _configuration == null ) {
+            throw new IllegalArgumentException( "configuration is null" );
+        }
+        setVisible( false );
+        setOptions( Options.createInstance( _configuration ) );
+        _mainpanel = new MainPanel( _configuration, this );
+        _open_filechooser = null;
+        _open_filechooser_for_species_tree = null;
+        _save_filechooser = null;
+        _writetopdf_filechooser = null;
+        _writetographics_filechooser = null;
+        _msa_filechooser = null;
+        _seqs_filechooser = null;
+        _values_filechooser = null;
+        _jmenubar = new JMenuBar();
+        buildFileMenu();
+        buildTypeMenu();
+        _contentpane = getContentPane();
+        _contentpane.setLayout( new BorderLayout() );
+        _contentpane.add( _mainpanel, BorderLayout.CENTER );
+        // App is this big
+        setSize( MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE );
+        // The window listener
+        setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+        addWindowListener( new WindowAdapter() {
+
+            @Override
+            public void windowClosing( final WindowEvent e ) {
+                exit();
+            }
+        } );
+        //   setVisible( true );
+        if ( ( phys != null ) && ( phys.length > 0 ) ) {
+            AptxUtil.addPhylogeniesToTabs( phys, "", null, _configuration, _mainpanel );
+            validate();
+            getMainPanel().getControlPanel().showWholeAll();
+            getMainPanel().getControlPanel().showWhole();
+        }
+        //activateSaveAllIfNeeded();
+        // ...and its children
+        _contentpane.repaint();
+    }
+
     private MainFrameApplication( final Phylogeny[] phys, final String config_file, final String title ) {
         // Reads the config file (false, false => not url, not applet):
-        this( phys, new Configuration( config_file, false, false ), title );
+        this( phys, new Configuration( config_file, false, false, true ), title );
     }
 
     @Override
@@ -590,10 +635,10 @@ public final class MainFrameApplication extends MainFrame {
             _contentpane.repaint();
         }
         catch ( final Exception ex ) {
-            Util.unexpectedException( ex );
+            AptxUtil.unexpectedException( ex );
         }
         catch ( final Error err ) {
-            Util.unexpectedError( err );
+            AptxUtil.unexpectedError( err );
         }
     }
 
@@ -660,15 +705,15 @@ public final class MainFrameApplication extends MainFrame {
         _save_all_item.setEnabled( false );
         _file_jmenu.addSeparator();
         _file_jmenu.add( _write_to_pdf_item = new JMenuItem( "Export to PDF file ..." ) );
-        if ( Util.canWriteFormat( "tif" ) || Util.canWriteFormat( "tiff" ) || Util.canWriteFormat( "TIF" ) ) {
+        if ( AptxUtil.canWriteFormat( "tif" ) || AptxUtil.canWriteFormat( "tiff" ) || AptxUtil.canWriteFormat( "TIF" ) ) {
             _file_jmenu.add( _write_to_tif_item = new JMenuItem( "Export to TIFF file..." ) );
         }
         _file_jmenu.add( _write_to_png_item = new JMenuItem( "Export to PNG file..." ) );
         _file_jmenu.add( _write_to_jpg_item = new JMenuItem( "Export to JPG file..." ) );
-        if ( Util.canWriteFormat( "gif" ) ) {
+        if ( AptxUtil.canWriteFormat( "gif" ) ) {
             _file_jmenu.add( _write_to_gif_item = new JMenuItem( "Export to GIF file..." ) );
         }
-        if ( Util.canWriteFormat( "bmp" ) ) {
+        if ( AptxUtil.canWriteFormat( "bmp" ) ) {
             _file_jmenu.add( _write_to_bmp_item = new JMenuItem( "Export to BMP file..." ) );
         }
         _file_jmenu.addSeparator();
@@ -1293,6 +1338,13 @@ public final class MainFrameApplication extends MainFrame {
         System.exit( 0 );
     }
 
+    public void end() {
+        _mainpanel.terminate();
+        _contentpane.removeAll();
+        setVisible( false );
+        dispose();
+    }
+
     private void extractTaxCodeFromNodeNames() {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
@@ -1414,7 +1466,7 @@ public final class MainFrameApplication extends MainFrame {
         phy.setRoot( node );
         phy.setRooted( true );
         phys[ 0 ] = phy;
-        Util.addPhylogeniesToTabs( phys, "", "", getConfiguration(), getMainPanel() );
+        AptxUtil.addPhylogeniesToTabs( phys, "", "", getConfiguration(), getMainPanel() );
         _mainpanel.getControlPanel().showWhole();
         _mainpanel.getCurrentTreePanel().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
         _mainpanel.getOptions().setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
@@ -1773,11 +1825,11 @@ public final class MainFrameApplication extends MainFrame {
                                 }
                             }
                         }
-                        Util.addPhylogeniesToTabs( phys,
-                                                   file.getName(),
-                                                   file.getAbsolutePath(),
-                                                   getConfiguration(),
-                                                   getMainPanel() );
+                        AptxUtil.addPhylogeniesToTabs( phys,
+                                                       file.getName(),
+                                                       file.getAbsolutePath(),
+                                                       getConfiguration(),
+                                                       getMainPanel() );
                         _mainpanel.getControlPanel().showWhole();
                         if ( nhx_or_nexus && one_desc ) {
                             JOptionPane
@@ -2077,11 +2129,11 @@ public final class MainFrameApplication extends MainFrame {
                         PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
                     }
                 }
-                Util.addPhylogeniesToTabs( phys,
-                                           new File( url.getFile() ).getName(),
-                                           new File( url.getFile() ).toString(),
-                                           getConfiguration(),
-                                           getMainPanel() );
+                AptxUtil.addPhylogeniesToTabs( phys,
+                                               new File( url.getFile() ).getName(),
+                                               new File( url.getFile() ).toString(),
+                                               getConfiguration(),
+                                               getMainPanel() );
                 _mainpanel.getControlPanel().showWhole();
             }
         }
@@ -2305,20 +2357,20 @@ public final class MainFrameApplication extends MainFrame {
         return exception;
     }
 
-    private void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
+    void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
         _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
                                                                    _mainpanel.getCurrentTreePanel().getHeight(),
                                                                    true );
         String file_written_to = "";
         boolean error = false;
         try {
-            file_written_to = Util.writePhylogenyToGraphicsFile( file_name,
-                                                                 _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                 _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                 _mainpanel.getCurrentTreePanel(),
-                                                                 _mainpanel.getControlPanel(),
-                                                                 type,
-                                                                 getOptions() );
+            file_written_to = AptxUtil.writePhylogenyToGraphicsFile( file_name,
+                                                                     _mainpanel.getCurrentTreePanel().getWidth(),
+                                                                     _mainpanel.getCurrentTreePanel().getHeight(),
+                                                                     _mainpanel.getCurrentTreePanel(),
+                                                                     _mainpanel.getControlPanel(),
+                                                                     type,
+                                                                     getOptions() );
         }
         catch ( final IOException e ) {
             error = true;
@@ -2528,6 +2580,10 @@ public final class MainFrameApplication extends MainFrame {
 
     static MainFrame createInstance( final Phylogeny[] phys, final Configuration config, final String title ) {
         return new MainFrameApplication( phys, config, title );
+    }
+
+    public static MainFrameApplication createInstance( final Phylogeny[] phys, final Configuration config ) {
+        return new MainFrameApplication( phys, config );
     }
 
     static MainFrame createInstance( final Phylogeny[] phys, final String config_file_name, final String title ) {

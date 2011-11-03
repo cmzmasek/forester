@@ -49,7 +49,7 @@ public class FontChooser extends JDialog implements ActionListener, ListSelectio
     private String                _type;
     private int                   _style;
     private int                   _size;
-    private final JList           _font_list        = new JList( Util.getAvailableFontFamiliesSorted() );
+    private final JList           _font_list        = new JList( AptxUtil.getAvailableFontFamiliesSorted() );
     private final JList           _style_list       = new JList( STYLE );
     private final JList           _size_list        = new JList( SIZE );
     private final JTextField      _fonts_tf         = new JTextField();
