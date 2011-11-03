@@ -319,3 +319,13 @@ public class phylo2graphics {
 }
 
 }}}
+
+= Setting node/branch colors of a phylogenetic tree and writing it to a graphics file =
+
+{{{
+
+package examples;
+
+
+
+}}}
