@@ -298,15 +298,15 @@ public class phylo2graphics {
             config.putDisplayColors( TreeColorSet.BRANCH, new Color( 0, 0, 0 ) );
             config.putDisplayColors( TreeColorSet.TAXONOMY, new Color( 0, 0, 0 ) );
             config.setPhylogenyGraphicsType( Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR );
-            AptxUtil.writePhylogenyToGraphicsFile( new File( "/home/czmasek/tol_117_TEST.xml" ),
-                                                   new File( "/home/czmasek/tol_117_TEST_.png" ),
+            AptxUtil.writePhylogenyToGraphicsFile( new File( "my_tree.xml" ),
+                                                   new File( "my_tree_graphics.png" ),
                                                    1000,
                                                    1000,
                                                    GraphicsExportType.PNG,
                                                    config );
             // If the tree 'phy' already exists, can also use this:
             AptxUtil.writePhylogenyToGraphicsFile( phy,
-                                                   new File( "/home/czmasek/tol_117_TEST_.png" ),
+                                                   new File( "out.png" ),
                                                    1000,
                                                    1000,
                                                    GraphicsExportType.PNG,
