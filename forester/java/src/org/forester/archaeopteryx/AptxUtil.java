@@ -132,8 +132,8 @@ public final class AptxUtil {
         Phylogeny[] phys = null;
         phys = PhylogenyMethods.readPhylogenies( parser, intree );
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
-        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
-                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+        AptxUtil.writePhylogenyToGraphicsFile( outfile, width, height, mf.getMainPanel().getCurrentTreePanel(), mf
+                .getMainPanel().getControlPanel(), type, mf.getOptions() );
         mf.end();
     }
 
@@ -930,13 +930,13 @@ public final class AptxUtil {
         return msg;
     }
 
-    public final static void writePhylogenyToGraphicsFileNonInteractive( final File outfile,
-                                                                         final int width,
-                                                                         final int height,
-                                                                         final TreePanel tree_panel,
-                                                                         final ControlPanel ac,
-                                                                         final GraphicsExportType type,
-                                                                         final Options options ) throws IOException {
+    public final static void writePhylogenyToGraphicsFile( final File outfile,
+                                                           final int width,
+                                                           final int height,
+                                                           final TreePanel tree_panel,
+                                                           final ControlPanel ac,
+                                                           final GraphicsExportType type,
+                                                           final Options options ) throws IOException {
         tree_panel.setParametersForPainting( width, height, true );
         tree_panel.resetPreferredSize();
         tree_panel.repaint();
@@ -958,19 +958,10 @@ public final class AptxUtil {
         if ( outfile.isDirectory() ) {
             throw new IOException( "\"" + outfile + "\" is a directory" );
         }
-        //Rectangle visible = null;
         final BufferedImage buffered_img = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
         final Graphics2D g2d = buffered_img.createGraphics();
         g2d.setRenderingHints( rendering_hints );
-        final int x = 0;
-        final int y = 0;
-        //if ( options.isGraphicsExportVisibleOnly() ) {
-        //    g2d = ( Graphics2D ) g2d.create( -visible.x, -visible.y, visible.width, visible.height );
-        //    g2d.setClip( null );
-        //    x = visible.x;
-        //    y = visible.y;
-        //}
-        tree_panel.paintPhylogeny( g2d, false, true, width, height, x, y );
+        tree_panel.paintPhylogeny( g2d, false, true, width, height, 0, 0 );
         if ( type == GraphicsExportType.TIFF ) {
             writeToTiff( outfile, buffered_img );
         }
