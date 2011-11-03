@@ -122,18 +122,18 @@ public final class AptxUtil {
         return false;
     }
 
-    public static void writePhylogenyToGraphicsFileNonInteractive( final File intree,
-                                                                   final File outfile,
-                                                                   final int width,
-                                                                   final int height,
-                                                                   final GraphicsExportType type,
-                                                                   final Configuration config ) throws IOException {
+    public static void writePhylogenyToGraphicsFile( final File intree,
+                                                     final File outfile,
+                                                     final int width,
+                                                     final int height,
+                                                     final GraphicsExportType type,
+                                                     final Configuration config ) throws IOException {
         final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
         Phylogeny[] phys = null;
         phys = PhylogenyMethods.readPhylogenies( parser, intree );
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
-        AptxUtil.writePhylogenyToGraphicsFile( outfile, width, height, mf.getMainPanel().getCurrentTreePanel(), mf
-                .getMainPanel().getControlPanel(), type, mf.getOptions() );
+        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
+                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
         mf.end();
     }
 
@@ -930,13 +930,13 @@ public final class AptxUtil {
         return msg;
     }
 
-    public final static void writePhylogenyToGraphicsFile( final File outfile,
-                                                           final int width,
-                                                           final int height,
-                                                           final TreePanel tree_panel,
-                                                           final ControlPanel ac,
-                                                           final GraphicsExportType type,
-                                                           final Options options ) throws IOException {
+    public final static void writePhylogenyToGraphicsFileNonInteractive( final File outfile,
+                                                                         final int width,
+                                                                         final int height,
+                                                                         final TreePanel tree_panel,
+                                                                         final ControlPanel ac,
+                                                                         final GraphicsExportType type,
+                                                                         final Options options ) throws IOException {
         tree_panel.setParametersForPainting( width, height, true );
         tree_panel.resetPreferredSize();
         tree_panel.repaint();
