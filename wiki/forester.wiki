@@ -300,10 +300,13 @@ public class phylo2graphics {
 	   config.setPhylogenyGraphicsType(
                 Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
 
-           AptxUtil.writePhylogenyToGraphicsFileNonInteractive(new File(
-					"/home/czmasek/tol_117_TEST.xml"), new File(
-					"/home/czmasek/tol_117_TEST_.png"), 1000, 1000,
-					GraphicsExportType.PNG, config);
+           AptxUtil.writePhylogenyToGraphicsFileNonInteractive(
+                                        new File("my_tree.xml"),
+                                        new File("my_tree.png"),
+                                        800,  // width
+                                        1000, // height
+					GraphicsExportType.PNG,
+                                        config);
         }
 	catch (IOException e) {
            e.printStackTrace();
