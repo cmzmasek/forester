@@ -131,6 +131,17 @@ public final class AptxUtil {
         final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
         Phylogeny[] phys = null;
         phys = PhylogenyMethods.readPhylogenies( parser, intree );
+        writePhylogenyToGraphicsFile( phys[ 0 ], outfile, width, height, type, config );
+    }
+
+    public static void writePhylogenyToGraphicsFile( final Phylogeny phy,
+                                                     final File outfile,
+                                                     final int width,
+                                                     final int height,
+                                                     final GraphicsExportType type,
+                                                     final Configuration config ) throws IOException {
+        final Phylogeny[] phys = new Phylogeny[ 1 ];
+        phys[ 0 ] = phy;
         final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
         AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
                 .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
