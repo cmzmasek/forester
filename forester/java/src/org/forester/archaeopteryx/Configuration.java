@@ -781,6 +781,10 @@ public final class Configuration {
         _cladogram_type = cladogram_type;
     }
 
+    public void setColorizeBranches( final boolean b ) {
+        display_options[ color_branches ][ 2 ] = b ? "yes" : "no";
+    }
+
     public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
         _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
     }
@@ -801,12 +805,60 @@ public final class Configuration {
         _default_node_shape_size = default_node_shape_size;
     }
 
+    public void setDisplayAsPhylogram( final boolean b ) {
+        display_options[ display_as_phylogram ][ 2 ] = b ? "yes" : "no";
+    }
+
     public void setDisplayColors( final SortedMap<String, Color> display_colors ) {
         _display_colors = display_colors;
     }
 
+    public void setDisplayConfidenceValues( final boolean b ) {
+        display_options[ write_confidence_values ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayInternalData( final boolean b ) {
+        display_options[ display_internal_data ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayNodeNames( final boolean b ) {
+        display_options[ show_node_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplaySequenceAcc( final boolean b ) {
+        display_options[ show_sequence_acc ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplaySequenceNames( final boolean b ) {
+        display_options[ show_gene_names ][ 2 ] = b ? "yes" : "no";
+    }
+
     public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
         _display_sequence_relations = display_sequence_relations;
+    }
+
+    public void setDisplaySequenceSymbols( final boolean b ) {
+        display_options[ show_gene_symbols ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyCode( final boolean b ) {
+        display_options[ show_tax_code ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyCommonNames( final boolean b ) {
+        display_options[ show_taxonomy_common_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyImages( final boolean b ) {
+        display_options[ show_taxonomy_images ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayTaxonomyScientificNames( final boolean b ) {
+        display_options[ show_taxonomy_scientific_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDynamicallyHideData( final boolean b ) {
+        display_options[ dynamically_hide_data ][ 2 ] = b ? "yes" : "no";
     }
 
     private void setEditable( final boolean editable ) {
@@ -1418,8 +1470,16 @@ public final class Configuration {
         _show_scale = show_scale;
     }
 
+    public void setTaxonomyColorize( final boolean b ) {
+        display_options[ color_according_to_species ][ 2 ] = b ? "yes" : "no";
+    }
+
     public void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
         _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
+    }
+
+    public void setUseBranchesWidths( final boolean b ) {
+        display_options[ width_branches ][ 2 ] = b ? "yes" : "no";
     }
 
     private void setValidatePhyloXmlAgainstSchema( final boolean validate_against_phyloxml_xsd_schema ) {
