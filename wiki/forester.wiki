@@ -300,7 +300,7 @@ public class phylo2graphics {
 	   config.setPhylogenyGraphicsType(
                 Options.PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR);
 
-           AptxUtil.writePhylogenyToGraphicsFileNonInteractive(
+           AptxUtil.writePhylogenyToGraphicsFile(
                                         new File("my_tree.xml"),
                                         new File("my_tree.png"),
                                         800,  // width
