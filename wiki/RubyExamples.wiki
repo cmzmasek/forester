@@ -33,7 +33,8 @@ files.each do | file |
     pepfiles = ftp.list()
     pepfiles.each do | pepfile |
       pepfile = pepfile.split().last
-      if pepfile =~ /all.fa./
+      if pepfile =~ /all.fa.gz/ # Only want the "all.fa.gz" files (and not the
+                                # "abinitio" files).
         ftp.getbinaryfile(pepfile)
         puts 'downloaded "' + pepfile + '"'
         count += 1
