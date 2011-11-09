@@ -17,7 +17,7 @@ require 'net/ftp'
 
 EMAIL           = 'myemail'
 PUB_RELEASE_DIR = '/pub/release-64/fasta'
-PEP_DIR          = '/pep'
+PEP_DIR         = '/pep'
 
 ftp = Net::FTP.new('ftp.ensembl.org', 'anonymous', EMAIL)
 ftp.passive = true # To avoid "No route to host" error.
