@@ -1,6 +1,6 @@
 require 'net/ftp'
 
-EMAIL           = 'czmasek@burnham.org'
+EMAIL           = '?'
 PUB_RELEASE_DIR = '/pub/release-64/fasta'
 PEP_DIR         = '/pep'
 
