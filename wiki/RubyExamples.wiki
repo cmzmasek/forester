@@ -1,8 +1,8 @@
 #summary Ruby examples
 
-= Introduction =
+= Ruby Examples =
 
-Various Ruby examples.
+Various simple Ruby examples.
 
 Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
 
