@@ -12,6 +12,8 @@ Copyright (C) 2011 Christian M Zmasek. All rights reserved.
 
 = Using net/ftp to download all Proteomes from the Ensembl Database =
 
+This, or something like it, can be used to download from Ensembl all "pep.all.fa.gz" files.
+
 {{{
 require 'net/ftp'
 
