@@ -1778,12 +1778,14 @@ public class surfacing {
                                                           input_file_properties[ i ][ 1 ],
                                                           filter,
                                                           filter_type,
-                                                          ind_score_cutoff );
+                                                          ind_score_cutoff,
+                                                          true );
             }
             else {
                 parser = new HmmscanPerDomainTableParser( new File( input_file_properties[ i ][ 0 ] ),
                                                           input_file_properties[ i ][ 1 ],
-                                                          ind_score_cutoff );
+                                                          ind_score_cutoff,
+                                                          true );
             }
             if ( e_value_max >= 0.0 ) {
                 parser.setEValueMaximum( e_value_max );
@@ -2388,12 +2390,21 @@ public class surfacing {
             final PhylogenyNode n = it.next();
             if ( ForesterUtil.isEmpty( n.getName() ) ) {
                 if ( n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                    n.setName( n.getNodeData().getTaxonomy().getTaxonomyCode() );
+                }
+                else if ( n.getNodeData().isHasTaxonomy()
                         && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                     n.setName( n.getNodeData().getTaxonomy().getScientificName() );
                 }
+                else if ( n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) ) {
+                    n.setName( n.getNodeData().getTaxonomy().getCommonName() );
+                }
                 else {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME,
-                                             "node without both name and scientific taxonomy name found" );
+                    ForesterUtil
+                            .fatalError( surfacing.PRG_NAME,
+                                         "node with no name, scientific name, common name, or taxonomy code present" );
                 }
             }
         }

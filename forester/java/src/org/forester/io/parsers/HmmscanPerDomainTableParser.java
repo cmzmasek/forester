@@ -91,6 +91,7 @@ public final class HmmscanPerDomainTableParser {
     private int                           _domains_ignored_due_to_virus_like_id;
     private Map<String, Integer>          _domains_ignored_due_to_virus_like_id_counts_map;
     private final INDIVIDUAL_SCORE_CUTOFF _ind_cutoff;
+    private final boolean                 _allow_proteins_with_same_name;
 
     public HmmscanPerDomainTableParser( final File input_file,
                                         final String species,
@@ -100,6 +101,20 @@ public final class HmmscanPerDomainTableParser {
         _filter = null;
         _filter_type = FilterType.NONE;
         _ind_cutoff = individual_cutoff_applies_to;
+        _allow_proteins_with_same_name = false;
+        init();
+    }
+
+    public HmmscanPerDomainTableParser( final File input_file,
+                                        final String species,
+                                        final INDIVIDUAL_SCORE_CUTOFF individual_cutoff_applies_to,
+                                        final boolean allow_proteins_with_same_name ) {
+        _input_file = input_file;
+        _species = species;
+        _filter = null;
+        _filter_type = FilterType.NONE;
+        _ind_cutoff = individual_cutoff_applies_to;
+        _allow_proteins_with_same_name = allow_proteins_with_same_name;
         init();
     }
 
@@ -113,7 +128,27 @@ public final class HmmscanPerDomainTableParser {
         _filter = filter;
         _filter_type = filter_type;
         _ind_cutoff = individual_cutoff_applies_to;
+        _allow_proteins_with_same_name = false;
         init();
+    }
+
+    public HmmscanPerDomainTableParser( final File input_file,
+                                        final String species,
+                                        final Set<DomainId> filter,
+                                        final FilterType filter_type,
+                                        final INDIVIDUAL_SCORE_CUTOFF individual_cutoff_applies_to,
+                                        final boolean allow_proteins_with_same_name ) {
+        _input_file = input_file;
+        _species = species;
+        _filter = filter;
+        _filter_type = filter_type;
+        _ind_cutoff = individual_cutoff_applies_to;
+        _allow_proteins_with_same_name = allow_proteins_with_same_name;
+        init();
+    }
+
+    public boolean isAllowProteinsWithSameName() {
+        return _allow_proteins_with_same_name;
     }
 
     private void actuallyAddProtein( final List<Protein> proteins, final Protein current_protein ) {
@@ -356,12 +391,14 @@ public final class HmmscanPerDomainTableParser {
             final int env_to = parseInt( tokens[ 20 ], line_number, "env to" );
             ++_domains_encountered;
             if ( !query.equals( prev_query ) || ( qlen != prev_qlen ) ) {
-                if ( query.equals( prev_query ) ) {
-                    throw new IOException( "more than one protein named [" + query + "]" + " lengths: " + qlen + ", "
-                            + prev_qlen );
-                }
-                if ( prev_queries.contains( query ) ) {
-                    throw new IOException( "more than one protein named [" + query + "]" );
+                if ( !isAllowProteinsWithSameName() ) {
+                    if ( query.equals( prev_query ) ) {
+                        throw new IOException( "more than one protein named [" + query + "]" + " lengths: " + qlen
+                                + ", " + prev_qlen );
+                    }
+                    if ( prev_queries.contains( query ) ) {
+                        throw new IOException( "more than one protein named [" + query + "]" );
+                    }
                 }
                 prev_query = query;
                 prev_qlen = qlen;

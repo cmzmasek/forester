@@ -42,48 +42,51 @@ import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
+import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final public static PhylogenyParser createParserDependingOnUrlContents( final URL url,
-                                                                            final boolean phyloxml_validate_against_xsd )
+    final public static PhylogenyParser createParserDependingFileContents( final File file,
+                                                                           final boolean phyloxml_validate_against_xsd )
             throws FileNotFoundException, IOException {
-        final String lc_filename = url.getFile().toString().toLowerCase();
-        PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
-        if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
-            if ( parser instanceof PhyloXmlParser ) {
-                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
-            }
-            else if ( parser instanceof TolParser ) {
-                ( ( TolParser ) parser ).setZippedInputstream( true );
-            }
-        }
-        if ( parser == null ) {
-            final String first_line = ForesterUtil.getFirstLine( url ).trim().toLowerCase();
-            if ( first_line.startsWith( "<" ) ) {
-                parser = new PhyloXmlParser();
-                if ( phyloxml_validate_against_xsd ) {
-                    final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                    final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                    if ( xsd_url != null ) {
-                        ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                    }
-                    else {
+        PhylogenyParser parser = null;
+        final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
+        if ( first_line.startsWith( "<" ) ) {
+            parser = new PhyloXmlParser();
+            if ( phyloxml_validate_against_xsd ) {
+                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
+                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
+                if ( xsd_url != null ) {
+                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
+                }
+                else {
+                    if ( ForesterConstants.RELEASE ) {
                         throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
                                 + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
                     }
                 }
             }
-            else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
-                    || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-                parser = new NexusPhylogeniesParser();
-            }
-            else {
-                parser = new NHXParser();
-            }
+        }
+        else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
+                || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
+            parser = new NexusPhylogeniesParser();
+        }
+        else {
+            parser = new NHXParser();
+        }
+        return parser;
+    }
+
+    final public static PhylogenyParser createParserDependingOnFileType( final File file,
+                                                                         final boolean phyloxml_validate_against_xsd )
+            throws FileNotFoundException, IOException {
+        PhylogenyParser parser = null;
+        parser = ParserUtils.createParserDependingOnSuffix( file.getName(), phyloxml_validate_against_xsd );
+        if ( parser == null ) {
+            parser = createParserDependingFileContents( file, phyloxml_validate_against_xsd );
         }
         return parser;
     }
@@ -127,46 +130,78 @@ public final class ParserUtils {
         return parser;
     }
 
-    final public static PhylogenyParser createParserDependingOnFileType( final File file,
-                                                                         final boolean phyloxml_validate_against_xsd )
+    final public static PhylogenyParser createParserDependingOnUrlContents( final URL url,
+                                                                            final boolean phyloxml_validate_against_xsd )
             throws FileNotFoundException, IOException {
-        PhylogenyParser parser = null;
-        parser = ParserUtils.createParserDependingOnSuffix( file.getName(), phyloxml_validate_against_xsd );
-        if ( parser == null ) {
-            parser = createParserDependingFileContents( file, phyloxml_validate_against_xsd );
+        final String lc_filename = url.getFile().toString().toLowerCase();
+        PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
+        if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
+            if ( parser instanceof PhyloXmlParser ) {
+                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
+            }
+            else if ( parser instanceof TolParser ) {
+                ( ( TolParser ) parser ).setZippedInputstream( true );
+            }
         }
-        return parser;
-    }
-
-    final public static PhylogenyParser createParserDependingFileContents( final File file,
-                                                                           final boolean phyloxml_validate_against_xsd )
-            throws FileNotFoundException, IOException {
-        PhylogenyParser parser = null;
-        final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
-        if ( first_line.startsWith( "<" ) ) {
-            parser = new PhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
+        if ( parser == null ) {
+            final String first_line = ForesterUtil.getFirstLine( url ).trim().toLowerCase();
+            if ( first_line.startsWith( "<" ) ) {
+                parser = new PhyloXmlParser();
+                if ( phyloxml_validate_against_xsd ) {
+                    final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
+                    final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
+                    if ( xsd_url != null ) {
+                        ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
+                    }
+                    else {
                         throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
                                 + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
                     }
                 }
             }
-        }
-        else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
-                || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
-            parser = new NexusPhylogeniesParser();
-        }
-        else {
-            parser = new NHXParser();
+            else if ( ( first_line.startsWith( "nexus" ) ) || ( first_line.startsWith( "#nexus" ) )
+                    || ( first_line.startsWith( "# nexus" ) ) || ( first_line.startsWith( "begin" ) ) ) {
+                parser = new NexusPhylogeniesParser();
+            }
+            else {
+                parser = new NHXParser();
+            }
         }
         return parser;
+    }
+
+    public static BufferedReader createReader( final Object source ) throws IOException, FileNotFoundException {
+        BufferedReader reader = null;
+        if ( ( source instanceof File ) || ( source instanceof String ) ) {
+            File f = null;
+            if ( source instanceof File ) {
+                f = ( File ) source;
+            }
+            else {
+                f = new File( ( String ) source );
+            }
+            if ( !f.exists() ) {
+                throw new IOException( "[" + f.getAbsolutePath() + "] does not exist" );
+            }
+            else if ( !f.isFile() ) {
+                throw new IOException( "[" + f.getAbsolutePath() + "] is not a file" );
+            }
+            else if ( !f.canRead() ) {
+                throw new IOException( "[" + f.getAbsolutePath() + "] is not a readable" );
+            }
+            reader = new BufferedReader( new FileReader( f ) );
+        }
+        else if ( source instanceof InputStream ) {
+            reader = new BufferedReader( new InputStreamReader( ( InputStream ) source ) );
+        }
+        else if ( ( source instanceof StringBuffer ) || ( source instanceof StringBuilder ) ) {
+            reader = new BufferedReader( new StringReader( source.toString() ) );
+        }
+        else {
+            throw new IllegalArgumentException( "attempt to parse object of type [" + source.getClass()
+                    + "] (can only parse objects of type File/String, InputStream, StringBuffer, or StringBuilder)" );
+        }
+        return reader;
     }
 
     /**
@@ -221,37 +256,11 @@ public final class ParserUtils {
         return null;
     }
 
-    public static BufferedReader createReader( final Object source ) throws IOException, FileNotFoundException {
-        BufferedReader reader = null;
-        if ( ( source instanceof File ) || ( source instanceof String ) ) {
-            File f = null;
-            if ( source instanceof File ) {
-                f = ( File ) source;
-            }
-            else {
-                f = new File( ( String ) source );
-            }
-            if ( !f.exists() ) {
-                throw new IOException( "[" + f.getAbsolutePath() + "] does not exist" );
-            }
-            else if ( !f.isFile() ) {
-                throw new IOException( "[" + f.getAbsolutePath() + "] is not a file" );
-            }
-            else if ( !f.canRead() ) {
-                throw new IOException( "[" + f.getAbsolutePath() + "] is not a readable" );
-            }
-            reader = new BufferedReader( new FileReader( f ) );
-        }
-        else if ( source instanceof InputStream ) {
-            reader = new BufferedReader( new InputStreamReader( ( InputStream ) source ) );
-        }
-        else if ( ( source instanceof StringBuffer ) || ( source instanceof StringBuilder ) ) {
-            reader = new BufferedReader( new StringReader( source.toString() ) );
-        }
-        else {
-            throw new IllegalArgumentException( "attempt to parse object of type [" + source.getClass()
-                    + "] (can only parse objects of type File/String, InputStream, StringBuffer, or StringBuilder)" );
-        }
-        return reader;
+    public final static Phylogeny[] readPhylogenies( final File file ) throws FileNotFoundException, IOException {
+        return PhylogenyMethods.readPhylogenies( ParserUtils.createParserDependingOnFileType( file, true ), file );
+    }
+
+    public final static Phylogeny[] readPhylogenies( final String file_name ) throws FileNotFoundException, IOException {
+        return readPhylogenies( new File( file_name ) );
     }
 }

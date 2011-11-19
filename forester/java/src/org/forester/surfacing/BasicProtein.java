@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+// Note: when implementing any "equals" method need to keep in mind that
+// proteins could have the same name and/or id!
 public class BasicProtein implements Protein {
 
     private final ProteinId    _id;

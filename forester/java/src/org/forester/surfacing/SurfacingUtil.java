@@ -893,10 +893,16 @@ public final class SurfacingUtil {
             final PhylogenyNode n = it.next();
             if ( ForesterUtil.isEmpty( n.getName() )
                     && ( !n.getNodeData().isHasTaxonomy() || ForesterUtil.isEmpty( n.getNodeData().getTaxonomy()
-                            .getScientificName() ) ) ) {
+                            .getScientificName() ) )
+                    && ( !n.getNodeData().isHasTaxonomy() || ForesterUtil.isEmpty( n.getNodeData().getTaxonomy()
+                            .getCommonName() ) ) ) {
                 if ( n.getParent() != null ) {
                     names.append( " " );
                     names.append( n.getParent().getName() );
+                }
+                final List l = n.getAllExternalDescendants();
+                for( final Object object : l ) {
+                    System.out.println( l.toString() );
                 }
                 ++c;
             }
