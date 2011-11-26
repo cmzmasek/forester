@@ -166,7 +166,9 @@ public final class SurfacingUtil {
                                                                     final String outfilename_for_counts,
                                                                     final String outfilename_for_dc,
                                                                     final String outfilename_for_dc_for_go_mapping,
-                                                                    final String outfilename_for_dc_for_go_mapping_unique ) {
+                                                                    final String outfilename_for_dc_for_go_mapping_unique,
+                                                                    final String outfilename_for_rank_counts,
+                                                                    final String outfilename_for_ancestor_species_counts ) {
         try {
             final BufferedWriter out_counts = new BufferedWriter( new FileWriter( outfilename_for_counts ) );
             final BufferedWriter out_dc = new BufferedWriter( new FileWriter( outfilename_for_dc ) );
@@ -190,6 +192,7 @@ public final class SurfacingUtil {
             final SortedMap<Integer, PriorityQueue<String>> domain_lists_go = new TreeMap<Integer, PriorityQueue<String>>();
             final SortedMap<Integer, SortedSet<String>> domain_lists_go_unique = new TreeMap<Integer, SortedSet<String>>();
             final Set<String> dcs = dc_gain_counts.keySet();
+            final SortedSet<String> more_than_once = new TreeSet<String>();
             for( final String dc : dcs ) {
                 final int count = dc_gain_counts.get( dc );
                 if ( histogram.containsKey( count ) ) {
@@ -207,6 +210,9 @@ public final class SurfacingUtil {
                     final SortedSet<String> set = new TreeSet<String>();
                     set.addAll( splitDomainCombination( dc ) );
                     domain_lists_go_unique.put( count, set );
+                }
+                if ( count > 1 ) {
+                    more_than_once.add( dc );
                 }
             }
             final Set<Integer> histogram_keys = histogram.keySet();
@@ -230,6 +236,52 @@ public final class SurfacingUtil {
             out_dc.close();
             out_dc_for_go_mapping.close();
             out_dc_for_go_mapping_unique.close();
+            //
+            final SortedMap<String, Integer> lca_rank_counts = new TreeMap<String, Integer>();
+            final SortedMap<String, Integer> lca_ancestor_species_counts = new TreeMap<String, Integer>();
+            for( final String dc : more_than_once ) {
+                final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+                for( final PhylogenyNodeIterator it = local_phylogeny_l.iteratorPostorder(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if ( n.getNodeData().getBinaryCharacters().getGainedCharacters().contains( dc ) ) {
+                        nodes.add( n );
+                    }
+                }
+                for( int i = 0; i < nodes.size() - 1; ++i ) {
+                    for( int j = i + 1; j < nodes.size(); ++j ) {
+                        final PhylogenyNode lca = PhylogenyMethods.getInstance().obtainLCA( nodes.get( i ),
+                                                                                            nodes.get( j ) );
+                        String rank = "unknown";
+                        if ( lca.getNodeData().isHasTaxonomy()
+                                && !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getRank() ) ) {
+                            rank = lca.getNodeData().getTaxonomy().getRank();
+                        }
+                        addToCountMap( lca_rank_counts, rank );
+                        String lca_species;
+                        if ( lca.getNodeData().isHasTaxonomy()
+                                && !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getScientificName() ) ) {
+                            lca_species = lca.getNodeData().getTaxonomy().getScientificName();
+                        }
+                        else if ( lca.getNodeData().isHasTaxonomy()
+                                && !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getCommonName() ) ) {
+                            lca_species = lca.getNodeData().getTaxonomy().getCommonName();
+                        }
+                        else {
+                            lca_species = lca.getName();
+                        }
+                        addToCountMap( lca_ancestor_species_counts, lca_species );
+                    }
+                }
+            }
+            final BufferedWriter out_for_rank_counts = new BufferedWriter( new FileWriter( outfilename_for_rank_counts ) );
+            final BufferedWriter out_for_ancestor_species_counts = new BufferedWriter( new FileWriter( outfilename_for_ancestor_species_counts ) );
+            ForesterUtil.map2writer( out_for_rank_counts, lca_rank_counts, "\t", ForesterUtil.LINE_SEPARATOR );
+            ForesterUtil.map2writer( out_for_ancestor_species_counts,
+                                     lca_ancestor_species_counts,
+                                     "\t",
+                                     ForesterUtil.LINE_SEPARATOR );
+            out_for_rank_counts.close();
+            out_for_ancestor_species_counts.close();
         }
         catch ( final IOException e ) {
             ForesterUtil.printWarningMessage( surfacing.PRG_NAME, "Failure to write: " + e );
@@ -244,6 +296,15 @@ public final class SurfacingUtil {
         ForesterUtil.programMessage( surfacing.PRG_NAME,
                                      "Wrote independent domain combination gains fitch lists to (for GO mapping, unique) ["
                                              + outfilename_for_dc_for_go_mapping_unique + "]" );
+    }
+
+    private final static void addToCountMap( final Map<String, Integer> map, final String s ) {
+        if ( map.containsKey( s ) ) {
+            map.put( s, map.get( s ) + 1 );
+        }
+        else {
+            map.put( s, 1 );
+        }
     }
 
     public static int calculateOverlap( final Domain domain, final List<Boolean> covered_positions ) {
@@ -724,7 +785,8 @@ public final class SurfacingUtil {
                     + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX, outfile_name
                     + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX, outfile_name
                     + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX, outfile_name
-                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX );
+                    + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX, outfile_name
+                    + "_indep_dc_gains_fitch_lca_ranks.txt", outfile_name + "_indep_dc_gains_fitch_lca_taxonomies.txt" );
         }
     }
 
