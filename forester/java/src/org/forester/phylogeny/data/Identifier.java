@@ -32,24 +32,33 @@ import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.util.ForesterUtil;
 
-public class Identifier implements PhylogenyData {
+public final class Identifier implements PhylogenyData {
 
-    final String _value;
-    final String _provider;
+    final private String _value;
+    final private String _provider;
+    final private String _value_provider;
 
     public Identifier() {
         _value = "";
         _provider = "";
+        _value_provider = "";
     }
 
     public Identifier( final String value ) {
         _value = value;
         _provider = "";
+        _value_provider = value;
     }
 
     public Identifier( final String value, final String provider ) {
         _value = value;
         _provider = provider;
+        if ( provider != null ) {
+            _value_provider = value + provider;
+        }
+        else {
+            _value_provider = value;
+        }
     }
 
     @Override
@@ -101,10 +110,7 @@ public class Identifier implements PhylogenyData {
 
     @Override
     public int hashCode() {
-        if ( getProvider() != null ) {
-            return ( getProvider() + getValue() ).hashCode();
-        }
-        return getValue().hashCode();
+        return _value_provider.hashCode();
     }
 
     @Override

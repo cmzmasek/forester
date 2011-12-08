@@ -32,14 +32,21 @@ import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.util.ForesterUtil;
 
-public class Accession implements PhylogenyData {
+public final class Accession implements PhylogenyData {
 
-    final String _value;
-    final String _source;
+    final private String _value;
+    final private String _source;
+    final private String _value_source;
 
     public Accession( final String value, final String source ) {
         _value = value;
         _source = source;
+        if ( source != null ) {
+            _value_source = value + source;
+        }
+        else {
+            _value_source = value;
+        }
     }
 
     @Override
@@ -91,10 +98,10 @@ public class Accession implements PhylogenyData {
 
     @Override
     public int hashCode() {
-        if ( getSource() != null ) {
-            return ( getSource() + getValue() ).hashCode();
-        }
-        return getValue().hashCode();
+        //if ( getSource() != null ) {
+        //    return ( getSource() + getValue() ).hashCode();
+        // }
+        return _value_source.hashCode();
     }
 
     @Override

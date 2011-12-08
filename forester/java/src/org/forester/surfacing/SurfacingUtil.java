@@ -241,7 +241,7 @@ public final class SurfacingUtil {
             final SortedMap<String, Integer> lca_ancestor_species_counts = new TreeMap<String, Integer>();
             for( final String dc : more_than_once ) {
                 final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
-                for( final PhylogenyNodeIterator it = local_phylogeny_l.iteratorPostorder(); it.hasNext(); ) {
+                for( final PhylogenyNodeIterator it = local_phylogeny_l.iteratorExternalForward(); it.hasNext(); ) {
                     final PhylogenyNode n = it.next();
                     if ( n.getNodeData().getBinaryCharacters().getGainedCharacters().contains( dc ) ) {
                         nodes.add( n );
