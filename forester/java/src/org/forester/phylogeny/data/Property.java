@@ -104,6 +104,7 @@ public class Property implements PhylogenyData {
         sb.append( ": " );
         sb.append( getValue() );
         if ( !ForesterUtil.isEmpty( getUnit() ) ) {
+            sb.append( " " );
             sb.append( getUnit() );
         }
         return sb;

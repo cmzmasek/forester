@@ -231,6 +231,9 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
     }
 
+   
+    
+    
     private static void addBasics( final DefaultMutableTreeNode top,
                                    final PhylogenyNode phylogeny_node,
                                    final String name ) {
@@ -261,10 +264,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                 if ( no_tax > 0 ) {
                     addSubelement( category, "External nodes without taxonomy", String.valueOf( no_tax ) );
                 }
-                //TODO remove me... maybe make me into a method?
-                //for( final Taxonomy taxonomy : distinct_tax.keySet() ) {
-                //    System.out.println( taxonomy + ": " + distinct_tax.get( taxonomy ) );
-                //}
+              
             }
         }
         if ( !phylogeny_node.isRoot() ) {
@@ -360,7 +360,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         top.add( category );
         for( final String key : properties_map.keySet() ) {
             final Property prop = properties_map.get( key );
-            category.add( new DefaultMutableTreeNode( prop.getRef() + " " + prop.getValue() + " " + prop.getUnit()
+            category.add( new DefaultMutableTreeNode( prop.getRef() + "=" + prop.getValue() + " " + prop.getUnit()
                     + " [" + prop.getAppliesTo().toString() + "]" ) );
         }
     }
