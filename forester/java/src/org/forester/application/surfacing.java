@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +234,7 @@ public class surfacing {
     final static private String                               SEQ_EXTRACT_OPTION                                                     = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                             = '#';
     final static private String                               PRG_VERSION                                                            = "2.210";
-    final static private String                               PRG_DATE                                                               = "2011.11.30";
+    final static private String                               PRG_DATE                                                               = "2011.12.08";
     final static private String                               E_MAIL                                                                 = "czmasek@burnham.org";
     final static private String                               WWW                                                                    = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                    = true;
@@ -2073,11 +2074,19 @@ public class surfacing {
         DescriptiveStatistics pw_stats = null;
         try {
             String my_outfile = output_file.toString();
-            if ( !my_outfile.endsWith( ".html" ) ) {
-                my_outfile += ".html";
+            Map<Character, Writer> split_writers = null;
+            Writer writer = null;
+            if ( similarities.size() > 1000  ) {
+                if ( my_outfile.endsWith( ".html" ) ) {
+                    my_outfile = my_outfile.substring( 0, my_outfile.length() - 5 );
+                }
+                split_writers = new HashMap<Character, Writer>();
+                createSplitWriters( out_dir, my_outfile, split_writers );
             }
-            final Writer writer = new BufferedWriter( new FileWriter( out_dir == null ? my_outfile : out_dir
-                    + ForesterUtil.FILE_SEPARATOR + my_outfile ) );
+            else if ( !my_outfile.endsWith( ".html" ) ) {
+                my_outfile += ".html";
+                writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) );
+            }
             List<Species> species_order = null;
             if ( species_matrix ) {
                 species_order = new ArrayList<Species>();
@@ -2097,6 +2106,7 @@ public class surfacing {
                     .writeDomainSimilaritiesToFile( html_desc,
                                                     new StringBuilder( number_of_genomes + " genomes" ),
                                                     writer,
+                                                    split_writers,
                                                     similarities,
                                                     number_of_genomes == 2,
                                                     species_order,
@@ -2361,6 +2371,37 @@ public class surfacing {
         System.out.println();
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
+    }
+
+    private static void createSplitWriters( File out_dir, String my_outfile, Map<Character, Writer> split_writers )
+            throws IOException {
+        split_writers.put( 'a', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_A.html"  ) ) );
+        split_writers.put( 'b', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_B.html"  ) ) );
+        split_writers.put( 'c', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_C.html"  ) ) );
+        split_writers.put( 'd', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_D.html"  ) ) );
+        split_writers.put( 'e', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_E.html"  ) ) );
+        split_writers.put( 'f', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_F.html"  ) ) );
+        split_writers.put( 'g', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_G.html"  ) ) );
+        split_writers.put( 'h', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_H.html"  ) ) );
+        split_writers.put( 'i', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_I.html"  ) ) );
+        split_writers.put( 'j', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_J.html"  ) ) );
+        split_writers.put( 'k', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_K.html"  ) ) );
+        split_writers.put( 'l', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_L.html"  ) ) );
+        split_writers.put( 'm', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_M.html"  ) ) );
+        split_writers.put( 'n', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_N.html"  ) ) );
+        split_writers.put( 'o', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_O.html"  ) ) );
+        split_writers.put( 'p', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_P.html"  ) ) );
+        split_writers.put( 'q', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_Q.html"  ) ) );
+        split_writers.put( 'r', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_R.html"  ) ) );
+        split_writers.put( 's', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_S.html"  ) ) );
+        split_writers.put( 't', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_T.html"  ) ) );
+        split_writers.put( 'u', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_U.html"  ) ) );
+        split_writers.put( 'v', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_V.html"  ) ) );
+        split_writers.put( 'w', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_W.html"  ) ) );
+        split_writers.put( 'x', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_X.html"  ) ) );
+        split_writers.put( 'y', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_Y.html"  ) ) );
+        split_writers.put( 'z', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_Z.html"  ) ) );
+        split_writers.put( '0', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile + "_09.html"  ) ) );
     }
 
     private static void printOutPercentageOfMultidomainProteins( final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo,

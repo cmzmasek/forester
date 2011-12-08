@@ -214,6 +214,7 @@ public class PairwiseGenomeComparator {
                                                                                 new StringBuilder( species_i + "-"
                                                                                         + species_j ),
                                                                                 writer,
+                                                                                null,
                                                                                 similarities,
                                                                                 true,
                                                                                 null,

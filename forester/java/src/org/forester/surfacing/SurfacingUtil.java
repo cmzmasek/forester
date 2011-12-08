@@ -1995,7 +1995,8 @@ public final class SurfacingUtil {
 
     public static DescriptiveStatistics writeDomainSimilaritiesToFile( final StringBuilder html_desc,
                                                                        final StringBuilder html_title,
-                                                                       final Writer w,
+                                                                       final Writer single_writer,
+                                                                       Map<Character, Writer> split_writers,
                                                                        final SortedSet<DomainSimilarity> similarities,
                                                                        final boolean treat_as_binary,
                                                                        final List<Species> species_order,
@@ -2138,77 +2139,100 @@ public final class SurfacingUtil {
                 System.out.println( "Pearsonian skewness : n/a" );
             }
         }
+
+        if ( single_writer != null && ( split_writers == null || split_writers.isEmpty() ) ) {
+            split_writers = new HashMap<Character, Writer>();
+            split_writers.put( '_', single_writer );
+        
+        }
+
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:
                 break;
             case HTML:
-                w.write( "<html>" );
-                w.write( SurfacingConstants.NL );
-                addHtmlHead( w, "SURFACING :: " + html_title );
-                w.write( SurfacingConstants.NL );
-                w.write( "<body>" );
-                w.write( SurfacingConstants.NL );
-                w.write( html_desc.toString() );
-                w.write( SurfacingConstants.NL );
-                w.write( "<hr>" );
-                w.write( "<br>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<tt><pre>" );
-                w.write( SurfacingConstants.NL );
-                if ( histo != null ) {
-                    w.write( histo.toStringBuffer( 20, '|', 40, 5 ).toString() );
+                for (Writer w : split_writers.values()) {
+                    w.write( "<html>" );
+                    w.write( SurfacingConstants.NL );
+                    addHtmlHead( w, "SURFACING :: " + html_title );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<body>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( html_desc.toString() );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<hr>" );
+                    w.write( "<br>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tt><pre>" );
+                    w.write( SurfacingConstants.NL );
+                    if ( histo != null ) {
+                        w.write( histo.toStringBuffer( 20, '|', 40, 5 ).toString() );
+                        w.write( SurfacingConstants.NL );
+                    }
+                    w.write( "</pre></tt>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<table>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td>N: </td><td>" + stats.getN() + "</td></tr>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td>Min: </td><td>" + stats.getMin() + "</td></tr>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td>Max: </td><td>" + stats.getMax() + "</td></tr>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td>Mean: </td><td>" + stats.arithmeticMean() + "</td></tr>" );
+                    w.write( SurfacingConstants.NL );
+                    if ( stats.getN() > 1 ) {
+                        w.write( "<tr><td>SD: </td><td>" + stats.sampleStandardDeviation() + "</td></tr>" );
+                    }
+                    else {
+                        w.write( "<tr><td>SD: </td><td>n/a</td></tr>" );
+                    }
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td>Median: </td><td>" + stats.median() + "</td></tr>" );
+                    w.write( SurfacingConstants.NL );
+                    if ( stats.getN() > 1 ) {
+                        w.write( "<tr><td>Pearsonian skewness: </td><td>" + stats.pearsonianSkewness() + "</td></tr>" );
+                    }
+                    else {
+                        w.write( "<tr><td>Pearsonian skewness: </td><td>n/a</td></tr>" );
+                    }
+                    w.write( SurfacingConstants.NL );
+                    w.write( "</table>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<br>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<hr>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<br>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<table>" );
                     w.write( SurfacingConstants.NL );
                 }
-                w.write( "</pre></tt>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<table>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<tr><td>N: </td><td>" + stats.getN() + "</td></tr>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<tr><td>Min: </td><td>" + stats.getMin() + "</td></tr>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<tr><td>Max: </td><td>" + stats.getMax() + "</td></tr>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<tr><td>Mean: </td><td>" + stats.arithmeticMean() + "</td></tr>" );
-                w.write( SurfacingConstants.NL );
-                if ( stats.getN() > 1 ) {
-                    w.write( "<tr><td>SD: </td><td>" + stats.sampleStandardDeviation() + "</td></tr>" );
-                }
-                else {
-                    w.write( "<tr><td>SD: </td><td>n/a</td></tr>" );
-                }
-                w.write( SurfacingConstants.NL );
-                w.write( "<tr><td>Median: </td><td>" + stats.median() + "</td></tr>" );
-                w.write( SurfacingConstants.NL );
-                if ( stats.getN() > 1 ) {
-                    w.write( "<tr><td>Pearsonian skewness: </td><td>" + stats.pearsonianSkewness() + "</td></tr>" );
-                }
-                else {
-                    w.write( "<tr><td>Pearsonian skewness: </td><td>n/a</td></tr>" );
-                }
-                w.write( SurfacingConstants.NL );
-                w.write( "</table>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<br>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<hr>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<br>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "<table>" );
-                w.write( SurfacingConstants.NL );
                 break;
         }
-        w.write( SurfacingConstants.NL );
+        for (Writer w : split_writers.values()) {
+            w.write( SurfacingConstants.NL );
+        }
         for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
             }
-            w.write( similarity.toStringBuffer( print_option ).toString() );
-            w.write( SurfacingConstants.NL );
+            if ( single_writer != null ) {
+                single_writer.write( similarity.toStringBuffer( print_option ).toString() );
+            }
+            else {
+                Writer local_writer = split_writers.get( ( similarity.getDomainId().getId().charAt( 0 ) + "" ).toLowerCase().charAt( 0 ) );
+                if ( local_writer == null ) {
+                    local_writer = split_writers.get( '0' );
+                }    
+                local_writer.write( similarity.toStringBuffer( print_option ).toString() );
+            }
+            for (Writer w : split_writers.values()) {
+                w.write( SurfacingConstants.NL );
+            }
         }
         switch ( print_option ) {
             case HTML:
+                for (Writer w : split_writers.values()) {
                 w.write( SurfacingConstants.NL );
                 w.write( "</table>" );
                 w.write( SurfacingConstants.NL );
@@ -2218,10 +2242,12 @@ public final class SurfacingUtil {
                 w.write( SurfacingConstants.NL );
                 w.write( "</html>" );
                 w.write( SurfacingConstants.NL );
+                }
                 break;
         }
-        w.flush();
+        for (Writer w : split_writers.values()) {
         w.close();
+        }
         return stats;
     }
 

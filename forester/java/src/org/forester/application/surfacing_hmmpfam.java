@@ -1973,7 +1973,9 @@ public class surfacing_hmmpfam {
             pw_stats = SurfacingUtil
                     .writeDomainSimilaritiesToFile( html_desc,
                                                     new StringBuilder( number_of_genomes + " genomes" ),
+                                                    
                                                     writer,
+                                                    null,
                                                     similarities,
                                                     number_of_genomes == 2,
                                                     species_order,
