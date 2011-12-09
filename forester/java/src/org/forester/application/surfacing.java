@@ -2373,8 +2373,9 @@ public class surfacing {
         System.out.println();
     }
 
-    private static void createSplitWriters( File out_dir, String my_outfile, Map<Character, Writer> split_writers )
-            throws IOException {
+    private static void createSplitWriters( final File out_dir,
+                                            final String my_outfile,
+                                            final Map<Character, Writer> split_writers ) throws IOException {
         split_writers.put( 'a', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile
                 + "_domains_A.html" ) ) );
         split_writers.put( 'b', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile

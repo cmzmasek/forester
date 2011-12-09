@@ -2139,18 +2139,15 @@ public final class SurfacingUtil {
                 System.out.println( "Pearsonian skewness : n/a" );
             }
         }
-
-        if ( single_writer != null && ( split_writers == null || split_writers.isEmpty() ) ) {
+        if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );
-        
         }
-
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:
                 break;
             case HTML:
-                for (Writer w : split_writers.values()) {
+                for( final Writer w : split_writers.values() ) {
                     w.write( "<html>" );
                     w.write( SurfacingConstants.NL );
                     addHtmlHead( w, "SURFACING :: " + html_title );
@@ -2209,7 +2206,7 @@ public final class SurfacingUtil {
                 }
                 break;
         }
-        for (Writer w : split_writers.values()) {
+        for( final Writer w : split_writers.values() ) {
             w.write( SurfacingConstants.NL );
         }
         for( final DomainSimilarity similarity : similarities ) {
@@ -2220,33 +2217,34 @@ public final class SurfacingUtil {
                 single_writer.write( similarity.toStringBuffer( print_option ).toString() );
             }
             else {
-                Writer local_writer = split_writers.get( ( similarity.getDomainId().getId().charAt( 0 ) + "" ).toLowerCase().charAt( 0 ) );
+                Writer local_writer = split_writers.get( ( similarity.getDomainId().getId().charAt( 0 ) + "" )
+                        .toLowerCase().charAt( 0 ) );
                 if ( local_writer == null ) {
                     local_writer = split_writers.get( '0' );
-                }    
+                }
                 local_writer.write( similarity.toStringBuffer( print_option ).toString() );
             }
-            for (Writer w : split_writers.values()) {
+            for( final Writer w : split_writers.values() ) {
                 w.write( SurfacingConstants.NL );
             }
         }
         switch ( print_option ) {
             case HTML:
-                for (Writer w : split_writers.values()) {
-                w.write( SurfacingConstants.NL );
-                w.write( "</table>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "</font>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "</body>" );
-                w.write( SurfacingConstants.NL );
-                w.write( "</html>" );
-                w.write( SurfacingConstants.NL );
+                for( final Writer w : split_writers.values() ) {
+                    w.write( SurfacingConstants.NL );
+                    w.write( "</table>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "</font>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "</body>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "</html>" );
+                    w.write( SurfacingConstants.NL );
                 }
                 break;
         }
-        for (Writer w : split_writers.values()) {
-        w.close();
+        for( final Writer w : split_writers.values() ) {
+            w.close();
         }
         return stats;
     }

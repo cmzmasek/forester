@@ -231,9 +231,6 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
     }
 
-   
-    
-    
     private static void addBasics( final DefaultMutableTreeNode top,
                                    final PhylogenyNode phylogeny_node,
                                    final String name ) {
@@ -264,7 +261,6 @@ class NodePanel extends JPanel implements TreeSelectionListener {
                 if ( no_tax > 0 ) {
                     addSubelement( category, "External nodes without taxonomy", String.valueOf( no_tax ) );
                 }
-              
             }
         }
         if ( !phylogeny_node.isRoot() ) {

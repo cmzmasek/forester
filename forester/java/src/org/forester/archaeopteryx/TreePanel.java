@@ -216,7 +216,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private double                          _max_distance_to_root             = -1;
     private int                             _dynamic_hiding_factor            = 0;
     private boolean                         _edited                           = false;
-   private Popup                           _node_desc_popup;
+    private Popup                           _node_desc_popup;
     private JTextArea                       _rollover_popup;
     // private final int                       _box_size;
     // private final int                       _half_box_size;
@@ -3168,10 +3168,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 sb.append( " " );
             }
-           
-            
             final Property p = properties.getProperty( ref );
-            
             sb.append( getPartAfterColon( p.getRef() ) );
             sb.append( "=" );
             sb.append( p.getValue() );
@@ -3181,10 +3178,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         return sb;
     }
-    
+
     final private static String getPartAfterColon( final String s ) {
         final int i = s.indexOf( ':' );
-        if ( (i < 1) ||( i == ( s.length()-1)) ) {
+        if ( ( i < 1 ) || ( i == ( s.length() - 1 ) ) ) {
             return s;
         }
         return s.substring( i + 1, s.length() );
@@ -4755,7 +4752,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                 }
-                
                 if ( _popup_buffer.length() > 0 ) {
                     if ( !getConfiguration().isUseNativeUI() ) {
                         _rollover_popup
