@@ -256,6 +256,7 @@ public final class NHXParser implements PhylogenyParser {
         boolean in_comment = false;
         boolean saw_colon = false;
         boolean saw_open_bracket = false;
+        boolean in_open_bracket = false;
         boolean in_double_quote = false;
         boolean in_single_quote = false;
         setPhylogenies( new ArrayList<Phylogeny>() );
@@ -300,6 +301,9 @@ public final class NHXParser implements PhylogenyParser {
                     saw_colon = false;
                 }
             }
+            if ( in_open_bracket && c == ']' ) {
+                in_open_bracket = false;
+            }
             // \n\t is always ignored,
             // as is " (34) and ' (39) (space is 32):
             if ( ( isIgnoreQuotes() && ( ( c < 33 ) || ( c > 126 ) || ( c == 34 ) || ( c == 39 ) || ( ( getCladeLevel() == 0 ) && ( c == ';' ) ) ) )
@@ -338,6 +342,7 @@ public final class NHXParser implements PhylogenyParser {
             }
             else if ( c == '[' ) {
                 saw_open_bracket = true;
+                in_open_bracket = true;
             }
             else if ( saw_open_bracket ) {
                 if ( c != ']' ) {
@@ -356,13 +361,13 @@ public final class NHXParser implements PhylogenyParser {
                 // comment consisting just of "[]":
                 saw_open_bracket = false;
             }
-            else if ( c == '(' ) {
+            else if ( c == '(' && !in_open_bracket ) {
                 processOpenParen();
             }
-            else if ( c == ')' ) {
+            else if ( c == ')' && !in_open_bracket ) {
                 processCloseParen();
             }
-            else if ( c == ',' ) {
+            else if ( c == ',' && !in_open_bracket ) {
                 processComma();
             }
             else {
@@ -631,6 +636,8 @@ public final class NHXParser implements PhylogenyParser {
                                  final PhylogenyNode node_to_annotate,
                                  final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                                  final boolean replace_underscores ) throws NHXFormatException {
+        System.out.println( s );
+        System.out.println();
         if ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }
@@ -651,7 +658,7 @@ public final class NHXParser implements PhylogenyParser {
                 b = "";
                 is_nhx = true;
                 if ( cb < 0 ) {
-                    throw new NHXFormatException( "error in NHX formatted data: no closing \"]\"" );
+                    throw new NHXFormatException( "error in NHX formatted data: no closing \"]\" in \"" + s + "\"" );
                 }
                 if ( s.indexOf( "&&NHX" ) == ( ob + 1 ) ) {
                     b = s.substring( ob + 6, cb );
@@ -671,7 +678,7 @@ public final class NHXParser implements PhylogenyParser {
                 }
             }
             t = new StringTokenizer( s, ":" );
-            if ( t.countTokens() >= 1 ) {
+            if ( t.countTokens() > 0 ) {
                 if ( !s.startsWith( ":" ) ) {
                     node_to_annotate.setName( t.nextToken() );
                     if ( !replace_underscores
@@ -690,6 +697,8 @@ public final class NHXParser implements PhylogenyParser {
                 }
                 while ( t.hasMoreTokens() ) {
                     s = t.nextToken();
+                    System.out.println( "=>" + s );
+                    System.out.println();
                     if ( s.startsWith( org.forester.io.parsers.nhx.NHXtags.SPECIES_NAME ) ) {
                         if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
                             node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );

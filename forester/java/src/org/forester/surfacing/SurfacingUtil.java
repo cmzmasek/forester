@@ -2147,10 +2147,16 @@ public final class SurfacingUtil {
             case SIMPLE_TAB_DELIMITED:
                 break;
             case HTML:
-                for( final Writer w : split_writers.values() ) {
+                for( final Character key : split_writers.keySet() ) {
+                    final Writer w = split_writers.get( key );
                     w.write( "<html>" );
                     w.write( SurfacingConstants.NL );
-                    addHtmlHead( w, "SURFACING :: " + html_title );
+                    if ( key != '_' ) {
+                        addHtmlHead( w, "DCs (" + html_title + ") " + key.toString().toUpperCase() );
+                    }
+                    else {
+                        addHtmlHead( w, "DCs (" + html_title + ")" );
+                    }
                     w.write( SurfacingConstants.NL );
                     w.write( "<body>" );
                     w.write( SurfacingConstants.NL );

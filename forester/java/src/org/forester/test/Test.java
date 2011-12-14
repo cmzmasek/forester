@@ -230,6 +230,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "NHX parsing (MrBayes): " );
+        if ( Test.testNHXParsingMB() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Nexus characters parsing: " );
         if ( Test.testNexusCharactersParsing() ) {
             System.out.println( "OK." );
@@ -4867,7 +4876,7 @@ public final class Test {
             if ( !p2[ 0 ].toNewHampshireX().equals( p2_S ) ) {
                 return false;
             }
-            final String p2b_S = "(((((((A:0.2[&NHX:S=qwerty]):0.2[&:S=uiop]):0.3[&NHX:S=asdf]):0.4[S=zxc]):0.5[]):0.6[&&NH:S=asd]):0.7[&&HX:S=za]):0.8[&&:S=zaq]";
+            final String p2b_S = "(((((((A:0.2[&NHX:S=qw,erty]):0.2[&:S=u(io)p]):0.3[&NHX:S=asdf]):0.4[S=zxc]):0.5[]):0.6[&&NH:S=asd]):0.7[&&HX:S=za]):0.8[&&:S=zaq]";
             final Phylogeny[] p2b = factory.create( p2b_S, new NHXParser() );
             if ( !p2b[ 0 ].toNewHampshireX().equals( "(((((((A:0.2):0.2):0.3):0.4):0.5):0.6):0.7):0.8" ) ) {
                 return false;
@@ -5021,6 +5030,35 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testNHXParsingMB() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny p1 = factory.create( "(1[&prob=1.000000000000000e+00,prob_stddev=0.000000000000000e+00,"
+                    + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+                    + "prob+-sd=\"100+-0\"]:4.129000000000000e-02[&length_mean=4.153987461671767e-02,"
+                    + "length_median=4.129000000000000e-02,length_95%HPD={3.217800000000000e-02,"
+                    + "5.026800000000000e-02}],2[&prob=1.000000000000000e+00,prob_stddev=0.000000000000000e+00,"
+                    + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+                    + "prob+-sd=\"100+-0\"]:6.375699999999999e-02[&length_mean=6.395210411945065e-02,"
+                    + "length_median=6.375699999999999e-02,length_95%HPD={5.388600000000000e-02,"
+                    + "7.369400000000000e-02}])", new NHXParser() )[ 0 ];
+            if ( !isEqual( p1.getNode( "1" ).getDistanceToParent(), 4.129e-02 ) ) {
+                System.out.println( p1.getNode( "1" ).getDistanceToParent() );
+                System.exit( -1 );
+                return false;
+            }
+            //  if ( !p1.toNewHampshireX().equals( "(A[&&NHX:S=a_species],B1[&&NHX:S=b_species])" ) ) {
+            //     return false;
+            //  }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            System.exit( -1 );
             return false;
         }
         return true;

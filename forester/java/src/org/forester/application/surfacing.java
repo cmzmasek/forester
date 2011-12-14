@@ -99,6 +99,7 @@ import org.forester.util.ForesterUtil;
 
 public class surfacing {
 
+    private static final int                                  MINIMAL_NUMBER_OF_SIMILARITIES_FOR_SPLITTING                           = 1000;
     public final static String                                DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS                    = "graph_analysis_out";
     public final static String                                DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS                = "_dc.dot";
     public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS = "_fitch_present_dc.dot";
@@ -2076,7 +2077,7 @@ public class surfacing {
             String my_outfile = output_file.toString();
             Map<Character, Writer> split_writers = null;
             Writer writer = null;
-            if ( similarities.size() > 1000 ) {
+            if ( similarities.size() > MINIMAL_NUMBER_OF_SIMILARITIES_FOR_SPLITTING ) {
                 if ( my_outfile.endsWith( ".html" ) ) {
                     my_outfile = my_outfile.substring( 0, my_outfile.length() - 5 );
                 }
@@ -2429,7 +2430,7 @@ public class surfacing {
         split_writers.put( 'z', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile
                 + "_domains_Z.html" ) ) );
         split_writers.put( '0', new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile
-                + "_09.html" ) ) );
+                + "_domains_0.html" ) ) );
     }
 
     private static void printOutPercentageOfMultidomainProteins( final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo,
