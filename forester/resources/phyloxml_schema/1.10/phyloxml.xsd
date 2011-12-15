@@ -15,8 +15,8 @@
 <!-- Copyright (c) 2008-2011 Christian M Zmasek                  -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.11                                               -->
-<!-- Last modified: 2011.11.15 by Christian M Zmasek             -->
+<!-- Version: 1.12                                               -->
+<!-- Last modified: 2011.12.14 by Christian M Zmasek             -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -444,6 +444,7 @@
       <xs:simpleContent>
          <xs:extension base="xs:double">
             <xs:attribute name="type" type="xs:token" use="required"/>
+            <xs:attribute name="stddev" type="xs:double"/>
          </xs:extension>
       </xs:simpleContent>
    </xs:complexType>
