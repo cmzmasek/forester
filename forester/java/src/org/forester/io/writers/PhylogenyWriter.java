@@ -73,6 +73,7 @@ public final class PhylogenyWriter {
     private Stack<PostOrderStackObject> _stack;
     private boolean                     _simple_nh;
     private boolean                     _nh_write_distance_to_parent;
+    private boolean                     _write_conf_values_in_branckets_in_nh;
     private boolean                     _indent_phyloxml;
     private int                         _node_level;
     private int                         _phyloxml_level;
@@ -80,6 +81,7 @@ public final class PhylogenyWriter {
 
     public PhylogenyWriter() {
         setIndentPhyloxml( INDENT_PHYLOXML_DEAFULT );
+        setWriteConfidenceValuesInBracketsInNH( false );
     }
 
     private void appendPhylogenyLevelPhyloXml( final Writer writer, final Phylogeny tree ) throws IOException {
@@ -336,6 +338,17 @@ public final class PhylogenyWriter {
 
     public StringBuffer toNewHampshire( final Phylogeny tree,
                                         final boolean simple_nh,
+                                        final boolean nh_write_distance_to_parent,
+                                        final boolean write_conf_values_in_branckets_in_nh ) throws IOException {
+        setOutputFormt( FORMAT.NH );
+        setWriteConfidenceValuesInBracketsInNH( write_conf_values_in_branckets_in_nh );
+        setSimpleNH( simple_nh );
+        setWriteDistanceToParentInNH( nh_write_distance_to_parent );
+        return getOutput( tree );
+    }
+
+    public StringBuffer toNewHampshire( final Phylogeny tree,
+                                        final boolean simple_nh,
                                         final boolean nh_write_distance_to_parent ) throws IOException {
         setOutputFormt( FORMAT.NH );
         setSimpleNH( simple_nh );
@@ -348,6 +361,14 @@ public final class PhylogenyWriter {
                                 final boolean write_distance_to_parent,
                                 final File out_file ) throws IOException {
         writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent ), out_file );
+    }
+
+    public void toNewHampshire( final Phylogeny tree,
+                                final boolean simple_nh,
+                                final boolean write_distance_to_parent,
+                                final boolean use_brackets_for_confidence,
+                                final File out_file ) throws IOException {
+        writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent, use_brackets_for_confidence ), out_file );
     }
 
     public void toNewHampshire( final Phylogeny[] trees,
@@ -556,8 +577,18 @@ public final class PhylogenyWriter {
             getBuffer().append( node.toNewHampshireX() );
         }
         else if ( getOutputFormt() == FORMAT.NH ) {
-            getBuffer().append( node.toNewHampshire( isSimpleNH(), isWriteDistanceToParentInNH() ) );
+            getBuffer().append( node.toNewHampshire( isSimpleNH(),
+                                                     isWriteDistanceToParentInNH(),
+                                                     isWriteConfidenceValuesInBracketsInNH() ) );
         }
+    }
+
+    private boolean isWriteConfidenceValuesInBracketsInNH() {
+        return _write_conf_values_in_branckets_in_nh;
+    }
+
+    private void setWriteConfidenceValuesInBracketsInNH( final boolean write_conf_values_in_branckets_in_nh ) {
+        _write_conf_values_in_branckets_in_nh = write_conf_values_in_branckets_in_nh;
     }
 
     private void writeOpenClade( final PhylogenyNode node ) throws IOException {

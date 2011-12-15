@@ -85,7 +85,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String       SCREEN_ANTIALIAS_LABEL              = "Antialias";
     static final String       COLOR_LABELS_LABEL                  = "Colorize Labels Same as Parent Branch";
     static final String       BG_GRAD_LABEL                       = "Background Color Gradient";
-    static final String       DISPLAY_NODE_BOXES_LABEL            = "Display Node Shapes";
+    static final String       DISPLAY_NODE_BOXES_LABEL            = "Show Node Shapes";
     static final String       SHOW_OVERVIEW_LABEL                 = "Show Overview";
     static final String       FONT_SIZE_MENU_LABEL                = "Font Size";
     static final String       NONUNIFORM_CLADOGRAMS_LABEL         = "External Node Sum Dependent Cladograms";
@@ -96,6 +96,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String       CYCLE_NODE_SHAPE_LABEL              = "Cycle Node Shapes";
     static final String       CYCLE_NODE_FILL_LABEL               = "Cycle Node Fill Type";
     static final String       CHOOSE_NODE_SIZE_LABEL              = "Choose Node Shape Size";
+    static final String       SHOW_CONF_STDDEV_LABEL              = "Show Confidence Standard Deviations";
+    static final String       USE_BRACKETS_FOR_CONF_IN_NH_LABEL   = "Brackets for Confidences in NH/Nexus Output";
     JMenuBar                  _jmenubar;
     JMenu                     _file_jmenu;
     JMenu                     _tools_menu;
@@ -156,6 +158,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _cycle_node_fill_mi;
     JMenuItem                 _choose_node_size_mi;
     JCheckBoxMenuItem         _taxonomy_colorize_node_shapes_cbmi;
+    JCheckBoxMenuItem         _show_confidence_stddev_cbmi;
     // _  print
     JCheckBoxMenuItem         _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem         _antialias_print_cbmi;
@@ -168,6 +171,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem         _internal_number_are_confidence_for_nh_parsing_cbmi;
     JCheckBoxMenuItem         _extract_pfam_style_tax_codes_cbmi;
     JCheckBoxMenuItem         _replace_underscores_cbmi;
+    JCheckBoxMenuItem         _use_brackets_for_conf_in_nh_export_cbmi;
     // _  search
     JCheckBoxMenuItem         _search_case_senstive_cbmi;
     JCheckBoxMenuItem         _search_whole_words_only_cbmi;
@@ -379,6 +383,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_branch_length_values_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_confidence_stddev_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _use_brackets_for_conf_in_nh_export_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _label_direction_cbmi ) {
@@ -956,6 +966,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
+        options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
+                && _show_confidence_stddev_cbmi.isSelected() );
         if ( ( _show_branch_length_values_cbmi != null ) && _show_branch_length_values_cbmi.isEnabled() ) {
             options.setShowBranchLengthValues( _show_branch_length_values_cbmi.isSelected() );
         }
@@ -964,6 +976,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
                 && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
+        options.setUseBracketsForConfInNhExport( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
+                && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() );
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
                 && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )

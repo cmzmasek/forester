@@ -784,16 +784,17 @@ public final class MainFrameApplication extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
+        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
+        _options_jmenu
+                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
+        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL ) );
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
         _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
         _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
-        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
-        _options_jmenu
-                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( LABEL_DIRECTION_LABEL ) );
         _label_direction_cbmi.setToolTipText( LABEL_DIRECTION_TIP );
         _options_jmenu.add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( COLOR_LABELS_LABEL ) );
@@ -827,13 +828,15 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
-        _options_jmenu
-                .add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Parsing:" ), getConfiguration() ) );
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Input/Output:" ),
+                                                      getConfiguration() ) );
         _options_jmenu
                 .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Numbers Are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
         _options_jmenu
                 .add( _extract_pfam_style_tax_codes_cbmi = new JCheckBoxMenuItem( "Extract Taxonomy Codes from Pfam-style Labels" ) );
+        _options_jmenu
+                .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
@@ -875,6 +878,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _print_using_actual_size_cbmi, getOptions().isPrintUsingActualSize() );
         customizeCheckBoxMenuItem( _graphics_export_using_actual_size_cbmi, getOptions()
                 .isGraphicsExportUsingActualSize() );
+        customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
+        customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi, getOptions()
+                .isUseBracketsForConfInNhExport() );
         _jmenubar.add( _options_jmenu );
     }
 
@@ -2312,7 +2318,7 @@ public final class MainFrameApplication extends MainFrame {
     private boolean writeAsNewHampshire( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNewHampshire( t, false, true, file );
+            writer.toNewHampshire( t, false, true, getOptions().isUseBracketsForConfInNhExport(), file );
         }
         catch ( final Exception e ) {
             exception = true;

@@ -75,6 +75,8 @@ final public class Options {
     private short                       _default_node_shape_size;
     private boolean                     _taxonomy_colorize_node_shapes;
     private boolean                     _show_default_node_shapes;
+    private boolean                     _show_confidence_stddev;
+    private boolean                     _use_brackets_for_conf_in_nh_export;
 
     private Options() {
         init();
@@ -184,6 +186,24 @@ final public class Options {
         _show_domain_labels = true;
         setAbbreviateScientificTaxonNames( false );
         _color_labels_same_as_parent_branch = false;
+        _show_confidence_stddev = true;
+        _use_brackets_for_conf_in_nh_export = false;
+    }
+
+    boolean isShowConfidenceStddev() {
+        return _show_confidence_stddev;
+    }
+
+    void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
+        _show_confidence_stddev = show_confidence_stddev;
+    }
+
+    boolean isUseBracketsForConfInNhExport() {
+        return _use_brackets_for_conf_in_nh_export;
+    }
+
+    void setUseBracketsForConfInNhExport( final boolean use_brackets_for_conf_in_nh_export ) {
+        _use_brackets_for_conf_in_nh_export = use_brackets_for_conf_in_nh_export;
     }
 
     final boolean isAbbreviateScientificTaxonNames() {

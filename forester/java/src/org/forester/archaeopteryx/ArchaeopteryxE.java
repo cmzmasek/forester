@@ -117,6 +117,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _cycle_node_fill_mi;
     private JMenuItem            _choose_node_size_mi;
     private JCheckBoxMenuItem    _taxonomy_colorize_node_shapes_cbmi;
+    private JCheckBoxMenuItem    _show_confidence_stddev_cbmi;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -234,6 +235,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_branch_length_values_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_confidence_stddev_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _label_direction_cbmi ) {
@@ -442,7 +446,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
-        //
+        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
+        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
+        _options_jmenu
+                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
+        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
                 .add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
         _options_jmenu
@@ -450,11 +458,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
         _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
         _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
-        //
-        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
-        _options_jmenu
-                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( MainFrame.LABEL_DIRECTION_LABEL ) );
         _options_jmenu
                 .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
@@ -506,6 +509,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
+        customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
         _jmenubar.add( _options_jmenu );
     }
 
@@ -1018,6 +1022,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
         }
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
+        options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
+                && _show_confidence_stddev_cbmi.isSelected() );
         if ( ( _show_branch_length_values_cbmi != null ) && _show_branch_length_values_cbmi.isEnabled() ) {
             options.setShowBranchLengthValues( _show_branch_length_values_cbmi.isSelected() );
         }

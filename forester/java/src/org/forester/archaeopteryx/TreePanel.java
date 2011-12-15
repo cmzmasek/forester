@@ -2705,7 +2705,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               final PhylogenyNode node,
                                               final boolean to_pdf,
                                               final boolean to_graphics_file ) {
-        String conf_str = "";
         final List<Confidence> confidences = node.getBranchData().getConfidences();
         //        if ( confidences.size() == 1 ) {
         //            final double value = node.getBranchData().getConfidence( 0 ).getValue();
@@ -2719,6 +2718,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         boolean not_first = false;
         Collections.sort( confidences );
         final StringBuilder sb = new StringBuilder();
+        String conf_str = "";
         for( final Confidence confidence : confidences ) {
             final double value = confidence.getValue();
             if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
@@ -2733,7 +2733,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
                         .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
-                if ( getControlPanel().isShowConfidenceSDValues() ) {
+                if ( getOptions().isShowConfidenceStddev() ) {
                     if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                         sb.append( "(" );
                         sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getStandardDeviation(),

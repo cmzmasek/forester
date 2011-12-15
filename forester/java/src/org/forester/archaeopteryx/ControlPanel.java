@@ -87,7 +87,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _show_node_names;
     private JCheckBox            _show_taxo_code;
     private JCheckBox            _write_confidence;
-    private JCheckBox            _write_confidence_sd;
     private JCheckBox            _show_events;
     private JCheckBox            _color_acc_species;
     private JCheckBox            _color_branches_cb;
@@ -438,11 +437,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( getWriteConfidenceCb(), ch_panel );
                 add( ch_panel );
                 break;
-            case Configuration.write_confidence_values_sd:
-                _write_confidence_sd = new JCheckBox( title );
-                addJCheckBox( getWriteConfidenceSDCb(), ch_panel );
-                add( ch_panel );
-                break;
             case Configuration.write_events:
                 _show_events = new JCheckBox( title );
                 addJCheckBox( getShowEventsCb(), ch_panel );
@@ -762,10 +756,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _write_confidence;
     }
 
-    public JCheckBox getWriteConfidenceSDCb() {
-        return _write_confidence_sd;
-    }
-
     private void init() {
         _draw_phylogram = new ArrayList<Boolean>();
         setSpeciesColors( new HashMap<String, Color>() );
@@ -822,10 +812,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowConfidenceValues() {
         return ( ( getWriteConfidenceCb() != null ) && getWriteConfidenceCb().isSelected() );
-    }
-
-    boolean isShowConfidenceSDValues() {
-        return ( ( getWriteConfidenceSDCb() != null ) && getWriteConfidenceSDCb().isSelected() );
     }
 
     boolean isShowDomainArchitectures() {
@@ -1052,11 +1038,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.write_confidence_values:
                 if ( getWriteConfidenceCb() != null ) {
                     getWriteConfidenceCb().setSelected( state );
-                }
-                break;
-            case Configuration.write_confidence_values_sd:
-                if ( getWriteConfidenceSDCb() != null ) {
-                    getWriteConfidenceSDCb().setSelected( state );
                 }
                 break;
             case Configuration.write_events:
@@ -1603,10 +1584,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                          _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
             setCheckbox( Configuration.write_confidence_values,
                          _configuration.doCheckOption( Configuration.write_confidence_values ) );
-            addCheckbox( Configuration.write_confidence_values_sd,
-                         _configuration.getDisplayTitle( Configuration.write_confidence_values_sd ) );
-            setCheckbox( Configuration.write_confidence_values_sd,
-                         _configuration.doCheckOption( Configuration.write_confidence_values_sd ) );
         }
         if ( _configuration.doDisplayOption( Configuration.write_events ) ) {
             addCheckbox( Configuration.write_events, _configuration.getDisplayTitle( Configuration.write_events ) );

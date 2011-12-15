@@ -180,16 +180,17 @@ public final class MainFrameApplet extends MainFrame {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
+        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
+        _options_jmenu
+                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
+        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL ) );
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
         _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
         _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
-        _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
-        _options_jmenu
-                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( LABEL_DIRECTION_LABEL ) );
         _label_direction_cbmi.setToolTipText( LABEL_DIRECTION_TIP );
         _options_jmenu.add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( COLOR_LABELS_LABEL ) );
@@ -239,6 +240,7 @@ public final class MainFrameApplet extends MainFrame {
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
+        customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
         _jmenubar.add( _options_jmenu );
     }
 

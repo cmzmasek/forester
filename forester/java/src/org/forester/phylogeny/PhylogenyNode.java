@@ -33,6 +33,7 @@ import java.util.List;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.data.BranchData;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.ChildNodeIteratorForward;
@@ -922,7 +923,9 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     // ---------------------------------------------------------
     // Writing of Nodes to Strings
     // ---------------------------------------------------------
-    final public String toNewHampshire( final boolean simple_nh, final boolean write_distance_to_parent ) {
+    final public String toNewHampshire( final boolean simple_nh,
+                                        final boolean write_distance_to_parent,
+                                        final boolean write_support_values_in_brackets ) {
         final StringBuilder sb = new StringBuilder();
         String data = "";
         if ( !ForesterUtil.isEmpty( getName() ) ) {
@@ -961,9 +964,15 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
                 sb.append( data );
             }
         }
-        if ( ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) && write_distance_to_parent ) {
+        if ( write_distance_to_parent && ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
             sb.append( ":" );
             sb.append( getDistanceToParent() );
+        }
+        if ( write_support_values_in_brackets && !isExternal()
+                && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+            sb.append( "[" );
+            sb.append( getBranchData().getConfidence( 0 ).getValue() );
+            sb.append( "]" );
         }
         return sb.toString();
     }

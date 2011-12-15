@@ -122,7 +122,6 @@ public final class Configuration {
     final static int                        show_vector_data                                       = 23;
     final static int                        show_taxonomy_images                                   = 24;
     final static int                        show_properties                                        = 25;
-    final static int                        write_confidence_values_sd                             = 26;
     // ------------------
     // Click-to options
     // ------------------
@@ -162,8 +161,7 @@ public final class Configuration {
             { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
             { "Prot/Gene Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
             { "Relation Confidence", "display", "no" }, { "Vector Data", "display", "no" },
-            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" },
-            { "Confidence StdDev", "display", "no" }                                              };
+            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" }             };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
