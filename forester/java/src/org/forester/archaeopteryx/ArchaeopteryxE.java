@@ -333,7 +333,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             case NHX:
                 return getMainPanel().getCurrentPhylogeny().toNewHampshireX();
             case NEXUS:
-                return getMainPanel().getCurrentPhylogeny().toNexus();
+                return getMainPanel().getCurrentPhylogeny().toNexus( false );
             case PHYLOXML:
                 return getMainPanel().getCurrentPhylogeny().toPhyloXML( -1 );
             default:
@@ -1068,7 +1068,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
             return;
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNexus() );
+        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNexus( false ) );
     }
 
     void viewAsNH() {
@@ -1077,7 +1077,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
             return;
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNewHampshire( false ) );
+        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNewHampshire( false, false ) );
     }
 
     void viewAsNHX() {

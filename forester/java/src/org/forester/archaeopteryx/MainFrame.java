@@ -1041,19 +1041,21 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void viewAsNexus() {
         removeTextFrame();
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty()
-                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
+                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 20000 ) ) {
             return;
         }
-        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNexus() );
+        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNexus( getOptions()
+                .isUseBracketsForConfInNhExport() ) );
     }
 
     void viewAsNH() {
         removeTextFrame();
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty()
-                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
+                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 20000 ) ) {
             return;
         }
-        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNewHampshire( false ) );
+        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny()
+                .toNewHampshire( false, getOptions().isUseBracketsForConfInNhExport() ) );
     }
 
     void viewAsNHX() {

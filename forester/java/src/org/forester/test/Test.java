@@ -4453,6 +4453,44 @@ public final class Test {
             if ( ( p46.length != 1 ) || !p46[ 0 ].isEmpty() ) {
                 return false;
             }
+            final Phylogeny p47 = factory.create( new StringBuffer( "((A,B)ab:2[0.44],C)" ), new NHXParser() )[ 0 ];
+            if ( !isEqual( 0.44, p47.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
+                return false;
+            }
+            final Phylogeny p48 = factory.create( new StringBuffer( "((A,B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            if ( !isEqual( 88, p48.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
+                return false;
+            }
+            final Phylogeny p49 = factory
+                    .create( new StringBuffer( "((A,B)a[comment:a,b;(a)]b:2[0.44][comment(a,b,b);],C)" ),
+                             new NHXParser() )[ 0 ];
+            if ( !isEqual( 0.44, p49.getNode( "ab" ).getBranchData().getConfidence( 0 ).getValue() ) ) {
+                return false;
+            }
+            final Phylogeny p50 = factory.create( new StringBuffer( "((\"A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            if ( p50.getNode( "A" ) == null ) {
+                return false;
+            }
+            if ( !p50.toNewHampshire( false, true ).equals( "((A,B)ab:2.0[88.0],C);" ) ) {
+                return false;
+            }
+            if ( !p50.toNewHampshire( false, false ).equals( "((A,B)ab:2.0,C);" ) ) {
+                return false;
+            }
+            final Phylogeny p51 = factory.create( new StringBuffer( "((\"A(A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            if ( p51.getNode( "A(A" ) == null ) {
+                return false;
+            }
+            final Phylogeny p52 = factory.create( new StringBuffer( "(('A(A',B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
+            if ( p52.getNode( "A(A" ) == null ) {
+                return false;
+            }
+            final Phylogeny p53 = factory
+                    .create( new StringBuffer( "(('A(A',\"B (x (a' ,b) f(x);\"[com])[ment]ab:2[88],C)" ),
+                             new NHXParser() )[ 0 ];
+            if ( p53.getNode( "B (x (a' ,b) f(x);" ) == null ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

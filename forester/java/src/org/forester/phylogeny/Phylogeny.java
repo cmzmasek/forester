@@ -1278,12 +1278,13 @@ public class Phylogeny {
     } // swapChildren( PhylogenyNode )
 
     public String toNewHampshire() {
-        return toNewHampshire( false );
+        return toNewHampshire( false, false );
     }
 
-    public String toNewHampshire( final boolean simple_nh ) {
+    public String toNewHampshire( final boolean simple_nh, final boolean write_conf_values_in_branckets_in_nh ) {
         try {
-            return new PhylogenyWriter().toNewHampshire( this, simple_nh, true ).toString();
+            return new PhylogenyWriter().toNewHampshire( this, simple_nh, true, write_conf_values_in_branckets_in_nh )
+                    .toString();
         }
         catch ( final IOException e ) {
             throw new Error( "this should not have happend: " + e.getMessage() );
@@ -1299,9 +1300,9 @@ public class Phylogeny {
         }
     }
 
-    public String toNexus() {
+    public String toNexus( final boolean write_conf_values_in_branckets_in_nh ) {
         try {
-            return new PhylogenyWriter().toNexus( this ).toString();
+            return new PhylogenyWriter().toNexus( this, write_conf_values_in_branckets_in_nh ).toString();
         }
         catch ( final IOException e ) {
             throw new Error( "this should not have happend: " + e.getMessage() );

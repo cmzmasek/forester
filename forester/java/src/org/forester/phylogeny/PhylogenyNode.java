@@ -968,7 +968,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
             sb.append( ":" );
             sb.append( getDistanceToParent() );
         }
-        if ( write_support_values_in_brackets && !isExternal()
+        if ( write_support_values_in_brackets && !isExternal() && getBranchData().isHasConfidences()
                 && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( "[" );
             sb.append( getBranchData().getConfidence( 0 ).getValue() );

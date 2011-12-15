@@ -2330,7 +2330,7 @@ public final class MainFrameApplication extends MainFrame {
     private boolean writeAsNexus( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNexus( file, t );
+            writer.toNexus( file, t, getOptions().isUseBracketsForConfInNhExport() );
         }
         catch ( final Exception e ) {
             exception = true;

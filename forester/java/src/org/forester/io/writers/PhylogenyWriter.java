@@ -414,34 +414,27 @@ public final class PhylogenyWriter {
         writeToFile( sb, out_file );
     }
 
-    public void toNexus( final File out_file, final List<Phylogeny> trees ) throws IOException {
-        final Writer writer = new BufferedWriter( new PrintWriter( out_file ) );
-        writeNexusStart( writer );
-        writeNexusTaxaBlock( writer, trees.get( 0 ) );
-        writeNexusTreesBlock( writer, trees );
-        writer.flush();
-        writer.close();
-    }
-
-    public void toNexus( final File out_file, final Phylogeny tree ) throws IOException {
+    public void toNexus( final File out_file, final Phylogeny tree, final boolean write_conf_values_in_branckets_in_nh )
+            throws IOException {
         final Writer writer = new BufferedWriter( new PrintWriter( out_file ) );
         final List<Phylogeny> trees = new ArrayList<Phylogeny>( 1 );
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
-        writeNexusTreesBlock( writer, trees );
+        writeNexusTreesBlock( writer, trees, write_conf_values_in_branckets_in_nh );
         writer.flush();
         writer.close();
     }
 
-    public StringBuffer toNexus( final Phylogeny tree ) throws IOException {
+    public StringBuffer toNexus( final Phylogeny tree, final boolean write_conf_values_in_branckets_in_nh )
+            throws IOException {
         final StringWriter string_writer = new StringWriter();
         final Writer writer = new BufferedWriter( string_writer );
         final List<Phylogeny> trees = new ArrayList<Phylogeny>( 1 );
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
-        writeNexusTreesBlock( writer, trees );
+        writeNexusTreesBlock( writer, trees, write_conf_values_in_branckets_in_nh );
         writer.flush();
         writer.close();
         return string_writer.getBuffer();
@@ -742,7 +735,9 @@ public final class PhylogenyWriter {
         writer.write( ForesterUtil.LINE_SEPARATOR );
     }
 
-    public static void writeNexusTreesBlock( final Writer writer, final List<Phylogeny> trees ) throws IOException {
+    public static void writeNexusTreesBlock( final Writer writer,
+                                             final List<Phylogeny> trees,
+                                             final boolean write_conf_values_in_branckets_in_nh ) throws IOException {
         writer.write( NexusConstants.BEGIN_TREES );
         writer.write( ForesterUtil.LINE_SEPARATOR );
         int i = 1;
@@ -766,7 +761,7 @@ public final class PhylogenyWriter {
             else {
                 writer.write( "[&U]" );
             }
-            writer.write( phylogeny.toNewHampshire( false ) );
+            writer.write( phylogeny.toNewHampshire( false, write_conf_values_in_branckets_in_nh ) );
             writer.write( ForesterUtil.LINE_SEPARATOR );
             i++;
         }

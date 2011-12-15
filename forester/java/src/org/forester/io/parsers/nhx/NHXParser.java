@@ -308,9 +308,9 @@ public final class NHXParser implements PhylogenyParser {
                         && ( ( c != '[' ) && ( c != '.' ) && ( ( c < 48 ) || ( c > 57 ) ) ) ) {
                     saw_colon = false;
                 }
-            }
-            if ( in_open_bracket && ( c == ']' ) ) {
-                in_open_bracket = false;
+                if ( in_open_bracket && ( c == ']' ) ) {
+                    in_open_bracket = false;
+                }
             }
             // \n\t is always ignored,
             // as is " (34) and ' (39) (space is 32):

@@ -2363,7 +2363,7 @@ public final class SurfacingUtil {
             w.write( ForesterUtil.LINE_SEPARATOR );
             my_matrix.writeNexusTaxaBlock( w );
             my_matrix.writeNexusBinaryChractersBlock( w );
-            PhylogenyWriter.writeNexusTreesBlock( w, phylogenies );
+            PhylogenyWriter.writeNexusTreesBlock( w, phylogenies, false );
             w.flush();
             w.close();
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );
