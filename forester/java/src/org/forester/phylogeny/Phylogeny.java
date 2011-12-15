@@ -42,6 +42,7 @@ import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
@@ -111,7 +112,7 @@ public class Phylogeny {
         new_node.setParent( sibling_parent );
         sibling.setParent( new_node );
         sibling_parent.setChildNode( sibling_index, new_node );
-        final double new_dist = sibling.getDistanceToParent() == PhylogenyNode.DISTANCE_DEFAULT ? PhylogenyNode.DISTANCE_DEFAULT
+        final double new_dist = sibling.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ? PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT
                 : sibling.getDistanceToParent() / 2;
         new_node.setDistanceToParent( new_dist );
         sibling.setDistanceToParent( new_dist );
@@ -1108,8 +1109,8 @@ public class Phylogeny {
                 b.setBranchData( ( BranchData ) a.getBranchDataDirectly().copy() );
             }
             // New root is always placed in the middle of the branch:
-            if ( a.getDistanceToParent() == PhylogenyNode.DISTANCE_DEFAULT ) {
-                b.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+            if ( a.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                b.setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
             }
             else {
                 if ( distance_n_to_parent >= 0.0 ) {
@@ -1142,9 +1143,9 @@ public class Phylogeny {
             if ( c.getNumberOfDescendants() == 2 ) {
                 final PhylogenyNode node = c.getChildNode( 1 - b.getChildNodeIndex( c ) );
                 node.setParent( b );
-                if ( ( c.getDistanceToParent() == PhylogenyNode.DISTANCE_DEFAULT )
-                        && ( node.getDistanceToParent() == PhylogenyNode.DISTANCE_DEFAULT ) ) {
-                    node.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+                if ( ( c.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT )
+                        && ( node.getDistanceToParent() == PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
+                    node.setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
                 }
                 else {
                     node.setDistanceToParent( ( c.getDistanceToParent() >= 0.0 ? c.getDistanceToParent() : 0.0 )

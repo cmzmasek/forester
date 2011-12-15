@@ -70,6 +70,7 @@ import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Polygon;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -4509,7 +4510,7 @@ public final class Test {
             if ( !n3.getName().equals( "n3" ) ) {
                 return false;
             }
-            if ( n3.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+            if ( n3.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
                 return false;
             }
             if ( n3.isDuplication() ) {
@@ -4748,7 +4749,7 @@ public final class Test {
             if ( PhylogenyMethods.getConfidenceValue( n1 ) != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                 return false;
             }
-            if ( n1.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+            if ( n1.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
                 return false;
             }
             if ( n2.getName().compareTo( "" ) != 0 ) {
@@ -4757,7 +4758,7 @@ public final class Test {
             if ( PhylogenyMethods.getConfidenceValue( n2 ) != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
                 return false;
             }
-            if ( n2.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+            if ( n2.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
                 return false;
             }
             final PhylogenyNode n00 = PhylogenyNode
@@ -5038,23 +5039,48 @@ public final class Test {
     private static boolean testNHXParsingMB() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny p1 = factory.create( "(1[&prob=1.000000000000000e+00,prob_stddev=0.000000000000000e+00,"
+            final Phylogeny p1 = factory.create( "(1[&prob=0.9500000000000000e+00,prob_stddev=0.1100000000000000e+00,"
                     + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
                     + "prob+-sd=\"100+-0\"]:4.129000000000000e-02[&length_mean=4.153987461671767e-02,"
                     + "length_median=4.129000000000000e-02,length_95%HPD={3.217800000000000e-02,"
-                    + "5.026800000000000e-02}],2[&prob=1.000000000000000e+00,prob_stddev=0.000000000000000e+00,"
+                    + "5.026800000000000e-02}],2[&prob=0.810000000000000e+00,prob_stddev=0.000000000000000e+00,"
                     + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
                     + "prob+-sd=\"100+-0\"]:6.375699999999999e-02[&length_mean=6.395210411945065e-02,"
                     + "length_median=6.375699999999999e-02,length_95%HPD={5.388600000000000e-02,"
                     + "7.369400000000000e-02}])", new NHXParser() )[ 0 ];
             if ( !isEqual( p1.getNode( "1" ).getDistanceToParent(), 4.129e-02 ) ) {
-                System.out.println( p1.getNode( "1" ).getDistanceToParent() );
-                System.exit( -1 );
                 return false;
             }
-            //  if ( !p1.toNewHampshireX().equals( "(A[&&NHX:S=a_species],B1[&&NHX:S=b_species])" ) ) {
-            //     return false;
-            //  }
+            if ( !isEqual( p1.getNode( "1" ).getBranchData().getConfidence( 0 ).getValue(), 0.9500000000000000e+00 ) ) {
+                return false;
+            }
+            if ( !isEqual( p1.getNode( "1" ).getBranchData().getConfidence( 0 ).getStandardDeviation(),
+                           0.1100000000000000e+00 ) ) {
+                return false;
+            }
+            if ( !isEqual( p1.getNode( "2" ).getDistanceToParent(), 6.375699999999999e-02 ) ) {
+                return false;
+            }
+            if ( !isEqual( p1.getNode( "2" ).getBranchData().getConfidence( 0 ).getValue(), 0.810000000000000e+00 ) ) {
+                return false;
+            }
+            final Phylogeny p2 = factory
+                    .create( "(1[something_else(?)s,prob=0.9500000000000000e+00{}(((,p)rob_stddev=0.110000000000e+00,"
+                                     + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+                                     + "prob+-sd=\"100+-0\"]:4.129000000000000e-02[&length_mean=4.153987461671767e-02,"
+                                     + "length_median=4.129000000000000e-02,length_95%HPD={3.217800000000000e-02,"
+                                     + "5.026800000000000e-02}],2[&prob=0.810000000000000e+00,prob_stddev=0.000000000000000e+00,"
+                                     + "prob_range={1.000000000000000e+00,1.000000000000000e+00},prob(percent)=\"100\","
+                                     + "prob+-sd=\"100+-0\"]:6.375699999999999e-02[&length_mean=6.395210411945065e-02,"
+                                     + "length_median=6.375699999999999e-02,length_95%HPD={5.388600000000000e-02,"
+                                     + "7.369400000000000e-02}])",
+                             new NHXParser() )[ 0 ];
+            if ( p2.getNode( "1" ) == null ) {
+                return false;
+            }
+            if ( p2.getNode( "2" ) == null ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

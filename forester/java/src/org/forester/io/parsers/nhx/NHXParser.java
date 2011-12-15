@@ -46,9 +46,11 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
@@ -86,6 +88,12 @@ public final class NHXParser implements PhylogenyParser {
                                                                                                        .compile( "^[A-Z0-9]+$" );
     public final static Pattern                              NUMBERS_ONLY_PATTERN              = Pattern
                                                                                                        .compile( "^[0-9]+$" );
+    public final static Pattern                              MB_PROB_PATTERN                   = Pattern
+                                                                                                       .compile( "prob=([^,]+)" );
+    public final static Pattern                              MB_PROB_SD_PATTERN                = Pattern
+                                                                                                       .compile( "prob_stddev=([^,]+)" );
+    public final static Pattern                              MB_BL_PATTERN                     = Pattern
+                                                                                                       .compile( "length_median=([^,]+)" );
 
     public NHXParser() {
         init();
@@ -301,7 +309,7 @@ public final class NHXParser implements PhylogenyParser {
                     saw_colon = false;
                 }
             }
-            if ( in_open_bracket && c == ']' ) {
+            if ( in_open_bracket && ( c == ']' ) ) {
                 in_open_bracket = false;
             }
             // \n\t is always ignored,
@@ -361,13 +369,13 @@ public final class NHXParser implements PhylogenyParser {
                 // comment consisting just of "[]":
                 saw_open_bracket = false;
             }
-            else if ( c == '(' && !in_open_bracket ) {
+            else if ( ( c == '(' ) && !in_open_bracket ) {
                 processOpenParen();
             }
-            else if ( c == ')' && !in_open_bracket ) {
+            else if ( ( c == ')' ) && !in_open_bracket ) {
                 processCloseParen();
             }
-            else if ( c == ',' && !in_open_bracket ) {
+            else if ( ( c == ',' ) && !in_open_bracket ) {
                 processComma();
             }
             else {
@@ -628,7 +636,7 @@ public final class NHXParser implements PhylogenyParser {
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
             PhylogenyMethods.setBootstrapConfidence( n, n.getDistanceToParent() );
-            n.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+            n.setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
         }
     }
 
@@ -636,8 +644,6 @@ public final class NHXParser implements PhylogenyParser {
                                  final PhylogenyNode node_to_annotate,
                                  final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                                  final boolean replace_underscores ) throws NHXFormatException {
-        System.out.println( s );
-        System.out.println();
         if ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }
@@ -645,18 +651,12 @@ public final class NHXParser implements PhylogenyParser {
             if ( replace_underscores ) {
                 s = s.replaceAll( "_+", " " );
             }
-            int ob = 0;
-            int cb = 0;
-            String a = "";
-            String b = "";
-            StringTokenizer t = null;
             boolean is_nhx = false;
-            ob = s.indexOf( "[" );
-            cb = s.indexOf( "]" );
+            final int ob = s.indexOf( "[" );
             if ( ob > -1 ) {
-                a = "";
-                b = "";
+                String b = "";
                 is_nhx = true;
+                final int cb = s.indexOf( "]" );
                 if ( cb < 0 ) {
                     throw new NHXFormatException( "error in NHX formatted data: no closing \"]\" in \"" + s + "\"" );
                 }
@@ -670,14 +670,16 @@ public final class NHXParser implements PhylogenyParser {
                     if ( numbers_only.matches() ) {
                         b = ":" + NHXtags.SUPPORT + bracketed;
                     }
+                    else if ( s.indexOf( "prob=" ) > -1 ) {
+                        processMrBayes3Data( s, node_to_annotate );
+                    }
                 }
-                a = s.substring( 0, ob );
-                s = a + b;
+                s = s.substring( 0, ob ) + b;
                 if ( ( s.indexOf( "[" ) > -1 ) || ( s.indexOf( "]" ) > -1 ) ) {
                     throw new NHXFormatException( "error in NHX formatted data: more than one \"]\" or \"[\"" );
                 }
             }
-            t = new StringTokenizer( s, ":" );
+            final StringTokenizer t = new StringTokenizer( s, ":" );
             if ( t.countTokens() > 0 ) {
                 if ( !s.startsWith( ":" ) ) {
                     node_to_annotate.setName( t.nextToken() );
@@ -697,8 +699,6 @@ public final class NHXParser implements PhylogenyParser {
                 }
                 while ( t.hasMoreTokens() ) {
                     s = t.nextToken();
-                    System.out.println( "=>" + s );
-                    System.out.println();
                     if ( s.startsWith( org.forester.io.parsers.nhx.NHXtags.SPECIES_NAME ) ) {
                         if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
                             node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
@@ -781,13 +781,61 @@ public final class NHXParser implements PhylogenyParser {
                         node_to_annotate.getNodeData().getSequence().setName( s.substring( 2 ) );
                     }
                     else if ( s.indexOf( '=' ) < 0 ) {
-                        if ( node_to_annotate.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+                        if ( node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
                             throw new NHXFormatException( "error in NHX formatted data: more than one distance to parent:"
                                     + "\"" + s + "\"" );
                         }
                         node_to_annotate.setDistanceToParent( doubleValue( s ) );
                     }
                 } // while ( t.hasMoreTokens() ) 
+            }
+        }
+    }
+
+    private static void processMrBayes3Data( final String s, final PhylogenyNode node_to_annotate )
+            throws NHXFormatException {
+        double sd = -1;
+        final Matcher mb_prob_sd_matcher = MB_PROB_SD_PATTERN.matcher( s );
+        if ( mb_prob_sd_matcher.find() ) {
+            try {
+                sd = Double.parseDouble( mb_prob_sd_matcher.group( 1 ) );
+            }
+            catch ( final NumberFormatException e ) {
+                throw new NHXFormatException( "failed to parse probability standard deviation (Mr Bayes output) from \""
+                        + s + "\"" );
+            }
+        }
+        final Matcher mb_prob_matcher = MB_PROB_PATTERN.matcher( s );
+        if ( mb_prob_matcher.find() ) {
+            double prob = -1;
+            try {
+                prob = Double.parseDouble( mb_prob_matcher.group( 1 ) );
+            }
+            catch ( final NumberFormatException e ) {
+                throw new NHXFormatException( "failed to parse probability (Mr Bayes output) from \"" + s + "\"" );
+            }
+            if ( prob >= 0.0 ) {
+                if ( sd >= 0.0 ) {
+                    node_to_annotate.getBranchData()
+                            .addConfidence( new Confidence( prob, "posterior probability", sd ) );
+                }
+                else {
+                    node_to_annotate.getBranchData().addConfidence( new Confidence( prob, "posterior probability" ) );
+                }
+            }
+        }
+        final Matcher mb_bl_matcher = MB_BL_PATTERN.matcher( s );
+        if ( mb_bl_matcher.find() ) {
+            double bl = -1;
+            try {
+                bl = Double.parseDouble( mb_bl_matcher.group( 1 ) );
+            }
+            catch ( final NumberFormatException e ) {
+                throw new NHXFormatException( "failed to parse median branch length (Mr Bayes output) from \"" + s
+                        + "\"" );
+            }
+            if ( bl >= 0.0 ) {
+                node_to_annotate.setDistanceToParent( bl );
             }
         }
     }

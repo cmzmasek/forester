@@ -53,6 +53,16 @@ public class ConfidenceParser implements PhylogenyDataPhyloXmlParser {
         if ( element.isHasAttribute( PhyloXmlMapping.CONFIDENCE_TYPE_ATTR ) ) {
             confidence.setType( element.getAttribute( PhyloXmlMapping.CONFIDENCE_TYPE_ATTR ) );
         }
+        if ( element.isHasAttribute( PhyloXmlMapping.CONFIDENCE_SD_ATTR ) ) {
+            try {
+                confidence.setStandardDeviation( Double.parseDouble( element
+                        .getAttribute( PhyloXmlMapping.CONFIDENCE_SD_ATTR ) ) );
+            }
+            catch ( final NumberFormatException ex ) {
+                throw new PhylogenyParserException( "attempt to parse ["
+                        + element.getAttribute( PhyloXmlMapping.CONFIDENCE_SD_ATTR + "] into double" ) );
+            }
+        }
         return confidence;
     }
 

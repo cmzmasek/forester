@@ -50,6 +50,7 @@ import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Point;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -237,7 +238,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         final DefaultMutableTreeNode category = new DefaultMutableTreeNode( name );
         top.add( category );
         addSubelement( category, NODE_NAME, phylogeny_node.getName() );
-        if ( phylogeny_node.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+        if ( phylogeny_node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             addSubelement( category,
                            NODE_BRANCH_LENGTH,
                            ForesterUtil.FORMATTER_6.format( phylogeny_node.getDistanceToParent() ) );

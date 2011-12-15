@@ -37,6 +37,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Confidence;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -137,7 +138,7 @@ public final class support_transfer {
             else {
                 PhylogenyMethods.setBootstrapConfidence( node, Confidence.CONFIDENCE_DEFAULT_VALUE );
             }
-            node.setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+            node.setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
         }
     } // moveBranchLengthsToBootstrap()
 

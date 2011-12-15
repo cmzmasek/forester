@@ -109,6 +109,7 @@ import org.forester.phylogeny.data.NodeVisualization;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
@@ -2706,34 +2707,43 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               final boolean to_graphics_file ) {
         String conf_str = "";
         final List<Confidence> confidences = node.getBranchData().getConfidences();
-        if ( confidences.size() == 1 ) {
-            final double value = node.getBranchData().getConfidence( 0 ).getValue();
-            if ( ( value == Confidence.CONFIDENCE_DEFAULT_VALUE ) || ( value < getOptions().getMinConfidenceValue() ) ) {
-                return;
-            }
-            conf_str = FORMATTER_CONFIDENCE.format( value );
-        }
-        else if ( confidences.size() > 1 ) {
-            boolean one_ok = false;
-            boolean not_first = false;
-            Collections.sort( confidences );
-            final StringBuilder sb = new StringBuilder();
-            for( final Confidence confidence : confidences ) {
-                final double value = confidence.getValue();
-                if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
-                    if ( value >= getOptions().getMinConfidenceValue() ) {
-                        one_ok = true;
+        //        if ( confidences.size() == 1 ) {
+        //            final double value = node.getBranchData().getConfidence( 0 ).getValue();
+        //            if ( ( value == Confidence.CONFIDENCE_DEFAULT_VALUE ) || ( value < getOptions().getMinConfidenceValue() ) ) {
+        //                return;
+        //            }
+        //            conf_str = FORMATTER_CONFIDENCE.format( value );
+        //        }
+        //        else if ( confidences.size() > 1 ) {
+        boolean one_ok = false;
+        boolean not_first = false;
+        Collections.sort( confidences );
+        final StringBuilder sb = new StringBuilder();
+        for( final Confidence confidence : confidences ) {
+            final double value = confidence.getValue();
+            if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                if ( value >= getOptions().getMinConfidenceValue() ) {
+                    one_ok = true;
+                }
+                if ( not_first ) {
+                    sb.append( "/" );
+                }
+                else {
+                    not_first = true;
+                }
+                sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
+                        .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                if ( getControlPanel().isShowConfidenceSDValues() ) {
+                    if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                        sb.append( "(" );
+                        sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getStandardDeviation(),
+                                                                                    getOptions()
+                                                                                            .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                        sb.append( ")" );
                     }
-                    if ( not_first ) {
-                        sb.append( "/" );
-                    }
-                    else {
-                        not_first = true;
-                    }
-                    sb.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( value, getOptions()
-                            .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
                 }
             }
+            //}
             if ( one_ok ) {
                 conf_str = sb.toString();
             }
@@ -2927,7 +2937,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getOptions().isShowBranchLengthValues()
                 && ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
                         || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
-                && ( !node.isRoot() ) && ( node.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) ) {
+                && ( !node.isRoot() ) && ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
             paintBranchLength( g, node, to_pdf, to_graphics_file );
         }
         if ( !getControlPanel().isShowInternalData() && !node.isExternal() && !node.isCollapse() ) {
@@ -3434,7 +3444,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             ++_external_node_index;
         }
         // Confidence values
-        if ( getControlPanel().isShowBootstrapValues()
+        if ( getControlPanel().isShowConfidenceValues()
                 && !node.isExternal()
                 && !node.isRoot()
                 && ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED )
@@ -4737,6 +4747,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 .append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence.getValue(),
                                                                                           getOptions()
                                                                                                   .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                        if ( confidence.getStandardDeviation() != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
+                            _popup_buffer.append( " (sd=" );
+                            _popup_buffer.append( FORMATTER_CONFIDENCE.format( ForesterUtil.round( confidence
+                                    .getStandardDeviation(), getOptions()
+                                    .getNumberOfDigitsAfterCommaForConfidenceValues() ) ) );
+                            _popup_buffer.append( ")" );
+                        }
                     }
                 }
                 if ( node.getNodeData().isHasProperties() ) {

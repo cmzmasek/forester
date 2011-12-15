@@ -34,6 +34,7 @@ import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.ChildNodeIteratorForward;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
@@ -41,9 +42,7 @@ import org.forester.util.ForesterUtil;
 
 public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> {
 
-    /** Value of -99.0 is used as default value. */
-    public final static double       DISTANCE_DEFAULT = -1024.0;
-    private static int               _node_count      = 0;
+    private static int               _node_count = 0;
     private byte                     _indicator;
     private int                      _id;
     private int                      _sum_ext_nodes;
@@ -595,7 +594,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         _x = 0;
         _y = 0;
         //_node_name = "";
-        _distance_parent = PhylogenyNode.DISTANCE_DEFAULT;
+        _distance_parent = PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
         _collapse = false;
         _link = null;
         _branch_data = null;
@@ -962,7 +961,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
                 sb.append( data );
             }
         }
-        if ( ( getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) && write_distance_to_parent ) {
+        if ( ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) && write_distance_to_parent ) {
             sb.append( ":" );
             sb.append( getDistanceToParent() );
         }
@@ -987,7 +986,7 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
                 sb.append( name );
             }
         }
-        if ( getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+        if ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             sb.append( ":" );
             sb.append( getDistanceToParent() );
         }

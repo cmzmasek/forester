@@ -35,6 +35,9 @@ import org.forester.util.ForesterUtil;
 
 public final class PhylogenyDataUtil {
 
+    /** Value of -99.0 is used as default value. */
+    public final static double BRANCH_LENGTH_DEFAULT = -1024.0;
+
     public static void appendClose( final Writer w, final String element_name ) throws IOException {
         w.write( "</" );
         w.write( element_name );
@@ -94,6 +97,18 @@ public final class PhylogenyDataUtil {
         w.write( ForesterUtil.LINE_SEPARATOR );
         w.write( indentation );
         w.write( PhylogenyWriter.PHYLO_XML_INTENDATION_BASE );
+        appendOpen( w, element_name, attribute1_name, attribute1_value, attribute2_name, attribute2_value );
+        w.write( replaceIllegalXmlCharacters( value ) );
+        appendClose( w, element_name );
+    }
+
+    public static void appendElement( final Writer w,
+                                      final String element_name,
+                                      final String value,
+                                      final String attribute1_name,
+                                      final String attribute1_value,
+                                      final String attribute2_name,
+                                      final String attribute2_value ) throws IOException {
         appendOpen( w, element_name, attribute1_name, attribute1_value, attribute2_name, attribute2_value );
         w.write( replaceIllegalXmlCharacters( value ) );
         appendClose( w, element_name );

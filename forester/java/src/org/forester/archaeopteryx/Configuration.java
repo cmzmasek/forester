@@ -122,6 +122,7 @@ public final class Configuration {
     final static int                        show_vector_data                                       = 23;
     final static int                        show_taxonomy_images                                   = 24;
     final static int                        show_properties                                        = 25;
+    final static int                        write_confidence_values_sd                             = 26;
     // ------------------
     // Click-to options
     // ------------------
@@ -151,7 +152,7 @@ public final class Configuration {
     String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-            { "Annotation", "nodisplay", "no" }, { "Confidence Value", "display", "?" }, { "Event", "display", "?" },
+            { "Annotation", "nodisplay", "no" }, { "Confidence Values", "display", "?" }, { "Event", "display", "?" },
             { "Taxonomy Colorize", "display", "no" }, { "Colorize Branches", "display", "no" },
             { "Use Branch-Widths", "display", "no" }, { "Show Custom Nodes", "display", "yes" },
             { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
@@ -161,7 +162,8 @@ public final class Configuration {
             { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
             { "Prot/Gene Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
             { "Relation Confidence", "display", "no" }, { "Vector Data", "display", "no" },
-            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" }             };
+            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" },
+            { "Confidence StdDev", "display", "no" }                                              };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },

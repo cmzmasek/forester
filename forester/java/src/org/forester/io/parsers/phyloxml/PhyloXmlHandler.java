@@ -55,6 +55,7 @@ import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Reference;
@@ -260,7 +261,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
             final XmlElement element = xml_element.getChildElement( i );
             final String qualified_name = element.getQualifiedName();
             if ( qualified_name.equals( PhyloXmlMapping.BRANCH_LENGTH ) ) {
-                if ( node.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+                if ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
                     throw new PhylogenyParserException( "ill advised attempt to set distance twice for the same clade (probably via element and via attribute)" );
                 }
                 node.setDistanceToParent( element.getValueAsDouble() );

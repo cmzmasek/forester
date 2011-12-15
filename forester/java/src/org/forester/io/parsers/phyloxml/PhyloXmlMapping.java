@@ -73,6 +73,7 @@ public final class PhyloXmlMapping {
     public static final String BINARY_CHARACTERS_LOST_COUNT_ATTR                   = "lost_count";
     public static final String BRANCH_LENGTH                                       = "branch_length";
     public static final String CONFIDENCE                                          = "confidence";
+    public static final String CONFIDENCE_SD_ATTR                                  = "stddev";
     public static final String CONFIDENCE_TYPE_ATTR                                = "type";
     public static final String COLOR                                               = "color";
     public static final String COLOR_RED                                           = "red";

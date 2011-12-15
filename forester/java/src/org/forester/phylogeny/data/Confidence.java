@@ -35,9 +35,10 @@ import org.forester.util.ForesterUtil;
 
 public class Confidence implements PhylogenyData, Comparable<Confidence> {
 
-    public final static double CONFIDENCE_DEFAULT_VALUE = -9999.0;
-    private double             _value;
-    private String             _type;
+    public final static int CONFIDENCE_DEFAULT_VALUE = -9999;
+    private double          _value;
+    private double          _sd;
+    private String          _type;
 
     public Confidence() {
         init();
@@ -46,6 +47,13 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
     public Confidence( final double value, final String type ) {
         setValue( value );
         setType( type );
+        setStandardDeviation( CONFIDENCE_DEFAULT_VALUE );
+    }
+
+    public Confidence( final double value, final String type, final double sd ) {
+        setValue( value );
+        setType( type );
+        setStandardDeviation( sd );
     }
 
     @Override
@@ -62,6 +70,11 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
             sb.append( "] " );
         }
         sb.append( ForesterUtil.FORMATTER_6.format( getValue() ) );
+        if ( getStandardDeviation() != CONFIDENCE_DEFAULT_VALUE ) {
+            sb.append( " (sd=" );
+            sb.append( getStandardDeviation() );
+            sb.append( ")" );
+        }
         return sb;
     }
 
@@ -75,7 +88,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
 
     @Override
     public PhylogenyData copy() {
-        return new Confidence( getValue(), getType() );
+        return new Confidence( getValue(), getType(), getStandardDeviation() );
     }
 
     public String getType() {
@@ -86,9 +99,14 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         return _value;
     }
 
+    public double getStandardDeviation() {
+        return _sd;
+    }
+
     public void init() {
         setValue( CONFIDENCE_DEFAULT_VALUE );
         setType( "" );
+        setStandardDeviation( CONFIDENCE_DEFAULT_VALUE );
     }
 
     @Override
@@ -117,6 +135,10 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         _value = value;
     }
 
+    public void setStandardDeviation( final double sd ) {
+        _sd = sd;
+    }
+
     @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
@@ -132,13 +154,28 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );
-        PhylogenyDataUtil.appendElement( writer,
-                                         PhyloXmlMapping.CONFIDENCE,
-                                         String.valueOf( ForesterUtil
-                                                 .round( getValue(),
-                                                         PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
-                                         PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
-                                         ForesterUtil.isEmpty( getType() ) ? "unknown" : getType() );
+        if ( getStandardDeviation() != CONFIDENCE_DEFAULT_VALUE ) {
+            PhylogenyDataUtil
+                    .appendElement( writer,
+                                    PhyloXmlMapping.CONFIDENCE,
+                                    String.valueOf( ForesterUtil
+                                            .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
+                                    PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
+                                    ForesterUtil.isEmpty( getType() ) ? "unknown" : getType(),
+                                    PhyloXmlMapping.CONFIDENCE_SD_ATTR,
+                                    String.valueOf( ForesterUtil
+                                            .round( getStandardDeviation(),
+                                                    PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
+        }
+        else {
+            PhylogenyDataUtil
+                    .appendElement( writer,
+                                    PhyloXmlMapping.CONFIDENCE,
+                                    String.valueOf( ForesterUtil
+                                            .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
+                                    PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
+                                    ForesterUtil.isEmpty( getType() ) ? "unknown" : getType() );
+        }
     }
 
     @Override

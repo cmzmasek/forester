@@ -45,6 +45,7 @@ import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -328,7 +329,7 @@ public class PhylogenyMethods {
         else if ( b >= 0.0 ) {
             return b;
         }
-        return PhylogenyNode.DISTANCE_DEFAULT;
+        return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
     }
 
     // Helper for getUltraParalogousNodes( PhylogenyNode ).

@@ -60,6 +60,7 @@ import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.MultipleUris;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Point;
 import org.forester.phylogeny.data.Reference;
 import org.forester.phylogeny.data.Sequence;
@@ -153,7 +154,7 @@ class NodeEditPanel extends JPanel {
         top.add( category );
         addSubelementEditable( category, NodePanel.NODE_NAME, phylogeny_node.getName(), PHYLOXML_TAG.NODE_NAME );
         String bl = "";
-        if ( phylogeny_node.getDistanceToParent() != PhylogenyNode.DISTANCE_DEFAULT ) {
+        if ( phylogeny_node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             bl = ForesterUtil.FORMATTER_6.format( phylogeny_node.getDistanceToParent() );
         }
         addSubelementEditable( category, NodePanel.NODE_BRANCH_LENGTH, bl, PHYLOXML_TAG.NODE_BRANCH_LENGTH );
@@ -651,7 +652,7 @@ class NodeEditPanel extends JPanel {
                 break;
             case NODE_BRANCH_LENGTH:
                 if ( ForesterUtil.isEmpty( value ) ) {
-                    getMyNode().setDistanceToParent( PhylogenyNode.DISTANCE_DEFAULT );
+                    getMyNode().setDistanceToParent( PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT );
                 }
                 else {
                     try {
@@ -713,7 +714,8 @@ class NodeEditPanel extends JPanel {
                 }
                 else {
                     final String type = getMyNode().getBranchData().getConfidences().get( number ).getType();
-                    getMyNode().getBranchData().getConfidences().set( number, new Confidence( confidence, type ) );
+                    final double sd = getMyNode().getBranchData().getConfidences().get( number ).getStandardDeviation();
+                    getMyNode().getBranchData().getConfidences().set( number, new Confidence( confidence, type, sd ) );
                 }
                 break;
             case CONFIDENCE_TYPE:
@@ -727,7 +729,8 @@ class NodeEditPanel extends JPanel {
                 }
                 else {
                     final double v = getMyNode().getBranchData().getConfidences().get( number ).getValue();
-                    getMyNode().getBranchData().getConfidences().set( number, new Confidence( v, value ) );
+                    final double sd = getMyNode().getBranchData().getConfidences().get( number ).getStandardDeviation();
+                    getMyNode().getBranchData().getConfidences().set( number, new Confidence( v, value, sd ) );
                 }
                 break;
             case TAXONOMY_CODE:
