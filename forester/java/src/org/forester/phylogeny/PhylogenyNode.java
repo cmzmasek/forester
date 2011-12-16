@@ -925,10 +925,16 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     // ---------------------------------------------------------
     final public String toNewHampshire( final boolean simple_nh,
                                         final boolean write_distance_to_parent,
-                                        final boolean write_support_values_in_brackets ) {
+                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
         final StringBuilder sb = new StringBuilder();
         String data = "";
-        if ( !ForesterUtil.isEmpty( getName() ) ) {
+        if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES ) && !isExternal() ) {
+            if ( getBranchData().isHasConfidences()
+                    && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
+                data = String.valueOf( getBranchData().getConfidence( 0 ).getValue() );
+            }
+        }
+        else if ( !ForesterUtil.isEmpty( getName() ) ) {
             data = getName();
         }
         else if ( getNodeData().isHasTaxonomy() ) {
@@ -968,7 +974,8 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
             sb.append( ":" );
             sb.append( getDistanceToParent() );
         }
-        if ( write_support_values_in_brackets && !isExternal() && getBranchData().isHasConfidences()
+        if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ) && !isExternal()
+                && getBranchData().isHasConfidences()
                 && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( "[" );
             sb.append( getBranchData().getConfidence( 0 ).getValue() );

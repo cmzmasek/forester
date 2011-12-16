@@ -29,6 +29,10 @@ package org.forester.phylogeny;
 
 public interface PhylogenyNodeI {
 
+    public enum NH_CONVERSION_SUPPORT_VALUE_STYLE {
+        NONE, IN_SQUARE_BRACKETS, AS_INTERNAL_NODE_NAMES;
+    }
+
     public void addAsChild( PhylogenyNodeI node );
 
     public PhylogenyNode getChildNode( int i );

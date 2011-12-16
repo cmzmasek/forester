@@ -62,6 +62,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyBranch;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -4471,10 +4472,15 @@ public final class Test {
             if ( p50.getNode( "A" ) == null ) {
                 return false;
             }
-            if ( !p50.toNewHampshire( false, true ).equals( "((A,B)ab:2.0[88.0],C);" ) ) {
+            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
+                    .equals( "((A,B)ab:2.0[88.0],C);" ) ) {
                 return false;
             }
-            if ( !p50.toNewHampshire( false, false ).equals( "((A,B)ab:2.0,C);" ) ) {
+            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE ).equals( "((A,B)ab:2.0,C);" ) ) {
+                return false;
+            }
+            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES )
+                    .equals( "((A,B)88.0:2.0,C);" ) ) {
                 return false;
             }
             final Phylogeny p51 = factory.create( new StringBuffer( "((\"A(A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];

@@ -39,6 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.Vector;
 
 import org.forester.io.writers.PhylogenyWriter;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Identifier;
@@ -1278,12 +1279,13 @@ public class Phylogeny {
     } // swapChildren( PhylogenyNode )
 
     public String toNewHampshire() {
-        return toNewHampshire( false, false );
+        return toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
     }
 
-    public String toNewHampshire( final boolean simple_nh, final boolean write_conf_values_in_branckets_in_nh ) {
+    public String toNewHampshire( final boolean simple_nh,
+                                  final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_style ) {
         try {
-            return new PhylogenyWriter().toNewHampshire( this, simple_nh, true, write_conf_values_in_branckets_in_nh )
+            return new PhylogenyWriter().toNewHampshire( this, simple_nh, true, nh_conversion_support_style )
                     .toString();
         }
         catch ( final IOException e ) {
@@ -1300,9 +1302,9 @@ public class Phylogeny {
         }
     }
 
-    public String toNexus( final boolean write_conf_values_in_branckets_in_nh ) {
+    public String toNexus( final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
         try {
-            return new PhylogenyWriter().toNexus( this, write_conf_values_in_branckets_in_nh ).toString();
+            return new PhylogenyWriter().toNexus( this, svs ).toString();
         }
         catch ( final IOException e ) {
             throw new Error( "this should not have happend: " + e.getMessage() );

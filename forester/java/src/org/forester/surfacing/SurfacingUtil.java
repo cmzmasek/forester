@@ -67,6 +67,7 @@ import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -2363,7 +2364,7 @@ public final class SurfacingUtil {
             w.write( ForesterUtil.LINE_SEPARATOR );
             my_matrix.writeNexusTaxaBlock( w );
             my_matrix.writeNexusBinaryChractersBlock( w );
-            PhylogenyWriter.writeNexusTreesBlock( w, phylogenies, false );
+            PhylogenyWriter.writeNexusTreesBlock( w, phylogenies, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
             w.flush();
             w.close();
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote Nexus file: \"" + outfile_name + "\"" );

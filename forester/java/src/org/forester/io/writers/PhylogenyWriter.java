@@ -41,6 +41,7 @@ import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostOrderStackObject;
@@ -73,7 +74,7 @@ public final class PhylogenyWriter {
     private Stack<PostOrderStackObject> _stack;
     private boolean                     _simple_nh;
     private boolean                     _nh_write_distance_to_parent;
-    private boolean                     _write_conf_values_in_branckets_in_nh;
+    NH_CONVERSION_SUPPORT_VALUE_STYLE   _nh_conversion_support_style;
     private boolean                     _indent_phyloxml;
     private int                         _node_level;
     private int                         _phyloxml_level;
@@ -81,7 +82,7 @@ public final class PhylogenyWriter {
 
     public PhylogenyWriter() {
         setIndentPhyloxml( INDENT_PHYLOXML_DEAFULT );
-        setWriteConfidenceValuesInBracketsInNH( false );
+        setNhConversionSupportStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
     }
 
     private void appendPhylogenyLevelPhyloXml( final Writer writer, final Phylogeny tree ) throws IOException {
@@ -339,9 +340,9 @@ public final class PhylogenyWriter {
     public StringBuffer toNewHampshire( final Phylogeny tree,
                                         final boolean simple_nh,
                                         final boolean nh_write_distance_to_parent,
-                                        final boolean write_conf_values_in_branckets_in_nh ) throws IOException {
+                                        final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) throws IOException {
         setOutputFormt( FORMAT.NH );
-        setWriteConfidenceValuesInBracketsInNH( write_conf_values_in_branckets_in_nh );
+        setNhConversionSupportStyle( svs );
         setSimpleNH( simple_nh );
         setWriteDistanceToParentInNH( nh_write_distance_to_parent );
         return getOutput( tree );
@@ -366,9 +367,9 @@ public final class PhylogenyWriter {
     public void toNewHampshire( final Phylogeny tree,
                                 final boolean simple_nh,
                                 final boolean write_distance_to_parent,
-                                final boolean use_brackets_for_confidence,
+                                final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
                                 final File out_file ) throws IOException {
-        writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent, use_brackets_for_confidence ), out_file );
+        writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent, svs ), out_file );
     }
 
     public void toNewHampshire( final Phylogeny[] trees,
@@ -414,27 +415,26 @@ public final class PhylogenyWriter {
         writeToFile( sb, out_file );
     }
 
-    public void toNexus( final File out_file, final Phylogeny tree, final boolean write_conf_values_in_branckets_in_nh )
+    public void toNexus( final File out_file, final Phylogeny tree, final NH_CONVERSION_SUPPORT_VALUE_STYLE svs )
             throws IOException {
         final Writer writer = new BufferedWriter( new PrintWriter( out_file ) );
         final List<Phylogeny> trees = new ArrayList<Phylogeny>( 1 );
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
-        writeNexusTreesBlock( writer, trees, write_conf_values_in_branckets_in_nh );
+        writeNexusTreesBlock( writer, trees, svs );
         writer.flush();
         writer.close();
     }
 
-    public StringBuffer toNexus( final Phylogeny tree, final boolean write_conf_values_in_branckets_in_nh )
-            throws IOException {
+    public StringBuffer toNexus( final Phylogeny tree, final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) throws IOException {
         final StringWriter string_writer = new StringWriter();
         final Writer writer = new BufferedWriter( string_writer );
         final List<Phylogeny> trees = new ArrayList<Phylogeny>( 1 );
         trees.add( tree );
         writeNexusStart( writer );
         writeNexusTaxaBlock( writer, tree );
-        writeNexusTreesBlock( writer, trees, write_conf_values_in_branckets_in_nh );
+        writeNexusTreesBlock( writer, trees, svs );
         writer.flush();
         writer.close();
         return string_writer.getBuffer();
@@ -572,16 +572,16 @@ public final class PhylogenyWriter {
         else if ( getOutputFormt() == FORMAT.NH ) {
             getBuffer().append( node.toNewHampshire( isSimpleNH(),
                                                      isWriteDistanceToParentInNH(),
-                                                     isWriteConfidenceValuesInBracketsInNH() ) );
+                                                     getNhConversionSupportStyle() ) );
         }
     }
 
-    private boolean isWriteConfidenceValuesInBracketsInNH() {
-        return _write_conf_values_in_branckets_in_nh;
+    private NH_CONVERSION_SUPPORT_VALUE_STYLE getNhConversionSupportStyle() {
+        return _nh_conversion_support_style;
     }
 
-    private void setWriteConfidenceValuesInBracketsInNH( final boolean write_conf_values_in_branckets_in_nh ) {
-        _write_conf_values_in_branckets_in_nh = write_conf_values_in_branckets_in_nh;
+    private void setNhConversionSupportStyle( final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_style ) {
+        _nh_conversion_support_style = nh_conversion_support_style;
     }
 
     private void writeOpenClade( final PhylogenyNode node ) throws IOException {
@@ -737,7 +737,7 @@ public final class PhylogenyWriter {
 
     public static void writeNexusTreesBlock( final Writer writer,
                                              final List<Phylogeny> trees,
-                                             final boolean write_conf_values_in_branckets_in_nh ) throws IOException {
+                                             final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) throws IOException {
         writer.write( NexusConstants.BEGIN_TREES );
         writer.write( ForesterUtil.LINE_SEPARATOR );
         int i = 1;
@@ -761,7 +761,7 @@ public final class PhylogenyWriter {
             else {
                 writer.write( "[&U]" );
             }
-            writer.write( phylogeny.toNewHampshire( false, write_conf_values_in_branckets_in_nh ) );
+            writer.write( phylogeny.toNewHampshire( false, svs ) );
             writer.write( ForesterUtil.LINE_SEPARATOR );
             i++;
         }
