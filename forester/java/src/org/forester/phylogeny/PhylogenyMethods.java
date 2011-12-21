@@ -193,7 +193,7 @@ public class PhylogenyMethods {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
-            if ( !n.isRoot() && !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
+            if ( !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
                 if ( !ForesterUtil.isEmpty( n.getName() ) ) {
                     double d = -1.0;
                     try {

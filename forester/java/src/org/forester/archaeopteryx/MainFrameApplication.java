@@ -88,6 +88,7 @@ import org.forester.msa.MsaFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -828,15 +829,19 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _print_size_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_pdf_width_mi = new JMenuItem( "" ) );
         _options_jmenu.addSeparator();
-        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Input/Output:" ),
-                                                      getConfiguration() ) );
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/NHX/Nexus Input:" ), getConfiguration() ) );
         _options_jmenu
-                .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Numbers Are Confidence Values" ) );
+                .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
         _options_jmenu
                 .add( _extract_pfam_style_tax_codes_cbmi = new JCheckBoxMenuItem( "Extract Taxonomy Codes from Pfam-style Labels" ) );
+        _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Output:" ), getConfiguration() ) );
         _options_jmenu
                 .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
+        _use_brackets_for_conf_in_nh_export_cbmi
+                .setToolTipText( "e.g. \"0.1[90]\" for a branch with support 90 and a length of 0.1" );
+        _options_jmenu
+                .add( _use_internal_names_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL ) );
         customizeJMenuItem( _choose_font_mi );
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
@@ -880,7 +885,9 @@ public final class MainFrameApplication extends MainFrame {
                 .isGraphicsExportUsingActualSize() );
         customizeCheckBoxMenuItem( _show_confidence_stddev_cbmi, getOptions().isShowConfidenceStddev() );
         customizeCheckBoxMenuItem( _use_brackets_for_conf_in_nh_export_cbmi, getOptions()
-                .isUseBracketsForConfInNhExport() );
+                .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
+        customizeCheckBoxMenuItem( _use_internal_names_for_conf_in_nh_export_cbmi, getOptions()
+                .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
         _jmenubar.add( _options_jmenu );
     }
 
@@ -2318,7 +2325,7 @@ public final class MainFrameApplication extends MainFrame {
     private boolean writeAsNewHampshire( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNewHampshire( t, false, true, getOptions().isUseBracketsForConfInNhExport(), file );
+            writer.toNewHampshire( t, false, true, getOptions().getNhConversionSupportValueStyle(), file );
         }
         catch ( final Exception e ) {
             exception = true;
@@ -2330,7 +2337,7 @@ public final class MainFrameApplication extends MainFrame {
     private boolean writeAsNexus( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNexus( file, t, getOptions().isUseBracketsForConfInNhExport() );
+            writer.toNexus( file, t, getOptions().getNhConversionSupportValueStyle() );
         }
         catch ( final Exception e ) {
             exception = true;

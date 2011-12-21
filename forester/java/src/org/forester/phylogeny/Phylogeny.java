@@ -1311,6 +1311,10 @@ public class Phylogeny {
         }
     }
 
+    public String toNexus() {
+        return toNexus( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
+    }
+
     public String toPhyloXML( final int phyloxml_level ) {
         try {
             return new PhylogenyWriter().toPhyloXML( this, phyloxml_level ).toString();

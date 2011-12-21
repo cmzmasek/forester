@@ -128,7 +128,7 @@ public final class NHXParser implements PhylogenyParser {
                       isReplaceUnderscores() );
             if ( NHXParser.GUESS_IF_SUPPORT_VALUES ) {
                 if ( NHXParser.isBranchLengthsLikeBootstrapValues( getCurrentPhylogeny() ) ) {
-                    NHXParser.moveBranchLengthsToBootstrapValues( getCurrentPhylogeny() );
+                    NHXParser.moveBranchLengthsToConfidenceValues( getCurrentPhylogeny() );
                 }
             }
             if ( isGuessRootedness() ) {
@@ -631,7 +631,7 @@ public final class NHXParser implements PhylogenyParser {
         return true;
     }
 
-    private static void moveBranchLengthsToBootstrapValues( final Phylogeny p ) {
+    private static void moveBranchLengthsToConfidenceValues( final Phylogeny p ) {
         final PhylogenyNodeIterator it = p.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();

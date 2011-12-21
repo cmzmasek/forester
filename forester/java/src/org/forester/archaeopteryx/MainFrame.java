@@ -47,6 +47,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.util.ForesterConstants;
@@ -54,50 +55,51 @@ import org.forester.util.ForesterUtil;
 
 public abstract class MainFrame extends JFrame implements ActionListener {
 
-    static final String       USE_MOUSEWHEEL_SHIFT_TO_ROTATE      = "In this display type, use mousewheel + Shift to rotate [or A and S]";
-    static final String       PHYLOXML_REF_TOOL_TIP               = Constants.PHYLOXML_REFERENCE;                                                                                                                                       //TODO //FIXME
-    static final String       APTX_REF_TOOL_TIP                   = Constants.APTX_REFERENCE;
-    private static final long serialVersionUID                    = 3655000897845508358L;
-    final static Font         menu_font                           = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                              Font.PLAIN,
-                                                                              10 );
-    static final String       TYPE_MENU_HEADER                    = "Type";
-    static final String       RECTANGULAR_TYPE_CBMI_LABEL         = "Rectangular";
-    static final String       EURO_TYPE_CBMI_LABEL                = "Euro Type";
-    static final String       CURVED_TYPE_CBMI_LABEL              = "Curved";
-    static final String       TRIANGULAR_TYPE_CBMI_LABEL          = "Triangular";
-    static final String       CONVEX_TYPE_CBMI_LABEL              = "Convex";
-    static final String       ROUNDED_TYPE_CBMI_LABEL             = "Rounded";
-    static final String       UNROOTED_TYPE_CBMI_LABEL            = "Unrooted (alpha)";                                                                                                                                                 //TODO
-    static final String       CIRCULAR_TYPE_CBMI_LABEL            = "Circular (alpha)";                                                                                                                                                 //TODO
-    static final String       OPTIONS_HEADER                      = "Options";
-    static final String       SEARCH_SUBHEADER                    = "Search:";
-    static final String       DISPLAY_SUBHEADER                   = "Display:";
-    static final String       SEARCH_TERMS_ONLY_LABEL             = "Match Complete Terms Only";
-    static final String       SEARCH_CASE_SENSITIVE_LABEL         = "Case Sensitive";
-    static final String       INVERSE_SEARCH_RESULT_LABEL         = "Negate Result";
-    static final String       DISPLAY_BRANCH_LENGTH_VALUES_LABEL  = "Display Branch Length Values";
-    static final String       DISPLAY_SCALE_LABEL                 = "Display Scale";
-    static final String       NON_LINED_UP_CLADOGRAMS_LABEL       = "Non-Lined Up Cladograms";
-    static final String       UNIFORM_CLADOGRAMS_LABEL            = "Total Node Sum Dependent Cladograms";
-    static final String       LABEL_DIRECTION_LABEL               = "Radial Labels";
-    static final String       LABEL_DIRECTION_TIP                 = "To use radial node labels in radial and unrooted display types";
-    static final String       SCREEN_ANTIALIAS_LABEL              = "Antialias";
-    static final String       COLOR_LABELS_LABEL                  = "Colorize Labels Same as Parent Branch";
-    static final String       BG_GRAD_LABEL                       = "Background Color Gradient";
-    static final String       DISPLAY_NODE_BOXES_LABEL            = "Show Node Shapes";
-    static final String       SHOW_OVERVIEW_LABEL                 = "Show Overview";
-    static final String       FONT_SIZE_MENU_LABEL                = "Font Size";
-    static final String       NONUNIFORM_CLADOGRAMS_LABEL         = "External Node Sum Dependent Cladograms";
-    static final String       SHOW_DOMAIN_LABELS_LABEL            = "Show Domain Labels";
-    static final String       COLOR_LABELS_TIP                    = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
-    static final String       ABBREV_SN_LABEL                     = "Abbreviate Scientific Taxonomic Names";
-    static final String       TAXONOMY_COLORIZE_NODE_SHAPES_LABEL = "Colorize Node Shapes According to Taxonomy";
-    static final String       CYCLE_NODE_SHAPE_LABEL              = "Cycle Node Shapes";
-    static final String       CYCLE_NODE_FILL_LABEL               = "Cycle Node Fill Type";
-    static final String       CHOOSE_NODE_SIZE_LABEL              = "Choose Node Shape Size";
-    static final String       SHOW_CONF_STDDEV_LABEL              = "Show Confidence Standard Deviations";
-    static final String       USE_BRACKETS_FOR_CONF_IN_NH_LABEL   = "Brackets for Confidences in NH/Nexus Output";
+    static final String       USE_MOUSEWHEEL_SHIFT_TO_ROTATE          = "In this display type, use mousewheel + Shift to rotate [or A and S]";
+    static final String       PHYLOXML_REF_TOOL_TIP                   = Constants.PHYLOXML_REFERENCE;                                                                                                                                       //TODO //FIXME
+    static final String       APTX_REF_TOOL_TIP                       = Constants.APTX_REFERENCE;
+    private static final long serialVersionUID                        = 3655000897845508358L;
+    final static Font         menu_font                               = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                                  Font.PLAIN,
+                                                                                  10 );
+    static final String       TYPE_MENU_HEADER                        = "Type";
+    static final String       RECTANGULAR_TYPE_CBMI_LABEL             = "Rectangular";
+    static final String       EURO_TYPE_CBMI_LABEL                    = "Euro Type";
+    static final String       CURVED_TYPE_CBMI_LABEL                  = "Curved";
+    static final String       TRIANGULAR_TYPE_CBMI_LABEL              = "Triangular";
+    static final String       CONVEX_TYPE_CBMI_LABEL                  = "Convex";
+    static final String       ROUNDED_TYPE_CBMI_LABEL                 = "Rounded";
+    static final String       UNROOTED_TYPE_CBMI_LABEL                = "Unrooted (alpha)";                                                                                                                                                 //TODO
+    static final String       CIRCULAR_TYPE_CBMI_LABEL                = "Circular (alpha)";                                                                                                                                                 //TODO
+    static final String       OPTIONS_HEADER                          = "Options";
+    static final String       SEARCH_SUBHEADER                        = "Search:";
+    static final String       DISPLAY_SUBHEADER                       = "Display:";
+    static final String       SEARCH_TERMS_ONLY_LABEL                 = "Match Complete Terms Only";
+    static final String       SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
+    static final String       INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
+    static final String       DISPLAY_BRANCH_LENGTH_VALUES_LABEL      = "Display Branch Length Values";
+    static final String       DISPLAY_SCALE_LABEL                     = "Display Scale";
+    static final String       NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladograms";
+    static final String       UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
+    static final String       LABEL_DIRECTION_LABEL                   = "Radial Labels";
+    static final String       LABEL_DIRECTION_TIP                     = "To use radial node labels in radial and unrooted display types";
+    static final String       SCREEN_ANTIALIAS_LABEL                  = "Antialias";
+    static final String       COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
+    static final String       BG_GRAD_LABEL                           = "Background Color Gradient";
+    static final String       DISPLAY_NODE_BOXES_LABEL                = "Show Node Shapes";
+    static final String       SHOW_OVERVIEW_LABEL                     = "Show Overview";
+    static final String       FONT_SIZE_MENU_LABEL                    = "Font Size";
+    static final String       NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
+    static final String       SHOW_DOMAIN_LABELS_LABEL                = "Show Domain Labels";
+    static final String       COLOR_LABELS_TIP                        = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
+    static final String       ABBREV_SN_LABEL                         = "Abbreviate Scientific Taxonomic Names";
+    static final String       TAXONOMY_COLORIZE_NODE_SHAPES_LABEL     = "Colorize Node Shapes According to Taxonomy";
+    static final String       CYCLE_NODE_SHAPE_LABEL                  = "Cycle Node Shapes";
+    static final String       CYCLE_NODE_FILL_LABEL                   = "Cycle Node Fill Type";
+    static final String       CHOOSE_NODE_SIZE_LABEL                  = "Choose Node Shape Size";
+    static final String       SHOW_CONF_STDDEV_LABEL                  = "Show Confidence Standard Deviations";
+    static final String       USE_BRACKETS_FOR_CONF_IN_NH_LABEL       = "Use Brackets for Confidence Values";
+    static final String       USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     JMenuBar                  _jmenubar;
     JMenu                     _file_jmenu;
     JMenu                     _tools_menu;
@@ -121,7 +123,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _color_rank_jmi;
     JMenuItem                 _infer_common_sn_names_item;
     JMenuItem                 _collapse_species_specific_subtrees;
-    JMenuItem                 _collapse_below_threshold;                                                                                                                                                                                //TODO implememt me
+    JMenuItem                 _collapse_below_threshold;                                                                                                                                                                                    //TODO implememt me
     JMenuItem                 _obtain_detailed_taxonomic_information_jmi;
     JMenuItem                 _obtain_detailed_taxonomic_information_deleting_jmi;
     JMenuItem                 _obtain_uniprot_seq_information_jmi;
@@ -146,7 +148,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem      _uniform_cladograms_rbmi;
     JRadioButtonMenuItem      _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem         _show_branch_length_values_cbmi;
-    JCheckBoxMenuItem         _show_scale_cbmi;                                                                                                                                                                                         //TODO fix me
+    JCheckBoxMenuItem         _show_scale_cbmi;                                                                                                                                                                                             //TODO fix me
     JCheckBoxMenuItem         _show_overview_cbmi;
     JCheckBoxMenuItem         _show_domain_labels;
     JCheckBoxMenuItem         _abbreviate_scientific_names;
@@ -172,6 +174,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem         _extract_pfam_style_tax_codes_cbmi;
     JCheckBoxMenuItem         _replace_underscores_cbmi;
     JCheckBoxMenuItem         _use_brackets_for_conf_in_nh_export_cbmi;
+    JCheckBoxMenuItem         _use_internal_names_for_conf_in_nh_export_cbmi;
     // _  search
     JCheckBoxMenuItem         _search_case_senstive_cbmi;
     JCheckBoxMenuItem         _search_whole_words_only_cbmi;
@@ -389,6 +392,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _use_brackets_for_conf_in_nh_export_cbmi ) {
+            if ( _use_brackets_for_conf_in_nh_export_cbmi.isSelected() ) {
+                _use_internal_names_for_conf_in_nh_export_cbmi.setSelected( false );
+            }
+            updateOptions( getOptions() );
+        }
+        else if ( o == _use_internal_names_for_conf_in_nh_export_cbmi ) {
+            if ( _use_internal_names_for_conf_in_nh_export_cbmi.isSelected() ) {
+                _use_brackets_for_conf_in_nh_export_cbmi.setSelected( false );
+            }
             updateOptions( getOptions() );
         }
         else if ( o == _label_direction_cbmi ) {
@@ -976,8 +988,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )
                 && ( _graphics_export_using_actual_size_cbmi.isSelected() ) );
         options.setAntialiasPrint( ( _antialias_print_cbmi != null ) && _antialias_print_cbmi.isSelected() );
-        options.setUseBracketsForConfInNhExport( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
-                && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() );
+        if ( ( _use_brackets_for_conf_in_nh_export_cbmi != null )
+                && _use_brackets_for_conf_in_nh_export_cbmi.isSelected() ) {
+            options.setNhConversionSupportValueStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
+        }
+        else if ( ( _use_internal_names_for_conf_in_nh_export_cbmi != null )
+                && _use_internal_names_for_conf_in_nh_export_cbmi.isSelected() ) {
+            options.setNhConversionSupportValueStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
+        }
+        else {
+            options.setNhConversionSupportValueStyle( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
+        }
         options.setPrintBlackAndWhite( ( _print_black_and_white_cbmi != null )
                 && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
@@ -1045,7 +1066,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNexus( getOptions()
-                .isUseBracketsForConfInNhExport() ) );
+                .getNhConversionSupportValueStyle() ) );
     }
 
     void viewAsNH() {
@@ -1055,7 +1076,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             return;
         }
         _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny()
-                .toNewHampshire( false, getOptions().isUseBracketsForConfInNhExport() ) );
+                .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ) );
     }
 
     void viewAsNHX() {
