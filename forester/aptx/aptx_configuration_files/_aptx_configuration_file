@@ -108,6 +108,7 @@ overview_width:                            120
 overview_height:                           120
 overview_placement_type:                   upper_left
 color_labels_same_as_branch_length_values: no
+display_sequence_relations:                no
 show_domain_labels:                        yes
 branch_length_value_digits:                3
 confidence_value_digits:                   3
@@ -117,7 +118,7 @@ allow_editing:                             yes
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 extract_taxonomy_codes_in_nh_parsing:      yes
-display_sequence_relations:                no
+
 
 
 #  phyloXML parsing
