@@ -64,6 +64,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
@@ -1784,8 +1785,15 @@ final class ControlPanel extends JPanel implements ActionListener {
     void uncollapseAll( final TreePanel tp ) {
         final Phylogeny t = tp.getPhylogeny();
         if ( ( t != null ) && !t.isEmpty() ) {
-            t.setAllNodesToNotCollapse();
+            for( final PhylogenyNodeIterator iter = t.iteratorPreorder(); iter.hasNext(); ) {
+                final PhylogenyNode node = iter.next();
+                node.setCollapse( false );
+            }
+            tp.resetNodeIdToDistToLeafMap();
+            tp.updateSetOfCollapsedExternalNodes( t );
             t.recalculateNumberOfExternalDescendants( false );
+            tp.setNodeInPreorderToNull();
+            t.hashIDs();
             showWhole();
         }
     }

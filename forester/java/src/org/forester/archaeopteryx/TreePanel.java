@@ -409,7 +409,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             phy.addAsChild( node );
         }
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.hashIDs();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
@@ -699,7 +699,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             calculateLongestExtNodeInfo();
-            _nodes_in_preorder = null;
+            setNodeInPreorderToNull();
+            _control_panel.displayedPhylogenyMightHaveChanged( true );
             resetPreferredSize();
             updateOvSizes();
             _main_panel.adjustJScrollPane();
@@ -717,7 +718,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         calculateLongestExtNodeInfo();
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         resetPreferredSize();
         _main_panel.adjustJScrollPane();
         setArrowCursor();
@@ -828,7 +829,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             errorMessageNoCutCopyPasteInUnrootedDisplay();
             return;
         }
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         final List<PhylogenyNode> nodes = PhylogenyMethods.getAllDescendants( node );
         final Set<Integer> node_ids = new HashSet<Integer>( nodes.size() );
@@ -860,7 +861,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( r != JOptionPane.OK_OPTION ) {
             return;
         }
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         setCopiedAndPastedNodes( null );
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         _phylogeny.deleteSubtree( node, true );
@@ -915,7 +916,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                     null,
                                                     options,
                                                     options[ 2 ] );
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         boolean node_only = true;
         if ( r == 1 ) {
             node_only = false;
@@ -1805,7 +1806,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.WARNING_MESSAGE );
             return;
         }
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         setWaitCursor();
         PhylogenyMethods.midpointRoot( _phylogeny );
         resetNodeIdToDistToLeafMap();
@@ -2511,7 +2512,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
     }
 
-    private void updateSetOfCollapsedExternalNodes( final Phylogeny phy ) {
+    void updateSetOfCollapsedExternalNodes( final Phylogeny phy ) {
         _collapsed_external_nodeid_set.clear();
         E: for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode ext_node = it.next();
@@ -3547,28 +3548,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 catch ( final ClassCastException cce ) {
                     cce.printStackTrace();
-                    return;
                 }
-                rds.setRenderingHeight( 6 );
-                int x = 0;
-                if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( node ).length() > 0 ) ) {
-                    x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( node ) + " " );
+                if ( rds != null ) {
+                    rds.setRenderingHeight( 6 );
+                    int x = 0;
+                    if ( getControlPanel().isShowTaxonomyCode()
+                            && ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( node ) ) ) ) {
+                        x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( node ) + " " );
+                    }
+                    if ( getControlPanel().isShowGeneNames()
+                            && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) ) {
+                        x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName() + " " );
+                    }
+                    if ( getControlPanel().isShowGeneSymbols()
+                            && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) ) {
+                        x += getTreeFontSet()._fm_large
+                                .stringWidth( node.getNodeData().getSequence().getSymbol() + " " );
+                    }
+                    if ( getControlPanel().isShowSequenceAcc()
+                            && ( node.getNodeData().getSequence().getAccession() != null ) ) {
+                        x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getAccession()
+                                .toString()
+                                + " " );
+                    }
+                    if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
+                        x += getTreeFontSet()._fm_large.stringWidth( node.getName() + " " );
+                    }
+                    rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
                 }
-                if ( getControlPanel().isShowGeneNames() ) {
-                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName() + " " );
-                }
-                if ( getControlPanel().isShowGeneSymbols() ) {
-                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getSymbol() + " " );
-                }
-                if ( getControlPanel().isShowSequenceAcc() ) {
-                    x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getAccession()
-                            .toString()
-                            + " " );
-                }
-                if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
-                    x += getTreeFontSet()._fm_large.stringWidth( node.getName() + " " );
-                }
-                rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
             }
         }
         //////////////
@@ -3577,18 +3584,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final RenderableVector rv = RenderableVector.createInstance( node.getNodeData().getVector(),
                                                                          getStatisticsForExpressionValues(),
                                                                          getConfiguration() );
-            int x = 0;
-            PhylogenyNode my_node = node;
-            if ( !getControlPanel().isDrawPhylogram() ) {
-                my_node = getPhylogeny().getFirstExternalNode();
+            if ( rv != null ) {
+                int x = 0;
+                PhylogenyNode my_node = node;
+                if ( !getControlPanel().isDrawPhylogram() ) {
+                    my_node = getPhylogeny().getFirstExternalNode();
+                }
+                if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( my_node ).length() > 0 ) ) {
+                    x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
+                }
+                if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
+                    x += getTreeFontSet()._fm_large.stringWidth( my_node.getName() + " " );
+                }
+                rv.render( my_node.getXcoord() + x, node.getYcoord() - 5, g, this, to_pdf );
             }
-            if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( my_node ).length() > 0 ) ) {
-                x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
-            }
-            if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
-                x += getTreeFontSet()._fm_large.stringWidth( my_node.getName() + " " );
-            }
-            rv.render( my_node.getXcoord() + x, node.getYcoord() - 5, g, this, to_pdf );
         }
         //////////////
     }
@@ -4200,7 +4209,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         node_ids.add( node.getId() );
         getCopiedAndPastedNodes().addAll( node_ids );
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         _phylogeny.externalNodesHaveChanged();
         _phylogeny.hashIDs();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
@@ -4276,7 +4285,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getPhylogeny().reRoot( node );
         getPhylogeny().recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         resetPreferredSize();
         getMainPanel().adjustJScrollPane();
         repaint();
@@ -4536,8 +4545,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      *            an instance of a Phylogeny
      */
     public final void setTree( final Phylogeny t ) {
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         _phylogeny = t;
+    }
+
+    final void setNodeInPreorderToNull() {
+        _nodes_in_preorder = null;
     }
 
     final void setTreeFile( final File treefile ) {
@@ -4846,7 +4859,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.WARNING_MESSAGE );
             return;
         }
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         if ( !node.isExternal() && !node.isRoot() && ( _subtree_index <= ( TreePanel.MAX_SUBTREES - 1 ) ) ) {
             _sub_phylogenies[ _subtree_index ] = _phylogeny;
             _sub_phylogenies_temp_roots[ _subtree_index ] = node;
@@ -4883,7 +4896,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void superTree() {
-        _nodes_in_preorder = null;
+        setNodeInPreorderToNull();
         final PhylogenyNode temp_root = _sub_phylogenies_temp_roots[ _subtree_index - 1 ];
         for( final PhylogenyNode n : temp_root.getDescendants() ) {
             n.setParent( temp_root );
@@ -4897,7 +4910,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void swap( final PhylogenyNode node ) {
         if ( !node.isExternal() ) {
             _phylogeny.swapChildren( node );
-            _nodes_in_preorder = null;
+            setNodeInPreorderToNull();
         }
         repaint();
     }
