@@ -910,10 +910,10 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
         _tools_menu
-                .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold" ) );
+                .add( _collapse_below_threshold = new JMenuItem( "Collapse Branches with Confidence Below Threshold into Multifurcations" ) );
         customizeJMenuItem( _collapse_below_threshold );
         _collapse_below_threshold
-                .setToolTipText( "To permanently collapse branches without at least one support value above a given threshold" );
+                .setToolTipText( "To collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
         _tools_menu.addSeparator();
         _tools_menu
                 .add( _move_node_names_to_tax_sn_jmi = new JMenuItem( "Transfer Node Names to Taxonomic Scientific Names" ) );
@@ -1103,8 +1103,14 @@ public final class MainFrameApplication extends MainFrame {
                 phy.hashIDs();
                 phy.recalculateNumberOfExternalDescendants( true );
                 getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+                getCurrentTreePanel().updateSetOfCollapsedExternalNodes( phy );
+                getCurrentTreePanel().calculateLongestExtNodeInfo();
+                getCurrentTreePanel().setNodeInPreorderToNull();
+                getCurrentTreePanel().recalculateMaxDistanceToRoot();
+                getCurrentTreePanel().resetPreferredSize();
                 getCurrentTreePanel().setEdited( true );
                 getCurrentTreePanel().repaint();
+                repaint();
             }
             if ( to_be_removed.size() > 0 ) {
                 JOptionPane.showMessageDialog( this, "Collapsed " + to_be_removed.size()
