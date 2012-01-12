@@ -4497,6 +4497,15 @@ public final class Test {
             if ( p53.getNode( "B (x (a' ,b) f(x);" ) == null ) {
                 return false;
             }
+            // 
+            final Phylogeny p54 = factory.create( new StringBuffer( "((A,B):[88],C)" ), new NHXParser() )[ 0 ];
+            if ( p54.getNode( "A" ) == null ) {
+                return false;
+            }
+            if ( !p54.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
+                    .equals( "((A,B)[88],C);" ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
