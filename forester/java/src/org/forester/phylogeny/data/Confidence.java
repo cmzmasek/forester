@@ -27,6 +27,9 @@ package org.forester.phylogeny.data;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 
 import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
@@ -35,10 +38,17 @@ import org.forester.util.ForesterUtil;
 
 public class Confidence implements PhylogenyData, Comparable<Confidence> {
 
-    public final static int CONFIDENCE_DEFAULT_VALUE = -9999;
-    private double          _value;
-    private double          _sd;
-    private String          _type;
+    public final static int          CONFIDENCE_DEFAULT_VALUE = -9999;
+    private double                   _value;
+    private double                   _sd;
+    private String                   _type;
+    public final static NumberFormat FORMATTER;
+    static {
+        final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setDecimalSeparator( '.' );
+        FORMATTER = new DecimalFormat( "#.#########", dfs );
+        FORMATTER.setMaximumFractionDigits( PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT );
+    }
 
     public Confidence() {
         init();
@@ -143,7 +153,8 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
         sb.append( NHXtags.SUPPORT );
-        sb.append( getValue() );
+        sb.append( FORMATTER.format( ForesterUtil.round( getValue(),
+                                                         PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
         return sb;
     }
 
@@ -158,7 +169,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
             PhylogenyDataUtil
                     .appendElement( writer,
                                     PhyloXmlMapping.CONFIDENCE,
-                                    String.valueOf( ForesterUtil
+                                    FORMATTER.format( ForesterUtil
                                             .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
                                     PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
                                     ForesterUtil.isEmpty( getType() ) ? "unknown" : getType(),
@@ -171,7 +182,7 @@ public class Confidence implements PhylogenyData, Comparable<Confidence> {
             PhylogenyDataUtil
                     .appendElement( writer,
                                     PhyloXmlMapping.CONFIDENCE,
-                                    String.valueOf( ForesterUtil
+                                    FORMATTER.format( ForesterUtil
                                             .round( getValue(), PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ),
                                     PhyloXmlMapping.CONFIDENCE_TYPE_ATTR,
                                     ForesterUtil.isEmpty( getType() ) ? "unknown" : getType() );

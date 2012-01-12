@@ -4473,14 +4473,14 @@ public final class Test {
                 return false;
             }
             if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
-                    .equals( "((A,B)ab:2.0[88.0],C);" ) ) {
+                    .equals( "((A,B)ab:2.0[88],C);" ) ) {
                 return false;
             }
             if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE ).equals( "((A,B)ab:2.0,C);" ) ) {
                 return false;
             }
             if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES )
-                    .equals( "((A,B)88.0:2.0,C);" ) ) {
+                    .equals( "((A,B)88:2.0,C);" ) ) {
                 return false;
             }
             final Phylogeny p51 = factory.create( new StringBuffer( "((\"A(A\",B)ab:2[88],C)" ), new NHXParser() )[ 0 ];
@@ -4528,11 +4528,10 @@ public final class Test {
                 return false;
             }
             if ( !n5.toNewHampshireX()
-                    .equals( "n5:0.1[&&NHX:T=1:S=Ecoli:D=Y:XN=S=tag1=value1=unit1:B=56.0:W=2.0:C=10.20.30]" ) ) {
+                    .equals( "n5:0.1[&&NHX:T=1:S=Ecoli:D=Y:XN=S=tag1=value1=unit1:B=56:W=2.0:C=10.20.30]" ) ) {
                 return false;
             }
-            if ( !n6.toNewHampshireX()
-                    .equals( "n6:1.0E-6[&&NHX:T=1:S=Ecoli:D=N:XN=B=bool_tag=T:B=100.0:W=2.0:C=0.0.0]" ) ) {
+            if ( !n6.toNewHampshireX().equals( "n6:1.0E-6[&&NHX:T=1:S=Ecoli:D=N:XN=B=bool_tag=T:B=100:W=2.0:C=0.0.0]" ) ) {
                 return false;
             }
         }
@@ -4963,13 +4962,13 @@ public final class Test {
                 return false;
             }
             final Phylogeny p9 = factory.create( "((A:0.2,B:0.3):0.5[91],C:0.1)root:0.1[100]", new NHXParser() )[ 0 ];
-            if ( !p9.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91.0],C:0.1)root:0.1[&&NHX:B=100.0]" ) ) {
+            if ( !p9.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
             final Phylogeny p10 = factory
                     .create( " [79]   ( (A [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
                              new NHXParser() )[ 0 ];
-            if ( !p10.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91.0],C:0.1)root:0.1[&&NHX:B=100.0]" ) ) {
+            if ( !p10.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
         }
@@ -5044,7 +5043,7 @@ public final class Test {
             final Phylogeny p10 = factory
                     .create( " [79]   ( (\"A \n\tB \" [co mment] :0 .2[comment],'B':0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],'C (or D?\\//;,))': 0.1)[comment]'\nroot is here (cool,  was! ) ':0.1[100] [comment]",
                              new NHXParser() )[ 0 ];
-            final String p10_clean_str = "(('A B':0.2,B:0.3):0.5[&&NHX:B=91.0],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100.0]";
+            final String p10_clean_str = "(('A B':0.2,B:0.3):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100]";
             if ( !p10.toNewHampshireX().equals( p10_clean_str ) ) {
                 return false;
             }
@@ -5056,7 +5055,7 @@ public final class Test {
             final Phylogeny p12 = factory
                     .create( " [79]   ( (\"A \n\tB \" [[][] :0 .2[comment][\t&\t&\n N\tH\tX:S=mo\tnkey !],'\tB\t\b\t\n\f\rB B ':0.0\b3[])\t[com ment]: 0. 5 \t[ 9 1 ][ \ncomment],'C\t (or D?\\//;,))': 0.\b1)[comment]'\nroot \tis here (cool, \b\t\n\f\r was! ) ':0.1[100] [comment]",
                              new NHXParser() )[ 0 ];
-            final String p12_clean_str = "(('A B':0.2[&&NHX:S=monkey!],'BB B':0.03):0.5[&&NHX:B=91.0],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100.0]";
+            final String p12_clean_str = "(('A B':0.2[&&NHX:S=monkey!],'BB B':0.03):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100]";
             if ( !p12.toNewHampshireX().equals( p12_clean_str ) ) {
                 return false;
             }

@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.NodeData;
@@ -931,7 +932,9 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
         if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES ) && !isExternal() ) {
             if ( getBranchData().isHasConfidences()
                     && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
-                data = String.valueOf( getBranchData().getConfidence( 0 ).getValue() );
+                data = Confidence.FORMATTER.format( ForesterUtil
+                        .round( getBranchData().getConfidence( 0 ).getValue(),
+                                PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) );
             }
         }
         else if ( !ForesterUtil.isEmpty( getName() ) ) {
@@ -978,7 +981,9 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
                 && getBranchData().isHasConfidences()
                 && ( getBranchData().getConfidence( 0 ).getValue() != Confidence.CONFIDENCE_DEFAULT_VALUE ) ) {
             sb.append( "[" );
-            sb.append( getBranchData().getConfidence( 0 ).getValue() );
+            sb.append( Confidence.FORMATTER.format( ForesterUtil
+                    .round( getBranchData().getConfidence( 0 ).getValue(),
+                            PhyloXmlUtil.ROUNDING_DIGITS_FOR_PHYLOXML_DOUBLE_OUTPUT ) ) );
             sb.append( "]" );
         }
         return sb.toString();
