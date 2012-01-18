@@ -1,7 +1,7 @@
 require 'net/ftp'
 
 EMAIL           = '?'
-PUB_RELEASE_DIR = '/pub/release-64/fasta'
+PUB_RELEASE_DIR = '/pub/release-65/fasta'
 PEP_DIR         = '/pep'
 
 ftp = Net::FTP.new('ftp.ensembl.org', 'anonymous', EMAIL)
