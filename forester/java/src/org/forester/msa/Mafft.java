@@ -41,12 +41,18 @@ public final class Mafft implements MsaInferrer {
     private int                 _exit_code;
     private final String        _path_to_prg;
 
+    public static MsaInferrer createInstance() {
+        return createInstance( getPathToCmd() );
+    }
+
     public static MsaInferrer createInstance( final String path_to_prg ) {
         return new Mafft( path_to_prg );
     }
 
     private static String getPathToCmd() {
         //TODO this needs to come from env variable, etc.
+        //FIXME ..
+        //should not be in this class!
         String path = "";
         final String os = ForesterUtil.OS_NAME.toLowerCase();
         if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
@@ -56,17 +62,13 @@ public final class Mafft implements MsaInferrer {
             path = "C:\\Program Files\\mafft-win\\mafft.bat";
         }
         else {
-            path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-6.832-without-extensions/scripts/mafft";
+            path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-6.864-without-extensions/scripts/mafft";
         }
         return path;
     }
 
     public static boolean isInstalled() {
         return SystemCommandExecutor.isExecuteableFile( new File( getPathToCmd() ) );
-    }
-
-    public static MsaInferrer createInstance() {
-        return createInstance( getPathToCmd() );
     }
 
     private Mafft( final String path_to_prg ) {
@@ -105,16 +107,16 @@ public final class Mafft implements MsaInferrer {
             my_opts.add( opts.get( i ) );
         }
         my_opts.add( path_to_input_seqs.getAbsolutePath() );
-        final SystemCommandExecutor commandExecutor = new SystemCommandExecutor( my_opts );
-        final int _exit_code = commandExecutor.executeCommand();
+        final SystemCommandExecutor command_executor = new SystemCommandExecutor( my_opts );
+        final int _exit_code = command_executor.executeCommand();
         if ( _exit_code != 0 ) {
-            throw new IOException( "MAFFT failed, exit code: " + _exit_code );
+            throw new IOException( "MAFFT program failed, exit code: " + _exit_code + ", command: " + my_opts );
         }
-        final StringBuilder stdout = commandExecutor.getStandardOutputFromCommand();
-        final StringBuilder stderr = commandExecutor.getStandardErrorFromCommand();
-        System.out.println( stdout );
-        System.out.println();
-        System.out.println( stderr );
+        final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
+        final StringBuilder stderr = command_executor.getStandardErrorFromCommand();
+        if ( stdout == null || stdout.length() < 2 ) {
+            throw new IOException( "MAFFT program did not produce any output, command: " + my_opts );
+        }
         _error = stderr.toString();
         final Msa msa = FastaParser.parseMsa( stdout.toString() );
         return msa;

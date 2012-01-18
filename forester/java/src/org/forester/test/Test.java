@@ -8229,7 +8229,7 @@ public final class Test {
             opts.add( "--quiet" );
             Msa msa = null;
             final MsaInferrer mafft = Mafft.createInstance();
-            msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi.fasta" ), opts );
+            msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );
             if ( ( msa == null ) || ( msa.getLength() < 10 ) || ( msa.getNumberOfSequences() != 19 ) ) {
                 return false;
             }

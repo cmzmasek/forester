@@ -85,25 +85,17 @@ public class PhylogeneticInferrer implements Runnable {
         _options = options;
     }
 
-    private Msa inferMsa() throws IOException {
-        final File temp_seqs_file = File.createTempFile( "aptx", ".fasta" );
+    private Msa inferMsa() throws IOException, InterruptedException {
+        final File temp_seqs_file = File.createTempFile( "__msa__temp__", ".fasta" );
+        System.out.println();
         System.out.println( "temp file: " + temp_seqs_file );
+        System.out.println();
         //final File temp_seqs_file = new File( _options.getTempDir() + ForesterUtil.FILE_SEPARATOR + "s.fasta" );
         final BufferedWriter writer = new BufferedWriter( new FileWriter( temp_seqs_file ) );
         SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
         writer.close();
         final List<String> opts = processMafftOptions();
-        Msa msa = null;
-        try {
-            msa = runMAFFT( temp_seqs_file, opts );
-        }
-        catch ( final InterruptedException e ) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        // copy aln file to intermediate dir file
-        // delete temp seqs file
-        return msa;
+        return runMAFFT( temp_seqs_file, opts );
     }
 
     private List<String> processMafftOptions() {
@@ -156,7 +148,7 @@ public class PhylogeneticInferrer implements Runnable {
         return phy;
     }
 
-    private void infer() {
+    private void infer() throws InterruptedException {
         //_mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
         if ( ( _msa == null ) && ( _seqs == null ) ) {
             throw new IllegalArgumentException( "cannot run phylogenetic analysis with null msa and seq array" );
@@ -231,7 +223,14 @@ public class PhylogeneticInferrer implements Runnable {
 
     @Override
     public void run() {
-        infer();
+        try {
+            infer();
+        }
+        catch ( InterruptedException e ) {
+            // TODO need to handle this exception SOMEHOW!
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private Msa runMAFFT( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {

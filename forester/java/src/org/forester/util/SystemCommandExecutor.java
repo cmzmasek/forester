@@ -8,7 +8,6 @@
  * 
  * http://devdaily.com/java/java-processbuilder-process-system-exec
  * 
- * 
  * Copyright 2010 alvin j. alexander, devdaily.com.
  * 
  * This program is free software: you can redistribute it and/or modify it under
@@ -23,7 +22,7 @@
  * You should have received a copy of the GNU Lesser Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Please ee the following page for the LGPL license:
+ * Please see the following page for the LGPL license:
  * http://www.gnu.org/licenses/lgpl.txt
  * 
  */
@@ -38,10 +37,11 @@ import java.util.List;
 
 public class SystemCommandExecutor {
 
-    private final List<String>    commandInformation;
-    private final String          adminPassword;
-    private ThreadedStreamHandler inputStreamHandler;
-    private ThreadedStreamHandler errorStreamHandler;
+    private final List<String>    _command_information;
+    private final String          _admin_password;
+    private ThreadedStreamHandler _input_stream_handler;
+    private ThreadedStreamHandler _error_stream_handler;
+    private final static boolean  DEBUG = false;
 
     /**
      * Pass in the system command you want to run as a List of Strings, as shown here:
@@ -59,15 +59,15 @@ public class SystemCommandExecutor {
      *       working to the point where it won't hang when the given password is
      *       wrong.
      *
-     * @param commandInformation The command you want to run.
+     * @param command_information The command you want to run.
      */
-    public SystemCommandExecutor( final List<String> commandInformation ) {
-        if ( ( commandInformation == null ) || commandInformation.isEmpty() ) {
+    public SystemCommandExecutor( final List<String> command_information ) {
+        if ( ( command_information == null ) || command_information.isEmpty() ) {
             throw new IllegalArgumentException( "The commandInformation is required." );
         }
-        checkCmdFile( new File( commandInformation.get( 0 ) ) );
-        this.commandInformation = commandInformation;
-        adminPassword = null;
+        checkCmdFile( new File( command_information.get( 0 ) ) );
+        _command_information = command_information;
+        _admin_password = null;
     }
 
     public static boolean isExecuteableFile( final File path_to_cmd_f ) {
@@ -83,7 +83,7 @@ public class SystemCommandExecutor {
         return true;
     }
 
-    private void checkCmdFile( final File path_to_cmd_f ) {
+    private static void checkCmdFile( final File path_to_cmd_f ) {
         if ( !path_to_cmd_f.exists() ) {
             throw new IllegalArgumentException( "[" + path_to_cmd_f.getAbsolutePath() + "] does not exist" );
         }
@@ -96,9 +96,12 @@ public class SystemCommandExecutor {
     }
 
     public int executeCommand() throws IOException, InterruptedException {
-        int exitValue = -99;
+        int exit_value = -99;
         try {
-            final ProcessBuilder pb = new ProcessBuilder( commandInformation );
+            final ProcessBuilder pb = new ProcessBuilder( _command_information );
+            if ( DEBUG ) {
+                System.out.println( "command_information=" + _command_information );
+            }
             final Process process = pb.start();
             // you need this if you're going to write something to the command's input stream
             // (such as when invoking the 'sudo' command, and it prompts you for a password).
@@ -111,44 +114,42 @@ public class SystemCommandExecutor {
             // these need to run as java threads to get the standard output and error from the command.
             // the inputstream handler gets a reference to our stdOutput in case we need to write
             // something to it, such as with the sudo command
-            inputStreamHandler = new ThreadedStreamHandler( inputStream, stdOutput, adminPassword );
-            errorStreamHandler = new ThreadedStreamHandler( errorStream );
+            _input_stream_handler = new ThreadedStreamHandler( inputStream, stdOutput, _admin_password );
+            _error_stream_handler = new ThreadedStreamHandler( errorStream );
             // TODO the inputStreamHandler has a nasty side-effect of hanging if the given password is wrong; fix it
-            inputStreamHandler.start();
-            errorStreamHandler.start();
+            _input_stream_handler.start();
+            _error_stream_handler.start();
             // TODO a better way to do this?
-            exitValue = process.waitFor();
+            exit_value = process.waitFor();
             // TODO a better way to do this?
-            inputStreamHandler.interrupt();
-            errorStreamHandler.interrupt();
-            inputStreamHandler.join();
-            errorStreamHandler.join();
+            _input_stream_handler.interrupt();
+            _error_stream_handler.interrupt();
+            _input_stream_handler.join();
+            _error_stream_handler.join();
         }
         catch ( final IOException e ) {
-            // TODO deal with this here, or just throw it?
             throw e;
         }
         catch ( final InterruptedException e ) {
             // generated by process.waitFor() call
-            // TODO deal with this here, or just throw it?
             throw e;
         }
-        finally {
-            return exitValue;
-        }
+        //  finally {
+        return exit_value;
+        //  }
     }
 
     /**
      * Get the standard error (stderr) from the command you just exec'd.
      */
     public StringBuilder getStandardErrorFromCommand() {
-        return errorStreamHandler.getOutputBuffer();
+        return _error_stream_handler.getOutputBuffer();
     }
 
     /**
      * Get the standard output (stdout) from the command you just exec'd.
      */
     public StringBuilder getStandardOutputFromCommand() {
-        return inputStreamHandler.getOutputBuffer();
+        return _input_stream_handler.getOutputBuffer();
     }
 }
