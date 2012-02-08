@@ -46,6 +46,9 @@ public class BasicGoSubset implements GoSubset {
         else if ( my_s.equals( GOSLIM_CANDIDA_STR ) ) {
             _type = Type.GOSLIM_CANDIDA;
         }
+        else if ( my_s.equals( GOSLIM_ASPERGILLUS_STR ) ) {
+            _type = Type.GOSLIM_ASPERGILLUS;
+        }
         else if ( my_s.equals( GOSLIM_PLANT_STR ) ) {
             _type = Type.GOSLIM_PLANT;
         }
@@ -60,6 +63,9 @@ public class BasicGoSubset implements GoSubset {
         }
         else if ( my_s.equals( UNVETTED_STR ) ) {
             _type = Type.UNVETTED;
+        }
+        else if ( my_s.equals( MF_NEEDS_REVIEW_STR ) ) {
+            _type = Type.MF_NEEDS_REVIEW;
         }
         else {
             throw new IllegalArgumentException( "unknown GO subset type: " + my_s );
@@ -116,6 +122,9 @@ public class BasicGoSubset implements GoSubset {
             case GOSLIM_PLANT:
                 sb.append( GOSLIM_PLANT_STR );
                 break;
+            case GOSLIM_ASPERGILLUS:
+                sb.append( GOSLIM_ASPERGILLUS_STR );
+                break;
             case GOSLIM_YEAST:
                 sb.append( GOSLIM_YEAST_STR );
                 break;
@@ -124,6 +133,15 @@ public class BasicGoSubset implements GoSubset {
                 break;
             case GOSLIM_POMBE:
                 sb.append( GOSLIM_POMBE_STR );
+                break;
+            case MF_NEEDS_REVIEW:
+                sb.append( MF_NEEDS_REVIEW_STR );
+                break;
+            case HIGH_LEVEL_ANNOTATION_QC:
+                sb.append( HIGH_LEVEL_ANNOTATION_QC_STR );
+                break;
+            case UNVETTED:
+                sb.append( UNVETTED_STR );
                 break;
             default:
                 new AssertionError( "unknown type: " + getType() );

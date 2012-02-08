@@ -46,6 +46,7 @@ public class ImageLoader implements Runnable {
 
     private final TreePanel            _tp;
     private static final BufferedImage PLACEHOLDER = new BufferedImage( 1, 1, BufferedImage.TYPE_INT_RGB );
+    private final static boolean       DEBUG       = false;
 
     public ImageLoader( final TreePanel tp ) {
         _tp = tp;
@@ -82,8 +83,8 @@ public class ImageLoader implements Runnable {
                                         || uri_str.endsWith( ".gif" ) || uri_str.endsWith( ".bmp" ) ) ) {
                             image_map.put( uri_str, PLACEHOLDER );
                             BufferedImage bi = null;
-                            if ( !Constants.__RELEASE && !Constants.__SNAPSHOT_RELEASE ) {
-                                System.out.println( "accessing:" + uri );
+                            if ( DEBUG ) {
+                                System.out.println( "accessing: " + uri );
                             }
                             try {
                                 bi = ImageIO.read( uri.getValue().toURL() );

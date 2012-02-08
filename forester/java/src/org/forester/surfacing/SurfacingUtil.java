@@ -673,7 +673,7 @@ public final class SurfacingUtil {
                 randomization = "yes, seed = " + random_number_seed_for_fitch_parsimony;
             }
             else {
-                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( false );
+                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( true );
             }
             SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossMatrix(), outfile_name
                     + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );

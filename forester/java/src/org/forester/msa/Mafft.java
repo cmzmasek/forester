@@ -114,7 +114,7 @@ public final class Mafft implements MsaInferrer {
         }
         final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
         final StringBuilder stderr = command_executor.getStandardErrorFromCommand();
-        if ( stdout == null || stdout.length() < 2 ) {
+        if ( ( stdout == null ) || ( stdout.length() < 2 ) ) {
             throw new IOException( "MAFFT program did not produce any output, command: " + my_opts );
         }
         _error = stderr.toString();

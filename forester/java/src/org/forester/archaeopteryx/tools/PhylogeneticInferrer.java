@@ -226,7 +226,7 @@ public class PhylogeneticInferrer implements Runnable {
         try {
             infer();
         }
-        catch ( InterruptedException e ) {
+        catch ( final InterruptedException e ) {
             // TODO need to handle this exception SOMEHOW!
             // TODO Auto-generated catch block
             e.printStackTrace();
