@@ -17,3 +17,5 @@ Copyright (C) 2012 Christian M Zmasek. All rights reserved.
 = Frequently Asked Questions =
 
 == How to read and display vector or expression data ==
+
+Aptx can be used to display vector or expression data associated with tree nodes.  
