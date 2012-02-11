@@ -16,7 +16,7 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
  
 Copyright (C) 2012 Christian M Zmasek. All rights reserved.
 
----
+----
 
 = Frequently Asked Questions =
 
@@ -30,4 +30,4 @@ Aptx can be used to display vector or expression data associated with tree nodes
 
 It is also possible to store vector data in phyloXML formatted files ([http://forester.googlecode.com/files/apaf_with_vector_data.xml example]).
 
----
+----
