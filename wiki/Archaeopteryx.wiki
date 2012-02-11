@@ -25,6 +25,6 @@ Aptx can be used to display vector or expression data associated with tree nodes
 
   # Ensure the configuration file contains this line: "show_vector_data:               display yes"
   # Start Aptx and read in a tree ([http://forester.googlecode.com/files/apaf.xml example tree])
-  # Open "Tools" menu and select "read Vector/Expression Values" to read in a matrix (of, for example, expression values)([http://forester.googlecode.com/files/apaf_expression.tab example expression values])
+  # Open "Tools" menu and select "read Vector/Expression Values" to read in a matrix (of, for example, expression values) ([http://forester.googlecode.com/files/apaf_expression.tab example expression values])
 
 It is also possible to store vector data in phyloXML formatted files ([http://forester.googlecode.com/files/apaf_with_vector_data.xml example]).
