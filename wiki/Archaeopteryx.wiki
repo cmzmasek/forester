@@ -1,11 +1,11 @@
-= forester Tutorial and Examples =
+= Archaeopteryx Tutorial and Examples =
 <wiki:toc max_depth="3" />
 
 = Introduction =
 
 Under development!
 
-Documentation, tutorial, and examples for [http://www.phylosoft.org/forester/ forester].
+Documentation, tutorial, and examples for [http://www.phylosoft.org/archaeopteryx/ Archaeopteryx] (visualization, analysis, and editing of phylogenetic trees).
 
 *All examples require jar-file "forester.jar" to be in the class-path.*
 
