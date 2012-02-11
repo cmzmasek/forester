@@ -5,7 +5,9 @@
 
 Under development!
 
-Documentation, tutorial, and examples for [http://www.phylosoft.org/forester/ forester].
+This contains documentation, tutorials, and examples for [http://www.phylosoft.org/forester/ forester].
+
+Documentation for [http://www.phylosoft.org/archaeopteryx/ Archaeopteryx] can be found [Archaeopteryx here].
 
 *All examples require jar-file "forester.jar" to be in the class-path.*
 
