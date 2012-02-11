@@ -6,7 +6,7 @@
 Under development!
 
 Documentation, tutorial, and examples for visualization, analysis, and editing of phylogenetic trees with [http://www.phylosoft.org/archaeopteryx/ Archaeopteryx].
-Same (older) documentation can also be found [http://aptxevo.wordpress.com/ here].
+Some (older) documentation can also be found [http://aptxevo.wordpress.com/ here].
 
 For developers: Information on the underlying [http://www.phylosoft.org/forester/ forester] framework is available [forester here].
 
@@ -16,7 +16,7 @@ Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical R
  
 Copyright (C) 2012 Christian M Zmasek. All rights reserved.
 
-
+---
 
 = Frequently Asked Questions =
 
@@ -29,3 +29,5 @@ Aptx can be used to display vector or expression data associated with tree nodes
   # Open "Tools" menu and select "read Vector/Expression Values" to read in a matrix (of, for example, expression values) ([http://forester.googlecode.com/files/apaf_expression.tab example expression values])
 
 It is also possible to store vector data in phyloXML formatted files ([http://forester.googlecode.com/files/apaf_with_vector_data.xml example]).
+
+---
