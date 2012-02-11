@@ -7,7 +7,7 @@ Under development!
 
 Documentation, tutorial, and examples for visualization, analysis, and editing of phylogenetic trees with [http://www.phylosoft.org/archaeopteryx/ Archaeopteryx].
 
-For developers: Information on the underlying forester framework is available [forester here].
+For developers: Information on the underlying [http://www.phylosoft.org/forester/ forester] framework is available [forester here].
 
 Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
 
