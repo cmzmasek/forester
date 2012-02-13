@@ -182,6 +182,7 @@ click_to: collapse_uncollapse  display
 click_to: reroot               display
 click_to: subtree              display
 click_to: swap                 display
+click_to: sort_descendants     display
 click_to: color_subtree        display
 click_to: open_seq_web         display
 click_to: open_tax_web         display
