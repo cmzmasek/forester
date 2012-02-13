@@ -33,8 +33,8 @@ public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainC
         if ( ( n_terminal == null ) || ( c_terminal == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        _id_0 = n_terminal;
-        _id_1 = c_terminal;
+        _id_0 = n_terminal.getId();
+        _id_1 = c_terminal.getId();
     }
 
     public AdjactantDirectedBinaryDomainCombination( final String n_terminal, final String c_terminal ) {

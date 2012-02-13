@@ -2437,17 +2437,32 @@ public final class SurfacingUtil {
         try {
             writer.write( genome );
             writer.write( "\t" );
-            writer.write( stats.arithmeticMean() + "" );
-            writer.write( "\t" );
-            writer.write( stats.sampleStandardDeviation() + "" );
-            writer.write( "\t" );
-            writer.write( stats.median() + "" );
-            writer.write( "\t" );
-            writer.write( stats.getN() + "" );
-            writer.write( "\t" );
-            writer.write( stats.getMin() + "" );
-            writer.write( "\t" );
-            writer.write( stats.getMax() + "" );
+            if ( stats.getN() >= 1 ) {
+                writer.write( stats.arithmeticMean() + "" );
+                writer.write( "\t" );
+                if ( stats.getN() >= 2 ) {
+                    writer.write( stats.sampleStandardDeviation() + "" );
+                }
+                else {
+                    writer.write( "" );
+                }
+                writer.write( "\t" );
+                writer.write( stats.median() + "" );
+                writer.write( "\t" );
+                writer.write( stats.getN() + "" );
+                writer.write( "\t" );
+                writer.write( stats.getMin() + "" );
+                writer.write( "\t" );
+                writer.write( stats.getMax() + "" );
+            }
+            else {
+                writer.write( "\t" );
+                writer.write( "\t" );
+                writer.write( "\t" );
+                writer.write( "0" );
+                writer.write( "\t" );
+                writer.write( "\t" );
+            }
             writer.write( "\n" );
         }
         catch ( final IOException e ) {

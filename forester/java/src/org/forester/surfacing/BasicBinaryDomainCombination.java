@@ -30,30 +30,34 @@ import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    DomainId _id_0;
-    DomainId _id_1;
+    String _id_0;
+    String _id_1;
 
+    //DomainId _id_0;
+    //DomainId _id_1;
     BasicBinaryDomainCombination() {
         _id_0 = null;
         _id_1 = null;
     }
 
-    public BasicBinaryDomainCombination( final DomainId id_0, final DomainId id_1 ) {
+    public BasicBinaryDomainCombination( final String id_0, final String id_1 ) {
         if ( ( id_0 == null ) || ( id_1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        if ( id_0.compareTo( id_1 ) < 0 ) {
-            _id_0 = id_0;
-            _id_1 = id_1;
+        final String my_id_0 = id_0.trim();
+        final String my_id_1 = id_1.trim();
+        if ( my_id_0.toLowerCase().compareTo( my_id_1.toLowerCase() ) < 0 ) {
+            _id_0 = my_id_0;
+            _id_1 = my_id_1;
         }
         else {
-            _id_0 = id_1;
-            _id_1 = id_0;
+            _id_0 = my_id_1;
+            _id_1 = my_id_0;
         }
     }
 
-    public BasicBinaryDomainCombination( final String id_0, final String id_1 ) {
-        this( new DomainId( id_0 ), new DomainId( id_1 ) );
+    public BasicBinaryDomainCombination( final DomainId id_0, final DomainId id_1 ) {
+        this( id_0.getId(), id_1.getId() );
     }
 
     @Override
@@ -94,17 +98,18 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     @Override
     public DomainId getId0() {
-        return _id_0;
+        return new DomainId( _id_0 );
     }
 
     @Override
     public DomainId getId1() {
-        return _id_1;
+        return new DomainId( _id_1 );
     }
 
     @Override
     public int hashCode() {
-        return getId0().hashCode() + ( 19 * getId1().hashCode() );
+        // return getId0().hashCode() + ( 19 * getId1().hashCode() );
+        return ( _id_0 + _id_1 ).hashCode();
     }
 
     @Override
@@ -154,9 +159,9 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer();
-        sb.append( getId0() );
+        sb.append( _id_0 );
         sb.append( BinaryDomainCombination.SEPARATOR );
-        sb.append( getId1() );
+        sb.append( _id_1 );
         return sb.toString();
     }
 
