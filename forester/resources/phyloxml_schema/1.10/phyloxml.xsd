@@ -180,6 +180,8 @@
          <xs:enumeration value="subform"/>
          <xs:enumeration value="cultivar"/>
          <xs:enumeration value="strain"/>
+         <xs:enumeration value="section"/>
+         <xs:enumeration value="subsection"/>
          <xs:enumeration value="unknown"/>
          <xs:enumeration value="other"/>
       </xs:restriction>
