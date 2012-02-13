@@ -15,8 +15,8 @@
 <!-- Copyright (c) 2008-2011 Christian M Zmasek                  -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.12                                               -->
-<!-- Last modified: 2011.12.14 by Christian M Zmasek             -->
+<!-- Version: 1.13                                               -->
+<!-- Last modified: 2012.02.12 by Christian M Zmasek             -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -372,7 +372,7 @@
    </xs:complexType>
    <xs:simpleType name="ref">
       <xs:restriction base="xs:token">
-         <xs:pattern value="[a-zA-Z0-9_]+:[a-zA-Z0-9_\.\-\s]+"/>
+         <xs:pattern value="[a-zA-Z0-9_]+:[a-zA-Z0-9_\.\-\s=]+"/>
       </xs:restriction>
    </xs:simpleType>
    <xs:simpleType name="AppliesTo">
