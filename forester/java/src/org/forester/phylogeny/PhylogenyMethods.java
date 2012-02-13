@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -232,21 +233,164 @@ public class PhylogenyMethods {
             }
         }
     }
-    
-    
-    
-    final static public void sortNodeDescendents( PhylogenyNode node ) {
+
+    final static public void sortNodeDescendents( final PhylogenyNode node, final DESCENDANT_SORT_PRIORITY pri ) {
+        class PhylogenyNodeSortTaxonomyPriority implements Comparator<PhylogenyNode> {
+
+            @Override
+            public int compare( final PhylogenyNode n1, final PhylogenyNode n2 ) {
+                if ( n1.getNodeData().isHasTaxonomy() && n2.getNodeData().isHasTaxonomy() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getScientificName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getScientificName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getScientificName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getScientificName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getTaxonomyCode() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getTaxonomyCode()
+                                .compareTo( n2.getNodeData().getTaxonomy().getTaxonomyCode() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getCommonName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getCommonName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getCommonName().toLowerCase() );
+                    }
+                }
+                if ( n1.getNodeData().isHasSequence() && n2.getNodeData().isHasSequence() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getName() ) ) ) {
+                        return n1.getNodeData().getSequence().getName().toLowerCase()
+                                .compareTo( n2.getNodeData().getSequence().getName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getSymbol() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getSymbol() ) ) ) {
+                        return n1.getNodeData().getSequence().getSymbol()
+                                .compareTo( n2.getNodeData().getSequence().getSymbol() );
+                    }
+                    if ( ( n1.getNodeData().getSequence().getAccession() != null )
+                            && ( n2.getNodeData().getSequence().getAccession() != null )
+                            && !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getAccession().getValue() )
+                            && !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getAccession().getValue() ) ) {
+                        return n1.getNodeData().getSequence().getAccession().getValue()
+                                .compareTo( n2.getNodeData().getSequence().getAccession().getValue() );
+                    }
+                }
+                if ( ( !ForesterUtil.isEmpty( n1.getName() ) ) && ( !ForesterUtil.isEmpty( n2.getName() ) ) ) {
+                    return n1.getName().toLowerCase().compareTo( n2.getName().toLowerCase() );
+                }
+                return 0;
+            }
+        }
+        class PhylogenyNodeSortSequencePriority implements Comparator<PhylogenyNode> {
+
+            @Override
+            public int compare( final PhylogenyNode n1, final PhylogenyNode n2 ) {
+                if ( n1.getNodeData().isHasSequence() && n2.getNodeData().isHasSequence() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getName() ) ) ) {
+                        return n1.getNodeData().getSequence().getName().toLowerCase()
+                                .compareTo( n2.getNodeData().getSequence().getName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getSymbol() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getSymbol() ) ) ) {
+                        return n1.getNodeData().getSequence().getSymbol()
+                                .compareTo( n2.getNodeData().getSequence().getSymbol() );
+                    }
+                    if ( ( n1.getNodeData().getSequence().getAccession() != null )
+                            && ( n2.getNodeData().getSequence().getAccession() != null )
+                            && !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getAccession().getValue() )
+                            && !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getAccession().getValue() ) ) {
+                        return n1.getNodeData().getSequence().getAccession().getValue()
+                                .compareTo( n2.getNodeData().getSequence().getAccession().getValue() );
+                    }
+                }
+                if ( n1.getNodeData().isHasTaxonomy() && n2.getNodeData().isHasTaxonomy() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getScientificName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getScientificName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getScientificName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getScientificName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getTaxonomyCode() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getTaxonomyCode()
+                                .compareTo( n2.getNodeData().getTaxonomy().getTaxonomyCode() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getCommonName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getCommonName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getCommonName().toLowerCase() );
+                    }
+                }
+                if ( ( !ForesterUtil.isEmpty( n1.getName() ) ) && ( !ForesterUtil.isEmpty( n2.getName() ) ) ) {
+                    return n1.getName().toLowerCase().compareTo( n2.getName().toLowerCase() );
+                }
+                return 0;
+            }
+        }
+        class PhylogenyNodeSortNodeNamePriority implements Comparator<PhylogenyNode> {
+
+            @Override
+            public int compare( final PhylogenyNode n1, final PhylogenyNode n2 ) {
+                if ( ( !ForesterUtil.isEmpty( n1.getName() ) ) && ( !ForesterUtil.isEmpty( n2.getName() ) ) ) {
+                    return n1.getName().toLowerCase().compareTo( n2.getName().toLowerCase() );
+                }
+                if ( n1.getNodeData().isHasTaxonomy() && n2.getNodeData().isHasTaxonomy() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getScientificName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getScientificName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getScientificName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getScientificName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getTaxonomyCode() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getTaxonomyCode()
+                                .compareTo( n2.getNodeData().getTaxonomy().getTaxonomyCode() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getTaxonomy().getCommonName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                        return n1.getNodeData().getTaxonomy().getCommonName().toLowerCase()
+                                .compareTo( n2.getNodeData().getTaxonomy().getCommonName().toLowerCase() );
+                    }
+                }
+                if ( n1.getNodeData().isHasSequence() && n2.getNodeData().isHasSequence() ) {
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getName() ) ) ) {
+                        return n1.getNodeData().getSequence().getName().toLowerCase()
+                                .compareTo( n2.getNodeData().getSequence().getName().toLowerCase() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getSymbol() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getSymbol() ) ) ) {
+                        return n1.getNodeData().getSequence().getSymbol()
+                                .compareTo( n2.getNodeData().getSequence().getSymbol() );
+                    }
+                    if ( ( n1.getNodeData().getSequence().getAccession() != null )
+                            && ( n2.getNodeData().getSequence().getAccession() != null )
+                            && !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getAccession().getValue() )
+                            && !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getAccession().getValue() ) ) {
+                        return n1.getNodeData().getSequence().getAccession().getValue()
+                                .compareTo( n2.getNodeData().getSequence().getAccession().getValue() );
+                    }
+                }
+                return 0;
+            }
+        }
+        Comparator<PhylogenyNode> c;
+        switch ( pri ) {
+            case SEQUENCE:
+                c = new PhylogenyNodeSortSequencePriority();
+                break;
+            case NODE_NAME:
+                c = new PhylogenyNodeSortNodeNamePriority();
+                break;
+            default:
+                c = new PhylogenyNodeSortTaxonomyPriority();
+        }
         final List<PhylogenyNode> descs = node.getDescendants();
-       // Collections.sort( arg0, comparator );
-        Collections.sort( descs );
-        
+        Collections.sort( descs, c );
         int i = 0;
-        for( PhylogenyNode desc : descs ) {
+        for( final PhylogenyNode desc : descs ) {
             node.setChildNode( i++, desc );
         }
-        
     }
-    
 
     final static public void transferNodeNameToField( final Phylogeny phy,
                                                       final PhylogenyMethods.PhylogenyNodeField field ) {
@@ -1429,5 +1573,9 @@ public class PhylogenyMethods {
 
     public static enum TAXONOMY_EXTRACTION {
         NO, YES, PFAM_STYLE_ONLY;
+    }
+
+    public static enum DESCENDANT_SORT_PRIORITY {
+        TAXONOMY, SEQUENCE, NODE_NAME;
     }
 }

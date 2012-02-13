@@ -100,6 +100,7 @@ import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
@@ -4917,17 +4918,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         repaint();
     }
-    
-    
-    final void  sortDescendants( final PhylogenyNode node ) {
+
+    final void sortDescendants( final PhylogenyNode node ) {
         if ( !node.isExternal() ) {
-            PhylogenyMethods.sortNodeDescendents( node );
+            DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+            if ( ( !getControlPanel().isShowTaxonomyScientificNames() && !getControlPanel().isShowTaxonomyCode() && !getControlPanel()
+                    .isShowTaxonomyCommonNames() ) ) {
+                if ( ( getControlPanel().isShowSequenceAcc() || getControlPanel().isShowGeneNames() || getControlPanel()
+                        .isShowGeneSymbols() ) ) {
+                    pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
+                }
+                else if ( getControlPanel().isShowNodeNames() ) {
+                    pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+                }
+            }
+            PhylogenyMethods.sortNodeDescendents( node, pri );
             setNodeInPreorderToNull();
         }
         repaint();
     }
-    
-    
+
     final private void switchDisplaygetPhylogenyGraphicsType() {
         switch ( getPhylogenyGraphicsType() ) {
             case RECTANGULAR:

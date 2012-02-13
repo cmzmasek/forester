@@ -1321,7 +1321,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
             _sort_descendents_item = cb_index;
-            addClickToOption( Configuration.sort_descendents, _configuration.getClickToTitle( Configuration.sort_descendents ) );
+            addClickToOption( Configuration.sort_descendents,
+                              _configuration.getClickToTitle( Configuration.sort_descendents ) );
             if ( default_option == Configuration.sort_descendents ) {
                 selected_index = cb_index;
             }
