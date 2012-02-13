@@ -100,6 +100,8 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_LIST.add( "subform" );
         TAXONOMY_RANKS_LIST.add( "cultivar" );
         TAXONOMY_RANKS_LIST.add( "strain" );
+        TAXONOMY_RANKS_LIST.add( "section" );
+        TAXONOMY_RANKS_LIST.add( "subsection" );
         TAXONOMY_RANKS_LIST.add( UNKNOWN );
         TAXONOMY_RANKS_LIST.add( OTHER );
         // same thing as set:
@@ -152,6 +154,8 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_SET.add( "subform" );
         TAXONOMY_RANKS_SET.add( "cultivar" );
         TAXONOMY_RANKS_SET.add( "strain" );
+        TAXONOMY_RANKS_SET.add( "section" );
+        TAXONOMY_RANKS_SET.add( "subsection" );
         TAXONOMY_RANKS_SET.add( UNKNOWN );
         TAXONOMY_RANKS_SET.add( OTHER );
     };
