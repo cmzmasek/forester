@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -231,6 +232,21 @@ public class PhylogenyMethods {
             }
         }
     }
+    
+    
+    
+    final static public void sortNodeDescendents( PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getDescendants();
+       // Collections.sort( arg0, comparator );
+        Collections.sort( descs );
+        
+        int i = 0;
+        for( PhylogenyNode desc : descs ) {
+            node.setChildNode( i++, desc );
+        }
+        
+    }
+    
 
     final static public void transferNodeNameToField( final Phylogeny phy,
                                                       final PhylogenyMethods.PhylogenyNodeField field ) {

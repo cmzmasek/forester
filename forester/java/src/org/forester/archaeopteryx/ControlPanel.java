@@ -125,6 +125,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _subtree_cb_item;
     private int                  _color_subtree_cb_item;
     private int                  _open_seq_web_item;
+    private int                  _sort_descendents_item;
     private int                  _open_tax_web_item;
     private int                  _cut_subtree_item;
     private int                  _copy_subtree_item;
@@ -1141,6 +1142,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         else if ( action == _open_seq_web_item ) {
             setActionWhenNodeClicked( NodeClickAction.OPEN_SEQ_WEB );
         }
+        else if ( action == _sort_descendents_item ) {
+            setActionWhenNodeClicked( NodeClickAction.SORT_DESCENDENTS );
+        }
         else if ( action == _blast_item ) {
             if ( !Constants.__RELEASE && !Constants.__SNAPSHOT_RELEASE ) {
                 setActionWhenNodeClicked( NodeClickAction.BLAST );
@@ -1311,6 +1315,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             _swap_cb_item = cb_index;
             addClickToOption( Configuration.swap, _configuration.getClickToTitle( Configuration.swap ) );
             if ( default_option == Configuration.swap ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
+            _sort_descendents_item = cb_index;
+            addClickToOption( Configuration.sort_descendents, _configuration.getClickToTitle( Configuration.sort_descendents ) );
+            if ( default_option == Configuration.sort_descendents ) {
                 selected_index = cb_index;
             }
             cb_index++;
@@ -1929,6 +1941,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         PASTE_SUBTREE,
         ADD_NEW_NODE,
         EDIT_NODE_DATA,
+        SORT_DESCENDENTS,
         BLAST;
     }
 }

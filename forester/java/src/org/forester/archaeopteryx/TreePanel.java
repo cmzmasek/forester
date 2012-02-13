@@ -1317,6 +1317,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case EDIT_NODE_DATA:
                 showNodeEditFrame( node );
                 break;
+            case SORT_DESCENDENTS:
+                sortDescendants( node );
+                break;
             default:
                 throw new IllegalArgumentException( "unknown action: " + action );
         }
@@ -4914,7 +4917,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         repaint();
     }
-
+    
+    
+    final void  sortDescendants( final PhylogenyNode node ) {
+        if ( !node.isExternal() ) {
+            PhylogenyMethods.sortNodeDescendents( node );
+            setNodeInPreorderToNull();
+        }
+        repaint();
+    }
+    
+    
     final private void switchDisplaygetPhylogenyGraphicsType() {
         switch ( getPhylogenyGraphicsType() ) {
             case RECTANGULAR:

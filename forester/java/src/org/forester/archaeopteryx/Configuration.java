@@ -129,7 +129,7 @@ public final class Configuration {
     final static int                        collapse_uncollapse                                    = 1;
     final static int                        reroot                                                 = 2;
     final static int                        subtree                                                = 3;
-    final static int                        swap                                                   = 4;
+    final static int                        swap               = 4;
     final static int                        color_subtree                                          = 5;
     final static int                        open_seq_web                                           = 6;
     final static int                        open_tax_web                                           = 7;
@@ -140,6 +140,9 @@ public final class Configuration {
     final static int                        add_new_node                                           = 12;
     final static int                        edit_node_data                                         = 13;
     final static int                        blast                                                  = 14;
+    final static int                        sort_descendents                                        = 15;
+    
+    
     // ---------------------------
     // Display options for trees
     // ---------------------------
@@ -167,7 +170,7 @@ public final class Configuration {
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
             { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Cut Subtree", "display" },
             { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Blast", "nodisplay" } };
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Blast", "nodisplay" }, { "Sort Descendants", "display" } };
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
     // --------------
@@ -362,6 +365,9 @@ public final class Configuration {
         }
         else if ( name.equals( "swap" ) ) {
             index = Configuration.swap;
+        }
+        else if ( name.equals( "sort_descendants" ) ) {
+            index = Configuration.sort_descendents;
         }
         else if ( name.equals( "display_sequences" ) ) {
             ForesterUtil
