@@ -990,6 +990,23 @@ public class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> 
     }
 
     /**
+     * Swaps the the two childern of a PhylogenyNode node of this Phylogeny.
+     */
+    public void swapChildren() throws RuntimeException {
+        if ( isExternal() ) {
+            throw new RuntimeException( "attempt to swap descendants of external node" );
+        }
+        if ( getNumberOfDescendants() != 2 ) {
+            throw new RuntimeException( "attempt to swap descendants of node with " + getNumberOfDescendants()
+                    + " descendants" );
+        }
+        final PhylogenyNode a = getChildNode( 0 );
+        final PhylogenyNode b = getChildNode( 1 );
+        setChildNode( 0, b );
+        setChildNode( 1, a );
+    }
+
+    /**
      * Converts this PhylogenyNode to a New Hampshire X (NHX) String
      * representation.
      */

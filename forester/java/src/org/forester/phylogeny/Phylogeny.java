@@ -867,46 +867,6 @@ public class Phylogeny {
         PhylogenyNode.setNodeCount( max + 1 );
     }
 
-    /**
-     * Arranges the order of childern for each node of this Phylogeny in such a
-     * way that either the branch with more children is on top (right) or on
-     * bottom (left), dependent on the value of boolean order.
-     * 
-     * @param order
-     *            decides in which direction to order
-     */
-    public void orderAppearance( final boolean order ) throws RuntimeException {
-        if ( !isTree() ) {
-            throw new FailedConditionCheckException( "Attempt to order appearance on phylogeny which is not tree-like." );
-        }
-        if ( isEmpty() ) {
-            return;
-        }
-        orderAppearanceHelper( getRoot(), order );
-    }
-
-    // Helper method for "orderAppearance(boolean)".
-    // Traverses this Phylogeny recusively.
-    private void orderAppearanceHelper( final PhylogenyNode n, final boolean order ) {
-        if ( n.isExternal() ) {
-            return;
-        }
-        else {
-            PhylogenyNode temp = null;
-            // FIXME
-            if ( ( n.getNumberOfDescendants() == 2 )
-                    && ( n.getChildNode1().getNumberOfExternalNodes() != n.getChildNode2().getNumberOfExternalNodes() )
-                    && ( ( n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2().getNumberOfExternalNodes() ) == order ) ) {
-                temp = n.getChildNode1();
-                n.setChild1( n.getChildNode2() );
-                n.setChild2( temp );
-            }
-            for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
-                orderAppearanceHelper( n.getChildNode( i ), order );
-            }
-        }
-    }
-
     public void preOrderReId() {
         if ( isEmpty() ) {
             return;
@@ -1255,28 +1215,6 @@ public class Phylogeny {
     public void setType( final String type ) {
         _type = type;
     }
-
-    /**
-     * Swaps the the two childern of a PhylogenyNode node of this Phylogeny.
-     * <p>
-     * (Last modified: 06/13/01)
-     * 
-     * @param node
-     *            a PhylogenyNode of this Phylogeny
-     */
-    public void swapChildren( final PhylogenyNode node ) throws RuntimeException {
-        if ( !isTree() ) {
-            throw new FailedConditionCheckException( "Attempt to swap children on phylogeny which is not tree-like." );
-        }
-        if ( isEmpty() || node.isExternal() || ( node.getNumberOfDescendants() < 2 ) ) {
-            return;
-        }
-        final PhylogenyNode first = node.getFirstChildNode();
-        for( int i = 1; i < node.getNumberOfDescendants(); ++i ) {
-            node.setChildNode( i - 1, node.getChildNode( i ) );
-        }
-        node.setChildNode( node.getNumberOfDescendants() - 1, first );
-    } // swapChildren( PhylogenyNode )
 
     public String toNewHampshire() {
         return toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );

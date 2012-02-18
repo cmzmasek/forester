@@ -224,8 +224,8 @@ public final class ParserUtils {
                                                           final boolean limit_to_five,
                                                           final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
-                && ( name.length() < 25 )
-                && ( name.lastIndexOf( "_" ) == name.indexOf( "_" ) )
+                && ( name.length() < 31 )
+                //  && ( name.lastIndexOf( "_" ) == name.indexOf( "_" ) )
                 && ( name.indexOf( "|" ) < 0 )
                 && ( name.indexOf( "." ) < 0 )
                 && ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name
@@ -234,23 +234,20 @@ public final class ParserUtils {
             final String[] s = name.split( "[_/]" );
             if ( s.length > 1 ) {
                 String str = s[ 1 ];
-                if ( limit_to_five ) {
-                    if ( str.length() > 5 ) {
-                        str = str.substring( 0, 5 );
-                    }
-                    else if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
+                if ( !limit_to_five || ( str.length() < 6 ) ) {
+                    if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
                         str = str.substring( 0, 3 );
                     }
+                    final Matcher uc_letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
+                    if ( !uc_letters_and_numbers.matches() ) {
+                        return null;
+                    }
+                    final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
+                    if ( numbers_only.matches() ) {
+                        return null;
+                    }
+                    return str;
                 }
-                final Matcher letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
-                if ( !letters_and_numbers.matches() ) {
-                    return null;
-                }
-                final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
-                if ( numbers_only.matches() ) {
-                    return null;
-                }
-                return str;
             }
         }
         return null;

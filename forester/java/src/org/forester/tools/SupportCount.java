@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
@@ -195,7 +196,10 @@ public final class SupportCount {
             if ( strip_evaluator_phylogenies ) {
                 unstripped_evaluator_phylogeny = evaluator_phylogeny.copy();
                 SupportCount.strip( seq_names_to_keep, evaluator_phylogeny );
-                evaluator_phylogeny.orderAppearance( true ); // This is for
+                PhylogenyMethods.orderAppearance( evaluator_phylogeny.getRoot(),
+                                                  true,
+                                                  true,
+                                                  DESCENDANT_SORT_PRIORITY.TAXONOMY ); // This is for
                 // easer
                 // comparison if
                 // phylos are saved
@@ -207,7 +211,10 @@ public final class SupportCount {
                                                    true,
                                                    similarity_threshold );
             if ( ( similarity_threshold < 0.0 ) || ( s >= similarity_threshold ) ) {
-                unstripped_evaluator_phylogeny.orderAppearance( true );
+                PhylogenyMethods.orderAppearance( unstripped_evaluator_phylogeny.getRoot(),
+                                                  true,
+                                                  true,
+                                                  DESCENDANT_SORT_PRIORITY.TAXONOMY );
                 evaluator_phylogenies_above_threshold.add( unstripped_evaluator_phylogeny );
             }
             if ( verbose ) {

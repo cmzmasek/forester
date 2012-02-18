@@ -61,6 +61,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
@@ -240,7 +241,16 @@ final class ControlPanel extends JPanel implements ActionListener {
                     showWhole();
                 }
                 else if ( e.getSource() == _order ) {
-                    tp.getPhylogeny().orderAppearance( _order_of_appearance );
+                    DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
+                    if ( ( !isShowTaxonomyScientificNames() && !isShowTaxonomyCode() && !isShowTaxonomyCommonNames() ) ) {
+                        if ( ( isShowSequenceAcc() || isShowGeneNames() || isShowGeneSymbols() ) ) {
+                            pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
+                        }
+                        else if ( isShowNodeNames() ) {
+                            pri = DESCENDANT_SORT_PRIORITY.NODE_NAME;
+                        }
+                    }
+                    PhylogenyMethods.orderAppearance( tp.getPhylogeny().getRoot(), _order_of_appearance, true, pri );
                     _order_of_appearance = !_order_of_appearance;
                     displayedPhylogenyMightHaveChanged( false );
                 }

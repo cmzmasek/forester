@@ -1560,6 +1560,49 @@ public class PhylogenyMethods {
         return nodes_to_delete.size();
     }
 
+    /**
+     * Arranges the order of childern for each node of this Phylogeny in such a
+     * way that either the branch with more children is on top (right) or on
+     * bottom (left), dependent on the value of boolean order.
+     * 
+     * @param order
+     *            decides in which direction to order
+     * @param pri 
+     */
+    public static void orderAppearance( final PhylogenyNode n,
+                                        final boolean order,
+                                        final boolean order_ext_alphabetically,
+                                        final DESCENDANT_SORT_PRIORITY pri ) {
+        if ( n.isExternal() ) {
+            return;
+        }
+        else {
+            PhylogenyNode temp = null;
+            if ( ( n.getNumberOfDescendants() == 2 )
+                    && ( n.getChildNode1().getNumberOfExternalNodes() != n.getChildNode2().getNumberOfExternalNodes() )
+                    && ( ( n.getChildNode1().getNumberOfExternalNodes() < n.getChildNode2().getNumberOfExternalNodes() ) == order ) ) {
+                temp = n.getChildNode1();
+                n.setChild1( n.getChildNode2() );
+                n.setChild2( temp );
+            }
+            else if ( order_ext_alphabetically ) {
+                //                boolean all_ext = true;
+                //                for( PhylogenyNode i : n.getDescendants() ) {
+                //                    if ( !i.isExternal() ) {
+                //                        all_ext = false;
+                //                        break;
+                //                    }
+                //                }
+                //                if ( all_ext ) {
+                PhylogenyMethods.sortNodeDescendents( n, pri );
+                //                }
+            }
+            for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
+                orderAppearance( n.getChildNode( i ), order, order_ext_alphabetically, pri );
+            }
+        }
+    }
+
     public static enum PhylogenyNodeField {
         CLADE_NAME,
         TAXONOMY_CODE,

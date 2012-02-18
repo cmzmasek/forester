@@ -4715,7 +4715,7 @@ public final class Test {
                 if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
                     return false;
                 }
-                if ( !PhylogenyMethods.getSpecies( b ).equals( "ECOLI" ) ) {
+                if ( !PhylogenyMethods.getSpecies( b ).equals( "" ) ) {
                     return false;
                 }
                 final PhylogenyNode c = PhylogenyNode
@@ -4724,7 +4724,25 @@ public final class Test {
                 if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
                     return false;
                 }
-                if ( !PhylogenyMethods.getSpecies( c ).equals( "RATAF" ) ) {
+                if ( !PhylogenyMethods.getSpecies( c ).equals( "" ) ) {
+                    return false;
+                }
+                final PhylogenyNode c1 = PhylogenyNode
+                        .createInstanceFromNhxString( "n10_BOVIN_1/1000-2000",
+                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
+                    return false;
+                }
+                if ( !PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
+                    return false;
+                }
+                final PhylogenyNode c2 = PhylogenyNode
+                        .createInstanceFromNhxString( "n10_Bovin_1/1000-2000",
+                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                if ( !c2.getName().equals( "n10_Bovin_1/1000-2000" ) ) {
+                    return false;
+                }
+                if ( !PhylogenyMethods.getSpecies( c2 ).equals( "" ) ) {
                     return false;
                 }
                 final PhylogenyNode d = PhylogenyNode

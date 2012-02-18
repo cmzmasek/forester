@@ -1786,13 +1786,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _node_popup_menu_items[ i ].setEnabled( isCanReroot() );
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.collapse_uncollapse ][ 0 ] ) ) {
-                _node_popup_menu_items[ i ].setEnabled( isCanCollapse() );
+                _node_popup_menu_items[ i ].setEnabled( ( isCanCollapse() && !node.isExternal() ) );
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.color_subtree ][ 0 ] ) ) {
                 _node_popup_menu_items[ i ].setEnabled( isCanColorSubtree() );
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.subtree ][ 0 ] ) ) {
                 _node_popup_menu_items[ i ].setEnabled( isCanSubtree( node ) );
+            }
+            else if ( title.equals( Configuration.clickto_options[ Configuration.swap ][ 0 ] ) ) {
+                _node_popup_menu_items[ i ].setEnabled( node.getNumberOfDescendants() == 2 );
+            }
+            else if ( title.equals( Configuration.clickto_options[ Configuration.sort_descendents ][ 0 ] ) ) {
+                _node_popup_menu_items[ i ].setEnabled( node.getNumberOfDescendants() > 1 );
             }
             _node_popup_menu_items[ i ].addActionListener( this );
             _node_popup_menu.add( _node_popup_menu_items[ i ] );
@@ -4912,8 +4918,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void swap( final PhylogenyNode node ) {
+        if ( node.isExternal() || ( node.getNumberOfDescendants() < 2 ) ) {
+            return;
+        }
+        if ( node.getNumberOfDescendants() > 2 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Cannot swap descendants of nodes with more than 2 descendants",
+                                           "Cannot swap descendants",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
         if ( !node.isExternal() ) {
-            _phylogeny.swapChildren( node );
+            node.swapChildren();
             setNodeInPreorderToNull();
         }
         repaint();
