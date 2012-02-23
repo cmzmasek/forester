@@ -4931,6 +4931,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() ) {
             node.swapChildren();
             setNodeInPreorderToNull();
+            _phylogeny.externalNodesHaveChanged();
+            _phylogeny.hashIDs();
+            _phylogeny.recalculateNumberOfExternalDescendants( true );
+            resetNodeIdToDistToLeafMap();
+            setEdited( true );
         }
         repaint();
     }
@@ -4950,6 +4955,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             PhylogenyMethods.sortNodeDescendents( node, pri );
             setNodeInPreorderToNull();
+            _phylogeny.externalNodesHaveChanged();
+            _phylogeny.hashIDs();
+            _phylogeny.recalculateNumberOfExternalDescendants( true );
+            resetNodeIdToDistToLeafMap();
+            setEdited( true );
         }
         repaint();
     }

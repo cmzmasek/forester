@@ -1868,7 +1868,8 @@ public class surfacing_hmmpfam {
                         SurfacingUtil.extractProteinNames( protein_list,
                                                            query_domain_ids_array[ j ],
                                                            query_domains_writer_ary[ j ],
-                                                           "\t" );
+                                                           "\t",
+                                                           surfacing.LIMIT_SPEC_FOR_PROT_EX );
                         query_domains_writer_ary[ j ].flush();
                     }
                     catch ( final IOException e ) {
@@ -2576,7 +2577,7 @@ public class surfacing_hmmpfam {
             SurfacingUtil.checkForOutputFileWriteability( out );
             try {
                 final Writer proteins_file_writer = new BufferedWriter( new FileWriter( out ) );
-                SurfacingUtil.extractProteinNames( protein_lists_per_species, domain, proteins_file_writer, "\t" );
+                SurfacingUtil.extractProteinNames( protein_lists_per_species, domain, proteins_file_writer, "\t", null );
                 proteins_file_writer.close();
             }
             catch ( final IOException e ) {

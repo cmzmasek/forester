@@ -235,7 +235,7 @@ public class surfacing {
     final static private String                               SEQ_EXTRACT_OPTION                                                     = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                             = '#';
     final static private String                               PRG_VERSION                                                            = "2.210";
-    final static private String                               PRG_DATE                                                               = "2011.12.08";
+    final static private String                               PRG_DATE                                                               = "2012.02.21";
     final static private String                               E_MAIL                                                                 = "czmasek@burnham.org";
     final static private String                               WWW                                                                    = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                    = true;
@@ -278,6 +278,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique.txt";
+    public static final String                                LIMIT_SPEC_FOR_PROT_EX                                                 = null;                                                                                                                                                                                       // e.g. "HUMAN"; set to null for not using this feature (default).
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -1946,7 +1947,8 @@ public class surfacing {
                         SurfacingUtil.extractProteinNames( protein_list,
                                                            query_domain_ids_array[ j ],
                                                            query_domains_writer_ary[ j ],
-                                                           "\t" );
+                                                           "\t",
+                                                           LIMIT_SPEC_FOR_PROT_EX );
                         query_domains_writer_ary[ j ].flush();
                     }
                     catch ( final IOException e ) {
@@ -2788,7 +2790,11 @@ public class surfacing {
             SurfacingUtil.checkForOutputFileWriteability( out );
             try {
                 final Writer proteins_file_writer = new BufferedWriter( new FileWriter( out ) );
-                SurfacingUtil.extractProteinNames( protein_lists_per_species, domain, proteins_file_writer, "\t" );
+                SurfacingUtil.extractProteinNames( protein_lists_per_species,
+                                                   domain,
+                                                   proteins_file_writer,
+                                                   "\t",
+                                                   LIMIT_SPEC_FOR_PROT_EX );
                 proteins_file_writer.close();
             }
             catch ( final IOException e ) {

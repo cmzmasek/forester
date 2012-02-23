@@ -44,6 +44,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.forester.application.surfacing;
 import org.forester.go.GoId;
 import org.forester.go.GoTerm;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -820,7 +821,11 @@ public final class DomainCountsDifferenceUtil {
                 + domain_id + PLUS_MINUS_PROTEINS_FILE_DOM_SUFFIX );
         SurfacingUtil.checkForOutputFileWriteability( my_proteins_file );
         final Writer proteins_file_writer = new BufferedWriter( new FileWriter( my_proteins_file ) );
-        SurfacingUtil.extractProteinNames( protein_lists_per_species, domain_id, proteins_file_writer, "\t" );
+        SurfacingUtil.extractProteinNames( protein_lists_per_species,
+                                           domain_id,
+                                           proteins_file_writer,
+                                           "\t",
+                                           surfacing.LIMIT_SPEC_FOR_PROT_EX );
         proteins_file_writer.close();
         System.out.println( "Wrote proteins list to \"" + my_proteins_file + "\"" );
     }

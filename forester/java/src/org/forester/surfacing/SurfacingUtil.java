@@ -845,65 +845,35 @@ public final class SurfacingUtil {
     public static void extractProteinNames( final List<Protein> proteins,
                                             final List<DomainId> query_domain_ids_nc_order,
                                             final Writer out,
-                                            final String separator ) throws IOException {
+                                            final String separator,
+                                            final String limit_to_species ) throws IOException {
         for( final Protein protein : proteins ) {
-            if ( protein.contains( query_domain_ids_nc_order, true ) ) {
-                out.write( protein.getSpecies().getSpeciesId() );
-                out.write( separator );
-                out.write( protein.getProteinId().getId() );
-                out.write( separator );
-                out.write( "[" );
-                final Set<DomainId> visited_domain_ids = new HashSet<DomainId>();
-                boolean first = true;
-                for( final Domain domain : protein.getProteinDomains() ) {
-                    if ( !visited_domain_ids.contains( domain.getDomainId() ) ) {
-                        visited_domain_ids.add( domain.getDomainId() );
-                        if ( first ) {
-                            first = false;
-                        }
-                        else {
-                            out.write( " " );
-                        }
-                        out.write( domain.getDomainId().getId() );
-                        out.write( " {" );
-                        out.write( "" + domain.getTotalCount() );
-                        out.write( "}" );
-                    }
-                }
-                out.write( "]" );
-                out.write( separator );
-                if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
-                        .equals( SurfacingConstants.NONE ) ) ) {
-                    out.write( protein.getDescription() );
-                }
-                out.write( separator );
-                if ( !( ForesterUtil.isEmpty( protein.getAccession() ) || protein.getAccession()
-                        .equals( SurfacingConstants.NONE ) ) ) {
-                    out.write( protein.getAccession() );
-                }
-                out.write( SurfacingConstants.NL );
-            }
-        }
-        out.flush();
-    }
-
-    public static void extractProteinNames( final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                            final DomainId domain_id,
-                                            final Writer out,
-                                            final String separator ) throws IOException {
-        for( final Species species : protein_lists_per_species.keySet() ) {
-            for( final Protein protein : protein_lists_per_species.get( species ) ) {
-                final List<Domain> domains = protein.getProteinDomains( domain_id );
-                if ( domains.size() > 0 ) {
-                    final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-                    for( final Domain domain : domains ) {
-                        stats.addValue( domain.getPerSequenceEvalue() );
-                    }
+            if ( ForesterUtil.isEmpty( limit_to_species )
+                    || protein.getSpecies().getSpeciesId().equalsIgnoreCase( limit_to_species ) ) {
+                if ( protein.contains( query_domain_ids_nc_order, true ) ) {
                     out.write( protein.getSpecies().getSpeciesId() );
                     out.write( separator );
                     out.write( protein.getProteinId().getId() );
                     out.write( separator );
-                    out.write( "[" + FORMATTER.format( stats.median() ) + "]" );
+                    out.write( "[" );
+                    final Set<DomainId> visited_domain_ids = new HashSet<DomainId>();
+                    boolean first = true;
+                    for( final Domain domain : protein.getProteinDomains() ) {
+                        if ( !visited_domain_ids.contains( domain.getDomainId() ) ) {
+                            visited_domain_ids.add( domain.getDomainId() );
+                            if ( first ) {
+                                first = false;
+                            }
+                            else {
+                                out.write( " " );
+                            }
+                            out.write( domain.getDomainId().getId() );
+                            out.write( " {" );
+                            out.write( "" + domain.getTotalCount() );
+                            out.write( "}" );
+                        }
+                    }
+                    out.write( "]" );
                     out.write( separator );
                     if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
                             .equals( SurfacingConstants.NONE ) ) ) {
@@ -915,6 +885,44 @@ public final class SurfacingUtil {
                         out.write( protein.getAccession() );
                     }
                     out.write( SurfacingConstants.NL );
+                }
+            }
+        }
+        out.flush();
+    }
+
+    public static void extractProteinNames( final SortedMap<Species, List<Protein>> protein_lists_per_species,
+                                            final DomainId domain_id,
+                                            final Writer out,
+                                            final String separator,
+                                            final String limit_to_species ) throws IOException {
+        for( final Species species : protein_lists_per_species.keySet() ) {
+            for( final Protein protein : protein_lists_per_species.get( species ) ) {
+                if ( ForesterUtil.isEmpty( limit_to_species )
+                        || protein.getSpecies().getSpeciesId().equalsIgnoreCase( limit_to_species ) ) {
+                    final List<Domain> domains = protein.getProteinDomains( domain_id );
+                    if ( domains.size() > 0 ) {
+                        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+                        for( final Domain domain : domains ) {
+                            stats.addValue( domain.getPerSequenceEvalue() );
+                        }
+                        out.write( protein.getSpecies().getSpeciesId() );
+                        out.write( separator );
+                        out.write( protein.getProteinId().getId() );
+                        out.write( separator );
+                        out.write( "[" + FORMATTER.format( stats.median() ) + "]" );
+                        out.write( separator );
+                        if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
+                                .equals( SurfacingConstants.NONE ) ) ) {
+                            out.write( protein.getDescription() );
+                        }
+                        out.write( separator );
+                        if ( !( ForesterUtil.isEmpty( protein.getAccession() ) || protein.getAccession()
+                                .equals( SurfacingConstants.NONE ) ) ) {
+                            out.write( protein.getAccession() );
+                        }
+                        out.write( SurfacingConstants.NL );
+                    }
                 }
             }
         }

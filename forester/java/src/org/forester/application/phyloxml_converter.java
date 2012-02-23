@@ -255,6 +255,9 @@ public class phyloxml_converter {
         if ( order_subtrees ) {
             for( final Phylogeny phy : phys ) {
                 PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.TAXONOMY );
+                phy.externalNodesHaveChanged();
+                phy.hashIDs();
+                phy.recalculateNumberOfExternalDescendants( true );
             }
         }
         try {

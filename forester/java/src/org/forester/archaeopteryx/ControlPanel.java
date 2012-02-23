@@ -252,6 +252,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                     }
                     PhylogenyMethods.orderAppearance( tp.getPhylogeny().getRoot(), _order_of_appearance, true, pri );
                     _order_of_appearance = !_order_of_appearance;
+                    tp.setNodeInPreorderToNull();
+                    tp.getPhylogeny().externalNodesHaveChanged();
+                    tp.getPhylogeny().hashIDs();
+                    tp.getPhylogeny().recalculateNumberOfExternalDescendants( true );
+                    tp.resetNodeIdToDistToLeafMap();
+                    tp.setEdited( true );
                     displayedPhylogenyMightHaveChanged( false );
                 }
                 else if ( e.getSource() == _uncollapse_all ) {
