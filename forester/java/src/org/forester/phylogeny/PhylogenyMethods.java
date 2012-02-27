@@ -1586,16 +1586,16 @@ public class PhylogenyMethods {
                 n.setChild2( temp );
             }
             else if ( order_ext_alphabetically ) {
-                //                boolean all_ext = true;
-                //                for( PhylogenyNode i : n.getDescendants() ) {
-                //                    if ( !i.isExternal() ) {
-                //                        all_ext = false;
-                //                        break;
-                //                    }
-                //                }
-                //                if ( all_ext ) {
-                PhylogenyMethods.sortNodeDescendents( n, pri );
-                //                }
+                boolean all_ext = true;
+                for( final PhylogenyNode i : n.getDescendants() ) {
+                    if ( !i.isExternal() ) {
+                        all_ext = false;
+                        break;
+                    }
+                }
+                if ( all_ext ) {
+                    PhylogenyMethods.sortNodeDescendents( n, pri );
+                }
             }
             for( int i = 0; i < n.getNumberOfDescendants(); ++i ) {
                 orderAppearance( n.getChildNode( i ), order, order_ext_alphabetically, pri );
