@@ -41,6 +41,8 @@ import org.forester.util.ForesterUtil;
 
 public final class UniProtWsTools {
 
+    private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true; //TODO turn off for final realease!
+
     public enum Db {
         UNKNOWN, UNIPROT;
     }
@@ -116,10 +118,10 @@ public final class UniProtWsTools {
             throws IOException {
         // Hack!  Craniata? .. 
         if ( sn.equals( "Drosophila" ) ) {
-            return hack( UniProtTaxonomy.DROSOPHILA_GENUS );
+            return uniProtTaxonomyToList( UniProtTaxonomy.DROSOPHILA_GENUS );
         }
         else if ( sn.equals( "Xenopus" ) ) {
-            return hack( UniProtTaxonomy.XENOPUS_GENUS );
+            return uniProtTaxonomyToList( UniProtTaxonomy.XENOPUS_GENUS );
         }
         // else if ( sn.equals( "Nucleariidae and Fonticula group" ) ) {
         //     return hack( UniProtTaxonomy.NUCLEARIIDAE_AND_FONTICULA );
@@ -156,19 +158,94 @@ public final class UniProtWsTools {
     public static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String code,
                                                                        final int max_taxonomies_return )
             throws IOException {
-        String my_code = new String( code );
-        // Hacks!
-        if ( my_code.equals( "FUGRU" ) ) {
-            my_code = "TAKRU";
-        }
-        else if ( my_code.equals( "CAP" ) ) {
-            return hack( UniProtTaxonomy.CAPITELLA_TELATA_SPECIES );
+        final String my_code = new String( code );
+        if ( ALLOW_TAXONOMY_CODE_HACKS ) {
+            final List<UniProtTaxonomy> l = resolveFakeTaxonomyCodes( max_taxonomies_return, my_code );
+            if ( l != null ) {
+                return l;
+            }
         }
         final List<String> result = getTaxonomyStringFromTaxonomyCode( my_code, max_taxonomies_return );
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
         }
         return null;
+    }
+
+    private static List<UniProtTaxonomy> resolveFakeTaxonomyCodes( final int max_taxonomies_return, final String code )
+            throws IOException {
+        if ( code.equals( "CAP" ) ) {
+            return getTaxonomiesFromId( "283909", max_taxonomies_return );
+        }
+        else if ( code.equals( "FUGRU" ) ) {
+            return getTaxonomiesFromId( "31033", max_taxonomies_return );
+        }
+        else if ( code.equals( "GIALA" ) ) {
+            return getTaxonomiesFromId( "5741", max_taxonomies_return );
+        }
+        else if ( code.equals( "TRIVE" ) ) {
+            return getTaxonomiesFromId( "413071", max_taxonomies_return );
+        }
+        else if ( code.equals( "CAPOWC" ) ) {
+            return getTaxonomiesFromId( "192875", max_taxonomies_return );
+        }
+        else if ( code.equals( "SPHARC" ) ) {
+            return getTaxonomiesFromId( "667725", max_taxonomies_return );
+        }
+        else if ( code.equals( "AGABB" ) ) {
+            return getTaxonomiesFromId( "597362", max_taxonomies_return );
+        }
+        else if ( code.equals( "BAUCOM" ) ) {
+            return getTaxonomiesFromId( "430998", max_taxonomies_return );
+        }
+        else if ( code.equals( "DICSQU" ) ) {
+            return getTaxonomiesFromId( "114155", max_taxonomies_return );
+        }
+        else if ( code.equals( "FOMPIN" ) ) {
+            return getTaxonomiesFromId( "40483", max_taxonomies_return );
+        }
+        else if ( code.equals( "HYDMA" ) ) {
+            return getTaxonomiesFromId( "6085", max_taxonomies_return );
+        }
+        else if ( code.equals( "MYCFI" ) ) {
+            return getTaxonomiesFromId( "83344", max_taxonomies_return );
+        }
+        else if ( code.equals( "OIDMAI" ) ) {
+            return getTaxonomiesFromId( "78148", max_taxonomies_return );
+        }
+        else if ( code.equals( "OSTRC" ) ) {
+            return getTaxonomiesFromId( "385169", max_taxonomies_return );
+        }
+        else if ( code.equals( "POSPL" ) ) {
+            return getTaxonomiesFromId( "104341", max_taxonomies_return );
+        }
+        else if ( code.equals( "SAICOM" ) ) {
+            return getTaxonomiesFromId( "5606", max_taxonomies_return );
+        }
+        else if ( code.equals( "SERLA" ) ) {
+            return getTaxonomiesFromId( "85982", max_taxonomies_return );
+        }
+        else if ( code.equals( "SPORO" ) ) {
+            return getTaxonomiesFromId( "40563", max_taxonomies_return );
+        }
+        else if ( code.equals( "ACRALC" ) ) {
+            return getTaxonomiesFromId( "398408", max_taxonomies_return );
+        }
+        else if ( code.equals( "THITER" ) ) {
+            return getTaxonomiesFromId( "35720", max_taxonomies_return );
+        }
+        else if ( code.equals( "MYCTHE" ) ) {
+            return getTaxonomiesFromId( "78579", max_taxonomies_return );
+        }
+        else if ( code.equals( "CONPUT" ) ) {
+            return getTaxonomiesFromId( "80637", max_taxonomies_return );
+        }
+        else if ( code.equals( "WOLCOC" ) ) {
+            return getTaxonomiesFromId( "81056", max_taxonomies_return );
+        }
+        else {
+            return null;
+        }
     }
 
     private static List<String> getTaxonomyStringFromCommonName( final String cn, final int max_lines_to_return )
@@ -191,7 +268,7 @@ public final class UniProtWsTools {
         return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
     }
 
-    private static List<UniProtTaxonomy> hack( final UniProtTaxonomy tax ) {
+    private static List<UniProtTaxonomy> uniProtTaxonomyToList( final UniProtTaxonomy tax ) {
         final List<UniProtTaxonomy> l = new ArrayList<UniProtTaxonomy>();
         l.add( tax );
         return l;

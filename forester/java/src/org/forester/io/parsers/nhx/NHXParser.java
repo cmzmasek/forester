@@ -60,7 +60,7 @@ import org.forester.util.ForesterUtil;
 
 public final class NHXParser implements PhylogenyParser {
 
-    public static final boolean                              LIMIT_SPECIES_NAMES_TO_FIVE_CHARS = true;
+    public static final boolean                              LIMIT_SPECIES_NAMES_TO_FIVE_CHARS = false;
     public static final PhylogenyMethods.TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT       = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
     final static private boolean                             GUESS_ROOTEDNESS_DEFAULT          = true;
     final static private boolean                             GUESS_IF_SUPPORT_VALUES           = true;

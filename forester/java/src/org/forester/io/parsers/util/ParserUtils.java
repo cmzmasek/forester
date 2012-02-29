@@ -234,7 +234,7 @@ public final class ParserUtils {
             final String[] s = name.split( "[_/]" );
             if ( s.length > 1 ) {
                 String str = s[ 1 ];
-                if ( !limit_to_five || ( str.length() < 6 ) ) {
+                if ( ( str.length() < 6 ) || ( !limit_to_five && ( str.length() < 7 ) ) ) {
                     if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
                         str = str.substring( 0, 3 );
                     }
