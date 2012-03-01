@@ -255,6 +255,12 @@ public final class UniProtWsTools {
         else if ( code.equals( "WOLCOC" ) ) {
             return getTaxonomiesFromId( "81056", max_taxonomies_return );
         }
+        else if ( code.equals( "CLAGRA" ) ) {
+            return getTaxonomiesFromId( "27339", max_taxonomies_return );
+        }
+        else if ( code.equals( "XANPAR" ) ) {
+            return getTaxonomiesFromId( "107463", max_taxonomies_return );
+        }
         else {
             return null;
         }
