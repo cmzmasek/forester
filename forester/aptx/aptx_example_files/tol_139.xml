@@ -1745,8 +1745,6 @@
                                     </taxonomy>
                                     <clade>
                                       <name>Sordariomyceta &amp; Dothideomycetes &amp; Trichocomaceae &amp; Lecanoromycetes</name>
-                                      <taxonomy>
-                                      </taxonomy>
                                       <clade>
                                         <name>Sordariomyceta &amp; Dothideomycetes &amp; Lecanoromycetes</name>
                                         <clade>
@@ -2081,9 +2079,9 @@
                                               <rank>subclass</rank>
                                             </taxonomy>
                                             <clade>
+                                              <name>CLAGRA</name>
                                               <taxonomy>
                                                 <id provider="uniprot">27339</id>
-                                                <code>CLAGRA</code>
                                                 <scientific_name>Cladonia grayi</scientific_name>
                                                 <synonym>Cladonia grayi Merr</synonym>
                                                 <rank>species</rank>
@@ -2091,9 +2089,9 @@
                                               </taxonomy>
                                             </clade>
                                             <clade>
+                                              <name>XANPAR</name>
                                               <taxonomy>
                                                 <id provider="uniprot">107463</id>
-                                                <code>XANPAR</code>
                                                 <scientific_name>Xanthoria parietina</scientific_name>
                                                 <rank>species</rank>
                                                 <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Xanthoria_parietina_%2806_03_31%29.jpg/800px-Xanthoria_parietina_%2806_03_31%29.jpg</uri>
@@ -2495,28 +2493,48 @@
                                             </clade>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">227334</id>
-                                                <scientific_name>Coniophorineae</scientific_name>
-                                                <rank>suborder</rank>
+                                                <id provider="uniprot">68889</id>
+                                                <scientific_name>Boletales</scientific_name>
+                                                <synonym>Melanogastrales</synonym>
+                                                <synonym>Sclerodermatales</synonym>
+                                                <rank>order</rank>
                                               </taxonomy>
                                               <clade>
-                                                <name>SERLA</name>
                                                 <taxonomy>
-                                                  <id provider="uniprot">85982</id>
-                                                  <scientific_name>Serpula lacrymans</scientific_name>
-                                                  <common_name>dry rot fungus</common_name>
-                                                  <rank>species</rank>
+                                                  <id provider="uniprot">227334</id>
+                                                  <scientific_name>Coniophorineae</scientific_name>
+                                                  <rank>suborder</rank>
                                                 </taxonomy>
+                                                <clade>
+                                                  <name>SERLAC</name>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">85982</id>
+                                                    <scientific_name>Serpula lacrymans</scientific_name>
+                                                    <common_name>dry rot fungus</common_name>
+                                                    <rank>species</rank>
+                                                    <uri>http://www.biolib.cz/IMG/GAL/BIG/18135.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                                <clade>
+                                                  <name>CONPUT</name>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">80637</id>
+                                                    <scientific_name>Coniophora puteana</scientific_name>
+                                                    <authority>Schum. ex Fries</authority>
+                                                    <common_name>cellar fungus</common_name>
+                                                    <rank>species</rank>
+                                                    <uri>http://genome.jgi-psf.org/public/Conpu1/P1240066_dp.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
                                               </clade>
                                               <clade>
-                                                <name>CONPUT</name>
+                                                <name>HYDPIN</name>
                                                 <taxonomy>
-                                                  <id provider="uniprot">80637</id>
-                                                  <scientific_name>Coniophora puteana</scientific_name>
-                                                  <authority>Schum. ex Fries</authority>
-                                                  <common_name>cellar fungus</common_name>
+                                                  <id provider="uniprot">388859</id>
+                                                  <scientific_name>Hydnomerulius pinastri</scientific_name>
+                                                  <common_name>Spiny dry rot fungus</common_name>
                                                   <rank>species</rank>
-                                                  <uri>http://genome.jgi-psf.org/public/Conpu1/P1240066_dp.jpg</uri>
+                                                  <uri>http://mycoweb-stv.narod.ru/fungi/Submitted/STV1/Hydnomerulius_pinastri_1_STV_20100913.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
