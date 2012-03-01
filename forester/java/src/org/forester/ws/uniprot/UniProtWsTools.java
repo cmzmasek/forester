@@ -192,6 +192,18 @@ public final class UniProtWsTools {
         else if ( code.equals( "SPHARC" ) ) {
             return getTaxonomiesFromId( "667725", max_taxonomies_return );
         }
+        else if ( code.equals( "THETRA" ) ) {
+            return getTaxonomiesFromId( "529818", max_taxonomies_return );
+        }
+        else if ( code.equals( "CHLVUL" ) ) {
+            return getTaxonomiesFromId( "574566", max_taxonomies_return );
+        }
+        else if ( code.equals( "CITCLE" ) ) {
+            return getTaxonomiesFromId( "85681", max_taxonomies_return );
+        }
+        else if ( code.equals( "MYCPOP" ) ) {
+            return getTaxonomiesFromId( "85929", max_taxonomies_return );
+        }
         else if ( code.equals( "AGABB" ) ) {
             return getTaxonomiesFromId( "597362", max_taxonomies_return );
         }
