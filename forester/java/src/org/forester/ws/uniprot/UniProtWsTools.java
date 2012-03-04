@@ -261,6 +261,12 @@ public final class UniProtWsTools {
         else if ( code.equals( "XANPAR" ) ) {
             return getTaxonomiesFromId( "107463", max_taxonomies_return );
         }
+        else if ( code.equals( "HYDPIN" ) ) {
+            return getTaxonomiesFromId( "388859", max_taxonomies_return );
+        }
+        else if ( code.equals( "SERLAC" ) ) {
+            return getTaxonomiesFromId( "85982", max_taxonomies_return );
+        }
         else {
             return null;
         }
