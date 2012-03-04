@@ -206,6 +206,9 @@ module Evoruby
                             Util.fatal_error( PRG_NAME, "unexpected format: " + line )
                         end
                         species = values[ 0 ]
+                        if species == "BRADI" || species == "ASPNG" || species == "SCLSC" || species == "PTEVA"
+                          next
+                        end
                         seq_name = values[ 1 ]
                         if ( species != current_species )
                             current_species = species
