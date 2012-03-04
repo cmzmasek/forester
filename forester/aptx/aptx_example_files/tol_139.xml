@@ -2875,27 +2875,44 @@
                     </clade>
                     <clade>
                       <taxonomy>
-                        <id provider="uniprot">451435</id>
-                        <scientific_name>Chytridiomycetes</scientific_name>
-                        <rank>class</rank>
+                        <id provider="uniprot">4761</id>
+                        <scientific_name>Chytridiomycota</scientific_name>
+                        <common_name>chytrids</common_name>
+                        <synonym>Mastigomycotina</synonym>
+                        <rank>phylum</rank>
                       </taxonomy>
                       <clade>
-                        <name>BATDE</name>
                         <taxonomy>
-                          <id provider="uniprot">109871</id>
-                          <code>BATDE</code>
-                          <scientific_name>Batrachochytrium dendrobatidis</scientific_name>
-                          <common_name>Frog chytrid fungus</common_name>
-                          <rank>species</rank>
+                          <id provider="uniprot">451435</id>
+                          <scientific_name>Chytridiomycetes</scientific_name>
+                          <rank>class</rank>
                         </taxonomy>
+                        <clade>
+                          <taxonomy>
+                            <id provider="uniprot">109871</id>
+                            <code>BATDE</code>
+                            <scientific_name>Batrachochytrium dendrobatidis</scientific_name>
+                            <common_name>Frog chytrid fungus</common_name>
+                            <rank>species</rank>
+                          </taxonomy>
+                        </clade>
+                        <clade>
+                          <taxonomy>
+                            <id provider="uniprot">109760</id>
+                            <code>SPIPN</code>
+                            <scientific_name>Spizellomyces punctatus</scientific_name>
+                            <rank>species</rank>
+                          </taxonomy>
+                        </clade>
                       </clade>
                       <clade>
-                        <name>SPIPN</name>
+                        <name>GONPRO</name>
                         <taxonomy>
-                          <id provider="uniprot">109760</id>
-                          <code>SPIPN</code>
-                          <scientific_name>Spizellomyces punctatus</scientific_name>
+                          <id provider="eol">157984</id>
+                          <scientific_name>Gonapodya prolifera</scientific_name>
+                          <authority>A. Fisch. 1892</authority>
                           <rank>species</rank>
+                          <uri>http://genome.jgi-psf.org/public/Ganpr1/Picture5.jpg</uri>
                         </taxonomy>
                       </clade>
                     </clade>
