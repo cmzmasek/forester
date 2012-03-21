@@ -26,10 +26,10 @@ module Evoruby
     class EvoNursery
         GAP_RATIO           = 0.75
         GAP_RATIO_FOR_SEQS  = 0.75
-        MIN_LENGTH          = 40
+        MIN_LENGTH          = 30
         MIN_SEQS            = 4
-        MAX_SEQS            = 1600
-        MAX_ALN_FILE_SIZE   = 4000000
+        MAX_SEQS            = 2000
+        MAX_ALN_FILE_SIZE   = 5000000
         MODEL               = :auto
         RATES               = :uniform
         FASTME_INITIAL_TREE = :GME
@@ -40,10 +40,10 @@ module Evoruby
         FASTME_OUTPUT_D     = FastMe::OUTPUT_D
 
         PRG_NAME       = "evo_nursery"
-        PRG_DATE       = "2009.10.15"
+        PRG_DATE       = "2012.03.21"
         PRG_DESC       = "pfam alignments to evolutionary trees"
         PRG_VERSION    = "0.20"
-        COPYRIGHT      = "2009-2010 Christian M Zmasek"
+        COPYRIGHT      = "2009-2012 Christian M Zmasek"
         CONTACT        = "phylosoft@gmail.com"
         WWW            = "www.phylosoft.org"
 
