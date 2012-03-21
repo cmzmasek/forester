@@ -1,7 +1,7 @@
 #!/usr/local/bin/ruby -w
 
 
-if ( ARGV == nil || ARGV.length != 3 )
+if ( ARGV == nil || ARGV.length != 2 )
   puts( "usage: preprocess.rb <input> <path to Pfam A HMMs>" )         
   exit( -1 )
 end 
