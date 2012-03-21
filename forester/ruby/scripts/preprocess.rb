@@ -10,7 +10,7 @@ input = ARGV[ 0 ]
 
 pfam = ARGV[ 1 ]
 
-system( "hmmscan --nobias --domtblout " + input + "_hmmscan_260_10 -E 10 " + pfam +  " + input + ".ni.fasta" )
+system( "hmmscan --nobias --domtblout " + input + "_hmmscan_260_10 -E 10 " + pfam + " "  + input + ".ni.fasta" )
 
 system( "hsp " + input + "_hmmscan_260_10 " + input + "_hmmscan_260_10_domain_table" )
 
