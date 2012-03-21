@@ -24,7 +24,7 @@ require 'iconv'
 module Evoruby
 
     class EvoNursery
-        GAP_RATIO           = 0.75
+        GAP_RATIO           = 0.50
         GAP_RATIO_FOR_SEQS  = 0.75
         MIN_LENGTH          = 30
         MIN_SEQS            = 4
