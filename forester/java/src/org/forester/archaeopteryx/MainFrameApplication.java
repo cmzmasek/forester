@@ -234,6 +234,13 @@ public final class MainFrameApplication extends MainFrame {
     JMenuItem                                _read_values_jmi;
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config, final String title ) {
+        this( phys, config, title, null );
+    }
+
+    private MainFrameApplication( final Phylogeny[] phys,
+                                  final Configuration config,
+                                  final String title,
+                                  final File current_dir ) {
         _configuration = config;
         if ( _configuration == null ) {
             throw new IllegalArgumentException( "configuration is null" );
@@ -278,6 +285,9 @@ public final class MainFrameApplication extends MainFrame {
         }
         catch ( final Exception e ) {
             AptxUtil.dieWithSystemError( e.toString() );
+        }
+        if ( ( current_dir != null ) && current_dir.canRead() && current_dir.isDirectory() ) {
+            setCurrentDir( current_dir );
         }
         // hide until everything is ready
         setVisible( false );
@@ -2607,6 +2617,13 @@ public final class MainFrameApplication extends MainFrame {
 
     static MainFrame createInstance( final Phylogeny[] phys, final String config_file_name, final String title ) {
         return new MainFrameApplication( phys, config_file_name, title );
+    }
+
+    public static MainFrame createInstance( final Phylogeny[] phys,
+                                            final Configuration config,
+                                            final String title,
+                                            final File current_dir ) {
+        return new MainFrameApplication( phys, config, title, current_dir );
     }
 
     static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {

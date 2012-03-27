@@ -95,6 +95,7 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_LIST.add( "species" );
         TAXONOMY_RANKS_LIST.add( "subspecies" );
         TAXONOMY_RANKS_LIST.add( "variety" );
+        TAXONOMY_RANKS_LIST.add( "varietas" );
         TAXONOMY_RANKS_LIST.add( "subvariety" );
         TAXONOMY_RANKS_LIST.add( "form" );
         TAXONOMY_RANKS_LIST.add( "subform" );
@@ -149,6 +150,7 @@ public final class PhyloXmlUtil {
         TAXONOMY_RANKS_SET.add( "species" );
         TAXONOMY_RANKS_SET.add( "subspecies" );
         TAXONOMY_RANKS_SET.add( "variety" );
+        TAXONOMY_RANKS_SET.add( "varietas" );
         TAXONOMY_RANKS_SET.add( "subvariety" );
         TAXONOMY_RANKS_SET.add( "form" );
         TAXONOMY_RANKS_SET.add( "subform" );

@@ -125,8 +125,12 @@ public final class Archaeopteryx {
         if ( f != null ) {
             title = f.getName();
         }
+        File current_dir = null;
+        if ( ( phylogenies != null ) && ( phylogenies.length > 0 ) ) {
+            current_dir = new File( "." );
+        }
         try {
-            MainFrameApplication.createInstance( phylogenies, conf, title );
+            MainFrameApplication.createInstance( phylogenies, conf, title, current_dir );
         }
         catch ( final Exception ex ) {
             AptxUtil.unexpectedException( ex );
