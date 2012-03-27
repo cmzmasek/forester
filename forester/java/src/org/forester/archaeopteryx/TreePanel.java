@@ -346,10 +346,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final public void actionPerformed( final ActionEvent e ) {
-        int index;
+        
         boolean done = false;
         final JMenuItem node_popup_menu_item = ( JMenuItem ) e.getSource();
-        for( index = 0; ( index < _node_popup_menu_items.length ) && !done; index++ ) {
+        for( int index = 0; ( index < _node_popup_menu_items.length ) && !done; index++ ) {
             // NOTE: index corresponds to the indices of click-to options
             // in the control panel.
             if ( node_popup_menu_item == _node_popup_menu_items[ index ] ) {
@@ -465,28 +465,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if ( node.getNodeData().isHasSequence() ) {
-            String name = "";
-            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-                name = node.getNodeData().getSequence().getName();
-            }
-            else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-                name = node.getNodeData().getSequence().getSymbol();
-            }
-            else if ( node.getNodeData().getSequence().getAccession() != null ) {
-                name = node.getNodeData().getSequence().getAccession().getValue();
-            }
-            if ( !ForesterUtil.isEmpty( name ) ) {
+            String query  = Blast.obtainQueryForBlast( node );
+            if ( !ForesterUtil.isEmpty( query ) ) {
+                
+                JApplet applet = null;
+                if ( isApplet() ) {
+                    applet = obtainApplet();
+                }
+                Blast.NcbiBlastWeb( query, applet, this );
+                
+              
+                
+                
+                if ( Constants.ALLOW_DDBJ_BLAST ) {
                 try {
-                    System.out.println( "trying: " + name );
+                    System.out.println( "trying: " + query );
                     final Blast s = new Blast();
-                    s.go( name );
+                    s.ddbjBlast( query );
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
                 }
+                }
             }
         }
     }
+
+   
 
     final void calcMaxDepth() {
         if ( _phylogeny != null ) {
@@ -1444,7 +1449,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return ( node.getNodeData().isHasSequence() && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil
                 .isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) )
                 || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) || !ForesterUtil.isEmpty( node
-                .getNodeData().getSequence().getSymbol() ) ) );
+                .getNodeData().getSequence().getSymbol() ) || !ForesterUtil.isEmpty( node
+                                                                                     .getNodeData().getSequence().getMolecularSequence() )) );
     }
 
     final boolean isCanCollapse() {
@@ -1743,9 +1749,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _node_popup_menu_items[ i ].setEnabled( isCanOpenTaxWeb( node ) );
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.blast ][ 0 ] ) ) {
-                if ( Constants.__RELEASE || Constants.__SNAPSHOT_RELEASE ) {
-                    continue;
-                }
+               
                 _node_popup_menu_items[ i ].setEnabled( isCanBlast( node ) );
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.delete_subtree_or_node ][ 0 ] ) ) {

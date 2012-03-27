@@ -1162,9 +1162,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked( NodeClickAction.SORT_DESCENDENTS );
         }
         else if ( action == _blast_item ) {
-            if ( !Constants.__RELEASE && !Constants.__SNAPSHOT_RELEASE ) {
+           
                 setActionWhenNodeClicked( NodeClickAction.BLAST );
-            }
+            
         }
         else if ( action == _open_tax_web_item ) {
             setActionWhenNodeClicked( NodeClickAction.OPEN_TAX_WEB );
@@ -1368,6 +1368,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+        if ( _configuration.doDisplayClickToOption( Configuration.blast ) ) {
+            _blast_item = cb_index;
+            addClickToOption( Configuration.blast, _configuration.getClickToTitle( Configuration.blast ) );
+            if ( default_option == Configuration.blast ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        
         if ( getOptions().isEditable() ) {
             if ( _configuration.doDisplayClickToOption( Configuration.cut_subtree ) ) {
                 _cut_subtree_item = cb_index;
@@ -1422,16 +1431,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 cb_index++;
             }
-            if ( !Constants.__RELEASE && !Constants.__SNAPSHOT_RELEASE ) {
-                if ( _configuration.doDisplayClickToOption( Configuration.blast ) ) {
-                    _blast_item = cb_index;
-                    addClickToOption( Configuration.blast, _configuration.getClickToTitle( Configuration.blast ) );
-                    if ( default_option == Configuration.blast ) {
-                        selected_index = cb_index;
-                    }
-                    cb_index++;
-                }
-            }
+           
+                
+            
         }
         // Set default selection and its action
         _click_to_combobox.setSelectedIndex( selected_index );

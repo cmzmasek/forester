@@ -25,30 +25,112 @@
 
 package org.forester.archaeopteryx.tools;
 
+
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.JApplet;
+
+import org.forester.archaeopteryx.AptxUtil;
+import org.forester.archaeopteryx.TreePanel;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.util.ForesterUtil;
 import org.forester.ws.wabi.RestUtil;
 
 public class Blast {
 
+    final static Pattern identifier_pattern_1 = Pattern.compile ("^([A-Za-z]{2,5})[|=:]([0-9A-Za-z\\.]{4,40})\\s*$");
+    final static Pattern identifier_pattern_2 = Pattern.compile ("^([A-Za-z]{2,5})[|=:]([0-9A-Za-z\\.]{4,40})[|,; ].*$");
+    
     public Blast() {
     }
 
-    public void go( final String geneName ) {
+
+    public static void NcbiBlastWeb( String query, JApplet applet, TreePanel p ) {
+
+      //http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&PAGE=Proteins&DATABASE=swissprot&QUERY=gi|163848401
+        
+        
+        StringBuilder uri_str = new StringBuilder();
+        uri_str.append( "http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&DATABASE=nr&PAGE=Proteins&QUERY=" );
+        uri_str.append( query );
+        try {
+
+            AptxUtil.launchWebBrowser( new URI( uri_str.toString() ), applet != null, applet, "_aptx_blast" );
+        }
+        catch ( final IOException e ) {
+            AptxUtil.showErrorMessage( p, e.toString() );
+            e.printStackTrace();
+        }
+        catch ( final URISyntaxException e ) {
+            AptxUtil.showErrorMessage( p, e.toString() );
+            e.printStackTrace();
+        }
+
+    }
+    public static String obtainQueryForBlast( final PhylogenyNode node ) {
+        String query = "";
+        if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+            query = node.getNodeData().getSequence().getMolecularSequence();
+        }
+        else if ( node.getNodeData().getSequence().getAccession() != null && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
+            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
+                query = node.getNodeData().getSequence().getAccession().getSource() + "%7C";
+            }
+            query += node.getNodeData().getSequence().getAccession().getValue();
+        }
+        else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
+            String name = node.getNodeData().getSequence().getName();
+            final Matcher matcher1 = identifier_pattern_1.matcher( name );
+            final Matcher matcher2 = identifier_pattern_2.matcher( name );
+            String group1 = "";
+            String group2 = "";
+            
+            if ( matcher1.matches() ) {
+                group1 =  matcher1.group( 1 );
+                group2 =  matcher1.group( 2 );
+                System.out.println( "1 1=" + group1 );
+
+                System.out.println( "1 2=" + group2 );
+            }
+            if ( matcher2.matches() ) {
+                group1 =  matcher2.group( 1 );
+                group2 =  matcher2.group( 2 );
+                System.out.println( "2 1=" + group1 );
+
+                System.out.println( "2 2=" + group2 );
+            }
+            if (!ForesterUtil.isEmpty( group1 ) && !ForesterUtil.isEmpty( group2 )) {
+                query = group1  + "%7C" + group2;
+            }
+
+        }
+       
+        
+        System.out.println( query );
+
+        return query;
+    }
+
+
+    public void ddbjBlast( final String geneName ) {
         // Retrieve accession number list which has specified gene name from searchByXMLPath of ARSA. Please click here for details of ARSA.
         /*target: Sequence length is between 300bp and 1000bp.
         Feature key is CDS.
         Gene qualifire is same as specified gene name.*/
         String queryPath = "/ENTRY/DDBJ/division=='HUM' AND (/ENTRY/DDBJ/length>=300 AND "
-                + "/ENTRY/DDBJ/length<=1000) ";
+            + "/ENTRY/DDBJ/length<=1000) ";
         queryPath += "AND (/ENTRY/DDBJ/feature-table/feature{/f_key = 'CDS' AND ";
         queryPath += "/f_quals/qualifier{/q_name = 'gene' AND /q_value=='" + geneName + "'}})";
         String query = "service=ARSA&method=searchByXMLPath&queryPath=" + queryPath
-                + "&returnPath=/ENTRY/DDBJ/primary-accession&offset=1&count=100";
+        + "&returnPath=/ENTRY/DDBJ/primary-accession&offset=1&count=100";
         //Execute ARSA
         String arsaResult = null;
         try {
@@ -82,7 +164,7 @@ public class Blast {
         //Execute blastn by using searchParam of Blast with step2's sequence. Specified option is -e 0.0001 -m 8 -b 50 -v 50. It means "Extract top 50 hit which E-value is more than 0.0001.". The reference databases are specified as follows. ddbjpri(primates) ddbjrod(rodents) ddbjmam(mammals) ddbjvrt(vertebrates ) ddbjinv(invertebrates).
         //Execute blastn with step3's sequence
         query = "service=Blast&method=searchParam&program=blastn&database=ddbjpri ddbjrod ddbjmam ddbjvrt "
-                + "ddbjinv&query=" + dnaSeq + "&param=-m 8 -b 50 -v 50 -e 0.0001";
+            + "ddbjinv&query=" + dnaSeq + "&param=-m 8 -b 50 -v 50 -e 0.0001";
         String blastResult = null;
         try {
             blastResult = RestUtil.getResult( query );
@@ -108,7 +190,7 @@ public class Blast {
         for( int i = 0; i < parsedBlastResult.size(); i++ ) {
             final String[] parsed = parsedBlastResult.elementAt( i );
             query = "service=ARSA&method=searchByXMLPath&queryPath=/ENTRY/DDBJ/primary-accession=='" + parsed[ 0 ]
-                    + "'&returnPath=/ENTRY/DDBJ/organism&offset=1&count=100";
+                                                                                                               + "'&returnPath=/ENTRY/DDBJ/organism&offset=1&count=100";
             String organism = null;
             try {
                 organism = RestUtil.getResult( query );

@@ -678,7 +678,7 @@ public final class AptxUtil {
         }
     }
 
-    final static void launchWebBrowser( final URI uri,
+    final public static void launchWebBrowser( final URI uri,
                                         final boolean is_applet,
                                         final JApplet applet,
                                         final String frame_name ) throws IOException {
@@ -835,7 +835,7 @@ public final class AptxUtil {
         }
     }
 
-    final static void showErrorMessage( final Component parent, final String error_msg ) {
+    final public static void showErrorMessage( final Component parent, final String error_msg ) {
         printAppletMessage( Constants.PRG_NAME, error_msg );
         JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
                 + "] Error", JOptionPane.ERROR_MESSAGE );

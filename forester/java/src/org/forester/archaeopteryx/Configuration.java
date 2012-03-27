@@ -133,13 +133,13 @@ public final class Configuration {
     final static int                        color_subtree                                          = 5;
     final static int                        open_seq_web                                           = 6;
     final static int                        open_tax_web                                           = 7;
-    final static int                        cut_subtree                                            = 8;
-    final static int                        copy_subtree                                           = 9;
-    final static int                        paste_subtree                                          = 10;
-    final static int                        delete_subtree_or_node                                 = 11;
-    final static int                        add_new_node                                           = 12;
-    final static int                        edit_node_data                                         = 13;
-    final static int                        blast                                                  = 14;
+    final static int                        blast                                                  = 8;
+    final static int                        cut_subtree                                            = 9;
+    final static int                        copy_subtree                                           = 10;
+    final static int                        paste_subtree                                          = 11;
+    final static int                        delete_subtree_or_node                                 = 12;
+    final static int                        add_new_node                                           = 13;
+    final static int                        edit_node_data                                         = 14;
     final static int                        sort_descendents                                       = 15;
     // ---------------------------
     // Display options for trees
@@ -166,9 +166,9 @@ public final class Configuration {
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },
-            { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Cut Subtree", "display" },
+            { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
             { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Blast", "nodisplay" },
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, 
             { "Sort Descendants", "display" }                                                     };
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
@@ -378,6 +378,9 @@ public final class Configuration {
         }
         else if ( name.equals( "open_tax_web" ) ) {
             index = Configuration.open_tax_web;
+        }
+        else if ( name.equals( "blast" ) ) {
+            index = Configuration.blast;
         }
         else if ( name.equals( "cut_subtree" ) ) {
             index = Configuration.cut_subtree;
