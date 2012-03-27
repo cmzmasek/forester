@@ -186,6 +186,7 @@ click_to: sort_descendants     display
 click_to: color_subtree        display
 click_to: open_seq_web         display
 click_to: open_tax_web         display
+click_to: blast                display
 click_to: cut_subtree          display
 click_to: copy_subtree         display
 click_to: paste_subtree        display
