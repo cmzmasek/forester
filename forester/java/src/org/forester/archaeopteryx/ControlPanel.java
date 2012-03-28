@@ -1162,9 +1162,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             setActionWhenNodeClicked( NodeClickAction.SORT_DESCENDENTS );
         }
         else if ( action == _blast_item ) {
-           
-                setActionWhenNodeClicked( NodeClickAction.BLAST );
-            
+            setActionWhenNodeClicked( NodeClickAction.BLAST );
         }
         else if ( action == _open_tax_web_item ) {
             setActionWhenNodeClicked( NodeClickAction.OPEN_TAX_WEB );
@@ -1376,7 +1374,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-        
         if ( getOptions().isEditable() ) {
             if ( _configuration.doDisplayClickToOption( Configuration.cut_subtree ) ) {
                 _cut_subtree_item = cb_index;
@@ -1431,9 +1428,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 cb_index++;
             }
-           
-                
-            
         }
         // Set default selection and its action
         _click_to_combobox.setSelectedIndex( selected_index );

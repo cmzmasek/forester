@@ -679,9 +679,9 @@ public final class AptxUtil {
     }
 
     final public static void launchWebBrowser( final URI uri,
-                                        final boolean is_applet,
-                                        final JApplet applet,
-                                        final String frame_name ) throws IOException {
+                                               final boolean is_applet,
+                                               final JApplet applet,
+                                               final String frame_name ) throws IOException {
         if ( is_applet ) {
             applet.getAppletContext().showDocument( uri.toURL(), frame_name );
         }
