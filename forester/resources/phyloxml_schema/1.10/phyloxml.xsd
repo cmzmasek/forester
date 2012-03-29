@@ -175,6 +175,7 @@
          <xs:enumeration value="species"/>
          <xs:enumeration value="subspecies"/>
          <xs:enumeration value="variety"/>
+         <xs:enumeration value="varietas"/>
          <xs:enumeration value="subvariety"/>
          <xs:enumeration value="form"/>
          <xs:enumeration value="subform"/>
