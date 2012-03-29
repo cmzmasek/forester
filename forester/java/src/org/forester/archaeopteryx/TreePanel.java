@@ -465,12 +465,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( node.getNodeData().isHasSequence() ) {
             final String query = Blast.obtainQueryForBlast( node );
+            boolean nucleotide = false;
+            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getType() ) ) {
+                if ( !node.getNodeData().getSequence().getType().toLowerCase().equals( PhyloXmlUtil.SEQ_TYPE_PROTEIN ) ) {
+                    nucleotide = true;
+                }
+            }
+            else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                nucleotide = !ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence().getMolecularSequence() );
+            }
             if ( !ForesterUtil.isEmpty( query ) ) {
                 JApplet applet = null;
                 if ( isApplet() ) {
                     applet = obtainApplet();
                 }
-                Blast.NcbiBlastWeb( query, applet, this );
+                try {
+                    Blast.openNcbiBlastWeb( query, nucleotide, applet, this );
+                }
+                catch ( final Exception e ) {
+                    e.printStackTrace();
+                }
                 if ( Constants.ALLOW_DDBJ_BLAST ) {
                     try {
                         System.out.println( "trying: " + query );
@@ -1438,11 +1452,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private boolean isCanBlast( final PhylogenyNode node ) {
-        return ( node.getNodeData().isHasSequence() && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil
-                .isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) )
-                || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() )
-                || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) || !ForesterUtil.isEmpty( node
-                .getNodeData().getSequence().getMolecularSequence() ) ) );
+        return ( node.getNodeData().isHasSequence()
+                && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil.isEmpty( node
+                        .getNodeData().getSequence().getAccession().getValue() ) )
+                        || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) || !ForesterUtil
+                        .isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) && Blast
+                .isContainsQueryForBlast( node ) );
     }
 
     final boolean isCanCollapse() {

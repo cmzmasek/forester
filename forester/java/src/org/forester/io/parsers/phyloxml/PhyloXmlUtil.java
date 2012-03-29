@@ -47,10 +47,13 @@ public final class PhyloXmlUtil {
     public static final String       VECTOR_PROPERTY_REF                        = "vector:index=";
     public static final String       VECTOR_PROPERTY_TYPE                       = "xsd:decimal";
     public static final String       UNIPROT_TAX_PROVIDER                       = "uniprot";
+    public static final String       SEQ_TYPE_RNA                               = "rna";
+    public static final String       SEQ_TYPE_DNA                               = "dna";
+    public static final String       SEQ_TYPE_PROTEIN                           = "protein";
     static {
-        SEQUENCE_TYPES.add( "rna" );
-        SEQUENCE_TYPES.add( "protein" );
-        SEQUENCE_TYPES.add( "dna" );
+        SEQUENCE_TYPES.add( SEQ_TYPE_RNA );
+        SEQUENCE_TYPES.add( SEQ_TYPE_PROTEIN );
+        SEQUENCE_TYPES.add( SEQ_TYPE_DNA );
         TAXONOMY_RANKS_LIST.add( "domain" );
         TAXONOMY_RANKS_LIST.add( "superkingdom" );
         TAXONOMY_RANKS_LIST.add( "kingdom" );

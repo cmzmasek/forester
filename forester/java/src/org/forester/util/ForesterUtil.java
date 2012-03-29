@@ -96,6 +96,17 @@ public final class ForesterUtil {
         }
     }
 
+    public static boolean seqIsLikelyToBeAa( final String s ) {
+        final String seq = s.toLowerCase();
+        if ( ( seq.indexOf( 'r' ) > -1 ) || ( seq.indexOf( 'd' ) > -1 ) || ( seq.indexOf( 'e' ) > -1 )
+                || ( seq.indexOf( 'q' ) > -1 ) || ( seq.indexOf( 'h' ) > -1 ) || ( seq.indexOf( 'k' ) > -1 )
+                || ( seq.indexOf( 'w' ) > -1 ) || ( seq.indexOf( 's' ) > -1 ) || ( seq.indexOf( 'm' ) > -1 )
+                || ( seq.indexOf( 'p' ) > -1 ) || ( seq.indexOf( 'v' ) > -1 ) ) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * This calculates a color. If value is equal to min the returned color is
      * minColor, if value is equal to max the returned color is maxColor,

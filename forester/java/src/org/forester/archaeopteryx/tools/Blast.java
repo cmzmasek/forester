@@ -32,30 +32,32 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JApplet;
 
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.util.ForesterUtil;
 import org.forester.ws.wabi.RestUtil;
 
-public class Blast {
+public final class Blast {
 
-    final static Pattern identifier_pattern_1 = Pattern.compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z\\.]{4,40})\\s*$" );
-    final static Pattern identifier_pattern_2 = Pattern
-                                                      .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z\\.]{4,40})[|,; ].*$" );
-
-    public Blast() {
-    }
-
-    public static void NcbiBlastWeb( final String query, final JApplet applet, final TreePanel p ) {
+    final public static void openNcbiBlastWeb( final String query,
+                                               final boolean is_nucleic_acids,
+                                               final JApplet applet,
+                                               final TreePanel p ) {
         //http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&PAGE=Proteins&DATABASE=swissprot&QUERY=gi|163848401
         final StringBuilder uri_str = new StringBuilder();
-        uri_str.append( "http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&DATABASE=nr&PAGE=Proteins&QUERY=" );
+        uri_str.append( "http://www.ncbi.nlm.nih.gov/blast/Blast.cgi?CMD=Web&DATABASE=nr&PAGE=" );
+        if ( is_nucleic_acids ) {
+            uri_str.append( "Nucleotide" );
+        }
+        else {
+            uri_str.append( "Proteins" );
+        }
+        uri_str.append( "&QUERY=" );
         uri_str.append( query );
         try {
             AptxUtil.launchWebBrowser( new URI( uri_str.toString() ), applet != null, applet, "_aptx_blast" );
@@ -70,7 +72,7 @@ public class Blast {
         }
     }
 
-    public static String obtainQueryForBlast( final PhylogenyNode node ) {
+    final public static String obtainQueryForBlast( final PhylogenyNode node ) {
         String query = "";
         if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
             query = node.getNodeData().getSequence().getMolecularSequence();
@@ -83,32 +85,19 @@ public class Blast {
             query += node.getNodeData().getSequence().getAccession().getValue();
         }
         else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-            final String name = node.getNodeData().getSequence().getName();
-            final Matcher matcher1 = identifier_pattern_1.matcher( name );
-            final Matcher matcher2 = identifier_pattern_2.matcher( name );
-            String group1 = "";
-            String group2 = "";
-            if ( matcher1.matches() ) {
-                group1 = matcher1.group( 1 );
-                group2 = matcher1.group( 2 );
-                System.out.println( "1 1=" + group1 );
-                System.out.println( "1 2=" + group2 );
-            }
-            if ( matcher2.matches() ) {
-                group1 = matcher2.group( 1 );
-                group2 = matcher2.group( 2 );
-                System.out.println( "2 1=" + group1 );
-                System.out.println( "2 2=" + group2 );
-            }
-            if ( !ForesterUtil.isEmpty( group1 ) && !ForesterUtil.isEmpty( group2 ) ) {
-                query = group1 + "%7C" + group2;
+            final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getNodeData().getSequence().getName() );
+            if ( acc != null ) {
+                query = acc.getSource() + "%7C" + acc.getValue();
             }
         }
-        System.out.println( query );
         return query;
     }
 
-    public void ddbjBlast( final String geneName ) {
+    final public static boolean isContainsQueryForBlast( final PhylogenyNode node ) {
+        return !ForesterUtil.isEmpty( obtainQueryForBlast( node ) );
+    }
+
+    final public void ddbjBlast( final String geneName ) {
         // Retrieve accession number list which has specified gene name from searchByXMLPath of ARSA. Please click here for details of ARSA.
         /*target: Sequence length is between 300bp and 1000bp.
         Feature key is CDS.
