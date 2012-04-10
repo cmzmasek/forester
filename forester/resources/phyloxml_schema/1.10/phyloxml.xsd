@@ -12,11 +12,11 @@
 <!--          or Ruby's License.                                 -->
 <!--          see: http://www.ruby-lang.org/en/about/license.txt -->
 <!--                                                             -->
-<!-- Copyright (c) 2008-2011 Christian M Zmasek                  -->
+<!-- Copyright (c) 2008-2012 Christian M Zmasek                  -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.13                                               -->
-<!-- Last modified: 2012.02.12 by Christian M Zmasek             -->
+<!-- Version: 1.14                                               -->
+<!-- Last modified: 2012.04.09 by Christian M Zmasek             -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -99,6 +99,7 @@
       </xs:sequence>
       <xs:attribute name="branch_length" type="xs:double"/>
       <xs:attribute name="id_source" type="phy:id_source"/>
+      <xs:attribute name="collapse" type="xs:boolean"/>
    </xs:complexType>
    <!-- Taxonomy:-->
    <xs:complexType name="Taxonomy">
