@@ -1715,7 +1715,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( _mainpanel.getCurrentScrollPane() == null ) {
             return;
         }
-        displayedPhylogenyMightHaveChanged( false );
+        getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
+        displayedPhylogenyMightHaveChanged( true );
         _mainpanel.getCurrentTreePanel().updateOvSettings();
         _mainpanel.getCurrentTreePanel().validate();
         _mainpanel.validate();
@@ -1815,7 +1816,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 node.setCollapse( false );
             }
             tp.resetNodeIdToDistToLeafMap();
-            tp.updateSetOfCollapsedExternalNodes( t );
+            tp.updateSetOfCollapsedExternalNodes();
             t.recalculateNumberOfExternalDescendants( false );
             tp.setNodeInPreorderToNull();
             t.hashIDs();

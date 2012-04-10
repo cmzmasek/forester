@@ -552,12 +552,10 @@ public final class PhylogenyWriter {
                 }
                 PhylogenyDataUtil.appendOpen( getWriter(), PhyloXmlMapping.CLADE );
             }
-            if ( indentation != null ) {
-                PhyloXmlNodeWriter.toPhyloXml( getWriter(), node, getPhyloXmlLevel(), indentation.toString() );
-            }
-            else {
-                PhyloXmlNodeWriter.toPhyloXml( getWriter(), node, getPhyloXmlLevel(), "" );
-            }
+            PhyloXmlNodeWriter.toPhyloXml( getWriter(),
+                                           node,
+                                           getPhyloXmlLevel(),
+                                           indentation != null ? indentation.toString() : "" );
             if ( node.isExternal() ) {
                 getWriter().write( ForesterUtil.LINE_SEPARATOR );
                 if ( indentation != null ) {
@@ -594,7 +592,15 @@ public final class PhylogenyWriter {
                 if ( isIndentPhyloxml() ) {
                     getWriter().write( createIndentation().toString() );
                 }
-                PhylogenyDataUtil.appendOpen( getWriter(), PhyloXmlMapping.CLADE );
+                if ( node.isCollapse() ) {
+                    PhylogenyDataUtil.appendOpen( getWriter(),
+                                                  PhyloXmlMapping.CLADE,
+                                                  PhyloXmlMapping.NODE_COLLAPSE,
+                                                  "true" );
+                }
+                else {
+                    PhylogenyDataUtil.appendOpen( getWriter(), PhyloXmlMapping.CLADE );
+                }
             }
             else if ( ( getOutputFormt() == FORMAT.NHX ) || ( getOutputFormt() == FORMAT.NH ) ) {
                 getBuffer().append( "(" );

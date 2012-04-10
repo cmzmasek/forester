@@ -39,7 +39,7 @@ public class PhyloXmlNodeWriter {
     public static void toPhyloXml( final Writer w, final PhylogenyNode node, final int level, final String indentation )
             throws IOException {
         String ind = "";
-        if ( indentation.length() > 0 ) {
+        if ( ( indentation != null ) && ( indentation.length() > 0 ) ) {
             ind = indentation + PhylogenyWriter.PHYLO_XML_INTENDATION_BASE;
         }
         if ( !ForesterUtil.isEmpty( node.getName() ) ) {

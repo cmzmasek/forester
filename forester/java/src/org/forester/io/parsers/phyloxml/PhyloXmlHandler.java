@@ -257,6 +257,12 @@ public final class PhyloXmlHandler extends DefaultHandler {
             }
             node.setDistanceToParent( d );
         }
+        if ( xml_element.isHasAttribute( PhyloXmlMapping.NODE_COLLAPSE ) ) {
+            final String collapse_str = xml_element.getAttribute( PhyloXmlMapping.NODE_COLLAPSE );
+            if ( !ForesterUtil.isEmpty( collapse_str ) && collapse_str.trim().equalsIgnoreCase( "true" ) ) {
+                node.setCollapse( true );
+            }
+        }
         for( int i = 0; i < xml_element.getNumberOfChildElements(); ++i ) {
             final XmlElement element = xml_element.getChildElement( i );
             final String qualified_name = element.getQualifiedName();

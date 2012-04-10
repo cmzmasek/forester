@@ -42,6 +42,7 @@ public final class PhyloXmlMapping {
     public static final String PHYLOGENY_TYPE_ATTR                                 = "type";
     public static final String CLADE                                               = "clade";
     public static final String NODE_NAME                                           = "name";
+    public static final String NODE_COLLAPSE                                       = "collapse";
     public static final String SEQUENCE                                            = "sequence";
     public static final String SEQUENCE_NAME                                       = "name";
     public static final String SEQUENCE_SYMBOL                                     = "symbol";

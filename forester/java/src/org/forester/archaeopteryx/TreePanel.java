@@ -707,7 +707,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !node.isExternal() && !node.isRoot() ) {
             final boolean collapse = !node.isCollapse();
             AptxUtil.collapseSubtree( node, collapse );
-            updateSetOfCollapsedExternalNodes( _phylogeny );
+            updateSetOfCollapsedExternalNodes();
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             calculateLongestExtNodeInfo();
@@ -726,7 +726,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setWaitCursor();
         AptxUtil.collapseSpeciesSpecificSubtrees( _phylogeny );
-        updateSetOfCollapsedExternalNodes( _phylogeny );
+        updateSetOfCollapsedExternalNodes();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         calculateLongestExtNodeInfo();
@@ -2532,17 +2532,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
     }
 
-    void updateSetOfCollapsedExternalNodes( final Phylogeny phy ) {
+    void updateSetOfCollapsedExternalNodes() {
+        final Phylogeny phy = getPhylogeny();
         _collapsed_external_nodeid_set.clear();
-        E: for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode ext_node = it.next();
-            PhylogenyNode n = ext_node;
-            while ( !n.isRoot() ) {
-                if ( n.isCollapse() ) {
-                    _collapsed_external_nodeid_set.add( ext_node.getId() );
-                    continue E;
+        if ( phy != null ) {
+            E: for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+                final PhylogenyNode ext_node = it.next();
+                PhylogenyNode n = ext_node;
+                while ( !n.isRoot() ) {
+                    if ( n.isCollapse() ) {
+                        _collapsed_external_nodeid_set.add( ext_node.getId() );
+                        ext_node.setCollapse( true );
+                        continue E;
+                    }
+                    n = n.getParent();
                 }
-                n = n.getParent();
             }
         }
     }

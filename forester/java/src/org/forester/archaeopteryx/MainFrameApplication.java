@@ -1113,7 +1113,7 @@ public final class MainFrameApplication extends MainFrame {
                 phy.hashIDs();
                 phy.recalculateNumberOfExternalDescendants( true );
                 getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-                getCurrentTreePanel().updateSetOfCollapsedExternalNodes( phy );
+                getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
                 getCurrentTreePanel().calculateLongestExtNodeInfo();
                 getCurrentTreePanel().setNodeInPreorderToNull();
                 getCurrentTreePanel().recalculateMaxDistanceToRoot();
