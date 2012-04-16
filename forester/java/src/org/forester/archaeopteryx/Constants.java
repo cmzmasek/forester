@@ -36,14 +36,14 @@ import org.forester.util.ForesterConstants;
 
 public final class Constants {
 
-    final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
-    public final static boolean __RELEASE                                                     = false;                                                    // TODO remove me
-    public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                    // TODO remove me
+    final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = false;
+    public final static boolean __RELEASE                                                     = true;                                                     // TODO remove me
+    public final static boolean __SNAPSHOT_RELEASE                                            = true;                                                     // TODO remove me
     public final static boolean __SYNTH_LF                                                    = false;                                                    // TODO remove me
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.971 9M";
-    final static String         PRG_DATE                                                      = "2012.04.09";
+    final static String         PRG_DATE                                                      = "2012.04.16";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Verdana", "Tahoma",
             "Arial", "Helvetica", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans" };
@@ -60,7 +60,7 @@ public final class Constants {
     final static float          WHEEL_ZOOM_IN_X_CORRECTION_FACTOR                             = 1.085f;
     final static float          WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR                            = 1 / Constants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR;
     static final boolean        SPECIAL_CUSTOM                                                = false;                                                    //TODO remove me
-    static final int            EXT_NODE_INFO_LENGTH_MAX                                      = 300;
+    static final double         EXT_NODE_INFO_LENGTH_MAX_RATIO                                = 0.95;
     static final Dimension      NODE_PANEL_SPLIT_MINIMUM_SIZE                                 = new Dimension( 100, 50 );
     static final Dimension      NODE_PANEL_SIZE                                               = new Dimension( 500, 600 );
     static final Dimension      NODE_FRAME_SIZE                                               = new Dimension( 520, 640 );

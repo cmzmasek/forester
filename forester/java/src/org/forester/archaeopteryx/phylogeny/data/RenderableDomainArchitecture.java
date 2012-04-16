@@ -32,6 +32,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.SortedMap;
 
@@ -135,7 +136,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     }
 
     @Override
-    public SortedMap<Double, ProteinDomain> getDomains() {
+    public SortedMap<BigDecimal, ProteinDomain> getDomains() {
         return _domain_structure.getDomains();
     }
 
@@ -160,7 +161,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
 
     @Override
     public Dimension getRenderingSize() {
-        return new Dimension( ForesterUtil.roundToInt( _domain_structure.getTotalLength() * _rendering_factor_width ),
+        return new Dimension( ForesterUtil.roundToInt( _domain_structure.getTotalLength() * getRenderingFactorWidth() ),
                               ForesterUtil.roundToInt( _rendering_height ) );
     }
 

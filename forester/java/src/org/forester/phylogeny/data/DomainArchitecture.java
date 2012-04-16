@@ -27,6 +27,7 @@ package org.forester.phylogeny.data;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -40,10 +41,10 @@ import org.forester.util.ForesterUtil;
 
 public class DomainArchitecture implements PhylogenyData {
 
-    public final static String               NHX_SEPARATOR = ">";
-    private static final double              INCREASE_KEY  = 0.0001;
-    private SortedMap<Double, ProteinDomain> _domains;
-    private int                              _total_length;
+    public final static String                   NHX_SEPARATOR = ">";
+    private static final BigDecimal              INCREASE_KEY  = new BigDecimal( "0.00001" );
+    private SortedMap<BigDecimal, ProteinDomain> _domains;
+    private int                                  _total_length;
 
     public DomainArchitecture() {
         init();
@@ -79,7 +80,7 @@ public class DomainArchitecture implements PhylogenyData {
             }
         }
         catch ( final Exception e ) {
-            throw new IllegalArgumentException( "Malformed format for domain structure \"" + da_str + "\": "
+            throw new IllegalArgumentException( "malformed format for domain structure \"" + da_str + "\": "
                     + e.getMessage() );
         }
         if ( to > total_length ) {
@@ -89,9 +90,9 @@ public class DomainArchitecture implements PhylogenyData {
     }
 
     public void addDomain( final ProteinDomain pd ) {
-        Double key = new Double( pd.getFrom() );
+        BigDecimal key = new BigDecimal( "" + pd.getFrom() );
         while ( _domains.containsKey( key ) ) {
-            key = new Double( key.doubleValue() + DomainArchitecture.INCREASE_KEY );
+            key = new BigDecimal( "" + ( key.doubleValue() + DomainArchitecture.INCREASE_KEY.doubleValue() ) );
         }
         _domains.put( key, pd );
     }
@@ -133,7 +134,7 @@ public class DomainArchitecture implements PhylogenyData {
         return ( ProteinDomain ) _domains.values().toArray()[ i ];
     }
 
-    public SortedMap<Double, ProteinDomain> getDomains() {
+    public SortedMap<BigDecimal, ProteinDomain> getDomains() {
         return _domains;
     }
 
@@ -146,7 +147,7 @@ public class DomainArchitecture implements PhylogenyData {
     }
 
     private void init() {
-        _domains = new TreeMap<Double, ProteinDomain>();
+        _domains = new TreeMap<BigDecimal, ProteinDomain>();
         _total_length = 0;
     }
 

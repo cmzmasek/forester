@@ -544,7 +544,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return;
         }
-        int longest = 20;
+        int max_length = ForesterUtil.roundToInt( ( getSize().getWidth() - MOVE )
+                * Constants.EXT_NODE_INFO_LENGTH_MAX_RATIO );
+        if ( max_length < 40 ) {
+            max_length = 40;
+        }
+        int longest = 30;
         for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
             int sum = 0;
             if ( node.isCollapse() ) {
@@ -574,6 +579,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             .asSimpleText()
                             + " " );
                 }
+                if ( getControlPanel().isShowDomainArchitectures()
+                        && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
+                    sum += ( ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture() )
+                            .getRenderingSize().getWidth();
+                }
             }
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy tax = node.getNodeData().getTaxonomy();
@@ -595,21 +605,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sum += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getBinaryCharacters()
                         .getGainedCharactersAsStringBuffer().toString() );
             }
-            if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
-                    && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
-                sum += ( ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture() )
-                        .getRenderingSize().getWidth();
-            }
-            if ( sum >= Constants.EXT_NODE_INFO_LENGTH_MAX ) {
-                setLongestExtNodeInfo( Constants.EXT_NODE_INFO_LENGTH_MAX );
+            if ( sum >= max_length ) {
+                setLongestExtNodeInfo( max_length );
                 return;
             }
             if ( sum > longest ) {
                 longest = sum;
             }
         }
-        if ( longest >= Constants.EXT_NODE_INFO_LENGTH_MAX ) {
-            setLongestExtNodeInfo( Constants.EXT_NODE_INFO_LENGTH_MAX );
+        if ( longest >= max_length ) {
+            setLongestExtNodeInfo( max_length );
         }
         else {
             setLongestExtNodeInfo( longest );
