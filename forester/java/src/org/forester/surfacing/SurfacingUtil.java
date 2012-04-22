@@ -105,11 +105,12 @@ public final class SurfacingUtil {
                                                                                  }
                                                                              };
     public final static Pattern             PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
+    private static final boolean USE_LAST = true;
 
     private SurfacingUtil() {
         // Hidden constructor.
     }
-
+ 
     public static void addAllBinaryDomainCombinationToSet( final GenomeWideCombinableDomains genome,
                                                            final SortedSet<BinaryDomainCombination> binary_domain_combinations ) {
         final SortedMap<DomainId, CombinableDomains> all_cd = genome.getAllCombinableDomainsIds();
@@ -673,7 +674,7 @@ public final class SurfacingUtil {
                 randomization = "yes, seed = " + random_number_seed_for_fitch_parsimony;
             }
             else {
-                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( true );
+                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( USE_LAST );
             }
             SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossMatrix(), outfile_name
                     + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
@@ -847,7 +848,7 @@ public final class SurfacingUtil {
          local_phylogeny_copy = phylogeny.copy();
         String randomization = "no";
        
-        secondary_features_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( true );
+        secondary_features_parsimony.executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( USE_LAST );
         
       
      
