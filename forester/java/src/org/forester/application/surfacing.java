@@ -279,6 +279,12 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique.txt";
     public static final String                                LIMIT_SPEC_FOR_PROT_EX                                                 = null;                                                                                                                                                                                       // e.g. "HUMAN"; set to null for not using this feature (default).
+    public static final String BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH_MAPPED  = "_dc_MAPPED_secondary_features_fitch"
+        + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_MAPPED_OUTPUT_SUFFIX =  "_indep_dc_gains_fitch_counts_MAPPED.txt";
+    public static final String INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX =  "_indep_dc_gains_fitch_lists_MAPPED.txt";
+    public static final String INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
+    public static final String INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,

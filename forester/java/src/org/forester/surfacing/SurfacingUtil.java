@@ -802,7 +802,7 @@ public final class SurfacingUtil {
         writeToNexus( outfile_name + surfacing.NEXUS_SECONDARY_FEATURES,
                       secondary_features_parsimony.createMatrixOfSecondaryFeaturePresenceOrAbsence( null ),
                       phylogeny );
-        final Phylogeny local_phylogeny_copy = phylogeny.copy();
+        Phylogeny local_phylogeny_copy = phylogeny.copy();
         secondary_features_parsimony.executeDolloParsimonyOnSecondaryFeatures( mapping_results_map );
         SurfacingUtil.writeMatrixToFile( secondary_features_parsimony.getGainLossMatrix(), outfile_name
                 + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_SECONDARY_FEATURES, Format.FORESTER );
@@ -840,6 +840,35 @@ public final class SurfacingUtil {
                           parameters_str );
         SurfacingUtil.writePhylogenyToFile( local_phylogeny_copy, outfile_name
                 + surfacing.SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
+        
+        
+        // FITCH DOMAIN COMBINATIONS
+        // -------------------------
+         local_phylogeny_copy = phylogeny.copy();
+        String randomization = "no";
+       
+        secondary_features_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( true );
+        
+      
+     
+      
+        preparePhylogeny( local_phylogeny_copy,
+                          secondary_features_parsimony,
+                          date_time,
+                          "Fitch parsimony on secondary binary domain combination presence/absence randomization: "
+                                  + randomization,
+                          "fitch_on_binary_domain_combinations_" + outfile_name,
+                          parameters_str );
+        SurfacingUtil.writePhylogenyToFile( local_phylogeny_copy, outfile_name
+                + surfacing.BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH_MAPPED );
+        calculateIndependentDomainCombinationGains( local_phylogeny_copy, outfile_name
+                + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_MAPPED_OUTPUT_SUFFIX, outfile_name
+                + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX, outfile_name
+                + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX, outfile_name
+                + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX, outfile_name
+                + "_MAPPED_indep_dc_gains_fitch_lca_ranks.txt", outfile_name + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt" );
+   
+        
     }
 
     public static void extractProteinNames( final List<Protein> proteins,
