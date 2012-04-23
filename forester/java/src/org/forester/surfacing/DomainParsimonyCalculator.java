@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.application.surfacing;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.BinaryStates;
@@ -632,26 +633,28 @@ public final class DomainParsimonyCalculator {
         final SortedSet<BinaryDomainCombination> all_binary_combinations_mapped = new TreeSet<BinaryDomainCombination>();
         final Set<BinaryDomainCombination>[] binary_combinations_per_genome_mapped = new HashSet[ number_of_identifiers ];
         int identifier_index = 0;
+        
+        final SortedSet<String> no_mappings = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
             binary_combinations_per_genome_mapped[ identifier_index ] = new HashSet<BinaryDomainCombination>();
             for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
                 
-                if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
-                    throw new IllegalArgumentException( "no mapping found for " + bc.getId0() );
-                }
-                if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
-                    throw new IllegalArgumentException( "no mapping found for " + bc.getId1() );
-                }
-                
-                
-                final BinaryDomainCombination mapped_bc = new  BasicBinaryDomainCombination( domain_id_to_second_features_map.get(  bc.getId0()) ,
-                                                                                             domain_id_to_second_features_map.get( bc.getId1()) );
+                final BinaryDomainCombination mapped_bc = mapBinaryDomainCombination( domain_id_to_second_features_map,
+                                                                                      bc,
+                                                                                      no_mappings );
                 all_binary_combinations_mapped.add( mapped_bc );
                 binary_combinations_per_genome_mapped[ identifier_index ].add( mapped_bc );
             }
             ++identifier_index;
         }
        
+        if ( !no_mappings.isEmpty() ) {
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "No mappings for the following (" + no_mappings.size()  + "):" );
+            for( final String id : no_mappings ) {
+                ForesterUtil.programMessage( surfacing.PRG_NAME, id);
+            }
+        }
+        
         final int number_of_characters = all_binary_combinations_mapped.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
                                                                                                                                                  number_of_characters );
@@ -689,6 +692,32 @@ public final class DomainParsimonyCalculator {
             ++identifier_index;
         }
         return matrix;
+    }
+
+    private static BinaryDomainCombination mapBinaryDomainCombination( final Map<DomainId, String> domain_id_to_second_features_map,
+                                                                       final BinaryDomainCombination bc,
+                                                                       final SortedSet<String> no_mappings ) {
+        String id0 = "";
+        String id1 = "";
+        
+        if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
+           
+            no_mappings.add(bc.getId0().getId()  );
+            id0 = bc.getId0().getId();
+        }
+        else {
+            id0 = domain_id_to_second_features_map.get(  bc.getId0());
+        }
+        if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
+           
+            no_mappings.add(bc.getId1().getId()  );
+            id1 = bc.getId1().getId();
+        }
+        else {
+            id1 = domain_id_to_second_features_map.get(  bc.getId1());
+        }
+        
+        return new BasicBinaryDomainCombination( id0, id1 );
     }
     
     

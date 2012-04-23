@@ -235,7 +235,7 @@ public class surfacing {
     final static private String                               SEQ_EXTRACT_OPTION                                                     = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                             = '#';
     final static private String                               PRG_VERSION                                                            = "2.230";
-    final static private String                               PRG_DATE                                                               = "2012.04.21";
+    final static private String                               PRG_DATE                                                               = "2012.04.22";
     final static private String                               E_MAIL                                                                 = "czmasek@burnham.org";
     final static private String                               WWW                                                                    = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                    = true;
@@ -2370,14 +2370,14 @@ public class surfacing {
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
         final long total_memory = rt.totalMemory() / 1000000;
-        System.out.println();
-        System.out.println( "Time for analysis : " + ( new Date().getTime() - analysis_start_time ) + "ms" );
-        System.out.println( "Total running time: " + ( new Date().getTime() - start_time ) + "ms " );
-        System.out.println( "Free memory       : " + free_memory + "MB, total memory: " + total_memory + "MB" );
-        System.out.println();
-        System.out.println( "If this application is useful to you, please cite:" );
-        System.out.println( surfacing.WWW );
-        System.out.println();
+       
+        ForesterUtil.programMessage( PRG_NAME,  "Time for analysis : " + ( new Date().getTime() - analysis_start_time ) + "ms" );
+        ForesterUtil.programMessage( PRG_NAME, "Total running time: " + ( new Date().getTime() - start_time ) + "ms " );
+        ForesterUtil.programMessage( PRG_NAME,  "Free memory       : " + free_memory + "MB, total memory: " + total_memory + "MB" );
+       
+        ForesterUtil.programMessage( PRG_NAME,  "If this application is useful to you, please cite:" );
+        ForesterUtil.programMessage( PRG_NAME,  surfacing.WWW );
+       
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
     }
