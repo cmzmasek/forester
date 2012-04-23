@@ -105,12 +105,12 @@ public final class SurfacingUtil {
                                                                                  }
                                                                              };
     public final static Pattern             PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
-    private static final boolean USE_LAST = true;
+    private static final boolean            USE_LAST                         = true;
 
     private SurfacingUtil() {
         // Hidden constructor.
     }
- 
+
     public static void addAllBinaryDomainCombinationToSet( final GenomeWideCombinableDomains genome,
                                                            final SortedSet<BinaryDomainCombination> binary_domain_combinations ) {
         final SortedMap<DomainId, CombinableDomains> all_cd = genome.getAllCombinableDomainsIds();
@@ -841,18 +841,11 @@ public final class SurfacingUtil {
                           parameters_str );
         SurfacingUtil.writePhylogenyToFile( local_phylogeny_copy, outfile_name
                 + surfacing.SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO );
-        
-        
         // FITCH DOMAIN COMBINATIONS
         // -------------------------
-         local_phylogeny_copy = phylogeny.copy();
-        String randomization = "no";
-       
+        local_phylogeny_copy = phylogeny.copy();
+        final String randomization = "no";
         secondary_features_parsimony.executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( USE_LAST );
-        
-      
-     
-      
         preparePhylogeny( local_phylogeny_copy,
                           secondary_features_parsimony,
                           date_time,
@@ -867,9 +860,8 @@ public final class SurfacingUtil {
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX, outfile_name
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX, outfile_name
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX, outfile_name
-                + "_MAPPED_indep_dc_gains_fitch_lca_ranks.txt", outfile_name + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt" );
-   
-        
+                + "_MAPPED_indep_dc_gains_fitch_lca_ranks.txt", outfile_name
+                + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt" );
     }
 
     public static void extractProteinNames( final List<Protein> proteins,

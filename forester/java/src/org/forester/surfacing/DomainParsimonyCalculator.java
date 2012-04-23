@@ -212,11 +212,10 @@ public final class DomainParsimonyCalculator {
         setTotalLosses( fitch.getTotalLosses() );
         setTotalUnchanged( fitch.getTotalUnchanged() );
     }
-    
-    private void executeFitchParsimonyOnSecondaryFeatures( 
-                                        final boolean use_last,
-                                        final boolean randomize,
-                                        final long random_number_seed ) {
+
+    private void executeFitchParsimonyOnSecondaryFeatures( final boolean use_last,
+                                                           final boolean randomize,
+                                                           final long random_number_seed ) {
         reset();
         if ( use_last ) {
             System.out.println( "   Fitch parsimony: use_last = true" );
@@ -229,21 +228,19 @@ public final class DomainParsimonyCalculator {
         fitch.setUseLast( use_last );
         fitch.setReturnGainLossMatrix( true );
         fitch.setReturnInternalStates( true );
-        
         final Map<DomainId, Set<String>> map = getDomainIdToSecondaryFeaturesMap();
         final Map<DomainId, String> newmap = new HashMap<DomainId, String>();
         final Iterator<Entry<DomainId, Set<String>>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            final Map.Entry<DomainId, Set<String>> pair =  (Map.Entry<DomainId, Set<String>>)it.next();
+        while ( it.hasNext() ) {
+            final Map.Entry<DomainId, Set<String>> pair = it.next();
             if ( pair.getValue().size() != 1 ) {
-                throw new IllegalArgumentException( pair.getKey().getId() + " mapps to " + pair.getValue().size() + " items" );
+                throw new IllegalArgumentException( pair.getKey().getId() + " mapps to " + pair.getValue().size()
+                        + " items" );
             }
             newmap.put( pair.getKey(), ( String ) pair.getValue().toArray()[ 0 ] );
         }
-        
-        CharacterStateMatrix<BinaryStates> states  =createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList(),
-                                                                                newmap );
-       
+        final CharacterStateMatrix<BinaryStates> states = createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList(),
+                                                                                                                                  newmap );
         fitch.execute( getPhylogeny(), states );
         setGainLossMatrix( fitch.getGainLossMatrix() );
         setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
@@ -256,7 +253,7 @@ public final class DomainParsimonyCalculator {
     public void executeFitchParsimonyOnBinaryDomainCombintion( final boolean use_last ) {
         executeFitchParsimony( false, use_last, false, 0 );
     }
-    
+
     public void executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( final boolean use_last ) {
         executeFitchParsimonyOnSecondaryFeatures( use_last, false, 0 );
     }
@@ -546,7 +543,6 @@ public final class DomainParsimonyCalculator {
         return new DomainParsimonyCalculator( phylogeny, gwcd_list, domain_id_to_secondary_features_map );
     }
 
-    
     /**
      * For folds instead of Pfam-domains, for example
      * 
@@ -619,10 +615,9 @@ public final class DomainParsimonyCalculator {
         }
         return matrix;
     }
-    
-    
+
     public static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                                                             final Map<DomainId, String> domain_id_to_second_features_map) {
+                                                                                                                             final Map<DomainId, String> domain_id_to_second_features_map ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
         }
@@ -633,12 +628,10 @@ public final class DomainParsimonyCalculator {
         final SortedSet<BinaryDomainCombination> all_binary_combinations_mapped = new TreeSet<BinaryDomainCombination>();
         final Set<BinaryDomainCombination>[] binary_combinations_per_genome_mapped = new HashSet[ number_of_identifiers ];
         int identifier_index = 0;
-        
         final SortedSet<String> no_mappings = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
             binary_combinations_per_genome_mapped[ identifier_index ] = new HashSet<BinaryDomainCombination>();
             for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
-                
                 final BinaryDomainCombination mapped_bc = mapBinaryDomainCombination( domain_id_to_second_features_map,
                                                                                       bc,
                                                                                       no_mappings );
@@ -647,14 +640,13 @@ public final class DomainParsimonyCalculator {
             }
             ++identifier_index;
         }
-       
         if ( !no_mappings.isEmpty() ) {
-            ForesterUtil.programMessage( surfacing.PRG_NAME, "No mappings for the following (" + no_mappings.size()  + "):" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "No mappings for the following (" + no_mappings.size()
+                    + "):" );
             for( final String id : no_mappings ) {
-                ForesterUtil.programMessage( surfacing.PRG_NAME, id);
+                ForesterUtil.programMessage( surfacing.PRG_NAME, id );
             }
         }
-        
         final int number_of_characters = all_binary_combinations_mapped.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
                                                                                                                                                  number_of_characters );
@@ -699,30 +691,23 @@ public final class DomainParsimonyCalculator {
                                                                        final SortedSet<String> no_mappings ) {
         String id0 = "";
         String id1 = "";
-        
         if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
-           
-            no_mappings.add(bc.getId0().getId()  );
+            no_mappings.add( bc.getId0().getId() );
             id0 = bc.getId0().getId();
         }
         else {
-            id0 = domain_id_to_second_features_map.get(  bc.getId0());
+            id0 = domain_id_to_second_features_map.get( bc.getId0() );
         }
         if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
-           
-            no_mappings.add(bc.getId1().getId()  );
+            no_mappings.add( bc.getId1().getId() );
             id1 = bc.getId1().getId();
         }
         else {
-            id1 = domain_id_to_second_features_map.get(  bc.getId1());
+            id1 = domain_id_to_second_features_map.get( bc.getId1() );
         }
-        
         return new BasicBinaryDomainCombination( id0, id1 );
     }
-    
-    
-    
-    
+
     public static CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
@@ -845,8 +830,6 @@ public final class DomainParsimonyCalculator {
         }
         return matrix;
     }
-
-   
 
     private static int getStateSumDeltaOnNode( final String node_identifier,
                                                final CharacterStateMatrix<GainLossStates> gain_loss_matrix,
