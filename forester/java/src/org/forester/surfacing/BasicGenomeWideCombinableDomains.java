@@ -264,21 +264,25 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                                ignore_combination_with_same_domain,
                                species,
                                null,
-                               DomainCombinationType.BASIC );
+                               DomainCombinationType.BASIC,
+                               null,
+                               null );
     }
 
     public static BasicGenomeWideCombinableDomains createInstance( final List<Protein> protein_list,
                                                                    final boolean ignore_combination_with_same_domain,
                                                                    final Species species,
                                                                    final DomainCombinationType dc_type ) {
-        return createInstance( protein_list, ignore_combination_with_same_domain, species, null, dc_type );
+        return createInstance( protein_list, ignore_combination_with_same_domain, species, null, dc_type, null, null );
     }
 
     public static BasicGenomeWideCombinableDomains createInstance( final List<Protein> protein_list,
                                                                    final boolean ignore_combination_with_same_domain,
                                                                    final Species species,
                                                                    final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
-                                                                   final DomainCombinationType dc_type ) {
+                                                                   final DomainCombinationType dc_type,
+                                                                   final Map<String, DescriptiveStatistics> protein_length_stats_by_dc,
+                                                                   final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
         final BasicGenomeWideCombinableDomains instance = new BasicGenomeWideCombinableDomains( species, dc_type );
         final Map<DomainId, Integer> domain_counts = new HashMap<DomainId, Integer>();
         final Map<DomainId, Integer> domain_protein_counts = new HashMap<DomainId, Integer>();
@@ -361,6 +365,27 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                     if ( ( dc_type == DomainCombinationType.DIRECTED_ADJACTANT ) && ( closest != null ) ) {
                         domain_combination.addCombinableDomain( closest.getDomainId() );
                     }
+                    if ( protein_length_stats_by_dc != null ) {
+                        final List<BinaryDomainCombination> dcs = domain_combination.toBinaryDomainCombinations();
+                        for( final BinaryDomainCombination dc : dcs ) {
+                            final String dc_str = dc.toString();
+                            if ( !protein_length_stats_by_dc.containsKey( dc_str ) ) {
+                                protein_length_stats_by_dc.put( dc_str, new BasicDescriptiveStatistics() );
+                            }
+                            protein_length_stats_by_dc.get( dc_str ).addValue( protein.getLength() );
+                        }
+                    }
+                    if ( domain_number_stats_by_dc != null ) {
+                        final List<BinaryDomainCombination> dcs = domain_combination.toBinaryDomainCombinations();
+                        for( final BinaryDomainCombination dc : dcs ) {
+                            final String dc_str = dc.toString();
+                            if ( !domain_number_stats_by_dc.containsKey( dc_str ) ) {
+                                domain_number_stats_by_dc.put( dc_str, new BasicDescriptiveStatistics() );
+                            }
+                            domain_number_stats_by_dc.get( dc_str ).addValue( protein.getNumberOfProteinDomains() );
+                        }
+                    }
+                    //
                 }
             }
         }

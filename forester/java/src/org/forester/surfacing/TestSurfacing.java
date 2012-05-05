@@ -4108,7 +4108,9 @@ public class TestSurfacing {
                                      true,
                                      new BasicSpecies( "human" ),
                                      null,
-                                     DomainCombinationType.BASIC );
+                                     DomainCombinationType.BASIC,
+                                     null,
+                                     null );
             cd = cdcc2.get( new DomainId( "A" ) );
             if ( cd.getKeyDomainCount() != 9 ) {
                 return false;

@@ -234,8 +234,8 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                                    = '#';
-    final static private String                               PRG_VERSION                                                                   = "2.230";
-    final static private String                               PRG_DATE                                                                      = "2012.04.22";
+    final static private String                               PRG_VERSION                                                                   = "2.240";
+    final static private String                               PRG_DATE                                                                      = "2012.05.04";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -358,6 +358,7 @@ public class surfacing {
      * @param sum_of_all_domains_encountered
      * @param all_bin_domain_combinations_encountered
      * @param is_gains_analysis
+     * @param protein_length_stats_by_dc 
      * @throws IOException
      */
     private static void executeFitchGainsAnalysis( final File output_file,
@@ -1412,7 +1413,6 @@ public class surfacing {
         System.out.println( "Ignore combination with self: " + ignore_combination_with_same );
         html_desc.append( "<tr><td>Ignore combination with self for domain combination similarity analyses:</td><td>"
                 + ignore_combination_with_same + "</td></tr>" + nl );
-        ;
         System.out.println( "Consider directedness       : "
                 + ( dc_type != BinaryDomainCombination.DomainCombinationType.BASIC ) );
         html_desc.append( "<tr><td>Consider directedness of binary domain combinations:</td><td>"
@@ -1759,6 +1759,8 @@ public class surfacing {
         catch ( final IOException e3 ) {
             e3.printStackTrace();
         }
+        final Map<String, DescriptiveStatistics> protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+        final Map<String, DescriptiveStatistics> domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
         // Main loop:
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();
@@ -1927,7 +1929,9 @@ public class surfacing {
                                      ignore_combination_with_same,
                                      new BasicSpecies( input_file_properties[ i ][ 1 ] ),
                                      domain_id_to_go_ids_map,
-                                     dc_type ) );
+                                     dc_type,
+                                     protein_length_stats_by_dc,
+                                     domain_number_stats_by_dc ) );
             domain_lengths_table.addLengths( protein_list );
             if ( gwcd_list.get( i ).getSize() > 0 ) {
                 SurfacingUtil.writeDomainCombinationsCountsFile( input_file_properties,
@@ -2255,7 +2259,9 @@ public class surfacing {
                                                         output_binary_domain_combinationsfor_graph_analysis,
                                                         all_bin_domain_combinations_gained_fitch,
                                                         all_bin_domain_combinations_lost_fitch,
-                                                        dc_type );
+                                                        dc_type,
+                                                        protein_length_stats_by_dc,
+                                                        domain_number_stats_by_dc );
                 // Listing of all domain combinations gained is only done if only one input tree is used. 
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
