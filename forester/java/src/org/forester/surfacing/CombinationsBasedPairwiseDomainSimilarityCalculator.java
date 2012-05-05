@@ -29,6 +29,8 @@ package org.forester.surfacing;
 
 import java.util.List;
 
+import org.forester.protein.DomainId;
+
 public class CombinationsBasedPairwiseDomainSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
 
     @Override

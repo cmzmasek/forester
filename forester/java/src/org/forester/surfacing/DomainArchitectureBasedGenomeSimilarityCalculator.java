@@ -29,6 +29,9 @@ package org.forester.surfacing;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
+
 public class DomainArchitectureBasedGenomeSimilarityCalculator {
 
     public static final double                MAX_SIMILARITY_SCORE = 1.0;

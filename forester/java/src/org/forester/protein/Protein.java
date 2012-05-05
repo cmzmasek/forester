@@ -24,9 +24,11 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.protein;
 
 import java.util.List;
+
+import org.forester.species.Species;
 
 public interface Protein {
 
@@ -63,6 +65,8 @@ public interface Protein {
     public List<Domain> getProteinDomains( final DomainId domain_id );
 
     public ProteinId getProteinId();
+
+    public int getLength();
 
     public Species getSpecies();
 }

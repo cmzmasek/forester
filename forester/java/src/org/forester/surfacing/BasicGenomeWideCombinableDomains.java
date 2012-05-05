@@ -17,7 +17,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.forester.go.GoId;
-import org.forester.surfacing.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
+import org.forester.protein.Protein;
+import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;

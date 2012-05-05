@@ -39,7 +39,7 @@ import org.forester.go.GoUtils;
 import org.forester.go.OBOparser;
 import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
-import org.forester.surfacing.DomainId;
+import org.forester.protein.DomainId;
 
 public class pfam2go_extractor {
 

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-import org.forester.surfacing.DomainId;
+import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class TestGo {

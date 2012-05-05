@@ -81,6 +81,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.protein.Protein;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
 import org.forester.sdi.SDIse;
@@ -88,7 +89,6 @@ import org.forester.sdi.TaxonomyAssigner;
 import org.forester.sdi.TestGSDI;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
-import org.forester.surfacing.Protein;
 import org.forester.surfacing.TestSurfacing;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.tools.SupportCount;
@@ -3433,8 +3433,14 @@ public final class Test {
             if ( p1.getNumberOfProteinDomains() != 15 ) {
                 return false;
             }
+            if ( p1.getLength() != 850 ) {
+                return false;
+            }
             final Protein p2 = proteins.get( 1 );
             if ( p2.getNumberOfProteinDomains() != 51 ) {
+                return false;
+            }
+            if ( p2.getLength() != 1291 ) {
                 return false;
             }
             final Protein p3 = proteins.get( 2 );

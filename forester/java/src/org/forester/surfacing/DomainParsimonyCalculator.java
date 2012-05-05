@@ -47,7 +47,10 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.surfacing.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.util.ForesterUtil;
 
 public final class DomainParsimonyCalculator {

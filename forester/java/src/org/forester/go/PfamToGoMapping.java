@@ -25,7 +25,7 @@
 
 package org.forester.go;
 
-import org.forester.surfacing.DomainId;
+import org.forester.protein.DomainId;
 
 public class PfamToGoMapping implements Mapping {
 

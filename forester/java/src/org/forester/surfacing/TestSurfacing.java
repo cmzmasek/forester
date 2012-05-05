@@ -48,7 +48,15 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.surfacing.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.BasicProtein;
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
+import org.forester.protein.Protein;
+import org.forester.protein.ProteinId;
+import org.forester.species.BasicSpecies;
+import org.forester.species.Species;
 import org.forester.test.Test;
 import org.forester.util.ForesterUtil;
 
@@ -351,10 +359,10 @@ public class TestSurfacing {
             if ( !TestSurfacing.isEqual( X.getPerSequenceScore(), -12 ) ) {
                 return false;
             }
-            final Protein mouse_1 = new BasicProtein( "1", "mouse" );
-            final Protein rabbit_1 = new BasicProtein( "1", "rabbit" );
-            final Protein ciona_1 = new BasicProtein( "1", "ciona" );
-            final Protein nemve_1 = new BasicProtein( "1", "nemve" );
+            final Protein mouse_1 = new BasicProtein( "1", "mouse", 0 );
+            final Protein rabbit_1 = new BasicProtein( "1", "rabbit", 0 );
+            final Protein ciona_1 = new BasicProtein( "1", "ciona", 0 );
+            final Protein nemve_1 = new BasicProtein( "1", "nemve", 0 );
             mouse_1.addProteinDomain( A );
             mouse_1.addProteinDomain( B );
             mouse_1.addProteinDomain( C );
@@ -605,7 +613,7 @@ public class TestSurfacing {
             if ( sa2.getMaximalDifferenceInCounts() != 3 ) {
                 return false;
             }
-            final Protein ciona_2 = new BasicProtein( "2", "ciona" );
+            final Protein ciona_2 = new BasicProtein( "2", "ciona", 0 );
             ciona_2.addProteinDomain( A );
             ciona_2.addProteinDomain( A );
             ciona_2.addProteinDomain( A );
@@ -618,7 +626,7 @@ public class TestSurfacing {
             ciona_2.addProteinDomain( F );
             ciona_2.addProteinDomain( G );
             ciona_2.addProteinDomain( X );
-            final Protein ciona_3 = new BasicProtein( "3", "ciona" );
+            final Protein ciona_3 = new BasicProtein( "3", "ciona", 0 );
             ciona_3.addProteinDomain( A );
             ciona_3.addProteinDomain( A );
             ciona_3.addProteinDomain( A );
@@ -1067,10 +1075,10 @@ public class TestSurfacing {
             if ( !TestSurfacing.isEqual( X.getPerSequenceScore(), -12 ) ) {
                 return false;
             }
-            final Protein mouse_1 = new BasicProtein( "1", "mouse" );
-            final Protein rabbit_1 = new BasicProtein( "1", "rabbit" );
-            final Protein ciona_1 = new BasicProtein( "1", "ciona" );
-            final Protein nemve_1 = new BasicProtein( "1", "nemve" );
+            final Protein mouse_1 = new BasicProtein( "1", "mouse", 0 );
+            final Protein rabbit_1 = new BasicProtein( "1", "rabbit", 0 );
+            final Protein ciona_1 = new BasicProtein( "1", "ciona", 0 );
+            final Protein nemve_1 = new BasicProtein( "1", "nemve", 0 );
             mouse_1.addProteinDomain( A );
             mouse_1.addProteinDomain( D );
             mouse_1.addProteinDomain( E );
@@ -1185,10 +1193,10 @@ public class TestSurfacing {
         try {
             final Domain A = new BasicDomain( "A", 1, 2, ( short ) 1, ( short ) 1, 0.15, -12 );
             final Domain B = new BasicDomain( "B", 1, 2, ( short ) 1, ( short ) 1, 0.2, -12 );
-            final Protein mouse_1 = new BasicProtein( "1", "mouse" );
-            final Protein rabbit_1 = new BasicProtein( "1", "rabbit" );
-            final Protein ciona_1 = new BasicProtein( "1", "ciona" );
-            final Protein nemve_1 = new BasicProtein( "1", "nemve" );
+            final Protein mouse_1 = new BasicProtein( "1", "mouse", 0 );
+            final Protein rabbit_1 = new BasicProtein( "1", "rabbit", 0 );
+            final Protein ciona_1 = new BasicProtein( "1", "ciona", 0 );
+            final Protein nemve_1 = new BasicProtein( "1", "nemve", 0 );
             mouse_1.addProteinDomain( A );
             rabbit_1.addProteinDomain( A );
             ciona_1.addProteinDomain( A );
@@ -1257,10 +1265,10 @@ public class TestSurfacing {
             if ( sims_ns.size() != 0 ) {
                 return false;
             }
-            final Protein mouse_2 = new BasicProtein( "1", "mouse" );
-            final Protein rabbit_2 = new BasicProtein( "1", "rabbit" );
-            final Protein ciona_2 = new BasicProtein( "1", "ciona" );
-            final Protein nemve_2 = new BasicProtein( "1", "nemve" );
+            final Protein mouse_2 = new BasicProtein( "1", "mouse", 0 );
+            final Protein rabbit_2 = new BasicProtein( "1", "rabbit", 0 );
+            final Protein ciona_2 = new BasicProtein( "1", "ciona", 0 );
+            final Protein nemve_2 = new BasicProtein( "1", "nemve", 0 );
             mouse_2.addProteinDomain( A );
             rabbit_2.addProteinDomain( A );
             ciona_2.addProteinDomain( A );
@@ -1322,7 +1330,7 @@ public class TestSurfacing {
             final Domain A60 = new BasicDomain( "A", 60, 395, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain C70 = new BasicDomain( "C", 70, 71, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain D80 = new BasicDomain( "D", 80, 81, ( short ) 1, ( short ) 4, 0.1, -12 );
-            final BasicProtein p = new BasicProtein( "p", "owl" );
+            final BasicProtein p = new BasicProtein( "p", "owl", 0 );
             p.addProteinDomain( B15 );
             p.addProteinDomain( C50 );
             p.addProteinDomain( A60 );
@@ -2151,11 +2159,11 @@ public class TestSurfacing {
             final GainLossStates L = GainLossStates.LOSS;
             final GainLossStates A = GainLossStates.UNCHANGED_ABSENT;
             final GainLossStates P = GainLossStates.UNCHANGED_PRESENT;
-            final Protein one_1 = new BasicProtein( "one", "1" );
-            final Protein two_1 = new BasicProtein( "two", "1" );
-            final Protein three_1 = new BasicProtein( "three", "1" );
-            final Protein four_1 = new BasicProtein( "four", "1" );
-            final Protein five_1 = new BasicProtein( "five", "1" );
+            final Protein one_1 = new BasicProtein( "one", "1", 0 );
+            final Protein two_1 = new BasicProtein( "two", "1", 0 );
+            final Protein three_1 = new BasicProtein( "three", "1", 0 );
+            final Protein four_1 = new BasicProtein( "four", "1", 0 );
+            final Protein five_1 = new BasicProtein( "five", "1", 0 );
             one_1.addProteinDomain( new BasicDomain( "B", 12, 14, ( short ) 1, ( short ) 4, 0.1, -12 ) );
             one_1.addProteinDomain( new BasicDomain( "C", 13, 14, ( short ) 1, ( short ) 4, 0.1, -12 ) );
             one_1.addProteinDomain( new BasicDomain( "A", 11, 12, ( short ) 1, ( short ) 4, 0.1, -12 ) );
@@ -2726,11 +2734,11 @@ public class TestSurfacing {
 
     private static boolean testDirectednessAndAdjacency() {
         try {
-            final Protein one_1 = new BasicProtein( "one", "1" );
-            final Protein two_1 = new BasicProtein( "two", "1" );
-            final Protein three_1 = new BasicProtein( "three", "1" );
-            final Protein four_1 = new BasicProtein( "four", "1" );
-            final Protein five_1 = new BasicProtein( "five", "1" );
+            final Protein one_1 = new BasicProtein( "one", "1", 0 );
+            final Protein two_1 = new BasicProtein( "two", "1", 0 );
+            final Protein three_1 = new BasicProtein( "three", "1", 0 );
+            final Protein four_1 = new BasicProtein( "four", "1", 0 );
+            final Protein five_1 = new BasicProtein( "five", "1", 0 );
             one_1.addProteinDomain( new BasicDomain( "B", 12, 14, ( short ) 1, ( short ) 4, 0.1, -12 ) );
             one_1.addProteinDomain( new BasicDomain( "C", 13, 14, ( short ) 1, ( short ) 4, 0.1, -12 ) );
             one_1.addProteinDomain( new BasicDomain( "A", 11, 12, ( short ) 1, ( short ) 4, 0.1, -12 ) );
@@ -2891,21 +2899,21 @@ public class TestSurfacing {
             final Domain l = new BasicDomain( "l", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain m = new BasicDomain( "m", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain n = new BasicDomain( "n", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
-            final Protein eel_0 = new BasicProtein( "0", "eel" );
-            final Protein eel_1 = new BasicProtein( "1", "eel" );
-            final Protein eel_2 = new BasicProtein( "2", "eel" );
-            final Protein eel_3 = new BasicProtein( "3", "eel" );
-            final Protein eel_4 = new BasicProtein( "4", "eel" );
-            final Protein eel_5 = new BasicProtein( "5", "eel" );
-            final Protein eel_6 = new BasicProtein( "6", "eel" );
-            final Protein rat_0 = new BasicProtein( "0", "rat" );
-            final Protein rat_1 = new BasicProtein( "1", "rat" );
-            final Protein rat_2 = new BasicProtein( "2", "rat" );
-            final Protein rat_3 = new BasicProtein( "3", "rat" );
-            final Protein rat_4 = new BasicProtein( "4", "rat" );
-            final Protein rat_5 = new BasicProtein( "5", "rat" );
-            final Protein rat_6 = new BasicProtein( "6", "rat" );
-            final Protein rat_7 = new BasicProtein( "7", "rat" );
+            final Protein eel_0 = new BasicProtein( "0", "eel", 0 );
+            final Protein eel_1 = new BasicProtein( "1", "eel", 0 );
+            final Protein eel_2 = new BasicProtein( "2", "eel", 0 );
+            final Protein eel_3 = new BasicProtein( "3", "eel", 0 );
+            final Protein eel_4 = new BasicProtein( "4", "eel", 0 );
+            final Protein eel_5 = new BasicProtein( "5", "eel", 0 );
+            final Protein eel_6 = new BasicProtein( "6", "eel", 0 );
+            final Protein rat_0 = new BasicProtein( "0", "rat", 0 );
+            final Protein rat_1 = new BasicProtein( "1", "rat", 0 );
+            final Protein rat_2 = new BasicProtein( "2", "rat", 0 );
+            final Protein rat_3 = new BasicProtein( "3", "rat", 0 );
+            final Protein rat_4 = new BasicProtein( "4", "rat", 0 );
+            final Protein rat_5 = new BasicProtein( "5", "rat", 0 );
+            final Protein rat_6 = new BasicProtein( "6", "rat", 0 );
+            final Protein rat_7 = new BasicProtein( "7", "rat", 0 );
             eel_1.addProteinDomain( a );
             eel_2.addProteinDomain( a );
             eel_2.addProteinDomain( b );
@@ -3445,11 +3453,11 @@ public class TestSurfacing {
             final Domain x = new BasicDomain( "x", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain y = new BasicDomain( "y", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain z = new BasicDomain( "z", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
-            final Protein a_0 = new BasicProtein( "0", "a" );
-            final Protein a_1 = new BasicProtein( "1", "a" );
-            final Protein a_2 = new BasicProtein( "2", "a" );
-            final Protein b_0 = new BasicProtein( "0", "b" );
-            final Protein b_1 = new BasicProtein( "1", "b" );
+            final Protein a_0 = new BasicProtein( "0", "a", 0 );
+            final Protein a_1 = new BasicProtein( "1", "a", 0 );
+            final Protein a_2 = new BasicProtein( "2", "a", 0 );
+            final Protein b_0 = new BasicProtein( "0", "b", 0 );
+            final Protein b_1 = new BasicProtein( "1", "b", 0 );
             a_0.addProteinDomain( u );
             a_0.addProteinDomain( v );
             a_0.addProteinDomain( w );
@@ -4431,7 +4439,7 @@ public class TestSurfacing {
                                                -0.111 );
             final Domain H7 = new BasicDomain( "H7", ( short ) 700, ( short ) 800, ( short ) 5, ( short ) 5, 0.7, -12 );
             final Domain H8 = new BasicDomain( "H7", ( short ) 700, ( short ) 800, ( short ) 5, ( short ) 200, 0.7, -12 );
-            final Protein protein = new BasicProtein( "00", "bat" );
+            final Protein protein = new BasicProtein( "00", "bat", 0 );
             protein.addProteinDomain( H5 );
             protein.addProteinDomain( H2 );
             protein.addProteinDomain( H7 );
@@ -4614,7 +4622,7 @@ public class TestSurfacing {
             final Domain a = new BasicDomain( "a", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain b = new BasicDomain( "b", 8, 20, ( short ) 1, ( short ) 1, 0.2, 1 );
             final Domain c = new BasicDomain( "c", 15, 16, ( short ) 1, ( short ) 1, 0.3, 1 );
-            final Protein abc = new BasicProtein( "abc", "nemve" );
+            final Protein abc = new BasicProtein( "abc", "nemve", 0 );
             abc.addProteinDomain( a );
             abc.addProteinDomain( b );
             abc.addProteinDomain( c );
@@ -4638,7 +4646,7 @@ public class TestSurfacing {
             final Domain d = new BasicDomain( "d", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
             final Domain e = new BasicDomain( "e", 8, 20, ( short ) 1, ( short ) 1, 0.3, 1 );
             final Domain f = new BasicDomain( "f", 15, 16, ( short ) 1, ( short ) 1, 0.2, 1 );
-            final Protein def = new BasicProtein( "def", "nemve" );
+            final Protein def = new BasicProtein( "def", "nemve", 0 );
             def.addProteinDomain( d );
             def.addProteinDomain( e );
             def.addProteinDomain( f );
@@ -4681,13 +4689,13 @@ public class TestSurfacing {
             final Domain g = new BasicDomain( "g", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain h = new BasicDomain( "h", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain x = new BasicDomain( "x", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
-            final Protein eel_0 = new BasicProtein( "0", "eel" );
-            final Protein eel_1 = new BasicProtein( "1", "eel" );
-            final Protein eel_2 = new BasicProtein( "2", "eel" );
-            final Protein eel_3 = new BasicProtein( "3", "eel" );
-            final Protein eel_4 = new BasicProtein( "4", "eel" );
-            final Protein eel_5 = new BasicProtein( "5", "eel" );
-            final Protein eel_6 = new BasicProtein( "6", "eel" );
+            final Protein eel_0 = new BasicProtein( "0", "eel", 0 );
+            final Protein eel_1 = new BasicProtein( "1", "eel", 0 );
+            final Protein eel_2 = new BasicProtein( "2", "eel", 0 );
+            final Protein eel_3 = new BasicProtein( "3", "eel", 0 );
+            final Protein eel_4 = new BasicProtein( "4", "eel", 0 );
+            final Protein eel_5 = new BasicProtein( "5", "eel", 0 );
+            final Protein eel_6 = new BasicProtein( "6", "eel", 0 );
             eel_1.addProteinDomain( a );
             eel_2.addProteinDomain( a );
             eel_2.addProteinDomain( b );
@@ -5435,7 +5443,7 @@ public class TestSurfacing {
             }
             final Domain a = new BasicDomain( "a", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 0.01, 1 );
             final Domain b = new BasicDomain( "b", ( short ) 2, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Protein ab = new BasicProtein( "ab", "varanus" );
+            final Protein ab = new BasicProtein( "ab", "varanus", 0 );
             ab.addProteinDomain( a );
             ab.addProteinDomain( b );
             final Protein ab_s0 = SurfacingUtil.removeOverlappingDomains( 3, false, ab );
@@ -5464,7 +5472,7 @@ public class TestSurfacing {
                                               0.0000001,
                                               1 );
             final Domain e = new BasicDomain( "e", ( short ) 5000, ( short ) 5500, ( short ) 1, ( short ) 1, 0.0001, 1 );
-            final Protein cde = new BasicProtein( "cde", "varanus" );
+            final Protein cde = new BasicProtein( "cde", "varanus", 0 );
             cde.addProteinDomain( c );
             cde.addProteinDomain( d );
             cde.addProteinDomain( e );
@@ -5480,7 +5488,7 @@ public class TestSurfacing {
             final Domain h = new BasicDomain( "h", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.0001, 1 );
             final Domain i = new BasicDomain( "i", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.5, 1 );
             final Domain i2 = new BasicDomain( "i", ( short ) 5, ( short ) 30, ( short ) 1, ( short ) 1, 0.5, 10 );
-            final Protein fghi = new BasicProtein( "fghi", "varanus" );
+            final Protein fghi = new BasicProtein( "fghi", "varanus", 0 );
             fghi.addProteinDomain( f );
             fghi.addProteinDomain( g );
             fghi.addProteinDomain( h );
@@ -5512,7 +5520,7 @@ public class TestSurfacing {
             final Domain m0 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 2, ( short ) 4, 0.5, 1 );
             final Domain m1 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 3, ( short ) 4, 0.5, 1 );
             final Domain m2 = new BasicDomain( "m", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
-            final Protein jklm = new BasicProtein( "jklm", "varanus" );
+            final Protein jklm = new BasicProtein( "jklm", "varanus", 0 );
             jklm.addProteinDomain( j );
             jklm.addProteinDomain( k );
             jklm.addProteinDomain( l );
@@ -5538,7 +5546,7 @@ public class TestSurfacing {
                 return false;
             }
             final Domain only = new BasicDomain( "only", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
-            final Protein od = new BasicProtein( "od", "varanus" );
+            final Protein od = new BasicProtein( "od", "varanus", 0 );
             od.addProteinDomain( only );
             final Protein od_s0 = SurfacingUtil.removeOverlappingDomains( 0, false, od );
             if ( od.getNumberOfProteinDomains() != 1 ) {
@@ -5592,58 +5600,58 @@ public class TestSurfacing {
             // 2 a b c e f g i n o
             // 3 a b d e f g j p q
             // 4 a b d p r
-            final Protein aa1 = new BasicProtein( "aa1", "one" );
+            final Protein aa1 = new BasicProtein( "aa1", "one", 0 );
             aa1.addProteinDomain( a );
             aa1.addProteinDomain( a );
-            final Protein ab1 = new BasicProtein( "ab1", "one" );
+            final Protein ab1 = new BasicProtein( "ab1", "one", 0 );
             ab1.addProteinDomain( a );
             ab1.addProteinDomain( b );
-            final Protein ac1 = new BasicProtein( "ac1", "one" );
+            final Protein ac1 = new BasicProtein( "ac1", "one", 0 );
             ac1.addProteinDomain( a );
             ac1.addProteinDomain( c );
-            final Protein efgh1 = new BasicProtein( "efgh1", "one" );
+            final Protein efgh1 = new BasicProtein( "efgh1", "one", 0 );
             efgh1.addProteinDomain( e );
             efgh1.addProteinDomain( f );
             efgh1.addProteinDomain( g );
             efgh1.addProteinDomain( h );
-            final Protein lm1 = new BasicProtein( "lm1", "one" );
+            final Protein lm1 = new BasicProtein( "lm1", "one", 0 );
             lm1.addProteinDomain( l );
             lm1.addProteinDomain( m );
-            final Protein ab2 = new BasicProtein( "ab2", "two" );
+            final Protein ab2 = new BasicProtein( "ab2", "two", 0 );
             ab2.addProteinDomain( a );
             ab2.addProteinDomain( b );
-            final Protein ac2 = new BasicProtein( "ac2", "two" );
+            final Protein ac2 = new BasicProtein( "ac2", "two", 0 );
             ac2.addProteinDomain( a );
             ac2.addProteinDomain( c );
-            final Protein efgi2 = new BasicProtein( "efgi2", "two" );
+            final Protein efgi2 = new BasicProtein( "efgi2", "two", 0 );
             efgi2.addProteinDomain( e );
             efgi2.addProteinDomain( f );
             efgi2.addProteinDomain( g );
             efgi2.addProteinDomain( i );
-            final Protein no2 = new BasicProtein( "no2", "two" );
+            final Protein no2 = new BasicProtein( "no2", "two", 0 );
             no2.addProteinDomain( n );
             no2.addProteinDomain( o );
-            final Protein ab3 = new BasicProtein( "ab3", "three" );
+            final Protein ab3 = new BasicProtein( "ab3", "three", 0 );
             ab3.addProteinDomain( a );
             ab3.addProteinDomain( b );
-            final Protein ad3 = new BasicProtein( "ad3", "three" );
+            final Protein ad3 = new BasicProtein( "ad3", "three", 0 );
             ad3.addProteinDomain( a );
             ad3.addProteinDomain( d );
-            final Protein efgj3 = new BasicProtein( "efgj3", "three" );
+            final Protein efgj3 = new BasicProtein( "efgj3", "three", 0 );
             efgj3.addProteinDomain( e );
             efgj3.addProteinDomain( f );
             efgj3.addProteinDomain( g );
             efgj3.addProteinDomain( j );
-            final Protein pq3 = new BasicProtein( "pq3", "three" );
+            final Protein pq3 = new BasicProtein( "pq3", "three", 0 );
             pq3.addProteinDomain( p );
             pq3.addProteinDomain( q );
-            final Protein ab4 = new BasicProtein( "ab4", "four" );
+            final Protein ab4 = new BasicProtein( "ab4", "four", 0 );
             ab4.addProteinDomain( a );
             ab4.addProteinDomain( b );
-            final Protein ad4 = new BasicProtein( "ad4", "four" );
+            final Protein ad4 = new BasicProtein( "ad4", "four", 0 );
             ad4.addProteinDomain( a );
             ad4.addProteinDomain( d );
-            final Protein pr4 = new BasicProtein( "pr4", "four" );
+            final Protein pr4 = new BasicProtein( "pr4", "four", 0 );
             pr4.addProteinDomain( p );
             pr4.addProteinDomain( r );
             final List<Protein> one_list = new ArrayList<Protein>();
@@ -5875,58 +5883,58 @@ public class TestSurfacing {
             // 2 a b c e f g i n o
             // 3 a b d e f g j p q
             // 4 a b d p r
-            final Protein aa1 = new BasicProtein( "aa1", "one" );
+            final Protein aa1 = new BasicProtein( "aa1", "one", 0 );
             aa1.addProteinDomain( a );
             aa1.addProteinDomain( a );
-            final Protein ab1 = new BasicProtein( "ab1", "one" );
+            final Protein ab1 = new BasicProtein( "ab1", "one", 0 );
             ab1.addProteinDomain( a );
             ab1.addProteinDomain( b );
-            final Protein ac1 = new BasicProtein( "ac1", "one" );
+            final Protein ac1 = new BasicProtein( "ac1", "one", 0 );
             ac1.addProteinDomain( a );
             ac1.addProteinDomain( c );
-            final Protein efgh1 = new BasicProtein( "efgh1", "one" );
+            final Protein efgh1 = new BasicProtein( "efgh1", "one", 0 );
             efgh1.addProteinDomain( e );
             efgh1.addProteinDomain( f );
             efgh1.addProteinDomain( g );
             efgh1.addProteinDomain( h );
-            final Protein lm1 = new BasicProtein( "lm1", "one" );
+            final Protein lm1 = new BasicProtein( "lm1", "one", 0 );
             lm1.addProteinDomain( l );
             lm1.addProteinDomain( m );
-            final Protein ab2 = new BasicProtein( "ab2", "two" );
+            final Protein ab2 = new BasicProtein( "ab2", "two", 0 );
             ab2.addProteinDomain( a );
             ab2.addProteinDomain( b );
-            final Protein ac2 = new BasicProtein( "ac2", "two" );
+            final Protein ac2 = new BasicProtein( "ac2", "two", 0 );
             ac2.addProteinDomain( a );
             ac2.addProteinDomain( c );
-            final Protein efgi2 = new BasicProtein( "efgi2", "two" );
+            final Protein efgi2 = new BasicProtein( "efgi2", "two", 0 );
             efgi2.addProteinDomain( e );
             efgi2.addProteinDomain( f );
             efgi2.addProteinDomain( g );
             efgi2.addProteinDomain( i );
-            final Protein no2 = new BasicProtein( "no2", "two" );
+            final Protein no2 = new BasicProtein( "no2", "two", 0 );
             no2.addProteinDomain( n );
             no2.addProteinDomain( o );
-            final Protein ab3 = new BasicProtein( "ab3", "three" );
+            final Protein ab3 = new BasicProtein( "ab3", "three", 0 );
             ab3.addProteinDomain( a );
             ab3.addProteinDomain( b );
-            final Protein ad3 = new BasicProtein( "ad3", "three" );
+            final Protein ad3 = new BasicProtein( "ad3", "three", 0 );
             ad3.addProteinDomain( a );
             ad3.addProteinDomain( d );
-            final Protein efgj3 = new BasicProtein( "efgj3", "three" );
+            final Protein efgj3 = new BasicProtein( "efgj3", "three", 0 );
             efgj3.addProteinDomain( e );
             efgj3.addProteinDomain( f );
             efgj3.addProteinDomain( g );
             efgj3.addProteinDomain( j );
-            final Protein pq3 = new BasicProtein( "pq3", "three" );
+            final Protein pq3 = new BasicProtein( "pq3", "three", 0 );
             pq3.addProteinDomain( p );
             pq3.addProteinDomain( q );
-            final Protein ab4 = new BasicProtein( "ab4", "four" );
+            final Protein ab4 = new BasicProtein( "ab4", "four", 0 );
             ab4.addProteinDomain( a );
             ab4.addProteinDomain( b );
-            final Protein ad4 = new BasicProtein( "ad4", "four" );
+            final Protein ad4 = new BasicProtein( "ad4", "four", 0 );
             ad4.addProteinDomain( a );
             ad4.addProteinDomain( d );
-            final Protein pr4 = new BasicProtein( "pr4", "four" );
+            final Protein pr4 = new BasicProtein( "pr4", "four", 0 );
             pr4.addProteinDomain( p );
             pr4.addProteinDomain( r );
             final List<Protein> one_list = new ArrayList<Protein>();

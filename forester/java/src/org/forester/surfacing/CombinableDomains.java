@@ -29,6 +29,9 @@ package org.forester.surfacing;
 import java.util.List;
 import java.util.SortedMap;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
 public interface CombinableDomains {

@@ -29,6 +29,10 @@ package org.forester.surfacing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
+
 public class DirectedCombinableDomains extends BasicCombinableDomains {
 
     public DirectedCombinableDomains( final DomainId n_terminal_key_domain, final Species species ) {

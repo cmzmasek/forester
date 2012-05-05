@@ -40,11 +40,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.forester.protein.BasicProtein;
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
+import org.forester.protein.Protein;
 import org.forester.surfacing.BasicDomain;
-import org.forester.surfacing.BasicProtein;
-import org.forester.surfacing.Domain;
-import org.forester.surfacing.DomainId;
-import org.forester.surfacing.Protein;
 import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.ForesterUtil;
 
@@ -355,7 +355,7 @@ public final class HmmPfamOutputParser {
                             + getInputFile().getCanonicalPath() + "]" );
                 }
                 if ( getReturnType() == ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN ) {
-                    current_protein = new BasicProtein( query, getSpecies() );
+                    current_protein = new BasicProtein( query, getSpecies(), 0 );
                 }
                 else {
                     throw new IllegalArgumentException( "unknown return type" );
@@ -376,7 +376,7 @@ public final class HmmPfamOutputParser {
                 if ( was_not_unique ) {
                     if ( getReturnType() == ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN ) {
                         current_protein = new BasicProtein( current_protein.getProteinId() + " "
-                                + line.substring( 13 ).trim(), getSpecies() );
+                                + line.substring( 13 ).trim(), getSpecies(), 0 );
                     }
                 }
                 else {

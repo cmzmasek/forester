@@ -43,6 +43,8 @@ import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;

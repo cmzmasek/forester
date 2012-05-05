@@ -1,5 +1,4 @@
 // $Id:
-//
 // FORESTER -- software libraries and applications
 // for evolutionary biology research and applications.
 //
@@ -24,9 +23,35 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.protein;
 
-public interface Species extends Comparable<Species> {
+public interface BinaryDomainCombination extends Comparable<BinaryDomainCombination> {
 
-    public abstract String getSpeciesId();
+    public static final String SEPARATOR = "=";
+
+    public DomainId getId0();
+
+    public DomainId getId1();
+
+    public abstract StringBuffer toGraphDescribingLanguage( final OutputFormat format,
+                                                            final String node_attribute,
+                                                            String edge_attribute );
+
+    /**
+     * This has to return a String representation
+     * in the following format:
+     * id0 - id1
+     * 
+     * @return a String representation in the form id0 - id1
+     */
+    @Override
+    public String toString();
+
+    public static enum DomainCombinationType {
+        BASIC, DIRECTED, DIRECTED_ADJACTANT;
+    }
+
+    public static enum OutputFormat {
+        DOT
+    }
 }

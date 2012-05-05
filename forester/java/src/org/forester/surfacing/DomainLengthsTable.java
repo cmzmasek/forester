@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
+import org.forester.protein.Protein;
+import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;

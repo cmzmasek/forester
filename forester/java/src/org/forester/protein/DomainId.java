@@ -24,7 +24,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.protein;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +100,7 @@ public class DomainId implements Comparable<DomainId> {
     // so two elements that are deemed equal by this method are, from the standpoint of the sorted set,
     // equal. The behavior of a sorted set is well-defined even if its ordering is inconsistent with equals; 
     // it just fails to obey the general contract of the Set interface."
-    List<GoId> getGoIds() {
+    public List<GoId> getGoIds() {
         return _go_ids;
     }
 

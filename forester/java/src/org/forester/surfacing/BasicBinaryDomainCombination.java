@@ -26,6 +26,8 @@
 
 package org.forester.surfacing;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {

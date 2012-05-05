@@ -29,6 +29,8 @@ package org.forester.surfacing;
 
 import java.util.SortedMap;
 
+import org.forester.protein.DomainId;
+
 /*
  * A helper class for PrintableDomainSimilarity.
  */

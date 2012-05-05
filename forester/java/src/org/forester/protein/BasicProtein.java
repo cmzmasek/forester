@@ -24,27 +24,42 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.protein;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.species.BasicSpecies;
+import org.forester.species.Species;
+import org.forester.util.ForesterUtil;
+
 // Note: when implementing any "equals" method need to keep in mind that
 // proteins could have the same name and/or id!
 public class BasicProtein implements Protein {
 
     private final ProteinId    _id;
+    private final int          _length;
     private final Species      _species;
     private String             _name;
     private String             _desc;
     private String             _accession;
     private final List<Domain> _protein_domains;
 
-    public BasicProtein( final String id_str, final String species_str ) {
+    public BasicProtein( final String id_str, final String species_str, final int length ) {
+        if ( length < 0 ) {
+            throw new IllegalArgumentException( "attempt to create protein of length " + length );
+        }
+        if ( ForesterUtil.isEmpty( id_str ) ) {
+            throw new IllegalArgumentException( "attempt to create protein with null or empty identifier" );
+        }
+        if ( ForesterUtil.isEmpty( species_str ) ) {
+            throw new IllegalArgumentException( "attempt to create protein with null or empty species" );
+        }
         _id = new ProteinId( id_str );
         _species = new BasicSpecies( species_str );
+        _length = length;
         _protein_domains = new ArrayList<Domain>();
         init();
     }
@@ -181,5 +196,10 @@ public class BasicProtein implements Protein {
 
     public void setName( final String name ) {
         _name = name;
+    }
+
+    @Override
+    public int getLength() {
+        return _length;
     }
 }

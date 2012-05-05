@@ -36,6 +36,8 @@ import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
 import org.forester.go.GoXRef;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.DomainSimilarityCalculator.GoAnnotationOutput;
 import org.forester.util.ForesterUtil;

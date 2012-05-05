@@ -30,7 +30,10 @@ package org.forester.surfacing;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.forester.surfacing.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
 public interface GenomeWideCombinableDomains {

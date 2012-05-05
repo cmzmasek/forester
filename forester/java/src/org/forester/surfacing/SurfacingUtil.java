@@ -71,6 +71,12 @@ import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.protein.BasicProtein;
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
+import org.forester.protein.Protein;
+import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.DomainSimilarityCalculator.GoAnnotationOutput;
 import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
@@ -1154,7 +1160,7 @@ public final class SurfacingUtil {
                                                     final boolean remove_engulfed_domains,
                                                     final Protein protein ) {
         final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(), protein.getSpecies()
-                .getSpeciesId() );
+                .getSpeciesId(), protein.getLength() );
         final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
         final List<Boolean> covered_positions = new ArrayList<Boolean>();
         for( final Domain domain : sorted ) {

@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
 public class BasicCombinableDomains implements CombinableDomains {

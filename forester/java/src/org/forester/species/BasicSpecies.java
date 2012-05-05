@@ -24,27 +24,27 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.species;
 
 import org.forester.util.ForesterUtil;
 
-public class ProteinId implements Comparable<ProteinId> {
+public class BasicSpecies implements Species {
 
-    final private String _id;
+    final private String _species_id;
 
-    public ProteinId( final String id ) {
-        if ( ForesterUtil.isEmpty( id ) ) {
-            throw new IllegalArgumentException( "attempt to create new protein id from empty or null string" );
+    public BasicSpecies( final String species_id ) {
+        if ( ForesterUtil.isEmpty( species_id ) ) {
+            throw new IllegalArgumentException( "attempt to create new species from empty or null string" );
         }
-        _id = id.trim();
+        _species_id = species_id.trim();
     }
 
     @Override
-    public int compareTo( final ProteinId protein_id ) {
-        if ( this == protein_id ) {
+    public int compareTo( final Species species ) {
+        if ( this == species ) {
             return 0;
         }
-        return getId().toLowerCase().compareTo( protein_id.getId().toLowerCase() );
+        return getSpeciesId().toLowerCase().compareTo( species.getSpeciesId().toLowerCase() );
     }
 
     @Override
@@ -53,28 +53,32 @@ public class ProteinId implements Comparable<ProteinId> {
             return true;
         }
         else if ( o == null ) {
-            throw new IllegalArgumentException( "attempt to check protein id equality to null" );
+            throw new IllegalArgumentException( "attempt to check [" + this.getClass() + "] equality to null" );
         }
         else if ( o.getClass() != this.getClass() ) {
-            throw new IllegalArgumentException( "attempt to check protein id equality to " + o + " [" + o.getClass()
-                    + "]" );
+            throw new IllegalArgumentException( "attempt to check [" + this.getClass() + "] equality to " + o + " ["
+                    + o.getClass() + "]" );
         }
         else {
-            return getId().equals( ( ( ProteinId ) o ).getId() );
+            return getSpeciesId().equals( ( ( Species ) o ).getSpeciesId() );
         }
     }
 
-    public String getId() {
-        return _id;
+    /* (non-Javadoc)
+     * @see org.forester.surfacing.Species#getSpeciesId()
+     */
+    @Override
+    public String getSpeciesId() {
+        return _species_id;
     }
 
     @Override
     public int hashCode() {
-        return getId().hashCode();
+        return getSpeciesId().hashCode();
     }
 
     @Override
     public String toString() {
-        return getId();
+        return getSpeciesId();
     }
 }

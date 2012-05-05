@@ -29,6 +29,9 @@ package org.forester.surfacing;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import org.forester.protein.DomainId;
+import org.forester.species.Species;
+
 /*
  * This is to represent a measure of similarity between two or more domains from
  * different genomes.

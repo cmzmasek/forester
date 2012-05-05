@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forester.surfacing.DomainId;
+import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class PfamToGoParser {

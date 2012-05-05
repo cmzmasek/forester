@@ -26,6 +26,9 @@
 
 package org.forester.surfacing;
 
+import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.DomainId;
+
 public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainCombination {
 
     public AdjactantDirectedBinaryDomainCombination( final DomainId n_terminal, final DomainId c_terminal ) {

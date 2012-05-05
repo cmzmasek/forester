@@ -27,6 +27,8 @@
 package org.forester.surfacing;
 
 import org.forester.go.GoId;
+import org.forester.protein.Domain;
+import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 /*
