@@ -178,9 +178,34 @@ public final class SurfacingUtil {
                                                                     final String outfilename_for_dc_for_go_mapping_unique,
                                                                     final String outfilename_for_rank_counts,
                                                                     final String outfilename_for_ancestor_species_counts,
+                                                                    final String outfilename_for_protein_stats,
                                                                     final Map<String, DescriptiveStatistics> protein_length_stats_by_dc,
                                                                     final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
         try {
+            //
+            //            if ( protein_length_stats_by_dc != null ) {
+            //                for( final Entry<?, DescriptiveStatistics> entry : protein_length_stats_by_dc.entrySet() ) {
+            //                    System.out.print( entry.getKey().toString() );
+            //                    System.out.print( ": " );
+            //                    double[] a = entry.getValue().getDataAsDoubleArray();
+            //                    for( int i = 0; i < a.length; i++ ) {
+            //                        System.out.print( a[ i ] + " " );
+            //                    }
+            //                    System.out.println();
+            //                }
+            //            }
+            //            if ( domain_number_stats_by_dc != null ) {
+            //                for( final Entry<?, DescriptiveStatistics> entry : domain_number_stats_by_dc.entrySet() ) {
+            //                    System.out.print( entry.getKey().toString() );
+            //                    System.out.print( ": " );
+            //                    double[] a = entry.getValue().getDataAsDoubleArray();
+            //                    for( int i = 0; i < a.length; i++ ) {
+            //                        System.out.print( a[ i ] + " " );
+            //                    }
+            //                    System.out.println();
+            //                }
+            //            }
+            //
             final BufferedWriter out_counts = new BufferedWriter( new FileWriter( outfilename_for_counts ) );
             final BufferedWriter out_dc = new BufferedWriter( new FileWriter( outfilename_for_dc ) );
             final BufferedWriter out_dc_for_go_mapping = new BufferedWriter( new FileWriter( outfilename_for_dc_for_go_mapping ) );
@@ -206,6 +231,10 @@ public final class SurfacingUtil {
             final SortedMap<Integer, SortedSet<String>> domain_lists_go_unique = new TreeMap<Integer, SortedSet<String>>();
             final Set<String> dcs = dc_gain_counts.keySet();
             final SortedSet<String> more_than_once = new TreeSet<String>();
+            final DescriptiveStatistics gained_once_lengths_stats = new BasicDescriptiveStatistics();
+            final DescriptiveStatistics gained_once_domain_count_stats = new BasicDescriptiveStatistics();
+            final DescriptiveStatistics gained_multiple_times_lengths_stats = new BasicDescriptiveStatistics();
+            final DescriptiveStatistics gained_multiple_times_domain_count_stats = new BasicDescriptiveStatistics();
             for( final String dc : dcs ) {
                 final int count = dc_gain_counts.get( dc );
                 if ( histogram.containsKey( count ) ) {
@@ -240,6 +269,36 @@ public final class SurfacingUtil {
                 }
                 if ( count > 1 ) {
                     more_than_once.add( dc );
+                    if ( protein_length_stats_by_dc != null ) {
+                        final DescriptiveStatistics s = protein_length_stats_by_dc.get( dc );
+                        final double[] a = s.getDataAsDoubleArray();
+                        for( final double element : a ) {
+                            gained_multiple_times_lengths_stats.addValue( element );
+                        }
+                    }
+                    if ( domain_number_stats_by_dc != null ) {
+                        final DescriptiveStatistics s = domain_number_stats_by_dc.get( dc );
+                        final double[] a = s.getDataAsDoubleArray();
+                        for( final double element : a ) {
+                            gained_multiple_times_domain_count_stats.addValue( element );
+                        }
+                    }
+                }
+                else {
+                    if ( protein_length_stats_by_dc != null ) {
+                        final DescriptiveStatistics s = protein_length_stats_by_dc.get( dc );
+                        final double[] a = s.getDataAsDoubleArray();
+                        for( final double element : a ) {
+                            gained_once_lengths_stats.addValue( element );
+                        }
+                    }
+                    if ( domain_number_stats_by_dc != null ) {
+                        final DescriptiveStatistics s = domain_number_stats_by_dc.get( dc );
+                        final double[] a = s.getDataAsDoubleArray();
+                        for( final double element : a ) {
+                            gained_once_domain_count_stats.addValue( element );
+                        }
+                    }
                 }
             }
             final Set<Integer> histogram_keys = histogram.keySet();
@@ -309,21 +368,55 @@ public final class SurfacingUtil {
                                      ForesterUtil.LINE_SEPARATOR );
             out_for_rank_counts.close();
             out_for_ancestor_species_counts.close();
-            System.out.println( "Lengths: " );
-            if ( protein_length_stats_by_dc != null ) {
-                for( final Entry<?, ?> entry : dc_reapp_counts_to_protein_length_stats.entrySet() ) {
-                    System.out.println( entry.getKey().toString() );
-                    System.out.println( ": " );
-                    System.out.println( entry.getValue().toString() );
+            if ( !ForesterUtil.isEmpty( outfilename_for_protein_stats )
+                    && ( ( protein_length_stats_by_dc != null ) || ( domain_number_stats_by_dc != null ) ) ) {
+                final BufferedWriter w = new BufferedWriter( new FileWriter( outfilename_for_protein_stats ) );
+                w.write( "Lengths: " );
+                w.write( "\n" );
+                if ( protein_length_stats_by_dc != null ) {
+                    for( final Entry<Integer, DescriptiveStatistics> entry : dc_reapp_counts_to_protein_length_stats
+                            .entrySet() ) {
+                        w.write( entry.getKey().toString() );
+                        w.write( ": " + entry.getValue().arithmeticMean() );
+                        w.write( "\n" );
+                    }
                 }
-            }
-            System.out.println( "Number of domains: " );
-            if ( domain_number_stats_by_dc != null ) {
-                for( final Entry<?, ?> entry : dc_reapp_counts_to_domain_number_stats.entrySet() ) {
-                    System.out.println( entry.getKey().toString() );
-                    System.out.println( ": " );
-                    System.out.println( entry.getValue().toString() );
+                w.flush();
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Number of domains: " );
+                w.write( "\n" );
+                if ( domain_number_stats_by_dc != null ) {
+                    for( final Entry<Integer, DescriptiveStatistics> entry : dc_reapp_counts_to_domain_number_stats
+                            .entrySet() ) {
+                        w.write( entry.getKey().toString() );
+                        w.write( ": " + entry.getValue().arithmeticMean() );
+                        w.write( "\n" );
+                    }
                 }
+                w.flush();
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained once, protein lengths:" );
+                w.write( "\n" );
+                w.write( gained_once_lengths_stats.toString() );
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained once, domain counts:" );
+                w.write( "\n" );
+                w.write( gained_once_domain_count_stats.toString() );
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained multiple times, protein lengths:" );
+                w.write( "\n" );
+                w.write( gained_multiple_times_lengths_stats.toString() );
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained multiple times, domain counts:" );
+                w.write( "\n" );
+                w.write( gained_multiple_times_domain_count_stats.toString() );
+                w.flush();
+                w.close();
             }
         }
         catch ( final IOException e ) {
@@ -837,6 +930,7 @@ public final class SurfacingUtil {
                                                                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX,
                                                         outfile_name + "_indep_dc_gains_fitch_lca_ranks.txt",
                                                         outfile_name + "_indep_dc_gains_fitch_lca_taxonomies.txt",
+                                                        outfile_name + "_indep_dc_gains_fitch_protein_statistics.txt",
                                                         protein_length_stats_by_dc,
                                                         domain_number_stats_by_dc );
         }
@@ -911,7 +1005,7 @@ public final class SurfacingUtil {
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX, outfile_name
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX, outfile_name
                 + "_MAPPED_indep_dc_gains_fitch_lca_ranks.txt", outfile_name
-                + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt", null, null );
+                + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt", null, null, null );
     }
 
     public static void doit( final List<Protein> proteins,
