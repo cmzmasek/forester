@@ -25,6 +25,8 @@
 
 package org.forester.util;
 
+import java.util.List;
+
 public interface DescriptiveStatistics {
 
     public final static String PLUS_MINUS = "" + ( char ) 177;
@@ -44,6 +46,8 @@ public interface DescriptiveStatistics {
     public abstract double coefficientOfVariation();
 
     public abstract double[] getDataAsDoubleArray();
+
+    public abstract List<Double> getData();
 
     public abstract double getMax();
 

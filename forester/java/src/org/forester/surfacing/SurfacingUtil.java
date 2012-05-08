@@ -238,8 +238,10 @@ public final class SurfacingUtil {
             final DescriptiveStatistics gained_once_domain_count_stats = new BasicDescriptiveStatistics();
             final DescriptiveStatistics gained_multiple_times_lengths_stats = new BasicDescriptiveStatistics();
             final DescriptiveStatistics gained_multiple_times_domain_count_stats = new BasicDescriptiveStatistics();
-            final DescriptiveStatistics gained_multiple_times_domain_length_stats = new BasicDescriptiveStatistics();
-            final DescriptiveStatistics gained_once_domain_length_stats = new BasicDescriptiveStatistics();
+            long gained_multiple_times_domain_length_sum = 0;
+            long gained_once_domain_length_sum = 0;
+            long gained_multiple_times_domain_length_count = 0;
+            long gained_once_domain_length_count = 0;
             for( final String dc : dcs ) {
                 final int count = dc_gain_counts.get( dc );
                 if ( histogram.containsKey( count ) ) {
@@ -286,15 +288,13 @@ public final class SurfacingUtil {
                     more_than_once.add( dc );
                     if ( protein_length_stats_by_dc != null ) {
                         final DescriptiveStatistics s = protein_length_stats_by_dc.get( dc );
-                        final double[] a = s.getDataAsDoubleArray();
-                        for( final double element : a ) {
+                        for( final double element : s.getData() ) {
                             gained_multiple_times_lengths_stats.addValue( element );
                         }
                     }
                     if ( domain_number_stats_by_dc != null ) {
                         final DescriptiveStatistics s = domain_number_stats_by_dc.get( dc );
-                        final double[] a = s.getDataAsDoubleArray();
-                        for( final double element : a ) {
+                        for( final double element : s.getData() ) {
                             gained_multiple_times_domain_count_stats.addValue( element );
                         }
                     }
@@ -302,28 +302,26 @@ public final class SurfacingUtil {
                         final String[] ds = dc.split( "=" );
                         final DescriptiveStatistics s0 = domain_length_stats_by_domain.get( ds[ 0 ] );
                         final DescriptiveStatistics s1 = domain_length_stats_by_domain.get( ds[ 1 ] );
-                        final double[] a0 = s0.getDataAsDoubleArray();
-                        final double[] a1 = s1.getDataAsDoubleArray();
-                        for( final double element : a0 ) {
-                            gained_multiple_times_domain_length_stats.addValue( element );
+                        for( final double element : s0.getData() ) {
+                            gained_multiple_times_domain_length_sum += element;
+                            ++gained_multiple_times_domain_length_count;
                         }
-                        for( final double element : a1 ) {
-                            gained_multiple_times_domain_length_stats.addValue( element );
+                        for( final double element : s1.getData() ) {
+                            gained_multiple_times_domain_length_sum += element;
+                            ++gained_multiple_times_domain_length_count;
                         }
                     }
                 }
                 else {
                     if ( protein_length_stats_by_dc != null ) {
                         final DescriptiveStatistics s = protein_length_stats_by_dc.get( dc );
-                        final double[] a = s.getDataAsDoubleArray();
-                        for( final double element : a ) {
+                        for( final double element : s.getData() ) {
                             gained_once_lengths_stats.addValue( element );
                         }
                     }
                     if ( domain_number_stats_by_dc != null ) {
                         final DescriptiveStatistics s = domain_number_stats_by_dc.get( dc );
-                        final double[] a = s.getDataAsDoubleArray();
-                        for( final double element : a ) {
+                        for( final double element : s.getData() ) {
                             gained_once_domain_count_stats.addValue( element );
                         }
                     }
@@ -331,13 +329,13 @@ public final class SurfacingUtil {
                         final String[] ds = dc.split( "=" );
                         final DescriptiveStatistics s0 = domain_length_stats_by_domain.get( ds[ 0 ] );
                         final DescriptiveStatistics s1 = domain_length_stats_by_domain.get( ds[ 1 ] );
-                        final double[] a0 = s0.getDataAsDoubleArray();
-                        final double[] a1 = s1.getDataAsDoubleArray();
-                        for( final double element : a0 ) {
-                            gained_once_domain_length_stats.addValue( element );
+                        for( final double element : s0.getData() ) {
+                            gained_once_domain_length_sum += element;
+                            ++gained_once_domain_length_count;
                         }
-                        for( final double element : a1 ) {
-                            gained_once_domain_length_stats.addValue( element );
+                        for( final double element : s1.getData() ) {
+                            gained_once_domain_length_sum += element;
+                            ++gained_once_domain_length_count;
                         }
                     }
                 }
@@ -409,7 +407,7 @@ public final class SurfacingUtil {
             out_for_rank_counts.close();
             out_for_ancestor_species_counts.close();
             if ( !ForesterUtil.isEmpty( outfilename_for_protein_stats )
-                    && ( ( protein_length_stats_by_dc != null ) || ( domain_number_stats_by_dc != null ) ) ) {
+                    && ( ( domain_length_stats_by_domain != null ) || ( protein_length_stats_by_dc != null ) || ( domain_number_stats_by_dc != null ) ) ) {
                 final BufferedWriter w = new BufferedWriter( new FileWriter( outfilename_for_protein_stats ) );
                 w.write( "Domain Lengths: " );
                 w.write( "\n" );
@@ -455,12 +453,17 @@ public final class SurfacingUtil {
                 w.write( "\n" );
                 w.write( "Gained once, domain lengths:" );
                 w.write( "\n" );
-                w.write( gained_once_domain_length_stats.toString() );
+                w.write( "N: " + gained_once_domain_length_count );
+                w.write( "\n" );
+                w.write( "Avg: " + ( ( double ) gained_once_domain_length_sum / gained_once_domain_length_count ) );
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "Gained multiple times, domain lengths:" );
                 w.write( "\n" );
-                w.write( gained_multiple_times_domain_length_stats.toString() );
+                w.write( "N: " + gained_multiple_times_domain_length_count );
+                w.write( "\n" );
+                w.write( "Avg: "
+                        + ( ( double ) gained_multiple_times_domain_length_sum / gained_multiple_times_domain_length_count ) );
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "\n" );

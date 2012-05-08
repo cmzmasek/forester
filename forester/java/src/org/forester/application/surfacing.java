@@ -286,6 +286,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
+    private static final boolean                              PERFORM_DC_REGAIN_PROTEINS_STATS                                              = true;
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -1760,9 +1761,13 @@ public class surfacing {
         catch ( final IOException e3 ) {
             e3.printStackTrace();
         }
-        final Map<String, DescriptiveStatistics> protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
-        final Map<String, DescriptiveStatistics> domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+        Map<String, DescriptiveStatistics> protein_length_stats_by_dc = null;
+        Map<String, DescriptiveStatistics> domain_number_stats_by_dc = null;
         final Map<String, DescriptiveStatistics> domain_length_stats_by_domain = new HashMap<String, DescriptiveStatistics>();
+        if ( PERFORM_DC_REGAIN_PROTEINS_STATS ) {
+            protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+            domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+        }
         // Main loop:
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();

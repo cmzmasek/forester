@@ -356,4 +356,9 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     public static double sampleStandardUnit( final double value, final double mean, final double sd ) {
         return ( value - mean ) / sd;
     }
+
+    @Override
+    public List<Double> getData() {
+        return _data;
+    }
 }
