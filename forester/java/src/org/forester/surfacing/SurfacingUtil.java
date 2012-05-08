@@ -72,6 +72,7 @@ import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.Domain;
@@ -180,7 +181,8 @@ public final class SurfacingUtil {
                                                                     final String outfilename_for_ancestor_species_counts,
                                                                     final String outfilename_for_protein_stats,
                                                                     final Map<String, DescriptiveStatistics> protein_length_stats_by_dc,
-                                                                    final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
+                                                                    final Map<String, DescriptiveStatistics> domain_number_stats_by_dc,
+                                                                    final Map<String, DescriptiveStatistics> domain_length_stats_by_domain ) {
         try {
             //
             //            if ( protein_length_stats_by_dc != null ) {
@@ -227,6 +229,7 @@ public final class SurfacingUtil {
             final SortedMap<Integer, StringBuilder> domain_lists = new TreeMap<Integer, StringBuilder>();
             final SortedMap<Integer, DescriptiveStatistics> dc_reapp_counts_to_protein_length_stats = new TreeMap<Integer, DescriptiveStatistics>();
             final SortedMap<Integer, DescriptiveStatistics> dc_reapp_counts_to_domain_number_stats = new TreeMap<Integer, DescriptiveStatistics>();
+            final SortedMap<Integer, DescriptiveStatistics> dc_reapp_counts_to_domain_lengths_stats = new TreeMap<Integer, DescriptiveStatistics>();
             final SortedMap<Integer, PriorityQueue<String>> domain_lists_go = new TreeMap<Integer, PriorityQueue<String>>();
             final SortedMap<Integer, SortedSet<String>> domain_lists_go_unique = new TreeMap<Integer, SortedSet<String>>();
             final Set<String> dcs = dc_gain_counts.keySet();
@@ -235,6 +238,8 @@ public final class SurfacingUtil {
             final DescriptiveStatistics gained_once_domain_count_stats = new BasicDescriptiveStatistics();
             final DescriptiveStatistics gained_multiple_times_lengths_stats = new BasicDescriptiveStatistics();
             final DescriptiveStatistics gained_multiple_times_domain_count_stats = new BasicDescriptiveStatistics();
+            final DescriptiveStatistics gained_multiple_times_domain_length_stats = new BasicDescriptiveStatistics();
+            final DescriptiveStatistics gained_once_domain_length_stats = new BasicDescriptiveStatistics();
             for( final String dc : dcs ) {
                 final int count = dc_gain_counts.get( dc );
                 if ( histogram.containsKey( count ) ) {
@@ -267,6 +272,16 @@ public final class SurfacingUtil {
                     dc_reapp_counts_to_domain_number_stats.get( count ).addValue( domain_number_stats_by_dc.get( dc )
                             .arithmeticMean() );
                 }
+                if ( domain_length_stats_by_domain != null ) {
+                    if ( !dc_reapp_counts_to_domain_lengths_stats.containsKey( count ) ) {
+                        dc_reapp_counts_to_domain_lengths_stats.put( count, new BasicDescriptiveStatistics() );
+                    }
+                    final String[] ds = dc.split( "=" );
+                    dc_reapp_counts_to_domain_lengths_stats.get( count ).addValue( domain_length_stats_by_domain
+                            .get( ds[ 0 ] ).arithmeticMean() );
+                    dc_reapp_counts_to_domain_lengths_stats.get( count ).addValue( domain_length_stats_by_domain
+                            .get( ds[ 1 ] ).arithmeticMean() );
+                }
                 if ( count > 1 ) {
                     more_than_once.add( dc );
                     if ( protein_length_stats_by_dc != null ) {
@@ -283,6 +298,19 @@ public final class SurfacingUtil {
                             gained_multiple_times_domain_count_stats.addValue( element );
                         }
                     }
+                    if ( domain_length_stats_by_domain != null ) {
+                        final String[] ds = dc.split( "=" );
+                        final DescriptiveStatistics s0 = domain_length_stats_by_domain.get( ds[ 0 ] );
+                        final DescriptiveStatistics s1 = domain_length_stats_by_domain.get( ds[ 1 ] );
+                        final double[] a0 = s0.getDataAsDoubleArray();
+                        final double[] a1 = s1.getDataAsDoubleArray();
+                        for( final double element : a0 ) {
+                            gained_multiple_times_domain_length_stats.addValue( element );
+                        }
+                        for( final double element : a1 ) {
+                            gained_multiple_times_domain_length_stats.addValue( element );
+                        }
+                    }
                 }
                 else {
                     if ( protein_length_stats_by_dc != null ) {
@@ -297,6 +325,19 @@ public final class SurfacingUtil {
                         final double[] a = s.getDataAsDoubleArray();
                         for( final double element : a ) {
                             gained_once_domain_count_stats.addValue( element );
+                        }
+                    }
+                    if ( domain_length_stats_by_domain != null ) {
+                        final String[] ds = dc.split( "=" );
+                        final DescriptiveStatistics s0 = domain_length_stats_by_domain.get( ds[ 0 ] );
+                        final DescriptiveStatistics s1 = domain_length_stats_by_domain.get( ds[ 1 ] );
+                        final double[] a0 = s0.getDataAsDoubleArray();
+                        final double[] a1 = s1.getDataAsDoubleArray();
+                        for( final double element : a0 ) {
+                            gained_once_domain_length_stats.addValue( element );
+                        }
+                        for( final double element : a1 ) {
+                            gained_once_domain_length_stats.addValue( element );
                         }
                     }
                 }
@@ -322,7 +363,6 @@ public final class SurfacingUtil {
             out_dc.close();
             out_dc_for_go_mapping.close();
             out_dc_for_go_mapping_unique.close();
-            //
             final SortedMap<String, Integer> lca_rank_counts = new TreeMap<String, Integer>();
             final SortedMap<String, Integer> lca_ancestor_species_counts = new TreeMap<String, Integer>();
             for( final String dc : more_than_once ) {
@@ -371,13 +411,28 @@ public final class SurfacingUtil {
             if ( !ForesterUtil.isEmpty( outfilename_for_protein_stats )
                     && ( ( protein_length_stats_by_dc != null ) || ( domain_number_stats_by_dc != null ) ) ) {
                 final BufferedWriter w = new BufferedWriter( new FileWriter( outfilename_for_protein_stats ) );
-                w.write( "Lengths: " );
+                w.write( "Domain Lengths: " );
+                w.write( "\n" );
+                if ( domain_length_stats_by_domain != null ) {
+                    for( final Entry<Integer, DescriptiveStatistics> entry : dc_reapp_counts_to_domain_lengths_stats
+                            .entrySet() ) {
+                        w.write( entry.getKey().toString() );
+                        w.write( "\t" + entry.getValue().arithmeticMean() );
+                        w.write( "\t" + entry.getValue().median() );
+                        w.write( "\n" );
+                    }
+                }
+                w.flush();
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Protein Lengths: " );
                 w.write( "\n" );
                 if ( protein_length_stats_by_dc != null ) {
                     for( final Entry<Integer, DescriptiveStatistics> entry : dc_reapp_counts_to_protein_length_stats
                             .entrySet() ) {
                         w.write( entry.getKey().toString() );
-                        w.write( ": " + entry.getValue().arithmeticMean() );
+                        w.write( "\t" + entry.getValue().arithmeticMean() );
+                        w.write( "\t" + entry.getValue().median() );
                         w.write( "\n" );
                     }
                 }
@@ -390,11 +445,24 @@ public final class SurfacingUtil {
                     for( final Entry<Integer, DescriptiveStatistics> entry : dc_reapp_counts_to_domain_number_stats
                             .entrySet() ) {
                         w.write( entry.getKey().toString() );
-                        w.write( ": " + entry.getValue().arithmeticMean() );
+                        w.write( "\t" + entry.getValue().arithmeticMean() );
+                        w.write( "\t" + entry.getValue().median() );
                         w.write( "\n" );
                     }
                 }
                 w.flush();
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained once, domain lengths:" );
+                w.write( "\n" );
+                w.write( gained_once_domain_length_stats.toString() );
+                w.write( "\n" );
+                w.write( "\n" );
+                w.write( "Gained multiple times, domain lengths:" );
+                w.write( "\n" );
+                w.write( gained_multiple_times_domain_length_stats.toString() );
+                w.write( "\n" );
+                w.write( "\n" );
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "Gained once, protein lengths:" );
@@ -702,7 +770,8 @@ public final class SurfacingUtil {
                                                  final List<BinaryDomainCombination> all_binary_domains_combination_lost_fitch,
                                                  final BinaryDomainCombination.DomainCombinationType dc_type,
                                                  final Map<String, DescriptiveStatistics> protein_length_stats_by_dc,
-                                                 final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
+                                                 final Map<String, DescriptiveStatistics> domain_number_stats_by_dc,
+                                                 final Map<String, DescriptiveStatistics> domain_length_stats_by_domain ) {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         final SortedSet<String> all_pfams_encountered = new TreeSet<String>();
@@ -932,7 +1001,8 @@ public final class SurfacingUtil {
                                                         outfile_name + "_indep_dc_gains_fitch_lca_taxonomies.txt",
                                                         outfile_name + "_indep_dc_gains_fitch_protein_statistics.txt",
                                                         protein_length_stats_by_dc,
-                                                        domain_number_stats_by_dc );
+                                                        domain_number_stats_by_dc,
+                                                        domain_length_stats_by_domain );
         }
     }
 
@@ -1005,7 +1075,7 @@ public final class SurfacingUtil {
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX, outfile_name
                 + surfacing.INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX, outfile_name
                 + "_MAPPED_indep_dc_gains_fitch_lca_ranks.txt", outfile_name
-                + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt", null, null, null );
+                + "_MAPPED_indep_dc_gains_fitch_lca_taxonomies.txt", null, null, null, null );
     }
 
     public static void doit( final List<Protein> proteins,
@@ -1774,181 +1844,6 @@ public final class SurfacingUtil {
                 out.write( "GO term acc" );
                 out.write( "</b></td><td><b>" );
                 out.write( "GO term" );
-                out.write( "</b></td><td><b>" );
-                out.write( "GO namespace" );
-                out.write( "</b></td>" );
-                out.write( "</tr>" );
-                out.write( SurfacingConstants.NL );
-                out.write( "</tr>" );
-                out.write( SurfacingConstants.NL );
-                per_node_counter = 0;
-                if ( matrix.getNumberOfCharacters() > 0 ) {
-                    per_node_go_mapped_domain_gain_loss_outfile = new File( per_node_go_mapped_domain_gain_loss_files_base_dir
-                            + ForesterUtil.FILE_SEPARATOR + id + suffix_for_per_node_events_file );
-                    SurfacingUtil.checkForOutputFileWriteability( per_node_go_mapped_domain_gain_loss_outfile );
-                    per_node_go_mapped_domain_gain_loss_outfile_writer = ForesterUtil
-                            .createBufferedWriter( per_node_go_mapped_domain_gain_loss_outfile );
-                }
-                else {
-                    per_node_go_mapped_domain_gain_loss_outfile = null;
-                    per_node_go_mapped_domain_gain_loss_outfile_writer = null;
-                }
-                for( int c = 0; c < matrix.getNumberOfCharacters(); ++c ) {
-                    // Not nice:
-                    // using null to indicate either UNCHANGED_PRESENT or GAIN.
-                    if ( ( matrix.getState( id, c ) == state )
-                            || ( ( state == null ) && ( ( matrix.getState( id, c ) == CharacterStateMatrix.GainLossStates.UNCHANGED_PRESENT ) || ( matrix
-                                    .getState( id, c ) == CharacterStateMatrix.GainLossStates.GAIN ) ) ) ) {
-                        final String character = matrix.getCharacter( c );
-                        String domain_0 = "";
-                        String domain_1 = "";
-                        if ( character.indexOf( BinaryDomainCombination.SEPARATOR ) > 0 ) {
-                            final String[] s = character.split( BinaryDomainCombination.SEPARATOR );
-                            if ( s.length != 2 ) {
-                                throw new AssertionError( "this should not have happened: unexpected format for domain combination: ["
-                                        + character + "]" );
-                            }
-                            domain_0 = s[ 0 ];
-                            domain_1 = s[ 1 ];
-                        }
-                        else {
-                            domain_0 = character;
-                        }
-                        writeDomainData( domain_id_to_go_ids_map,
-                                         go_id_to_term_map,
-                                         go_namespace_limit,
-                                         out,
-                                         domain_0,
-                                         domain_1,
-                                         prefix_for_html,
-                                         character_separator,
-                                         domain_id_to_secondary_features_maps,
-                                         null );
-                        all_pfams_encountered.add( domain_0 );
-                        if ( pfams_gained_or_lost != null ) {
-                            pfams_gained_or_lost.add( domain_0 );
-                        }
-                        if ( !ForesterUtil.isEmpty( domain_1 ) ) {
-                            all_pfams_encountered.add( domain_1 );
-                            if ( pfams_gained_or_lost != null ) {
-                                pfams_gained_or_lost.add( domain_1 );
-                            }
-                        }
-                        if ( per_node_go_mapped_domain_gain_loss_outfile_writer != null ) {
-                            writeDomainsToIndividualFilePerTreeNode( per_node_go_mapped_domain_gain_loss_outfile_writer,
-                                                                     domain_0,
-                                                                     domain_1 );
-                            per_node_counter++;
-                        }
-                    }
-                }
-                if ( per_node_go_mapped_domain_gain_loss_outfile_writer != null ) {
-                    per_node_go_mapped_domain_gain_loss_outfile_writer.close();
-                    if ( per_node_counter < 1 ) {
-                        per_node_go_mapped_domain_gain_loss_outfile.delete();
-                    }
-                    per_node_counter = 0;
-                }
-                out.write( "</table>" );
-                out.write( SurfacingConstants.NL );
-                out.write( "<hr>" );
-                out.write( SurfacingConstants.NL );
-            } // for( final String id : sorted_ids ) {  
-            out.write( "</body>" );
-            out.write( SurfacingConstants.NL );
-            out.write( "</html>" );
-            out.write( SurfacingConstants.NL );
-            out.flush();
-            out.close();
-        }
-        catch ( final IOException e ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
-        }
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters detailed HTML list: \"" + filename + "\"" );
-    }
-
-    public static void writeBinaryStatesMatrixToListORIGIG( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
-                                                            final Map<GoId, GoTerm> go_id_to_term_map,
-                                                            final GoNameSpace go_namespace_limit,
-                                                            final boolean domain_combinations,
-                                                            final CharacterStateMatrix<CharacterStateMatrix.GainLossStates> matrix,
-                                                            final CharacterStateMatrix.GainLossStates state,
-                                                            final String filename,
-                                                            final String indentifier_characters_separator,
-                                                            final String character_separator,
-                                                            final String title_for_html,
-                                                            final String prefix_for_html,
-                                                            final Map<DomainId, Set<String>>[] domain_id_to_secondary_features_maps,
-                                                            final SortedSet<String> all_pfams_encountered,
-                                                            final SortedSet<String> pfams_gained_or_lost,
-                                                            final String suffix_for_per_node_events_file ) {
-        if ( ( go_namespace_limit != null ) && ( ( go_id_to_term_map == null ) || ( go_id_to_term_map.size() < 1 ) ) ) {
-            throw new IllegalArgumentException( "attempt to use GO namespace limit without a GO-id to term map" );
-        }
-        else if ( ( ( domain_id_to_go_ids_map == null ) || ( domain_id_to_go_ids_map.size() < 1 ) ) ) {
-            throw new IllegalArgumentException( "attempt to output detailed HTML without a Pfam to GO map" );
-        }
-        else if ( ( ( go_id_to_term_map == null ) || ( go_id_to_term_map.size() < 1 ) ) ) {
-            throw new IllegalArgumentException( "attempt to output detailed HTML without a GO-id to term map" );
-        }
-        final File outfile = new File( filename );
-        checkForOutputFileWriteability( outfile );
-        final SortedSet<String> sorted_ids = new TreeSet<String>();
-        for( int i = 0; i < matrix.getNumberOfIdentifiers(); ++i ) {
-            sorted_ids.add( matrix.getIdentifier( i ) );
-        }
-        try {
-            final Writer out = new BufferedWriter( new FileWriter( outfile ) );
-            final File per_node_go_mapped_domain_gain_loss_files_base_dir = createBaseDirForPerNodeDomainFiles( surfacing.BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES,
-                                                                                                                domain_combinations,
-                                                                                                                state,
-                                                                                                                filename );
-            Writer per_node_go_mapped_domain_gain_loss_outfile_writer = null;
-            File per_node_go_mapped_domain_gain_loss_outfile = null;
-            int per_node_counter = 0;
-            out.write( "<html>" );
-            out.write( SurfacingConstants.NL );
-            addHtmlHead( out, title_for_html );
-            out.write( SurfacingConstants.NL );
-            out.write( "<body>" );
-            out.write( SurfacingConstants.NL );
-            out.write( "<h1>" );
-            out.write( SurfacingConstants.NL );
-            out.write( title_for_html );
-            out.write( SurfacingConstants.NL );
-            out.write( "</h1>" );
-            out.write( SurfacingConstants.NL );
-            out.write( "<table>" );
-            out.write( SurfacingConstants.NL );
-            for( final String id : sorted_ids ) {
-                out.write( "<tr>" );
-                out.write( "<td>" );
-                out.write( "<a href=\"#" + id + "\">" + id + "</a>" );
-                writeTaxonomyLinks( out, id );
-                out.write( "</td>" );
-                out.write( "</tr>" );
-                out.write( SurfacingConstants.NL );
-            }
-            out.write( "</table>" );
-            out.write( SurfacingConstants.NL );
-            for( final String id : sorted_ids ) {
-                out.write( SurfacingConstants.NL );
-                out.write( "<h2>" );
-                out.write( "<a name=\"" + id + "\">" + id + "</a>" );
-                writeTaxonomyLinks( out, id );
-                out.write( "</h2>" );
-                out.write( SurfacingConstants.NL );
-                out.write( "<table>" );
-                out.write( SurfacingConstants.NL );
-                out.write( "<tr>" );
-                out.write( "<td><b>" );
-                out.write( "Pfam domain(s)" );
-                out.write( "</b></td><td><b>" );
-                out.write( "GO term acc" );
-                out.write( "</b></td><td><b>" );
-                out.write( "GO term" );
-                out.write( "</b></td><td><b>" );
-                out.write( "Penultimate GO term" );
                 out.write( "</b></td><td><b>" );
                 out.write( "GO namespace" );
                 out.write( "</b></td>" );

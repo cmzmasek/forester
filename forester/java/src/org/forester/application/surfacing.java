@@ -64,6 +64,7 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.BinaryDomainCombination;
+import org.forester.protein.Domain;
 import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.species.BasicSpecies;
@@ -234,8 +235,8 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                                    = '#';
-    final static private String                               PRG_VERSION                                                                   = "2.240";
-    final static private String                               PRG_DATE                                                                      = "2012.05.04";
+    final static private String                               PRG_VERSION                                                                   = "2.250";
+    final static private String                               PRG_DATE                                                                      = "2012.05.07";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -1761,6 +1762,7 @@ public class surfacing {
         }
         final Map<String, DescriptiveStatistics> protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
         final Map<String, DescriptiveStatistics> domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+        final Map<String, DescriptiveStatistics> domain_length_stats_by_domain = new HashMap<String, DescriptiveStatistics>();
         // Main loop:
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();
@@ -1911,6 +1913,13 @@ public class surfacing {
                     dc_data_writer.write( SurfacingUtil.proteinToDomainCombinations( protein, count + "", "\t" )
                             .toString() );
                     ++count;
+                    for( final Domain d : protein.getProteinDomains() ) {
+                        final String d_str = d.getDomainId().toString();
+                        if ( !domain_length_stats_by_domain.containsKey( d_str ) ) {
+                            domain_length_stats_by_domain.put( d_str, new BasicDescriptiveStatistics() );
+                        }
+                        domain_length_stats_by_domain.get( d_str ).addValue( d.getLength() );
+                    }
                 }
             }
             catch ( final IOException e ) {
@@ -2261,7 +2270,8 @@ public class surfacing {
                                                         all_bin_domain_combinations_lost_fitch,
                                                         dc_type,
                                                         protein_length_stats_by_dc,
-                                                        domain_number_stats_by_dc );
+                                                        domain_number_stats_by_dc,
+                                                        domain_length_stats_by_domain );
                 // Listing of all domain combinations gained is only done if only one input tree is used. 
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {

@@ -74,6 +74,7 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
+    @Override
     public int getLength() {
         throw new RuntimeException( "method not implemented" );
     }

@@ -40,11 +40,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
 import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
-import org.forester.surfacing.BasicDomain;
 import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.ForesterUtil;
 

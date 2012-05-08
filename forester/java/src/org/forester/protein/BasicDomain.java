@@ -24,11 +24,9 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.surfacing;
+package org.forester.protein;
 
 import org.forester.go.GoId;
-import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class BasicDomain implements Domain {
@@ -65,28 +63,7 @@ public class BasicDomain implements Domain {
                         final short total_count,
                         final double per_sequence_evalue,
                         final double per_sequence_score ) {
-        if ( ( from >= to ) || ( from < 0 ) ) {
-            throw new IllegalArgumentException( "attempt to create protein domain from " + from + " to " + to );
-        }
-        if ( ForesterUtil.isEmpty( id_str ) ) {
-            throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
-        }
-        if ( ( number > total_count ) || ( number < 0 ) ) {
-            throw new IllegalArgumentException( "attempt to create protein domain number " + number + " out of "
-                    + total_count );
-        }
-        if ( per_sequence_evalue < 0.0 ) {
-            throw new IllegalArgumentException( "attempt to create protein domain with E-value" );
-        }
-        _id = new DomainId( id_str );
-        _from = from;
-        _to = to;
-        _number = number;
-        _total_count = total_count;
-        _per_sequence_evalue = per_sequence_evalue;
-        _per_sequence_score = per_sequence_score;
-        _per_domain_evalue = -1;
-        _per_domain_score = -1;
+        this( id_str, from, to, number, total_count, per_sequence_evalue, per_sequence_score, 0, 0 );
     }
 
     public BasicDomain( final String id_str,
@@ -109,7 +86,7 @@ public class BasicDomain implements Domain {
                     + total_count );
         }
         if ( ( per_sequence_evalue < 0.0 ) || ( per_domain_evalue < 0.0 ) ) {
-            throw new IllegalArgumentException( "attempt to create protein domain with E-value" );
+            throw new IllegalArgumentException( "attempt to create protein domain with negative E-value" );
         }
         _id = new DomainId( id_str );
         _from = from;
@@ -233,5 +210,10 @@ public class BasicDomain implements Domain {
 
     public StringBuffer toStringBuffer() {
         return new StringBuffer( getDomainId().getId() );
+    }
+
+    @Override
+    public int getLength() {
+        return 1 + getTo() - getFrom();
     }
 }

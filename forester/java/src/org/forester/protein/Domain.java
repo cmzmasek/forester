@@ -34,6 +34,8 @@ public interface Domain extends Comparable<Domain> {
 
     public DomainId getDomainId();
 
+    public int getLength();
+
     public int getFrom();
 
     public GoId getGoId( int i );
