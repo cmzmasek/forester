@@ -27,9 +27,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "2010.03.19"
+    PRG_DATE       = "2012.05.11"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.05"
+    PRG_VERSION    = "1.06"
     COPYRIGHT      = "2008-2010 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
@@ -487,12 +487,15 @@ module Evoruby
         end
 
         if @rem_red
-          removed = msa.remove_redundant_sequences!( true, true )
+          removed = msa.remove_redundant_sequences!( true, false )
           if removed.size > 0
-            Util.print_message( PRG_NAME, "going to ignore the following " + removed.size.to_s + " redundant sequences:" )
-            log << "going to ignore the following " + removed.size.to_s + " redundant sequences:" + ld
+            identicals = msa.get_identical_seqs_detected
+            log << "the following " + identicals.size.to_s + " sequences are identical:" + ld
+            identicals.each { | s |
+              log << s + ld
+            }
+            log << "ignoring the following " + removed.size.to_s + " redundant sequences:" + ld
             removed.each { | seq_name |
-              puts seq_name
               log << seq_name + ld
             }
             Util.print_message( PRG_NAME, "will store " + msa.get_number_of_seqs.to_s + " non-redundant sequences" )
