@@ -593,13 +593,39 @@ public class PhylogenyMethods {
         return stats;
     }
 
-    public static DescriptiveStatistics calculatConfidenceStatistics( final Phylogeny phy ) {
+    public static DescriptiveStatistics calculatBranchLengthStatistics( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
-            if ( !n.isExternal() ) {
+            if ( !n.isRoot() && ( n.getDistanceToParent() >= 0.0 ) ) {
+                stats.addValue( n.getDistanceToParent() );
+            }
+        }
+        return stats;
+    }
+
+    public static List<DescriptiveStatistics> calculatConfidenceStatistics( final Phylogeny phy ) {
+        final List<DescriptiveStatistics> stats = new ArrayList<DescriptiveStatistics>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() && !n.isRoot() ) {
                 if ( n.getBranchData().isHasConfidences() ) {
-                    stats.addValue( n.getBranchData().getConfidence( 0 ).getValue() );
+                    for( int i = 0; i < n.getBranchData().getConfidences().size(); ++i ) {
+                        final Confidence c = n.getBranchData().getConfidences().get( i );
+                        if ( ( i > ( stats.size() - 1 ) ) || ( stats.get( i ) == null ) ) {
+                            stats.add( i, new BasicDescriptiveStatistics() );
+                        }
+                        if ( !ForesterUtil.isEmpty( c.getType() ) ) {
+                            if ( !ForesterUtil.isEmpty( stats.get( i ).getDescription() ) ) {
+                                if ( !stats.get( i ).getDescription().equalsIgnoreCase( c.getType() ) ) {
+                                    throw new IllegalArgumentException( "support values in node [" + n.toString()
+                                            + "] appear inconsistently ordered" );
+                                }
+                            }
+                            stats.get( i ).setDescription( c.getType() );
+                        }
+                        stats.get( i ).addValue( ( ( c != null ) && ( c.getValue() >= 0 ) ) ? c.getValue() : 0 );
+                    }
                 }
             }
         }

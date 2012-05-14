@@ -85,4 +85,8 @@ public interface DescriptiveStatistics {
 
     @Override
     public abstract String toString();
+
+    public abstract void setDescription( final String desc );
+
+    public abstract String getDescription();
 }

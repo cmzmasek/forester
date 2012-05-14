@@ -79,6 +79,7 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
+import org.forester.util.AsciiHistogram;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 import org.forester.ws.uniprot.UniProtTaxonomy;
@@ -573,42 +574,82 @@ public final class AptxUtil {
             desc.append( "Maximum distance to root: " );
             desc.append( ForesterUtil.round( PhylogenyMethods.calculateMaxDistanceToRoot( phy ), 6 ) );
             desc.append( "\n" );
-            desc.append( "Descendants per node statistics: " );
-            final DescriptiveStatistics ds = PhylogenyMethods.calculatNumberOfDescendantsPerNodeStatistics( phy );
-            desc.append( "\n" );
-            desc.append( "    Median: " + ForesterUtil.round( ds.median(), 2 ) );
-            desc.append( "\n" );
-            desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 2 ) );
-            desc.append( "\n" );
-            desc.append( "    SD: " + ForesterUtil.round( ds.sampleStandardDeviation(), 2 ) );
-            desc.append( "\n" );
-            desc.append( "    Minimum: " + ForesterUtil.roundToInt( ds.getMin() ) );
-            desc.append( "\n" );
-            desc.append( "    Maximum: " + ForesterUtil.roundToInt( ds.getMax() ) );
-            desc.append( "\n" );
-            final DescriptiveStatistics cs = PhylogenyMethods.calculatConfidenceStatistics( phy );
-            if ( cs.getN() > 1 ) {
-                desc.append( "Support statistics: " );
-                desc.append( "\n" );
-                desc.append( "    Branches with support: " + cs.getN() );
-                desc.append( "\n" );
-                desc.append( "    Median: " + ForesterUtil.round( cs.median(), 6 ) );
-                desc.append( "\n" );
-                desc.append( "    Mean: " + ForesterUtil.round( cs.arithmeticMean(), 6 ) );
-                desc.append( "\n" );
-                if ( cs.getN() > 2 ) {
-                    desc.append( "    SD: " + ForesterUtil.round( cs.sampleStandardDeviation(), 6 ) );
-                    desc.append( "\n" );
-                }
-                desc.append( "    Minimum: " + ForesterUtil.roundToInt( cs.getMin() ) );
-                desc.append( "\n" );
-                desc.append( "    Maximum: " + ForesterUtil.roundToInt( cs.getMax() ) );
-                desc.append( "\n" );
-            }
             final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( phy.getRoot() );
             if ( taxs != null ) {
                 desc.append( "Distinct external taxonomies: " );
                 desc.append( taxs.size() );
+            }
+            desc.append( "\n" );
+            final DescriptiveStatistics bs = PhylogenyMethods.calculatBranchLengthStatistics( phy );
+            if ( bs.getN() > 2 ) {
+                desc.append( "\n" );
+                desc.append( "Branch-length statistics: " );
+                desc.append( "\n" );
+                desc.append( "    Number of branches with non-negative branch-lengths: " + bs.getN() );
+                desc.append( "\n" );
+                desc.append( "    Median: " + ForesterUtil.round( bs.median(), 6 ) );
+                desc.append( "\n" );
+                desc.append( "    Mean: " + ForesterUtil.round( bs.arithmeticMean(), 6 ) );
+                desc.append( "\n" );
+                desc.append( "    SD: " + ForesterUtil.round( bs.sampleStandardDeviation(), 6 ) );
+                desc.append( "\n" );
+                desc.append( "    Minimum: " + ForesterUtil.round( bs.getMin(), 6 ) );
+                desc.append( "\n" );
+                desc.append( "    Maximum: " + ForesterUtil.round( bs.getMax(), 6 ) );
+                desc.append( "\n" );
+                desc.append( "\n" );
+                final AsciiHistogram histo = new AsciiHistogram( bs );
+                desc.append( histo.toStringBuffer( 12, '#', 40, 7, "    " ) );
+            }
+            final DescriptiveStatistics ds = PhylogenyMethods.calculatNumberOfDescendantsPerNodeStatistics( phy );
+            if ( ds.getN() > 2 ) {
+                desc.append( "\n" );
+                desc.append( "Descendants per node statistics: " );
+                desc.append( "\n" );
+                desc.append( "    Median: " + ForesterUtil.round( ds.median(), 2 ) );
+                desc.append( "\n" );
+                desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 2 ) );
+                desc.append( "\n" );
+                desc.append( "    SD: " + ForesterUtil.round( ds.sampleStandardDeviation(), 2 ) );
+                desc.append( "\n" );
+                desc.append( "    Minimum: " + ForesterUtil.roundToInt( ds.getMin() ) );
+                desc.append( "\n" );
+                desc.append( "    Maximum: " + ForesterUtil.roundToInt( ds.getMax() ) );
+                desc.append( "\n" );
+            }
+            final List<DescriptiveStatistics> css = PhylogenyMethods.calculatConfidenceStatistics( phy );
+            if ( css.size() > 0 ) {
+                desc.append( "\n" );
+                for( int i = 0; i < css.size(); ++i ) {
+                    final DescriptiveStatistics cs = css.get( i );
+                    if ( ( cs != null ) && ( cs.getN() > 1 ) ) {
+                        if ( css.size() > 1 ) {
+                            desc.append( "Support statistics " + ( i + 1 ) + ": " );
+                        }
+                        else {
+                            desc.append( "Support statistics: " );
+                        }
+                        if ( !ForesterUtil.isEmpty( cs.getDescription() ) ) {
+                            desc.append( "\n" );
+                            desc.append( "    Type: " + cs.getDescription() );
+                        }
+                        desc.append( "\n" );
+                        desc.append( "    Branches with support: " + cs.getN() );
+                        desc.append( "\n" );
+                        desc.append( "    Median: " + ForesterUtil.round( cs.median(), 6 ) );
+                        desc.append( "\n" );
+                        desc.append( "    Mean: " + ForesterUtil.round( cs.arithmeticMean(), 6 ) );
+                        desc.append( "\n" );
+                        if ( cs.getN() > 2 ) {
+                            desc.append( "    SD: " + ForesterUtil.round( cs.sampleStandardDeviation(), 6 ) );
+                            desc.append( "\n" );
+                        }
+                        desc.append( "    Minimum: " + ForesterUtil.roundToInt( cs.getMin() ) );
+                        desc.append( "\n" );
+                        desc.append( "    Maximum: " + ForesterUtil.roundToInt( cs.getMax() ) );
+                        desc.append( "\n" );
+                    }
+                }
             }
         }
         return desc.toString();

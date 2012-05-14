@@ -50,7 +50,8 @@ public class AsciiHistogram {
                                      final int max_count,
                                      final int under,
                                      final int over,
-                                     final double binning_factor ) {
+                                     final double binning_factor,
+                                     final String indent ) {
         final double draw_factor = ( double ) max_count / size;
         final int counts_size = ForesterUtil.roundToInt( Math.log10( max_count ) ) + 1;
         if ( !ForesterUtil.isEmpty( getTitle() ) ) {
@@ -59,12 +60,18 @@ public class AsciiHistogram {
             sb.append( ForesterUtil.LINE_SEPARATOR );
         }
         if ( under > 0 ) {
+            if ( !ForesterUtil.isEmpty( indent ) ) {
+                sb.append( indent );
+            }
             sb.append( "[" + under + "] " );
             sb.append( ForesterUtil.LINE_SEPARATOR );
         }
         for( int i = 0; i < bins.length; ++i ) {
             final int count = bins[ i ];
             final double label = ForesterUtil.round( ( min + i * ( 1.0 / binning_factor ) ), digits );
+            if ( !ForesterUtil.isEmpty( indent ) ) {
+                sb.append( indent );
+            }
             sb.append( ForesterUtil.pad( label + "", digits, '0', false ) );
             sb.append( " [" + ForesterUtil.pad( count + "", counts_size, ' ', true ) + "] " );
             final int s = ForesterUtil.roundToInt( count / draw_factor );
@@ -74,6 +81,9 @@ public class AsciiHistogram {
             sb.append( ForesterUtil.LINE_SEPARATOR );
         }
         if ( over > 0 ) {
+            if ( !ForesterUtil.isEmpty( indent ) ) {
+                sb.append( indent );
+            }
             sb.append( "[" + over + "] " );
             sb.append( ForesterUtil.LINE_SEPARATOR );
         }
@@ -92,7 +102,8 @@ public class AsciiHistogram {
                                         final int number_of_bins,
                                         final char symbol,
                                         final int size,
-                                        final int digits ) {
+                                        final int digits,
+                                        final String indent ) {
         if ( min >= max ) {
             throw new IllegalArgumentException( "min [" + min + "] is larger than or equal to max [" + max + "]" );
         }
@@ -112,8 +123,22 @@ public class AsciiHistogram {
                 max_count = bin;
             }
         }
-        drawToStringBuffer( min, symbol, size, digits, sb, bins, max_count, 0, 0, binning_factor );
+        drawToStringBuffer( min, symbol, size, digits, sb, bins, max_count, 0, 0, binning_factor, indent );
         return sb;
+    }
+
+    public StringBuffer toStringBuffer( final int bins,
+                                        final char symbol,
+                                        final int size,
+                                        final int digits,
+                                        final String indent ) {
+        return toStringBuffer( getDescriptiveStatistics().getMin(),
+                               getDescriptiveStatistics().getMax(),
+                               bins,
+                               symbol,
+                               size,
+                               digits,
+                               indent );
     }
 
     public StringBuffer toStringBuffer( final int bins, final char symbol, final int size, final int digits ) {
@@ -122,6 +147,7 @@ public class AsciiHistogram {
                                bins,
                                symbol,
                                size,
-                               digits );
+                               digits,
+                               null );
     }
 }

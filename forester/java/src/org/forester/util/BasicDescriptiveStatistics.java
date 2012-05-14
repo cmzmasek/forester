@@ -39,6 +39,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     private double       _max;
     private double       _sigma;
     private boolean      _recalc_sigma;
+    private String       _desc;
 
     public BasicDescriptiveStatistics() {
         init();
@@ -167,6 +168,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         _max = -Double.MAX_VALUE;
         _sigma = 0.0;
         _recalc_sigma = true;
+        _desc = "";
     }
 
     /* (non-Javadoc)
@@ -360,5 +362,15 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     @Override
     public List<Double> getData() {
         return _data;
+    }
+
+    @Override
+    public void setDescription( final String desc ) {
+        _desc = desc;
+    }
+
+    @Override
+    public String getDescription() {
+        return _desc;
     }
 }

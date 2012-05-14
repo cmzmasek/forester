@@ -2850,7 +2850,7 @@ public final class Test {
             dss3.addValue( 10 );
             final AsciiHistogram histo = new AsciiHistogram( dss3 );
             histo.toStringBuffer( 10, '=', 40, 5 );
-            histo.toStringBuffer( 3, 8, 10, '=', 40, 5 );
+            histo.toStringBuffer( 3, 8, 10, '=', 40, 5, null );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
