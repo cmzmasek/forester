@@ -537,7 +537,7 @@ public final class AptxUtil {
         }
     }
 
-    final static String crateBasicInformation( final Phylogeny phy ) {
+    final static String createBasicInformation( final Phylogeny phy ) {
         final StringBuilder desc = new StringBuilder();
         if ( ( phy != null ) && !phy.isEmpty() ) {
             if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
@@ -617,8 +617,14 @@ public final class AptxUtil {
                 desc.append( "    Maximum: " + ForesterUtil.roundToInt( ds.getMax() ) );
                 desc.append( "\n" );
             }
-            final List<DescriptiveStatistics> css = PhylogenyMethods.calculatConfidenceStatistics( phy );
-            if ( css.size() > 0 ) {
+            List<DescriptiveStatistics> css = null;
+            try {
+                css = PhylogenyMethods.calculatConfidenceStatistics( phy );
+            }
+            catch ( final IllegalArgumentException e ) {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME, e.getMessage() );
+            }
+            if ( ( css != null ) && ( css.size() > 0 ) ) {
                 desc.append( "\n" );
                 for( int i = 0; i < css.size(); ++i ) {
                     final DescriptiveStatistics cs = css.get( i );

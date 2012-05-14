@@ -1056,7 +1056,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
             return;
         }
-        _textframe = TextFrame.instantiate( AptxUtil.crateBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
+        _textframe = TextFrame.instantiate( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
     }
 
     void viewAsNexus() {
