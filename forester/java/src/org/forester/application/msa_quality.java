@@ -5,12 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.SortedMap;
 
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaMethods;
+import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.CommandLineArguments;
+import org.forester.util.DescriptiveStatistics;
 
 public class msa_quality {
 
@@ -41,10 +42,9 @@ public class msa_quality {
         }
         final int end = 2;
         final int start = 6;
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( int c = start; c <= end; ++c ) {
-            final SortedMap<Character, Integer> dist = MsaMethods.calculateResidueDestributionPerColumn( msa, c );
-            final char majority_char = ' ';
-            final int majority_count = 0;
+            stats.addValue( MsaMethods.calculateIdentityRatio( msa, c ) );
         }
     }
 }

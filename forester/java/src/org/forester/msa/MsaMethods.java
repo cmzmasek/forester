@@ -26,7 +26,9 @@
 package org.forester.msa;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -118,9 +120,22 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
-    public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int c ) {
+    public static double calculateIdentityRatio( final Msa msa, final int column ) {
+        final SortedMap<Character, Integer> dist = calculateResidueDestributionPerColumn( msa, column );
+        int majority_count = 0;
+        final Iterator<Map.Entry<Character, Integer>> it = dist.entrySet().iterator();
+        while ( it.hasNext() ) {
+            final Map.Entry<Character, Integer> pair = it.next();
+            if ( pair.getValue() > majority_count ) {
+                majority_count = pair.getValue();
+            }
+        }
+        return ( double ) majority_count / msa.getNumberOfSequences();
+    }
+
+    public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
-        for( final Character r : msa.getColumnAt( c ) ) {
+        for( final Character r : msa.getColumnAt( column ) ) {
             if ( !map.containsKey( r ) ) {
                 map.put( r, 1 );
             }
