@@ -48,7 +48,7 @@ import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaInferrer;
-import org.forester.msa.MsaTools;
+import org.forester.msa.MsaMethods;
 import org.forester.msa.ResampleableMsa;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -178,8 +178,8 @@ public class PhylogeneticInferrer implements Runnable {
                 return;
             }
             System.out.println( msa.toString() );
-            System.out.println( MsaTools.calcBasicGapinessStatistics( msa ).toString() );
-            final MsaTools msa_tools = MsaTools.createInstance();
+            System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
+            final MsaMethods msa_tools = MsaMethods.createInstance();
             if ( _options.isExecuteMsaProcessing() ) {
                 msa = msa_tools.removeGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(),
                                                   _options.getMsaProcessingMinAllowedLength(),
@@ -196,7 +196,7 @@ public class PhylogeneticInferrer implements Runnable {
             }
             System.out.println( msa_tools.getIgnoredSequenceIds() );
             System.out.println( msa.toString() );
-            System.out.println( MsaTools.calcBasicGapinessStatistics( msa ).toString() );
+            System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
             _msa = msa;
         }
         final int n = _options.getBootstrapSamples();

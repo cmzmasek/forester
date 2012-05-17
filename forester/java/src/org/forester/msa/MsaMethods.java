@@ -27,13 +27,15 @@ package org.forester.msa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 
-public final class MsaTools {
+public final class MsaMethods {
 
     private ArrayList<String> _ignored_seqs_ids;
 
@@ -41,11 +43,11 @@ public final class MsaTools {
         return _ignored_seqs_ids;
     }
 
-    synchronized public static MsaTools createInstance() {
-        return new MsaTools();
+    synchronized public static MsaMethods createInstance() {
+        return new MsaMethods();
     }
 
-    private MsaTools() {
+    private MsaMethods() {
         init();
     }
 
@@ -114,6 +116,19 @@ public final class MsaTools {
             return null;
         }
         return BasicMsa.createInstance( seqs );
+    }
+
+    public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int c ) {
+        final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
+        for( final Character r : msa.getColumnAt( c ) ) {
+            if ( !map.containsKey( r ) ) {
+                map.put( r, 1 );
+            }
+            else {
+                map.put( r, map.get( r ) + 1 );
+            }
+        }
+        return map;
     }
 
     public static DescriptiveStatistics calcBasicGapinessStatistics( final Msa msa ) {

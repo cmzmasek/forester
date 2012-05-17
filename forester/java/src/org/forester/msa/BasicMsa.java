@@ -27,6 +27,7 @@ package org.forester.msa;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.sequence.Sequence;
@@ -155,5 +156,14 @@ public class BasicMsa implements Msa {
             }
         }
         return msa;
+    }
+
+    @Override
+    public List<Character> getColumnAt( final int col ) {
+        final List<Character> column = new ArrayList<Character>();
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            column.add( getResidueAt( row, col ) );
+        }
+        return column;
     }
 }

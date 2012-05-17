@@ -27,6 +27,7 @@ package org.forester.msa;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 import org.forester.sequence.Sequence.TYPE;
 
@@ -41,6 +42,8 @@ public interface Msa {
     public int getNumberOfSequences();
 
     public char getResidueAt( int row, int col );
+
+    public List<Character> getColumnAt( int col );
 
     public StringBuffer getSequenceAsString( int row );
 
