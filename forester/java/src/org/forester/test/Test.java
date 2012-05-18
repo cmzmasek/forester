@@ -54,9 +54,11 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.writers.PhylogenyWriter;
+import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaInferrer;
+import org.forester.msa.MsaMethods;
 import org.forester.pccx.TestPccx;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyBranch;
@@ -697,6 +699,15 @@ public final class Test {
         }
         System.out.print( "Next nodes with collapsed: " );
         if ( Test.testNextNodeWithCollapsing() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Simple MSA quality: " );
+        if ( Test.testMsaQualityMethod() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -8816,6 +8827,38 @@ public final class Test {
                 return false;
             }
             if ( !ext.get( 3 ).getName().equals( "fgh" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testMsaQualityMethod() {
+        try {
+            final Sequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJ" );
+            final Sequence s1 = BasicSequence.createAaSequence( "a", "ABBXEFGHIJ" );
+            final Sequence s2 = BasicSequence.createAaSequence( "a", "AXCXEFGHIJ" );
+            final Sequence s3 = BasicSequence.createAaSequence( "a", "AXDDEFGHIJ" );
+            final List<Sequence> l = new ArrayList<Sequence>();
+            l.add( s0 );
+            l.add( s1 );
+            l.add( s2 );
+            l.add( s3 );
+            final Msa msa = BasicMsa.createInstance( l );
+            if ( !isEqual( 1, MsaMethods.calculateIdentityRatio( msa, 0 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.5, MsaMethods.calculateIdentityRatio( msa, 1 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.25, MsaMethods.calculateIdentityRatio( msa, 2 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.75, MsaMethods.calculateIdentityRatio( msa, 3 ) ) ) {
                 return false;
             }
         }

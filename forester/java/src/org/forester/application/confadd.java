@@ -55,7 +55,7 @@ public class confadd {
     final static private String PRG_NAME         = "confadd";
     final static private String PRG_VERSION      = "1.01";
     final static private String PRG_DATE         = "2010.10.26";
-    final static private String E_MAIL           = "czmasek@burnham.org";
+    final static private String E_MAIL           = "phylosoft@gmail.com";
     final static private String WWW              = "www.phylosoft.org/forester/";
 
     public static void main( final String args[] ) {
