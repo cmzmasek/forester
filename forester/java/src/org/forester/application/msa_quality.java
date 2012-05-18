@@ -72,7 +72,7 @@ public class msa_quality {
             System.out.print( pos );
             System.out.print( ":\t" );
             System.out.print( mean );
-            if ( window > 2 ) {
+            if ( stats.getN() > 2 ) {
                 System.out.print( "\t" );
                 System.out.print( stats.median() );
                 System.out.print( "\t" );
