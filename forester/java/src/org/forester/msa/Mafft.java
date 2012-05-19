@@ -50,7 +50,7 @@ public final class Mafft implements MsaInferrer {
     }
 
     private static String getPathToCmd() {
-        //TODO this needs to come from env variable, etc.
+        //TODO this needs to come from config file!!
         //FIXME ..
         //should not be in this class!
         String path = "";
@@ -62,7 +62,7 @@ public final class Mafft implements MsaInferrer {
             path = "C:\\Program Files\\mafft-win\\mafft.bat";
         }
         else {
-            path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-6.864-without-extensions/scripts/mafft";
+            path = "/home/czmasek/bin/mafft";
         }
         return path;
     }
@@ -109,15 +109,17 @@ public final class Mafft implements MsaInferrer {
         my_opts.add( path_to_input_seqs.getAbsolutePath() );
         final SystemCommandExecutor command_executor = new SystemCommandExecutor( my_opts );
         final int _exit_code = command_executor.executeCommand();
+        final StringBuilder stderr = command_executor.getStandardErrorFromCommand();
+        _error = stderr.toString();
         if ( _exit_code != 0 ) {
-            throw new IOException( "MAFFT program failed, exit code: " + _exit_code + ", command: " + my_opts );
+            throw new IOException( "MAFFT program failed, exit code: " + _exit_code + "\nCommand:\n" + my_opts
+                    + "\nError:\n" + stderr );
         }
         final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
-        final StringBuilder stderr = command_executor.getStandardErrorFromCommand();
         if ( ( stdout == null ) || ( stdout.length() < 2 ) ) {
-            throw new IOException( "MAFFT program did not produce any output, command: " + my_opts );
+            throw new IOException( "MAFFT program did not produce any output\nCommand:\n" + my_opts + "\nError:\n"
+                    + stderr );
         }
-        _error = stderr.toString();
         final Msa msa = FastaParser.parseMsa( stdout.toString() );
         return msa;
     }

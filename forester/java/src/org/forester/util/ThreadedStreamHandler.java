@@ -81,6 +81,13 @@ class ThreadedStreamHandler extends Thread {
         sudoIsRequested = true;
     }
 
+    ThreadedStreamHandler( final InputStream inputStream, final OutputStream outputStream ) {
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
+        printWriter = new PrintWriter( outputStream );
+        sudoIsRequested = false;
+    }
+
     private void doSleep( final long millis ) {
         try {
             Thread.sleep( millis );

@@ -8211,12 +8211,48 @@ public final class Test {
         try {
             final String msa_str_0 = "seq1 abcd\n\nseq2 efgh\n";
             final Msa msa_0 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_0.getBytes() ) );
-            final String msa_str_1 = "seq_1 abc\nseq2 ghi\nseq_1 def\nseq2 jkm\n";
+            final String msa_str_1 = "seq1 abc\nseq2 ghi\nseq1 def\nseq2 jkm\n";
             final Msa msa_1 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_1.getBytes() ) );
             final String msa_str_2 = "seq1 abc\nseq2 ghi\n\ndef\njkm\n";
             final Msa msa_2 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_2.getBytes() ) );
             final String msa_str_3 = "seq1 abc\n def\nseq2 ghi\n jkm\n";
             final Msa msa_3 = GeneralMsaParser.parse( new ByteArrayInputStream( msa_str_3.getBytes() ) );
+            if ( !msa_1.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdef" ) ) {
+                return false;
+            }
+            if ( !msa_1.getSequenceAsString( 1 ).toString().equalsIgnoreCase( "ghixkm" ) ) {
+                return false;
+            }
+            if ( !msa_1.getIdentifier( 0 ).toString().equals( "seq1" ) ) {
+                return false;
+            }
+            if ( !msa_1.getIdentifier( 1 ).toString().equals( "seq2" ) ) {
+                return false;
+            }
+            if ( !msa_2.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdef" ) ) {
+                return false;
+            }
+            if ( !msa_2.getSequenceAsString( 1 ).toString().equalsIgnoreCase( "ghixkm" ) ) {
+                return false;
+            }
+            if ( !msa_2.getIdentifier( 0 ).toString().equals( "seq1" ) ) {
+                return false;
+            }
+            if ( !msa_2.getIdentifier( 1 ).toString().equals( "seq2" ) ) {
+                return false;
+            }
+            if ( !msa_3.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdef" ) ) {
+                return false;
+            }
+            if ( !msa_3.getSequenceAsString( 1 ).toString().equalsIgnoreCase( "ghixkm" ) ) {
+                return false;
+            }
+            if ( !msa_3.getIdentifier( 0 ).toString().equals( "seq1" ) ) {
+                return false;
+            }
+            if ( !msa_3.getIdentifier( 1 ).toString().equals( "seq2" ) ) {
+                return false;
+            }
             final Msa msa_4 = GeneralMsaParser.parse( new FileInputStream( PATH_TO_TEST_DATA + "msa_1.txt" ) );
             if ( !msa_4.getSequenceAsString( 0 ).toString().equalsIgnoreCase( "abcdefeeeeeeeexx" ) ) {
                 return false;
@@ -8265,7 +8301,10 @@ public final class Test {
             Msa msa = null;
             final MsaInferrer mafft = Mafft.createInstance();
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );
-            if ( ( msa == null ) || ( msa.getLength() < 10 ) || ( msa.getNumberOfSequences() != 19 ) ) {
+            if ( ( msa == null ) || ( msa.getLength() < 20 ) || ( msa.getNumberOfSequences() != 19 ) ) {
+                return false;
+            }
+            if ( !msa.getIdentifier( 0 ).toString().equals( "a" ) ) {
                 return false;
             }
         }
