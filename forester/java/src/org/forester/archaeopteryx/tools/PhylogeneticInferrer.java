@@ -64,6 +64,7 @@ public class PhylogeneticInferrer implements Runnable {
     private final MainFrameApplication         _mf;
     private final PhylogeneticInferenceOptions _options;
     private final List<Sequence>               _seqs;
+    private final boolean DEBUG = true;
     public final static String                 MSA_FILE_SUFFIX = ".aln";
     public final static String                 PWD_FILE_SUFFIX = ".pwd";
 
@@ -87,9 +88,11 @@ public class PhylogeneticInferrer implements Runnable {
 
     private Msa inferMsa() throws IOException, InterruptedException {
         final File temp_seqs_file = File.createTempFile( "__msa__temp__", ".fasta" );
+        if ( DEBUG ) {
         System.out.println();
         System.out.println( "temp file: " + temp_seqs_file );
         System.out.println();
+        }
         //final File temp_seqs_file = new File( _options.getTempDir() + ForesterUtil.FILE_SEPARATOR + "s.fasta" );
         final BufferedWriter writer = new BufferedWriter( new FileWriter( temp_seqs_file ) );
         SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
@@ -160,12 +163,28 @@ public class PhylogeneticInferrer implements Runnable {
             }
             catch ( final IOException e ) {
                 JOptionPane.showMessageDialog( _mf,
-                                               "Could not create multiple sequence alignment with "
-                                                       + _options.getMsaPrg() + "\nand the following parameters:\n\""
-                                                       + _options.getMsaPrgParameters() + "\"\nError:"
+                                               "Could not create multiple sequence alignment with \""
+                                                       + _options.getMsaPrg() + "\" and the following parameters:\n\""
+                                                       + _options.getMsaPrgParameters() + "\"\nError: "
                                                        + e.getLocalizedMessage(),
                                                "Failed to Calculate MSA",
                                                JOptionPane.ERROR_MESSAGE );
+                if ( DEBUG ) {
+                e.printStackTrace();
+                }
+                return;
+            }
+            catch ( final Exception e ) {
+                JOptionPane.showMessageDialog( _mf,
+                                               "Could not create multiple sequence alignment with \""
+                                                       + _options.getMsaPrg() + "\" and the following parameters:\n\""
+                                                       + _options.getMsaPrgParameters() + "\"\nError: "
+                                                       + e.getLocalizedMessage(),
+                                               "Unexpected Exception During MSA Calculation",
+                                               JOptionPane.ERROR_MESSAGE );
+                if ( DEBUG ) {
+                e.printStackTrace();
+                }
                 return;
             }
             if ( msa == null ) {
@@ -177,8 +196,10 @@ public class PhylogeneticInferrer implements Runnable {
                                                JOptionPane.ERROR_MESSAGE );
                 return;
             }
+            if ( DEBUG ) {
             System.out.println( msa.toString() );
             System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
+            }
             final MsaMethods msa_tools = MsaMethods.createInstance();
             if ( _options.isExecuteMsaProcessing() ) {
                 msa = msa_tools.removeGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(),
@@ -194,9 +215,11 @@ public class PhylogeneticInferrer implements Runnable {
                     return;
                 }
             }
+            if ( DEBUG ) {
             System.out.println( msa_tools.getIgnoredSequenceIds() );
             System.out.println( msa.toString() );
             System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
+            }
             _msa = msa;
         }
         final int n = _options.getBootstrapSamples();

@@ -41,11 +41,11 @@ public final class Mafft implements MsaInferrer {
     private int                 _exit_code;
     private final String        _path_to_prg;
 
-    public static MsaInferrer createInstance() {
+    public static MsaInferrer createInstance() throws IOException {
         return createInstance( getPathToCmd() );
     }
 
-    public static MsaInferrer createInstance( final String path_to_prg ) {
+    public static MsaInferrer createInstance( final String path_to_prg ) throws IOException {
         return new Mafft( path_to_prg );
     }
 
@@ -71,9 +71,9 @@ public final class Mafft implements MsaInferrer {
         return SystemCommandExecutor.isExecuteableFile( new File( getPathToCmd() ) );
     }
 
-    private Mafft( final String path_to_prg ) {
+    private Mafft( final String path_to_prg ) throws IOException {
         if ( !SystemCommandExecutor.isExecuteableFile( new File( path_to_prg ) ) ) {
-            throw new IllegalArgumentException( "cannot execute MAFFT via [" + path_to_prg + "]" );
+            throw new IOException( "cannot execute MAFFT with \"" + path_to_prg + "\"" );
         }
         _path_to_prg = new String( path_to_prg );
         init();
