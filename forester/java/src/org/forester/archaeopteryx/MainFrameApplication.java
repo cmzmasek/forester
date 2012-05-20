@@ -679,11 +679,11 @@ public final class MainFrameApplication extends MainFrame {
     void buildPhylogeneticInferenceMenu() {
         _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
         _inference_menu
-                .add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment...(EXPERIMENTAL - DO NOT USE!!) " ) );
+                .add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
         customizeJMenuItem( _inference_from_msa_item );
         _inference_from_msa_item.setToolTipText( "Basic phylogenetic inference from MSA" );
         _inference_menu
-                .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences...(EXPERIMENTAL - DO NOT USE!!) " ) );
+                .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
         customizeJMenuItem( _inference_from_seqs_item );
         _inference_from_seqs_item.setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
         _jmenubar.add( _inference_menu );
