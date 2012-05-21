@@ -677,6 +677,7 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     void buildPhylogeneticInferenceMenu() {
+        final InferenceManager inference_manager = InferenceManager.getInstance();
         _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
         _inference_menu
                 .add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
