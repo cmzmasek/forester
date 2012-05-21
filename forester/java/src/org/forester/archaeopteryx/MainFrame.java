@@ -46,6 +46,7 @@ import javax.swing.JRadioButtonMenuItem;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
@@ -209,9 +210,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration             _configuration;
     JMenuItem                 _remove_branch_color_item;
     Options                   _options;
-
+    final ProcessPool               _process_pool;
+    
     MainFrame() {
-        // Empty constructor.
+        _process_pool = new ProcessPool();
+    }
+    
+    ProcessPool getProcessPool() {
+        return _process_pool;
     }
 
     /**

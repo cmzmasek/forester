@@ -234,6 +234,7 @@ public final class MainFrameApplication extends MainFrame {
     JMenuItem                                _read_values_jmi;
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config, final String title ) {
+        
         this( phys, config, title, null );
     }
 
@@ -241,6 +242,7 @@ public final class MainFrameApplication extends MainFrame {
                                   final Configuration config,
                                   final String title,
                                   final File current_dir ) {
+        super();
         _configuration = config;
         if ( _configuration == null ) {
             throw new IllegalArgumentException( "configuration is null" );
