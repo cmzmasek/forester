@@ -30,6 +30,7 @@ import java.util.List;
 
 public class ProcessPool {
 
+    private final static boolean                   DEBUG      = true;
     final static private ArrayList<ProcessRunning> _processes = new ArrayList<ProcessRunning>();
 
     public synchronized ProcessRunning getProcessByIndex( final int i ) {
@@ -53,15 +54,22 @@ public class ProcessPool {
         final ProcessRunning p = ProcessRunning.createInstance( name );
         final int id = p.getId();
         if ( getProcessById( id ) != null ) {
-            throw new IllegalStateException( "process with id " + id + "already exists" );
+            throw new IllegalStateException( " process with id " + id + "already exists" );
         }
         getProcesses().add( p );
+        if ( DEBUG ) {
+            System.out.println( "added: " + p );
+        }
         return id;
     }
 
     public synchronized boolean removeProcess( final int id ) {
         final int i = getProcessIndexById( id );
         if ( i >= 0 ) {
+            if ( DEBUG ) {
+                final ProcessRunning p = getProcessById( id );
+                System.out.println( " removing: " + p );
+            }
             getProcesses().remove( i );
             return true;
         }
