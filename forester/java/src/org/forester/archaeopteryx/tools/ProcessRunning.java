@@ -28,22 +28,22 @@ package org.forester.archaeopteryx.tools;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-final class ProcessRunning {
+final public class ProcessRunning {
 
     private static int   count = 0;
     final private int    _id;
     final private String _name;
     final private String _start;
 
-    int getId() {
+    public  int getId() {
         return _id;
     }
     
-     String getName() {
+    public  String getName() {
         return _name;
     }
     
-     String getStart() {
+    public String getStart() {
         return _start;
     }
     
