@@ -24,6 +24,7 @@
 
 package org.forester.archaeopteryx;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
@@ -203,6 +204,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                 _phyloxml_website_item;
     JMenuItem                 _phyloxml_ref_item;
     JMenuItem                 _aptx_ref_item;
+    // process menu:
+    JMenu                     _process_menu;
     // Handy pointers to child components:
     MainPanel                 _mainpanel;
     Container                 _contentpane;
@@ -541,6 +544,43 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add( _help_jmenu );
     }
 
+    public void updateProcessMenu() {
+        System.out.println( "pool size " + _process_pool.size() );
+        if ( _process_pool.size() > 0 ) {
+            if ( _process_menu == null ) {
+                _process_menu = createMenu( "", getConfiguration() );
+                _process_menu.setForeground( Color.RED );
+            }
+            final String text = "processes running: " + _process_pool.size();
+            _process_menu.setText( text );
+            _jmenubar.add( _process_menu );
+        }
+        else {
+            if ( _process_menu != null ) {
+                _jmenubar.remove( _process_menu );
+            }
+        }
+        _jmenubar.validate();
+        _jmenubar.repaint();
+        repaint();
+        //        _help_jmenu.add( _help_item = new JMenuItem( "Help" ) );
+        //        _help_jmenu.add( _website_item = new JMenuItem( "Archaeopteryx Home" ) );
+        //        _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" );
+        //        _help_jmenu.add( _phyloxml_website_item = new JMenuItem( "phyloXML Home" ) );
+        //        _help_jmenu.add( _phyloxml_ref_item = new JMenuItem( "phyloXML Reference" ) );
+        //        _help_jmenu.addSeparator();
+        //        _help_jmenu.add( _about_item = new JMenuItem( "About" ) );
+        //        customizeJMenuItem( _help_item );
+        //        customizeJMenuItem( _website_item );
+        //        customizeJMenuItem( _phyloxml_website_item );
+        //        customizeJMenuItem( _aptx_ref_item );
+        //        customizeJMenuItem( _phyloxml_ref_item );
+        //        customizeJMenuItem( _about_item );
+        //        _phyloxml_ref_item.setToolTipText( PHYLOXML_REF_TOOL_TIP );
+        //        _aptx_ref_item.setToolTipText( APTX_REF_TOOL_TIP );
+        //        _jmenubar.add( _help_jmenu );
+    }
+
     void buildTypeMenu() {
         _type_menu = createMenu( TYPE_MENU_HEADER, getConfiguration() );
         _type_menu.add( _rectangular_type_cbmi = new JCheckBoxMenuItem( MainFrame.RECTANGULAR_TYPE_CBMI_LABEL ) );
@@ -782,7 +822,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _label_direction_cbmi;
     }
 
-    MainPanel getMainPanel() {
+    public MainPanel getMainPanel() {
         return _mainpanel;
     }
 

@@ -43,7 +43,7 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-public class GoAnnotation implements Runnable {
+public class GoAnnotation extends RunnableProcess {
 
     private static final String        SYMBOL   = "Symbol";
     private static final String        ASPECT   = "Aspect";
@@ -62,7 +62,7 @@ public class GoAnnotation implements Runnable {
     }
 
     private void annotate() {
-        _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
+        start( _mf, "GO annotate" );
         for( final PhylogenyNodeIterator iter = _phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( ( node.getNodeData().getSequences() != null ) && !node.getNodeData().getSequences().isEmpty() ) {
@@ -125,6 +125,7 @@ public class GoAnnotation implements Runnable {
                 }
             }
         }
+        end( _mf );
         _treepanel.repaint();
         _treepanel.setEdited( true );
     }

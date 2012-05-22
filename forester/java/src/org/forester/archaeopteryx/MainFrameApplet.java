@@ -270,7 +270,7 @@ public final class MainFrameApplet extends MainFrame {
     }
 
     @Override
-    MainPanel getMainPanel() {
+    public MainPanel getMainPanel() {
         return _mainpanel;
     }
 

@@ -31,27 +31,16 @@ import javax.swing.JOptionPane;
 
 import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.analysis.AncestralTaxonomyInferenceException;
-import org.forester.archaeopteryx.Constants;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.util.ForesterUtil;
 import org.forester.ws.uniprot.UniProtWsTools;
 
-public class AncestralTaxonomyInferrer implements Runnable {
+public class AncestralTaxonomyInferrer extends RunnableProcess {
 
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private long                       _process_id;
-
-    private long getProcessId() {
-        return _process_id;
-    }
-
-    private void setProcessId( final long process_id ) {
-        _process_id = process_id;
-    }
 
     public AncestralTaxonomyInferrer( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
@@ -63,27 +52,13 @@ public class AncestralTaxonomyInferrer implements Runnable {
         return UniProtWsTools.BASE_URL;
     }
 
-    private void start() {
-        _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
-        setProcessId( _mf.getProcessPool().addProcess( "ancestral taxonomy" ) );
-    }
-
-    private void end() {
-        final boolean removed = _mf.getProcessPool().removeProcess( getProcessId() );
-        if ( !removed ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not remove process " + getProcessId()
-                    + " from process pool" );
-        }
-        _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
-    }
-
     private void inferTaxonomies() {
-        start();
+        start( _mf, "ancestral taxonomy" );
         try {
             AncestralTaxonomyInference.inferTaxonomyFromDescendents( _phy );
         }
         catch ( final AncestralTaxonomyInferenceException e ) {
-            end();
+            end( _mf );
             JOptionPane.showMessageDialog( _mf,
                                            e.getMessage(),
                                            "Error during ancestral taxonomy inference",
@@ -91,7 +66,7 @@ public class AncestralTaxonomyInferrer implements Runnable {
             return;
         }
         catch ( final UnknownHostException e ) {
-            end();
+            end( _mf );
             JOptionPane.showMessageDialog( _mf,
                                            "Could not connect to \"" + getBaseUrl() + "\"",
                                            "Network error during ancestral taxonomy inference",
@@ -99,7 +74,7 @@ public class AncestralTaxonomyInferrer implements Runnable {
             return;
         }
         catch ( final Exception e ) {
-            end();
+            end( _mf );
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
@@ -108,8 +83,7 @@ public class AncestralTaxonomyInferrer implements Runnable {
             return;
         }
         catch ( final Error e ) {
-            end();
-            e.printStackTrace();
+            end( _mf );
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
                                            "Unexpected error during ancestral taxonomy inference",
@@ -120,7 +94,7 @@ public class AncestralTaxonomyInferrer implements Runnable {
         _treepanel.setTree( _phy );
         _mf.showWhole();
         _treepanel.setEdited( true );
-        end();
+        end( _mf );
         try {
             JOptionPane.showMessageDialog( _mf,
                                            "Ancestral taxonomy inference successfully completed",
