@@ -30,37 +30,40 @@ import java.util.Calendar;
 
 final public class ProcessRunning {
 
-    private static int   count = 0;
-    final private int    _id;
+    private static long  count = 0;
+    final private long   _id;
     final private String _name;
     final private String _start;
 
-    public  int getId() {
+    public long getId() {
         return _id;
     }
-    
-    public  String getName() {
+
+    public String getName() {
         return _name;
     }
-    
+
     public String getStart() {
         return _start;
     }
-    
+
+    @Override
     public String toString() {
         return getName() + " [id=" + getId() + "] [start=" + getStart() + "]";
     }
-    
+
     synchronized static ProcessRunning createInstance( final String name ) {
         final Calendar cal = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat( "HH:mm:ss" );
         return new ProcessRunning( count++, name, sdf.format( cal.getTime() ) );
     }
-    
-    private ProcessRunning( final int id, final String name, final String start ) {
+
+    private ProcessRunning( final long id, final String name, final String start ) {
+        if ( id < 0 ) {
+            throw new IllegalArgumentException( "process id cannot be negative" );
+        }
         _id = id;
         _name = name;
-        _start = start;  
+        _start = start;
     }
-
 }

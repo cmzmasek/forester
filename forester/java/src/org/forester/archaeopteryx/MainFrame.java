@@ -210,13 +210,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration             _configuration;
     JMenuItem                 _remove_branch_color_item;
     Options                   _options;
-    final ProcessPool               _process_pool;
-    
+    final ProcessPool         _process_pool;
+
     MainFrame() {
-        _process_pool = new ProcessPool();
+        _process_pool = ProcessPool.createInstance();
     }
-    
-    ProcessPool getProcessPool() {
+
+    public ProcessPool getProcessPool() {
         return _process_pool;
     }
 

@@ -65,6 +65,7 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.GoAnnotation;
+import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
 import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
 import org.forester.archaeopteryx.tools.PhylogeneticInferrer;
@@ -234,7 +235,6 @@ public final class MainFrameApplication extends MainFrame {
     JMenuItem                                _read_values_jmi;
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config, final String title ) {
-        
         this( phys, config, title, null );
     }
 
@@ -681,12 +681,10 @@ public final class MainFrameApplication extends MainFrame {
     void buildPhylogeneticInferenceMenu() {
         final InferenceManager inference_manager = InferenceManager.getInstance();
         _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
-        _inference_menu
-                .add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
+        _inference_menu.add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
         customizeJMenuItem( _inference_from_msa_item );
         _inference_from_msa_item.setToolTipText( "Basic phylogenetic inference from MSA" );
-        _inference_menu
-                .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
+        _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
         customizeJMenuItem( _inference_from_seqs_item );
         _inference_from_seqs_item.setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
         _jmenubar.add( _inference_menu );

@@ -30,8 +30,16 @@ import java.util.List;
 
 public class ProcessPool {
 
-    private final static boolean                   DEBUG      = true;
-    final static private ArrayList<ProcessRunning> _processes = new ArrayList<ProcessRunning>();
+    private final static boolean            DEBUG = true;
+    private final ArrayList<ProcessRunning> _processes;
+
+    private ProcessPool() {
+        _processes = new ArrayList<ProcessRunning>();
+    }
+
+    public static ProcessPool createInstance() {
+        return new ProcessPool();
+    }
 
     public synchronized ProcessRunning getProcessByIndex( final int i ) {
         return getProcesses().get( i );
@@ -41,7 +49,7 @@ public class ProcessPool {
         return getProcesses().size();
     }
 
-    public synchronized ProcessRunning getProcessById( final int id ) {
+    public synchronized ProcessRunning getProcessById( final long id ) {
         for( final ProcessRunning p : getProcesses() ) {
             if ( p.getId() == id ) {
                 return p;
@@ -50,25 +58,25 @@ public class ProcessPool {
         return null;
     }
 
-    public synchronized int addProcess( final String name ) {
+    public synchronized long addProcess( final String name ) {
         final ProcessRunning p = ProcessRunning.createInstance( name );
-        final int id = p.getId();
+        final long id = p.getId();
         if ( getProcessById( id ) != null ) {
             throw new IllegalStateException( " process with id " + id + "already exists" );
         }
         getProcesses().add( p );
         if ( DEBUG ) {
-            System.out.println( "added: " + p );
+            System.out.println( " pp: added: " + p );
         }
         return id;
     }
 
-    public synchronized boolean removeProcess( final int id ) {
+    public synchronized boolean removeProcess( final long id ) {
         final int i = getProcessIndexById( id );
         if ( i >= 0 ) {
             if ( DEBUG ) {
                 final ProcessRunning p = getProcessById( id );
-                System.out.println( " removing: " + p );
+                System.out.println( " pp: removing: " + p );
             }
             getProcesses().remove( i );
             return true;
@@ -76,10 +84,11 @@ public class ProcessPool {
         return false;
     }
 
-    private synchronized int getProcessIndexById( final int id ) {
-        final ProcessRunning p = getProcessById( id );
-        if ( p != null ) {
-            return p.getId();
+    private synchronized int getProcessIndexById( final long id ) {
+        for( int i = 0; i < size(); ++i ) {
+            if ( getProcesses().get( i ).getId() == id ) {
+                return i;
+            }
         }
         return -1;
     }

@@ -62,10 +62,9 @@ public final class Configuration {
     private boolean                         _use_tabbed_display                                    = false;
     private boolean                         _hide_controls_and_menus                               = false;
     private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
-    private File _mafft = null;
-    private File _clustalo = null;
-    private File _fastme = null;
-    
+    private File                            _mafft                                                 = null;
+    private File                            _clustalo                                              = null;
+    private File                            _fastme                                                = null;
     private SortedMap<String, WebLink>      _weblinks                                              = null;
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _antialias_screen                                      = true;
@@ -932,16 +931,16 @@ public final class Configuration {
             }
         }
         else if ( key.equals( "path_to_mafft" ) ) {
-            setPathToMafft( new File( (String) st.nextElement() ) );
+            setPathToMafft( new File( ( String ) st.nextElement() ) );
         }
         else if ( key.equals( "path_to_clustalo" ) ) {
-            setPathToClustalOmega( new File( (String) st.nextElement() ) );
+            setPathToClustalOmega( new File( ( String ) st.nextElement() ) );
         }
         else if ( key.equals( "path_to_fastme" ) ) {
-            setPathToFastME( new File( (String) st.nextElement() ) );
+            setPathToFastME( new File( ( String ) st.nextElement() ) );
         }
         else if ( key.equals( "path_to_mafft" ) ) {
-            setPathToMafft( new File( (String) st.nextElement() ) );
+            setPathToMafft( new File( ( String ) st.nextElement() ) );
         }
         else if ( key.equals( VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA ) ) {
             setValidatePhyloXmlAgainstSchema( parseBoolean( ( String ) st.nextElement() ) );
@@ -1518,36 +1517,28 @@ public final class Configuration {
         return DEFAULT_FONT_FAMILY;
     }
 
-   
     public File getPathToMafft() {
         return _mafft;
     }
-
-    
 
     public File getPathToClustalOmega() {
         return _clustalo;
     }
 
-   
     public File getPathToFastME() {
         return _fastme;
     }
-    
-    
+
     public void setPathToMafft( final File mafft ) {
         _mafft = mafft;
     }
 
-    
-
-    public void setPathToClustalOmega(  final File clustalo ) {
-         _clustalo = clustalo ;
+    public void setPathToClustalOmega( final File clustalo ) {
+        _clustalo = clustalo;
     }
 
-   
     public void setPathToFastME( final File fastme ) {
-         _fastme = fastme;
+        _fastme = fastme;
     }
 
     static enum TRIPLET {
