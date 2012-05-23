@@ -48,6 +48,8 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.ProcessPool;
+import org.forester.archaeopteryx.tools.ProcessRunning;
+import org.forester.archaeopteryx.tools.RunnableProcess;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
@@ -544,19 +546,29 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add( _help_jmenu );
     }
 
-    public void updateProcessMenu() {
+    public synchronized void updateProcessMenu() {
         System.out.println( "pool size " + _process_pool.size() );
         if ( _process_pool.size() > 0 ) {
             if ( _process_menu == null ) {
                 _process_menu = createMenu( "", getConfiguration() );
                 _process_menu.setForeground( Color.RED );
             }
+            _process_menu.removeAll();
             final String text = "processes running: " + _process_pool.size();
             _process_menu.setText( text );
             _jmenubar.add( _process_menu );
+                 
+           
+            
+            for ( int i = 0; i < _process_pool.size(); ++i ) {
+                final ProcessRunning p = _process_pool.getProcessByIndex( i ); 
+                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]"  )) );
+              
+            }
         }
         else {
             if ( _process_menu != null ) {
+                _process_menu.removeAll();
                 _jmenubar.remove( _process_menu );
             }
         }
@@ -740,7 +752,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void customizeJMenuItem( final JMenuItem jmi ) {
+    JMenuItem customizeJMenuItem( final JMenuItem jmi ) {
         if ( jmi != null ) {
             jmi.setFont( MainFrame.menu_font );
             if ( !getConfiguration().isUseNativeUI() ) {
@@ -749,6 +761,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             jmi.addActionListener( this );
         }
+        return jmi;
     }
 
     void customizeRadioButtonMenuItem( final JRadioButtonMenuItem item, final boolean is_selected ) {
