@@ -3,8 +3,83 @@ package org.forester.development;
 
 public class neTest {
 
-    double[][] eigvecs = new double[20][20];
-    
+    public class DoublePointer {
+
+        private double _value;
+
+        DoublePointer( final double value ) {
+            _value = value;
+        }
+
+        double getValue() {
+            return _value;
+        }
+
+        void setValue( final double value ) {
+            _value = value;
+        }
+    }
+    double[][] eigvecs = new double[ 20 ][ 20 ];
+
+    //globals
+    //    void coeffs(double x, double y, double *c, double *s, double accuracy)
+    //    { /* compute cosine and sine of theta */
+    //      double root;
+    //
+    //      root = sqrt(x * x + y * y);
+    //      if (root < accuracy) {
+    //        *c = 1.0;
+    //        *s = 0.0;
+    //      } else {
+    //        *c = x / root;
+    //        *s = y / root;
+    //      }
+    //    }  /* coeffs */
+    // compute cosine and sine of theta
+    void coeffs( final double x, final double y, final DoublePointer c, final DoublePointer s, final double accuracy ) {
+        final double root = Math.sqrt( x * x + y * y );
+        if ( root < accuracy ) {
+            c.setValue( 1.0 );
+            s.setValue( 0.0 );
+        }
+        else {
+            c.setValue( x / root );
+            s.setValue( y / root );
+        }
+    }
+
+    //    void tridiag(double (*a)[20], long n, double accuracy)
+    //    { /* Givens tridiagonalization */
+    //      long i, j;
+    //      double s, c;
+    //
+    //      for (i = 2; i < n; i++) {
+    //        for (j = i + 1; j <= n; j++) {
+    //          coeffs(a[i - 2][i - 1], a[i - 2][j - 1], &c, &s,accuracy);
+    //          givens(a, i, j, n, c, s, true);
+    //          givens(a, i, j, n, c, s, false);
+    //          givens(eigvecs, i, j, n, c, s, true);
+    //        }
+    //      }
+    //    }  /* tridiag */
+    // Givens tridiagonalization 
+    void tridiag( final double a[][], final int n, final double accuracy ) {
+        int i, j;
+        double s, c;
+        DoublePointer sp = new DoublePointer( 0 );
+        DoublePointer cp = new DoublePointer( 0 );
+        for( i = 2; i < n; i++ ) {
+            for( j = i + 1; j <= n; j++ ) {
+                coeffs( a[ i - 2 ][ i - 1 ], a[ i - 2 ][ j - 1 ], cp, sp, accuracy );
+                c = cp.getValue();
+                s = sp.getValue();
+                givens( a, i, j, n, c, s, true );
+                givens( a, i, j, n, c, s, false );
+                givens( eigvecs, i, j, n, c, s, true );
+            }
+        }
+    } /* tridiag */
+
     //    void shiftqr(double (*a)[20], long n, double accuracy)
     //    { /* QR eigenvalue-finder */
     //      long i, j;
@@ -38,8 +113,10 @@ public class neTest {
     void shiftqr( final double a[][], final int n, final double accuracy ) {
         int i, j;
         double approx;
-        double s = 0;//TODO
-        double c = 0;//TODO
+        DoublePointer sp = new DoublePointer( 0 );
+        DoublePointer cp = new DoublePointer( 0 );
+        double s;
+        double c;
         double d;
         double TEMP;
         double TEMP1;
@@ -59,10 +136,12 @@ public class neTest {
                     a[ j ][ j ] -= approx;
                 }
                 for( j = 1; j < i; j++ ) {
-                    //TODO coeffs(a[j - 1][j - 1], a[j][j - 1], &c, &s, accuracy);
+                    coeffs( a[ j - 1 ][ j - 1 ], a[ j ][ j - 1 ], cp, sp, accuracy );
+                    c = cp.getValue();
+                    s = sp.getValue();
                     givens( a, j, j + 1, i, c, s, true );
                     givens( a, j, j + 1, i, c, s, false );
-                    givens(eigvecs, j, j + 1, n, c, s, true);
+                    givens( eigvecs, j, j + 1, n, c, s, true );
                 }
                 for( j = 0; j < i; j++ ) {
                     a[ j ][ j ] += approx;
