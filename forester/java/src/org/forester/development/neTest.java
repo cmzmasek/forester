@@ -66,8 +66,8 @@ public class neTest {
     void tridiag( final double a[][], final int n, final double accuracy ) {
         int i, j;
         double s, c;
-        DoublePointer sp = new DoublePointer( 0 );
-        DoublePointer cp = new DoublePointer( 0 );
+        final DoublePointer sp = new DoublePointer( 0 );
+        final DoublePointer cp = new DoublePointer( 0 );
         for( i = 2; i < n; i++ ) {
             for( j = i + 1; j <= n; j++ ) {
                 coeffs( a[ i - 2 ][ i - 1 ], a[ i - 2 ][ j - 1 ], cp, sp, accuracy );
@@ -113,8 +113,8 @@ public class neTest {
     void shiftqr( final double a[][], final int n, final double accuracy ) {
         int i, j;
         double approx;
-        DoublePointer sp = new DoublePointer( 0 );
-        DoublePointer cp = new DoublePointer( 0 );
+        final DoublePointer sp = new DoublePointer( 0 );
+        final DoublePointer cp = new DoublePointer( 0 );
         double s;
         double c;
         double d;

@@ -37,6 +37,8 @@ public final class NeighborJoining {
 
     private BasicSymmetricalDistanceMatrix _d;
     private BasicSymmetricalDistanceMatrix _m;
+    private double[][]                     _d_values;
+    private double[][]                     _m_values;
     private double[]                       _r;
     private int                            _n;
     private PhylogenyNode[]                _external_nodes;
@@ -49,26 +51,28 @@ public final class NeighborJoining {
     }
 
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
+        final int otu1_m = _mappings[ otu1 ];
+        final int otu2_m = _mappings[ otu2 ];
+        int i_m;
         for( int i = 0; i < _n; ++i ) {
             if ( ( i == otu1 ) || ( i == otu2 ) ) {
                 continue;
             }
-            //final double nd = ;
-            //  setValueInD( nd, otu1, i );
-            //   _d.setValue( _mappings[ otu1 ],
-            //                _mappings[ i ],
-            //                ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2 );
-            _d._values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            //  _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            i_m = _mappings[ i ];
+            _d_values[ otu1_m ][ i_m ] = ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] - 2 ) / 2;
         }
     }
 
     private final void calculateNetDivergences() {
         double d;
+        int i_m;
         for( int i = 0; i < _n; ++i ) {
             d = 0;
+            i_m = _mappings[ i ];
             for( int n = 0; n < _n; ++n ) {
-                //  d += getValueFromD( i, n );
-                d += _d._values[ _mappings[ i ] ][ _mappings[ n ] ];
+                d += _d_values[ i_m ][ _mappings[ n ] ];
+                //d += getValueFromD( i, n );
             }
             _r[ i ] = d;
         }
@@ -87,10 +91,8 @@ public final class NeighborJoining {
             int otu2 = -1;
             for( int j = 1; j < _n; ++j ) {
                 for( int i = 0; i < j; ++i ) {
-                    //   if ( _m.getValue( i, j ) < minimum ) {
-                    if ( _m._values[ i ][ j ] < minimum ) {
-                        //minimum = _m.getValue( i, j );
-                        minimum = _m._values[ i ][ j ];
+                    if ( _m_values[ i ][ j ] < minimum ) {
+                        minimum = _m_values[ i ][ j ];
                         otu1 = i;
                         otu2 = j;
                     }
@@ -114,7 +116,6 @@ public final class NeighborJoining {
                 printProgress( otu1, otu2 );
             }
             calculateDistancesFromNewNode( otu1, otu2, d );
-            //setExternalPhylogenyNode( node, otu1 );
             _external_nodes[ _mappings[ otu1 ] ] = node;
             updateMappings( otu2 );
             --_n;
@@ -141,39 +142,20 @@ public final class NeighborJoining {
         return pl;
     }
 
-    //    private int[] findMinimalDistance() {
-    //        // if more than one minimal distances, always the first found is
-    //        // returned
-    //        // i could randomize this, so that any would be returned in a randomized
-    //        // fashion...
-    //        double minimum = Double.MAX_VALUE;
-    //        int otu_1 = -1;
-    //        int otu_2 = -1;
-    //        for( int j = 1; j < _n; ++j ) {
-    //            for( int i = 0; i < j; ++i ) {
-    //                if ( _m.getValue( i, j ) < minimum ) {
-    //                    minimum = _m.getValue( i, j );
-    //                    otu_1 = i;
-    //                    otu_2 = j;
-    //                }
-    //            }
-    //        }
-    //        return new int[] { otu_1, otu_2 };
-    //    }
     private final PhylogenyNode getExternalPhylogenyNode( final int i ) {
         return _external_nodes[ _mappings[ i ] ];
     }
 
     private final double getValueFromD( final int otu1, final int otu2 ) {
-        //return _d.getValue( _mappings[ otu1 ], _mappings[ otu2 ] );
-        return _d._values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
+        return _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
     }
 
     private final void initExternalNodes() {
         _external_nodes = new PhylogenyNode[ _n ];
+        String id;
         for( int i = 0; i < _n; ++i ) {
             _external_nodes[ i ] = new PhylogenyNode();
-            final String id = _d.getIdentifier( i );
+            id = _d.getIdentifier( i );
             if ( id != null ) {
                 _external_nodes[ i ].setName( id );
             }
@@ -199,31 +181,26 @@ public final class NeighborJoining {
         _m = new BasicSymmetricalDistanceMatrix( _n );
         _r = new double[ _n ];
         _mappings = new int[ _n ];
+        _d_values = _d.getValues();
+        _m_values = _m.getValues();
         initExternalNodes();
     }
 
-    //  private final void setExternalPhylogenyNode( final PhylogenyNode node, final int i ) {
-    //      _external_nodes[ _mappings[ i ] ] = node;
-    //  }
-    //  private final void setValueInD( final double d, final int otu1, final int otu2 ) {
-    //      _d.setValue( _mappings[ otu1 ], _mappings[ otu2 ], d );
-    //  }
     private final void updateM() {
         calculateNetDivergences();
+        double r_j;
+        int j_m;
+        final int _n_2 = _n - 2;
         for( int j = 1; j < _n; ++j ) {
+            r_j = _r[ j ];
+            j_m = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
-                //_m.setValue( i, j, calculateM( i, j ) );
-                //_m.setValue( i, j, getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 ) );
-                //_m._values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 );
-                _m._values[ i ][ j ] = _d._values[ _mappings[ i ] ][ _mappings[ j ] ] - ( _r[ i ] + _r[ j ] )
-                        / ( _n - 2 );
+                //  _m_values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + r_j ) / ( _n - 2 );
+                _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( _r[ i ] + r_j ) / ( _n_2 );
             }
         }
     }
 
-    //private double calculateM( final int i, final int j ) {
-    //    return getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 );
-    //}
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < _mappings.length - 1; ++i ) {

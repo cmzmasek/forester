@@ -39,12 +39,16 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
 
     // NumberFormat                      nf1              = NumberFormat.getInstance();
     private final static NumberFormat PHYLIP_FORMATTER = new DecimalFormat( "0.000000" );
-    final public double[][]           _values;
+    final double[][]                  _values;
     final String[]                    _identifiers;
 
     public BasicSymmetricalDistanceMatrix( final int size ) {
         _values = new double[ size ][ size ];
         _identifiers = new String[ size ];
+    }
+
+    public final double[][] getValues() {
+        return _values;
     }
 
     @Override

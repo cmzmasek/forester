@@ -49,7 +49,6 @@ import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
-import org.forester.archaeopteryx.tools.RunnableProcess;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
@@ -557,13 +556,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             final String text = "processes running: " + _process_pool.size();
             _process_menu.setText( text );
             _jmenubar.add( _process_menu );
-                 
-           
-            
-            for ( int i = 0; i < _process_pool.size(); ++i ) {
-                final ProcessRunning p = _process_pool.getProcessByIndex( i ); 
-                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]"  )) );
-              
+            for( int i = 0; i < _process_pool.size(); ++i ) {
+                final ProcessRunning p = _process_pool.getProcessByIndex( i );
+                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]" ) ) );
             }
         }
         else {
