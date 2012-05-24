@@ -2346,7 +2346,7 @@ public class TestPhylogenyReconstruction {
 
     private static void timeNeighborJoining() {
         final NeighborJoining nj = NeighborJoining.createInstance();
-        for( int n = 3; n <= 14; ++n ) {
+        for( int n = 3; n <= 13; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
