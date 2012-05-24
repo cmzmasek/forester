@@ -46,7 +46,7 @@ import java.util.TreeSet;
 
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.Format;
-import org.forester.evoinference.matrix.distance.DistanceMatrix;
+import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
@@ -546,7 +546,8 @@ public class surfacing {
         return intrees;
     }
 
-    private static List<Phylogeny> inferSpeciesTrees( final File outfile, final List<DistanceMatrix> distances_list ) {
+    private static List<Phylogeny> inferSpeciesTrees( final File outfile,
+                                                      final List<BasicSymmetricalDistanceMatrix> distances_list ) {
         final NeighborJoining nj = NeighborJoining.createInstance();
         final List<Phylogeny> phylogenies = nj.execute( distances_list );
         final PhylogenyWriter w = new PhylogenyWriter();

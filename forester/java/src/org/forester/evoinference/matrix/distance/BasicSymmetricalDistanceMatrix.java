@@ -35,11 +35,11 @@ import java.util.StringTokenizer;
 import org.forester.util.ForesterUtil;
 import org.forester.util.IllegalFormatUseException;
 
-public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
+public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
 
-    NumberFormat                      nf1              = NumberFormat.getInstance();
+    // NumberFormat                      nf1              = NumberFormat.getInstance();
     private final static NumberFormat PHYLIP_FORMATTER = new DecimalFormat( "0.000000" );
-    final double[][]                  _values;
+    final public double[][]           _values;
     final String[]                    _identifiers;
 
     public BasicSymmetricalDistanceMatrix( final int size ) {
@@ -48,12 +48,12 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
     }
 
     @Override
-    public String getIdentifier( final int i ) {
+    public final String getIdentifier( final int i ) {
         return _identifiers[ i ];
     }
 
     @Override
-    public int getIndex( final String identifier ) {
+    public final int getIndex( final String identifier ) {
         for( int i = 0; i < _identifiers.length; i++ ) {
             if ( getIdentifier( i ).equals( identifier ) ) {
                 return i;
@@ -63,14 +63,14 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
     }
 
     @Override
-    public int getSize() {
+    public final int getSize() {
         return _values.length;
     }
 
     @Override
-    public double getValue( final int col, final int row ) {
+    public final double getValue( final int col, final int row ) {
         if ( col == row ) {
-            if ( col >= getSize() ) {
+            if ( col >= _values.length ) {
                 throw new IndexOutOfBoundsException( "" );
             }
             return 0.0;
@@ -81,7 +81,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         return _values[ col ][ row ];
     }
 
-    public void randomize( final long seed ) {
+    public final void randomize( final long seed ) {
         final java.util.Random r = new java.util.Random( seed );
         for( int j = 0; j < getSize(); ++j ) {
             for( int i = 0; i < j; ++i ) {
@@ -91,11 +91,11 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
     }
 
     @Override
-    public void setIdentifier( final int i, final String identifier ) {
+    public final void setIdentifier( final int i, final String identifier ) {
         _identifiers[ i ] = identifier;
     }
 
-    public void setRow( final String s, final int row ) {
+    public final void setRow( final String s, final int row ) {
         final StringTokenizer tk = new StringTokenizer( s );
         int i = 0;
         while ( tk.hasMoreElements() ) {
@@ -105,7 +105,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
     }
 
     @Override
-    public void setValue( final int col, final int row, final double d ) {
+    public final void setValue( final int col, final int row, final double d ) {
         if ( ( col == row ) && ( d != 0.0 ) ) {
             throw new IllegalArgumentException( "attempt to set a non-zero value on the diagonal of a symmetrical distance matrix" );
         }
@@ -115,7 +115,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         _values[ col ][ row ] = d;
     }
 
-    public void write( final Writer w ) throws IOException {
+    public final void write( final Writer w ) throws IOException {
         w.write( "    " );
         w.write( getSize() + "" );
         w.write( ForesterUtil.LINE_SEPARATOR );
@@ -141,7 +141,7 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
         }
     }
 
-    private StringBuffer toPhylip() {
+    private final StringBuffer toPhylip() {
         final StringBuffer sb = new StringBuffer();
         sb.append( ' ' );
         sb.append( ' ' );
@@ -174,12 +174,12 @@ public class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return toPhylip().toString();
     }
 
     @Override
-    public StringBuffer toStringBuffer( final Format format ) {
+    public final StringBuffer toStringBuffer( final Format format ) {
         switch ( format ) {
             case PHYLIP:
                 return toPhylip();

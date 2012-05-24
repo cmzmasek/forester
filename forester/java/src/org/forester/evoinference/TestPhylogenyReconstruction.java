@@ -1925,7 +1925,6 @@ public class TestPhylogenyReconstruction {
             m.setIdentifier( 4, "E" );
             m.setIdentifier( 5, "F" );
             final NeighborJoining nj = NeighborJoining.createInstance();
-            nj.setVerbose( false );
             nj.execute( m );
             m = new BasicSymmetricalDistanceMatrix( 7 );
             m.setIdentifier( 0, "Bovine" );
@@ -2347,10 +2346,14 @@ public class TestPhylogenyReconstruction {
 
     private static void timeNeighborJoining() {
         final NeighborJoining nj = NeighborJoining.createInstance();
-        for( int n = 3; n <= 12; ++n ) {
+        for( int n = 3; n <= 14; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
+            //  for( int i = 0; i < mt.getSize(); i++ ) {
+            //      mt.setIdentifier( i, i + "i" );
+            //  }
+            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
             final long start_time = new Date().getTime();
             nj.execute( mt );
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms." );

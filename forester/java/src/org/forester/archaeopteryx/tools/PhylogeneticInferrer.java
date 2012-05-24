@@ -145,7 +145,7 @@ public class PhylogeneticInferrer implements Runnable {
                 e.printStackTrace();
             }
         }
-        final NeighborJoining nj = new NeighborJoining();
+        final NeighborJoining nj = NeighborJoining.createInstance();
         final Phylogeny phy = nj.execute( m );
         PhylogeneticInferrer.extractFastaInformation( phy );
         return phy;

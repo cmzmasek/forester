@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.io.parsers.SymmetricalDistanceMatrixParser;
 import org.forester.io.writers.PhylogenyWriter;
@@ -118,11 +119,10 @@ public class nj {
                     + matrices[ 0 ].getSize() );
         }
         final List<Phylogeny> ps = new ArrayList<Phylogeny>();
-        final NeighborJoining nj = NeighborJoining.createInstance();
-        nj.setVerbose( verbose );
+        final NeighborJoining nj = NeighborJoining.createInstance( verbose );
         final long start_time = new Date().getTime();
         for( final DistanceMatrix matrix : matrices ) {
-            ps.add( nj.execute( matrix ) );
+            ps.add( nj.execute( ( BasicSymmetricalDistanceMatrix ) matrix ) );
         }
         final long end_time = new Date().getTime();
         final PhylogenyWriter w = new PhylogenyWriter();
