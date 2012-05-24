@@ -67,7 +67,8 @@ public final class NeighborJoining {
         for( int i = 0; i < _n; ++i ) {
             d = 0;
             for( int n = 0; n < _n; ++n ) {
-                d += getValueFromD( i, n );
+                //  d += getValueFromD( i, n );
+                d += _d._values[ _mappings[ i ] ][ _mappings[ n ] ];
             }
             _r[ i ] = d;
         }
@@ -78,7 +79,6 @@ public final class NeighborJoining {
         final Phylogeny phylogeny = new Phylogeny();
         while ( _n > 2 ) {
             updateM();
-            //final int[] s = findMinimalDistance();
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
             // could randomize this, so that any would be returned in a randomized fashion...
@@ -96,9 +96,6 @@ public final class NeighborJoining {
                     }
                 }
             }
-            //
-            // final int otu1 = s[ 0 ];
-            // final int otu2 = s[ 1 ];
             // It is a condition that otu1 < otu2.
             if ( DEBUG ) {
                 if ( otu1 > otu2 ) {
@@ -217,7 +214,9 @@ public final class NeighborJoining {
             for( int i = 0; i < j; ++i ) {
                 //_m.setValue( i, j, calculateM( i, j ) );
                 //_m.setValue( i, j, getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 ) );
-                _m._values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 );
+                //_m._values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + _r[ j ] ) / ( _n - 2 );
+                _m._values[ i ][ j ] = _d._values[ _mappings[ i ] ][ _mappings[ j ] ] - ( _r[ i ] + _r[ j ] )
+                        / ( _n - 2 );
             }
         }
     }
