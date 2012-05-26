@@ -36,7 +36,7 @@ import org.forester.util.ForesterUtil;
 public final class NeighborJoining {
 
     private BasicSymmetricalDistanceMatrix _d;
-    private BasicSymmetricalDistanceMatrix _m;
+    // private BasicSymmetricalDistanceMatrix _m;
     private double[][]                     _d_values;
     private double[][]                     _m_values;
     private double[]                       _r;
@@ -178,11 +178,10 @@ public final class NeighborJoining {
     private final void reset( final BasicSymmetricalDistanceMatrix distances ) {
         _n = distances.getSize();
         _d = distances;
-        _m = new BasicSymmetricalDistanceMatrix( _n );
         _r = new double[ _n ];
         _mappings = new int[ _n ];
         _d_values = _d.getValues();
-        _m_values = _m.getValues();
+        _m_values = new double[ _n ][ _n ];
         initExternalNodes();
     }
 
