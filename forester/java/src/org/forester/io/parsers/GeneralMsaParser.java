@@ -48,7 +48,7 @@ public final class GeneralMsaParser {
     private static final Pattern NAME_SEQ_PATTERN          = Pattern.compile( "(\\S+)\\s+(\\S+)\\s*" );
     private static final Pattern INDENTED_SEQ_PATTERN      = Pattern.compile( "\\s+(\\S+)\\s*" );
     private static final Pattern NON_INDENTED_SEQ_PATTERN  = Pattern.compile( "(\\S+).*" );
-    private static final Pattern PROBCONS_REGEX            = Pattern.compile( "^CLUSTAL\\s" );
+    private static final Pattern PROBCONS_REGEX            = Pattern.compile( "^CLUSTAL" );
     private static final Pattern MUSCLE_REGEX              = Pattern.compile( "^MUSCLE\\s\\(" );
     private static final Pattern CLUSTAL_REGEX             = Pattern.compile( "^PROBCONS\\s" );
     private static final Pattern ANYTHING_REGEX            = Pattern.compile( "[\\d\\s]+" );
