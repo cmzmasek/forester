@@ -36,7 +36,7 @@ import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public class msa_quality {
+public class mcc {
 
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
@@ -44,7 +44,8 @@ public class msa_quality {
     final static private String TO_OPTION     = "t";
     final static private String STEP_OPTION   = "s";
     final static private String WINDOW_OPTION = "w";
-    final static private String PRG_NAME      = "msa_quality";
+    final static private String PRG_NAME      = "mcc";
+    final static private String PRG_DESC      = "msa consensus conservation";
     final static private String PRG_VERSION   = "1.00";
     final static private String PRG_DATE      = "2012.05.18";
     final static private String E_MAIL        = "phylosoft@gmail.com";
@@ -89,7 +90,7 @@ public class msa_quality {
     }
 
     private static void printHelp() {
-        ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_DESC, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME + " <options> <msa input file>" );

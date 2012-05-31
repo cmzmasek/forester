@@ -58,7 +58,7 @@ import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
 
-public class PhylogeneticInferrer implements Runnable {
+public class PhylogeneticInferrer extends RunnableProcess {
 
     private Msa                                _msa;
     private final MainFrameApplication         _mf;
@@ -156,12 +156,14 @@ public class PhylogeneticInferrer implements Runnable {
         if ( ( _msa == null ) && ( _seqs == null ) ) {
             throw new IllegalArgumentException( "cannot run phylogenetic analysis with null msa and seq array" );
         }
+        start( _mf, "phylogenetic inference" );
         if ( _msa == null ) {
             Msa msa = null;
             try {
                 msa = inferMsa();
             }
             catch ( final IOException e ) {
+                end( _mf );
                 JOptionPane.showMessageDialog( _mf,
                                                "Could not create multiple sequence alignment with \""
                                                        + _options.getMsaPrg() + "\" and the following parameters:\n\""
@@ -175,6 +177,7 @@ public class PhylogeneticInferrer implements Runnable {
                 return;
             }
             catch ( final Exception e ) {
+                end( _mf );
                 JOptionPane.showMessageDialog( _mf,
                                                "Could not create multiple sequence alignment with \""
                                                        + _options.getMsaPrg() + "\" and the following parameters:\n\""
@@ -188,6 +191,7 @@ public class PhylogeneticInferrer implements Runnable {
                 return;
             }
             if ( msa == null ) {
+                end( _mf );
                 JOptionPane.showMessageDialog( _mf,
                                                "Could not create multiple sequence alignment with "
                                                        + _options.getMsaPrg() + "\nand the following parameters:\n\""
@@ -206,6 +210,7 @@ public class PhylogeneticInferrer implements Runnable {
                                                   _options.getMsaProcessingMinAllowedLength(),
                                                   msa );
                 if ( msa == null ) {
+                    end( _mf );
                     JOptionPane.showMessageDialog( _mf,
                                                    "Less than two sequences longer than "
                                                            + _options.getMsaProcessingMinAllowedLength()
@@ -237,7 +242,8 @@ public class PhylogeneticInferrer implements Runnable {
             ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
         }
         _mf.getMainPanel().addPhylogenyInNewTab( master_phy, _mf.getConfiguration(), "nj", "njpath" );
-        _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+        //  _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+        end( _mf );
         JOptionPane.showMessageDialog( _mf,
                                        "Inference successfully completed",
                                        "Inference Completed",

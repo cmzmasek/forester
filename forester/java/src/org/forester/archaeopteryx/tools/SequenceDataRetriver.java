@@ -47,7 +47,7 @@ import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtWsTools;
 
-public final class SequenceDataRetriver implements Runnable {
+public final class SequenceDataRetriver extends RunnableProcess {
 
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
@@ -69,13 +69,12 @@ public final class SequenceDataRetriver implements Runnable {
     }
 
     private void execute() {
-        _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
+        start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
         try {
             not_found = obtainSeqInformation( _phy );
         }
         catch ( final UnknownHostException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             JOptionPane.showMessageDialog( _mf,
                                            "Could not connect to \"" + getBaseUrl() + "\"",
                                            "Network error during taxonomic information gathering",
@@ -83,7 +82,6 @@ public final class SequenceDataRetriver implements Runnable {
             return;
         }
         catch ( final IOException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
@@ -92,7 +90,7 @@ public final class SequenceDataRetriver implements Runnable {
             return;
         }
         finally {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+            end( _mf );
         }
         _treepanel.setTree( _phy );
         _mf.showWhole();

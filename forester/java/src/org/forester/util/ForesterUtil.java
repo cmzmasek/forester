@@ -731,13 +731,18 @@ public final class ForesterUtil {
     }
 
     final public static void printProgramInformation( final String prg_name,
+                                                      final String desc,
                                                       final String prg_version,
                                                       final String date,
                                                       final String email,
                                                       final String www ) {
-        final int l = prg_name.length() + prg_version.length() + date.length() + 4;
+        String my_prg_name = new String( prg_name );
+        if ( !ForesterUtil.isEmpty( desc ) ) {
+            my_prg_name += ( " - " + desc );
+        }
+        final int l = my_prg_name.length() + prg_version.length() + date.length() + 4;
         System.out.println();
-        System.out.println( prg_name + " " + prg_version + " (" + date + ")" );
+        System.out.println( my_prg_name + " " + prg_version + " (" + date + ")" );
         for( int i = 0; i < l; ++i ) {
             System.out.print( "_" );
         }
@@ -750,6 +755,14 @@ public final class ForesterUtil {
             System.out.println( "[running on Java " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         }
         System.out.println();
+    }
+
+    final public static void printProgramInformation( final String prg_name,
+                                                      final String prg_version,
+                                                      final String date,
+                                                      final String email,
+                                                      final String www ) {
+        printProgramInformation( prg_name, null, prg_version, date, email, www );
     }
 
     final public static void printWarningMessage( final String prg_name, final String message ) {

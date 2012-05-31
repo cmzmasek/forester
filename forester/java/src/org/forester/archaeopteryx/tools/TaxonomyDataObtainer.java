@@ -39,7 +39,7 @@ import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.ws.uniprot.UniProtWsTools;
 
-public class TaxonomyDataObtainer implements Runnable {
+public class TaxonomyDataObtainer extends RunnableProcess {
 
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
@@ -68,7 +68,7 @@ public class TaxonomyDataObtainer implements Runnable {
     }
 
     private void execute() {
-        _mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
+        start( _mf, "taxonomy data" );
         SortedSet<String> not_found = null;
         try {
             not_found = AncestralTaxonomyInference.obtainDetailedTaxonomicInformation( _phy, _delete );
@@ -100,7 +100,7 @@ public class TaxonomyDataObtainer implements Runnable {
             return;
         }
         finally {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+            end( _mf );
         }
         _treepanel.setTree( _phy );
         _mf.showWhole();

@@ -18,7 +18,7 @@ public abstract class RunnableProcess implements Runnable {
     }
 
     void start( final MainFrame mf, final String name ) {
-        mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
+        //mf.getMainPanel().getCurrentTreePanel().setWaitCursor();
         setProcessId( mf.getProcessPool().addProcess( name ) );
         mf.updateProcessMenu();
     }
@@ -29,7 +29,7 @@ public abstract class RunnableProcess implements Runnable {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not remove process " + getProcessId()
                     + " from process pool" );
         }
-        mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
+        //mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
         mf.updateProcessMenu();
     }
 }
