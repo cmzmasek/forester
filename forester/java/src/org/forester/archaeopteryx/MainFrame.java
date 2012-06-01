@@ -43,6 +43,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -545,8 +546,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add( _help_jmenu );
     }
 
-    public synchronized void updateProcessMenu() {
-        System.out.println( "pool size " + _process_pool.size() );
+    public void updateProcessMenu() {
+        // In general Swing is not thread safe.
+        // See "Swing's Threading Policy".
+        SwingUtilities.invokeLater( new Runnable() {
+
+            public void run() {
+                doUpdateProcessMenu();
+            }
+        } );
+    }
+
+    private void doUpdateProcessMenu() {
         if ( _process_pool.size() > 0 ) {
             if ( _process_menu == null ) {
                 _process_menu = createMenu( "", getConfiguration() );
@@ -570,22 +581,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.validate();
         _jmenubar.repaint();
         repaint();
-        //        _help_jmenu.add( _help_item = new JMenuItem( "Help" ) );
-        //        _help_jmenu.add( _website_item = new JMenuItem( "Archaeopteryx Home" ) );
-        //        _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" );
-        //        _help_jmenu.add( _phyloxml_website_item = new JMenuItem( "phyloXML Home" ) );
-        //        _help_jmenu.add( _phyloxml_ref_item = new JMenuItem( "phyloXML Reference" ) );
-        //        _help_jmenu.addSeparator();
-        //        _help_jmenu.add( _about_item = new JMenuItem( "About" ) );
-        //        customizeJMenuItem( _help_item );
-        //        customizeJMenuItem( _website_item );
-        //        customizeJMenuItem( _phyloxml_website_item );
-        //        customizeJMenuItem( _aptx_ref_item );
-        //        customizeJMenuItem( _phyloxml_ref_item );
-        //        customizeJMenuItem( _about_item );
-        //        _phyloxml_ref_item.setToolTipText( PHYLOXML_REF_TOOL_TIP );
-        //        _aptx_ref_item.setToolTipText( APTX_REF_TOOL_TIP );
-        //        _jmenubar.add( _help_jmenu );
     }
 
     void buildTypeMenu() {

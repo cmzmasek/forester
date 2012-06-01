@@ -625,7 +625,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void displayedPhylogenyMightHaveChanged( final boolean recalc_longest_ext_node_info ) {
-        if ( ( _mainpanel != null ) && ( _mainpanel.getCurrentPhylogeny() != null ) ) {
+        if ( ( _mainpanel != null )
+                && ( _mainpanel.getCurrentPhylogeny() != null && !_mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             if ( getOptions().isShowOverview() ) {
                 _mainpanel.getCurrentTreePanel().updateOvSizes();
             }
@@ -1712,7 +1713,7 @@ final class ControlPanel extends JPanel implements ActionListener {
      * Fit entire tree into window.
      */
     void showWhole() {
-        if ( _mainpanel.getCurrentScrollPane() == null ) {
+        if ( _mainpanel.getCurrentScrollPane() == null || _mainpanel.getCurrentTreePanel().getPhylogeny().isEmpty() ) {
             return;
         }
         getCurrentTreePanel().updateSetOfCollapsedExternalNodes();

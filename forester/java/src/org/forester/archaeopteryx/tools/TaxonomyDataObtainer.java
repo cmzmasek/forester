@@ -74,7 +74,6 @@ public class TaxonomyDataObtainer extends RunnableProcess {
             not_found = AncestralTaxonomyInference.obtainDetailedTaxonomicInformation( _phy, _delete );
         }
         catch ( final UnknownHostException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             JOptionPane.showMessageDialog( _mf,
                                            "Could not connect to \"" + getBaseUrl() + "\"",
                                            "Network error during taxonomic information gathering",
@@ -82,7 +81,6 @@ public class TaxonomyDataObtainer extends RunnableProcess {
             return;
         }
         catch ( final IOException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
@@ -91,7 +89,6 @@ public class TaxonomyDataObtainer extends RunnableProcess {
             return;
         }
         catch ( final AncestralTaxonomyInferenceException e ) {
-            _mf.getMainPanel().getCurrentTreePanel().setArrowCursor();
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
@@ -101,6 +98,18 @@ public class TaxonomyDataObtainer extends RunnableProcess {
         }
         finally {
             end( _mf );
+        }
+        if ( _phy == null || _phy.isEmpty() ) {
+            try {
+                JOptionPane.showMessageDialog( _mf,
+                                               "None of the external node taxonomies could be resolved",
+                                               "Taxonomy Tool Failed",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+            catch ( final Exception e ) {
+                // Not important if this fails, do nothing. 
+            }
+            return;
         }
         _treepanel.setTree( _phy );
         _mf.showWhole();

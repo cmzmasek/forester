@@ -3670,6 +3670,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                final int graphics_file_height,
                                final int graphics_file_x,
                                final int graphics_file_y ) {
+        if ( _phylogeny == null || _phylogeny.isEmpty() ) {
+            return;
+        }
         if ( _control_panel.isShowSequenceRelations() ) {
             _query_sequence = _control_panel.getSelectedQuerySequence();
         }
