@@ -99,7 +99,7 @@ public class TaxonomyDataObtainer extends RunnableProcess {
         finally {
             end( _mf );
         }
-        if ( _phy == null || _phy.isEmpty() ) {
+        if ( ( _phy == null ) || _phy.isEmpty() ) {
             try {
                 JOptionPane.showMessageDialog( _mf,
                                                "None of the external node taxonomies could be resolved",
