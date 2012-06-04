@@ -41,7 +41,7 @@ public final class AncestralTaxonomyInference {
 
     public static void inferTaxonomyFromDescendents( final Phylogeny phy ) throws IOException,
             AncestralTaxonomyInferenceException {
-        TaxonomyDataObtainer.clearCachesIfTooLarge();
+        TaxonomyDataManager.clearCachesIfTooLarge();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( !node.isExternal() ) {
@@ -61,12 +61,12 @@ public final class AncestralTaxonomyInference {
         int shortest_lin_length = Integer.MAX_VALUE;
         for( final PhylogenyNode desc : descs ) {
             if ( desc.getNodeData().isHasTaxonomy()
-                    && ( TaxonomyDataObtainer.isHasAppropriateId( desc.getNodeData().getTaxonomy() )
+                    && ( TaxonomyDataManager.isHasAppropriateId( desc.getNodeData().getTaxonomy() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getTaxonomyCode() ) || !ForesterUtil
                             .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
-                final UniProtTaxonomy up_tax = TaxonomyDataObtainer.obtainUniProtTaxonomy( desc.getNodeData()
+                final UniProtTaxonomy up_tax = TaxonomyDataManager.obtainUniProtTaxonomy( desc.getNodeData()
                         .getTaxonomy(), null, null );
                 if ( ( up_tax == null ) && ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() ) ) {
                     String desc_str = "";
@@ -169,7 +169,7 @@ public final class AncestralTaxonomyInference {
         final Taxonomy tax = new Taxonomy();
         n.getNodeData().setTaxonomy( tax );
         tax.setScientificName( last_common );
-        final UniProtTaxonomy up_tax = TaxonomyDataObtainer.obtainUniProtTaxonomyFromLineage( last_common_lineage );
+        final UniProtTaxonomy up_tax = TaxonomyDataManager.obtainUniProtTaxonomyFromLineage( last_common_lineage );
         if ( up_tax != null ) {
             if ( !ForesterUtil.isEmpty( up_tax.getRank() ) ) {
                 try {

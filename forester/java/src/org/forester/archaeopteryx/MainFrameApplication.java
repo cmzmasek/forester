@@ -59,7 +59,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 
-import org.forester.analysis.TaxonomyDataObtainer;
+import org.forester.analysis.TaxonomyDataManager;
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -1516,7 +1516,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this,
+                final TaxonomyDataManager t = new TaxonomyDataManager( this,
                                                                          _mainpanel.getCurrentTreePanel(),
                                                                          phy.copy() );
                 new Thread( t ).start();
@@ -1528,10 +1528,10 @@ public final class MainFrameApplication extends MainFrame {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final TaxonomyDataObtainer t = new TaxonomyDataObtainer( this,
+                final TaxonomyDataManager t = new TaxonomyDataManager( this,
                                                                          _mainpanel.getCurrentTreePanel(),
                                                                          phy.copy(),
-                                                                         true );
+                                                                         true,true );
                 new Thread( t ).start();
             }
         }

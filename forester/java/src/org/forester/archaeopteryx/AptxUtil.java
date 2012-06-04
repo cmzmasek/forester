@@ -63,7 +63,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
 import org.forester.analysis.AncestralTaxonomyInference;
-import org.forester.analysis.TaxonomyDataObtainer;
+import org.forester.analysis.TaxonomyDataManager;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
@@ -465,7 +465,7 @@ public final class AptxUtil {
                         else {
                             UniProtTaxonomy up = null;
                             try {
-                                up = TaxonomyDataObtainer.obtainUniProtTaxonomy( temp_tax, null, null );
+                                up = TaxonomyDataManager.obtainUniProtTaxonomy( temp_tax, null, null );
                             }
                             catch ( final Exception e ) {
                                 e.printStackTrace();
