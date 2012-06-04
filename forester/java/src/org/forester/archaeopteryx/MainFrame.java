@@ -1150,10 +1150,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      */
     static void about() {
         final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
-        about.append( "Copyright (C) 2007-2011 Christian Zmasek\n" );
+        about.append( "Copyright (C) 2007-2012 Christian M. Zmasek\n" );
         about.append( "All Rights Reserved\n" );
         about.append( "License: GNU Lesser General Public License (LGPL)\n" );
         about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
+        about.append( "Based on: " + ForesterUtil.getForesterLibraryInformation() + "\n" );
         about.append( "phyloXML version : " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
         about.append( "phyloXML location: " + ForesterConstants.PHYLO_XML_LOCATION + "\n" );
         if ( !ForesterUtil.isEmpty( ForesterUtil.JAVA_VERSION ) && !ForesterUtil.isEmpty( ForesterUtil.JAVA_VENDOR ) ) {

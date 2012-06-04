@@ -90,7 +90,7 @@ public class mcc {
     }
 
     private static void printHelp() {
-        ForesterUtil.printProgramInformation( PRG_NAME, PRG_DESC, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
+        ForesterUtil.printProgramInformation( PRG_NAME, PRG_DESC, PRG_VERSION, PRG_DATE, E_MAIL, WWW, ForesterUtil.getForesterLibraryInformation() );
         System.out.println( "Usage:" );
         System.out.println();
         System.out.println( PRG_NAME + " <options> <msa input file>" );

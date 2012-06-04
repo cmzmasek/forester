@@ -50,11 +50,13 @@ public class count_support {
     final static private String  PRG_NAME                = "count_support";
     final static private String  PRG_VERSION             = "1.0";
     final static private String  PRG_DATE                = "2008.03.04";
+    final static private String E_MAIL        = "phylosoft@gmail.com";
+    final static private String WWW           = "www.phylosoft.org/forester/";
     private final static boolean WRITE_EVALUATORS_AS_NHX = false;
 
     public static void main( final String args[] ) {
-        ForesterUtil
-                .printProgramInformation( count_support.PRG_NAME, count_support.PRG_VERSION, count_support.PRG_DATE );
+         ForesterUtil.printProgramInformation( PRG_NAME, null, PRG_VERSION, PRG_DATE, E_MAIL, WWW, ForesterUtil.getForesterLibraryInformation() );
+        
         if ( ( args.length < 3 ) || ( args.length > 7 ) ) {
             System.out.println();
             System.out.println( count_support.PRG_NAME + ": wrong number of arguments" );

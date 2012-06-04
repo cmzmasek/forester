@@ -95,6 +95,10 @@ public final class ForesterUtil {
             sb.append( separator );
         }
     }
+    
+    final public static String getForesterLibraryInformation() {
+        return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE  + ")";
+    }
 
     public static boolean seqIsLikelyToBeAa( final String s ) {
         final String seq = s.toLowerCase();
@@ -735,7 +739,8 @@ public final class ForesterUtil {
                                                       final String prg_version,
                                                       final String date,
                                                       final String email,
-                                                      final String www ) {
+                                                      final String www,
+                                                      final String based_on ) {
         String my_prg_name = new String( prg_name );
         if ( !ForesterUtil.isEmpty( desc ) ) {
             my_prg_name += ( " - " + desc );
@@ -748,8 +753,11 @@ public final class ForesterUtil {
         }
         System.out.println();
         System.out.println();
-        System.out.println( "WWW    : " + www );
-        System.out.println( "Contact: " + email );
+        System.out.println( "WWW     : " + www );
+        System.out.println( "Contact : " + email );
+        if ( !ForesterUtil.isEmpty( based_on ) ) {
+            System.out.println( "Based on: " + based_on );
+        }
         if ( !ForesterUtil.isEmpty( ForesterUtil.JAVA_VERSION ) && !ForesterUtil.isEmpty( ForesterUtil.JAVA_VENDOR ) ) {
             System.out.println();
             System.out.println( "[running on Java " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
@@ -762,7 +770,7 @@ public final class ForesterUtil {
                                                       final String date,
                                                       final String email,
                                                       final String www ) {
-        printProgramInformation( prg_name, null, prg_version, date, email, www );
+        printProgramInformation( prg_name, null, prg_version, date, email, www, null );
     }
 
     final public static void printWarningMessage( final String prg_name, final String message ) {
