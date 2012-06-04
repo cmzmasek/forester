@@ -61,12 +61,11 @@ public final class TaxonomyDataManager extends RunnableProcess {
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _cn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _id_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
-
-    private final Phylogeny            _phy;
-    private final MainFrameApplication _mf;
-    private final TreePanel            _treepanel;
-    private final boolean              _delete;
-    private final boolean _allow_simple_names;
+    private final Phylogeny                               _phy;
+    private final MainFrameApplication                    _mf;
+    private final TreePanel                               _treepanel;
+    private final boolean                                 _delete;
+    private final boolean                                 _allow_simple_names;
 
     public TaxonomyDataManager( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
@@ -77,10 +76,10 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     public TaxonomyDataManager( final MainFrameApplication mf,
-                                 final TreePanel treepanel,
-                                 final Phylogeny phy,
-                                 final boolean delete,
-                                 final boolean allow_simple_name ) {
+                                final TreePanel treepanel,
+                                final Phylogeny phy,
+                                final boolean delete,
+                                final boolean allow_simple_name ) {
         _phy = phy;
         _mf = mf;
         _treepanel = treepanel;
@@ -88,7 +87,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
         _allow_simple_names = allow_simple_name;
     }
 
-    
     synchronized static void clearCachesIfTooLarge() {
         if ( getSnTaxCacheMap().size() > MAX_CACHE_SIZE ) {
             getSnTaxCacheMap().clear();
@@ -127,9 +125,9 @@ public final class TaxonomyDataManager extends RunnableProcess {
         return _sn_up_cache_map;
     }
 
-    private final static UniProtTaxonomy getTaxonomies( final HashMap<String, UniProtTaxonomy> cache,
-                                                  final Object query,
-                                                  final QUERY_TYPE qt ) throws IOException,
+    private final static UniProtTaxonomy obtainTaxonomy( final HashMap<String, UniProtTaxonomy> cache,
+                                                        final Object query,
+                                                        final QUERY_TYPE qt ) throws IOException,
             AncestralTaxonomyInferenceException {
         if ( cache.containsKey( query ) ) {
             return cache.get( query ).copy();
@@ -184,12 +182,10 @@ public final class TaxonomyDataManager extends RunnableProcess {
         return UniProtWsTools.getTaxonomiesFromId( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
-   
     private final static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String query ) throws IOException {
         return UniProtWsTools.getTaxonomiesFromScientificNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
-    
     private final static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String query ) throws IOException {
         return UniProtWsTools.getTaxonomiesFromTaxonomyCode( query, MAX_TAXONOMIES_TO_RETURN );
     }
@@ -202,8 +198,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     synchronized final private static SortedSet<String> obtainDetailedTaxonomicInformation( final Phylogeny phy,
-                                                                                      final boolean delete,
-                                                                                      final boolean allow_to_use_basic_node_names )
+                                                                                            final boolean delete,
+                                                                                            final boolean allow_to_use_basic_node_names )
             throws IOException, AncestralTaxonomyInferenceException {
         clearCachesIfTooLarge();
         final SortedSet<String> not_found = new TreeSet<String>();
@@ -233,12 +229,15 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 }
             }
             UniProtTaxonomy uniprot_tax = null;
-            if ( ( ( tax != null )
-                    && ( isHasAppropriateId( tax ) || !ForesterUtil.isEmpty( tax.getScientificName() )
-                            || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil.isEmpty( tax
-                            .getCommonName() ) ) ) ||
-                            ( allow_to_use_basic_node_names && !ForesterUtil.isEmpty( node.getName() ) ) ) {
-                uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
+            if ( ( ( tax != null ) && ( isHasAppropriateId( tax ) || !ForesterUtil.isEmpty( tax.getScientificName() )
+                    || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil.isEmpty( tax.getCommonName() ) ) )
+                    || ( allow_to_use_basic_node_names && !ForesterUtil.isEmpty( node.getName() ) ) ) {
+                if ( tax != null ) {
+                    uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
+                }
+                else {
+                    uniprot_tax = obtainUniProtTaxonomy( node.getName(), null, qt );
+                }
                 if ( uniprot_tax != null ) {
                     updateTaxonomy( qt, node, tax, uniprot_tax );
                 }
@@ -264,37 +263,53 @@ public final class TaxonomyDataManager extends RunnableProcess {
     public final static UniProtTaxonomy obtainUniProtTaxonomy( final Taxonomy tax, Object query, QUERY_TYPE qt )
             throws IOException, AncestralTaxonomyInferenceException {
         if ( tax == null ) {
-            throw new IllegalArgumentException( "illegal attempt to use empty taxonomy object");
+            throw new IllegalArgumentException( "illegal attempt to use empty taxonomy object" );
         }
-        
-        
         if ( TaxonomyDataManager.isHasAppropriateId( tax ) ) {
             query = tax.getIdentifier().getValue();
             qt = QUERY_TYPE.ID;
-            return getTaxonomies( TaxonomyDataManager.getIdTaxCacheMap(), query, qt );
+            return obtainTaxonomy( TaxonomyDataManager.getIdTaxCacheMap(), query, qt );
         }
         else if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             if ( !ForesterUtil.isEmpty( tax.getLineage() ) ) {
                 query = tax.getLineage();
                 qt = QUERY_TYPE.LIN;
-                return getTaxonomies( TaxonomyDataManager.getLineageTaxCacheMap(), query, qt );
+                return obtainTaxonomy( TaxonomyDataManager.getLineageTaxCacheMap(), query, qt );
             }
             else {
                 query = tax.getScientificName();
                 qt = QUERY_TYPE.SN;
-                return getTaxonomies( TaxonomyDataManager.getSnTaxCacheMap(), query, qt );
+                return obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), query, qt );
             }
         }
         else if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             query = tax.getTaxonomyCode();
             qt = QUERY_TYPE.CODE;
-            return getTaxonomies( TaxonomyDataManager.getCodeTaxCacheMap(), query, qt );
+            return obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), query, qt );
         }
         else {
             query = tax.getCommonName();
             qt = QUERY_TYPE.CN;
-            return getTaxonomies( TaxonomyDataManager.getCnTaxCacheMap(), query, qt );
+            return obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), query, qt );
         }
+    }
+
+    public final static UniProtTaxonomy obtainUniProtTaxonomy( final String simple_name, Object query, QUERY_TYPE qt )
+            throws IOException, AncestralTaxonomyInferenceException {
+        if ( ForesterUtil.isEmpty( simple_name ) ) {
+            throw new IllegalArgumentException( "illegal attempt to use empty simple name" );
+        }
+        qt = QUERY_TYPE.SN;
+        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), query, qt );
+        if ( ut == null ) {
+            qt = QUERY_TYPE.CODE;
+            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), query, qt );
+        }
+        if ( ut == null ) {
+            qt = QUERY_TYPE.CN;
+            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), query, qt );
+        }
+        return ut;
     }
 
     static final UniProtTaxonomy obtainUniProtTaxonomyFromLineage( final List<String> lineage )
@@ -347,9 +362,9 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     synchronized final private static void updateTaxonomy( final QUERY_TYPE qt,
-                                                     final PhylogenyNode node,
-                                                     final Taxonomy tax,
-                                                     final UniProtTaxonomy up_tax ) {
+                                                           final PhylogenyNode node,
+                                                           final Taxonomy tax,
+                                                           final UniProtTaxonomy up_tax ) {
         if ( ( qt != QUERY_TYPE.SN ) && !ForesterUtil.isEmpty( up_tax.getScientificName() )
                 && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             tax.setScientificName( up_tax.getScientificName() );
@@ -386,7 +401,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
             }
         }
     }
-   
+
     private final void execute() {
         start( _mf, "taxonomy data" );
         SortedSet<String> not_found = null;

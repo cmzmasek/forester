@@ -1518,7 +1518,7 @@ public final class MainFrameApplication extends MainFrame {
             if ( ( phy != null ) && !phy.isEmpty() ) {
                 final TaxonomyDataManager t = new TaxonomyDataManager( this,
                                                                          _mainpanel.getCurrentTreePanel(),
-                                                                         phy.copy() );
+                                                                         phy.copy(), false,true );
                 new Thread( t ).start();
             }
         }
