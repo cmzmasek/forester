@@ -242,6 +242,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     if ( tax == null ) {
                         tax = new Taxonomy();
                         node.getNodeData().addTaxonomy( tax );
+                        node.setName( "" );
                     }
                     updateTaxonomy( qt, node, tax, uniprot_tax );
                 }
