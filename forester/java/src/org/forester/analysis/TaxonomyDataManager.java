@@ -126,8 +126,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static UniProtTaxonomy obtainTaxonomy( final HashMap<String, UniProtTaxonomy> cache,
-                                                        final Object query,
-                                                        final QUERY_TYPE qt ) throws IOException,
+                                                         final Object query,
+                                                         final QUERY_TYPE qt ) throws IOException,
             AncestralTaxonomyInferenceException {
         if ( cache.containsKey( query ) ) {
             return cache.get( query ).copy();
@@ -236,13 +236,22 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
                 }
                 else {
-                    uniprot_tax = obtainUniProtTaxonomy( node.getName(), null, qt );
+                    uniprot_tax = obtainUniProtTaxonomy( node.getName(), qt );
                 }
                 if ( uniprot_tax != null ) {
+                    if ( tax == null ) {
+                        tax = new Taxonomy();
+                        node.getNodeData().addTaxonomy( tax );
+                    }
                     updateTaxonomy( qt, node, tax, uniprot_tax );
                 }
                 else {
-                    not_found.add( tax.toString() );
+                    if ( tax != null ) {
+                        not_found.add( tax.toString() );
+                    }
+                    else {
+                        not_found.add(node.getName() );
+                    }
                     if ( delete && node.isExternal() ) {
                         not_found_external_nodes.add( node );
                     }
@@ -294,20 +303,20 @@ public final class TaxonomyDataManager extends RunnableProcess {
         }
     }
 
-    public final static UniProtTaxonomy obtainUniProtTaxonomy( final String simple_name, Object query, QUERY_TYPE qt )
+    public final static UniProtTaxonomy obtainUniProtTaxonomy( final String simple_name, QUERY_TYPE qt )
             throws IOException, AncestralTaxonomyInferenceException {
         if ( ForesterUtil.isEmpty( simple_name ) ) {
             throw new IllegalArgumentException( "illegal attempt to use empty simple name" );
         }
         qt = QUERY_TYPE.SN;
-        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), query, qt );
+        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), simple_name, qt );
         if ( ut == null ) {
             qt = QUERY_TYPE.CODE;
-            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), query, qt );
+            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), simple_name, qt );
         }
         if ( ut == null ) {
             qt = QUERY_TYPE.CN;
-            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), query, qt );
+            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), simple_name, qt );
         }
         return ut;
     }
