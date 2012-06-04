@@ -59,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 
+import org.forester.analysis.TaxonomyDataObtainer;
 import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -70,7 +71,6 @@ import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
 import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
 import org.forester.archaeopteryx.tools.PhylogeneticInferrer;
 import org.forester.archaeopteryx.tools.SequenceDataRetriver;
-import org.forester.archaeopteryx.tools.TaxonomyDataObtainer;
 import org.forester.archaeopteryx.webservices.PhylogeniesWebserviceClient;
 import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.FastaParser;

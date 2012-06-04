@@ -17,12 +17,12 @@ public abstract class RunnableProcess implements Runnable {
         _process_id = process_id;
     }
 
-    void start( final MainFrame mf, final String name ) {
+    public void  start( final MainFrame mf, final String name ) {
         setProcessId( mf.getProcessPool().addProcess( name ) );
         mf.updateProcessMenu();
     }
 
-    void end( final MainFrame mf ) {
+    public void end( final MainFrame mf ) {
         final boolean removed = mf.getProcessPool().removeProcess( getProcessId() );
         if ( !removed ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not remove process " + getProcessId()
