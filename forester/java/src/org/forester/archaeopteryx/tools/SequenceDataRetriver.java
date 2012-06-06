@@ -43,6 +43,7 @@ import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceIdParser;
 import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtWsTools;
@@ -55,7 +56,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
     private final static boolean       DEBUG = false;
 
     private enum Db {
-        UNKNOWN, UNIPROT, EMBL;
+        UNKNOWN, UNIPROT, EMBL, NCBI;
     }
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
@@ -185,8 +186,8 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 if ( ( query = UniProtWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
                     db = Db.UNIPROT;
                 }
-                else if ( ( query = DatabaseTools.parseGenbankAccessor( node.getName() ) ) != null ) {
-                    db = Db.EMBL;
+                else if ( ( query = SequenceIdParser.parseGenbankAccessor( node.getName() ) ) != null ) {
+                    db = Db.NCBI;
                 }
             }
             if ( !ForesterUtil.isEmpty( query ) ) {

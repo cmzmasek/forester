@@ -58,20 +58,75 @@ public final class SequenceIdParser {
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6})(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern GENBANK_PROTEIN_AC_PATTERN      = Pattern
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5})(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static boolean DEBUG                           = false;
+    private final static boolean DEBUG                           = true;
 
     
-    
+    /**
+     * Returns null if no match.
+     * 
+     */
     public final static Identifier parse( final String s ) {
-        String v = DatabaseTools.parseGenbankAccessor( s );
+        String v = parseGenbankAccessor( s );
         if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, "genbank" );
+            return new Identifier( v, "ncbi" );
         }
-        
+        v = parseRefSeqAccessor( s );
+        if ( !ForesterUtil.isEmpty( v ) ) {
+            return new Identifier( v, "ncbi" );
+        }
         return null;
     }
     
+    /**
+     * Returns null if no match.
+     * 
+     * @param query
+     * @param db 
+     * @return
+     */
+    static public String parseGenbankAccessor( final String query ) {
+        Matcher m = GENBANK_NUCLEOTIDE_AC_PATTERN_1.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        else {
+            m = GENBANK_NUCLEOTIDE_AC_PATTERN_2.matcher( query );
+            if ( m.lookingAt() ) {
+                return m.group( 1 );
+            }
+            else {
+                m = GENBANK_PROTEIN_AC_PATTERN.matcher( query );
+                if ( m.lookingAt() ) {
+                    return m.group( 1 );
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+    }
     
+    public final static String parseRefSeqAccessor( final String query ) {
+        Matcher m = GENBANK_NUCLEOTIDE_AC_PATTERN_1.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        else {
+            m = GENBANK_NUCLEOTIDE_AC_PATTERN_2.matcher( query );
+            if ( m.lookingAt() ) {
+                return m.group( 1 );
+            }
+            else {
+                m = GENBANK_PROTEIN_AC_PATTERN.matcher( query );
+                if ( m.lookingAt() ) {
+                    return m.group( 1 );
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+    }
     
     
     

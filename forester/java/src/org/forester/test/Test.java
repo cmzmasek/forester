@@ -7959,43 +7959,43 @@ public final class Test {
         //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
         //Protein:    3 letters + 5 numerals
         //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
-        if ( !DatabaseTools.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
             return false;
         }
-        if ( !DatabaseTools.parseGenbankAccessor( ".AY423861." ).equals( "AY423861" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( ".AY423861." ).equals( "AY423861" ) ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "AAY423861" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "AAY423861" ) != null ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "AY4238612" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "AY4238612" ) != null ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "AAY4238612" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "AAY4238612" ) != null ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "Y423861" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "Y423861" ) != null ) {
             return false;
         }
-        if ( !DatabaseTools.parseGenbankAccessor( "S12345" ).equals( "S12345" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( "S12345" ).equals( "S12345" ) ) {
             return false;
         }
-        if ( !DatabaseTools.parseGenbankAccessor( "|S12345|" ).equals( "S12345" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( "|S12345|" ).equals( "S12345" ) ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "|S123456" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "|S123456" ) != null ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "ABC123456" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "ABC123456" ) != null ) {
             return false;
         }
-        if ( !DatabaseTools.parseGenbankAccessor( "ABC12345" ).equals( "ABC12345" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( "ABC12345" ).equals( "ABC12345" ) ) {
             return false;
         }
-        if ( !DatabaseTools.parseGenbankAccessor( "&ABC12345&" ).equals( "ABC12345" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( "&ABC12345&" ).equals( "ABC12345" ) ) {
             return false;
         }
-        if ( DatabaseTools.parseGenbankAccessor( "ABCD12345" ) != null ) {
+        if ( SequenceIdParser.parseGenbankAccessor( "ABCD12345" ) != null ) {
             return false;
         }
         return true;
@@ -8929,7 +8929,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8942,7 +8942,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8955,7 +8955,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8969,7 +8969,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "AAA96518" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8982,7 +8982,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "EHB07727" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8995,7 +8995,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "BAF37827" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9008,7 +9008,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "CAA73223" )
-                 || !id.getProvider().equals( "genbank" ) ) {
+                 || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
