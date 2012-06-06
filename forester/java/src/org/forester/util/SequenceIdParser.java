@@ -28,6 +28,8 @@
 
 package org.forester.util;
 
+import org.forester.phylogeny.data.Identifier;
+
 public final class SequenceIdParser {
 
     
@@ -41,8 +43,16 @@ public final class SequenceIdParser {
     // lcl_91970_unknown_
     
     
+    public final static Identifier parse( final String s ) {
+        
+        return null;
+    }
+    
     
     private SequenceIdParser() {
         // Hiding the constructor.
     }
+    
+    
+    
 }

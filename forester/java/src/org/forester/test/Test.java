@@ -103,6 +103,7 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
+import org.forester.util.SequenceIdParser;
 import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtTaxonomy;
@@ -171,6 +172,19 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        
+        
+       
+        System.out.print( "Sequence id parsing: " );
+        if (  testSequenceIdParsing() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            System.exit( -1 ); //TODO FIXME remove me!! ~
+            failed++;
+        }
         System.out.print( "Hmmscan output parser: " );
         if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
@@ -8898,6 +8912,20 @@ public final class Test {
                 return false;
             }
             if ( !isEqual( 0.75, MsaMethods.calculateIdentityRatio( msa, 3 ) ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
+    private static boolean testSequenceIdParsing() {
+        try {
+            Identifier id = SequenceIdParser.parse( "mites|ref_XP_002434188_1" );
+            if ( id == null || ForesterUtil.isEmpty( id.getValue() ) || !id.getValue().equals( "002434188_1" ) ) {
                 return false;
             }
         }
