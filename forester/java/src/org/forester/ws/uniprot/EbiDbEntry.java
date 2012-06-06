@@ -56,7 +56,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "DEFINITION" ) ) {
                 if ( line.indexOf( "[" ) > 0 ) {
-                    e.setDe( DatabaseTools.extract( line, "DEFINITIO", "[" ) );
+                    e.setDe( DatabaseTools.extract( line, "DEFINITION", "[" ) );
                 }
                 else {
                     e.setDe( DatabaseTools.extract( line, "DEFINITION" ) );
