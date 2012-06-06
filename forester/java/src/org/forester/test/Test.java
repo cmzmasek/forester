@@ -9016,18 +9016,36 @@ public final class Test {
                 return false;
             }
             // 
-//            id = SequenceIdParser.parse( "mites|ref_XP_002434188_1" );
-//            if ( id == null
-//                 || ForesterUtil.isEmpty( id.getValue() )
-//                 || ForesterUtil.isEmpty( id.getProvider() )
-//                 || !id.getValue().equals( "002434188" )
-//                 || !id.getProvider().equals( "genbank" ) ) {
-//                if ( id != null ) {
-//                    System.out.println( "value   =" + id.getValue() );
-//                    System.out.println( "provider=" + id.getProvider() );
-//                }
-//                return false;
-//            }
+            id = SequenceIdParser.parse( "mites|ref_XP_002434188_1" );
+            if ( id == null
+                 || ForesterUtil.isEmpty( id.getValue() )
+                 || ForesterUtil.isEmpty( id.getProvider() )
+                 || !id.getValue().equals( "XP_002434188" )
+                 || !id.getProvider().equals( "ncbi" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getProvider() );
+                }
+                return false;
+            }
+            // 
+            id = SequenceIdParser.parse( "mites_ref_XP_002434188_1_bla_XP_12345" );
+            if ( id == null
+                 || ForesterUtil.isEmpty( id.getValue() )
+                 || ForesterUtil.isEmpty( id.getProvider() )
+                 || !id.getValue().equals( "XP_002434188" )
+                 || !id.getProvider().equals( "ncbi" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getProvider() );
+                }
+                return false;
+            }
+            // 
+            id = SequenceIdParser.parse( "XP_12345" );
+            if ( id != null ) {
+                return false;
+            }
             
             // lcl_91970_unknown_
         }

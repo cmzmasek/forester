@@ -58,6 +58,14 @@ public final class SequenceIdParser {
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6})(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern GENBANK_PROTEIN_AC_PATTERN      = Pattern
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5})(?:[^a-zA-Z0-9]|\\Z)" );
+   
+    // RefSeq accession numbers can be distinguished from GenBank accessions 
+    // by their distinct prefix format of 2 characters followed by an
+    // underscore character ('_'). For example, a RefSeq protein accession is NP_015325. 
+    private final static Pattern REFSEQ_PATTERN      = Pattern
+    .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
+
+    
     private final static boolean DEBUG                           = true;
 
     
@@ -80,9 +88,6 @@ public final class SequenceIdParser {
     /**
      * Returns null if no match.
      * 
-     * @param query
-     * @param db 
-     * @return
      */
     static public String parseGenbankAccessor( final String query ) {
         Matcher m = GENBANK_NUCLEOTIDE_AC_PATTERN_1.matcher( query );
@@ -106,26 +111,16 @@ public final class SequenceIdParser {
         }
     }
     
+    /**
+     * Returns null if no match.
+     * 
+     */
     public final static String parseRefSeqAccessor( final String query ) {
-        Matcher m = GENBANK_NUCLEOTIDE_AC_PATTERN_1.matcher( query );
+        Matcher m = REFSEQ_PATTERN.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );
         }
-        else {
-            m = GENBANK_NUCLEOTIDE_AC_PATTERN_2.matcher( query );
-            if ( m.lookingAt() ) {
-                return m.group( 1 );
-            }
-            else {
-                m = GENBANK_PROTEIN_AC_PATTERN.matcher( query );
-                if ( m.lookingAt() ) {
-                    return m.group( 1 );
-                }
-                else {
-                    return null;
-                }
-            }
-        }
+        return null;
     }
     
     
