@@ -48,8 +48,8 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
         _treepanel = treepanel;
     }
 
-    private String getBaseUrl() {
-        return UniProtWsTools.BASE_URL;
+    public static String getBaseUrl() {
+        return UniProtWsTools.BASE_UNIPROT_URL;
     }
 
     private void inferTaxonomies() {

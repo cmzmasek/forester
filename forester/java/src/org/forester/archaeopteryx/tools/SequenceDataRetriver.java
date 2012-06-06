@@ -44,7 +44,6 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceIdParser;
-import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtWsTools;
 
@@ -53,7 +52,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private final static boolean       DEBUG = false;
+    private final static boolean       DEBUG = true;
 
     private enum Db {
         UNKNOWN, UNIPROT, EMBL, NCBI;
@@ -65,10 +64,6 @@ public final class SequenceDataRetriver extends RunnableProcess {
         _treepanel = treepanel;
     }
 
-    private String getBaseUrl() {
-        return UniProtWsTools.BASE_URL;
-    }
-
     private void execute() {
         start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
@@ -76,8 +71,9 @@ public final class SequenceDataRetriver extends RunnableProcess {
             not_found = obtainSeqInformation( _phy );
         }
         catch ( final UnknownHostException e ) {
+            final String what = "_"; //TODO FIXME 
             JOptionPane.showMessageDialog( _mf,
-                                           "Could not connect to \"" + getBaseUrl() + "\"",
+                                           "Could not connect to \"" + what + "\"",
                                            "Network error during taxonomic information gathering",
                                            JOptionPane.ERROR_MESSAGE );
             return;
@@ -165,6 +161,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 tax = new Taxonomy();
             }
             String query = null;
+            Identifier id = null;
             Db db = Db.UNKNOWN;
             if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
@@ -186,12 +183,12 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 if ( ( query = UniProtWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
                     db = Db.UNIPROT;
                 }
-                else if ( ( query = SequenceIdParser.parseGenbankAccessor( node.getName() ) ) != null ) {
+                else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
                     db = Db.NCBI;
                 }
             }
+            SequenceDatabaseEntry db_entry = null;
             if ( !ForesterUtil.isEmpty( query ) ) {
-                SequenceDatabaseEntry db_entry = null;
                 if ( db == Db.UNIPROT ) {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
@@ -217,35 +214,39 @@ public final class SequenceDataRetriver extends RunnableProcess {
                         db = Db.EMBL;
                     }
                 }
-                if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
-                    if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
-                        String type = null;
-                        if ( db == Db.EMBL ) {
-                            type = "embl";
-                        }
-                        else if ( db == Db.UNIPROT ) {
-                            type = "uniprot";
-                        }
-                        seq.setAccession( new Accession( db_entry.getAccession(), type ) );
+            }
+            else if ( ( db == Db.NCBI ) && ( id != null ) ) {
+                System.out.println( "db == Db.NCBI && id != null" );
+                db_entry = UniProtWsTools.obtainrefSeqentryFromEmbl( id, 200 );
+            }
+            if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
+                if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
+                    String type = null;
+                    if ( db == Db.EMBL ) {
+                        type = "embl";
                     }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
-                        seq.setName( db_entry.getSequenceName() );
+                    else if ( db == Db.UNIPROT ) {
+                        type = "uniprot";
                     }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
-                        seq.setSymbol( db_entry.getSequenceSymbol() );
-                    }
-                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
-                        tax.setScientificName( db_entry.getTaxonomyScientificName() );
-                    }
-                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
-                        tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
-                    }
-                    node.getNodeData().setTaxonomy( tax );
-                    node.getNodeData().setSequence( seq );
+                    seq.setAccession( new Accession( db_entry.getAccession(), type ) );
                 }
-                else {
-                    not_found.add( node.getName() );
+                if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
+                    seq.setName( db_entry.getSequenceName() );
                 }
+                if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
+                    seq.setSymbol( db_entry.getSequenceSymbol() );
+                }
+                if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
+                    tax.setScientificName( db_entry.getTaxonomyScientificName() );
+                }
+                if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                    tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
+                }
+                node.getNodeData().setTaxonomy( tax );
+                node.getNodeData().setSequence( seq );
+            }
+            else {
+                not_found.add( node.getName() );
             }
         }
         return not_found;

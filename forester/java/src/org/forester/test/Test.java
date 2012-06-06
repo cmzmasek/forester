@@ -9021,7 +9021,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "XP_002434188" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+                 || !id.getProvider().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9034,7 +9034,7 @@ public final class Test {
                  || ForesterUtil.isEmpty( id.getValue() )
                  || ForesterUtil.isEmpty( id.getProvider() )
                  || !id.getValue().equals( "XP_002434188" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+                 || !id.getProvider().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );

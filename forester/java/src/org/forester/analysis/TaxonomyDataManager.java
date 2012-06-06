@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
+import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.RunnableProcess;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
@@ -521,7 +522,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final String getBaseUrl() {
-        return UniProtWsTools.BASE_URL;
+        return AncestralTaxonomyInferrer.getBaseUrl();
     }
 
     @Override

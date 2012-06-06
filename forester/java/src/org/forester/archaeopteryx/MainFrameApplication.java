@@ -954,9 +954,9 @@ public final class MainFrameApplication extends MainFrame {
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
         _tools_menu
-                .add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information (from UniProt)" ) );
+                .add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
         customizeJMenuItem( _obtain_uniprot_seq_information_jmi );
-        _obtain_uniprot_seq_information_jmi.setToolTipText( "To add additional sequence information (from UniProt)" );
+        _obtain_uniprot_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu.addSeparator();
         if ( !Constants.__RELEASE ) {
             _tools_menu.add( _function_analysis = new JMenuItem( "Add UniProtKB Annotations" ) );

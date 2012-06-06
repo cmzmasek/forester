@@ -67,6 +67,8 @@ public final class SequenceIdParser {
 
     
     private final static boolean DEBUG                           = true;
+    
+  
 
     
     /**
@@ -76,11 +78,11 @@ public final class SequenceIdParser {
     public final static Identifier parse( final String s ) {
         String v = parseGenbankAccessor( s );
         if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, "ncbi" );
+            return new Identifier( v, Identifier.NCBI );
         }
         v = parseRefSeqAccessor( s );
         if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, "ncbi" );
+            return new Identifier( v, Identifier.REFSEQ );
         }
         return null;
     }
@@ -89,7 +91,7 @@ public final class SequenceIdParser {
      * Returns null if no match.
      * 
      */
-    static public String parseGenbankAccessor( final String query ) {
+    public static String parseGenbankAccessor( final String query ) {
         Matcher m = GENBANK_NUCLEOTIDE_AC_PATTERN_1.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );
@@ -115,7 +117,7 @@ public final class SequenceIdParser {
      * Returns null if no match.
      * 
      */
-    public final static String parseRefSeqAccessor( final String query ) {
+    private final static String parseRefSeqAccessor( final String query ) {
         Matcher m = REFSEQ_PATTERN.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );

@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.forester.phylogeny.data.Identifier;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtWsTools {
@@ -46,8 +47,12 @@ public final class UniProtWsTools {
     public enum Db {
         UNKNOWN, UNIPROT;
     }
-    public final static String   BASE_URL           = "http://www.uniprot.org/";
-    public final static String   BASE_EMBL_DB_URL   = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/embl/";
+    public final static String   BASE_UNIPROT_URL          = "http://www.uniprot.org/";
+    public final static String   BASE_EMBL_DB_URL  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
+    public final static String   EMBL_DBS_EMBL     = "embl";
+    public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
+    public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
+    
     private final static String  URL_ENC            = "UTF-8";
     // uniprot/expasy accession number format (6 chars):
     // letter digit letter-or-digit letter-or-digit letter-or-digit digit
@@ -322,12 +327,33 @@ public final class UniProtWsTools {
         return taxonomies;
     }
 
-    public static List<String> queryEmblDb( final String query, final int max_lines_to_return ) throws IOException {
-        return queryDb( query, max_lines_to_return, BASE_EMBL_DB_URL );
+    public static List<String> queryEmblDb( final Identifier id, final int max_lines_to_return ) throws IOException {
+        
+        StringBuilder url_sb = new StringBuilder();
+        url_sb.append( BASE_EMBL_DB_URL );
+        
+        if ( ForesterUtil.isEmpty(  id.getProvider() ) ||  id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+            url_sb.append( '/');
+            url_sb.append( UniProtWsTools.EMBL_DBS_EMBL );
+            url_sb.append( '/');
+        }
+        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
+                url_sb.append( '/');
+                url_sb.append( UniProtWsTools.EMBL_DBS_REFSEQ_P );
+                url_sb.append( '/');
+            }
+            else {
+                url_sb.append( '/');
+                url_sb.append( UniProtWsTools.EMBL_DBS_REFSEQ_N );
+                url_sb.append( '/');
+            }
+        }
+        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
     }
 
     public static List<String> queryUniprot( final String query, final int max_lines_to_return ) throws IOException {
-        return queryDb( query, max_lines_to_return, BASE_URL );
+        return queryDb( query, max_lines_to_return, BASE_UNIPROT_URL );
     }
 
     public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
@@ -365,9 +391,15 @@ public final class UniProtWsTools {
         return UniProtEntry.createInstanceFromPlainText( lines );
     }
 
+    public static SequenceDatabaseEntry obtainrefSeqentryFromEmbl( final Identifier id, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryEmblDb( id, max_lines_to_return );
+        return EbiDbEntry.createInstanceForRefSeq( lines );
+    }
+
     public static SequenceDatabaseEntry obtainEmblEntry( final String query, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( query, max_lines_to_return );
+        final List<String> lines = queryEmblDb( new Identifier( query ), max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 }

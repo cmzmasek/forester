@@ -46,9 +46,44 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         throw new CloneNotSupportedException();
     }
 
+    
+    public static SequenceDatabaseEntry createInstanceForRefSeq( final List<String> lines ) {
+        final EbiDbEntry e = new EbiDbEntry();
+        for( final String line : lines ) {
+            System.out.println( "-" + line );
+            if ( line.startsWith( "ACCESSION" ) ) {
+                e.setPA( DatabaseTools.extract( line, "ACCESSION" ) );
+            }
+            else if ( line.startsWith( "DEFINITION" ) ) {
+                if ( line.indexOf( "[" ) > 0 ) {
+                    e.setDe( DatabaseTools.extract( line, "DEFINITIO", "[" ) );
+                }
+                else {
+                    e.setDe( DatabaseTools.extract( line, "DEFINITION" ) );
+                }
+               
+                
+            }
+         
+            else if ( line.startsWith( "SOURCE" ) ) {
+                if ( line.indexOf( "(" ) > 0 ) {
+                    e.setOs( DatabaseTools.extract( line, "SOURCE", "(" ) );
+                }
+                else {
+                    e.setOs( DatabaseTools.extract( line, "SOURCE" ) );
+                }
+            }
+            
+        }
+        return e;
+    }
+    
+    
+    
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
+            System.out.println( "->" + line );
             if ( line.startsWith( "PA" ) ) {
                 e.setPA( DatabaseTools.extract( line, "PA" ) );
             }
