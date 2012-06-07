@@ -1,8 +1,12 @@
-#Gene tree preprocessing
+= Gene tree Preprocessing =
 
-= Introduction =
+Usage: 
+java -Xms32m -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>
 
-Add your content here.
+
+
+
 
 
 = Details =
