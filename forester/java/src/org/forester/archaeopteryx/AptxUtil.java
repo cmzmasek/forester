@@ -83,7 +83,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
-import org.forester.ws.uniprot.UniProtTaxonomy;
+import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public final class AptxUtil {
 

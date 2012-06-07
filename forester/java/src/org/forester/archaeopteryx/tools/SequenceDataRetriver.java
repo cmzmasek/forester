@@ -43,8 +43,8 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceIdParser;
-import org.forester.ws.uniprot.SequenceDatabaseEntry;
-import org.forester.ws.uniprot.SequenceDbWsTools;
+import org.forester.ws.seqdb.SequenceDatabaseEntry;
+import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
 

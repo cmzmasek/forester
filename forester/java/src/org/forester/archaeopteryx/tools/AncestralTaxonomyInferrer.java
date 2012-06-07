@@ -34,7 +34,7 @@ import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.ws.uniprot.SequenceDbWsTools;
+import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public class AncestralTaxonomyInferrer extends RunnableProcess {
 
