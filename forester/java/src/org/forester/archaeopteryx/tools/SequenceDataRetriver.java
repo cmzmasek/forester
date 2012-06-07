@@ -142,7 +142,8 @@ public final class SequenceDataRetriver extends RunnableProcess {
         }
     }
 
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only ) throws IOException {
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only )
+            throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
@@ -183,11 +184,9 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     }
                 }
             }
-            
             if ( db == Db.NONE ) {
                 not_found.add( node.getName() );
             }
-            
             SequenceDatabaseEntry db_entry = null;
             if ( !ForesterUtil.isEmpty( query ) ) {
                 if ( db == Db.UNIPROT ) {
@@ -212,7 +211,6 @@ public final class SequenceDataRetriver extends RunnableProcess {
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
                 db_entry = SequenceDbWsTools.obtainEmblEntry( id, DEFAULT_LINES_TO_RETURN );
             }
-           
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
                     String type = null;
@@ -247,6 +245,11 @@ public final class SequenceDataRetriver extends RunnableProcess {
             }
             else if ( db != Db.NONE ) {
                 not_found.add( node.getName() );
+            }
+            try {
+                Thread.sleep( 10 );// Sleep for 10 ms
+            }
+            catch ( final InterruptedException ie ) {
             }
         }
         return not_found;
