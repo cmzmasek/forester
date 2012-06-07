@@ -1,3 +1,5 @@
+#summary preprocessing of gene trees for speciation/duplication inference
+
 = Gene tree preprocessing =
 
 == Purpose ==
