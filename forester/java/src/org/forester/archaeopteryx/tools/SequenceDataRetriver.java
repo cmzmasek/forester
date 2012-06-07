@@ -47,6 +47,8 @@ import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
+    
+    public final static int DEFAULT_LINES_TO_RETURN = 50;
 
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
@@ -189,23 +191,23 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
                     }
-                    db_entry = SequenceDbWsTools.obtainUniProtEntry( query, 200 );
+                    db_entry = SequenceDbWsTools.obtainUniProtEntry( query, DEFAULT_LINES_TO_RETURN );
                 }
                 if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
-                    db_entry = SequenceDbWsTools.obtainEmblEntry(  new Identifier( query ), 200 );
+                    db_entry = SequenceDbWsTools.obtainEmblEntry(  new Identifier( query ), DEFAULT_LINES_TO_RETURN );
                     if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
                         db = Db.EMBL;
                     }
                 }
             }
             else if ( ( db == Db.REFSEQ ) && ( id != null ) ) {
-                db_entry = SequenceDbWsTools.obtainRefSeqEntryFromEmbl( id, 200 );
+                db_entry = SequenceDbWsTools.obtainRefSeqEntryFromEmbl( id, DEFAULT_LINES_TO_RETURN );
             }
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
-                db_entry = SequenceDbWsTools.obtainEmblEntry( id, 200 );
+                db_entry = SequenceDbWsTools.obtainEmblEntry( id, DEFAULT_LINES_TO_RETURN );
             }
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
