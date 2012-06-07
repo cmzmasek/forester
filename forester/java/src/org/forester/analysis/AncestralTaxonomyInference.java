@@ -35,7 +35,7 @@ import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
-import org.forester.ws.uniprot.UniProtTaxonomy;
+import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public final class AncestralTaxonomyInference {
 
