@@ -25,7 +25,9 @@
 
 package org.forester.application;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.SortedSet;
 
@@ -43,10 +45,6 @@ public class gene_tree_preprocess {
 
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
-    final static private String FROM_OPTION   = "f";
-    final static private String TO_OPTION     = "t";
-    final static private String STEP_OPTION   = "s";
-    final static private String WINDOW_OPTION = "w";
     final static private String PRG_NAME      = "gene_tree_preprocess";
     final static private String PRG_DESC      = "gene tree preprocessing for SDI analysis";
     final static private String PRG_VERSION   = "1.00";
@@ -81,9 +79,9 @@ public class gene_tree_preprocess {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
                         + " external node(s), aborting" );
             }
-            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy );
+            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true );
             for( final String remove_me : not_found ) {
-                System.out.println( " not found: " + not_found );
+                System.out.println( " not found: " + remove_me );
                 PhylogenyMethods.removeNode( phy.getNode( remove_me ), phy );
             }
             if ( phy.getNumberOfExternalNodes() < 2 ) {
@@ -98,9 +96,21 @@ public class gene_tree_preprocess {
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outtree + "]: " + e.getLocalizedMessage() );
             }
-            //  ForesterUtil.programMessage( PRG_NAME, "wrote output to: [" + outfile + "]" );
+            ForesterUtil.programMessage( PRG_NAME, "wrote output phylogeny to: " + outtree );
+            try {
+                final BufferedWriter out = new BufferedWriter( new FileWriter( removed_nodes ) );
+                for( final String remove_me : not_found ) {
+                    out.write( remove_me );
+                    out.newLine();
+                }
+                out.close();
+            }
+            catch ( final IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME,
+                                         "failed to write to [" + removed_nodes + "]: " + e.getLocalizedMessage() );
+            }
+            ForesterUtil.programMessage( PRG_NAME, "wrote removed external nodes labels to: " + removed_nodes );
             ForesterUtil.programMessage( PRG_NAME, "OK" );
-            System.out.println();
         }
         catch ( final Exception e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
@@ -122,19 +132,8 @@ public class gene_tree_preprocess {
                                               E_MAIL,
                                               WWW,
                                               ForesterUtil.getForesterLibraryInformation() );
-        System.out.println( "Usage:" );
-        System.out.println();
-        System.out.println( PRG_NAME + " <options> <msa input file>" );
-        System.out.println();
-        System.out.println( " options: " );
-        System.out.println();
-        System.out.println( "   -" + FROM_OPTION + "=<integer>: from (msa column)" );
-        System.out.println( "   -" + TO_OPTION + "=<integer>: to (msa column)" );
-        System.out.println( "    or" );
-        System.out.println( "   -" + WINDOW_OPTION + "=<integer>: window size (msa columns)" );
-        System.out.println( "   -" + STEP_OPTION + "=<integer>: step size (msa columns)" );
-        System.out.println();
-        System.out.println();
+        System.out.print( "Usage: " );
+        System.out.println( PRG_NAME + " <input phylogeny file>" );
         System.out.println();
     }
 }

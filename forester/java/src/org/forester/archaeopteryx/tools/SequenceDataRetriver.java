@@ -47,13 +47,12 @@ import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
-    
-    public final static int DEFAULT_LINES_TO_RETURN = 50;
 
+    public final static int            DEFAULT_LINES_TO_RETURN = 50;
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private final static boolean       DEBUG = true;
+    private final static boolean       DEBUG                   = false;
 
     private enum Db {
         UNIPROT, EMBL, NCBI, NONE, REFSEQ;
@@ -69,7 +68,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
         start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
         try {
-            not_found = obtainSeqInformation( _phy );
+            not_found = obtainSeqInformation( _phy, false );
         }
         catch ( final UnknownHostException e ) {
             final String what = "_"; //TODO FIXME 
@@ -143,14 +142,15 @@ public final class SequenceDataRetriver extends RunnableProcess {
         }
     }
 
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy ) throws IOException {
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only ) throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            final Sequence seq = node.getNodeData().isHasSequence() ?  node.getNodeData().getSequence() : new Sequence() ;
-            final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy() ;
-            
-           
+            if ( ext_nodes_only && node.isInternal() ) {
+                continue;
+            }
+            final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence() : new Sequence();
+            final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy();
             String query = null;
             Identifier id = null;
             Db db = Db.NONE;
@@ -175,16 +175,19 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     db = Db.UNIPROT;
                 }
                 else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
-                    
                     if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
                         db = Db.NCBI;
                     }
                     else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
                         db = Db.REFSEQ;
                     }
-                   
                 }
             }
+            
+            if ( db == Db.NONE ) {
+                not_found.add( node.getName() );
+            }
+            
             SequenceDatabaseEntry db_entry = null;
             if ( !ForesterUtil.isEmpty( query ) ) {
                 if ( db == Db.UNIPROT ) {
@@ -197,7 +200,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
-                    db_entry = SequenceDbWsTools.obtainEmblEntry(  new Identifier( query ), DEFAULT_LINES_TO_RETURN );
+                    db_entry = SequenceDbWsTools.obtainEmblEntry( new Identifier( query ), DEFAULT_LINES_TO_RETURN );
                     if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
                         db = Db.EMBL;
                     }
@@ -209,6 +212,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
                 db_entry = SequenceDbWsTools.obtainEmblEntry( id, DEFAULT_LINES_TO_RETURN );
             }
+           
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
                     String type = null;
