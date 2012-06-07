@@ -29,6 +29,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.forester.archaeopteryx.tools.SequenceDataRetriver;
@@ -36,8 +38,10 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -67,21 +71,22 @@ public class gene_tree_preprocess {
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME,
-                                         "failed to read phylogeny from [" + in + "]: "
-                                                 + e.getLocalizedMessage() );
+                                         "failed to read phylogeny from [" + in + "]: " + e.getLocalizedMessage() );
             }
             final File outtree = new File( ForesterUtil.removeSuffix( in.toString() )
                     + "_preprocessed_gene_tree.phylo.xml" );
             final File removed_nodes = new File( ForesterUtil.removeSuffix( in.toString() ) + "_removed_nodes.txt" );
+            final File present_species = new File( ForesterUtil.removeSuffix( in.toString() ) + "_species_present.txt" );
             checkForOutputFileWriteability( outtree );
             checkForOutputFileWriteability( removed_nodes );
+            checkForOutputFileWriteability( present_species );
             if ( phy.getNumberOfExternalNodes() < 2 ) {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
                         + " external node(s), aborting" );
             }
             final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true );
             for( final String remove_me : not_found ) {
-                System.out.println( " not found: " + remove_me );
+               // System.out.println( " not found: " + remove_me );
                 PhylogenyMethods.removeNode( phy.getNode( remove_me ), phy );
             }
             if ( phy.getNumberOfExternalNodes() < 2 ) {
@@ -97,6 +102,29 @@ public class gene_tree_preprocess {
                 ForesterUtil.fatalError( PRG_NAME, "failed to write to [" + outtree + "]: " + e.getLocalizedMessage() );
             }
             ForesterUtil.programMessage( PRG_NAME, "wrote output phylogeny to: " + outtree );
+            final Set<String> species_found = new HashSet<String>();
+            try {
+                final BufferedWriter out = new BufferedWriter( new FileWriter( present_species ) );
+                for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+                    final PhylogenyNode node = iter.next();
+                    if ( node.getNodeData().isHasTaxonomy() ) {
+                        final String sn = node.getNodeData().getTaxonomy().getScientificName();
+                        if ( !ForesterUtil.isEmpty( sn ) ) {
+                            if ( !species_found.contains( sn ) ) {
+                                species_found.add( sn );
+                                out.write( node.getNodeData().getTaxonomy().getScientificName() );
+                                out.newLine();
+                            }
+                        }
+                    }
+                }
+                out.close();
+            }
+            catch ( final IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME,
+                                         "failed to write to [" + present_species + "]: " + e.getLocalizedMessage() );
+            }
+            ForesterUtil.programMessage( PRG_NAME, "wrote present species to: " + present_species );
             try {
                 final BufferedWriter out = new BufferedWriter( new FileWriter( removed_nodes ) );
                 for( final String remove_me : not_found ) {
