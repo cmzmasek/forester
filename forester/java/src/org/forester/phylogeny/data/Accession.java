@@ -68,7 +68,7 @@ public final class Accession implements PhylogenyData {
 
     @Override
     public PhylogenyData copy() {
-        return new Accession( new String( getValue() ), new String( getSource() ) );
+        return new Accession(  getValue() , getSource()  );
     }
 
     @Override

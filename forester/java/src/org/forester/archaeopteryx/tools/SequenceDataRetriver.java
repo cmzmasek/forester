@@ -55,7 +55,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
     private final static boolean       DEBUG = true;
 
     private enum Db {
-        UNKNOWN, UNIPROT, EMBL, NCBI;
+        UNIPROT, EMBL, NCBI, NONE;
     }
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
@@ -132,8 +132,8 @@ public final class SequenceDataRetriver extends RunnableProcess {
         else {
             try {
                 JOptionPane.showMessageDialog( _mf,
-                                               "UniProt sequence tool successfully completed",
-                                               "UniProt Sequence Tool Completed",
+                                               "Sequence tool successfully completed",
+                                               "Sequence Tool Completed",
                                                JOptionPane.INFORMATION_MESSAGE );
             }
             catch ( final Exception e ) {
@@ -146,23 +146,13 @@ public final class SequenceDataRetriver extends RunnableProcess {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            Sequence seq = null;
-            Taxonomy tax = null;
-            if ( node.getNodeData().isHasSequence() ) {
-                seq = node.getNodeData().getSequence();
-            }
-            else {
-                seq = new Sequence();
-            }
-            if ( node.getNodeData().isHasTaxonomy() ) {
-                tax = node.getNodeData().getTaxonomy();
-            }
-            else {
-                tax = new Taxonomy();
-            }
+            final Sequence seq = node.getNodeData().isHasSequence() ?  node.getNodeData().getSequence() : new Sequence() ;
+            final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy() ;
+            
+           
             String query = null;
             Identifier id = null;
-            Db db = Db.UNKNOWN;
+            Db db = Db.NONE;
             if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
@@ -193,23 +183,17 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
                     }
-                    try {
-                        db_entry = UniProtWsTools.obtainUniProtEntry( query, 200 );
-                    }
-                    catch ( final FileNotFoundException e ) {
-                        // Ignore.
-                    }
+                  
+                    db_entry = UniProtWsTools.obtainUniProtEntry( query, 200 );
+                  
                 }
                 if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
-                    try {
-                        db_entry = UniProtWsTools.obtainEmblEntry( query, 200 );
-                    }
-                    catch ( final FileNotFoundException e ) {
-                        // Ignore.
-                    }
+                    
+                    db_entry = UniProtWsTools.obtainEmblEntry( query, 200 );
+                   
                     if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
                         db = Db.EMBL;
                     }
@@ -245,7 +229,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 node.getNodeData().setTaxonomy( tax );
                 node.getNodeData().setSequence( seq );
             }
-            else {
+            else if ( db != Db.NONE ) {
                 not_found.add( node.getName() );
             }
         }
