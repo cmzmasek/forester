@@ -1,5 +1,9 @@
 = Gene tree Preprocessing =
 
+== Purpose ==
+
+Use EBI database to add species information to a gene tree which has sequence identifiers as labels.
+
 == Usage == 
 {{{
 java -Xmx1024m -cp
