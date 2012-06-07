@@ -13,3 +13,8 @@ path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree i
 Output is two files:
   * input-name_preprocessed_gene_tree.phylo.xml
   * input-name_removed_nodes.txt
+
+
+== Download ==
+
+Download forester.jar here: http://code.google.com/p/forester/downloads/list
