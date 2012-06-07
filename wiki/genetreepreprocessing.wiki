@@ -14,8 +14,9 @@ path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree i
 
 == Details ==
 
-Output is two files:
+Output consists of three files:
   * input-name_preprocessed_gene_tree.phylo.xml
+  * input-name_species_present.txt
   * input-name_removed_nodes.txt
 
 
