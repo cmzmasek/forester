@@ -198,7 +198,7 @@ public final class gsdi {
         System.out.println( "Running time (excluding I/O): " + ( new Date().getTime() - start_time ) + "ms" );
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( out_file, gene_tree, 1 );
+            writer.toPhyloXML( out_file, gene_tree, 0 );
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME, "Failed to write to \"" + out_file + "\" [" + e.getMessage() + "]" );
@@ -219,7 +219,7 @@ public final class gsdi {
             System.out.println( "Number speciations              : " + ( ( GSDI ) sdi ).getSpeciationsSum() );
         }
         System.out.println();
-    } // main( final String args[] )
+    } 
 
     private static void print_help() {
         System.out.println( "Usage: \"" + gsdi.PRG_NAME
@@ -228,7 +228,7 @@ public final class gsdi {
         System.out.println( "Options:" );
         System.out.println( " -" + gsdi.STRIP_OPTION + ": to strip the species tree prior to duplication inference" );
         System.out.println( " -" + gsdi.GSDI_OPTION
-                + ": to use GSDI algorithm instead of SDIse algorithm (under development, not recommended)" );
+                + ": to use GSDI algorithm instead of SDIse algorithm" );
         System.out
                 .println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION + ": use most parimonious duplication model for GSDI: " );
         System.out.println( "     assign nodes as speciations which would otherwise be assiged" );
