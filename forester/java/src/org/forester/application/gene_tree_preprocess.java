@@ -67,7 +67,7 @@ public class gene_tree_preprocess {
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME,
-                                         "failed to read target phylogenies from [" + in + "]: "
+                                         "failed to read phylogeny from [" + in + "]: "
                                                  + e.getLocalizedMessage() );
             }
             final File outtree = new File( ForesterUtil.removeSuffix( in.toString() )
