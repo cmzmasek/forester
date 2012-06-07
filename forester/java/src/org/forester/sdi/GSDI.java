@@ -56,7 +56,7 @@ import org.forester.util.ForesterUtil;
  * 
  * @author Christian M. Zmasek
  */
-public class GSDI extends SDI {
+public final class GSDI extends SDI {
 
     private final HashMap<PhylogenyNode, Integer> _transversal_counts;
     private final boolean                         _most_parsimonious_duplication_model;
@@ -103,26 +103,26 @@ public class GSDI extends SDI {
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
     }
 
-    private Event createDuplicationEvent() {
+    private final Event createDuplicationEvent() {
         final Event event = Event.createSingleDuplicationEvent();
         ++_duplications_sum;
         return event;
     }
 
-    private Event createSingleSpeciationOrDuplicationEvent() {
+    private final Event createSingleSpeciationOrDuplicationEvent() {
         final Event event = Event.createSingleSpeciationOrDuplicationEvent();
         ++_speciation_or_duplication_events_sum;
         return event;
     }
 
-    private Event createSpeciationEvent() {
+    private final Event createSpeciationEvent() {
         final Event event = Event.createSingleSpeciationEvent();
         ++_speciations_sum;
         return event;
     }
 
     // s is the node on the species tree g maps to.
-    private void determineEvent( final PhylogenyNode s, final PhylogenyNode g ) {
+    private final void determineEvent( final PhylogenyNode s, final PhylogenyNode g ) {
         Event event = null;
         // Determine how many children map to same node as parent.
         int sum_g_childs_mapping_to_s = 0;
@@ -190,7 +190,7 @@ public class GSDI extends SDI {
      * @param g
      *            starting node of a gene tree - normally the root
      */
-    void geneTreePostOrderTraversal( final PhylogenyNode g ) {
+    final void geneTreePostOrderTraversal( final PhylogenyNode g ) {
         if ( !g.isExternal() ) {
             for( final PhylogenyNodeIterator iter = g.iterateChildNodesForward(); iter.hasNext(); ) {
                 geneTreePostOrderTraversal( iter.next() );
@@ -218,22 +218,22 @@ public class GSDI extends SDI {
         }
     }
 
-    public int getSpeciationOrDuplicationEventsSum() {
+    public final int getSpeciationOrDuplicationEventsSum() {
         return _speciation_or_duplication_events_sum;
     }
 
-    public int getSpeciationsSum() {
+    public final int getSpeciationsSum() {
         return _speciations_sum;
     }
 
-    private int getTraversalCount( final PhylogenyNode node ) {
+    private final int getTraversalCount( final PhylogenyNode node ) {
         if ( _transversal_counts.containsKey( node ) ) {
             return _transversal_counts.get( node );
         }
         return 0;
     }
 
-    private void increaseTraversalCount( final PhylogenyNode node ) {
+    private final void increaseTraversalCount( final PhylogenyNode node ) {
         if ( _transversal_counts.containsKey( node ) ) {
             _transversal_counts.put( node, _transversal_counts.get( node ) + 1 );
         }
@@ -250,7 +250,7 @@ public class GSDI extends SDI {
      * 
      */
     @Override
-    void linkNodesOfG() {
+    final  void linkNodesOfG() {
         final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
@@ -272,14 +272,16 @@ public class GSDI extends SDI {
             final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
             if ( s == null ) {
                 throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
-                        + " not present in species tree." );
+                        + " not present in species tree" );
             }
+          
+          
             g.setLink( s );
         }
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         final StringBuffer sb = new StringBuffer();
         sb.append( "Most parsimonious duplication model: " + _most_parsimonious_duplication_model );
         sb.append( ForesterUtil.getLineSeparator() );
@@ -295,7 +297,7 @@ public class GSDI extends SDI {
         return sb.toString();
     }
 
-    static int[] obtainMinMaxIdIndices( final PhylogenyNode[] linked_nodes ) {
+    static final int[] obtainMinMaxIdIndices( final PhylogenyNode[] linked_nodes ) {
         int max_i = 0;
         int min_i = 0;
         int max_i_id = -Integer.MAX_VALUE;
@@ -386,4 +388,4 @@ public class GSDI extends SDI {
     // n.getPhylogenyNodeData().setEvent( event );
     // }
     // } // calculateMforNode( PhylogenyNode )
-} // End of class GSDI.
+}

@@ -197,7 +197,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
 
     @Override
     public int hashCode() {
-        if ( getIdentifier() != null ) {
+        if ( getIdentifier() != null && !ForesterUtil.isEmpty( getIdentifier().getValue() ) ) {
             return getIdentifier().hashCode();
         }
         else if ( !ForesterUtil.isEmpty( getTaxonomyCode() ) ) {
@@ -251,7 +251,11 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
             return true;
         }
         final Taxonomy tax = ( Taxonomy ) data;
-        if ( ( getIdentifier() != null ) && ( tax.getIdentifier() != null ) ) {
+        if ( ( getIdentifier() != null ) && ( tax.getIdentifier() != null )
+          && !ForesterUtil.isEmpty( getIdentifier().getValue() )  
+          && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
+        
+        ) {
             return getIdentifier().isEqual( tax.getIdentifier() );
         }
         else if ( !ForesterUtil.isEmpty( getTaxonomyCode() ) && !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {

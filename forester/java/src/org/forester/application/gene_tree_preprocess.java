@@ -52,7 +52,7 @@ public class gene_tree_preprocess {
     final static private String PRG_VERSION   = "1.01";
     final static private String PRG_DATE      = "2012.06.07";
     final static private String E_MAIL        = "phylosoft@gmail.com";
-    final static private String WWW           = "www.phylosoft.org/forester/";
+    final static private String WWW           = "www.phylosoft.org/forester";
 
     public static void main( final String[] args ) {
         try {
@@ -82,9 +82,8 @@ public class gene_tree_preprocess {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
                         + " external node(s), aborting" );
             }
-            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true );
+            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true , false);
             for( final String remove_me : not_found ) {
-                //PhylogenyMethods.removeNode( phy.getNode( remove_me ), phy );
                 phy.deleteSubtree( phy.getNode( remove_me ), true );
             }
             if ( phy.getNumberOfExternalNodes() < 2 ) {

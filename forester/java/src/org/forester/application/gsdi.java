@@ -31,9 +31,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.forester.archaeopteryx.Archaeopteryx;
+import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDI;
@@ -44,18 +48,19 @@ import org.forester.util.ForesterUtil;
 
 public final class gsdi {
 
-    final static private String STRIP_OPTION             = "s";
-    final static private String GSDI_OPTION              = "g";
-    final static private String MOST_PARSIMONIOUS_OPTION = "m";
-    final static private String HELP_OPTION_1            = "help";
-    final static private String HELP_OPTION_2            = "h";
-    final static private String DEFAULT_OUTFILE          = "sdi_out.xml";
-    final static private String PRG_NAME                 = "gsdi";
-    final static private String PRG_VERSION              = "0.4";
-    final static private String PRG_DATE                 = "120607";
-    final static private String PRG_DESC                 = "general speciation duplication inference";
-    final static private String E_MAIL                   = "phylosoft@gmail.com";
-    final static private String WWW                      = "www.phylosoft.org/forester/";
+    final static private String STRIP_OPTION                 = "s";
+    final static private String SDI_OPTION                   = "b";
+    final static private String MOST_PARSIMONIOUS_OPTION     = "m";
+    final static private String GUESS_FORMAT_OF_SPECIES_TREE = "q";
+    final static private String HELP_OPTION_1                = "help";
+    final static private String HELP_OPTION_2                = "h";
+    final static private String DEFAULT_OUTFILE              = "gsdi_out.phylo.xml";
+    final static private String PRG_NAME                     = "gsdi";
+    final static private String PRG_VERSION                  = "0.4";
+    final static private String PRG_DATE                     = "120607";
+    final static private String PRG_DESC                     = "general speciation duplication inference";
+    final static private String E_MAIL                       = "phylosoft@gmail.com";
+    final static private String WWW                          = "www.phylosoft.org/forester";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -86,26 +91,31 @@ public final class gsdi {
         }
         final List<String> allowed_options = new ArrayList<String>();
         allowed_options.add( gsdi.STRIP_OPTION );
-        allowed_options.add( gsdi.GSDI_OPTION );
+        allowed_options.add( gsdi.SDI_OPTION );
+        allowed_options.add( gsdi.GUESS_FORMAT_OF_SPECIES_TREE );
         allowed_options.add( gsdi.MOST_PARSIMONIOUS_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( gsdi.PRG_NAME, "unknown option(s): " + dissallowed_options );
         }
-        boolean use_sdise = true;
+        boolean use_sdise = false;
         boolean strip = false;
         boolean most_parsimonous_duplication_model = false;
+        boolean species_tree_in_phyloxml = true;
         if ( cla.isOptionSet( gsdi.STRIP_OPTION ) ) {
             strip = true;
         }
-        if ( cla.isOptionSet( gsdi.GSDI_OPTION ) ) {
-            use_sdise = false;
+        if ( cla.isOptionSet( gsdi.SDI_OPTION ) ) {
+            use_sdise = true;
         }
         if ( cla.isOptionSet( gsdi.MOST_PARSIMONIOUS_OPTION ) ) {
             if ( use_sdise ) {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "Can only use most parsimonious duplication mode with GSDI" );
             }
             most_parsimonous_duplication_model = true;
+        }
+        if ( cla.isOptionSet( gsdi.GUESS_FORMAT_OF_SPECIES_TREE ) ) {
+            species_tree_in_phyloxml = false;
         }
         Phylogeny species_tree = null;
         Phylogeny gene_tree = null;
@@ -136,12 +146,22 @@ public final class gsdi {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
+            if ( species_tree_in_phyloxml ) {
+                species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
+            }
+            else {
+                final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
+                species_tree = factory.create( species_tree_file, p )[ 0 ];
+                PhylogenyMethods.transferNodeNameToField( species_tree,
+                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
+              
+            }
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( gsdi.PRG_NAME,
                                      "Failed to read species tree from [" + gene_tree_file + "]: " + e.getMessage() );
         }
+        
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             gene_tree = factory.create( gene_tree_file, new PhyloXmlParser() )[ 0 ];
@@ -153,12 +173,12 @@ public final class gsdi {
         gene_tree.setRooted( true );
         species_tree.setRooted( true );
         if ( !gene_tree.isCompletelyBinary() ) {
-            ForesterUtil.fatalError( gsdi.PRG_NAME, "gene tree (\"" + gene_tree_file + "\") is not completely binary." );
+            ForesterUtil.fatalError( gsdi.PRG_NAME, "gene tree (\"" + gene_tree_file + "\") is not completely binary" );
         }
         if ( use_sdise ) {
             if ( !species_tree.isCompletelyBinary() ) {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "species tree (\"" + species_tree_file
-                        + "\") is not completely binary." );
+                        + "\") is not completely binary" );
             }
         }
         // For timing.
@@ -180,12 +200,12 @@ public final class gsdi {
         try {
             if ( use_sdise ) {
                 System.out.println();
-                System.out.println( "Using SDIse algorithm." );
+                System.out.println( "Using SDIse algorithm" );
                 sdi = new SDIse( gene_tree, species_tree );
             }
             else {
                 System.out.println();
-                System.out.println( "Using GSDI algorithm." );
+                System.out.println( "Using GSDI algorithm" );
                 System.out.println();
                 System.out.println( "Use most parsimonous duplication model: " + most_parsimonous_duplication_model );
                 sdi = new GSDI( gene_tree, species_tree, most_parsimonous_duplication_model );
@@ -201,7 +221,7 @@ public final class gsdi {
             writer.toPhyloXML( out_file, gene_tree, 0 );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "Failed to write to \"" + out_file + "\" [" + e.getMessage() + "]" );
+            ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + out_file + "]: " + e.getMessage() );
         }
         System.out.println();
         System.out.println( "Successfully wrote resulting gene tree to: " + out_file );
@@ -219,28 +239,30 @@ public final class gsdi {
             System.out.println( "Number speciations              : " + ( ( GSDI ) sdi ).getSpeciationsSum() );
         }
         System.out.println();
-    } 
+    }
 
     private static void print_help() {
-        System.out.println( "Usage: \"" + gsdi.PRG_NAME
-                + " [-options] <gene tree in phyloXML format> <species tree in phyloXML format> [outfile]\"" );
+        System.out.println( "Usage: " + gsdi.PRG_NAME
+                + " [-options] <gene tree in phyloXML format> <species tree in phyloXML format> [outfile]" );
         System.out.println();
         System.out.println( "Options:" );
         System.out.println( " -" + gsdi.STRIP_OPTION + ": to strip the species tree prior to duplication inference" );
-        System.out.println( " -" + gsdi.GSDI_OPTION
-                + ": to use GSDI algorithm instead of SDIse algorithm" );
-        System.out
-                .println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION + ": use most parimonious duplication model for GSDI: " );
+        System.out.println( " -" + gsdi.SDI_OPTION + ": to use SDI algorithm instead of GSDI algorithm" );
+        System.out.println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION
+                + ": use most parimonious duplication model for GSDI: " );
         System.out.println( "     assign nodes as speciations which would otherwise be assiged" );
         System.out.println( "     as unknown because of polytomies in the species tree" );
+        System.out.println( " -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE + ": to allow species tree in other formats than" );
+        System.out.println( "     phyloXML (Newick, NHX, Nexus)" );
         System.out.println();
         System.out.println( "Species tree:" );
-        System.out.println( " In phyloXML format, with taxonomy data in appropriate fields." );
+        System.out.println( " In phyloXML format (unless option " + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
+                + " is used), with taxonomy data in appropriate fields" );
         System.out.println();
         System.out.println( "Gene tree:" );
-        System.out.println( " In phyloXM format, with taxonomy and sequence data in appropriate fields." );
+        System.out.println( " In phyloXM format, with taxonomy and sequence data in appropriate fields" );
         System.out.println();
-        System.out.println( "Note. GSDI algorithm is under development." );
+        System.out.println( "Note -- GSDI algorithm is under development" );
         System.out.println();
     }
 }

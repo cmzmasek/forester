@@ -68,7 +68,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
         start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
         try {
-            not_found = obtainSeqInformation( _phy, false );
+            not_found = obtainSeqInformation( _phy, false, true );
         }
         catch ( final UnknownHostException e ) {
             final String what = "_"; //TODO FIXME 
@@ -142,7 +142,8 @@ public final class SequenceDataRetriver extends RunnableProcess {
         }
     }
 
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only )
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only,
+                                                          final boolean allow_to_set_taxonomic_data )
             throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
@@ -237,7 +238,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
                     tax.setScientificName( db_entry.getTaxonomyScientificName() );
                 }
-                if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
                     tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
                 }
                 node.getNodeData().setTaxonomy( tax );
