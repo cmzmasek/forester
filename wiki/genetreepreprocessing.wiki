@@ -1,8 +1,10 @@
 = Gene tree Preprocessing =
 
 == Usage == 
-{{{java -Xmx1024m -cp
-path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>}}}
+{{{
+java -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>
+}}}
 
 
 
