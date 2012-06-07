@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.util.ForesterUtil;
 
-public final class UniProtWsTools {
+public final class SequenceDbWsTools {
 
     private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true; //TODO turn off for final realease!
 
@@ -333,19 +333,19 @@ public final class UniProtWsTools {
         url_sb.append( BASE_EMBL_DB_URL );
         
         if ( ForesterUtil.isEmpty(  id.getProvider() ) ||  id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
-            url_sb.append( '/');
-            url_sb.append( UniProtWsTools.EMBL_DBS_EMBL );
+           
+            url_sb.append( SequenceDbWsTools.EMBL_DBS_EMBL );
             url_sb.append( '/');
         }
         else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
             if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
-                url_sb.append( '/');
-                url_sb.append( UniProtWsTools.EMBL_DBS_REFSEQ_P );
+              
+                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
                 url_sb.append( '/');
             }
             else {
-                url_sb.append( '/');
-                url_sb.append( UniProtWsTools.EMBL_DBS_REFSEQ_N );
+               
+                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
                 url_sb.append( '/');
             }
         }
@@ -391,15 +391,15 @@ public final class UniProtWsTools {
         return UniProtEntry.createInstanceFromPlainText( lines );
     }
 
-    public static SequenceDatabaseEntry obtainrefSeqentryFromEmbl( final Identifier id, final int max_lines_to_return )
+    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Identifier id, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryEmblDb( id, max_lines_to_return );
-        return EbiDbEntry.createInstanceForRefSeq( lines );
+        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
     }
 
-    public static SequenceDatabaseEntry obtainEmblEntry( final String query, final int max_lines_to_return )
+    public static SequenceDatabaseEntry obtainEmblEntry( final Identifier id, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( new Identifier( query ), max_lines_to_return );
+        final List<String> lines = queryEmblDb( id , max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 }

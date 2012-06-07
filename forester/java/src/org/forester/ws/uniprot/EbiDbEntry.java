@@ -37,6 +37,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     private String _os;
     private String _tax_id;
     private String _symbol;
+    private String _provider;
 
     private EbiDbEntry() {
     }
@@ -47,10 +48,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     
-    public static SequenceDatabaseEntry createInstanceForRefSeq( final List<String> lines ) {
+    public static SequenceDatabaseEntry createInstanceFromPlainTextForRefSeq( final List<String> lines ) {
         final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
-            System.out.println( "-" + line );
+          //  System.out.println( "-" + line );
             if ( line.startsWith( "ACCESSION" ) ) {
                 e.setPA( DatabaseTools.extract( line, "ACCESSION" ) );
             }
@@ -83,7 +84,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final EbiDbEntry e = new EbiDbEntry();
         for( final String line : lines ) {
-            System.out.println( "->" + line );
+            
             if ( line.startsWith( "PA" ) ) {
                 e.setPA( DatabaseTools.extract( line, "PA" ) );
             }
@@ -174,5 +175,14 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
                 && ForesterUtil.isEmpty( getTaxonomyScientificName() )
                 && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
+    }
+
+    @Override
+    public String getProvider() {
+        return _provider;
+    }
+    
+    public void setProvider( final String provider ) {
+         _provider = provider;
     }
 }

@@ -34,7 +34,7 @@ import org.forester.analysis.AncestralTaxonomyInferenceException;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.ws.uniprot.UniProtWsTools;
+import org.forester.ws.uniprot.SequenceDbWsTools;
 
 public class AncestralTaxonomyInferrer extends RunnableProcess {
 
@@ -49,7 +49,7 @@ public class AncestralTaxonomyInferrer extends RunnableProcess {
     }
 
     public static String getBaseUrl() {
-        return UniProtWsTools.BASE_UNIPROT_URL;
+        return SequenceDbWsTools.BASE_UNIPROT_URL;
     }
 
     private void inferTaxonomies() {

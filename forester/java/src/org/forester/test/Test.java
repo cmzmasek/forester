@@ -107,7 +107,7 @@ import org.forester.util.SequenceIdParser;
 import org.forester.ws.uniprot.DatabaseTools;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
 import org.forester.ws.uniprot.UniProtTaxonomy;
-import org.forester.ws.uniprot.UniProtWsTools;
+import org.forester.ws.uniprot.SequenceDbWsTools;
 import org.forester.ws.wabi.TxSearch;
 import org.forester.ws.wabi.TxSearch.RANKS;
 import org.forester.ws.wabi.TxSearch.TAX_NAME_CLASS;
@@ -7850,7 +7850,7 @@ public final class Test {
 
     private static boolean testUniprotTaxonomySearch() {
         try {
-            List<UniProtTaxonomy> results = UniProtWsTools
+            List<UniProtTaxonomy> results = SequenceDbWsTools
                     .getTaxonomiesFromCommonNameStrict( "starlet sea anemone", 10 );
             if ( results.size() != 1 ) {
                 return false;
@@ -7871,7 +7871,7 @@ public final class Test {
                 return false;
             }
             results = null;
-            results = UniProtWsTools.getTaxonomiesFromScientificNameStrict( "Nematostella vectensis", 10 );
+            results = SequenceDbWsTools.getTaxonomiesFromScientificNameStrict( "Nematostella vectensis", 10 );
             if ( results.size() != 1 ) {
                 return false;
             }
@@ -7891,7 +7891,7 @@ public final class Test {
                 return false;
             }
             results = null;
-            results = UniProtWsTools.getTaxonomiesFromId( "45351", 10 );
+            results = SequenceDbWsTools.getTaxonomiesFromId( "45351", 10 );
             if ( results.size() != 1 ) {
                 return false;
             }
@@ -7911,7 +7911,7 @@ public final class Test {
                 return false;
             }
             results = null;
-            results = UniProtWsTools.getTaxonomiesFromTaxonomyCode( "NEMVE", 10 );
+            results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( "NEMVE", 10 );
             if ( results.size() != 1 ) {
                 return false;
             }
@@ -8002,47 +8002,47 @@ public final class Test {
     }
 
     private static boolean testUniprotEntryRetrieval() {
-        if ( !UniProtWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "EP12345" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "EP12345" ) != null ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "3 4P12345" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "3 4P12345" ) != null ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "P12345E" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "P12345E" ) != null ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "P123455" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "P123455" ) != null ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "EP12345E" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "EP12345E" ) != null ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "AY423861" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "AY423861" ) != null ) {
             return false;
         }
-        if ( !UniProtWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {
             return false;
         }
-        if ( UniProtWsTools.parseUniProtAccessor( "P1DDDD" ) != null ) {
+        if ( SequenceDbWsTools.parseUniProtAccessor( "P1DDDD" ) != null ) {
             return false;
         }
-        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X/P12345/12-42" ).equals( "P12345" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X/P12345/12-42" ).equals( "P12345" ) ) {
             return false;
         }
-        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X P12345 12-42" ).equals( "P12345" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X P12345 12-42" ).equals( "P12345" ) ) {
             return false;
         }
-        if ( !UniProtWsTools.parseUniProtAccessor( "P12345/12-42" ).equals( "P12345" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P12345/12-42" ).equals( "P12345" ) ) {
             return false;
         }
-        if ( !UniProtWsTools.parseUniProtAccessor( "P1234X/P12345" ).equals( "P12345" ) ) {
+        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X/P12345" ).equals( "P12345" ) ) {
             return false;
         }
         try {
-            final SequenceDatabaseEntry entry = UniProtWsTools.obtainUniProtEntry( "P12345", 200 );
+            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainUniProtEntry( "P12345", 200 );
             if ( !entry.getAccession().equals( "P12345" ) ) {
                 return false;
             }

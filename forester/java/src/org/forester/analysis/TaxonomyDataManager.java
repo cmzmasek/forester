@@ -48,7 +48,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 import org.forester.ws.uniprot.UniProtTaxonomy;
-import org.forester.ws.uniprot.UniProtWsTools;
+import org.forester.ws.uniprot.SequenceDbWsTools;
 
 public final class TaxonomyDataManager extends RunnableProcess {
 
@@ -176,19 +176,19 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String query ) throws IOException {
-        return UniProtWsTools.getTaxonomiesFromCommonNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
+        return SequenceDbWsTools.getTaxonomiesFromCommonNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromId( final String query ) throws IOException {
-        return UniProtWsTools.getTaxonomiesFromId( query, MAX_TAXONOMIES_TO_RETURN );
+        return SequenceDbWsTools.getTaxonomiesFromId( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String query ) throws IOException {
-        return UniProtWsTools.getTaxonomiesFromScientificNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
+        return SequenceDbWsTools.getTaxonomiesFromScientificNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String query ) throws IOException {
-        return UniProtWsTools.getTaxonomiesFromTaxonomyCode( query, MAX_TAXONOMIES_TO_RETURN );
+        return SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( query, MAX_TAXONOMIES_TO_RETURN );
     }
 
     static final boolean isHasAppropriateId( final Taxonomy tax ) {

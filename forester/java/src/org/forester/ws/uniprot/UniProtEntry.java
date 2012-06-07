@@ -139,4 +139,9 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 && ForesterUtil.isEmpty( getTaxonomyScientificName() )
                 && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
     }
+
+    @Override
+    public String getProvider() {
+        return "uniprot";
+    }
 }

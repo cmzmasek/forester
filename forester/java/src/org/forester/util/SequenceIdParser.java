@@ -32,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.phylogeny.data.Identifier;
-import org.forester.ws.uniprot.DatabaseTools;
 
 public final class SequenceIdParser {
 
@@ -65,11 +64,7 @@ public final class SequenceIdParser {
     private final static Pattern REFSEQ_PATTERN      = Pattern
     .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
 
-    
-    private final static boolean DEBUG                           = true;
-    
-  
-
+   
     
     /**
      * Returns null if no match.
@@ -78,6 +73,7 @@ public final class SequenceIdParser {
     public final static Identifier parse( final String s ) {
         String v = parseGenbankAccessor( s );
         if ( !ForesterUtil.isEmpty( v ) ) {
+
             return new Identifier( v, Identifier.NCBI );
         }
         v = parseRefSeqAccessor( s );

@@ -34,7 +34,7 @@ import org.forester.util.ForesterUtil;
 
 public final class Identifier implements PhylogenyData {
 
-    final  public static String NCBI = "ncbi";
+    final public static String NCBI = "ncbi";
     final public static String REFSEQ = "refseq";
     
     final private String _value;

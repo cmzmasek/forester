@@ -25,7 +25,6 @@
 
 package org.forester.archaeopteryx.tools;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.SortedSet;
@@ -45,7 +44,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceIdParser;
 import org.forester.ws.uniprot.SequenceDatabaseEntry;
-import org.forester.ws.uniprot.UniProtWsTools;
+import org.forester.ws.uniprot.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
 
@@ -55,7 +54,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
     private final static boolean       DEBUG = true;
 
     private enum Db {
-        UNIPROT, EMBL, NCBI, NONE;
+        UNIPROT, EMBL, NCBI, NONE, REFSEQ;
     }
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
@@ -170,11 +169,18 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 db = Db.EMBL;
             }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                if ( ( query = UniProtWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
+                if ( ( query = SequenceDbWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
                     db = Db.UNIPROT;
                 }
                 else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
-                    db = Db.NCBI;
+                    
+                    if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                        db = Db.NCBI;
+                    }
+                    else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                        db = Db.REFSEQ;
+                    }
+                   
                 }
             }
             SequenceDatabaseEntry db_entry = null;
@@ -183,25 +189,23 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
                     }
-                  
-                    db_entry = UniProtWsTools.obtainUniProtEntry( query, 200 );
-                  
+                    db_entry = SequenceDbWsTools.obtainUniProtEntry( query, 200 );
                 }
                 if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
-                    
-                    db_entry = UniProtWsTools.obtainEmblEntry( query, 200 );
-                   
+                    db_entry = SequenceDbWsTools.obtainEmblEntry(  new Identifier( query ), 200 );
                     if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
                         db = Db.EMBL;
                     }
                 }
             }
+            else if ( ( db == Db.REFSEQ ) && ( id != null ) ) {
+                db_entry = SequenceDbWsTools.obtainRefSeqEntryFromEmbl( id, 200 );
+            }
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
-                System.out.println( "db == Db.NCBI && id != null" );
-                db_entry = UniProtWsTools.obtainrefSeqentryFromEmbl( id, 200 );
+                db_entry = SequenceDbWsTools.obtainEmblEntry( id, 200 );
             }
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
@@ -211,6 +215,12 @@ public final class SequenceDataRetriver extends RunnableProcess {
                     }
                     else if ( db == Db.UNIPROT ) {
                         type = "uniprot";
+                    }
+                    else if ( db == Db.NCBI ) {
+                        type = "ncbi";
+                    }
+                    else if ( db == Db.REFSEQ ) {
+                        type = "refseq";
                     }
                     seq.setAccession( new Accession( db_entry.getAccession(), type ) );
                 }
