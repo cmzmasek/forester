@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'bio'
 
 seq_ary = Array.new
@@ -13,6 +12,8 @@ end
 # Creates a multiple sequence alignment (possibly unaligned) named
 # 'seqs' from array 'seq_ary'.
 seqs = Bio::Alignment.new( seq_ary )
+
+
 seqs.each { |seq| puts seq.to_s }
 
 
