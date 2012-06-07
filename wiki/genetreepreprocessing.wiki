@@ -1,17 +1,13 @@
 = Gene tree Preprocessing =
 
-Usage: 
-java -Xms32m -Xmx1024m -cp
-path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>
+== Usage == 
+`java -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>`
 
 
 
+== Details ==
 
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Output is two files:
+  * <input>_preprocessed_gene_tree.phylo.xml
+  * <input>_removed_nodes.txt
