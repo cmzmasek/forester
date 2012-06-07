@@ -1,4 +1,4 @@
-= Gene tree Preprocessing =
+= Gene tree preprocessing =
 
 == Purpose ==
 
