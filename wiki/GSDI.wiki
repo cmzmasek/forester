@@ -1,16 +1,26 @@
-#summary preprocessing of gene trees for speciation/duplication inference
+#summary generalized speciation duplication inference
 
 = Generalized Speciation Duplication Inference
 
 == Purpose ==
 
-Infer duplication events on a gene tree given a trusted species tree.
+To infer duplication events on a gene tree given a trusted species tree.
 
 == Usage == 
 {{{
 java -Xmx1024m -cp
-path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>
+path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyloXML format> <species tree> [outfile]
 }}}
+
+=== Options ===
+
+  *s : to strip the species tree prior to duplication inference
+ *  -b: to use SDI algorithm instead of GSDI algorithm
+ * -m: use most parimonious duplication model for GSDI: 
+     assign nodes as speciations which would otherwise be assiged
+     as unknown because of polytomies in the species tree
+ * -q: to allow species tree in other formats than
+     phyloXML (Newick, NHX, Nexus)
 
 
 
