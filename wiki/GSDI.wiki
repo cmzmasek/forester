@@ -1,0 +1,27 @@
+#summary preprocessing of gene trees for speciation/duplication inference
+
+= Generalized Speciation Duplication Inference
+
+== Purpose ==
+
+Infer duplication events on a gene tree given a trusted species tree.
+
+== Usage == 
+{{{
+java -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gene_tree_preprocess <input tree in NH, NHX, Nexus, or phyloXML>
+}}}
+
+
+
+== Details ==
+
+Output consists of three files:
+  * input-name_preprocessed_gene_tree.phylo.xml
+  * input-name_species_present.txt
+  * input-name_removed_nodes.txt
+
+
+== Download ==
+
+Download forester.jar here: http://code.google.com/p/forester/downloads/list
