@@ -124,7 +124,7 @@ public final class ParserUtils {
         else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" ) ) {
             parser = new NexusPhylogeniesParser();
         }
-        else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" ) ) {
+        else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" ) || filename_lc.endsWith( ".nwk" ) ) {
             parser = new NHXParser();
         }
         return parser;

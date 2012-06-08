@@ -2714,7 +2714,7 @@ class NHFilter extends FileFilter {
         final String file_name = f.getName().trim().toLowerCase();
         return file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
                 || file_name.endsWith( ".tr" ) || file_name.endsWith( ".tree" ) || file_name.endsWith( ".dnd" )
-                || file_name.endsWith( ".ph" ) || file_name.endsWith( ".phb" ) || file_name.endsWith( ".nwk" )
+                || file_name.endsWith( ".ph" )  || file_name.endsWith( ".phb" ) || file_name.endsWith( ".nwk" )
                 || f.isDirectory();
     }
 
