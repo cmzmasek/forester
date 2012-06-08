@@ -1,3 +1,5 @@
+#summary Archaeopteryx Documentation
+
 = Archaeopteryx Documentation =
 <wiki:toc max_depth="3" />
 
