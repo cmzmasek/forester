@@ -26,6 +26,11 @@ In phyloXML format (unless option -q is used), with taxonomy data in appropriate
 In phyloXML format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
 
 
+== Reference ==
+
+Zmasek CM and Eddy SR "A simple algorithm to infer gene duplication and speciation events on a gene tree" [http://bioinformatics.oxfordjournals.org/content/17/9/821.abstract Bioinformatics, 17, 821-828]
+ 
+
 
 == Download ==
 
