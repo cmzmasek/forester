@@ -1051,15 +1051,45 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
 
     @Override
     final public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        if ( !ForesterUtil.isEmpty( getName() ) ) {
+        StringBuilder sb = new StringBuilder();
+        if ( ForesterUtil.isEmpty( getName() ) ) {
             sb.append( getName() );
             sb.append( " " );
         }
-        sb.append( "[" );
-        sb.append( getId() );
-        sb.append( "]" );
-        return sb.toString();
+        if ( getNodeData().isHasTaxonomy() ) {
+            if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getScientificName() ) ) {
+                sb.append( getNodeData().getTaxonomy().getScientificName() );
+                sb.append( " " );
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                sb.append( getNodeData().getTaxonomy().getTaxonomyCode() );
+                sb.append( " " );
+            }
+            else if ( getNodeData().getTaxonomy().getIdentifier() != null ) {
+                sb.append( getNodeData().getTaxonomy().getIdentifier().toString() );
+                sb.append( " " );
+            }
+        }
+        if ( getNodeData().isHasSequence() ) {
+            if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getName() ) ) {
+                sb.append( getNodeData().getSequence().getName() );
+                sb.append( " " );
+            }
+            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
+                sb.append( getNodeData().getSequence().getSymbol() );
+                sb.append( " " );
+            }
+            else if ( getNodeData().getSequence().getAccession() != null ) {
+                sb.append( getNodeData().getTaxonomy().getIdentifier().toString() );
+                sb.append( " " );
+            }
+        }
+        if ( sb.length() <= 1 ) {
+            sb.append( "[" );
+            sb.append( getId() );
+            sb.append( "]" );
+        }
+        return sb.toString().trim();
     }
 
     /**

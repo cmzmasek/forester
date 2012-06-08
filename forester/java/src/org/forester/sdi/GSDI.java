@@ -274,22 +274,10 @@ public final class GSDI extends SDI {
             }
         }
         if ( _strip_gene_tree ) {
-            final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
-            for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
-                final PhylogenyNode g = iter.next();
-                if ( !g.getNodeData().isHasTaxonomy() ) {
-                    throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
-                }
-                final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
-                if ( s == null ) {
-                    // throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
-                    //         + " not present in species tree" );
-                    to_delete.add( g );
-                }
-            }
-            for( final PhylogenyNode n : to_delete ) {
-                _gene_tree.deleteSubtree( n, true );
-                System.out.println( "deleted" + n );
+            stripGeneTree( speciestree_ext_nodes );
+            if ( ( _gene_tree == null ) || ( _gene_tree.getNumberOfExternalNodes() < 2 ) ) {
+                throw new IllegalArgumentException( "species tree does not contain any"
+                        + " nodes matching species in the gene tree" );
             }
         }
         // Retrieve the reference to the PhylogenyNode with a matching species.
@@ -304,6 +292,24 @@ public final class GSDI extends SDI {
                         + " not present in species tree" );
             }
             g.setLink( s );
+        }
+    }
+
+    private final void stripGeneTree( final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes ) {
+        final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode g = iter.next();
+            if ( !g.getNodeData().isHasTaxonomy() ) {
+                throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
+            }
+            final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
+            if ( s == null ) {
+                to_delete.add( g );
+            }
+        }
+        for( final PhylogenyNode n : to_delete ) {
+            _gene_tree.deleteSubtree( n, true );
+            System.out.println( "deleted node from gene tree: " + n );
         }
     }
 
