@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -50,19 +49,19 @@ import org.forester.util.ForesterUtil;
 public final class gsdi {
 
     final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE = true;
-    final static private String STRIP_OPTION                 = "s";
-    final static private String SDI_OPTION                   = "b";
-    final static private String MOST_PARSIMONIOUS_OPTION     = "m";
-    final static private String GUESS_FORMAT_OF_SPECIES_TREE = "q";
-    final static private String HELP_OPTION_1                = "help";
-    final static private String HELP_OPTION_2                = "h";
-    final static private String DEFAULT_OUTFILE              = "gsdi_out.phylo.xml";
-    final static private String PRG_NAME                     = "gsdi";
-    final static private String PRG_VERSION                  = "0.5";
-    final static private String PRG_DATE                     = "120608";
-    final static private String PRG_DESC                     = "general speciation duplication inference";
-    final static private String E_MAIL                       = "phylosoft@gmail.com";
-    final static private String WWW                          = "www.phylosoft.org/forester";
+    final static private String STRIP_OPTION                           = "s";
+    final static private String SDI_OPTION                             = "b";
+    final static private String MOST_PARSIMONIOUS_OPTION               = "m";
+    final static private String GUESS_FORMAT_OF_SPECIES_TREE           = "q";
+    final static private String HELP_OPTION_1                          = "help";
+    final static private String HELP_OPTION_2                          = "h";
+    final static private String DEFAULT_OUTFILE_SUFFIX                 = "_gsdi_out.phylo.xml";
+    final static private String PRG_NAME                               = "gsdi";
+    final static private String PRG_VERSION                            = "0.901";
+    final static private String PRG_DATE                               = "120608";
+    final static private String PRG_DESC                               = "general speciation duplication inference";
+    final static private String E_MAIL                                 = "phylosoft@gmail.com";
+    final static private String WWW                                    = "www.phylosoft.org/forester";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -131,7 +130,8 @@ public final class gsdi {
                 out_file = cla.getFile( 2 );
             }
             else {
-                out_file = new File( gsdi.DEFAULT_OUTFILE );
+                out_file = new File( ForesterUtil.removeSuffix( gene_tree_file.toString() ) + DEFAULT_OUTFILE_SUFFIX );
+                //out_file = new File( gsdi.DEFAULT_OUTFILE );
             }
         }
         catch ( final IllegalArgumentException e ) {
@@ -153,20 +153,18 @@ public final class gsdi {
             }
             else {
                 final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
-                if ( REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE && p instanceof NHXParser ) {
-                    (( NHXParser ) p ).setReplaceUnderscores( true );
+                if ( REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE && ( p instanceof NHXParser ) ) {
+                    ( ( NHXParser ) p ).setReplaceUnderscores( true );
                 }
                 species_tree = factory.create( species_tree_file, p )[ 0 ];
                 PhylogenyMethods.transferNodeNameToField( species_tree,
                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
-              
             }
         }
         catch ( final IOException e ) {
             ForesterUtil.fatalError( gsdi.PRG_NAME,
                                      "Failed to read species tree from [" + gene_tree_file + "]: " + e.getMessage() );
         }
-        
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             gene_tree = factory.create( gene_tree_file, new PhyloXmlParser() )[ 0 ];
