@@ -19,14 +19,14 @@ path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyl
   * -m: use most parimonious duplication model for GSDI: assign nodes as speciations which would otherwise be assiged as unknown because of polytomies in the species tree
   * -q: to allow species tree in other formats than phyloXML (Newick, NHX, Nexus)
 
+==== Species tree ====
+In phyloXML format (unless option -q is used), with taxonomy data in appropriate fields. Must be rooted, polytomies are allowed.
+
+==== Gene tree ====
+In phyloXM format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
 
 
-== Details ==
 
-Output consists of three files:
-  * input-name_preprocessed_gene_tree.phylo.xml
-  * input-name_species_present.txt
-  * input-name_removed_nodes.txt
 
 
 == Download ==
