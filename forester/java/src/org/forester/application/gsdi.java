@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.forester.archaeopteryx.Archaeopteryx;
+
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -56,8 +56,8 @@ public final class gsdi {
     final static private String HELP_OPTION_2                = "h";
     final static private String DEFAULT_OUTFILE              = "gsdi_out.phylo.xml";
     final static private String PRG_NAME                     = "gsdi";
-    final static private String PRG_VERSION                  = "0.4";
-    final static private String PRG_DATE                     = "120607";
+    final static private String PRG_VERSION                  = "0.5";
+    final static private String PRG_DATE                     = "120608";
     final static private String PRG_DESC                     = "general speciation duplication inference";
     final static private String E_MAIL                       = "phylosoft@gmail.com";
     final static private String WWW                          = "www.phylosoft.org/forester";
@@ -208,7 +208,7 @@ public final class gsdi {
                 System.out.println( "Using GSDI algorithm" );
                 System.out.println();
                 System.out.println( "Use most parsimonous duplication model: " + most_parsimonous_duplication_model );
-                sdi = new GSDI( gene_tree, species_tree, most_parsimonous_duplication_model );
+                sdi = new GSDI( gene_tree, species_tree, most_parsimonous_duplication_model, true );
             }
         }
         catch ( final Exception e ) {
@@ -256,7 +256,7 @@ public final class gsdi {
         System.out.println( "     phyloXML (Newick, NHX, Nexus)" );
         System.out.println();
         System.out.println( "Species tree:" );
-        System.out.println( " In phyloXML format (unless option " + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
+        System.out.println( " In phyloXML format (unless option -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
                 + " is used), with taxonomy data in appropriate fields" );
         System.out.println();
         System.out.println( "Gene tree:" );

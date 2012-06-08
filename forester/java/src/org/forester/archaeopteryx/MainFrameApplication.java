@@ -1212,7 +1212,7 @@ public final class MainFrameApplication extends MainFrame {
         GSDI gsdi = null;
         int duplications = -1;
         try {
-            gsdi = new GSDI( gene_tree, _species_tree.copy(), true );
+            gsdi = new GSDI( gene_tree, _species_tree.copy(), true, true );
             duplications = gsdi.getDuplicationsSum();
         }
         catch ( final Exception e ) {

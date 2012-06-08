@@ -26,6 +26,8 @@
 package org.forester.sdi;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -60,6 +62,7 @@ public final class GSDI extends SDI {
 
     private final HashMap<PhylogenyNode, Integer> _transversal_counts;
     private final boolean                         _most_parsimonious_duplication_model;
+    private final boolean                         _strip_gene_tree;
     private int                                   _speciation_or_duplication_events_sum;
     private int                                   _speciations_sum;
 
@@ -91,16 +94,24 @@ public final class GSDI extends SDI {
      */
     public GSDI( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
-                 final boolean most_parsimonious_duplication_model ) {
+                 final boolean most_parsimonious_duplication_model,
+                 final boolean strip_gene_tree ) {
         super( gene_tree, species_tree );
         _speciation_or_duplication_events_sum = 0;
         _speciations_sum = 0;
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
         _transversal_counts = new HashMap<PhylogenyNode, Integer>();
         _duplications_sum = 0;
+        _strip_gene_tree = strip_gene_tree;
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
+    }
+
+    public GSDI( final Phylogeny gene_tree,
+                 final Phylogeny species_tree,
+                 final boolean most_parsimonious_duplication_model ) {
+        this( gene_tree, species_tree, most_parsimonious_duplication_model, false );
     }
 
     private final Event createDuplicationEvent() {
@@ -250,7 +261,7 @@ public final class GSDI extends SDI {
      * 
      */
     @Override
-    final  void linkNodesOfG() {
+    final void linkNodesOfG() {
         final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
@@ -262,8 +273,26 @@ public final class GSDI extends SDI {
                 speciestree_ext_nodes.put( n.getNodeData().getTaxonomy(), n );
             }
         }
-        // Retrieve the reference to the PhylogenyNode with a matching species
-        // name.
+        if ( _strip_gene_tree ) {
+            final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
+            for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
+                final PhylogenyNode g = iter.next();
+                if ( !g.getNodeData().isHasTaxonomy() ) {
+                    throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
+                }
+                final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
+                if ( s == null ) {
+                    // throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
+                    //         + " not present in species tree" );
+                    to_delete.add( g );
+                }
+            }
+            for( final PhylogenyNode n : to_delete ) {
+                _gene_tree.deleteSubtree( n, true );
+                System.out.println( "deleted" + n );
+            }
+        }
+        // Retrieve the reference to the PhylogenyNode with a matching species.
         for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode g = iter.next();
             if ( !g.getNodeData().isHasTaxonomy() ) {
@@ -274,8 +303,6 @@ public final class GSDI extends SDI {
                 throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
                         + " not present in species tree" );
             }
-          
-          
             g.setLink( s );
         }
     }
