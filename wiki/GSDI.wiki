@@ -23,7 +23,7 @@ path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyl
 In phyloXML format (unless option -q is used), with taxonomy data in appropriate fields. Must be rooted, polytomies are allowed.
 
 ==== Gene tree ====
-In phyloXM format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
+In phyloXML format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
 
 
 
