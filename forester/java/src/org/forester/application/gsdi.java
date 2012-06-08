@@ -33,6 +33,7 @@ import java.util.List;
 
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
@@ -48,6 +49,7 @@ import org.forester.util.ForesterUtil;
 
 public final class gsdi {
 
+    final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE = true;
     final static private String STRIP_OPTION                 = "s";
     final static private String SDI_OPTION                   = "b";
     final static private String MOST_PARSIMONIOUS_OPTION     = "m";
@@ -151,6 +153,9 @@ public final class gsdi {
             }
             else {
                 final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
+                if ( REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE && p instanceof NHXParser ) {
+                    (( NHXParser ) p ).setReplaceUnderscores( true );
+                }
                 species_tree = factory.create( species_tree_file, p )[ 0 ];
                 PhylogenyMethods.transferNodeNameToField( species_tree,
                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
