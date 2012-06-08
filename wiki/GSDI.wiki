@@ -1,6 +1,6 @@
 #summary generalized speciation duplication inference
 
-= Generalized Speciation Duplication Inference
+= Generalized Speciation Duplication Inference =
 
 == Purpose ==
 
@@ -24,8 +24,6 @@ In phyloXML format (unless option -q is used), with taxonomy data in appropriate
 
 ==== Gene tree ====
 In phyloXM format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
-
-
 
 
 
