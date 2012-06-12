@@ -65,6 +65,7 @@ public final class GSDI extends SDI {
     private final boolean                         _strip_gene_tree;
     private int                                   _speciation_or_duplication_events_sum;
     private int                                   _speciations_sum;
+    private final Set<PhylogenyNode>              _stripped_gene_tree_nodes; 
 
     /**
      * Constructor which sets the gene tree and the species tree to be compared.
@@ -101,8 +102,9 @@ public final class GSDI extends SDI {
         _speciations_sum = 0;
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
         _transversal_counts = new HashMap<PhylogenyNode, Integer>();
-        _duplications_sum = 0;
+        _duplications_sum = 0; 
         _strip_gene_tree = strip_gene_tree;
+        _stripped_gene_tree_nodes = new HashSet<PhylogenyNode>(); 
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
@@ -262,17 +264,7 @@ public final class GSDI extends SDI {
      */
     @Override
     final void linkNodesOfG() {
-        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
-        for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
-            final PhylogenyNode n = iter.next();
-            if ( n.getNodeData().isHasTaxonomy() ) {
-                if ( speciestree_ext_nodes.containsKey( n.getNodeData().getTaxonomy() ) ) {
-                    throw new IllegalArgumentException( "taxonomy [" + n.getNodeData().getTaxonomy()
-                            + "] is not unique in species phylogeny" );
-                }
-                speciestree_ext_nodes.put( n.getNodeData().getTaxonomy(), n );
-            }
-        }
+        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = createTaxonomyToNodeMap();
         if ( _strip_gene_tree ) {
             stripGeneTree( speciestree_ext_nodes );
             if ( ( _gene_tree == null ) || ( _gene_tree.getNumberOfExternalNodes() < 2 ) ) {
@@ -295,8 +287,24 @@ public final class GSDI extends SDI {
         }
     }
 
+    final private HashMap<Taxonomy, PhylogenyNode> createTaxonomyToNodeMap() {
+        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasTaxonomy() ) {
+                if ( speciestree_ext_nodes.containsKey( n.getNodeData().getTaxonomy() ) ) {
+                    throw new IllegalArgumentException( "taxonomy [" + n.getNodeData().getTaxonomy()
+                            + "] is not unique in species phylogeny" );
+                }
+                speciestree_ext_nodes.put( n.getNodeData().getTaxonomy(), n );
+            }
+        }
+        return speciestree_ext_nodes;
+    }
+
     private final void stripGeneTree( final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes ) {
-        final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
+      //  final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
+        
         for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode g = iter.next();
             if ( !g.getNodeData().isHasTaxonomy() ) {
@@ -304,13 +312,18 @@ public final class GSDI extends SDI {
             }
             final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
             if ( s == null ) {
-                to_delete.add( g );
+                _stripped_gene_tree_nodes.add( g );
             }
         }
-        for( final PhylogenyNode n : to_delete ) {
+        for( final PhylogenyNode n :  _stripped_gene_tree_nodes ) {
             _gene_tree.deleteSubtree( n, true );
-            System.out.println( "deleted node from gene tree: " + n );
+            
         }
+        
+    }
+    
+    public Set<PhylogenyNode> getStrippedExternalGeneTreeNodes() {
+        return _stripped_gene_tree_nodes;
     }
 
     @Override

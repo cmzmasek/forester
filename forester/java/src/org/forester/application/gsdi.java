@@ -50,12 +50,16 @@ public final class gsdi {
 
     final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE = true;
     final static private String STRIP_OPTION                           = "s";
+    final static private String ALLOW_STRIPPING_OF_GENE_TREE_OPTION       = "g";
+    
     final static private String SDI_OPTION                             = "b";
     final static private String MOST_PARSIMONIOUS_OPTION               = "m";
     final static private String GUESS_FORMAT_OF_SPECIES_TREE           = "q";
     final static private String HELP_OPTION_1                          = "help";
     final static private String HELP_OPTION_2                          = "h";
     final static private String DEFAULT_OUTFILE_SUFFIX                 = "_gsdi_out.phylo.xml";
+    final static private String SUFFIX_FOR_LIST_OF_STIPPED_GENE_TREE_NODES = "_stripped_gene_tree_nodes.txt";
+    final static private String SUFFIX_FOR_LOG_FILE                    = "_gsdi_log.txt";    
     final static private String PRG_NAME                               = "gsdi";
     final static private String PRG_VERSION                            = "0.901";
     final static private String PRG_DATE                               = "120608";
@@ -95,6 +99,8 @@ public final class gsdi {
         allowed_options.add( gsdi.SDI_OPTION );
         allowed_options.add( gsdi.GUESS_FORMAT_OF_SPECIES_TREE );
         allowed_options.add( gsdi.MOST_PARSIMONIOUS_OPTION );
+        allowed_options.add( gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION );
+        
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( gsdi.PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -103,6 +109,7 @@ public final class gsdi {
         boolean strip = false;
         boolean most_parsimonous_duplication_model = false;
         boolean species_tree_in_phyloxml = true;
+        boolean allow_stripping_of_gene_tree = false;
         if ( cla.isOptionSet( gsdi.STRIP_OPTION ) ) {
             strip = true;
         }
@@ -118,6 +125,15 @@ public final class gsdi {
         if ( cla.isOptionSet( gsdi.GUESS_FORMAT_OF_SPECIES_TREE ) ) {
             species_tree_in_phyloxml = false;
         }
+        if ( cla.isOptionSet( gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION ) ) {
+            if ( use_sdise ) {
+                ForesterUtil.fatalError( gsdi.PRG_NAME, "Can only allow stripping of gene tree with GSDI" );
+            }
+            allow_stripping_of_gene_tree = true;
+        }
+       
+        
+        
         Phylogeny species_tree = null;
         Phylogeny gene_tree = null;
         File gene_tree_file = null;
@@ -211,7 +227,9 @@ public final class gsdi {
                 System.out.println( "Using GSDI algorithm" );
                 System.out.println();
                 System.out.println( "Use most parsimonous duplication model: " + most_parsimonous_duplication_model );
-                sdi = new GSDI( gene_tree, species_tree, most_parsimonous_duplication_model, true );
+                System.out.println( "Allow stripping of gene tree nodes    : " + allow_stripping_of_gene_tree );
+                sdi = new GSDI( gene_tree, species_tree, most_parsimonous_duplication_model, allow_stripping_of_gene_tree );
+              
             }
         }
         catch ( final Exception e ) {
@@ -239,9 +257,22 @@ public final class gsdi {
                     + ( ( GSDI ) sdi ).getSpeciationOrDuplicationEventsSum() );
         }
         if ( !use_sdise ) {
-            System.out.println( "Number speciations              : " + ( ( GSDI ) sdi ).getSpeciationsSum() );
+            System.out.println( "Number of speciations            : " + ( ( GSDI ) sdi ).getSpeciationsSum() );
         }
         System.out.println();
+        some stat on gene tree:
+            filename, name
+            number of external nodes, strppided nodes
+        some stats on sepcies tree, external nodes,
+        filename, name
+        internal nodes
+        how many of which are polytomies
+        //wrote log file to
+        if ( allow_stripping_of_gene_tree ) {
+            stripped x nodes, y external nodes remain
+            
+            
+        }
     }
 
     private static void print_help() {
@@ -249,21 +280,27 @@ public final class gsdi {
                 + " [-options] <gene tree in phyloXML format> <species tree in phyloXML format> [outfile]" );
         System.out.println();
         System.out.println( "Options:" );
-        System.out.println( " -" + gsdi.STRIP_OPTION + ": to strip the species tree prior to duplication inference" );
-        System.out.println( " -" + gsdi.SDI_OPTION + ": to use SDI algorithm instead of GSDI algorithm" );
+        System.out.println( " -" + gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION + ": to allow stripping of gene tree nodes without a matching species in the species tree (writes list of stripped nodes to " + );
+        System.out.println( " -" + gsdi.STRIP_OPTION + ": to strip the species tree of unneeded species prior to duplication inference" );
+        System.out.println( " -" + gsdi.SDI_OPTION + ": to use SDI algorithm instead of GSDI algorithm" );//TODO gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION not allowed
         System.out.println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION
                 + ": use most parimonious duplication model for GSDI: " );
         System.out.println( "     assign nodes as speciations which would otherwise be assiged" );
         System.out.println( "     as unknown because of polytomies in the species tree" );
         System.out.println( " -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE + ": to allow species tree in other formats than" );
         System.out.println( "     phyloXML (Newick, NHX, Nexus)" );
+        
+        
         System.out.println();
         System.out.println( "Species tree:" );
         System.out.println( " In phyloXML format (unless option -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
-                + " is used), with taxonomy data in appropriate fields" );
+                + " is used, in which case the species matching between gene tree and species tree must be via scientific name), with taxonomy data in appropriate fields" );
         System.out.println();
         System.out.println( "Gene tree:" );
         System.out.println( " In phyloXM format, with taxonomy and sequence data in appropriate fields" );
+        System.out.println();
+        System.out.println( "Example:" );
+        System.out.println( "gsdi 
         System.out.println();
         System.out.println( "Note -- GSDI algorithm is under development" );
         System.out.println();
