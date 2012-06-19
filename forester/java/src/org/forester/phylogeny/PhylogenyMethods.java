@@ -474,6 +474,13 @@ public class PhylogenyMethods {
                                 .setIdentifier( new Identifier( id, PhyloXmlUtil.UNIPROT_TAX_PROVIDER ) );
                         break;
                     }
+                    case TAXONOMY_ID: {
+                        if ( !n.getNodeData().isHasTaxonomy() ) {
+                            n.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        n.getNodeData().getTaxonomy().setIdentifier( new Identifier( name ) );
+                        break;
+                    }
                 }
             }
         }
@@ -1637,7 +1644,8 @@ public class PhylogenyMethods {
         SEQUENCE_SYMBOL,
         SEQUENCE_NAME,
         TAXONOMY_ID_UNIPROT_1,
-        TAXONOMY_ID_UNIPROT_2;
+        TAXONOMY_ID_UNIPROT_2,
+        TAXONOMY_ID;
     }
 
     public static enum TAXONOMY_EXTRACTION {

@@ -131,7 +131,6 @@ public abstract class SDI {
         boolean all_have_id = true;
         boolean all_have_code = true;
         boolean all_have_sn = true;
-        boolean all_have_cn = true;
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( n.getNodeData().isHasTaxonomy() ) {
@@ -144,9 +143,6 @@ public abstract class SDI {
                 }
                 if ( ForesterUtil.isEmpty( tax.getScientificName() ) ) {
                     all_have_sn = false;
-                }
-                if ( ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-                    all_have_cn = false;
                 }
             }
             else {
@@ -166,9 +162,6 @@ public abstract class SDI {
                 if ( ForesterUtil.isEmpty( tax.getScientificName() ) ) {
                     all_have_sn = false;
                 }
-                if ( ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-                    all_have_cn = false;
-                }
             }
             else {
                 throw new IllegalArgumentException( "gene tree node [" + n + "] has no taxonomic data" );
@@ -182,9 +175,6 @@ public abstract class SDI {
         }
         else if ( all_have_sn ) {
             base = TaxonomyComparisonBase.SCIENTIFIC_NAME;
-        }
-        else if ( all_have_cn ) {
-            base = TaxonomyComparisonBase.COMMON_NAME;
         }
         else {
             throw new IllegalArgumentException( "gene tree and species tree have incomparable taxonomies" );
@@ -296,7 +286,7 @@ public abstract class SDI {
         return sb.toString();
     }
 
-    private static String taxonomyToString( final PhylogenyNode n, final TaxonomyComparisonBase base ) {
+    static String taxonomyToString( final PhylogenyNode n, final TaxonomyComparisonBase base ) {
         final Taxonomy tax = n.getNodeData().getTaxonomy();
         switch ( base ) {
             case ID:
@@ -305,14 +295,12 @@ public abstract class SDI {
                 return tax.getTaxonomyCode();
             case SCIENTIFIC_NAME:
                 return tax.getScientificName();
-            case COMMON_NAME:
-                return tax.getCommonName();
             default:
                 throw new IllegalArgumentException( "unknown comparison base for taxonomies: " + base );
         }
     }
 
-    enum TaxonomyComparisonBase {
-        ID, CODE, SCIENTIFIC_NAME, COMMON_NAME;
+    public enum TaxonomyComparisonBase {
+        ID, CODE, SCIENTIFIC_NAME
     }
 }

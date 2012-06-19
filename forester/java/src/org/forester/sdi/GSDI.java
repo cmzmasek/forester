@@ -27,6 +27,7 @@ package org.forester.sdi;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
@@ -65,7 +66,7 @@ public final class GSDI extends SDI {
     private final boolean                         _strip_gene_tree;
     private int                                   _speciation_or_duplication_events_sum;
     private int                                   _speciations_sum;
-    private final Set<PhylogenyNode>              _stripped_gene_tree_nodes; 
+    private final Set<PhylogenyNode>              _stripped_gene_tree_nodes;
 
     /**
      * Constructor which sets the gene tree and the species tree to be compared.
@@ -102,9 +103,9 @@ public final class GSDI extends SDI {
         _speciations_sum = 0;
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
         _transversal_counts = new HashMap<PhylogenyNode, Integer>();
-        _duplications_sum = 0; 
+        _duplications_sum = 0;
         _strip_gene_tree = strip_gene_tree;
-        _stripped_gene_tree_nodes = new HashSet<PhylogenyNode>(); 
+        _stripped_gene_tree_nodes = new HashSet<PhylogenyNode>();
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
@@ -287,6 +288,61 @@ public final class GSDI extends SDI {
         }
     }
 
+    final void linkNodesOfG2() {
+        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = createTaxonomyToNodeMap();
+        if ( _strip_gene_tree ) {
+            stripGeneTree( speciestree_ext_nodes );
+            if ( ( _gene_tree == null ) || ( _gene_tree.getNumberOfExternalNodes() < 2 ) ) {
+                throw new IllegalArgumentException( "species tree does not contain any"
+                        + " nodes matching species in the gene tree" );
+            }
+        }
+        // Retrieve the reference to the PhylogenyNode with a matching species.
+        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode g = iter.next();
+            if ( !g.getNodeData().isHasTaxonomy() ) {
+                throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
+            }
+            final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
+            if ( s == null ) {
+                throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
+                        + " not present in species tree" );
+            }
+            g.setLink( s );
+        }
+        //////
+        final Map<String, PhylogenyNode> speciestree_ext_nodes = new HashMap<String, PhylogenyNode>();
+        final TaxonomyComparisonBase tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
+        if ( _strip_gene_tree ) {
+            stripGeneTree( speciestree_ext_nodes );
+            if ( ( _gene_tree == null ) || ( _gene_tree.getNumberOfExternalNodes() < 2 ) ) {
+                throw new IllegalArgumentException( "species tree does not contain any"
+                        + " nodes matching species in the gene tree" );
+            }
+        }
+        // Put references to all external nodes of the species tree into a map.
+        // Stringyfied taxonomy is the key, node is the value.
+        for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode s = iter.next();
+            final String tax_str = taxonomyToString( s, tax_comp_base );
+            if ( speciestree_ext_nodes.containsKey( tax_str ) ) {
+                throw new IllegalArgumentException( "taxonomy [" + s + "] is not unique in species phylogeny" );
+            }
+            speciestree_ext_nodes.put( tax_str, s );
+        }
+        // Retrieve the reference to the node with a matching stringyfied taxonomy.
+        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode g = iter.next();
+            final String tax_str = taxonomyToString( g, tax_comp_base );
+            final PhylogenyNode s = speciestree_ext_nodes.get( tax_str );
+            if ( s == null ) {
+                throw new IllegalArgumentException( "taxonomy [" + g.getNodeData().getTaxonomy()
+                        + "] not present in species tree" );
+            }
+            g.setLink( s );
+        }
+    }
+
     final private HashMap<Taxonomy, PhylogenyNode> createTaxonomyToNodeMap() {
         final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
@@ -303,25 +359,64 @@ public final class GSDI extends SDI {
     }
 
     private final void stripGeneTree( final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes ) {
-      //  final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
-        
+        //  final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode g = iter.next();
             if ( !g.getNodeData().isHasTaxonomy() ) {
                 throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
             }
-            final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
-            if ( s == null ) {
+            if ( !speciestree_ext_nodes.containsKey( g.getNodeData().getTaxonomy() ) ) {
                 _stripped_gene_tree_nodes.add( g );
             }
         }
-        for( final PhylogenyNode n :  _stripped_gene_tree_nodes ) {
+        for( final PhylogenyNode n : _stripped_gene_tree_nodes ) {
             _gene_tree.deleteSubtree( n, true );
-            
         }
-        
     }
-    
+
+    public static TaxonomyComparisonBase determineTaxonomyComparisonBase( final Phylogeny gene_tree ) {
+        int with_id_count = 0;
+        int with_code_count = 0;
+        int with_sn_count = 0;
+        int max = 0;
+        for( final PhylogenyNodeIterator iter = gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode g = iter.next();
+            if ( g.getNodeData().isHasTaxonomy() ) {
+                final Taxonomy tax = g.getNodeData().getTaxonomy();
+                if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() ) ) {
+                    if ( ++with_id_count > max ) {
+                        max = with_id_count;
+                    }
+                }
+                if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                    if ( ++with_code_count > max ) {
+                        max = with_code_count;
+                    }
+                }
+                if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+                    if ( ++with_sn_count > max ) {
+                        max = with_sn_count;
+                    }
+                }
+            }
+        }
+        if ( max == 0 ) {
+            throw new IllegalArgumentException( "gene tree has no taxonomic data" );
+        }
+        else if ( max == 1 ) {
+            throw new IllegalArgumentException( "gene tree has only one node with taxonomic data" );
+        }
+        else if ( max == with_sn_count ) {
+            return SDI.TaxonomyComparisonBase.SCIENTIFIC_NAME;
+        }
+        else if ( max == with_id_count ) {
+            return SDI.TaxonomyComparisonBase.ID;
+        }
+        else {
+            return SDI.TaxonomyComparisonBase.CODE;
+        }
+    }
+
     public Set<PhylogenyNode> getStrippedExternalGeneTreeNodes() {
         return _stripped_gene_tree_nodes;
     }

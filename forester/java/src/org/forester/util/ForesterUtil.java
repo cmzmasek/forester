@@ -95,9 +95,9 @@ public final class ForesterUtil {
             sb.append( separator );
         }
     }
-    
+
     final public static String getForesterLibraryInformation() {
-        return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE  + ")";
+        return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE + ")";
     }
 
     public static boolean seqIsLikelyToBeAa( final String s ) {
