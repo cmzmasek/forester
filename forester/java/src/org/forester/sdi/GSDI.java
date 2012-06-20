@@ -339,39 +339,43 @@ public final class GSDI extends SDI {
                     continue;
                 }
                 else {
-                    throw new IllegalArgumentException( "gene tree node [" + g + "] has no taxonomic data" );
-                }
-            }
-            final String tax_str = taxonomyToString( g, tax_comp_base );
-            if ( ForesterUtil.isEmpty( tax_str ) ) {
-                if ( _strip_gene_tree ) {
-                    _stripped_gene_tree_nodes.add( g );
-                    continue;
-                }
-                else {
-                    throw new IllegalArgumentException( "gene tree node [" + g + "] has no appropriate taxonomic data" );
-                }
-            }
-            final PhylogenyNode s = speciestree_ext_nodes.get( tax_str );
-            if ( s == null ) {
-                if ( _strip_gene_tree ) {
-                    _stripped_gene_tree_nodes.add( g );
-                }
-                else {
-                    throw new IllegalArgumentException( "taxonomy [" + g.getNodeData().getTaxonomy()
-                            + "] not present in species tree" );
+                    throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
                 }
             }
             else {
-                g.setLink( s );
-                System.out.println( "setting link of " + g + " to " + s );
-            }
-            if ( _strip_gene_tree ) {
-                for( final PhylogenyNode n : _stripped_gene_tree_nodes ) {
-                    if ( _gene_tree.getNode( n.getId() ) != null ) {
-                        _gene_tree.deleteSubtree( _gene_tree.getNode( n.getId() ), true );
+                final String tax_str = taxonomyToString( g, tax_comp_base );
+                if ( ForesterUtil.isEmpty( tax_str ) ) {
+                    if ( _strip_gene_tree ) {
+                        _stripped_gene_tree_nodes.add( g );
+                    }
+                    else {
+                        throw new IllegalArgumentException( "gene tree node " + g
+                                + " has no appropriate taxonomic data" );
                     }
                 }
+                else {
+                    final PhylogenyNode s = speciestree_ext_nodes.get( tax_str );
+                    // if ( s == null ) {
+                    //     if ( _strip_gene_tree ) {
+                    //        _stripped_gene_tree_nodes.add( g );
+                    //    }
+                    //     else {
+                    //         throw new IllegalArgumentException( "taxonomy " + g.getNodeData().getTaxonomy()
+                    //                 + " not present in species tree" );
+                    //     }
+                    // }
+                    //  else {
+                    g.setLink( s );
+                    System.out.println( "setting link of " + g + " to " + s );
+                    //  }
+                }
+            }
+        } // for loop
+        if ( _strip_gene_tree ) {
+            for( final PhylogenyNode n : _stripped_gene_tree_nodes ) {
+                //  if ( _gene_tree.getNode( n.getId() ) != null ) {
+                _gene_tree.deleteSubtree( n, true );
+                //  }
             }
         }
     }
