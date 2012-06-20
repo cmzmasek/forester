@@ -287,6 +287,7 @@ public final class gsdi {
             }
         }
         catch ( final Exception e ) {
+            e.printStackTrace();
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
         }
         System.out.println();
