@@ -70,6 +70,14 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
     }
 
+    public void reset() {
+        _parent = null;
+        _link = null;
+        _descendants = null;
+        _node_data = null;
+        _branch_data = null;
+    }
+
     /**
      * Adds PhylogenyNode n to the list of child nodes and sets the _parent of n
      * to this.
