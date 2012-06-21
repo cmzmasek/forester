@@ -45,7 +45,7 @@ public class RIOn {
     GeneralTable<String, Integer> _super_orthologs                = null;
     GeneralTable<String, Integer> _ultra_paralogs                 = null;
 
-    private void doInferOrthologs( final Phylogeny gene_tree, final Phylogeny species_tree ) {
+    private void doInferOrthologs( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SdiException {
         final SDIR sdiunrooted = new SDIR();
         final Phylogeny assigned_tree = sdiunrooted.infer( gene_tree,
                                                            species_tree,

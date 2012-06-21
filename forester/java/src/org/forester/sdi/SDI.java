@@ -214,8 +214,9 @@ public abstract class SDI {
      * links (sets the field "link" of PhylogenyNode) each external
      * PhylogenyNode of gene_tree to the external PhylogenyNode of species_tree
      * which has the same species name.
+     * @throws SdiException 
      */
-    void linkNodesOfG() {
+    void linkNodesOfG() throws SdiException {
         final Map<String, PhylogenyNode> speciestree_ext_nodes = new HashMap<String, PhylogenyNode>();
         final TaxonomyComparisonBase tax_comp_base = determineTaxonomyComparisonBase();
         // Put references to all external nodes of the species tree into a map.

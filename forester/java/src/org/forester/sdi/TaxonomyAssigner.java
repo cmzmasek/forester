@@ -32,7 +32,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 public class TaxonomyAssigner extends SDI {
 
-    public TaxonomyAssigner( final Phylogeny gene_tree, final Phylogeny species_tree ) {
+    public TaxonomyAssigner( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SdiException {
         super( gene_tree, species_tree );
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
@@ -65,7 +65,7 @@ public class TaxonomyAssigner extends SDI {
         }
     }
 
-    public static void execute( final Phylogeny gene_tree, final Phylogeny species_tree ) {
+    public static void execute( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SdiException {
         new TaxonomyAssigner( gene_tree, species_tree );
     }
 }

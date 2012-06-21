@@ -45,6 +45,7 @@ import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.sdi.DistanceCalculator;
 import org.forester.sdi.RIO;
 import org.forester.sdi.SDIR;
+import org.forester.sdi.SdiException;
 import org.forester.util.ForesterUtil;
 
 public class rio {
@@ -145,7 +146,7 @@ public class rio {
                                                     final int warn_no_orthos,
                                                     final double warn_one_ortho,
                                                     final int bootstraps,
-                                                    final double t_orthologs_dc ) throws IOException {
+                                                    final double t_orthologs_dc ) throws IOException, SdiException {
         Phylogeny consensus_tree = null;
         Phylogeny
         // to be a consensus tree.

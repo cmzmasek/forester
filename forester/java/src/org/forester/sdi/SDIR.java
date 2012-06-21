@@ -212,6 +212,7 @@ public class SDIR {
      *            Array) must be no lower than 1
      * @return array of rooted Trees with duplication vs. speciation assigned if
      *         return_trees is set to true, null otherwise
+     * @throws SdiException 
      */
     public Phylogeny[] infer( final Phylogeny gene_tree,
                               final Phylogeny species_tree,
@@ -219,7 +220,7 @@ public class SDIR {
                               boolean minimize_sum_of_dup,
                               final boolean minimize_height,
                               final boolean return_trees,
-                              int max_trees_to_return ) {
+                              int max_trees_to_return ) throws SdiException {
         init();
         SDIse sdise = null;
         final ArrayList<Phylogeny> trees = new ArrayList<Phylogeny>();

@@ -953,8 +953,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
-        _tools_menu
-                .add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
+        _tools_menu.add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
         customizeJMenuItem( _obtain_uniprot_seq_information_jmi );
         _obtain_uniprot_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu.addSeparator();
@@ -1212,7 +1211,7 @@ public final class MainFrameApplication extends MainFrame {
         GSDI gsdi = null;
         int duplications = -1;
         try {
-            gsdi = new GSDI( gene_tree, _species_tree.copy(), true, true );
+            gsdi = new GSDI( gene_tree, _species_tree.copy(), true, true, false );
             duplications = gsdi.getDuplicationsSum();
         }
         catch ( final Exception e ) {
@@ -1517,8 +1516,10 @@ public final class MainFrameApplication extends MainFrame {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
                 final TaxonomyDataManager t = new TaxonomyDataManager( this,
-                                                                         _mainpanel.getCurrentTreePanel(),
-                                                                         phy.copy(), false,true );
+                                                                       _mainpanel.getCurrentTreePanel(),
+                                                                       phy.copy(),
+                                                                       false,
+                                                                       true );
                 new Thread( t ).start();
             }
         }
@@ -1529,9 +1530,10 @@ public final class MainFrameApplication extends MainFrame {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
                 final TaxonomyDataManager t = new TaxonomyDataManager( this,
-                                                                         _mainpanel.getCurrentTreePanel(),
-                                                                         phy.copy(),
-                                                                         true,true );
+                                                                       _mainpanel.getCurrentTreePanel(),
+                                                                       phy.copy(),
+                                                                       true,
+                                                                       true );
                 new Thread( t ).start();
             }
         }
@@ -2714,7 +2716,7 @@ class NHFilter extends FileFilter {
         final String file_name = f.getName().trim().toLowerCase();
         return file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
                 || file_name.endsWith( ".tr" ) || file_name.endsWith( ".tree" ) || file_name.endsWith( ".dnd" )
-                || file_name.endsWith( ".ph" )  || file_name.endsWith( ".phb" ) || file_name.endsWith( ".nwk" )
+                || file_name.endsWith( ".ph" ) || file_name.endsWith( ".phb" ) || file_name.endsWith( ".nwk" )
                 || f.isDirectory();
     }
 

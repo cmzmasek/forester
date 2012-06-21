@@ -40,13 +40,16 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDI.TaxonomyComparisonBase;
 import org.forester.sdi.SDIse;
+import org.forester.sdi.SdiException;
 import org.forester.util.CommandLineArguments;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public final class gsdi {
@@ -119,12 +122,12 @@ public final class gsdi {
 
     private static void execute( final CommandLineArguments cla ) throws IOException {
         BASE_ALGORITHM base_algorithm = BASE_ALGORITHM.GSDI;
-        boolean strip = false;
+        boolean strip_species_tree = false;
         boolean most_parsimonous_duplication_model = false;
         boolean species_tree_in_phyloxml = true;
         boolean allow_stripping_of_gene_tree = false;
         if ( cla.isOptionSet( gsdi.STRIP_OPTION ) ) {
-            strip = true;
+            strip_species_tree = true;
         }
         if ( cla.isOptionSet( gsdi.SDI_OPTION ) ) {
             base_algorithm = BASE_ALGORITHM.SDI;
@@ -229,12 +232,17 @@ public final class gsdi {
         gene_tree.setRooted( true );
         species_tree.setRooted( true );
         if ( !gene_tree.isCompletelyBinary() ) {
-            ForesterUtil.fatalError( gsdi.PRG_NAME, "gene tree (\"" + gene_tree_file + "\") is not completely binary" );
+            log_writer.write( "User Error: gene tree is not completely binary" );
+            log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            log_writer.close();
+            ForesterUtil.fatalError( gsdi.PRG_NAME, "gene tree is not completely binary" );
         }
         if ( base_algorithm != BASE_ALGORITHM.GSDI ) {
             if ( !species_tree.isCompletelyBinary() ) {
-                ForesterUtil.fatalError( gsdi.PRG_NAME, "species tree (\"" + species_tree_file
-                        + "\") is not completely binary, use GSDI instead" );
+                log_writer.write( "User Error: species tree is not completely binary, use GSDI instead" );
+                log_writer.write( ForesterUtil.LINE_SEPARATOR );
+                log_writer.close();
+                ForesterUtil.fatalError( gsdi.PRG_NAME, "species tree is not completely binary, use GSDI instead" );
             }
         }
         // For timing.
@@ -249,18 +257,30 @@ public final class gsdi {
         // Helper.randomizeSpecies( 1, 8192, gene_tree );
         // Helper.intervalNumberSpecies( gene_tree, 4096 );
         // Helper.numberSpeciesInDescOrder( gene_tree );
-        log_writer.write( PRG_NAME + " " + PRG_VERSION + " " + PRG_DATE );
+        log_writer.write( PRG_NAME + " - " + PRG_DESC );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
-        log_writer.write( PRG_DESC );
+        log_writer.write( "  version         : " + PRG_VERSION );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
-        log_writer.write( PRG_DESC );
+        log_writer.write( "  date            : " + PRG_DATE );
+        log_writer.write( ForesterUtil.LINE_SEPARATOR );
+        log_writer.write( "  forester version: " + ForesterConstants.FORESTER_VERSION );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
-        log_writer.write( new SimpleDateFormat( "yyyyMMdd HH:mm:ss" ).format( new Date() ) );
+        log_writer.write( "Start time: " + new SimpleDateFormat( "yyyyMMdd HH:mm:ss" ).format( new Date() ) );
+        log_writer.write( ForesterUtil.LINE_SEPARATOR );
+        log_writer.write( "Gene tree file: " + gene_tree_file.getCanonicalPath() );
+        log_writer.write( ForesterUtil.LINE_SEPARATOR );
+        log_writer.write( "Gene tree name: "
+                + ( ForesterUtil.isEmpty( gene_tree.getName() ) ? "" : gene_tree.getName() ) );
+        log_writer.write( ForesterUtil.LINE_SEPARATOR );
+        log_writer.write( "Species tree file: " + species_tree_file.getCanonicalPath() );
+        log_writer.write( ForesterUtil.LINE_SEPARATOR );
+        log_writer.write( "Species tree name: "
+                + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
         System.out.println();
-        System.out.println( "Strip species tree: " + strip );
-        log_writer.write( "Strip species tree: " + strip );
+        System.out.println( "Strip species tree: " + strip_species_tree );
+        log_writer.write( "Strip species tree: " + strip_species_tree );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
         SDI sdi = null;
         final long start_time = new Date().getTime();
@@ -273,22 +293,40 @@ public final class gsdi {
                 log_writer.write( ForesterUtil.LINE_SEPARATOR );
                 log_writer.write( "Allow stripping of gene tree nodes    : " + allow_stripping_of_gene_tree );
                 log_writer.write( ForesterUtil.LINE_SEPARATOR );
+                log_writer.flush();
                 sdi = new GSDI( gene_tree,
                                 species_tree,
                                 most_parsimonous_duplication_model,
-                                allow_stripping_of_gene_tree );
+                                allow_stripping_of_gene_tree,
+                                strip_species_tree );
             }
             else {
                 System.out.println();
                 System.out.println( "Using SDIse algorithm" );
                 log_writer.write( "Using SDIse algorithm" );
                 log_writer.write( ForesterUtil.LINE_SEPARATOR );
+                log_writer.flush();
                 sdi = new SDIse( gene_tree, species_tree );
             }
         }
-        catch ( final Exception e ) {
-            e.printStackTrace();
+        catch ( final SdiException e ) {
+            log_writer.write( "User Error: " + e.getLocalizedMessage() );
+            log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            log_writer.close();
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+        }
+        catch ( final IOException e ) {
+            log_writer.write( "Error: " + e );
+            log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            log_writer.close();
+            ForesterUtil.fatalError( PRG_NAME, e.toString() );
+        }
+        catch ( final Exception e ) {
+            log_writer.write( "Error: " + e );
+            log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            log_writer.close();
+            e.printStackTrace();
+            System.exit( -1 );
         }
         System.out.println();
         System.out.println( "Running time (excluding I/O): " + ( new Date().getTime() - start_time ) + "ms" );
@@ -315,19 +353,24 @@ public final class gsdi {
         System.out.println( "Number of duplications          : " + sdi.getDuplicationsSum() );
         log_writer.write( "Number of duplications          : " + sdi.getDuplicationsSum() );
         log_writer.write( ForesterUtil.LINE_SEPARATOR );
-        if ( ( base_algorithm == BASE_ALGORITHM.GSDI ) && !most_parsimonous_duplication_model ) {
-            final int duplications = ( ( GSDI ) sdi ).getSpeciationOrDuplicationEventsSum();
-            System.out.println( "Number of potential duplications: " + duplications );
-            log_writer.write( "Number of potential duplications: " + duplications );
-            log_writer.write( ForesterUtil.LINE_SEPARATOR );
-        }
-        if ( base_algorithm == BASE_ALGORITHM.GSDI ) {
-            final int spec = ( ( GSDI ) sdi ).getSpeciationsSum();
+        if ( ( base_algorithm == BASE_ALGORITHM.GSDI ) ) {
+            final GSDI gsdi = ( GSDI ) sdi;
+            if ( !most_parsimonous_duplication_model ) {
+                final int duplications = gsdi.getSpeciationOrDuplicationEventsSum();
+                System.out.println( "Number of potential duplications: " + duplications );
+                log_writer.write( "Number of potential duplications: " + duplications );
+                log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            }
+            final int spec = gsdi.getSpeciationsSum();
             System.out.println( "Number of speciations            : " + spec );
             log_writer.write( "Number of speciations            : " + spec );
             log_writer.write( ForesterUtil.LINE_SEPARATOR );
+            for( PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
+                System.out.println( n.toString() );
+            }
         }
         System.out.println();
+        log_writer.close();
         //  some stat on gene tree:
         //      filename, name
         //      number of external nodes, strppided nodes

@@ -79,8 +79,9 @@ public class SDIse extends SDI {
      *            reference to a rooted binary species Phylogeny which might get
      *            stripped in the process, must have species names in the
      *            species name fields for all external nodes
+     * @throws SdiException 
      */
-    public SDIse( final Phylogeny gene_tree, final Phylogeny species_tree ) {
+    public SDIse( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SdiException {
         super( gene_tree, species_tree );
         _duplications_sum = 0;
         getSpeciesTree().preOrderReId();
