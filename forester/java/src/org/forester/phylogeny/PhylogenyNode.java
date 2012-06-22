@@ -103,6 +103,7 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
     }
 
     @Override
+    // this is poor, as it only compares on names!
     final public int compareTo( final PhylogenyNode o ) {
         final PhylogenyNode n = o;
         if ( ( getName() == null ) || ( n.getName() == null ) ) {
@@ -171,7 +172,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * 
      */
     final public boolean equals( final Object o ) {
-        System.out.print( " PN___e___ " );
         if ( this == o ) {
             return true;
         }
@@ -576,7 +576,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
 
     @Override
     final public int hashCode() {
-        System.out.print( " PNh " );
         final NodeData data = getNodeData();
         if ( ( getName().length() < 1 ) && !data.isHasSequence() && !data.isHasTaxonomy() ) {
             return super.hashCode();

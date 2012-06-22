@@ -27,10 +27,10 @@ package org.forester.sdi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -71,7 +71,7 @@ public final class GSDI extends SDI {
     private int                                   _speciations_sum;
     private final List<PhylogenyNode>             _stripped_gene_tree_nodes;
     private final List<PhylogenyNode>             _stripped_species_tree_nodes;
-    private final SortedSet<PhylogenyNode>        _mapped_species_tree_nodes;
+    private final Set<PhylogenyNode>              _mapped_species_tree_nodes;
 
     /**
      * Constructor which sets the gene tree and the species tree to be compared.
@@ -115,7 +115,7 @@ public final class GSDI extends SDI {
         _strip_species_tree = strip_species_tree;
         _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
-        _mapped_species_tree_nodes = new TreeSet<PhylogenyNode>();
+        _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
@@ -382,7 +382,7 @@ public final class GSDI extends SDI {
         }
     }
 
-    public SortedSet<PhylogenyNode> getMappedExternalSpeciesTreeNodes() {
+    public Set<PhylogenyNode> getMappedExternalSpeciesTreeNodes() {
         return _mapped_species_tree_nodes;
     }
 
