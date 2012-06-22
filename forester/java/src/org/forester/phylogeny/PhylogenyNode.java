@@ -70,12 +70,10 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
     }
 
-    public void reset() {
+    public void removeConnections() {
         _parent = null;
         _link = null;
         _descendants = null;
-        _node_data = null;
-        _branch_data = null;
     }
 
     /**
@@ -173,6 +171,7 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * 
      */
     final public boolean equals( final Object o ) {
+        System.out.print( " PN___e___ " );
         if ( this == o ) {
             return true;
         }
@@ -195,11 +194,11 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
                 return ( this_data.getTaxonomy().isEqual( other_data.getTaxonomy() ) && this_data.getSequence()
                         .isEqual( other_data.getSequence() ) );
             }
-            else if ( this_data.isHasSequence() && other_data.isHasSequence() ) {
-                return ( this_data.getSequence().isEqual( other_data.getSequence() ) );
-            }
             else if ( this_data.isHasTaxonomy() && other_data.isHasTaxonomy() ) {
                 return ( this_data.getTaxonomy().isEqual( other_data.getTaxonomy() ) );
+            }
+            else if ( this_data.isHasSequence() && other_data.isHasSequence() ) {
+                return ( this_data.getSequence().isEqual( other_data.getSequence() ) );
             }
             else if ( getName().length() > 0 ) {
                 // Node name is not empty, and equal.
@@ -577,6 +576,7 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
 
     @Override
     final public int hashCode() {
+        System.out.print( " PNh " );
         final NodeData data = getNodeData();
         if ( ( getName().length() < 1 ) && !data.isHasSequence() && !data.isHasTaxonomy() ) {
             return super.hashCode();

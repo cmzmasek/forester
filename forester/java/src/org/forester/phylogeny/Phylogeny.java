@@ -268,7 +268,7 @@ public class Phylogeny {
                 }
             }
         }
-        remove_us.reset();
+        remove_us.removeConnections();
         setIdHash( null );
         externalNodesHaveChanged();
     }

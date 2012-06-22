@@ -27,10 +27,8 @@ package org.forester.sdi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -304,7 +302,7 @@ public final class GSDI extends SDI {
     //    }
     final void linkNodesOfG() throws SdiException {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
-        final Set<PhylogenyNode> species_tree_ext_nodes = new HashSet<PhylogenyNode>();
+        final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
         final TaxonomyComparisonBase tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
         System.out.println( "comp base is: " + tax_comp_base );
         // Stringyfied taxonomy is the key, node is the value.
@@ -365,10 +363,21 @@ public final class GSDI extends SDI {
             }
         }
         if ( _strip_species_tree ) {
+            for( PhylogenyNode x : _mapped_species_tree_nodes ) {
+                System.out.println( ">>" + x );
+            }
             for( final PhylogenyNode s : species_tree_ext_nodes ) {
+                System.out.print( ">>>>>>>>>" + s );
                 if ( !_mapped_species_tree_nodes.contains( s ) ) {
                     _species_tree.deleteSubtree( s, true );
+                    System.out.println( " DELETING" );
                 }
+                else {
+                    System.out.println();
+                }
+            }
+            for( PhylogenyNode x : _mapped_species_tree_nodes ) {
+                System.out.println( ">>" + x );
             }
         }
     }

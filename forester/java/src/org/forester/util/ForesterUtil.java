@@ -304,6 +304,14 @@ public final class ForesterUtil {
         return new BufferedWriter( new FileWriter( file ) );
     }
 
+    final public static EasyWriter createEasyWriter( final File file ) throws IOException {
+        return new EasyWriter( createBufferedWriter( file ) );
+    }
+
+    final public static BufferedWriter createEasyWriter( final String name ) throws IOException {
+        return createEasyWriter( createFileForWriting( name ) );
+    }
+
     final public static BufferedWriter createBufferedWriter( final String name ) throws IOException {
         return new BufferedWriter( new FileWriter( createFileForWriting( name ) ) );
     }
