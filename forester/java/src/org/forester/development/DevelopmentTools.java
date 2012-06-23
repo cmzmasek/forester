@@ -27,6 +27,7 @@ package org.forester.development;
 
 import java.util.Random;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -133,7 +134,12 @@ public final class DevelopmentTools {
         PhylogenyNode n = t.getFirstExternalNode();
         int j = t.getRoot().getNumberOfExternalNodes();
         while ( n != null ) {
-            PhylogenyMethods.setTaxonomyCode( n, j + "" );
+            try {
+                PhylogenyMethods.setTaxonomyCode( n, j + "" );
+            }
+            catch ( final PhyloXmlDataFormatException e ) {
+                e.printStackTrace();
+            }
             j--;
             n = n.getNextExternalNode();
         }
@@ -177,7 +183,12 @@ public final class DevelopmentTools {
         PhylogenyNode n = t.getFirstExternalNode();
         while ( n != null ) {
             final String code = ( ( Math.abs( r.nextInt() ) % ( ma - mi + 1 ) ) + mi ) + "";
-            PhylogenyMethods.setTaxonomyCode( n, code );
+            try {
+                PhylogenyMethods.setTaxonomyCode( n, code );
+            }
+            catch ( final PhyloXmlDataFormatException e ) {
+                e.printStackTrace();
+            }
             n = n.getNextExternalNode();
         }
     }

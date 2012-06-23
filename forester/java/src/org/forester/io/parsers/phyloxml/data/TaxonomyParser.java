@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.data.Uri;
@@ -48,7 +48,7 @@ public class TaxonomyParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public Taxonomy parse( final XmlElement element ) throws PhylogenyParserException {
+    public Taxonomy parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final Taxonomy taxonomy = new Taxonomy();
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );

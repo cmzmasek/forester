@@ -4546,11 +4546,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( getMainPanel().getOptions().isAntialiasScreen() ) {
-            if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR 
-            && !getMainPanel().getOptions().isShowDefaultNodeShapes()       
-            && ( getControlPanel() != null && !getControlPanel().isShowDomainArchitectures() )
-            
-            ) {
+            if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
+                    && !getMainPanel().getOptions().isShowDefaultNodeShapes()
+                    && ( ( getControlPanel() != null ) && !getControlPanel().isShowDomainArchitectures() ) ) {
                 _rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
             }
             else {

@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.io.parsers.nhx.NHXFormatException;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -76,7 +77,7 @@ public final class PhylogenyDecorator {
                                  final Map<String, Map<String, String>> map,
                                  final boolean picky,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map )
-            throws IllegalArgumentException {
+            throws IllegalArgumentException, PhyloXmlDataFormatException {
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final String name = node.getName();
@@ -175,6 +176,7 @@ public final class PhylogenyDecorator {
      * @param picky
      * @throws IllegalArgumentException
      * @throws NHXFormatException
+     * @throws PhyloXmlDataFormatException 
      */
     public static void decorate( final Phylogeny phylogeny,
                                  final Map<String, String> map,
@@ -186,7 +188,7 @@ public final class PhylogenyDecorator {
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
                                  final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException {
+            NHXFormatException, PhyloXmlDataFormatException {
         PhylogenyDecorator.decorate( phylogeny,
                                      map,
                                      field,
@@ -213,6 +215,7 @@ public final class PhylogenyDecorator {
      * @param intermediate_map
      *            maps name (in phylogeny) to a intermediate value
      * @throws IllegalArgumentException
+     * @throws PhyloXmlDataFormatException 
      */
     public static void decorate( final Phylogeny phylogeny,
                                  final Map<String, String> map,
@@ -224,7 +227,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException {
+                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
+            PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "Attempt to extract bracketed scientific name together with data field pointing to scientific name" );
         }
@@ -343,7 +347,7 @@ public final class PhylogenyDecorator {
                                  final Map<String, Map<String, String>> map,
                                  final boolean picky,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map )
-            throws IllegalArgumentException, NHXFormatException {
+            throws IllegalArgumentException, NHXFormatException, PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
             PhylogenyDecorator.decorate( phylogenies[ i ],
                                          map,
@@ -362,7 +366,7 @@ public final class PhylogenyDecorator {
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
                                  final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException {
+            NHXFormatException, PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
             PhylogenyDecorator.decorate( phylogenies[ i ],
                                          map,
@@ -388,7 +392,7 @@ public final class PhylogenyDecorator {
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
                                  final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException {
+            NHXFormatException, PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
             PhylogenyDecorator.decorate( phylogenies[ i ],
                                          map,

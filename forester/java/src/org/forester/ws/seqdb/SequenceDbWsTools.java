@@ -47,12 +47,11 @@ public final class SequenceDbWsTools {
     public enum Db {
         UNKNOWN, UNIPROT;
     }
-    public final static String   BASE_UNIPROT_URL          = "http://www.uniprot.org/";
-    public final static String   BASE_EMBL_DB_URL  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
-    public final static String   EMBL_DBS_EMBL     = "embl";
-    public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
-    public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
-    
+    public final static String   BASE_UNIPROT_URL   = "http://www.uniprot.org/";
+    public final static String   BASE_EMBL_DB_URL   = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
+    public final static String   EMBL_DBS_EMBL      = "embl";
+    public final static String   EMBL_DBS_REFSEQ_P  = "refseqp";
+    public final static String   EMBL_DBS_REFSEQ_N  = "refseqn";
     private final static String  URL_ENC            = "UTF-8";
     // uniprot/expasy accession number format (6 chars):
     // letter digit letter-or-digit letter-or-digit letter-or-digit digit
@@ -328,25 +327,20 @@ public final class SequenceDbWsTools {
     }
 
     public static List<String> queryEmblDb( final Identifier id, final int max_lines_to_return ) throws IOException {
-        
-        StringBuilder url_sb = new StringBuilder();
+        final StringBuilder url_sb = new StringBuilder();
         url_sb.append( BASE_EMBL_DB_URL );
-        
-        if ( ForesterUtil.isEmpty(  id.getProvider() ) ||  id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
-           
+        if ( ForesterUtil.isEmpty( id.getProvider() ) || id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
             url_sb.append( SequenceDbWsTools.EMBL_DBS_EMBL );
-            url_sb.append( '/');
+            url_sb.append( '/' );
         }
         else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
             if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
-              
                 url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
-                url_sb.append( '/');
+                url_sb.append( '/' );
             }
             else {
-               
                 url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
-                url_sb.append( '/');
+                url_sb.append( '/' );
             }
         }
         return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
@@ -399,7 +393,7 @@ public final class SequenceDbWsTools {
 
     public static SequenceDatabaseEntry obtainEmblEntry( final Identifier id, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( id , max_lines_to_return );
+        final List<String> lines = queryEmblDb( id, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 }

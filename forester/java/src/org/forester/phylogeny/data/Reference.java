@@ -87,7 +87,7 @@ public class Reference implements PhylogenyData {
                 && ( ( Reference ) data ).getDoi().equals( getDoi() );
     }
 
-    public void setDoi( final String doi ) {
+    public void setDoi( final String doi ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( doi ) && !PhyloXmlUtil.LIT_REF_DOI_PATTERN.matcher( doi ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal doi: [" + doi + "]" );
         }

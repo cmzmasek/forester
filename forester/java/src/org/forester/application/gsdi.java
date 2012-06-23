@@ -205,15 +205,18 @@ public final class gsdi {
                     case SCIENTIFIC_NAME:
                         PhylogenyMethods
                                 .transferNodeNameToField( species_tree,
-                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1 );
+                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1,
+                                                          true );
                         break;
                     case CODE:
                         PhylogenyMethods.transferNodeNameToField( species_tree,
-                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE );
+                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE,
+                                                                  true );
                         break;
                     case ID:
                         PhylogenyMethods.transferNodeNameToField( species_tree,
-                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID );
+                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID,
+                                                                  true );
                         break;
                     default:
                         ForesterUtil.fatalError( gsdi.PRG_NAME, "unable to determine comparison base" );
@@ -325,7 +328,7 @@ public final class gsdi {
         log_writer.println( "Number of duplications          : " + sdi.getDuplicationsSum() );
         if ( ( base_algorithm == BASE_ALGORITHM.GSDI ) ) {
             final GSDI gsdi = ( GSDI ) sdi;
-            File species_tree_used_file = new File( out_file + SUFFIX_FOR_SPECIES_TREE_USED );
+            final File species_tree_used_file = new File( out_file + SUFFIX_FOR_SPECIES_TREE_USED );
             try {
                 final PhylogenyWriter writer = new PhylogenyWriter();
                 writer.toPhyloXML( species_tree_used_file, gsdi.getSpeciesTree(), 0 );
@@ -346,7 +349,7 @@ public final class gsdi {
             final int spec = gsdi.getSpeciationsSum();
             System.out.println( "Number of speciations            : " + spec );
             log_writer.println( "Number of speciations            : " + spec );
-            for( PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
+            for( final PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
                 System.out.println( n.toString() );
             }
         }

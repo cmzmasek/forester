@@ -363,7 +363,7 @@ public final class GSDI extends SDI {
             }
         }
         if ( _strip_species_tree ) {
-            for( PhylogenyNode x : _mapped_species_tree_nodes ) {
+            for( final PhylogenyNode x : _mapped_species_tree_nodes ) {
                 System.out.println( ">>" + x );
             }
             for( final PhylogenyNode s : species_tree_ext_nodes ) {
@@ -376,7 +376,7 @@ public final class GSDI extends SDI {
                     System.out.println();
                 }
             }
-            for( PhylogenyNode x : _mapped_species_tree_nodes ) {
+            for( final PhylogenyNode x : _mapped_species_tree_nodes ) {
                 System.out.println( ">>" + x );
             }
         }

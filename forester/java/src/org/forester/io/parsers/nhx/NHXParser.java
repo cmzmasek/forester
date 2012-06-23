@@ -39,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
@@ -118,8 +119,9 @@ public final class NHXParser implements PhylogenyParser {
      * 
      * @throws PhylogenyParserException
      * @throws NHXFormatException
+     * @throws PhyloXmlDataFormatException 
      */
-    private void finishPhylogeny() throws PhylogenyParserException, NHXFormatException {
+    private void finishPhylogeny() throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         setCladeLevel( 0 );
         if ( getCurrentPhylogeny() != null ) {
             parseNHX( getCurrentAnotation().toString(),
@@ -142,7 +144,8 @@ public final class NHXParser implements PhylogenyParser {
         }
     }
 
-    private void finishSingleNodePhylogeny() throws PhylogenyParserException, NHXFormatException {
+    private void finishSingleNodePhylogeny() throws PhylogenyParserException, NHXFormatException,
+            PhyloXmlDataFormatException {
         setCladeLevel( 0 );
         final PhylogenyNode new_node = new PhylogenyNode();
         parseNHX( getCurrentAnotation().toString(), new_node, getTaxonomyExtraction(), isReplaceUnderscores() );
@@ -408,8 +411,9 @@ public final class NHXParser implements PhylogenyParser {
      * 
      * @throws PhylogenyParserException
      * @throws NHXFormatException
+     * @throws PhyloXmlDataFormatException 
      */
-    private void processCloseParen() throws PhylogenyParserException, NHXFormatException {
+    private void processCloseParen() throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         decreaseCladeLevel();
         if ( !isSawClosingParen() ) {
             final PhylogenyNode new_node = new PhylogenyNode();
@@ -435,8 +439,9 @@ public final class NHXParser implements PhylogenyParser {
      * 
      * @throws PhylogenyParserException
      * @throws NHXFormatException
+     * @throws PhyloXmlDataFormatException 
      */
-    private void processComma() throws PhylogenyParserException, NHXFormatException {
+    private void processComma() throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         if ( !isSawClosingParen() ) {
             final PhylogenyNode new_node = new PhylogenyNode();
             parseNHX( getCurrentAnotation().toString(), new_node, getTaxonomyExtraction(), isReplaceUnderscores() );
@@ -460,8 +465,9 @@ public final class NHXParser implements PhylogenyParser {
      * 
      * @throws PhylogenyParserException
      * @throws NHXFormatException
+     * @throws PhyloXmlDataFormatException 
      */
-    private void processOpenParen() throws PhylogenyParserException, NHXFormatException {
+    private void processOpenParen() throws PhylogenyParserException, NHXFormatException, PhyloXmlDataFormatException {
         final PhylogenyNode new_node = new PhylogenyNode();
         if ( getCladeLevel() == 0 ) {
             if ( getCurrentPhylogeny() != null ) {
@@ -643,7 +649,8 @@ public final class NHXParser implements PhylogenyParser {
     public static void parseNHX( String s,
                                  final PhylogenyNode node_to_annotate,
                                  final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
-                                 final boolean replace_underscores ) throws NHXFormatException {
+                                 final boolean replace_underscores ) throws NHXFormatException,
+            PhyloXmlDataFormatException {
         if ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
         }

@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyData;
 
@@ -48,7 +48,7 @@ public class IdentifierParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         if ( element.isHasAttribute( PhyloXmlMapping.IDENTIFIER_PROVIDER_ATTR ) ) {
             return new Identifier( element.getValueAsString(),
                                    element.getAttribute( PhyloXmlMapping.IDENTIFIER_PROVIDER_ATTR ) );

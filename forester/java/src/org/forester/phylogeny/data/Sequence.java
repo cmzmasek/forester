@@ -114,7 +114,12 @@ public class Sequence implements PhylogenyData, MultipleUris {
         final Sequence seq = new Sequence();
         seq.setAnnotations( getAnnotations() );
         seq.setName( getName() );
-        seq.setSymbol( getSymbol() );
+        try {
+            seq.setSymbol( getSymbol() );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         seq.setMolecularSequence( getMolecularSequence() );
         seq.setMolecularSequenceAligned( isMolecularSequenceAligned() );
         seq.setLocation( getLocation() );
@@ -124,7 +129,12 @@ public class Sequence implements PhylogenyData, MultipleUris {
         else {
             seq.setAccession( null );
         }
-        seq.setType( getType() );
+        try {
+            seq.setType( getType() );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         if ( getUris() != null ) {
             seq.setUris( new ArrayList<Uri>() );
             for( final Uri uri : getUris() ) {
@@ -253,8 +263,18 @@ public class Sequence implements PhylogenyData, MultipleUris {
         setMolecularSequenceAligned( false );
         setLocation( "" );
         setAccession( null );
-        setSymbol( "" );
-        setType( "" );
+        try {
+            setSymbol( "" );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
+        try {
+            setType( "" );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         setDomainArchitecture( null );
         setUris( null );
         setSequenceRelations( null );
@@ -306,14 +326,14 @@ public class Sequence implements PhylogenyData, MultipleUris {
         _source_id = source_id;
     }
 
-    public void setSymbol( final String symbol ) {
+    public void setSymbol( final String symbol ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( symbol ) && !PhyloXmlUtil.SEQUENCE_SYMBOL_PATTERN.matcher( symbol ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal sequence symbol: [" + symbol + "]" );
         }
         _symbol = symbol;
     }
 
-    public void setType( final String type ) {
+    public void setType( final String type ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( type ) && !PhyloXmlUtil.SEQUENCE_TYPES.contains( type ) ) {
             throw new PhyloXmlDataFormatException( "illegal sequence type: [" + type + "]" );
         }

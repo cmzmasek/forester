@@ -142,7 +142,8 @@ public final class SequenceDataRetriver extends RunnableProcess {
         }
     }
 
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy, final boolean ext_nodes_only,
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
+                                                          final boolean ext_nodes_only,
                                                           final boolean allow_to_set_taxonomic_data )
             throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();

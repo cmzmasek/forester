@@ -30,7 +30,7 @@ public interface SequenceDatabaseEntry {
     public boolean isEmpty();
 
     public String getAccession();
-    
+
     public String getProvider();
 
     public String getSequenceName();

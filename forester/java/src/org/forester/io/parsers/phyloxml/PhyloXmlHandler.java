@@ -120,6 +120,9 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 catch ( final PhylogenyParserException ex ) {
                     throw new SAXException( ex.getMessage() );
                 }
+                catch ( final PhyloXmlDataFormatException e ) {
+                    throw new SAXException( e.getMessage() );
+                }
             }
             else if ( local_name.equals( PhyloXmlMapping.SEQUENCE_RELATION ) ) {
                 try {
@@ -173,7 +176,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
                         }
                     }
                 }
-                catch ( final PhylogenyParserException ex ) {
+                catch ( final PhyloXmlDataFormatException ex ) {
                     throw new SAXException( ex.getMessage() );
                 }
             }
@@ -181,8 +184,11 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 try {
                     PhyloXmlHandler.mapElementToPhylogeny( getCurrentXmlElement(), getCurrentPhylogeny() );
                 }
-                catch ( final PhylogenyParserException ex ) {
-                    throw new SAXException( ex.getMessage() );
+                catch ( final PhylogenyParserException e ) {
+                    throw new SAXException( e.getMessage() );
+                }
+                catch ( final PhyloXmlDataFormatException e ) {
+                    throw new SAXException( e.getMessage() );
                 }
                 finishPhylogeny();
                 reset();
@@ -245,7 +251,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
     }
 
     private void mapElementToPhylogenyNode( final XmlElement xml_element, final PhylogenyNode node )
-            throws PhylogenyParserException {
+            throws PhylogenyParserException, PhyloXmlDataFormatException {
         if ( xml_element.isHasAttribute( PhyloXmlMapping.BRANCH_LENGTH ) ) {
             double d = 0;
             try {
@@ -440,7 +446,7 @@ public final class PhyloXmlHandler extends DefaultHandler {
     }
 
     private static void mapElementToPhylogeny( final XmlElement xml_element, final Phylogeny phylogeny )
-            throws PhylogenyParserException {
+            throws PhylogenyParserException, PhyloXmlDataFormatException {
         for( int i = 0; i < xml_element.getNumberOfChildElements(); ++i ) {
             final XmlElement element = xml_element.getChildElement( i );
             final String qualified_name = element.getQualifiedName();

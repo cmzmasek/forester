@@ -62,7 +62,6 @@ import javax.swing.JApplet;
 import javax.swing.JOptionPane;
 import javax.swing.text.MaskFormatter;
 
-import org.forester.analysis.AncestralTaxonomyInference;
 import org.forester.analysis.TaxonomyDataManager;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;

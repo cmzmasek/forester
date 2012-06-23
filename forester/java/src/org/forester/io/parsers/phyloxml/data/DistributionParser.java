@@ -28,9 +28,9 @@ package org.forester.io.parsers.phyloxml.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.Point;
@@ -52,7 +52,7 @@ public class DistributionParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String desc = "";
         List<Point> points = null;
         List<Polygon> polygons = null;

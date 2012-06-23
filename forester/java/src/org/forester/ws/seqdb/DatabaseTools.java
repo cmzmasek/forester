@@ -1,10 +1,8 @@
 
 package org.forester.ws.seqdb;
 
-
 public class DatabaseTools {
 
-   
     static String extract( final String target, final String a, final String b ) {
         final int i_a = target.indexOf( a );
         final int i_b = target.indexOf( b );

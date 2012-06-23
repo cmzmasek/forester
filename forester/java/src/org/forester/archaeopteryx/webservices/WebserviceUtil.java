@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -135,7 +136,8 @@ public final class WebserviceUtil {
         }
     }
 
-    public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny ) {
+    public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny )
+            throws PhyloXmlDataFormatException {
         if ( client.getProcessingInstructions().equals( WebserviceUtil.TAX_CODE_TO_SCI_NAME ) ) {
             WebserviceUtil.transferTaxonomyCodeToScientificName( phylogeny );
         }
@@ -162,7 +164,7 @@ public final class WebserviceUtil {
         }
     }
 
-    static void transferExternalScientificNameToTaxonomyCode( final Phylogeny phy ) {
+    static void transferExternalScientificNameToTaxonomyCode( final Phylogeny phy ) throws PhyloXmlDataFormatException {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -176,7 +178,7 @@ public final class WebserviceUtil {
         }
     }
 
-    static void transferInternalTaxonomyCodeToScientificName( final Phylogeny phy ) {
+    static void transferInternalTaxonomyCodeToScientificName( final Phylogeny phy ) throws PhyloXmlDataFormatException {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -204,7 +206,7 @@ public final class WebserviceUtil {
         }
     }
 
-    static void transferTaxonomyCodeToScientificName( final Phylogeny phy ) {
+    static void transferTaxonomyCodeToScientificName( final Phylogeny phy ) throws PhyloXmlDataFormatException {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();

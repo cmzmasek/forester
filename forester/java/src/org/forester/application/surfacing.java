@@ -2632,13 +2632,16 @@ public class surfacing {
                 + ": to output binary domain combinations for (downstream) graph analysis" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
         System.out.println();
+        System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
+                + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
+                + " -no_eo -mo=0 -input=genomes_limited.txt -out_dir=out -o=o "
+                + " -species_tree=tol.xml -obo=gene_ontology_2012_02_07.obo -pos_filter=f.txt -all_prot" );
         System.out.println();
-        System.out.println( "Example: java -Xms128m -Xmx512m -cp path/to/forester.jar"
+        System.out.println( "Example 2: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
                 + " -cos=Pfam_ls_22_TC2 -p2g=pfam2go -obo=gene_ontology_edit.obo "
                 + "-dc_sort=dom -ignore_with_self -no_singles -e=0.001 -mo=1 -no_eo "
-                + "-ds_output=detailed_html -scoring=domains -sort=alpha -" + JACKNIFE_OPTION
-                + "=50 human mouse brafl strpu" );
+                + "-ds_output=detailed_html -scoring=domains -sort=alpha human mouse brafl strpu" );
         System.out.println();
     }
 

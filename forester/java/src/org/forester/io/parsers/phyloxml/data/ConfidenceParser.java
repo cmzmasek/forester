@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.PhylogenyData;
 
@@ -47,7 +47,7 @@ public class ConfidenceParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final Confidence confidence = new Confidence();
         confidence.setValue( element.getValueAsDouble() );
         if ( element.isHasAttribute( PhyloXmlMapping.CONFIDENCE_TYPE_ATTR ) ) {
@@ -59,7 +59,7 @@ public class ConfidenceParser implements PhylogenyDataPhyloXmlParser {
                         .getAttribute( PhyloXmlMapping.CONFIDENCE_SD_ATTR ) ) );
             }
             catch ( final NumberFormatException ex ) {
-                throw new PhylogenyParserException( "attempt to parse ["
+                throw new PhyloXmlDataFormatException( "attempt to parse ["
                         + element.getAttribute( PhyloXmlMapping.CONFIDENCE_SD_ATTR + "] into double" ) );
             }
         }

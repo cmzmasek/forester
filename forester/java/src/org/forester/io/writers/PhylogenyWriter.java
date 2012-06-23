@@ -481,10 +481,8 @@ public final class PhylogenyWriter {
         writer.flush();
         writer.close();
     }
-    
-    public void toPhyloXML( final Phylogeny phy,
-                            final int phyloxml_level,
-                            final File out_file ) throws IOException {
+
+    public void toPhyloXML( final Phylogeny phy, final int phyloxml_level, final File out_file ) throws IOException {
         final Writer writer = new BufferedWriter( new PrintWriter( out_file ) );
         toPhyloXML( writer, phy, phyloxml_level );
         writer.flush();

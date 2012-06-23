@@ -28,10 +28,10 @@ package org.forester.io.parsers.phyloxml.data;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlHandler;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Sequence;
@@ -46,7 +46,7 @@ public class SequenceRelationParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public SequenceRelation parse( final XmlElement element ) throws PhylogenyParserException {
+    public SequenceRelation parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final SequenceRelation seqRelation = new SequenceRelation();
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_RELATION_TYPE ) ) {
             final String sType = element.getAttribute( PhyloXmlMapping.SEQUENCE_RELATION_TYPE );

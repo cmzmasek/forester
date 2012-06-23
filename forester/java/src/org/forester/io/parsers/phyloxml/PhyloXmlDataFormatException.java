@@ -26,7 +26,9 @@
 
 package org.forester.io.parsers.phyloxml;
 
-public class PhyloXmlDataFormatException extends PhyloXmlException {
+import java.io.IOException;
+
+public class PhyloXmlDataFormatException extends IOException {
 
     private static final long serialVersionUID = 3756209394438250170L;
 

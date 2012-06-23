@@ -28,9 +28,9 @@ package org.forester.io.parsers.phyloxml.data;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.Uri;
 
@@ -50,7 +50,7 @@ public class UriParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String type = "";
         String desc = "";
         URI uri = null;
@@ -58,7 +58,7 @@ public class UriParser implements PhylogenyDataPhyloXmlParser {
             uri = new URI( element.getValueAsString() );
         }
         catch ( final URISyntaxException e ) {
-            throw new PhylogenyParserException( "ill formatted Uri: " + element.getValueAsString() );
+            throw new PhyloXmlDataFormatException( "ill formatted Uri: " + element.getValueAsString() );
         }
         if ( element.isHasAttribute( PhyloXmlMapping.URI_DESC_ATTR ) ) {
             desc = element.getAttribute( PhyloXmlMapping.URI_DESC_ATTR );

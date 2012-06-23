@@ -78,6 +78,7 @@ import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
@@ -1374,7 +1375,7 @@ public final class MainFrameApplication extends MainFrame {
         dispose();
     }
 
-    private void extractTaxCodeFromNodeNames() {
+    private void extractTaxCodeFromNodeNames() throws PhyloXmlDataFormatException {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
@@ -1469,21 +1470,23 @@ public final class MainFrameApplication extends MainFrame {
         return false;
     }
 
-    private void moveNodeNamesToSeqNames() {
+    private void moveNodeNamesToSeqNames() throws PhyloXmlDataFormatException {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                PhylogenyMethods.transferNodeNameToField( phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME );
+                PhylogenyMethods
+                        .transferNodeNameToField( phy, PhylogenyMethods.PhylogenyNodeField.SEQUENCE_NAME, false );
             }
         }
     }
 
-    private void moveNodeNamesToTaxSn() {
+    private void moveNodeNamesToTaxSn() throws PhyloXmlDataFormatException {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
                 PhylogenyMethods.transferNodeNameToField( phy,
-                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME );
+                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                          false );
             }
         }
     }

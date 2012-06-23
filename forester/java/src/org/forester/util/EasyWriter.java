@@ -8,7 +8,7 @@ public final class EasyWriter extends BufferedWriter {
 
     private final static String LINE_SEPARATOR = ForesterUtil.LINE_SEPARATOR;
 
-    public EasyWriter( BufferedWriter out ) {
+    public EasyWriter( final BufferedWriter out ) {
         super( out );
     }
 

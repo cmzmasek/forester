@@ -221,10 +221,10 @@ public class Phylogeny {
      * @param remove_us the parent node of the subtree to be deleted
      */
     public void deleteSubtree( final PhylogenyNode remove_us, final boolean collapse_resulting_node_with_one_desc ) {
-        if ( isEmpty() || ( remove_us.isRoot() && getNumberOfExternalNodes() != 1 ) ) {
+        if ( isEmpty() || ( remove_us.isRoot() && ( getNumberOfExternalNodes() != 1 ) ) ) {
             return;
         }
-        if ( remove_us.isRoot() && getNumberOfExternalNodes() == 1 ) {
+        if ( remove_us.isRoot() && ( getNumberOfExternalNodes() == 1 ) ) {
             init();
         }
         else if ( !collapse_resulting_node_with_one_desc ) {

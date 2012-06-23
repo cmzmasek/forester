@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -49,7 +49,7 @@ public class EventParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String type = "";
         Confidence conf = null;
         int duplications = Event.DEFAULT_VALUE;
@@ -82,7 +82,7 @@ public class EventParser implements PhylogenyDataPhyloXmlParser {
                 event = new Event( duplications, speciations, losses, type );
             }
             catch ( final Exception e ) {
-                throw new PhylogenyParserException( "problem with " + element.toString() + ": " + e.getMessage() );
+                throw new PhyloXmlDataFormatException( "problem with " + element.toString() + ": " + e.getMessage() );
             }
         }
         if ( conf != null ) {

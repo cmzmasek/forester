@@ -252,7 +252,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                         not_found.add( tax.toString() );
                     }
                     else {
-                        not_found.add(node.getName() );
+                        not_found.add( node.getName() );
                     }
                     if ( delete && node.isExternal() ) {
                         not_found_external_nodes.add( node );
@@ -375,7 +375,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
     synchronized final private static void updateTaxonomy( final QUERY_TYPE qt,
                                                            final PhylogenyNode node,
                                                            final Taxonomy tax,
-                                                           final UniProtTaxonomy up_tax ) {
+                                                           final UniProtTaxonomy up_tax )
+            throws PhyloXmlDataFormatException {
         if ( ( qt != QUERY_TYPE.SN ) && !ForesterUtil.isEmpty( up_tax.getScientificName() )
                 && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             tax.setScientificName( up_tax.getScientificName() );

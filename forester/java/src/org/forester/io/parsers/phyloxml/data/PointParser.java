@@ -27,9 +27,9 @@ package org.forester.io.parsers.phyloxml.data;
 
 import java.math.BigDecimal;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.Point;
 import org.forester.util.ForesterUtil;
@@ -50,7 +50,7 @@ public class PointParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String alt_unit = "";
         String geo_datum = "";
         if ( element.isHasAttribute( PhyloXmlMapping.POINT_ALTITUDE_UNIT_ATTR ) ) {

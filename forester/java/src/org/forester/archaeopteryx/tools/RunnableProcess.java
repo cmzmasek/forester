@@ -17,7 +17,7 @@ public abstract class RunnableProcess implements Runnable {
         _process_id = process_id;
     }
 
-    public void  start( final MainFrame mf, final String name ) {
+    public void start( final MainFrame mf, final String name ) {
         setProcessId( mf.getProcessPool().addProcess( name ) );
         mf.updateProcessMenu();
     }

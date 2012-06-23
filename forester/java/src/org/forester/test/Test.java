@@ -104,7 +104,6 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
 import org.forester.util.SequenceIdParser;
-import org.forester.ws.seqdb.DatabaseTools;
 import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
@@ -172,11 +171,8 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
-        
-        
-       
         System.out.print( "Sequence id parsing: " );
-        if (  testSequenceIdParsing() ) {
+        if ( testSequenceIdParsing() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -7850,8 +7846,8 @@ public final class Test {
 
     private static boolean testUniprotTaxonomySearch() {
         try {
-            List<UniProtTaxonomy> results = SequenceDbWsTools
-                    .getTaxonomiesFromCommonNameStrict( "starlet sea anemone", 10 );
+            List<UniProtTaxonomy> results = SequenceDbWsTools.getTaxonomiesFromCommonNameStrict( "starlet sea anemone",
+                                                                                                 10 );
             if ( results.size() != 1 ) {
                 return false;
             }
@@ -8921,15 +8917,12 @@ public final class Test {
         }
         return true;
     }
-    
+
     private static boolean testSequenceIdParsing() {
         try {
             Identifier id = SequenceIdParser.parse( "gb_ADF31344_segmented_worms_" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8938,11 +8931,8 @@ public final class Test {
             }
             //
             id = SequenceIdParser.parse( "segmented worms|gb_ADF31344" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8951,25 +8941,18 @@ public final class Test {
             }
             //
             id = SequenceIdParser.parse( "segmented worms gb_ADF31344 and more" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "ADF31344" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
                 }
                 return false;
             }
-           
             // 
             id = SequenceIdParser.parse( "gb_AAA96518_1" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "AAA96518" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "AAA96518" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8978,11 +8961,8 @@ public final class Test {
             }
             // 
             id = SequenceIdParser.parse( "gb_EHB07727_1_rodents_" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "EHB07727" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "EHB07727" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -8991,11 +8971,8 @@ public final class Test {
             }
             // 
             id = SequenceIdParser.parse( "dbj_BAF37827_1_turtles_" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "BAF37827" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "BAF37827" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9004,11 +8981,8 @@ public final class Test {
             }
             // 
             id = SequenceIdParser.parse( "emb_CAA73223_1_primates_" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "CAA73223" )
-                 || !id.getProvider().equals( "ncbi" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "CAA73223" ) || !id.getProvider().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9017,11 +8991,8 @@ public final class Test {
             }
             // 
             id = SequenceIdParser.parse( "mites|ref_XP_002434188_1" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "XP_002434188" )
-                 || !id.getProvider().equals( "refseq" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "XP_002434188" ) || !id.getProvider().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9030,11 +9001,8 @@ public final class Test {
             }
             // 
             id = SequenceIdParser.parse( "mites_ref_XP_002434188_1_bla_XP_12345" );
-            if ( id == null
-                 || ForesterUtil.isEmpty( id.getValue() )
-                 || ForesterUtil.isEmpty( id.getProvider() )
-                 || !id.getValue().equals( "XP_002434188" )
-                 || !id.getProvider().equals( "refseq" ) ) {
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "XP_002434188" ) || !id.getProvider().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
                     System.out.println( "provider=" + id.getProvider() );
@@ -9046,7 +9014,6 @@ public final class Test {
             if ( id != null ) {
                 return false;
             }
-            
             // lcl_91970_unknown_
         }
         catch ( final Exception e ) {

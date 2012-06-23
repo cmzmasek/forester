@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.ProteinDomain;
 
 public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
@@ -46,7 +46,7 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public ProteinDomain parse( final XmlElement element ) throws PhylogenyParserException {
+    public ProteinDomain parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String name = "";
         int f = -1;
         int t = -1;
@@ -63,11 +63,11 @@ public class ProteinDomainParser implements PhylogenyDataPhyloXmlParser {
             }
         }
         catch ( final Exception e ) {
-            throw new PhylogenyParserException( "failed to parse element [" + element + "]: " + e.getMessage() );
+            throw new PhyloXmlDataFormatException( "failed to parse element [" + element + "]: " + e.getMessage() );
         }
         name = element.getValueAsString();
         if ( ( f == -1 ) || ( t == -1 ) || ( conf == ProteinDomain.CONFIDENCE_DEFAULT ) ) {
-            throw new PhylogenyParserException( "from, to, or confidence attribute not set in: " + element );
+            throw new PhyloXmlDataFormatException( "from, to, or confidence attribute not set in: " + element );
         }
         return new ProteinDomain( name, f, t, id, conf );
     }

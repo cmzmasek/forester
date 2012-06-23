@@ -136,25 +136,25 @@ public class XmlElement {
         return b;
     }
 
-    public double getValueAsDouble() throws PhylogenyParserException {
+    public double getValueAsDouble() throws PhyloXmlDataFormatException {
         double d = 0.0;
         try {
             d = Double.parseDouble( getValueAsString() );
         }
         catch ( final NumberFormatException ex ) {
-            throw new PhylogenyParserException( "attempt to parse [" + getValueAsString() + "] into double, in "
+            throw new PhyloXmlDataFormatException( "attempt to parse [" + getValueAsString() + "] into double, in "
                     + toString() );
         }
         return d;
     }
 
-    public int getValueAsInt() throws PhylogenyParserException {
+    public int getValueAsInt() throws PhyloXmlDataFormatException {
         int i = 0;
         try {
             i = Integer.parseInt( getValueAsString() );
         }
         catch ( final NumberFormatException ex ) {
-            throw new PhylogenyParserException( "attempt to parse [" + getValueAsString() + "] into integer, in "
+            throw new PhyloXmlDataFormatException( "attempt to parse [" + getValueAsString() + "] into integer, in "
                     + toString() );
         }
         return i;

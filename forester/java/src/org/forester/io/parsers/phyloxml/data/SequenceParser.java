@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.DomainArchitecture;
@@ -50,7 +50,7 @@ public class SequenceParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public Sequence parse( final XmlElement element ) throws PhylogenyParserException {
+    public Sequence parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final Sequence sequence = new Sequence();
         if ( element.isHasAttribute( PhyloXmlMapping.SEQUENCE_TYPE ) ) {
             sequence.setType( element.getAttribute( PhyloXmlMapping.SEQUENCE_TYPE ) );

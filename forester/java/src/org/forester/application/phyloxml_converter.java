@@ -34,6 +34,7 @@ import java.util.List;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
@@ -74,7 +75,7 @@ public class phyloxml_converter {
     final static private String  WWW                               = "www.phylosoft.org/forester/";
     final static private boolean SPECIAL                           = false;
 
-    public static void main( final String args[] ) {
+    public static void main( final String args[] ) throws PhyloXmlDataFormatException {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
         CommandLineArguments cla = null;
         try {
@@ -238,7 +239,7 @@ public class phyloxml_converter {
         }
         if ( field != null ) {
             for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.transferNodeNameToField( phy, field );
+                PhylogenyMethods.transferNodeNameToField( phy, field, false );
             }
         }
         if ( midpoint_reroot ) {

@@ -40,6 +40,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.BranchColor;
@@ -393,10 +394,14 @@ public class PhylogenyMethods {
     }
 
     final static public void transferNodeNameToField( final Phylogeny phy,
-                                                      final PhylogenyMethods.PhylogenyNodeField field ) {
+                                                      final PhylogenyMethods.PhylogenyNodeField field,
+                                                      final boolean external_only ) throws PhyloXmlDataFormatException {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
+            if ( external_only && n.isInternal() ) {
+                continue;
+            }
             final String name = n.getName().trim();
             if ( !ForesterUtil.isEmpty( name ) ) {
                 switch ( field ) {
@@ -1557,8 +1562,10 @@ public class PhylogenyMethods {
      * 
      * @param node
      * @param taxonomy_code
+     * @throws PhyloXmlDataFormatException 
      */
-    public static void setTaxonomyCode( final PhylogenyNode node, final String taxonomy_code ) {
+    public static void setTaxonomyCode( final PhylogenyNode node, final String taxonomy_code )
+            throws PhyloXmlDataFormatException {
         if ( !node.getNodeData().isHasTaxonomy() ) {
             node.getNodeData().setTaxonomy( new Taxonomy() );
         }

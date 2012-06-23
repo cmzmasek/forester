@@ -39,6 +39,7 @@ import org.forester.archaeopteryx.webservices.WebservicesManager;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
@@ -187,10 +188,26 @@ public class UrlTreeReader implements Runnable {
                             PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny );
                         }
                         if ( client.getProcessingInstructions() != null ) {
-                            WebserviceUtil.processInstructions( client, phylogeny );
+                            try {
+                                WebserviceUtil.processInstructions( client, phylogeny );
+                            }
+                            catch ( final PhyloXmlDataFormatException e ) {
+                                JOptionPane.showMessageDialog( _main_frame,
+                                                               "Error:\n" + e.getLocalizedMessage(),
+                                                               "Error",
+                                                               JOptionPane.ERROR_MESSAGE );
+                            }
                         }
                         if ( client.getNodeField() != null ) {
-                            PhylogenyMethods.transferNodeNameToField( phylogeny, client.getNodeField() );
+                            try {
+                                PhylogenyMethods.transferNodeNameToField( phylogeny, client.getNodeField(), false );
+                            }
+                            catch ( final PhyloXmlDataFormatException e ) {
+                                JOptionPane.showMessageDialog( _main_frame,
+                                                               "Error:\n" + e.getLocalizedMessage(),
+                                                               "Error",
+                                                               JOptionPane.ERROR_MESSAGE );
+                            }
                         }
                         phylogeny.setIdentifier( new Identifier( identifier, client.getName() ) );
                         _main_frame.getJMenuBar().remove( _main_frame.getHelpMenu() );

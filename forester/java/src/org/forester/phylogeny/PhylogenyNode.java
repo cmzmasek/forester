@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
@@ -42,6 +43,12 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
 
+/**
+ * Warning. Implementation of method 'compareTo' only looks at 
+ * node name. Thus, use of this class in SortedSets might lead
+ * to unexpected behavior.
+ *
+ */
 public final class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> {
 
     private static int               _node_count      = 0;
@@ -1058,8 +1065,8 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
 
     @Override
     final public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if ( ForesterUtil.isEmpty( getName() ) ) {
+        final StringBuilder sb = new StringBuilder();
+        if ( !ForesterUtil.isEmpty( getName() ) ) {
             sb.append( getName() );
             sb.append( " " );
         }
@@ -1129,26 +1136,27 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         PhylogenyNode._node_count = i;
     }
 
-    public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException {
+    public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException,
+            PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, PhylogenyMethods.TAXONOMY_EXTRACTION.NO, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
                                                              final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws NHXFormatException {
+            throws NHXFormatException, PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, false );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx,
                                                              final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
                                                              final boolean replace_underscores )
-            throws NHXFormatException {
+            throws NHXFormatException, PhyloXmlDataFormatException {
         return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
     }
 
     private PhylogenyNode( final String nhx,
                            final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction,
-                           final boolean replace_underscores ) throws NHXFormatException {
+                           final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
         //  init();
         NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
         setId( PhylogenyNode.getNodeCount() );

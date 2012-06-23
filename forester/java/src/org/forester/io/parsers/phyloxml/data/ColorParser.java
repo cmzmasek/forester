@@ -27,9 +27,9 @@ package org.forester.io.parsers.phyloxml.data;
 
 import java.awt.Color;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.PhylogenyData;
 
@@ -49,7 +49,7 @@ public class ColorParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         int red = 0;
         int green = 0;
         int blue = 0;

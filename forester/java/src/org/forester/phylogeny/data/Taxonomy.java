@@ -109,7 +109,12 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     @Override
     public PhylogenyData copy() {
         final Taxonomy t = new Taxonomy();
-        t.setTaxonomyCode( getTaxonomyCode() );
+        try {
+            t.setTaxonomyCode( getTaxonomyCode() );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         t.setScientificName( getScientificName() );
         t.setCommonName( getCommonName() );
         t.setAuthority( getAuthority() );
@@ -122,7 +127,12 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         else {
             t.setIdentifier( null );
         }
-        t.setRank( new String( getRank() ) );
+        try {
+            t.setRank( new String( getRank() ) );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         if ( getUris() != null ) {
             t.setUris( new ArrayList<Uri>() );
             for( final Uri uri : getUris() ) {
@@ -218,8 +228,18 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         setScientificName( "" );
         setCommonName( "" );
         setIdentifier( null );
-        setRank( "" );
-        setTaxonomyCode( "" );
+        try {
+            setRank( "" );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
+        try {
+            setTaxonomyCode( "" );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            e.printStackTrace();
+        }
         setAuthority( "" );
         setSynonyms( null );
         setUris( null );
@@ -290,7 +310,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         _identifier = identifier;
     }
 
-    public void setRank( final String rank ) {
+    public void setRank( final String rank ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( rank ) && !PhyloXmlUtil.TAXONOMY_RANKS_SET.contains( rank ) ) {
             throw new PhyloXmlDataFormatException( "illegal rank: [" + rank + "]" );
         }
@@ -305,7 +325,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         _synonyms = synonyms;
     }
 
-    public void setTaxonomyCode( final String taxonomy_code ) {
+    public void setTaxonomyCode( final String taxonomy_code ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( taxonomy_code )
                 && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );

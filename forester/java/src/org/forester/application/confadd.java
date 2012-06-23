@@ -59,8 +59,13 @@ public class confadd {
     final static private String WWW              = "www.phylosoft.org/forester/";
 
     public static void main( final String args[] ) {
-         ForesterUtil.printProgramInformation( PRG_NAME, null, PRG_VERSION, PRG_DATE, E_MAIL, WWW, ForesterUtil.getForesterLibraryInformation() );
-        
+        ForesterUtil.printProgramInformation( PRG_NAME,
+                                              null,
+                                              PRG_VERSION,
+                                              PRG_DATE,
+                                              E_MAIL,
+                                              WWW,
+                                              ForesterUtil.getForesterLibraryInformation() );
         CommandLineArguments cla = null;
         try {
             cla = new CommandLineArguments( args );

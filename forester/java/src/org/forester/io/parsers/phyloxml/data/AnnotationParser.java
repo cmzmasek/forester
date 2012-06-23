@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -51,7 +51,7 @@ public class AnnotationParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         String ref;
         if ( element.isHasAttribute( PhyloXmlMapping.ANNOTATION_REF_ATTR ) ) {
             ref = element.getAttribute( PhyloXmlMapping.ANNOTATION_REF_ATTR );

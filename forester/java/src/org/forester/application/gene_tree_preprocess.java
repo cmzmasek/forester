@@ -82,7 +82,7 @@ public class gene_tree_preprocess {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
                         + " external node(s), aborting" );
             }
-            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true , false);
+            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true, false );
             for( final String remove_me : not_found ) {
                 phy.deleteSubtree( phy.getNode( remove_me ), true );
             }

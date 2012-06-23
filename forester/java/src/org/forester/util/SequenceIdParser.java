@@ -35,8 +35,6 @@ import org.forester.phylogeny.data.Identifier;
 
 public final class SequenceIdParser {
 
-    
-   
     // gb_ADF31344_1_segmented_worms_
     // gb_AAA96518_1
     // gb_EHB07727_1_rodents_
@@ -46,7 +44,6 @@ public final class SequenceIdParser {
     // mites|ref_XP_002434188_1
     // ref_XP_002434188_1_mites___ticks_
     // ref_NP_001121530_1_frogs___toads_
-    
     //The format for GenBank Accession numbers are:
     //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
     //Protein:    3 letters + 5 numerals
@@ -57,15 +54,12 @@ public final class SequenceIdParser {
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6})(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern GENBANK_PROTEIN_AC_PATTERN      = Pattern
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5})(?:[^a-zA-Z0-9]|\\Z)" );
-   
     // RefSeq accession numbers can be distinguished from GenBank accessions 
     // by their distinct prefix format of 2 characters followed by an
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325. 
-    private final static Pattern REFSEQ_PATTERN      = Pattern
-    .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
+    private final static Pattern REFSEQ_PATTERN                  = Pattern
+                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
 
-   
-    
     /**
      * Returns null if no match.
      * 
@@ -73,7 +67,6 @@ public final class SequenceIdParser {
     public final static Identifier parse( final String s ) {
         String v = parseGenbankAccessor( s );
         if ( !ForesterUtil.isEmpty( v ) ) {
-
             return new Identifier( v, Identifier.NCBI );
         }
         v = parseRefSeqAccessor( s );
@@ -82,7 +75,7 @@ public final class SequenceIdParser {
         }
         return null;
     }
-    
+
     /**
      * Returns null if no match.
      * 
@@ -108,25 +101,20 @@ public final class SequenceIdParser {
             }
         }
     }
-    
+
     /**
      * Returns null if no match.
      * 
      */
     private final static String parseRefSeqAccessor( final String query ) {
-        Matcher m = REFSEQ_PATTERN.matcher( query );
+        final Matcher m = REFSEQ_PATTERN.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );
         }
         return null;
     }
-    
-    
-    
+
     private SequenceIdParser() {
         // Hiding the constructor.
     }
-    
-    
-    
 }

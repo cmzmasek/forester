@@ -25,9 +25,9 @@
 
 package org.forester.io.parsers.phyloxml.data;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.ProteinDomain;
 
@@ -47,10 +47,10 @@ public class DomainArchitectureParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public DomainArchitecture parse( final XmlElement element ) throws PhylogenyParserException {
+    public DomainArchitecture parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final DomainArchitecture architecure = new DomainArchitecture();
         if ( !element.isHasAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH ) ) {
-            throw new PhylogenyParserException( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH
+            throw new PhyloXmlDataFormatException( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH
                     + " attribute is required for domain architecture" );
         }
         final String lenght_str = element.getAttribute( PhyloXmlMapping.SEQUENCE_DOMAIN_ARCHITECTURE_LENGTH );
@@ -58,7 +58,7 @@ public class DomainArchitectureParser implements PhylogenyDataPhyloXmlParser {
             architecure.setTotalLength( Integer.parseInt( lenght_str ) );
         }
         catch ( final NumberFormatException e ) {
-            throw new PhylogenyParserException( "could not extract domain architecture length from [" + lenght_str
+            throw new PhyloXmlDataFormatException( "could not extract domain architecture length from [" + lenght_str
                     + "]: " + e.getMessage() );
         }
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {

@@ -28,9 +28,9 @@ package org.forester.io.parsers.phyloxml.data;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.XmlElement;
-import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.PhylogenyData;
 
@@ -50,7 +50,7 @@ public class BinaryCharactersParser implements PhylogenyDataPhyloXmlParser {
     }
 
     @Override
-    public PhylogenyData parse( final XmlElement element ) throws PhylogenyParserException {
+    public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
         final SortedSet<String> present = new TreeSet<String>();
         final SortedSet<String> gained = new TreeSet<String>();
         final SortedSet<String> lost = new TreeSet<String>();
@@ -76,7 +76,7 @@ public class BinaryCharactersParser implements PhylogenyDataPhyloXmlParser {
             }
         }
         catch ( final NumberFormatException e ) {
-            throw new PhylogenyParserException( "failed to parse integer from element " + element.getQualifiedName() );
+            throw new PhyloXmlDataFormatException( "failed to parse integer from element " + element.getQualifiedName() );
         }
         for( int i = 0; i < element.getNumberOfChildElements(); ++i ) {
             final XmlElement child_element = element.getChildElement( i );
