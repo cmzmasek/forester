@@ -158,10 +158,8 @@ public final class GSDI extends SDI {
         // Determine the sum of traversals.
         int traversals_sum = 0;
         int max_traversals = 0;
-       
         PhylogenyNode max_traversals_node = null;
         if ( !s.isExternal() ) {
-            
             for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
                 final PhylogenyNode current_node = s.getChildNode( i );
                 final int traversals = getTraversalCount( current_node );
@@ -170,7 +168,6 @@ public final class GSDI extends SDI {
                     max_traversals = traversals;
                     max_traversals_node = current_node;
                 }
-               
             }
         }
         // System.out.println( " sum=" + traversals_sum );
@@ -216,15 +213,13 @@ public final class GSDI extends SDI {
         for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
             final PhylogenyNode current_node = s.getChildNode( i );
             final int traversals = getTraversalCount( current_node );
-          
             if ( traversals < min_traversals ) {
                 min_traversals = traversals;
-                
             }
         }
         for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
             final PhylogenyNode current_node = s.getChildNode( i );
-            _transversal_counts.put( current_node, getTraversalCount( current_node  ) - min_traversals );
+            _transversal_counts.put( current_node, getTraversalCount( current_node ) - min_traversals );
         }
     }
 

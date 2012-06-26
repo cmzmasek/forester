@@ -977,11 +977,11 @@ public class PhylogenyMethods {
         if ( !node.getNodeData().isHasTaxonomy() ) {
             return "";
         }
-        if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-            return node.getNodeData().getTaxonomy().getTaxonomyCode();
-        }
         else if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
             return node.getNodeData().getTaxonomy().getScientificName();
+        }
+        if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+            return node.getNodeData().getTaxonomy().getTaxonomyCode();
         }
         else {
             return node.getNodeData().getTaxonomy().getCommonName();

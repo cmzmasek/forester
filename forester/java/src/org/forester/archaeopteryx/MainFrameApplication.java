@@ -1385,7 +1385,7 @@ public final class MainFrameApplication extends MainFrame {
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
                         final String code = ParserUtils
-                                .extractTaxonomyCodeFromNodeName( name, false, PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+                                .extractTaxonomyCodeFromNodeName( name, PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
                         if ( !ForesterUtil.isEmpty( code ) ) {
                             PhylogenyMethods.setTaxonomyCode( n, code );
                         }

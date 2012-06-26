@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
@@ -48,6 +49,9 @@ import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
+
+    final private static Pattern TAXOMONY_CODE_PATTERN_1 = Pattern.compile( "[A-Z0-9]{5}" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_2 = Pattern.compile( "([A-Z0-9]{5})[^A-Z].*" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
@@ -218,11 +222,9 @@ public final class ParserUtils {
      * Return null if no code extractable.
      * 
      * @param name
-     * @param limit_to_five
      * @return
      */
     public static String extractTaxonomyCodeFromNodeName( final String name,
-                                                          final boolean limit_to_five,
                                                           final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
                 && ( name.length() < 31 )
@@ -234,21 +236,30 @@ public final class ParserUtils {
                 && ( ( ( name.indexOf( "/" ) ) < 0 ) || ( name.indexOf( "/" ) > name.indexOf( "_" ) ) ) ) {
             final String[] s = name.split( "[_/]" );
             if ( s.length > 1 ) {
-                String str = s[ 1 ];
-                if ( ( str.length() < 6 ) || ( !limit_to_five && ( str.length() < 7 ) ) ) {
-                    if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
-                        str = str.substring( 0, 3 );
-                    }
-                    final Matcher uc_letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
-                    if ( !uc_letters_and_numbers.matches() ) {
-                        return null;
-                    }
-                    final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
-                    if ( numbers_only.matches() ) {
-                        return null;
-                    }
-                    return str;
+                final String str = s[ 1 ];
+                //   if (  str.length() < 6  ) {
+                if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
+                    return str.substring( 0, 3 );
                 }
+                final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( str );
+                if ( m1.matches() ) {
+                    return m1.group();
+                }
+                final Matcher m2 = TAXOMONY_CODE_PATTERN_2.matcher( str );
+                if ( m2.matches() ) {
+                    return m2.group( 1 );
+                }
+                // return null;
+                //                final Matcher uc_letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
+                //                if ( !uc_letters_and_numbers.matches() ) {
+                //                    return null;
+                //                }
+                //                final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
+                //                if ( numbers_only.matches() ) {
+                //                    return null;
+                //                }
+                //                return str;
+                //  }
             }
         }
         return null;

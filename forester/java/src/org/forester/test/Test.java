@@ -2123,7 +2123,7 @@ public final class Test {
                 return false;
             }
             t2.setIdentifier( new Identifier( "ecoli" ) );
-            t2.setTaxonomyCode( "other" );
+            t2.setTaxonomyCode( "OTHER" );
             t2.setScientificName( "what" );
             t2.setCommonName( "something" );
             if ( !t1.isEqual( t2 ) ) {
@@ -4706,69 +4706,81 @@ public final class Test {
             if ( PhylogenyMethods.getSpecies( n23 ).length() > 0 ) {
                 return false;
             }
-            if ( NHXParser.LIMIT_SPECIES_NAMES_TO_FIVE_CHARS ) {
-                final PhylogenyNode a = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_ECOLI/1-2",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !a.getName().equals( "n10_ECOLI/1-2" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( a ).equals( "ECOLI" ) ) {
-                    return false;
-                }
-                final PhylogenyNode b = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_ECOLI1/1-2",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( b ).equals( "" ) ) {
-                    return false;
-                }
-                final PhylogenyNode c = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_RATAF12/1000-2000",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( c ).equals( "" ) ) {
-                    return false;
-                }
-                final PhylogenyNode c1 = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_BOVIN_1/1000-2000",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
-                    return false;
-                }
-                final PhylogenyNode c2 = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_Bovin_1/1000-2000",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !c2.getName().equals( "n10_Bovin_1/1000-2000" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( c2 ).equals( "" ) ) {
-                    return false;
-                }
-                final PhylogenyNode d = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_RAT1/1-2",
-                                                      PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !d.getName().equals( "n10_RAT1/1-2" ) ) {
-                    return false;
-                }
-                if ( !PhylogenyMethods.getSpecies( d ).equals( "RAT" ) ) {
-                    return false;
-                }
-                final PhylogenyNode e = PhylogenyNode
-                        .createInstanceFromNhxString( "n10_RAT1", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
-                if ( !e.getName().equals( "n10_RAT1" ) ) {
-                    return false;
-                }
-                if ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( e ) ) ) {
-                    return false;
-                }
+            final PhylogenyNode a = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_ECOLI/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !a.getName().equals( "n10_ECOLI/1-2" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( a ).equals( "ECOLI" ) ) {
+                return false;
+            }
+            final PhylogenyNode b = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_ECOLI1/1-2",
+                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( b ).equals( "ECOLI" ) ) {
+                return false;
+            }
+            final PhylogenyNode c = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_RATAF12/1000-2000",
+                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( c ).equals( "RATAF" ) ) {
+                return false;
+            }
+            final PhylogenyNode c1 = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_BOVIN_1/1000-2000",
+                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
+                return false;
+            }
+            final PhylogenyNode c2 = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_Bovin_1/1000-2000",
+                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !c2.getName().equals( "n10_Bovin_1/1000-2000" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( c2 ).equals( "" ) ) {
+                return false;
+            }
+            final PhylogenyNode d = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_RAT1/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !d.getName().equals( "n10_RAT1/1-2" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( d ).equals( "RAT" ) ) {
+                return false;
+            }
+            final PhylogenyNode e = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_RAT1", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            if ( !e.getName().equals( "n10_RAT1" ) ) {
+                return false;
+            }
+            if ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( e ) ) ) {
+                return false;
+            }
+            final PhylogenyNode e2 = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_RAT1", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            if ( !e2.getName().equals( "n10_RAT1" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( e2 ).equals( "RAT" ) ) {
+                return false;
+            }
+            final PhylogenyNode e3 = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_RAT~", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            if ( !e3.getName().equals( "n10_RAT~" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( e3 ).equals( "RAT" ) ) {
+                return false;
             }
             final PhylogenyNode n11 = PhylogenyNode
                     .createInstanceFromNhxString( "n111111_ECOLI/jdj:0.4",
@@ -4792,6 +4804,22 @@ public final class Test {
                 return false;
             }
             if ( PhylogenyMethods.getSpecies( n12 ).length() > 0 ) {
+                return false;
+            }
+            final PhylogenyNode m = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_MOUSEa", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            if ( !m.getName().equals( "n10_MOUSEa" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( m ).equals( "MOUSE" ) ) {
+                return false;
+            }
+            final PhylogenyNode o = PhylogenyNode
+                    .createInstanceFromNhxString( "n10_MOUSE_", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            if ( !o.getName().equals( "n10_MOUSE_" ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.getSpecies( o ).equals( "MOUSE" ) ) {
                 return false;
             }
             final Property tvu1 = n5.getNodeData().getProperties().getProperty( "tag1" );
@@ -4878,7 +4906,7 @@ public final class Test {
             if ( !n13.getName().equals( "blah_12345/1-2" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( n13 ).equals( "" ) ) {
+            if ( !PhylogenyMethods.getSpecies( n13 ).equals( "12345" ) ) {
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode

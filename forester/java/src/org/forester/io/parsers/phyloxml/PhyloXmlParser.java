@@ -193,18 +193,12 @@ public class PhyloXmlParser implements PhylogenyParser {
             else if ( getSource() instanceof InputStream ) {
                 if ( !isZippedInputstream() ) {
                     final InputStream is = ( InputStream ) getSource();
-                    final Reader reader = new InputStreamReader( is );
-                    xml_reader.parse( new InputSource( reader ) );
+                    xml_reader.parse( new InputSource( new InputStreamReader( is ) ) );
                 }
                 else {
                     final ZipInputStream zip_is = new ZipInputStream( ( InputStream ) getSource() );
                     zip_is.getNextEntry();
-                    final Reader reader = new InputStreamReader( zip_is );
-                    if ( reader == null ) {
-                        throw new PhylogenyParserException( "zip input stream \"" + getSource()
-                                + "\" appears not to contain any (phyloXML) data" );
-                    }
-                    xml_reader.parse( new InputSource( reader ) );
+                    xml_reader.parse( new InputSource( new InputStreamReader( zip_is ) ) );
                 }
             }
             else if ( getSource() instanceof String ) {

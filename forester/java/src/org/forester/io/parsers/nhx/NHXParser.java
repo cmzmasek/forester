@@ -61,17 +61,16 @@ import org.forester.util.ForesterUtil;
 
 public final class NHXParser implements PhylogenyParser {
 
-    public static final boolean                              LIMIT_SPECIES_NAMES_TO_FIVE_CHARS = false;
-    public static final PhylogenyMethods.TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT       = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
-    final static private boolean                             GUESS_ROOTEDNESS_DEFAULT          = true;
-    final static private boolean                             GUESS_IF_SUPPORT_VALUES           = true;
-    final static private boolean                             IGNORE_QUOTES_DEFAULT             = false;
-    final static public boolean                              REPLACE_UNDERSCORES_DEFAULT       = false;
+    public static final PhylogenyMethods.TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
+    final static private boolean                             GUESS_ROOTEDNESS_DEFAULT    = true;
+    final static private boolean                             GUESS_IF_SUPPORT_VALUES     = true;
+    final static private boolean                             IGNORE_QUOTES_DEFAULT       = false;
+    final static public boolean                              REPLACE_UNDERSCORES_DEFAULT = false;
     private boolean                                          _saw_closing_paren;
-    final static private byte                                STRING                            = 0;
-    final static private byte                                STRING_BUFFER                     = 1;
-    final static private byte                                CHAR_ARRAY                        = 2;
-    final static private byte                                BUFFERED_READER                   = 3;
+    final static private byte                                STRING                      = 0;
+    final static private byte                                STRING_BUFFER               = 1;
+    final static private byte                                CHAR_ARRAY                  = 2;
+    final static private byte                                BUFFERED_READER             = 3;
     private boolean                                          _guess_rootedness;
     private boolean                                          _has_next;
     private boolean                                          _ignore_quotes;
@@ -85,16 +84,16 @@ public final class NHXParser implements PhylogenyParser {
     private Phylogeny                                        _current_phylogeny;
     private PhylogenyMethods.TAXONOMY_EXTRACTION             _taxonomy_extraction;
     private boolean                                          _replace_underscores;
-    public final static Pattern                              UC_LETTERS_NUMBERS_PATTERN        = Pattern
-                                                                                                       .compile( "^[A-Z0-9]+$" );
-    public final static Pattern                              NUMBERS_ONLY_PATTERN              = Pattern
-                                                                                                       .compile( "^[0-9\\.]+$" );
-    public final static Pattern                              MB_PROB_PATTERN                   = Pattern
-                                                                                                       .compile( "prob=([^,]+)" );
-    public final static Pattern                              MB_PROB_SD_PATTERN                = Pattern
-                                                                                                       .compile( "prob_stddev=([^,]+)" );
-    public final static Pattern                              MB_BL_PATTERN                     = Pattern
-                                                                                                       .compile( "length_median=([^,]+)" );
+    public final static Pattern                              UC_LETTERS_NUMBERS_PATTERN  = Pattern
+                                                                                                 .compile( "^[A-Z0-9]+$" );
+    public final static Pattern                              NUMBERS_ONLY_PATTERN        = Pattern
+                                                                                                 .compile( "^[0-9\\.]+$" );
+    public final static Pattern                              MB_PROB_PATTERN             = Pattern
+                                                                                                 .compile( "prob=([^,]+)" );
+    public final static Pattern                              MB_PROB_SD_PATTERN          = Pattern
+                                                                                                 .compile( "prob_stddev=([^,]+)" );
+    public final static Pattern                              MB_BL_PATTERN               = Pattern
+                                                                                                 .compile( "length_median=([^,]+)" );
 
     public NHXParser() {
         init();
@@ -692,10 +691,8 @@ public final class NHXParser implements PhylogenyParser {
                     node_to_annotate.setName( t.nextToken() );
                     if ( !replace_underscores
                             && ( !is_nhx && ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.NO ) ) ) {
-                        final String tax = ParserUtils
-                                .extractTaxonomyCodeFromNodeName( node_to_annotate.getName(),
-                                                                  LIMIT_SPECIES_NAMES_TO_FIVE_CHARS,
-                                                                  taxonomy_extraction );
+                        final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node_to_annotate.getName(),
+                                                                                        taxonomy_extraction );
                         if ( !ForesterUtil.isEmpty( tax ) ) {
                             if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
                                 node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
