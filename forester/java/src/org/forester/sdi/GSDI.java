@@ -176,6 +176,8 @@ public final class GSDI extends SDI {
         if ( sum_g_childs_mapping_to_s > 0 ) {
             if ( traversals_sum == 2 ) {
                 event = createDuplicationEvent();
+                System.out.print( g.toString() );
+                System.out.println( " : ==2" );
                 //  _transversal_counts.clear();
             }
             else if ( traversals_sum > 2 ) {
@@ -189,7 +191,7 @@ public final class GSDI extends SDI {
                 }
                 else {
                     event = createDuplicationEvent();
-                    System.out.println( g.toString() );
+                    //System.out.println( g.toString() );
                     _transversal_counts.put( max_traversals_node, 1 );
                     //  _transversal_counts.clear();
                 }

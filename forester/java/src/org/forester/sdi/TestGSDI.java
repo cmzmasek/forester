@@ -111,543 +111,544 @@ public final class TestGSDI {
                     + "),[&&NHX:S=x],[&&NHX:S=y],[&&NHX:S=z])";
             final Phylogeny s2 = ParserBasedPhylogenyFactory.getInstance().create( s2_, new NHXParser() )[ 0 ];
             s2.setRooted( true );
-            //            final String s1_ = "((([&&NHX:S=A2],[&&NHX:S=A1]),[&&NHX:S=B],[&&NHX:S=C]),[&&NHX:S=D])";
-            //            final Phylogeny s1 = ParserBasedPhylogenyFactory.getInstance().create( s1_, new NHXParser() )[ 0 ];
-            //            s1.setRooted( true );
-            //            final Phylogeny g1 = TestGSDI
-            //                    .createPhylogeny( "((((B[&&NHX:S=B],A1[&&NHX:S=A1]),C[&&NHX:S=C]),A2[&&NHX:S=A2]),D[&&NHX:S=D])" );
-            //            final GSDI sdi1 = new GSDI( g1, s1, false );
-            //            if ( sdi1.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g1.getNode( "B" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g1.getNode( "C" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !( pm.obtainLCA( g1.getNode( "A2" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isDuplication() ) ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g1.getNode( "D" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2 = TestGSDI
-            //                    .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),B[&&NHX:S=B]),C[&&NHX:S=C]),D[&&NHX:S=D])" );
-            //            final GSDI sdi2 = new GSDI( g2, s1, false );
-            //            if ( sdi2.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "A2" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "B" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "C" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g3 = TestGSDI
-            //                    .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),C[&&NHX:S=C]),B[&&NHX:S=B]),D[&&NHX:S=D])" );
-            //            final GSDI sdi3 = new GSDI( g3, s1, false );
-            //            if ( sdi3.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "A2" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "C" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "B" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g4 = TestGSDI
-            //                    .createPhylogeny( "(((B[&&NHX:S=B],C1[&&NHX:S=C]),C2[&&NHX:S=C]),D[&&NHX:S=D])" );
-            //            final GSDI sdi4 = new GSDI( g4, s1, false );
-            //            if ( sdi4.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "C1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "C2" ) ).getNodeData().getEvent().isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g5 = TestGSDI
-            //                    .createPhylogeny( "(((D1[&&NHX:S=D],A1[&&NHX:S=A1]),B[&&NHX:S=B]),((D2[&&NHX:S=D],D3[&&NHX:S=D]),C[&&NHX:S=C]))" );
-            //            final GSDI sdi5 = new GSDI( g5, s1, false );
-            //            if ( sdi5.getDuplicationsSum() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "B" ) ).getNodeData().getEvent().isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "D2" ) ).getNodeData().getEvent().isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g5.getNode( "D2" ), g5.getNode( "D3" ) ).getNodeData().getEvent().isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g5.getNode( "C" ), g5.getNode( "D3" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny species7 = TestGSDI.createPhylogeny( "(((((((([&&NHX:S=a1],[&&NHX:S=a2]),"
-            //                    + "([&&NHX:S=b1],[&&NHX:S=b2])),[&&NHX:S=x]),(([&&NHX:S=m1],[&&NHX:S=m2]),"
-            //                    + "([&&NHX:S=n1],[&&NHX:S=n2]))),(([&&NHX:S=i1],[&&NHX:S=i2]),"
-            //                    + "([&&NHX:S=j1],[&&NHX:S=j2]))),(([&&NHX:S=e1],[&&NHX:S=e2]),"
-            //                    + "([&&NHX:S=f1],[&&NHX:S=f2]))),[&&NHX:S=y]),[&&NHX:S=z])" );
-            //            final Phylogeny gene7_2 = TestGSDI
-            //                    .createPhylogeny( "(((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),x[&&NHX:S=x]),m1[&&NHX:S=m1]),i1[&&NHX:S=i1]),j2[&&NHX:S=j2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
-            //            gene7_2.setRooted( true );
-            //            final GSDI sdi7_2 = new GSDI( gene7_2, species7, false );
-            //            if ( sdi7_2.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "a2" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "b1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "x" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "m1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "i1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "j2" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "e1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "y" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( gene7_2, "a1", "z" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //           
-            //            final Phylogeny g2_0 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],m3[&&NHX:S=m3])" );
-            //            final GSDI sdi2_0 = new GSDI( g2_0, s2, false );
-            //            if ( sdi2_0.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_0.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_0.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_0.getNode( "m1" ), g2_0.getNode( "m3" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_1 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],h2[&&NHX:S=h2])" );
-            //            final GSDI sdi2_1 = new GSDI( g2_1, s2, false );
-            //            if ( sdi2_1.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_1.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_1.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_1.getNode( "e2" ), g2_1.getNode( "h2" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_2 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],p4[&&NHX:S=p4])" );
-            //            final GSDI sdi2_2 = new GSDI( g2_2, s2, false );
-            //            if ( sdi2_2.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_2.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_2.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_2.getNode( "e2" ), g2_2.getNode( "p4" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_3 = TestGSDI.createPhylogeny( "(e2a[&&NHX:S=e2],e2b[&&NHX:S=e2])" );
-            //            final GSDI sdi2_3 = new GSDI( g2_3, s2, false );
-            //            if ( sdi2_3.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_3.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_3.getSpeciationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_3.getNode( "e2a" ), g2_3.getNode( "e2b" ) ).getNodeData().getEvent().isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_4 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),i3[&&NHX:S=i3])" );
-            //            final GSDI sdi2_4 = new GSDI( g2_4, s2, false );
-            //            if ( sdi2_4.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_4.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_4.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_4.getNode( "j1" ), g2_4.getNode( "j4" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_4.getNode( "j1" ), g2_4.getNode( "i3" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_5 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),f3[&&NHX:S=f3])" );
-            //            final GSDI sdi2_5 = new GSDI( g2_5, s2, false );
-            //            if ( sdi2_5.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_5.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_5.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_5.getNode( "j1" ), g2_5.getNode( "j4" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_5.getNode( "j1" ), g2_5.getNode( "f3" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_6 = TestGSDI.createPhylogeny( "((j3[&&NHX:S=j3],i4[&&NHX:S=i4]),f3[&&NHX:S=f3])" );
-            //            final GSDI sdi2_6 = new GSDI( g2_6, s2, false );
-            //            if ( sdi2_6.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_6.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_6.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_6.getNode( "j3" ), g2_6.getNode( "i4" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_6.getNode( "j3" ), g2_6.getNode( "f3" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_7 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k1[&&NHX:S=k1]),i1[&&NHX:S=i1])" );
-            //            final GSDI sdi2_7 = new GSDI( g2_7, s2, false );
-            //            if ( sdi2_7.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_7.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_7.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_7.getNode( "j1" ), g2_7.getNode( "k1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_7.getNode( "j1" ), g2_7.getNode( "i1" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_8 = TestGSDI.createPhylogeny( "(j1[&&NHX:S=j1],(k1[&&NHX:S=k1],i1[&&NHX:S=i1]))" );
-            //            final GSDI sdi2_8 = new GSDI( g2_8, s2, false );
-            //            if ( sdi2_8.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_8.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_8.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_8.getNode( "j1" ), g2_8.getNode( "k1" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !pm.obtainLCA( g2_8.getNode( "k1" ), g2_8.getNode( "i1" ) ).getNodeData().getEvent().isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_9 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
-            //            final GSDI sdi2_9 = new GSDI( g2_9, s2, false );
-            //            if ( sdi2_9.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_9.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_9.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_9, "j1", "k4" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_9, "j1", "f2" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_10 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
-            //            final GSDI sdi2_10 = new GSDI( g2_10, s2, false );
-            //            if ( sdi2_10.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_10.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_10.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_10, "m1", "k4" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_10, "m1", "f2" ).isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_11 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),x[&&NHX:S=x])" );
-            //            final GSDI sdi2_11 = new GSDI( g2_11, s2, false );
-            //            if ( sdi2_11.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_11.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_11.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_11, "m1", "k4" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_11, "m1", "x" ).isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_12 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],(k4[&&NHX:S=k4],x[&&NHX:S=x]))" );
-            //            final GSDI sdi2_12 = new GSDI( g2_12, s2, false );
-            //            if ( sdi2_12.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_12.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_12.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_12, "x", "k4" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_12, "m1", "x" ).isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_13 = TestGSDI.createPhylogeny( "(x[&&NHX:S=x],(y[&&NHX:S=y],z[&&NHX:S=z]))" );
-            //            final GSDI sdi2_13 = new GSDI( g2_13, s2, false );
-            //            if ( sdi2_13.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_13.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_13.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_13, "y", "z" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_13, "x", "z" ).isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_14 = TestGSDI.createPhylogeny( "(a1_1[&&NHX:S=a1],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
-            //            final GSDI sdi2_14 = new GSDI( g2_14, s2, false );
-            //            if ( sdi2_14.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_14.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_14.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_14, "b1", "a1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_14, "b1", "a1_1" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_15 = TestGSDI.createPhylogeny( "(a2[&&NHX:S=a2],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
-            //            final GSDI sdi2_15 = new GSDI( g2_15, s2, false );
-            //            if ( sdi2_15.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_15.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_15.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_15, "b1", "a1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_15, "b1", "a2" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_16 = TestGSDI.createPhylogeny( "(n2[&&NHX:S=n2],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
-            //            final GSDI sdi2_16 = new GSDI( g2_16, s2, false );
-            //            if ( sdi2_16.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_16.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_16.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_16, "j3", "n1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_16, "j3", "n2" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_17 = TestGSDI.createPhylogeny( "(p4[&&NHX:S=p4],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
-            //            final GSDI sdi2_17 = new GSDI( g2_17, s2, false );
-            //            if ( sdi2_17.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_17.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_17.getSpeciationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_17, "j3", "n1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_17, "j3", "p4" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_18 = TestGSDI
-            //                    .createPhylogeny( "((n11[&&NHX:S=n1],n12[&&NHX:S=n1]),(n13[&&NHX:S=n1],n14[&&NHX:S=n1]))" );
-            //            final GSDI sdi2_18 = new GSDI( g2_18, s2, false );
-            //            if ( sdi2_18.getDuplicationsSum() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_18.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_18.getSpeciationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_18, "n11", "n12" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_18, "n13", "n14" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_18, "n11", "n13" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_19 = TestGSDI
-            //                    .createPhylogeny( "((n11[&&NHX:S=n1],n21[&&NHX:S=n2]),(n12[&&NHX:S=n1],n22[&&NHX:S=n2]))" );
-            //            final GSDI sdi2_19 = new GSDI( g2_19, s2, false );
-            //            if ( sdi2_19.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_19.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_19.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_19, "n11", "n21" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_19, "n12", "n22" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_19, "n11", "n12" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_20 = TestGSDI
-            //                    .createPhylogeny( "((n11[&&NHX:S=n1],n2[&&NHX:S=n2]),(n12[&&NHX:S=n1],n3[&&NHX:S=n3]))" );
-            //            final GSDI sdi2_20 = new GSDI( g2_20, s2, false );
-            //            if ( sdi2_20.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_20.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_20.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_20, "n11", "n2" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_20, "n12", "n3" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_20, "n11", "n12" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_21 = TestGSDI
-            //                    .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],a1[&&NHX:S=a1]))" );
-            //            final GSDI sdi2_21 = new GSDI( g2_21, s2, false );
-            //            if ( sdi2_21.getDuplicationsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_21.getSpeciationOrDuplicationEventsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_21.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_21, "n1", "n2" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_21, "n3", "a1" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_21, "n2", "a1" ).isDuplication() ) {
-            //                return false;
-            //            }
-            //            final Phylogeny g2_22 = TestGSDI
-            //                    .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],n4[&&NHX:S=n4]))" );
-            //            final GSDI sdi2_22 = new GSDI( g2_22, s2, false );
-            //            if ( sdi2_22.getDuplicationsSum() != 0 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_22.getSpeciationOrDuplicationEventsSum() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( sdi2_22.getSpeciationsSum() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_22, "n1", "n2" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_22, "n3", "n4" ).isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !TestGSDI.getEvent( g2_22, "n1", "n3" ).isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
+            final String s1_ = "((([&&NHX:S=A2],[&&NHX:S=A1]),[&&NHX:S=B],[&&NHX:S=C]),[&&NHX:S=D])";
+            final Phylogeny s1 = ParserBasedPhylogenyFactory.getInstance().create( s1_, new NHXParser() )[ 0 ];
+            s1.setRooted( true );
+            final Phylogeny g1 = TestGSDI
+                    .createPhylogeny( "((((B[&&NHX:S=B],A1[&&NHX:S=A1]),C[&&NHX:S=C]),A2[&&NHX:S=A2]),D[&&NHX:S=D])" );
+            final GSDI sdi1 = new GSDI( g1, s1, false );
+            if ( sdi1.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g1.getNode( "B" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g1.getNode( "C" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            if ( !( pm.obtainLCA( g1.getNode( "A2" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isDuplication() ) ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g1.getNode( "D" ), g1.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2 = TestGSDI
+                    .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),B[&&NHX:S=B]),C[&&NHX:S=C]),D[&&NHX:S=D])" );
+            final GSDI sdi2 = new GSDI( g2, s1, false );
+            if ( sdi2.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "A2" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "B" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "C" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2.getNode( "A1" ), g2.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g3 = TestGSDI
+                    .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),C[&&NHX:S=C]),B[&&NHX:S=B]),D[&&NHX:S=D])" );
+            final GSDI sdi3 = new GSDI( g3, s1, false );
+            if ( sdi3.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "A2" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "C" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "B" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g3.getNode( "A1" ), g3.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g4 = TestGSDI
+                    .createPhylogeny( "(((B[&&NHX:S=B],C1[&&NHX:S=C]),C2[&&NHX:S=C]),D[&&NHX:S=D])" );
+            final GSDI sdi4 = new GSDI( g4, s1, false );
+            if ( sdi4.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "C1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "C2" ) ).getNodeData().getEvent().isDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g4.getNode( "B" ), g4.getNode( "D" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g5 = TestGSDI
+                    .createPhylogeny( "(((D1[&&NHX:S=D],A1[&&NHX:S=A1]),B[&&NHX:S=B]),((D2[&&NHX:S=D],D3[&&NHX:S=D]),C[&&NHX:S=C]))" );
+            final GSDI sdi5 = new GSDI( g5, s1, false );
+            if ( sdi5.getDuplicationsSum() != 3 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "A1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "B" ) ).getNodeData().getEvent().isDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g5.getNode( "D1" ), g5.getNode( "D2" ) ).getNodeData().getEvent().isDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g5.getNode( "D2" ), g5.getNode( "D3" ) ).getNodeData().getEvent().isDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g5.getNode( "C" ), g5.getNode( "D3" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny species7 = TestGSDI.createPhylogeny( "(((((((([&&NHX:S=a1],[&&NHX:S=a2]),"
+                    + "([&&NHX:S=b1],[&&NHX:S=b2])),[&&NHX:S=x]),(([&&NHX:S=m1],[&&NHX:S=m2]),"
+                    + "([&&NHX:S=n1],[&&NHX:S=n2]))),(([&&NHX:S=i1],[&&NHX:S=i2]),"
+                    + "([&&NHX:S=j1],[&&NHX:S=j2]))),(([&&NHX:S=e1],[&&NHX:S=e2]),"
+                    + "([&&NHX:S=f1],[&&NHX:S=f2]))),[&&NHX:S=y]),[&&NHX:S=z])" );
+            final Phylogeny gene7_2 = TestGSDI
+                    .createPhylogeny( "(((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),x[&&NHX:S=x]),m1[&&NHX:S=m1]),i1[&&NHX:S=i1]),j2[&&NHX:S=j2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
+            gene7_2.setRooted( true );
+            final GSDI sdi7_2 = new GSDI( gene7_2, species7, false );
+            if ( sdi7_2.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "a2" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "b1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "x" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "m1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "i1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "j2" ).isDuplication() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "e1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "y" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( gene7_2, "a1", "z" ).isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_0 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],m3[&&NHX:S=m3])" );
+            final GSDI sdi2_0 = new GSDI( g2_0, s2, false );
+            if ( sdi2_0.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_0.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_0.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_0.getNode( "m1" ), g2_0.getNode( "m3" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_1 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],h2[&&NHX:S=h2])" );
+            final GSDI sdi2_1 = new GSDI( g2_1, s2, false );
+            if ( sdi2_1.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_1.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_1.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_1.getNode( "e2" ), g2_1.getNode( "h2" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_2 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],p4[&&NHX:S=p4])" );
+            final GSDI sdi2_2 = new GSDI( g2_2, s2, false );
+            if ( sdi2_2.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_2.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_2.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_2.getNode( "e2" ), g2_2.getNode( "p4" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_3 = TestGSDI.createPhylogeny( "(e2a[&&NHX:S=e2],e2b[&&NHX:S=e2])" );
+            final GSDI sdi2_3 = new GSDI( g2_3, s2, false );
+            if ( sdi2_3.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_3.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_3.getSpeciationsSum() != 0 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_3.getNode( "e2a" ), g2_3.getNode( "e2b" ) ).getNodeData().getEvent().isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_4 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),i3[&&NHX:S=i3])" );
+            final GSDI sdi2_4 = new GSDI( g2_4, s2, false );
+            if ( sdi2_4.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_4.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_4.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_4.getNode( "j1" ), g2_4.getNode( "j4" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_4.getNode( "j1" ), g2_4.getNode( "i3" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_5 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),f3[&&NHX:S=f3])" );
+            final GSDI sdi2_5 = new GSDI( g2_5, s2, false );
+            if ( sdi2_5.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_5.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_5.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_5.getNode( "j1" ), g2_5.getNode( "j4" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_5.getNode( "j1" ), g2_5.getNode( "f3" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_6 = TestGSDI.createPhylogeny( "((j3[&&NHX:S=j3],i4[&&NHX:S=i4]),f3[&&NHX:S=f3])" );
+            final GSDI sdi2_6 = new GSDI( g2_6, s2, false );
+            if ( sdi2_6.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_6.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_6.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_6.getNode( "j3" ), g2_6.getNode( "i4" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_6.getNode( "j3" ), g2_6.getNode( "f3" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_7 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k1[&&NHX:S=k1]),i1[&&NHX:S=i1])" );
+            final GSDI sdi2_7 = new GSDI( g2_7, s2, false );
+            if ( sdi2_7.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_7.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_7.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_7.getNode( "j1" ), g2_7.getNode( "k1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_7.getNode( "j1" ), g2_7.getNode( "i1" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_8 = TestGSDI.createPhylogeny( "(j1[&&NHX:S=j1],(k1[&&NHX:S=k1],i1[&&NHX:S=i1]))" );
+            final GSDI sdi2_8 = new GSDI( g2_8, s2, false );
+            if ( sdi2_8.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_8.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_8.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_8.getNode( "j1" ), g2_8.getNode( "k1" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            if ( !pm.obtainLCA( g2_8.getNode( "k1" ), g2_8.getNode( "i1" ) ).getNodeData().getEvent().isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_9 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
+            final GSDI sdi2_9 = new GSDI( g2_9, s2, false );
+            if ( sdi2_9.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_9.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_9.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_9, "j1", "k4" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_9, "j1", "f2" ).isSpeciation() ) {
+                return false;
+            }
+            final Phylogeny g2_10 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
+            final GSDI sdi2_10 = new GSDI( g2_10, s2, false );
+            if ( sdi2_10.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_10.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_10.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_10, "m1", "k4" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_10, "m1", "f2" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_11 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),x[&&NHX:S=x])" );
+            final GSDI sdi2_11 = new GSDI( g2_11, s2, false );
+            if ( sdi2_11.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_11.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_11.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_11, "m1", "k4" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_11, "m1", "x" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_12 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],(k4[&&NHX:S=k4],x[&&NHX:S=x]))" );
+            final GSDI sdi2_12 = new GSDI( g2_12, s2, false );
+            if ( sdi2_12.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_12.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_12.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_12, "x", "k4" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_12, "m1", "x" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_13 = TestGSDI.createPhylogeny( "(x[&&NHX:S=x],(y[&&NHX:S=y],z[&&NHX:S=z]))" );
+            final GSDI sdi2_13 = new GSDI( g2_13, s2, false );
+            if ( sdi2_13.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_13.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_13.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_13, "y", "z" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_13, "x", "z" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_14 = TestGSDI.createPhylogeny( "(a1_1[&&NHX:S=a1],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
+            final GSDI sdi2_14 = new GSDI( g2_14, s2, false );
+            if ( sdi2_14.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_14.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_14.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_14, "b1", "a1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_14, "b1", "a1_1" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_15 = TestGSDI.createPhylogeny( "(a2[&&NHX:S=a2],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
+            final GSDI sdi2_15 = new GSDI( g2_15, s2, false );
+            if ( sdi2_15.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_15.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_15.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_15, "b1", "a1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_15, "b1", "a2" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_16 = TestGSDI.createPhylogeny( "(n2[&&NHX:S=n2],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
+            final GSDI sdi2_16 = new GSDI( g2_16, s2, false );
+            if ( sdi2_16.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_16.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_16.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_16, "j3", "n1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_16, "j3", "n2" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_17 = TestGSDI.createPhylogeny( "(p4[&&NHX:S=p4],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
+            final GSDI sdi2_17 = new GSDI( g2_17, s2, false );
+            if ( sdi2_17.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_17.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_17.getSpeciationsSum() != 1 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_17, "j3", "n1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_17, "j3", "p4" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_18 = TestGSDI
+                    .createPhylogeny( "((n11[&&NHX:S=n1],n12[&&NHX:S=n1]),(n13[&&NHX:S=n1],n14[&&NHX:S=n1]))" );
+            final GSDI sdi2_18 = new GSDI( g2_18, s2, false );
+            if ( sdi2_18.getDuplicationsSum() != 3 ) {
+                return false;
+            }
+            if ( sdi2_18.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_18.getSpeciationsSum() != 0 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_18, "n11", "n12" ).isDuplication() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_18, "n13", "n14" ).isDuplication() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_18, "n11", "n13" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_19 = TestGSDI
+                    .createPhylogeny( "((n11[&&NHX:S=n1],n21[&&NHX:S=n2]),(n12[&&NHX:S=n1],n22[&&NHX:S=n2]))" );
+            final GSDI sdi2_19 = new GSDI( g2_19, s2, false );
+            if ( sdi2_19.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_19.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_19.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_19, "n11", "n21" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_19, "n12", "n22" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_19, "n11", "n12" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_20 = TestGSDI
+                    .createPhylogeny( "((n11[&&NHX:S=n1],n2[&&NHX:S=n2]),(n12[&&NHX:S=n1],n3[&&NHX:S=n3]))" );
+            final GSDI sdi2_20 = new GSDI( g2_20, s2, false );
+            if ( sdi2_20.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_20.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_20.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_20, "n11", "n2" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_20, "n12", "n3" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_20, "n11", "n12" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_21 = TestGSDI
+                    .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],a1[&&NHX:S=a1]))" );
+            final GSDI sdi2_21 = new GSDI( g2_21, s2, false );
+            if ( sdi2_21.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_21.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_21.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_21, "n1", "n2" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_21, "n3", "a1" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_21, "n2", "a1" ).isDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_22 = TestGSDI
+                    .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],n4[&&NHX:S=n4]))" );
+            final GSDI sdi2_22 = new GSDI( g2_22, s2, false );
+            Archaeopteryx.createApplication( g2_22 );
+            Archaeopteryx.createApplication( s2 );
+            if ( sdi2_22.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi2_22.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi2_22.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_22, "n1", "n2" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_22, "n3", "n4" ).isSpeciation() ) {
+                return false;
+            }
+            if ( !TestGSDI.getEvent( g2_22, "n1", "n3" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
             //            final Phylogeny g2_23 = TestGSDI
             //                    .createPhylogeny( "((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),(c1[&&NHX:S=c1],d1[&&NHX:S=d1]))" );
             //            final GSDI sdi2_23 = new GSDI( g2_23, s2, false );
@@ -879,60 +880,60 @@ public final class TestGSDI {
             //            if ( !TestGSDI.getEvent( g2_32, "a1", "z" ).isSpeciationOrDuplication() ) {
             //                return false;
             //            }
-            //-
-            final Phylogeny g2_33_d = TestGSDI
-                    .createPhylogeny( "((((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?],(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?])" );
-            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false );
-            Archaeopteryx.createApplication( g2_33_d );
-            //  Archaeopteryx.createApplication( s2 );
-            //-
-            final Phylogeny g2_33 = TestGSDI
-                    .createPhylogeny( "(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1]),x[&&NHX:S=x]),p1[&&NHX:S=p1]),i1[&&NHX:S=i1]),k2[&&NHX:S=k2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
-            final GSDI sdi2_33 = new GSDI( g2_33, s2, false );
-            Archaeopteryx.createApplication( g2_33 );
-            // Archaeopteryx.createApplication( s2 );
-            if ( sdi2_33.getDuplicationsSum() != 1 ) {
-                return false;
-            }
-            if ( sdi2_33.getSpeciationOrDuplicationEventsSum() != 7 ) {
-                return false;
-            }
-            if ( sdi2_33.getSpeciationsSum() != 3 ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "a2" ).isSpeciation() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "b1" ).isSpeciation() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "c1" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "d1" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "x" ).isSpeciation() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "p1" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "i1" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "k2" ).isDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "e1" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "y" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
-            if ( !TestGSDI.getEvent( g2_33, "a1", "z" ).isSpeciationOrDuplication() ) {
-                return false;
-            }
+            //            //-
+            //            final Phylogeny g2_33_d = TestGSDI
+            //                    .createPhylogeny( "((((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?],(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?])" );
+            //            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false );
+            //            Archaeopteryx.createApplication( g2_33_d );
+            //            //  Archaeopteryx.createApplication( s2 );
+            //            //-
+            //            final Phylogeny g2_33 = TestGSDI
+            //                    .createPhylogeny( "(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1]),x[&&NHX:S=x]),p1[&&NHX:S=p1]),i1[&&NHX:S=i1]),k2[&&NHX:S=k2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
+            //            final GSDI sdi2_33 = new GSDI( g2_33, s2, false );
+            //            Archaeopteryx.createApplication( g2_33 );
+            //            // Archaeopteryx.createApplication( s2 );
+            //            if ( sdi2_33.getDuplicationsSum() != 1 ) {
+            //                return false;
+            //            }
+            //            if ( sdi2_33.getSpeciationOrDuplicationEventsSum() != 7 ) {
+            //                return false;
+            //            }
+            //            if ( sdi2_33.getSpeciationsSum() != 3 ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "a2" ).isSpeciation() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "b1" ).isSpeciation() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "c1" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "d1" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "x" ).isSpeciation() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "p1" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "i1" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "k2" ).isDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "e1" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "y" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
+            //            if ( !TestGSDI.getEvent( g2_33, "a1", "z" ).isSpeciationOrDuplication() ) {
+            //                return false;
+            //            }
             //            final Phylogeny g2_34 = TestGSDI
             //                    .createPhylogeny( "(((n1_0[&&NHX:S=n1],n2_0[&&NHX:S=n2]),(n1_1[&&NHX:S=n1],n3_0[&&NHX:S=n3])),n4_0[&&NHX:S=n4])" );
             //            final GSDI sdi2_34 = new GSDI( g2_34, s2, false );
