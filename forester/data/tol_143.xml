@@ -2014,9 +2014,9 @@
                                                 </clade>
                                               </clade>
                                               <clade>
+                                                <name>BAUCOM</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">430998</id>
-                                                  <code>BAUCOM</code>
                                                   <scientific_name>Baudoinia compniacensis</scientific_name>
                                                   <rank>species</rank>
                                                   <uri>http://www.diark.org/img/species_pict/Baudoinia_compniacensis</uri>
