@@ -205,7 +205,7 @@ public final class gsdi {
                     case SCIENTIFIC_NAME:
                         PhylogenyMethods
                                 .transferNodeNameToField( species_tree,
-                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID_UNIPROT_1,
+                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
                                                           true );
                         break;
                     case CODE:

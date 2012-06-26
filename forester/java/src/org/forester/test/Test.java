@@ -1924,26 +1924,6 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n = t3.getNode( "ABC" );
-            PhylogenyNodeIterator it;
-            for( it = n.iterateChildNodesForward(); it.hasNext(); ) {
-                it.next();
-            }
-            for( it.reset(); it.hasNext(); ) {
-                it.next();
-            }
-            final PhylogenyNodeIterator it2 = n.iterateChildNodesForward();
-            if ( !it2.next().getName().equals( "A" ) ) {
-                return false;
-            }
-            if ( !it2.next().getName().equals( "B" ) ) {
-                return false;
-            }
-            if ( !it2.next().getName().equals( "C" ) ) {
-                return false;
-            }
-            if ( it2.hasNext() ) {
-                return false;
-            }
             final Phylogeny t4 = factory.create( "((A:1,B:2,C:10)ABC:1,(D:3,E:5)DE:3,(F,G,H,I))", new NHXParser() )[ 0 ];
             if ( t4.getNumberOfExternalNodes() != 9 ) {
                 return false;

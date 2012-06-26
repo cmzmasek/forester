@@ -149,8 +149,9 @@ public final class GSDI extends SDI {
         Event event = null;
         // Determine how many children map to same node as parent.
         int sum_g_childs_mapping_to_s = 0;
-        for( final PhylogenyNodeIterator iter = g.iterateChildNodesForward(); iter.hasNext(); ) {
-            if ( iter.next().getLink() == s ) {
+        for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
+            final PhylogenyNode c = g.getChildNode( i );
+            if ( c.getLink() == s ) {
                 ++sum_g_childs_mapping_to_s;
             }
         }
@@ -159,8 +160,8 @@ public final class GSDI extends SDI {
         int max_traversals = 0;
         PhylogenyNode max_traversals_node = null;
         if ( !s.isExternal() ) {
-            for( final PhylogenyNodeIterator iter = s.iterateChildNodesForward(); iter.hasNext(); ) {
-                final PhylogenyNode current_node = iter.next();
+            for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
+                final PhylogenyNode current_node = s.getChildNode( i );
                 final int traversals = getTraversalCount( current_node );
                 traversals_sum += traversals;
                 if ( traversals > max_traversals ) {
@@ -175,6 +176,7 @@ public final class GSDI extends SDI {
         if ( sum_g_childs_mapping_to_s > 0 ) {
             if ( traversals_sum == 2 ) {
                 event = createDuplicationEvent();
+                //  _transversal_counts.clear();
             }
             else if ( traversals_sum > 2 ) {
                 if ( max_traversals <= 1 ) {
@@ -187,11 +189,14 @@ public final class GSDI extends SDI {
                 }
                 else {
                     event = createDuplicationEvent();
+                    System.out.println( g.toString() );
                     _transversal_counts.put( max_traversals_node, 1 );
+                    //  _transversal_counts.clear();
                 }
             }
             else {
                 event = createDuplicationEvent();
+                //   _transversal_counts.clear();
             }
         }
         else {
@@ -214,8 +219,18 @@ public final class GSDI extends SDI {
      */
     final void geneTreePostOrderTraversal( final PhylogenyNode g ) {
         if ( !g.isExternal() ) {
-            for( final PhylogenyNodeIterator iter = g.iterateChildNodesForward(); iter.hasNext(); ) {
-                geneTreePostOrderTraversal( iter.next() );
+            boolean all_ext = true;
+            for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
+                if ( g.getChildNode( i ).isInternal() ) {
+                    all_ext = false;
+                    break;
+                }
+            }
+            if ( all_ext ) {
+                _transversal_counts.clear();
+            }
+            for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
+                geneTreePostOrderTraversal( g.getChildNode( i ) );
             }
             final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
             for( int i = 0; i < linked_nodes.length; ++i ) {
@@ -240,7 +255,6 @@ public final class GSDI extends SDI {
             g.setLink( s );
             // Determines whether dup. or spec.
             determineEvent( s, g );
-            // _transversal_counts.clear();
         }
     }
 
@@ -304,7 +318,7 @@ public final class GSDI extends SDI {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
         final TaxonomyComparisonBase tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
-        System.out.println( "comp base is: " + tax_comp_base );
+        // System.out.println( "comp base is: " + tax_comp_base );
         // Stringyfied taxonomy is the key, node is the value.
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
@@ -352,7 +366,7 @@ public final class GSDI extends SDI {
                     else {
                         g.setLink( s );
                         _mapped_species_tree_nodes.add( s );
-                        System.out.println( "setting link of " + g + " to " + s );
+                        //  System.out.println( "setting link of " + g + " to " + s );
                     }
                 }
             }
@@ -363,21 +377,10 @@ public final class GSDI extends SDI {
             }
         }
         if ( _strip_species_tree ) {
-            for( final PhylogenyNode x : _mapped_species_tree_nodes ) {
-                System.out.println( ">>" + x );
-            }
             for( final PhylogenyNode s : species_tree_ext_nodes ) {
-                System.out.print( ">>>>>>>>>" + s );
                 if ( !_mapped_species_tree_nodes.contains( s ) ) {
                     _species_tree.deleteSubtree( s, true );
-                    System.out.println( " DELETING" );
                 }
-                else {
-                    System.out.println();
-                }
-            }
-            for( final PhylogenyNode x : _mapped_species_tree_nodes ) {
-                System.out.println( ">>" + x );
             }
         }
     }

@@ -28,7 +28,6 @@ package org.forester.sdi;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Taxonomy;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 
 public class TaxonomyAssigner extends SDI {
 
@@ -41,8 +40,8 @@ public class TaxonomyAssigner extends SDI {
 
     void geneTreePostOrderTraversal( final PhylogenyNode g ) {
         if ( !g.isExternal() ) {
-            for( final PhylogenyNodeIterator iter = g.iterateChildNodesForward(); iter.hasNext(); ) {
-                geneTreePostOrderTraversal( iter.next() );
+            for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
+                geneTreePostOrderTraversal( g.getChildNode( i ) );
             }
             final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
             for( int i = 0; i < linked_nodes.length; ++i ) {

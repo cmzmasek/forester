@@ -38,8 +38,6 @@ import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.iterators.ChildNodeIteratorForward;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
 
@@ -747,13 +745,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
 
     final public boolean isSpeciation() {
         return getNodeData().isHasEvent() && getNodeData().getEvent().isSpeciation();
-    }
-
-    // ---------------------------------------------------------
-    // Iterator
-    // ---------------------------------------------------------
-    final public PhylogenyNodeIterator iterateChildNodesForward() {
-        return new ChildNodeIteratorForward( this );
     }
 
     // ---------------------------------------------------------

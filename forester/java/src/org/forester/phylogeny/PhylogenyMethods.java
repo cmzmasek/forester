@@ -192,6 +192,20 @@ public class PhylogenyMethods {
         return trees;
     }
 
+    public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final List<File> files )
+            throws IOException {
+        final List<Phylogeny> tree_list = new ArrayList<Phylogeny>();
+        for( final File file : files ) {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] trees = factory.create( file, parser );
+            if ( ( trees == null ) || ( trees.length == 0 ) ) {
+                throw new PhylogenyParserException( "Unable to parse phylogeny from file: " + file );
+            }
+            tree_list.addAll( Arrays.asList( trees ) );
+        }
+        return tree_list.toArray( new Phylogeny[ tree_list.size() ] );
+    }
+
     final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
@@ -406,16 +420,6 @@ public class PhylogenyMethods {
             if ( !ForesterUtil.isEmpty( name ) ) {
                 switch ( field ) {
                     case TAXONOMY_CODE:
-                        //temp hack
-                        //                        if ( name.length() > 5 ) {
-                        //                            n.setName( "" );
-                        //                            if ( !n.getNodeData().isHasTaxonomy() ) {
-                        //                                n.getNodeData().setTaxonomy( new Taxonomy() );
-                        //                            }
-                        //                            n.getNodeData().getTaxonomy().setScientificName( name );
-                        //                            break;
-                        //                        }
-                        //
                         n.setName( "" );
                         setTaxonomyCode( n, name );
                         break;
@@ -1246,8 +1250,9 @@ public class PhylogenyMethods {
             double blue = 0.0;
             int n = 0;
             if ( node.isInternal() ) {
-                for( final PhylogenyNodeIterator iterator = node.iterateChildNodesForward(); iterator.hasNext(); ) {
-                    final PhylogenyNode child_node = iterator.next();
+                //for( final PhylogenyNodeIterator iterator = node.iterateChildNodesForward(); iterator.hasNext(); ) {
+                for( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
+                    final PhylogenyNode child_node = node.getChildNode( i );
                     final Color child_color = getBranchColorValue( child_node );
                     if ( child_color != null ) {
                         ++n;
