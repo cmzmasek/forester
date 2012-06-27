@@ -1,18 +1,18 @@
 
 package org.forester.sdi;
 
-public class SdiException extends Exception {
+public class SDIException extends Exception {
 
     /**
      * 
      */
     private static final long serialVersionUID = 5154733429066500435L;
 
-    public SdiException() {
+    public SDIException() {
         super();
     }
 
-    public SdiException( final String message ) {
+    public SDIException( final String message ) {
         super( message );
     }
 }

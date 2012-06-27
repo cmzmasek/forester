@@ -36,8 +36,6 @@ import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 
-import com.itextpdf.text.pdf.ArabicLigaturizer;
-
 public final class TestGSDI {
 
     private final static Phylogeny createPhylogeny( final String nhx ) throws IOException {

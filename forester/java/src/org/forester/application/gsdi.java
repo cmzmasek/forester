@@ -46,8 +46,8 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDI.TaxonomyComparisonBase;
+import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIse;
-import org.forester.sdi.SdiException;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterConstants;
@@ -312,7 +312,7 @@ public final class gsdi {
                 sdi = new SDIse( gene_tree, species_tree );
             }
         }
-        catch ( final SdiException e ) {
+        catch ( final SDIException e ) {
             log_writer.println( "User Error: " + e.getLocalizedMessage() );
             log_writer.close();
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );

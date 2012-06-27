@@ -39,9 +39,9 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
 import org.forester.sdi.SDIse;
-import org.forester.sdi.SdiException;
 import org.forester.util.ForesterUtil;
 
 /*
@@ -145,7 +145,7 @@ public class sdi_dir {
      *            set to true, then out of the resulting trees with minimal
      *            mapping cost or minimal number of duplications the tree with
      *            the minimal height is chosen
-     * @throws SdiException 
+     * @throws SDIException 
      */
     public static void infer( final File indir,
                               final File species_tree_file,
@@ -155,7 +155,7 @@ public class sdi_dir {
                               final boolean write_trees,
                               final boolean minimize_mapping_cost,
                               boolean minimize_sum_of_dup,
-                              final boolean minimize_height ) throws IOException, SdiException {
+                              final boolean minimize_height ) throws IOException, SDIException {
         final int MIN_EXT_NODES = 4; // Minimal size of trees [in ext nodes]
         // to be analyzed.
         final int MAX_EXT_NODES = 5000; // Maximal size of trees [in ext nodes]

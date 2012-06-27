@@ -36,8 +36,8 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIx;
-import org.forester.sdi.SdiException;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -49,7 +49,7 @@ public class sdix {
     final static private String PRG_VERSION   = "0.001 alpha";
     final static private String PRG_DATE      = "2009.10.14";
 
-    public static void main( final String args[] ) throws SdiException {
+    public static void main( final String args[] ) throws SDIException {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE );
         System.out.println();
         CommandLineArguments cla = null;

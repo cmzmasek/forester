@@ -51,7 +51,7 @@ public class SDIx {
     private void analyze( final Phylogeny gene_tree,
                           final String gene_tree_file_name,
                           final Phylogeny[] species_trees,
-                          final File out_dir ) throws IOException, SdiException {
+                          final File out_dir ) throws IOException, SDIException {
         final boolean minimize_cost = true;
         final boolean minimize_sum_of_dup = true;
         final boolean minimize_height = true;
@@ -101,7 +101,7 @@ public class SDIx {
     }
 
     public void method1( final List<File> gene_tree_files, final Phylogeny[] species_trees, final File out_dir )
-            throws IOException, SdiException {
+            throws IOException, SDIException {
         checkSpeciesTreesForEqualNumberOfExtNodes( species_trees );
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         for( final File gene_tree_file : gene_tree_files ) {

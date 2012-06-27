@@ -495,7 +495,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-       
         System.out.print( "SDIunrooted: " );
         if ( Test.testSDIunrooted() ) {
             System.out.println( "OK." );
@@ -7487,8 +7486,6 @@ public final class Test {
         }
         return true;
     }
-
-   
 
     private static boolean testUniprotTaxonomySearch() {
         try {

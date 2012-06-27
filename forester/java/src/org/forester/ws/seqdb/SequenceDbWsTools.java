@@ -380,7 +380,7 @@ public final class SequenceDbWsTools {
             // To prevent accessing online dbs in too quick succession. 
             Thread.sleep( 20 );
         }
-        catch ( InterruptedException e ) {
+        catch ( final InterruptedException e ) {
             e.printStackTrace();
         }
         return result;

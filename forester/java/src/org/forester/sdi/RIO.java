@@ -231,10 +231,10 @@ public final class RIO {
      * @param query
      *            the sequence name of the squence whose orthologs are to be
      *            inferred
-     * @throws SdiException 
+     * @throws SDIException 
      */
     public void inferOrthologs( final File gene_trees_file, final Phylogeny species_tree, final String query )
-            throws IOException, SdiException {
+            throws IOException, SDIException {
         int bs = 0;
         if ( RIO.TIME ) {
             _time = System.currentTimeMillis();
@@ -283,7 +283,7 @@ public final class RIO {
     // Helper method which performs the actual ortholog inference for
     // the external node with seqname query.
     private void inferOrthologsHelper( final Phylogeny gene_tree, final Phylogeny species_tree, final String query )
-            throws SdiException {
+            throws SDIException {
         Phylogeny assigned_tree = null;
         List<PhylogenyNode> nodes = null;
         final SDIR sdiunrooted = new SDIR();
