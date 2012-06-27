@@ -500,6 +500,12 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         return getNodeData().getNodeName();
     }
 
+    final public List<PhylogenyNode> getAllDescendants() {
+       
+        return _descendants;
+    }
+    
+    
     final public int getNumberOfDescendants() {
         if ( _descendants == null ) {
             return 0;

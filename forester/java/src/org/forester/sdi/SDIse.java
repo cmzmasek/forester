@@ -96,7 +96,8 @@ public class SDIse extends SDI {
     private void calculateMforNode( final PhylogenyNode n ) {
         if ( !n.isExternal() ) {
             final boolean was_duplication = n.isDuplication();
-            PhylogenyNode a = n.getChildNode1().getLink(), b = n.getChildNode2().getLink();
+            PhylogenyNode a = n.getChildNode1().getLink();
+            PhylogenyNode b = n.getChildNode2().getLink();
             while ( a != b ) {
                 if ( a.getId() > b.getId() ) {
                     a = a.getParent();

@@ -72,33 +72,6 @@ public final class GSDI extends SDI {
     private final List<PhylogenyNode> _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
 
-    /**
-     * Constructor which sets the gene tree and the species tree to be compared.
-     * species_tree is the species tree to which the gene tree gene_tree will be
-     * compared to - with method "infer(boolean)". Both Trees must be completely
-     * binary and rooted. The actual inference is accomplished with method
-     * "infer(boolean)". The mapping cost L can then be calculated with method
-     * "computeMappingCost()".
-     * <p>
-     * 
-     * @see #infer(boolean)
-     * @see SDI#computeMappingCostL()
-     * @param gene_tree
-     *            reference to a rooted gene tree to which assign duplication vs
-     *            speciation, must have species names in the species name fields
-     *            for all external nodes
-     * @param species_tree
-     *            reference to a rooted binary species tree which might get
-     *            stripped in the process, must have species names in the
-     *            species name fields for all external nodes
-     * 
-     * @param most_parsimonious_duplication_model
-     *            set to true to assign nodes as speciations which would
-     *            otherwise be assiged as unknown because of polytomies in the
-     *            species tree.
-     * @throws SdiException 
-     * 
-     */
     public GSDI( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
                  final boolean most_parsimonious_duplication_model,
@@ -116,7 +89,6 @@ public final class GSDI extends SDI {
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
-        //geneTreePostOrderTraversal( getGeneTree().getRoot(), null );
         geneTreePostOrderTraversal();
     }
 
@@ -127,102 +99,58 @@ public final class GSDI extends SDI {
 
     // s is the node on the species tree g maps to.
     private final void determineEvent( final PhylogenyNode s, final PhylogenyNode g ) {
-        Event event = null;
-        // Determine how many children map to same node as parent.
-        int sum_g_childs_mapping_to_s = 0;
-        for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
-            final PhylogenyNode c = g.getChildNode( i );
-            if ( c.getLink() == s ) {
-                ++sum_g_childs_mapping_to_s;
-            }
+        boolean oyako = false;
+        if ( ( g.getChildNode1().getLink() == s ) || ( g.getChildNode2().getLink() == s ) ) {
+            oyako = true;
         }
         if ( g.getLink().getNumberOfDescendants() == 2 ) {
-            if ( sum_g_childs_mapping_to_s > 0 ) {
-                event = createDuplicationEvent();
+            if ( oyako ) {
+                g.getNodeData().setEvent( createDuplicationEvent() );
             }
             else {
-                event = createSpeciationEvent();
+                g.getNodeData().setEvent( createSpeciationEvent() );
             }
         }
         else {
-            if ( sum_g_childs_mapping_to_s > 0 ) {
+            if ( oyako ) {
                 boolean multiple = false;
-                Set<PhylogenyNode> set = new HashSet<PhylogenyNode>();
-                for( PhylogenyNode n : g.getChildNode1().getLink().getAllExternalDescendants() ) {
+                final Set<PhylogenyNode> set = new HashSet<PhylogenyNode>();
+                for( PhylogenyNode n : g.getChildNode1().getAllExternalDescendants() ) {
+                    n = n.getLink();
+                    while ( n.getParent() != s ) {
+                        n = n.getParent();
+                        if ( n.isRoot() ) {
+                            break;
+                        }
+                    }
                     set.add( n );
                 }
-                for( PhylogenyNode n : g.getChildNode2().getLink().getAllExternalDescendants() ) {
+                for( PhylogenyNode n : g.getChildNode2().getAllExternalDescendants() ) {
+                    n = n.getLink();
+                    while ( n.getParent() != s ) {
+                        n = n.getParent();
+                        if ( n.isRoot() ) {
+                            break;
+                        }
+                    }
                     if ( set.contains( n ) ) {
                         multiple = true;
                         break;
                     }
-                    // else {
-                    //     set.add( n );
-                    // }
                 }
                 if ( multiple ) {
-                    event = createDuplicationEvent();
+                    g.getNodeData().setEvent( createDuplicationEvent() );
                 }
                 else {
-                    event = createSingleSpeciationOrDuplicationEvent();
+                    g.getNodeData().setEvent( createSingleSpeciationOrDuplicationEvent() );
                 }
             }
             else {
-                event = createSpeciationEvent();
+                g.getNodeData().setEvent( createSpeciationEvent() );
             }
         }
-        g.getNodeData().setEvent( event );
     }
 
-    //    private final void determineEvent2( final PhylogenyNode s, final PhylogenyNode g ) {
-    //        Event event = null;
-    //        // Determine how many children map to same node as parent.
-    //        int sum_g_childs_mapping_to_s = 0;
-    //        for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
-    //            final PhylogenyNode c = g.getChildNode( i );
-    //            if ( c.getLink() == s ) {
-    //                ++sum_g_childs_mapping_to_s;
-    //            }
-    //        }
-    //        // Determine the sum of traversals.
-    //        int traversals_sum = 0;
-    //        int max_traversals = 0;
-    //        PhylogenyNode max_traversals_node = null;
-    //        if ( !s.isExternal() ) {
-    //            for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
-    //                final PhylogenyNode current_node = s.getChildNode( i );
-    //                final int traversals = getTraversalCount( current_node );
-    //                traversals_sum += traversals;
-    //                if ( traversals > max_traversals ) {
-    //                    max_traversals = traversals;
-    //                    max_traversals_node = current_node;
-    //                }
-    //            }
-    //        }
-    //        // System.out.println( " sum=" + traversals_sum );
-    //        // System.out.println( " max=" + max_traversals );
-    //        // System.out.println( " m=" + sum_g_childs_mapping_to_s );
-    //        if ( s.getNumberOfDescendants() == 2 ) {
-    //            if ( sum_g_childs_mapping_to_s == 0 ) {
-    //                event = createSpeciationEvent();
-    //            }
-    //            else {
-    //                event = createDuplicationEvent();
-    //            }
-    //        }
-    //        else {
-    //            if ( sum_g_childs_mapping_to_s == 2 ) {
-    //                event = createDuplicationEvent();
-    //            }
-    //            else if ( sum_g_childs_mapping_to_s == 1 ) {
-    //                event = createSingleSpeciationOrDuplicationEvent();
-    //            }
-    //            else {
-    //                event = createSpeciationEvent();
-    //            }
-    //        }
-    //        g.getNodeData().setEvent( event );
-    //    }
     /**
      * Traverses the subtree of PhylogenyNode g in postorder, calculating the
      * mapping function M, and determines which nodes represent speciation
@@ -232,34 +160,23 @@ public final class GSDI extends SDI {
      * the species tree must be labeled in preorder.
      * <p>
      * 
-     * @param g
-     *            starting node of a gene tree - normally the root
      */
     final void geneTreePostOrderTraversal() {
-        for( PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
-            PhylogenyNode g = it.next();
+        for( final PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode g = it.next();
             if ( !g.isExternal() ) {
-                final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
-                for( int i = 0; i < linked_nodes.length; ++i ) {
-                    if ( g.getChildNode( i ).getLink() == null ) {
-                        System.out.println( "link is null for " + g.getChildNode( i ) );
-                        System.exit( -1 );
+                PhylogenyNode s1 = g.getChildNode1().getLink();
+                PhylogenyNode s2 = g.getChildNode2().getLink();
+                while ( s1 != s2 ) {
+                    if ( s1.getId() > s2.getId() ) {
+                        s1 = s1.getParent();
                     }
-                    linked_nodes[ i ] = g.getChildNode( i ).getLink();
+                    else {
+                        s2 = s2.getParent();
+                    }
                 }
-                final int[] min_max = obtainMinMaxIdIndices( linked_nodes );
-                int min_i = min_max[ 0 ];
-                int max_i = min_max[ 1 ];
-                while ( linked_nodes[ min_i ] != linked_nodes[ max_i ] ) {
-                    linked_nodes[ max_i ] = linked_nodes[ max_i ].getParent();
-                    final int[] min_max_ = obtainMinMaxIdIndices( linked_nodes );
-                    min_i = min_max_[ 0 ];
-                    max_i = min_max_[ 1 ];
-                }
-                final PhylogenyNode s = linked_nodes[ max_i ];
-                g.setLink( s );
-                // Determines whether dup. or spec.
-                determineEvent( s, g );
+                g.setLink( s1 );
+                determineEvent( s1, g );
             }
         }
     }
@@ -297,29 +214,6 @@ public final class GSDI extends SDI {
      * 
      */
     @Override
-    //    final void linkNodesOfG() {
-    //        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = createTaxonomyToNodeMap();
-    //        if ( _strip_gene_tree ) {
-    //            stripGeneTree( speciestree_ext_nodes );
-    //            if ( ( _gene_tree == null ) || ( _gene_tree.getNumberOfExternalNodes() < 2 ) ) {
-    //                throw new IllegalArgumentException( "species tree does not contain any"
-    //                        + " nodes matching species in the gene tree" );
-    //            }
-    //        }
-    //        // Retrieve the reference to the PhylogenyNode with a matching species.
-    //        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
-    //            final PhylogenyNode g = iter.next();
-    //            if ( !g.getNodeData().isHasTaxonomy() ) {
-    //                throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
-    //            }
-    //            final PhylogenyNode s = speciestree_ext_nodes.get( g.getNodeData().getTaxonomy() );
-    //            if ( s == null ) {
-    //                throw new IllegalArgumentException( "species " + g.getNodeData().getTaxonomy()
-    //                        + " not present in species tree" );
-    //            }
-    //            g.setLink( s );
-    //        }
-    //    }
     final void linkNodesOfG() throws SdiException {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
@@ -395,52 +289,6 @@ public final class GSDI extends SDI {
         return _mapped_species_tree_nodes;
     }
 
-    //    final private HashMap<Taxonomy, PhylogenyNode> createTaxonomyToNodeMap() {
-    //        final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes = new HashMap<Taxonomy, PhylogenyNode>();
-    //        for( final PhylogenyNodeIterator iter = _species_tree.iteratorLevelOrder(); iter.hasNext(); ) {
-    //            final PhylogenyNode n = iter.next();
-    //            if ( n.getNodeData().isHasTaxonomy() ) {
-    //                if ( speciestree_ext_nodes.containsKey( n.getNodeData().getTaxonomy() ) ) {
-    //                    throw new IllegalArgumentException( "taxonomy [" + n.getNodeData().getTaxonomy()
-    //                            + "] is not unique in species phylogeny" );
-    //                }
-    //                speciestree_ext_nodes.put( n.getNodeData().getTaxonomy(), n );
-    //            }
-    //        }
-    //        return speciestree_ext_nodes;
-    //    }
-    //    private final void stripGeneTree( final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes ) {
-    //        //  final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
-    //        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
-    //            final PhylogenyNode g = iter.next();
-    //            if ( !g.getNodeData().isHasTaxonomy() ) {
-    //                throw new IllegalArgumentException( "gene tree node " + g + " has no taxonomic data" );
-    //            }
-    //            if ( !speciestree_ext_nodes.containsKey( g.getNodeData().getTaxonomy() ) ) {
-    //                _stripped_gene_tree_nodes.add( g );
-    //            }
-    //        }
-    //        for( final PhylogenyNode n : _stripped_gene_tree_nodes ) {
-    //            _gene_tree.deleteSubtree( n, true );
-    //        }
-    //    }
-    //    private final void stripGeneTree2( final HashMap<Taxonomy, PhylogenyNode> speciestree_ext_nodes ) {
-    //        //  final Set<PhylogenyNode> to_delete = new HashSet<PhylogenyNode>();
-    //        for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
-    //            final PhylogenyNode g = iter.next();
-    //            if ( !g.getNodeData().isHasTaxonomy() ) {
-    //                _stripped_gene_tree_nodes.add( g );
-    //            }
-    //            else {
-    //                if ( !speciestree_ext_nodes.containsKey( g.getNodeData().getTaxonomy() ) ) {
-    //                    _stripped_gene_tree_nodes.add( g );
-    //                }
-    //            }
-    //        }
-    //        for( final PhylogenyNode n : _stripped_gene_tree_nodes ) {
-    //            _gene_tree.deleteSubtree( n, true );
-    //        }
-    //    }
     public static TaxonomyComparisonBase determineTaxonomyComparisonBase( final Phylogeny gene_tree ) {
         int with_id_count = 0;
         int with_code_count = 0;
@@ -504,96 +352,4 @@ public final class GSDI extends SDI {
         sb.append( "mapping cost L                     : " + computeMappingCostL() );
         return sb.toString();
     }
-
-    static final int[] obtainMinMaxIdIndices( final PhylogenyNode[] linked_nodes ) {
-        int max_i = 0;
-        int min_i = 0;
-        int max_i_id = -Integer.MAX_VALUE;
-        int min_i_id = Integer.MAX_VALUE;
-        for( int i = 0; i < linked_nodes.length; ++i ) {
-            final int id_i = linked_nodes[ i ].getId();
-            if ( id_i > max_i_id ) {
-                max_i = i;
-                max_i_id = linked_nodes[ max_i ].getId();
-            }
-            if ( id_i < min_i_id ) {
-                min_i = i;
-                min_i_id = linked_nodes[ min_i ].getId();
-            }
-        }
-        return new int[] { min_i, max_i };
-    }
-    /**
-     * Updates the mapping function M after the root of the gene tree has been
-     * moved by one branch. It calculates M for the root of the gene tree and
-     * one of its two children.
-     * <p>
-     * To be used ONLY by method "SDIunrooted.fastInfer(Phylogeny,Phylogeny)".
-     * <p>
-     * (Last modfied: )
-     * 
-     * @param prev_root_was_dup
-     *            true if the previous root was a duplication, false otherwise
-     * @param prev_root_c1
-     *            child 1 of the previous root
-     * @param prev_root_c2
-     *            child 2 of the previous root
-     * @return number of duplications which have been assigned in gene tree
-     */
-    // int updateM( final boolean prev_root_was_dup,
-    // final PhylogenyNode prev_root_c1, final PhylogenyNode prev_root_c2 ) {
-    // final PhylogenyNode root = getGeneTree().getRoot();
-    // if ( ( root.getChildNode1() == prev_root_c1 )
-    // || ( root.getChildNode2() == prev_root_c1 ) ) {
-    // calculateMforNode( prev_root_c1 );
-    // }
-    // else {
-    // calculateMforNode( prev_root_c2 );
-    // }
-    // Event event = null;
-    // if ( prev_root_was_dup ) {
-    // event = Event.createSingleDuplicationEvent();
-    // }
-    // else {
-    // event = Event.createSingleSpeciationEvent();
-    // }
-    // root.getPhylogenyNodeData().setEvent( event );
-    // calculateMforNode( root );
-    // return getDuplications();
-    // } // updateM( boolean, PhylogenyNode, PhylogenyNode )
-    // Helper method for updateM( boolean, PhylogenyNode, PhylogenyNode )
-    // Calculates M for PhylogenyNode n, given that M for the two children
-    // of n has been calculated.
-    // (Last modified: 10/02/01)
-    // private void calculateMforNode( final PhylogenyNode n ) {
-    // if ( !n.isExternal() ) {
-    // boolean was_duplication = n.isDuplication();
-    // PhylogenyNode a = n.getChildNode1().getLink(), b = n
-    // .getChildNode2().getLink();
-    // while ( a != b ) {
-    // if ( a.getID() > b.getID() ) {
-    // a = a.getParent();
-    // }
-    // else {
-    // b = b.getParent();
-    // }
-    // }
-    // n.setLink( a );
-    // Event event = null;
-    // if ( ( a == n.getChildNode1().getLink() )
-    // || ( a == n.getChildNode2().getLink() ) ) {
-    // event = Event.createSingleDuplicationEvent();
-    // if ( !was_duplication ) {
-    // increaseDuplications();
-    // }
-    // }
-    // else {
-    // event = Event.createSingleSpeciationEvent();
-    // if ( was_duplication ) {
-    // decreaseDuplications();
-    // }
-    // }
-    // n.getPhylogenyNodeData().setEvent( event );
-    // }
-    // } // calculateMforNode( PhylogenyNode )
 }
