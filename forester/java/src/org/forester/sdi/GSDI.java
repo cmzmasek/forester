@@ -164,7 +164,7 @@ public final class GSDI extends SDI {
     final void geneTreePostOrderTraversal() {
         for( final PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode g = it.next();
-            if ( !g.isExternal() ) {
+            if ( g.isInternal() ) {
                 PhylogenyNode s1 = g.getChildNode1().getLink();
                 PhylogenyNode s2 = g.getChildNode2().getLink();
                 while ( s1 != s2 ) {
