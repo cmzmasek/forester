@@ -28,7 +28,7 @@
             <branch_length>0.1</branch_length>
             <node_id>b</node_id>
             <taxonomy>
-               <code>qwerty</code>
+               <code>QWERT</code>
             </taxonomy>
             <sequence id_source="s2">
                <accession source="foo">qw-_|</accession>
