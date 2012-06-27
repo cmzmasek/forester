@@ -113,7 +113,6 @@ public final class GSDI extends SDI {
         }
         else {
             if ( oyako ) {
-                boolean multiple = false;
                 final Set<PhylogenyNode> set = new HashSet<PhylogenyNode>();
                 for( PhylogenyNode n : g.getChildNode1().getAllExternalDescendants() ) {
                     n = n.getLink();
@@ -125,6 +124,7 @@ public final class GSDI extends SDI {
                     }
                     set.add( n );
                 }
+                boolean multiple = false;
                 for( PhylogenyNode n : g.getChildNode2().getAllExternalDescendants() ) {
                     n = n.getLink();
                     while ( n.getParent() != s ) {
