@@ -61,16 +61,17 @@ import org.forester.util.ForesterUtil;
  * 
  * @author Christian M. Zmasek
  */
-public final class GSDI extends SDI {
+public final class GSDIold extends SDI {
 
-    private final boolean             _most_parsimonious_duplication_model;
-    private final boolean             _strip_gene_tree;
-    private final boolean             _strip_species_tree;
-    private int                       _speciation_or_duplication_events_sum;
-    private int                       _speciations_sum;
-    private final List<PhylogenyNode> _stripped_gene_tree_nodes;
-    private final List<PhylogenyNode> _stripped_species_tree_nodes;
-    private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
+    private final HashMap<PhylogenyNode, Integer> _transversal_counts;
+    private final boolean                         _most_parsimonious_duplication_model;
+    private final boolean                         _strip_gene_tree;
+    private final boolean                         _strip_species_tree;
+    private int                                   _speciation_or_duplication_events_sum;
+    private int                                   _speciations_sum;
+    private final List<PhylogenyNode>             _stripped_gene_tree_nodes;
+    private final List<PhylogenyNode>             _stripped_species_tree_nodes;
+    private final Set<PhylogenyNode>              _mapped_species_tree_nodes;
 
     /**
      * Constructor which sets the gene tree and the species tree to be compared.
@@ -99,7 +100,7 @@ public final class GSDI extends SDI {
      * @throws SdiException 
      * 
      */
-    public GSDI( final Phylogeny gene_tree,
+    public GSDIold( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
                  final boolean most_parsimonious_duplication_model,
                  final boolean strip_gene_tree,
@@ -108,6 +109,7 @@ public final class GSDI extends SDI {
         _speciation_or_duplication_events_sum = 0;
         _speciations_sum = 0;
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
+        _transversal_counts = new HashMap<PhylogenyNode, Integer>();
         _duplications_sum = 0;
         _strip_gene_tree = strip_gene_tree;
         _strip_species_tree = strip_species_tree;
@@ -117,10 +119,10 @@ public final class GSDI extends SDI {
         getSpeciesTree().preOrderReId();
         linkNodesOfG();
         //geneTreePostOrderTraversal( getGeneTree().getRoot(), null );
-        geneTreePostOrderTraversal();
+        geneTreePostOrderTraversal2();
     }
 
-    GSDI( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean most_parsimonious_duplication_model )
+    GSDIold( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean most_parsimonious_duplication_model )
             throws SdiException {
         this( gene_tree, species_tree, most_parsimonious_duplication_model, false, false );
     }
@@ -136,40 +138,56 @@ public final class GSDI extends SDI {
                 ++sum_g_childs_mapping_to_s;
             }
         }
-        if ( g.getLink().getNumberOfDescendants() == 2 ) {
-            if ( sum_g_childs_mapping_to_s > 0 ) {
-                event = createDuplicationEvent();
-            }
-            else {
-                event = createSpeciationEvent();
+        // Determine the sum of traversals.
+        int traversals_sum = 0;
+        int max_traversals = 0;
+        PhylogenyNode max_traversals_node = null;
+        if ( !s.isExternal() ) {
+            for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
+                final PhylogenyNode current_node = s.getChildNode( i );
+                final int traversals = getTraversalCount( current_node );
+                traversals_sum += traversals;
+                if ( traversals > max_traversals ) {
+                    max_traversals = traversals;
+                    max_traversals_node = current_node;
+                }
             }
         }
-        else {
-            if ( sum_g_childs_mapping_to_s > 0 ) {
-                boolean multiple = false;
-                Set<PhylogenyNode> set = new HashSet<PhylogenyNode>();
-                for( PhylogenyNode n : g.getChildNode1().getLink().getAllExternalDescendants() ) {
-                    set.add( n );
-                }
-                for( PhylogenyNode n : g.getChildNode2().getLink().getAllExternalDescendants() ) {
-                    if ( set.contains( n ) ) {
-                        multiple = true;
-                        break;
+        // System.out.println( " sum=" + traversals_sum );
+        // System.out.println( " max=" + max_traversals );
+        // System.out.println( " m=" + sum_g_childs_mapping_to_s );
+        if ( sum_g_childs_mapping_to_s > 0 ) {
+            if ( traversals_sum == 2 ) {
+                event = createDuplicationEvent();
+                System.out.print( g.toString() );
+                System.out.println( " : ==2" );
+                //  _transversal_counts.clear();
+            }
+            else if ( traversals_sum > 2 ) {
+                if ( max_traversals <= 1 ) {
+                    if ( _most_parsimonious_duplication_model ) {
+                        event = createSpeciationEvent();
                     }
-                    // else {
-                    //     set.add( n );
-                    // }
-                }
-                if ( multiple ) {
-                    event = createDuplicationEvent();
+                    else {
+                        event = createSingleSpeciationOrDuplicationEvent();
+                    }
                 }
                 else {
-                    event = createSingleSpeciationOrDuplicationEvent();
+                    event = createDuplicationEvent();
+                    //     normalizeTcounts( s );
+                    //System.out.println( g.toString() );
+                    _transversal_counts.put( max_traversals_node, 1 );
+                    //  _transversal_counts.clear();
                 }
             }
             else {
-                event = createSpeciationEvent();
+                event = createDuplicationEvent();
+                //   _transversal_counts.clear();
             }
+            //normalizeTcounts( s );
+        }
+        else {
+            event = createSpeciationEvent();
         }
         g.getNodeData().setEvent( event );
     }
@@ -223,21 +241,64 @@ public final class GSDI extends SDI {
     //        }
     //        g.getNodeData().setEvent( event );
     //    }
-    /**
-     * Traverses the subtree of PhylogenyNode g in postorder, calculating the
-     * mapping function M, and determines which nodes represent speciation
-     * events and which ones duplication events.
-     * <p>
-     * Preconditions: Mapping M for external nodes must have been calculated and
-     * the species tree must be labeled in preorder.
-     * <p>
-     * 
-     * @param g
-     *            starting node of a gene tree - normally the root
-     */
-    final void geneTreePostOrderTraversal() {
+    final void geneTreePostOrderTraversal2() {
+        PhylogenyNode g = null;
         for( PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
-            PhylogenyNode g = it.next();
+            g = it.next();
+            if ( !g.isExternal() ) {
+                for( PhylogenyNodeIterator itw = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
+                    PhylogenyNode gg = it.next();
+                    gg.setLink( null );
+                }
+                try {
+                    linkNodesOfG();
+                }
+                catch ( SdiException e ) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                _transversal_counts.clear();
+                final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
+                for( int i = 0; i < linked_nodes.length; ++i ) {
+                    if ( g.getChildNode( i ).getLink() == null ) {
+                        System.out.println( "link is null for " + g.getChildNode( i ) );
+                        System.exit( -1 );
+                    }
+                    linked_nodes[ i ] = g.getChildNode( i ).getLink();
+                }
+                final int[] min_max = obtainMinMaxIdIndices( linked_nodes );
+                int min_i = min_max[ 0 ];
+                int max_i = min_max[ 1 ];
+                // initTransversalCounts();
+                while ( linked_nodes[ min_i ] != linked_nodes[ max_i ] ) {
+                    increaseTraversalCount( linked_nodes[ max_i ] );
+                    //                if ( linked_nodes[ max_i ].isExternal() ) {
+                    //                    System.out.println( "i am ext!" );
+                    //                    PhylogenyNode n = linked_nodes[ max_i ];
+                    //                    while ( !n.isRoot() ) {
+                    //                        _transversal_counts.put( n, 0 );
+                    //                        n = n.getParent();
+                    //                    }
+                    //                }
+                    linked_nodes[ max_i ] = linked_nodes[ max_i ].getParent();
+                    final int[] min_max_ = obtainMinMaxIdIndices( linked_nodes );
+                    min_i = min_max_[ 0 ];
+                    max_i = min_max_[ 1 ];
+                }
+                final PhylogenyNode s = linked_nodes[ max_i ];
+                g.setLink( s );
+                // Determines whether dup. or spec.
+                determineEvent( s, g );
+            }
+        }
+    }
+
+    final void geneTreePostOrderTraversal() {
+        PhylogenyNode prev;
+        PhylogenyNode g = null;
+        for( PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
+            prev = g;
+            g = it.next();
             if ( !g.isExternal() ) {
                 final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
                 for( int i = 0; i < linked_nodes.length; ++i ) {
@@ -250,7 +311,17 @@ public final class GSDI extends SDI {
                 final int[] min_max = obtainMinMaxIdIndices( linked_nodes );
                 int min_i = min_max[ 0 ];
                 int max_i = min_max[ 1 ];
+                // initTransversalCounts();
                 while ( linked_nodes[ min_i ] != linked_nodes[ max_i ] ) {
+                    increaseTraversalCount( linked_nodes[ max_i ] );
+                    //                if ( linked_nodes[ max_i ].isExternal() ) {
+                    //                    System.out.println( "i am ext!" );
+                    //                    PhylogenyNode n = linked_nodes[ max_i ];
+                    //                    while ( !n.isRoot() ) {
+                    //                        _transversal_counts.put( n, 0 );
+                    //                        n = n.getParent();
+                    //                    }
+                    //                }
                     linked_nodes[ max_i ] = linked_nodes[ max_i ].getParent();
                     final int[] min_max_ = obtainMinMaxIdIndices( linked_nodes );
                     min_i = min_max_[ 0 ];
@@ -260,7 +331,62 @@ public final class GSDI extends SDI {
                 g.setLink( s );
                 // Determines whether dup. or spec.
                 determineEvent( s, g );
+                if ( false ) {
+                    System.out.println( "******" );
+                    _transversal_counts.clear();
+                }
             }
+        }
+    }
+
+    /**
+     * Traverses the subtree of PhylogenyNode g in postorder, calculating the
+     * mapping function M, and determines which nodes represent speciation
+     * events and which ones duplication events.
+     * <p>
+     * Preconditions: Mapping M for external nodes must have been calculated and
+     * the species tree must be labeled in preorder.
+     * <p>
+     * 
+     * @param g
+     *            starting node of a gene tree - normally the root
+     */
+    final void geneTreePostOrderTraversal( final PhylogenyNode g ) {
+        if ( !g.isExternal() ) {
+            for( int i = 0; i < g.getNumberOfDescendants(); ++i ) {
+                geneTreePostOrderTraversal( g.getChildNode( i ) );
+            }
+            final PhylogenyNode[] linked_nodes = new PhylogenyNode[ g.getNumberOfDescendants() ];
+            for( int i = 0; i < linked_nodes.length; ++i ) {
+                if ( g.getChildNode( i ).getLink() == null ) {
+                    System.out.println( "link is null for " + g.getChildNode( i ) );
+                    System.exit( -1 );
+                }
+                linked_nodes[ i ] = g.getChildNode( i ).getLink();
+            }
+            final int[] min_max = obtainMinMaxIdIndices( linked_nodes );
+            int min_i = min_max[ 0 ];
+            int max_i = min_max[ 1 ];
+            // initTransversalCounts();
+            while ( linked_nodes[ min_i ] != linked_nodes[ max_i ] ) {
+                increaseTraversalCount( linked_nodes[ max_i ] );
+                //                if ( linked_nodes[ max_i ].isExternal() ) {
+                //                    System.out.println( "i am ext!" );
+                //                    PhylogenyNode n = linked_nodes[ max_i ];
+                //                    while ( !n.isRoot() ) {
+                //                        _transversal_counts.put( n, 0 );
+                //                        n = n.getParent();
+                //                    }
+                //                }
+                linked_nodes[ max_i ] = linked_nodes[ max_i ].getParent();
+                final int[] min_max_ = obtainMinMaxIdIndices( linked_nodes );
+                min_i = min_max_[ 0 ];
+                max_i = min_max_[ 1 ];
+            }
+            final PhylogenyNode s = linked_nodes[ max_i ];
+            g.setLink( s );
+            // Determines whether dup. or spec.
+            determineEvent( s, g );
         }
     }
 
@@ -288,6 +414,42 @@ public final class GSDI extends SDI {
 
     public final int getSpeciationsSum() {
         return _speciations_sum;
+    }
+
+    private final int getTraversalCount( final PhylogenyNode node ) {
+        if ( _transversal_counts.containsKey( node ) ) {
+            return _transversal_counts.get( node );
+        }
+        return 0;
+    }
+
+    private final void increaseTraversalCount( final PhylogenyNode node ) {
+        if ( _transversal_counts.containsKey( node ) ) {
+            _transversal_counts.put( node, _transversal_counts.get( node ) + 1 );
+        }
+        else {
+            _transversal_counts.put( node, 1 );
+        }
+        // System.out.println( "count for node " + node.getID() + " is now "
+        // + getTraversalCount( node ) );
+    }
+
+    private void normalizeTcounts( final PhylogenyNode s ) {
+        //        int min_traversals = Integer.MAX_VALUE;
+        //        for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
+        //            final PhylogenyNode current_node = s.getChildNode( i );
+        //            final int traversals = getTraversalCount( current_node );
+        //            if ( traversals < min_traversals ) {
+        //                min_traversals = traversals;
+        //            }
+        //        }
+        for( int i = 0; i < s.getNumberOfDescendants(); ++i ) {
+            final PhylogenyNode current_node = s.getChildNode( i );
+            // _transversal_counts.put( current_node, getTraversalCount( current_node ) - min_traversals );
+            if ( getTraversalCount( current_node ) > 1 ) {
+                _transversal_counts.put( current_node, 1 );
+            }
+        }
     }
 
     /**

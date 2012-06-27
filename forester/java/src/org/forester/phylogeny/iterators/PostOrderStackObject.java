@@ -32,39 +32,21 @@ import org.forester.phylogeny.PhylogenyNode;
  * 
  * @version 1.00 -- last modified: 06/15/00
  */
-public class PostOrderStackObject {
+public final class PostOrderStackObject {
 
     final private PhylogenyNode _node;
     final private int           _phase;
 
-    /**
-     * Creates a new PostOrderStackObject object.
-     * 
-     * @param n
-     *            DOCUMENT ME!
-     * @param i
-     *            DOCUMENT ME!
-     */
     public PostOrderStackObject( final PhylogenyNode n, final int i ) {
         _node = n;
         _phase = i;
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
-    public PhylogenyNode getNode() {
+    final public PhylogenyNode getNode() {
         return _node;
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
-    public int getPhase() {
+    final public int getPhase() {
         return _phase;
     }
 }

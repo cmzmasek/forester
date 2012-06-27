@@ -34,7 +34,7 @@ import org.forester.phylogeny.PhylogenyNode;
 /*
  * *
  */
-public class PostorderTreeIterator implements PhylogenyNodeIterator {
+public final class PostorderTreeIterator implements PhylogenyNodeIterator {
 
     final private Phylogeny                   _tree;
     final private PhylogenyNode               _root;
@@ -55,25 +55,20 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
         reset();
     }
 
-    private PhylogenyNode getRoot() {
+    final private PhylogenyNode getRoot() {
         return _root;
     }
 
-    private Stack<PostOrderStackObject> getStack() {
+    final private Stack<PostOrderStackObject> getStack() {
         return _stack;
     }
 
-    private Phylogeny getTree() {
+    final private Phylogeny getTree() {
         return _tree;
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
     @Override
-    public boolean hasNext() {
+    final public boolean hasNext() {
         return _has_next;
     }
 
@@ -81,7 +76,7 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
      * Advances the Iterator by one.
      */
     @Override
-    public PhylogenyNode next() throws NoSuchElementException {
+    final public PhylogenyNode next() throws NoSuchElementException {
         if ( !hasNext() ) {
             throw new NoSuchElementException( "Attempt to call \"next()\" on iterator which has no more next elements." );
         }
@@ -89,7 +84,6 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
             final PostOrderStackObject si = getStack().pop();
             final PhylogenyNode node = si.getNode();
             final int phase = si.getPhase();
-            // if ( node != null ) {
             if ( phase > node.getNumberOfDescendants() ) {
                 setHasNext( node != getRoot() );
                 return node;
@@ -99,34 +93,23 @@ public class PostorderTreeIterator implements PhylogenyNodeIterator {
                 if ( node.isInternal() ) {
                     getStack().push( new PostOrderStackObject( node.getChildNode( phase - 1 ), 1 ) );
                 }
-                // else {
-                // getStack().push( new PostOrderStackObject( null, 1 ) );
-                // }
             }
-            // }
         }
     }
 
-    /**
-     * Not supported.
-     * 
-     */
     @Override
-    public void remove() {
+    final public void remove() {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * DOCUMENT ME!
-     */
     @Override
-    public void reset() {
+    final public void reset() {
         setHasNext( true );
         getStack().clear();
         getStack().push( new PostOrderStackObject( getTree().getRoot(), 1 ) );
     }
 
-    private void setHasNext( final boolean has_next ) {
+    final private void setHasNext( final boolean has_next ) {
         _has_next = has_next;
     }
-} // End of class PostorderTreeIterator.
+}

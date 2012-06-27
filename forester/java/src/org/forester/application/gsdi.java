@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
@@ -203,20 +204,42 @@ public final class gsdi {
                 final TaxonomyComparisonBase comp_base = GSDI.determineTaxonomyComparisonBase( gene_tree );
                 switch ( comp_base ) {
                     case SCIENTIFIC_NAME:
-                        PhylogenyMethods
-                                .transferNodeNameToField( species_tree,
-                                                          PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                          true );
+                        try {
+                            PhylogenyMethods
+                                    .transferNodeNameToField( species_tree,
+                                                              PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                              true );
+                        }
+                        catch ( final PhyloXmlDataFormatException e ) {
+                            ForesterUtil.fatalError( gsdi.PRG_NAME,
+                                                     "Failed to transfer general node name to scientific name, in ["
+                                                             + species_tree_file + "]: " + e.getMessage() );
+                        }
                         break;
                     case CODE:
-                        PhylogenyMethods.transferNodeNameToField( species_tree,
-                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE,
-                                                                  true );
+                        try {
+                            PhylogenyMethods
+                                    .transferNodeNameToField( species_tree,
+                                                              PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE,
+                                                              true );
+                        }
+                        catch ( final PhyloXmlDataFormatException e ) {
+                            ForesterUtil.fatalError( gsdi.PRG_NAME,
+                                                     "Failed to transfer general node name to taxonomy code, in ["
+                                                             + species_tree_file + "]: " + e.getMessage() );
+                        }
                         break;
                     case ID:
-                        PhylogenyMethods.transferNodeNameToField( species_tree,
-                                                                  PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID,
-                                                                  true );
+                        try {
+                            PhylogenyMethods.transferNodeNameToField( species_tree,
+                                                                      PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID,
+                                                                      true );
+                        }
+                        catch ( final PhyloXmlDataFormatException e ) {
+                            ForesterUtil.fatalError( gsdi.PRG_NAME,
+                                                     "Failed to transfer general node name to taxonomy id, in ["
+                                                             + species_tree_file + "]: " + e.getMessage() );
+                        }
                         break;
                     default:
                         ForesterUtil.fatalError( gsdi.PRG_NAME, "unable to determine comparison base" );
@@ -224,8 +247,8 @@ public final class gsdi {
             }
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( gsdi.PRG_NAME,
-                                     "Failed to read species tree from [" + gene_tree_file + "]: " + e.getMessage() );
+            ForesterUtil.fatalError( gsdi.PRG_NAME, "Failed to read species tree from [" + species_tree_file + "]: "
+                    + e.getMessage() );
         }
         gene_tree.setRooted( true );
         species_tree.setRooted( true );

@@ -103,17 +103,6 @@ public final class AncestralTaxonomyInference {
                 else {
                     node = "[" + desc.getId() + "]";
                 }
-                //   final List<PhylogenyNode> e = desc.getAllExternalDescendants();
-                //TODO remove me!
-                //                System.out.println();
-                //                int x = 0;
-                //                for( final PhylogenyNode object : e ) {
-                //                    System.out.println( x + ":" );
-                //                    System.out.println( object.getName() + "  " );
-                //                    x++;
-                //                }
-                //                System.out.println();
-                //
                 throw new AncestralTaxonomyInferenceException( "node " + node
                         + " has no or inappropriate taxonomic information" );
             }
