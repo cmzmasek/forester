@@ -88,8 +88,8 @@ public final class GSDI extends SDI {
         _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
-        getSpeciesTree().preOrderReId();
         linkNodesOfG();
+        getSpeciesTree().preOrderReId();
         geneTreePostOrderTraversal();
     }
 
@@ -258,7 +258,11 @@ public final class GSDI extends SDI {
                     }
                 }
                 else {
-                    final PhylogenyNode s = species_to_node_map.get( tax_str );
+                    PhylogenyNode s = species_to_node_map.get( tax_str );
+                    if ( ( _tax_comp_base == TaxonomyComparisonBase.SCIENTIFIC_NAME ) && ( s == null )
+                            && ( ForesterUtil.countChars( tax_str, ' ' ) > 1 ) ) {
+                        s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, s );
+                    }
                     if ( s == null ) {
                         if ( _strip_gene_tree ) {
                             _stripped_gene_tree_nodes.add( g );
@@ -281,6 +285,37 @@ public final class GSDI extends SDI {
         if ( _strip_species_tree ) {
             stripSpeciesTree( species_tree_ext_nodes );
         }
+    }
+
+    private final static PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
+                                                                           final String tax_str,
+                                                                           PhylogenyNode s ) {
+        s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, " (" );
+        if ( s == null ) {
+            if ( ForesterUtil.countChars( tax_str, ' ' ) == 2 ) {
+                s = species_to_node_map.get( tax_str.substring( 0, tax_str.lastIndexOf( ' ' ) ).trim() );
+            }
+        }
+        if ( s == null ) {
+            for( final String t : new String[] { " subspecies ", " strain ", " variety ", " varietas ", " subvariety ",
+                    " form ", " subform ", " cultivar ", " section ", " subsection " } ) {
+                s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, t );
+                if ( s != null ) {
+                    break;
+                }
+            }
+        }
+        return s;
+    }
+
+    private final static PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
+                                                                           final String tax_str,
+                                                                           final String term ) {
+        final int i = tax_str.indexOf( term );
+        if ( i > 4 ) {
+            return species_to_node_map.get( tax_str.substring( 0, i ).trim() );
+        }
+        return null;
     }
 
     public TaxonomyComparisonBase getTaxCompBase() {

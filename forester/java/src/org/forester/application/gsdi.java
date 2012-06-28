@@ -126,7 +126,6 @@ public final class gsdi {
     private static void execute( final CommandLineArguments cla ) throws IOException {
         BASE_ALGORITHM base_algorithm = BASE_ALGORITHM.GSDI;
         boolean most_parsimonous_duplication_model = false;
-        boolean species_tree_in_phyloxml = true;
         boolean allow_stripping_of_gene_tree = false;
         if ( cla.isOptionSet( gsdi.SDISE_OPTION ) ) {
             base_algorithm = BASE_ALGORITHM.SDI;
@@ -136,9 +135,6 @@ public final class gsdi {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "Can only use most parsimonious duplication mode with GSDI" );
             }
             most_parsimonous_duplication_model = true;
-        }
-        if ( cla.isOptionSet( gsdi.GUESS_FORMAT_OF_SPECIES_TREE ) ) {
-            species_tree_in_phyloxml = false;
         }
         if ( cla.isOptionSet( gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION ) ) {
             if ( base_algorithm != BASE_ALGORITHM.GSDI ) {
@@ -195,11 +191,11 @@ public final class gsdi {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            if ( species_tree_in_phyloxml ) {
-                species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
+            final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
+            if ( p instanceof PhyloXmlParser ) {
+                species_tree = factory.create( species_tree_file, p )[ 0 ];
             }
             else {
-                final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
                 if ( REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE && ( p instanceof NHXParser ) ) {
                     ( ( NHXParser ) p ).setReplaceUnderscores( true );
                 }
@@ -341,10 +337,11 @@ public final class gsdi {
             writer.toPhyloXML( out_file, gene_tree, 0 );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + out_file + "]: " + e.getMessage() );
+            ForesterUtil.fatalError( PRG_NAME,
+                                     "Failed to write to [" + out_file.getCanonicalPath() + "]: " + e.getMessage() );
         }
-        System.out.println( "Wrote resulting gene tree to             : " + out_file );
-        log_writer.println( "Wrote resulting gene tree to             : " + out_file );
+        System.out.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
+        log_writer.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         if ( base_algorithm == BASE_ALGORITHM.SDI ) {
             sdi.computeMappingCostL();
             System.out.println( "Mapping cost                             : " + sdi.computeMappingCostL() );
@@ -352,17 +349,20 @@ public final class gsdi {
         }
         else if ( ( base_algorithm == BASE_ALGORITHM.GSDI ) ) {
             final GSDI gsdi = ( GSDI ) sdi;
-            final File species_tree_used_file = new File( out_file + SUFFIX_FOR_SPECIES_TREE_USED );
+            final File species_tree_used_file = new File( ForesterUtil.removeSuffix( out_file.toString() )
+                    + SUFFIX_FOR_SPECIES_TREE_USED );
             try {
                 final PhylogenyWriter writer = new PhylogenyWriter();
                 writer.toPhyloXML( species_tree_used_file, gsdi.getSpeciesTree(), 0 );
             }
             catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME,
-                                         "Failed to write to [" + species_tree_used_file + "]: " + e.getMessage() );
+                ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + species_tree_used_file.getCanonicalPath()
+                        + "]: " + e.getMessage() );
             }
-            System.out.println( "Wrote (stripped) species tree to         : " + species_tree_used_file );
-            log_writer.println( "Wrote (stripped) species tree to         : " + species_tree_used_file );
+            System.out.println( "Wrote (stripped) species tree to         : "
+                    + species_tree_used_file.getCanonicalPath() );
+            log_writer.println( "Wrote (stripped) species tree to         : "
+                    + species_tree_used_file.getCanonicalPath() );
         }
         System.out.println( "Number of external nodes in gene tree    : " + gene_tree.getNumberOfExternalNodes() );
         log_writer.println( "Number of external nodes in gene tree    : " + gene_tree.getNumberOfExternalNodes() );
@@ -404,7 +404,7 @@ public final class gsdi {
             printStrippedSpeciesTreeNodesToLog( log_writer, gsdi );
         }
         System.out.println();
-        System.out.println( "Wrote log to                             : " + log_file );
+        System.out.println( "Wrote log to                             : " + log_file.getCanonicalPath() );
         System.out.println();
         log_writer.close();
     }
