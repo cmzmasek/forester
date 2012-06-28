@@ -302,6 +302,26 @@ public abstract class SDI {
     }
 
     public enum TaxonomyComparisonBase {
-        ID, CODE, SCIENTIFIC_NAME
+        ID {
+
+            @Override
+            public String toString() {
+                return "taxonomy id";
+            }
+        },
+        CODE {
+
+            @Override
+            public String toString() {
+                return "taxonomy code/mnemonic";
+            }
+        },
+        SCIENTIFIC_NAME {
+
+            @Override
+            public String toString() {
+                return "scientific name";
+            }
+        }
     }
 }

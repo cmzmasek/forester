@@ -598,6 +598,17 @@ public class PhylogenyMethods {
         return max;
     }
 
+    public static int countNumberOfPolytomies( final Phylogeny phy ) {
+        int count = 0;
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() && ( n.getNumberOfDescendants() > 2 ) ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static DescriptiveStatistics calculatNumberOfDescendantsPerNodeStatistics( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {

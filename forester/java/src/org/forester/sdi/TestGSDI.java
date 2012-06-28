@@ -30,13 +30,18 @@ import java.io.IOException;
 import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.development.DevelopmentTools;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.util.ForesterUtil;
 
 public final class TestGSDI {
+
+    private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
+                                                          + "test_data" + ForesterUtil.getFileSeparator();
 
     private final static Phylogeny createPhylogeny( final String nhx ) throws IOException {
         final Phylogeny p = ParserBasedPhylogenyFactory.getInstance().create( nhx, new NHXParser() )[ 0 ];
@@ -883,18 +888,9 @@ public final class TestGSDI {
             if ( !TestGSDI.getEvent( g2_32, "a1", "z" ).isSpeciationOrDuplication() ) {
                 return false;
             }
-            //            //            //-
-            final Phylogeny g2_33_d = TestGSDI
-                    .createPhylogeny( "((((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?],(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?])" );
-            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false );
-            Archaeopteryx.createApplication( g2_33_d );
-            //  Archaeopteryx.createApplication( s2 );
-            //-
             final Phylogeny g2_33 = TestGSDI
                     .createPhylogeny( "(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1]),x[&&NHX:S=x]),p1[&&NHX:S=p1]),i1[&&NHX:S=i1]),k2[&&NHX:S=k2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
             final GSDI sdi2_33 = new GSDI( g2_33, s2, false );
-            Archaeopteryx.createApplication( g2_33 );
-            Archaeopteryx.createApplication( s2 );
             if ( sdi2_33.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -935,6 +931,18 @@ public final class TestGSDI {
                 return false;
             }
             if ( !TestGSDI.getEvent( g2_33, "a1", "z" ).isSpeciationOrDuplication() ) {
+                return false;
+            }
+            final Phylogeny g2_33_d = TestGSDI
+                    .createPhylogeny( "((((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?],(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?])" );
+            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false );
+            if ( sdi2_33_d.getDuplicationsSum() != 3 ) {
+                return false;
+            }
+            if ( sdi2_33_d.getSpeciationOrDuplicationEventsSum() != 14 ) {
+                return false;
+            }
+            if ( sdi2_33_d.getSpeciationsSum() != 6 ) {
                 return false;
             }
             final Phylogeny g2_34 = TestGSDI
@@ -1202,12 +1210,26 @@ public final class TestGSDI {
             if ( sdi7_4_2.getSpeciationsSum() != 5 ) {
                 return false;
             }
-            //---------------------
             final String g2_0_ = "(([&&NHX:S=a1],[&&NHX:S=a2]),([&&NHX:S=o2],[&&NHX:S=o4]))";
             final Phylogeny g2_0p = TestGSDI.createPhylogeny( g2_0_ );
             g2_0.setRooted( true );
             final GSDI sdi2_0p = new GSDI( g2_0p, s2, false );
             if ( sdi2_0p.getDuplicationsSum() != 0 ) {
+                return false;
+            }
+            //--
+            final Phylogeny tol_143_ = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA + "tol_143.xml" )[ 0 ];
+            final Phylogeny gene_tree_tax_code_4_ = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gene_tree_tax_code_4.xml" )[ 0 ];
+            final GSDI gsdi_143_4_1 = new GSDI( gene_tree_tax_code_4_.copy(), tol_143_.copy(), false, true, true );
+            Archaeopteryx.createApplication( gsdi_143_4_1.getGeneTree() );
+            if ( gsdi_143_4_1.getDuplicationsSum() != 21 ) {
+                return false;
+            }
+            if ( gsdi_143_4_1.getSpeciationsSum() != 28 ) {
+                return false;
+            }
+            if ( gsdi_143_4_1.getSpeciationOrDuplicationEventsSum() != 6 ) {
                 return false;
             }
         }

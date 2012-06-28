@@ -71,6 +71,7 @@ public final class GSDI extends SDI {
     private final List<PhylogenyNode> _stripped_gene_tree_nodes;
     private final List<PhylogenyNode> _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
+    private TaxonomyComparisonBase    _tax_comp_base;
 
     public GSDI( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
@@ -142,7 +143,12 @@ public final class GSDI extends SDI {
                     g.getNodeData().setEvent( createDuplicationEvent() );
                 }
                 else {
-                    g.getNodeData().setEvent( createSingleSpeciationOrDuplicationEvent() );
+                    if ( _most_parsimonious_duplication_model ) {
+                        g.getNodeData().setEvent( createSpeciationEvent() );
+                    }
+                    else {
+                        g.getNodeData().setEvent( createSingleSpeciationOrDuplicationEvent() );
+                    }
                 }
             }
             else {
@@ -217,13 +223,13 @@ public final class GSDI extends SDI {
     final void linkNodesOfG() throws SDIException {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
-        final TaxonomyComparisonBase tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
+        _tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
         // System.out.println( "comp base is: " + tax_comp_base );
         // Stringyfied taxonomy is the key, node is the value.
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
             species_tree_ext_nodes.add( s );
-            final String tax_str = taxonomyToString( s, tax_comp_base );
+            final String tax_str = taxonomyToString( s, _tax_comp_base );
             if ( !ForesterUtil.isEmpty( tax_str ) ) {
                 if ( species_to_node_map.containsKey( tax_str ) ) {
                     throw new SDIException( "taxonomy \"" + s + "\" is not unique in species tree" );
@@ -243,7 +249,7 @@ public final class GSDI extends SDI {
                 }
             }
             else {
-                final String tax_str = taxonomyToString( g, tax_comp_base );
+                final String tax_str = taxonomyToString( g, _tax_comp_base );
                 if ( ForesterUtil.isEmpty( tax_str ) ) {
                     if ( _strip_gene_tree ) {
                         _stripped_gene_tree_nodes.add( g );
@@ -272,16 +278,33 @@ public final class GSDI extends SDI {
             }
         } // for loop
         if ( _strip_gene_tree ) {
-            for( final PhylogenyNode g : _stripped_gene_tree_nodes ) {
-                _gene_tree.deleteSubtree( g, true );
-            }
+            stripGeneTree();
         }
         if ( _strip_species_tree ) {
-            for( final PhylogenyNode s : species_tree_ext_nodes ) {
-                if ( !_mapped_species_tree_nodes.contains( s ) ) {
-                    _species_tree.deleteSubtree( s, true );
-                }
+            stripSpeciesTree( species_tree_ext_nodes );
+        }
+    }
+
+    public TaxonomyComparisonBase getTaxCompBase() {
+        return _tax_comp_base;
+    }
+
+    private void stripSpeciesTree( final List<PhylogenyNode> species_tree_ext_nodes ) {
+        for( final PhylogenyNode s : species_tree_ext_nodes ) {
+            if ( !_mapped_species_tree_nodes.contains( s ) ) {
+                _species_tree.deleteSubtree( s, true );
+                _stripped_species_tree_nodes.add( s );
             }
+        }
+    }
+
+    public List<PhylogenyNode> getStrippedSpeciesTreeNodes() {
+        return _stripped_species_tree_nodes;
+    }
+
+    private void stripGeneTree() {
+        for( final PhylogenyNode g : _stripped_gene_tree_nodes ) {
+            _gene_tree.deleteSubtree( g, true );
         }
     }
 
