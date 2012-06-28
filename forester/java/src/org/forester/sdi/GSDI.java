@@ -224,7 +224,6 @@ public final class GSDI extends SDI {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
         _tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
-        // System.out.println( "comp base is: " + tax_comp_base );
         // Stringyfied taxonomy is the key, node is the value.
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
@@ -272,7 +271,6 @@ public final class GSDI extends SDI {
                     else {
                         g.setLink( s );
                         _mapped_species_tree_nodes.add( s );
-                        //  System.out.println( "setting link of " + g + " to " + s );
                     }
                 }
             }
