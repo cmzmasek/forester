@@ -22,7 +22,7 @@ path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyl
   * -b: to use SDIse algorithm instead of GSDI algorithm (for binary species trees)
 
 ==== Gene tree ====
-Must be in phyloXM format, with taxonomy and sequence data in appropriate fields.
+Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
 
 ==== Species tree ====
 Must be in phyloXML format unless option -q is used.
