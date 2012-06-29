@@ -15,16 +15,21 @@ path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyl
 === Options ===
 
   * -g: to allow stripping of gene tree nodes without a matching species in the species tree
-  * -b: to use SDI algorithm instead of GSDI algorithm
-  * -m: use most parimonious duplication model for GSDI: assign nodes as speciations which would otherwise be assiged as unknown because of polytomies in the species tree
-  * -q: to allow species tree in other formats than phyloXML (Newick, NHX, Nexus)
-
-==== Species tree ====
-In phyloXML format (unless option -q is used), with taxonomy data in appropriate fields. Must be rooted, polytomies are allowed.
+ 
+  * -m: use most parimonious duplication model for GSDI:
+     assign nodes as speciations which would otherwise be assiged
+     as potential duplications due tp polytomies in the species tree
+  * -q: to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)
+  * -b: to use SDIse algorithm instead of GSDI algorithm (for binary species trees)
 
 ==== Gene tree ====
-In phyloXML format, with taxonomy and sequence data in appropriate fields. Must be rooted an binary (no polytomies).
+Must be in phyloXM format, with taxonomy and sequence data in appropriate fields.
 
+==== Species tree ====
+Must be in phyloXML format unless option -q is used.
+
+=== Options ===
+gsdi -g gene_tree.xml tree_of_life.xml out.xml
 
 == Description ==
 
