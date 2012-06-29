@@ -254,7 +254,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _order_of_appearance = !_order_of_appearance;
                     tp.setNodeInPreorderToNull();
                     tp.getPhylogeny().externalNodesHaveChanged();
-                    tp.getPhylogeny().hashIDs();
+                    tp.getPhylogeny().clearHashIdToNodeMap();
                     tp.getPhylogeny().recalculateNumberOfExternalDescendants( true );
                     tp.resetNodeIdToDistToLeafMap();
                     tp.setEdited( true );
@@ -1820,7 +1820,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             tp.updateSetOfCollapsedExternalNodes();
             t.recalculateNumberOfExternalDescendants( false );
             tp.setNodeInPreorderToNull();
-            t.hashIDs();
+            t.clearHashIdToNodeMap();
             showWhole();
         }
     }

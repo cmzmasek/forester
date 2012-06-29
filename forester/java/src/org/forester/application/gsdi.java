@@ -74,7 +74,7 @@ public final class gsdi {
     final static private String REMAPPED_SUFFIX                        = "_gsdi_remapped.txt";
     final static private String PRG_NAME                               = "gsdi";
     final static private String PRG_VERSION                            = "1.000";
-    final static private String PRG_DATE                               = "120608";
+    final static private String PRG_DATE                               = "120629";
     final static private String PRG_DESC                               = "general speciation duplication inference";
     final static private String E_MAIL                                 = "phylosoft@gmail.com";
     final static private String WWW                                    = "www.phylosoft.org/forester";

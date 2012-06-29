@@ -354,6 +354,8 @@ public final class GSDI extends SDI {
                 _stripped_species_tree_nodes.add( s );
             }
         }
+        _species_tree.clearHashIdToNodeMap();
+        _species_tree.externalNodesHaveChanged();
     }
 
     public List<PhylogenyNode> getStrippedSpeciesTreeNodes() {
@@ -364,6 +366,8 @@ public final class GSDI extends SDI {
         for( final PhylogenyNode g : _stripped_gene_tree_nodes ) {
             _gene_tree.deleteSubtree( g, true );
         }
+        _gene_tree.clearHashIdToNodeMap();
+        _gene_tree.externalNodesHaveChanged();
     }
 
     public Set<PhylogenyNode> getMappedExternalSpeciesTreeNodes() {

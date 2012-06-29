@@ -411,7 +411,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setNodeInPreorderToNull();
         _phylogeny.externalNodesHaveChanged();
-        _phylogeny.hashIDs();
+        _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         setEdited( true );
@@ -882,7 +882,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setCopiedAndPastedNodes( null );
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         _phylogeny.deleteSubtree( node, true );
-        _phylogeny.hashIDs();
+        _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         setEdited( true );
@@ -948,7 +948,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _phylogeny.deleteSubtree( node, true );
         }
         _phylogeny.externalNodesHaveChanged();
-        _phylogeny.hashIDs();
+        _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         setEdited( true );
@@ -4243,7 +4243,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         getCopiedAndPastedNodes().addAll( node_ids );
         setNodeInPreorderToNull();
         _phylogeny.externalNodesHaveChanged();
-        _phylogeny.hashIDs();
+        _phylogeny.clearHashIdToNodeMap();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
         setEdited( true );
@@ -4956,7 +4956,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             node.swapChildren();
             setNodeInPreorderToNull();
             _phylogeny.externalNodesHaveChanged();
-            _phylogeny.hashIDs();
+            _phylogeny.clearHashIdToNodeMap();
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             setEdited( true );
@@ -4980,7 +4980,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             PhylogenyMethods.sortNodeDescendents( node, pri );
             setNodeInPreorderToNull();
             _phylogeny.externalNodesHaveChanged();
-            _phylogeny.hashIDs();
+            _phylogeny.clearHashIdToNodeMap();
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
             setEdited( true );

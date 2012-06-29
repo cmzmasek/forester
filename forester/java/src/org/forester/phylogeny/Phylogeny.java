@@ -68,7 +68,7 @@ public class Phylogeny {
     private Confidence                                          _confidence;
     private Identifier                                          _identifier;
     private boolean                                             _rerootable;
-    private HashMap<Integer, PhylogenyNode>                     _idhash;
+    private HashMap<Integer, PhylogenyNode>                     _id_to_node_map;
     private List<PhylogenyNode>                                 _external_nodes_set;
     private Collection<Sequence>                                _sequenceRelationQueries;
     private Collection<SequenceRelation.SEQUENCE_RELATION_TYPE> _relevant_sequence_relation_types;
@@ -213,7 +213,7 @@ public class Phylogeny {
     }
 
     /**
-     * Need the delete and/or rehash _idhash (not done automatically
+     * Need to call clearHashIdToNodeMap() afterwards (not done automatically
      * to allow client multiple deletions in linear time).
      * Need to call 'recalculateNumberOfExternalDescendants(boolean)' after this 
      * if tree is to be displayed.
@@ -269,7 +269,6 @@ public class Phylogeny {
             }
         }
         remove_us.removeConnections();
-        setIdHash( null );
         externalNodesHaveChanged();
     }
 
@@ -376,11 +375,8 @@ public class Phylogeny {
         return _identifier;
     }
 
-    // ---------------------------------------------------------
-    // Modification of Phylogeny topology and Phylogeny appearance
-    // ---------------------------------------------------------
-    private HashMap<Integer, PhylogenyNode> getIdHash() {
-        return _idhash;
+    private HashMap<Integer, PhylogenyNode> getIdToNodeMap() {
+        return _id_to_node_map;
     }
 
     /**
@@ -392,29 +388,16 @@ public class Phylogeny {
 
     /**
      * Finds the PhylogenyNode of this Phylogeny which has a matching ID number.
-     * Takes O(n) time. After method hashIDs() has been called it runs in
-     * constant time.
-     * 
-     * @param id
-     *            ID number (int) of the PhylogenyNode to find
      * @return PhylogenyNode with matching ID, null if not found
      */
     public PhylogenyNode getNode( final int id ) throws NoSuchElementException {
         if ( isEmpty() ) {
             throw new NoSuchElementException( "attempt to get node in an empty phylogeny" );
         }
-        if ( _idhash != null ) {
-            return _idhash.get( id );
+        if ( ( getIdToNodeMap() == null ) || getIdToNodeMap().isEmpty() ) {
+            reHashIdToNodeMap();
         }
-        else {
-            for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                if ( node.getId() == id ) {
-                    return node;
-                }
-            }
-        }
-        return null;
+        return getIdToNodeMap().get( id );
     }
 
     /**
@@ -724,15 +707,19 @@ public class Phylogeny {
      * constant time. Important: The user is responsible for calling this method
      * (again) after this Phylogeny has been changed/created/renumbered.
      */
-    public void hashIDs() {
+    private void reHashIdToNodeMap() {
         if ( isEmpty() ) {
             return;
         }
-        setIdHash( new HashMap<Integer, PhylogenyNode>() );
+        setIdToNodeMap( new HashMap<Integer, PhylogenyNode>() );
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            getIdHash().put( node.getId(), node );
+            getIdToNodeMap().put( node.getId(), node );
         }
+    }
+
+    public void clearHashIdToNodeMap() {
+        setIdToNodeMap( null );
     }
 
     /**
@@ -745,7 +732,7 @@ public class Phylogeny {
         _description = "";
         _type = "";
         _distance_unit = "";
-        _idhash = null;
+        _id_to_node_map = null;
         _confidence = null;
         _identifier = null;
         _rerootable = true;
@@ -849,7 +836,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return;
         }
-        _idhash = null;
+        _id_to_node_map = null;
         int max = 0;
         for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode node = it.next();
@@ -870,7 +857,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return;
         }
-        setIdHash( null );
+        setIdToNodeMap( null );
         int i = PhylogenyNode.getNodeCount();
         for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); ) {
             it.next().setId( i++ );
@@ -1165,8 +1152,8 @@ public class Phylogeny {
         _identifier = identifier;
     }
 
-    void setIdHash( final HashMap<Integer, PhylogenyNode> idhash ) {
-        _idhash = idhash;
+    private void setIdToNodeMap( final HashMap<Integer, PhylogenyNode> idhash ) {
+        _id_to_node_map = idhash;
     }
 
     /**

@@ -751,11 +751,12 @@ public class PhylogenyMethods {
     }
 
     public static void deleteExternalNodesNegativeSelection( final Set<Integer> to_delete, final Phylogeny phy ) {
-        phy.hashIDs();
+        phy.clearHashIdToNodeMap();
         for( final Integer id : to_delete ) {
             phy.deleteSubtree( phy.getNode( id ), true );
         }
-        phy.hashIDs();
+        phy.clearHashIdToNodeMap();
+        phy.externalNodesHaveChanged();
     }
 
     public static void deleteExternalNodesNegativeSelection( final String[] node_names_to_delete, final Phylogeny p )
@@ -776,6 +777,8 @@ public class PhylogenyMethods {
                 p.deleteSubtree( n, true );
             }
         }
+        p.clearHashIdToNodeMap();
+        p.externalNodesHaveChanged();
     }
 
     public static void deleteExternalNodesPositiveSelection( final Set<Taxonomy> species_to_keep, final Phylogeny phy ) {
@@ -792,9 +795,8 @@ public class PhylogenyMethods {
                 throw new IllegalArgumentException( "node " + n.getId() + " has no taxonomic data" );
             }
         }
-        phy.hashIDs();
+        phy.clearHashIdToNodeMap();
         phy.externalNodesHaveChanged();
-        //  deleteExternalNodesNegativeSelection( to_delete, phy );
     }
 
     public static List<String> deleteExternalNodesPositiveSelection( final String[] node_names_to_keep,
@@ -1286,6 +1288,8 @@ public class PhylogenyMethods {
         }
         if ( remove_me.isExternal() ) {
             phylogeny.deleteSubtree( remove_me, false );
+            phylogeny.clearHashIdToNodeMap();
+            phylogeny.externalNodesHaveChanged();
         }
         else {
             final PhylogenyNode parent = remove_me.getParent();
@@ -1297,7 +1301,7 @@ public class PhylogenyMethods {
                                                                  desc.getDistanceToParent() ) );
             }
             remove_me.setParent( null );
-            phylogeny.setIdHash( null );
+            phylogeny.clearHashIdToNodeMap();
             phylogeny.externalNodesHaveChanged();
         }
     }
@@ -1613,6 +1617,8 @@ public class PhylogenyMethods {
         for( final PhylogenyNode phylogenyNode : nodes_to_delete ) {
             to_be_stripped.deleteSubtree( phylogenyNode, true );
         }
+        to_be_stripped.clearHashIdToNodeMap();
+        to_be_stripped.externalNodesHaveChanged();
         return nodes_to_delete.size();
     }
 

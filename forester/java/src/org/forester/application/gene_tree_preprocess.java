@@ -86,6 +86,8 @@ public class gene_tree_preprocess {
             for( final String remove_me : not_found ) {
                 phy.deleteSubtree( phy.getNode( remove_me ), true );
             }
+            phy.clearHashIdToNodeMap();
+            phy.externalNodesHaveChanged();
             if ( phy.getNumberOfExternalNodes() < 2 ) {
                 ForesterUtil.fatalError( PRG_NAME,
                                          "after removal of unresolvable external nodes, phylogeny has "

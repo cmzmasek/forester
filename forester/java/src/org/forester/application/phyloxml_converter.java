@@ -257,7 +257,7 @@ public class phyloxml_converter {
             for( final Phylogeny phy : phys ) {
                 PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.TAXONOMY );
                 phy.externalNodesHaveChanged();
-                phy.hashIDs();
+                phy.clearHashIdToNodeMap();
                 phy.recalculateNumberOfExternalDescendants( true );
             }
         }

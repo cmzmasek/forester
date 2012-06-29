@@ -205,7 +205,7 @@ public final class SupportCount {
                 // phylos are saved
                 // to file.
                 evaluator_phylogeny.externalNodesHaveChanged();
-                evaluator_phylogeny.hashIDs();
+                evaluator_phylogeny.clearHashIdToNodeMap();
                 evaluator_phylogeny.recalculateNumberOfExternalDescendants( true );
             }
             final double s = SupportCount.compare( phylogeny,

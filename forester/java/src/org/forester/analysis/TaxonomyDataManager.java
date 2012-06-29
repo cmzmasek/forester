@@ -265,7 +265,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 phy.deleteSubtree( node, true );
             }
             phy.externalNodesHaveChanged();
-            phy.hashIDs();
+            phy.clearHashIdToNodeMap();
             phy.recalculateNumberOfExternalDescendants( true );
         }
         return not_found;

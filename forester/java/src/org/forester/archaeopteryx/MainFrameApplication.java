@@ -97,9 +97,7 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
-import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
-import org.forester.sdi.SDIse;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -203,7 +201,6 @@ public final class MainFrameApplication extends MainFrame {
     // Analysis menu
     private JMenu                            _analysis_menu;
     private JMenuItem                        _load_species_tree_item;
-    private JMenuItem                        _sdi_item;
     private JMenuItem                        _gsdi_item;
     private JMenuItem                        _root_min_dups_item;
     private JMenuItem                        _root_min_cost_l_item;
@@ -531,12 +528,6 @@ public final class MainFrameApplication extends MainFrame {
             else if ( o == _load_species_tree_item ) {
                 readSpeciesTreeFromFile();
             }
-            else if ( o == _sdi_item ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                executeSDI();
-            }
             else if ( o == _lineage_inference ) {
                 if ( isSubtreeDisplayed() ) {
                     JOptionPane.showMessageDialog( this,
@@ -658,16 +649,12 @@ public final class MainFrameApplication extends MainFrame {
 
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
-        _analysis_menu.add( _sdi_item = new JMenuItem( "SDI (Speciation Duplication Inference)" ) );
-        if ( !Constants.__RELEASE && !Constants.__SNAPSHOT_RELEASE ) {
-            _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
-        }
+        _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
         _analysis_menu.addSeparator();
         _analysis_menu.add( _root_min_dups_item = new JMenuItem( "Root by Minimizing Duplications | Height (SDI)" ) );
         _analysis_menu.add( _root_min_cost_l_item = new JMenuItem( "Root by Minimizing Cost L | Height (SDI)" ) );
         _analysis_menu.addSeparator();
         _analysis_menu.add( _load_species_tree_item = new JMenuItem( "Load Species Tree..." ) );
-        customizeJMenuItem( _sdi_item );
         customizeJMenuItem( _gsdi_item );
         customizeJMenuItem( _root_min_dups_item );
         customizeJMenuItem( _root_min_cost_l_item );
@@ -1111,7 +1098,7 @@ public final class MainFrameApplication extends MainFrame {
             }
             if ( to_be_removed.size() > 0 ) {
                 phy.externalNodesHaveChanged();
-                phy.hashIDs();
+                phy.clearHashIdToNodeMap();
                 phy.recalculateNumberOfExternalDescendants( true );
                 getCurrentTreePanel().resetNodeIdToDistToLeafMap();
                 getCurrentTreePanel().updateSetOfCollapsedExternalNodes();
@@ -1210,23 +1197,29 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDI gsdi = null;
-        int duplications = -1;
         try {
-            gsdi = new GSDI( gene_tree, _species_tree.copy(), true, true, false );
-            duplications = gsdi.getDuplicationsSum();
+            gsdi = new GSDI( gene_tree, _species_tree.copy(), false, true, true );
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDI", JOptionPane.ERROR_MESSAGE );
         }
         gene_tree.setRerootable( false );
         _mainpanel.getCurrentTreePanel().setTree( gene_tree );
+        _mainpanel.getCurrentPhylogeny().clearHashIdToNodeMap();
+        _mainpanel.getCurrentPhylogeny().recalculateNumberOfExternalDescendants( true );
+        _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
         getControlPanel().setShowEvents( true );
         showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( gsdi.getSpeciesTree(), getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Number of duplications: " + duplications,
-                                       "GSDI successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this, "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                + "Potential duplications: " + gsdi.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
+                + gsdi.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
     }
 
     void executeFunctionAnalysis() {
@@ -1292,40 +1285,6 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
         }
-    }
-
-    void executeSDI() {
-        if ( !isOKforSDI( true, true ) ) {
-            return;
-        }
-        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not rooted",
-                                           "Cannot execute SDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        SDI sdi = null;
-        int duplications = -1;
-        try {
-            sdi = new SDIse( gene_tree, _species_tree.copy() );
-            duplications = sdi.getDuplicationsSum();
-        }
-        catch ( final Exception e ) {
-            JOptionPane.showMessageDialog( this, e.toString(), "Error during SDI", JOptionPane.ERROR_MESSAGE );
-        }
-        gene_tree.setRerootable( false );
-        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Number of duplications: " + duplications,
-                                       "SDI successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
     }
 
     void executeSDIR( final boolean minimize_cost ) {
