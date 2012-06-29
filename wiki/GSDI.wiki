@@ -27,6 +27,13 @@ Must be in phyloXM format, with taxonomy and sequence data in appropriate fields
 ==== Species tree ====
 Must be in phyloXML format unless option -q is used.
 
+=== Taxonomic mapping between gene and species tree ===
+
+GSDI can establish a taxonomic mapping between gene and species tree on the following three data fields:
+  * scientific names (e.g. "Pyrococcus horikoshii")
+  * taxonomic identifiers (e.g. "35932" from uniprot or ncbi)
+  * taxonomy codes (e.g. "PYRHO") 
+
 === Output ===
 
 Besides the main output of a gene tree with duplications and speciations assigned to all of its internal nodes, this program also produces the following:
