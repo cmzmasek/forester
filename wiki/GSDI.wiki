@@ -48,9 +48,9 @@ GSDI can establish a taxonomic mapping between gene and species tree on the foll
 
 
 === Example files ===
-* [http://forester.googlecode.com/files/wnt_gene_tree.xml gene tree]
-* [http://forester.googlecode.com/files/species.xml species tree]
-* [http://forester.googlecode.com/files/wnt_gsdi_log.txt log file (output)]
+  * [http://forester.googlecode.com/files/wnt_gene_tree.xml gene tree]
+  * [http://forester.googlecode.com/files/species.xml species tree]
+  * [http://forester.googlecode.com/files/wnt_gsdi_log.txt log file (output)]
 
 
 == Reference ==
