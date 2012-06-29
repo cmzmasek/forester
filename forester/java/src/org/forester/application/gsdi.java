@@ -484,7 +484,7 @@ public final class gsdi {
         System.out.println( " in phyloXML format (unless option -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE + " is used)" );
         System.out.println();
         System.out.println( "Example: gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
-                + "  gene_tree.xml tree_of_life.xml out.xml" );
+                + " gene_tree.xml tree_of_life.xml out.xml" );
         System.out.println();
     }
 }
