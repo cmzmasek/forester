@@ -1061,16 +1061,12 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
     @Override
     final public String toString() {
         final StringBuilder sb = new StringBuilder();
-        if ( !ForesterUtil.isEmpty( getName() ) ) {
-            sb.append( getName() );
-            sb.append( " " );
-        }
         if ( getNodeData().isHasTaxonomy() ) {
             if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getScientificName() ) ) {
                 sb.append( getNodeData().getTaxonomy().getScientificName() );
                 sb.append( " " );
             }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+            else if ( ( sb.length() <= 1 ) && !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
                 sb.append( getNodeData().getTaxonomy().getTaxonomyCode() );
                 sb.append( " " );
             }
@@ -1092,6 +1088,10 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
                 sb.append( getNodeData().getTaxonomy().getIdentifier().toString() );
                 sb.append( " " );
             }
+        }
+        if ( ( sb.length() <= 1 ) && !ForesterUtil.isEmpty( getName() ) ) {
+            sb.append( getName() );
+            sb.append( " " );
         }
         if ( sb.length() <= 1 ) {
             sb.append( "[" );

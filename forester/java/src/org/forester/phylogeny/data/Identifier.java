@@ -80,6 +80,10 @@ public final class Identifier implements PhylogenyData {
         return sb;
     }
 
+    public String getValuePlusProvider() {
+        return _value_provider;
+    }
+
     @Override
     public PhylogenyData copy() {
         return new Identifier( getValue(), getProvider() );

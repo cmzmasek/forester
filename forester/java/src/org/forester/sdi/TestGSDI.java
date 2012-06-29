@@ -27,7 +27,6 @@ package org.forester.sdi;
 
 import java.io.IOException;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.development.DevelopmentTools;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -36,6 +35,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.sdi.SDI.TaxonomyComparisonBase;
 import org.forester.util.ForesterUtil;
 
 public final class TestGSDI {
@@ -1222,7 +1222,6 @@ public final class TestGSDI {
             final Phylogeny gene_tree_tax_code_4_ = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
                     + "gene_tree_tax_code_4.xml" )[ 0 ];
             final GSDI gsdi_143_4_1 = new GSDI( gene_tree_tax_code_4_.copy(), tol_143_.copy(), false, true, true );
-            Archaeopteryx.createApplication( gsdi_143_4_1.getGeneTree() );
             if ( gsdi_143_4_1.getDuplicationsSum() != 21 ) {
                 return false;
             }
@@ -1230,6 +1229,162 @@ public final class TestGSDI {
                 return false;
             }
             if ( gsdi_143_4_1.getSpeciationOrDuplicationEventsSum() != 6 ) {
+                return false;
+            }
+            //--
+            final Phylogeny gsdi_test_gene_tree_sn_wnt = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gsdi_test_gene_tree_sn_wnt.xml" )[ 0 ];
+            gsdi_test_gene_tree_sn_wnt.setRooted( true );
+            final GSDI a = new GSDI( gsdi_test_gene_tree_sn_wnt.copy(), tol_143_.copy(), false, true, true );
+            if ( a.getDuplicationsSum() != 33 ) {
+                return false;
+            }
+            if ( a.getSpeciationsSum() != 31 ) {
+                return false;
+            }
+            if ( a.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( a.getTaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( a.getMappedExternalSpeciesTreeNodes().size() != 26 ) {
+                return false;
+            }
+            if ( a.getReMappedScientificNamesFromGeneTree().size() != 0 ) {
+                return false;
+            }
+            //--
+            final Phylogeny gsdi_test_species_tree_sn_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gsdi_test_species_tree_sn.xml" )[ 0 ];
+            final GSDI b = new GSDI( gsdi_test_gene_tree_sn_wnt.copy(),
+                                     gsdi_test_species_tree_sn_xml.copy(),
+                                     false,
+                                     true,
+                                     true );
+            if ( b.getDuplicationsSum() != 8 ) {
+                return false;
+            }
+            if ( b.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( b.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( b.getTaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( b.getMappedExternalSpeciesTreeNodes().size() != 2 ) {
+                return false;
+            }
+            if ( b.getReMappedScientificNamesFromGeneTree().size() != 0 ) {
+                return false;
+            }
+            if ( b.getStrippedExternalGeneTreeNodes().size() != 87 ) {
+                return false;
+            }
+            if ( b.getStrippedSpeciesTreeNodes().size() != 17 ) {
+                return false;
+            }
+            //--
+            final Phylogeny gsdi_test_species_tree_sn_nh = TestGSDI
+                    .createPhylogeny( "((((((('Homo sapiens','Mus musculus')Euarchontoglires,'Petromyzon marinus')Vertebrata,'Nematostella vectensis')'Bilateria Cnidaria',(('Mycosphaerella graminicola','Mycosphaerella pini')Mycosphaerella,'Saccharomyces cerevisiae')'Pezizomycotina Saccharomycetales')Opisthokonta,('Plasmodium chabaudi','Plasmodium falciparum','Plasmodium yoelii yoelii')Plasmodium)Eukaryota,'Pyrococcus horikoshii')Neomura,(('Kineococcus radiotolerans','Kocuria rhizophila','Streptomyces coelicolor','Thermobifida fusca','Microlunatus phosphovorus'),'Bacteroides thetaiotaomicron'))'cellular organisms';" );
+            PhylogenyMethods.transferNodeNameToField( gsdi_test_species_tree_sn_nh,
+                                                      PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                      true );
+            final GSDI c = new GSDI( gsdi_test_gene_tree_sn_wnt.copy(),
+                                     gsdi_test_species_tree_sn_nh.copy(),
+                                     false,
+                                     true,
+                                     true );
+            if ( c.getDuplicationsSum() != 8 ) {
+                return false;
+            }
+            if ( c.getSpeciationsSum() != 2 ) {
+                return false;
+            }
+            if ( c.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( c.getTaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( c.getMappedExternalSpeciesTreeNodes().size() != 2 ) {
+                return false;
+            }
+            if ( c.getReMappedScientificNamesFromGeneTree().size() != 0 ) {
+                return false;
+            }
+            if ( c.getStrippedExternalGeneTreeNodes().size() != 87 ) {
+                return false;
+            }
+            if ( c.getStrippedSpeciesTreeNodes().size() != 15 ) {
+                return false;
+            }
+            //--
+            final Phylogeny gsdi_test_gene_tree_codes_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gsdi_test_gene_tree_codes.xml" )[ 0 ];
+            final Phylogeny gsdi_test_species_tree_codes_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gsdi_test_species_tree_codes.xml" )[ 0 ];
+            final GSDI d = new GSDI( gsdi_test_gene_tree_codes_xml.copy(),
+                                     gsdi_test_species_tree_codes_xml.copy(),
+                                     false,
+                                     true,
+                                     true );
+            if ( d.getDuplicationsSum() != 21 ) {
+                return false;
+            }
+            if ( d.getSpeciationsSum() != 28 ) {
+                return false;
+            }
+            if ( d.getSpeciationOrDuplicationEventsSum() != 6 ) {
+                return false;
+            }
+            if ( d.getTaxCompBase() != TaxonomyComparisonBase.CODE ) {
+                return false;
+            }
+            if ( d.getMappedExternalSpeciesTreeNodes().size() != 17 ) {
+                return false;
+            }
+            if ( d.getReMappedScientificNamesFromGeneTree().size() != 0 ) {
+                return false;
+            }
+            if ( d.getStrippedExternalGeneTreeNodes().size() != 12 ) {
+                return false;
+            }
+            if ( d.getStrippedSpeciesTreeNodes().size() != 3 ) {
+                return false;
+            }
+            //--
+            final Phylogeny gsdi_test_gene_tree_sn_xml = ParserUtils.readPhylogenies( PATH_TO_TEST_DATA
+                    + "gsdi_test_gene_tree_sn.xml" )[ 0 ];
+            final GSDI e = new GSDI( gsdi_test_gene_tree_sn_xml.copy(),
+                                     gsdi_test_species_tree_sn_xml.copy(),
+                                     false,
+                                     true,
+                                     true );
+            if ( e.getDuplicationsSum() != 7 ) {
+                return false;
+            }
+            if ( e.getSpeciationsSum() != 9 ) {
+                return false;
+            }
+            if ( e.getSpeciationOrDuplicationEventsSum() != 1 ) {
+                return false;
+            }
+            if ( e.getTaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( e.getMappedExternalSpeciesTreeNodes().size() != 12 ) {
+                return false;
+            }
+            if ( e.getReMappedScientificNamesFromGeneTree().size() != 8 ) {
+                return false;
+            }
+            if ( e.getStrippedExternalGeneTreeNodes().size() != 3 ) {
+                return false;
+            }
+            if ( e.getStrippedSpeciesTreeNodes().size() != 7 ) {
                 return false;
             }
         }

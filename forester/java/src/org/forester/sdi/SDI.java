@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
@@ -288,14 +289,17 @@ public abstract class SDI {
     }
 
     static String taxonomyToString( final PhylogenyNode n, final TaxonomyComparisonBase base ) {
-        final Taxonomy tax = n.getNodeData().getTaxonomy();
         switch ( base ) {
             case ID:
-                return tax.getIdentifier().getValue();
+                final Identifier id = n.getNodeData().getTaxonomy().getIdentifier();
+                if ( id == null ) {
+                    return null;
+                }
+                return id.getValuePlusProvider();
             case CODE:
-                return tax.getTaxonomyCode();
+                return n.getNodeData().getTaxonomy().getTaxonomyCode();
             case SCIENTIFIC_NAME:
-                return tax.getScientificName();
+                return n.getNodeData().getTaxonomy().getScientificName();
             default:
                 throw new IllegalArgumentException( "unknown comparison base for taxonomies: " + base );
         }

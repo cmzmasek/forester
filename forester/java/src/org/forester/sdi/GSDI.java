@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -72,6 +74,7 @@ public final class GSDI extends SDI {
     private final List<PhylogenyNode> _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
     private TaxonomyComparisonBase    _tax_comp_base;
+    private final SortedSet<String>   _scientific_names_mapped_to_reduced_specificity;
 
     public GSDI( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
@@ -88,6 +91,7 @@ public final class GSDI extends SDI {
         _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
+        _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
         linkNodesOfG();
         getSpeciesTree().preOrderReId();
         geneTreePostOrderTraversal();
@@ -228,12 +232,14 @@ public final class GSDI extends SDI {
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
             species_tree_ext_nodes.add( s );
-            final String tax_str = taxonomyToString( s, _tax_comp_base );
-            if ( !ForesterUtil.isEmpty( tax_str ) ) {
-                if ( species_to_node_map.containsKey( tax_str ) ) {
-                    throw new SDIException( "taxonomy \"" + s + "\" is not unique in species tree" );
+            if ( s.getNodeData().isHasTaxonomy() ) {
+                final String tax_str = taxonomyToString( s, _tax_comp_base );
+                if ( !ForesterUtil.isEmpty( tax_str ) ) {
+                    if ( species_to_node_map.containsKey( tax_str ) ) {
+                        throw new SDIException( "taxonomy \"" + s + "\" is not unique in species tree" );
+                    }
+                    species_to_node_map.put( tax_str, s );
                 }
-                species_to_node_map.put( tax_str, s );
             }
         }
         // Retrieve the reference to the node with a matching stringyfied taxonomy.
@@ -261,7 +267,7 @@ public final class GSDI extends SDI {
                     PhylogenyNode s = species_to_node_map.get( tax_str );
                     if ( ( _tax_comp_base == TaxonomyComparisonBase.SCIENTIFIC_NAME ) && ( s == null )
                             && ( ForesterUtil.countChars( tax_str, ' ' ) > 1 ) ) {
-                        s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, s );
+                        s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str );
                     }
                     if ( s == null ) {
                         if ( _strip_gene_tree ) {
@@ -281,19 +287,25 @@ public final class GSDI extends SDI {
         } // for loop
         if ( _strip_gene_tree ) {
             stripGeneTree();
+            if ( getGeneTree().isEmpty() || ( getGeneTree().getNumberOfExternalNodes() < 2 ) ) {
+                throw new SDIException( "species could not be mapped between gene tree and species tree" );
+            }
         }
         if ( _strip_species_tree ) {
             stripSpeciesTree( species_tree_ext_nodes );
         }
     }
 
-    private final static PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
-                                                                           final String tax_str,
-                                                                           PhylogenyNode s ) {
-        s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, " (" );
+    private final PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
+                                                                    final String tax_str ) {
+        PhylogenyNode s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str, " (" );
         if ( s == null ) {
             if ( ForesterUtil.countChars( tax_str, ' ' ) == 2 ) {
-                s = species_to_node_map.get( tax_str.substring( 0, tax_str.lastIndexOf( ' ' ) ).trim() );
+                final String new_tax_str = tax_str.substring( 0, tax_str.lastIndexOf( ' ' ) ).trim();
+                s = species_to_node_map.get( new_tax_str );
+                if ( s != null ) {
+                    addScientificNamesMappedToReducedSpecificity( tax_str, new_tax_str );
+                }
             }
         }
         if ( s == null ) {
@@ -308,14 +320,27 @@ public final class GSDI extends SDI {
         return s;
     }
 
-    private final static PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
-                                                                           final String tax_str,
-                                                                           final String term ) {
+    private final PhylogenyNode tryMapByRemovingOverlySpecificData( final Map<String, PhylogenyNode> species_to_node_map,
+                                                                    final String tax_str,
+                                                                    final String term ) {
         final int i = tax_str.indexOf( term );
         if ( i > 4 ) {
-            return species_to_node_map.get( tax_str.substring( 0, i ).trim() );
+            final String new_tax_str = tax_str.substring( 0, i ).trim();
+            final PhylogenyNode s = species_to_node_map.get( new_tax_str );
+            if ( s != null ) {
+                addScientificNamesMappedToReducedSpecificity( tax_str, new_tax_str );
+            }
+            return s;
         }
         return null;
+    }
+
+    private final void addScientificNamesMappedToReducedSpecificity( final String s1, final String s2 ) {
+        _scientific_names_mapped_to_reduced_specificity.add( s1 + " -> " + s2 );
+    }
+
+    public final SortedSet<String> getReMappedScientificNamesFromGeneTree() {
+        return _scientific_names_mapped_to_reduced_specificity;
     }
 
     public TaxonomyComparisonBase getTaxCompBase() {
@@ -377,11 +402,11 @@ public final class GSDI extends SDI {
         else if ( max == 1 ) {
             throw new IllegalArgumentException( "gene tree has only one node with taxonomic data" );
         }
-        else if ( max == with_sn_count ) {
-            return SDI.TaxonomyComparisonBase.SCIENTIFIC_NAME;
-        }
         else if ( max == with_id_count ) {
             return SDI.TaxonomyComparisonBase.ID;
+        }
+        else if ( max == with_sn_count ) {
+            return SDI.TaxonomyComparisonBase.SCIENTIFIC_NAME;
         }
         else {
             return SDI.TaxonomyComparisonBase.CODE;
