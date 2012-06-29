@@ -471,7 +471,7 @@ public final class gsdi {
         System.out.println( " -" + gsdi.MOST_PARSIMONIOUS_OPTION
                 + ": use most parimonious duplication model for GSDI: " );
         System.out.println( "     assign nodes as speciations which would otherwise be assiged" );
-        System.out.println( "     as potential duplications dueof polytomies in the species tree" );
+        System.out.println( "     as potential duplications due to polytomies in the species tree" );
         System.out.println( " -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
                 + ": to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)" );
         System.out.println( " -" + gsdi.SDISE_OPTION
