@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true">
+  <clade>
+    <clade>
+      <clade>
+        <clade>
+          <clade>
+            <clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <clade>
+                      <clade>
+                        <clade>
+                          <clade>
+                            <taxonomy>
+                              <scientific_name>Plasmodium falciparum (maybe)</scientific_name>
+                            </taxonomy>
+                            <sequence>
+                              <name>A</name>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <scientific_name>Plasmodium yoelii yoelii</scientific_name>
+                            </taxonomy>
+                            <sequence>
+                              <name>A</name>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <taxonomy>
+                            <scientific_name>Plasmodium chabaudi strain lame</scientific_name>
+                          </taxonomy>
+                          <sequence>
+                            <name>A</name>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <taxonomy>
+                          <scientific_name>Plasmodium yoelii yoelii</scientific_name>
+                        </taxonomy>
+                        <sequence>
+                          <name>B</name>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>i have no species</name>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <scientific_name>Homo sapiens</scientific_name>
+                      <common_name>Human</common_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>X</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <scientific_name>big lizard</scientific_name>
+                  </taxonomy>
+                  <sequence>
+                    <name>X</name>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <id provider="ncbi">3093</id>
+                  <scientific_name>Characium perforatum</scientific_name>
+                </taxonomy>
+                <sequence>
+                  <name>X</name>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <taxonomy>
+                      <code>HUMAN</code>
+                      <scientific_name>Homo sapiens</scientific_name>
+                      <common_name>Human</common_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>A</name>
+                    </sequence>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <scientific_name>Mus musculus subspecies balb</scientific_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>A</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <scientific_name>Saccharomyces cerevisiae (strain ATCC 204508 / S288c)</scientific_name>
+                  </taxonomy>
+                  <sequence>
+                    <name>A</name>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <taxonomy>
+                      <scientific_name>Homo sapiens</scientific_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>E</name>
+                    </sequence>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <scientific_name>Saccharomyces cerevisiae subsection strange</scientific_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>E</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <scientific_name>Mus musculus nielsson</scientific_name>
+                  </taxonomy>
+                  <sequence>
+                    <name>F</name>
+                  </sequence>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <clade>
+              <taxonomy>
+                <code>NEMVE</code>
+                <scientific_name>Nematostella vectensis</scientific_name>
+                <common_name>Starlet sea anemone</common_name>
+              </taxonomy>
+              <sequence>
+                <name>C</name>
+              </sequence>
+            </clade>
+            <clade>
+              <taxonomy>
+                <scientific_name>Petromyzon marinus</scientific_name>
+                <common_name>Sea lamprey</common_name>
+              </taxonomy>
+              <sequence>
+                <name>C</name>
+              </sequence>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <clade>
+            <clade>
+              <taxonomy>
+                <scientific_name>Mycosphaerella graminicola</scientific_name>
+                <synonym>Septoria tritici</synonym>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence>
+                <name>D</name>
+              </sequence>
+            </clade>
+            <clade>
+              <taxonomy>
+                <scientific_name>Mycosphaerella graminicola</scientific_name>
+              </taxonomy>
+              <sequence>
+                <name>D1</name>
+              </sequence>
+            </clade>
+          </clade>
+          <clade>
+            <taxonomy>
+              <id provider="uniprot">64363</id>
+              <scientific_name>Mycosphaerella pini</scientific_name>
+            </taxonomy>
+            <sequence>
+              <name>D</name>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <taxonomy>
+          <id provider="uniprot">70601</id>
+          <scientific_name>Pyrococcus horikoshii (strain ATCC 700860 / DSM 12428 / JCM 9974 / NBRC 100139 / OT-3)</scientific_name>
+        </taxonomy>
+        <sequence>
+          <name>A</name>
+        </sequence>
+      </clade>
+    </clade>
+    <clade>
+      <taxonomy>
+        <code>BACTN</code>
+        <scientific_name>Bacteroides thetaiotaomicron (strain ATCC 29148 / DSM 2079 / NCTC 10582 / E50 / VPI-5482)</scientific_name>
+      </taxonomy>
+      <sequence>
+        <name>A</name>
+      </sequence>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

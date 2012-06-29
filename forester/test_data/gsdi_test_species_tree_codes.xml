@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="false">
+  <clade>
+    <name>cellular_organisms</name>
+    <clade>
+      <taxonomy>
+        <scientific_name>Neomura</scientific_name>
+      </taxonomy>
+      <clade>
+        <taxonomy>
+          <id provider="uniprot">2759</id>
+          <scientific_name>Eukaryota</scientific_name>
+          <rank>superkingdom</rank>
+        </taxonomy>
+        <clade>
+          <taxonomy>
+            <id provider="uniprot">33154</id>
+            <scientific_name>Opisthokonta</scientific_name>
+            <common_name>Fungi/Metazoa group</common_name>
+          </taxonomy>
+          <clade>
+            <name>Bilateria_Cnidaria</name>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">7742</id>
+                <scientific_name>Vertebrata</scientific_name>
+              </taxonomy>
+              <clade>
+                <taxonomy>
+                  <id provider="uniprot">314146</id>
+                  <scientific_name>Euarchontoglires</scientific_name>
+                  <rank>superorder</rank>
+                </taxonomy>
+                <clade>
+                  <taxonomy>
+                    <code>HUMAN</code>
+                  </taxonomy>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <code>MOUSE</code>
+                  </taxonomy>
+                </clade>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <code>PETMA</code>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <clade>
+                <taxonomy>
+                  <code>NEMVE</code>
+                </taxonomy>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <common_name>nemve sister</common_name>
+                </taxonomy>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <name>Pezizomycotina_Saccharomycetales</name>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">41254</id>
+                <scientific_name>Mycosphaerella</scientific_name>
+                <rank>genus</rank>
+              </taxonomy>
+              <clade>
+                <taxonomy>
+                  <code>MYCGR</code>
+                </taxonomy>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <code>MYCPJ</code>
+                </taxonomy>
+              </clade>
+            </clade>
+            <clade>
+              <clade>
+                <name>YEAST</name>
+                <taxonomy>
+                  <code>YEAST</code>
+                </taxonomy>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <code>WOAMI</code>
+                </taxonomy>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <clade>
+            <taxonomy>
+              <code>PLACH</code>
+            </taxonomy>
+          </clade>
+          <clade>
+            <name>PLAFA</name>
+            <taxonomy>
+              <code>PLAFA</code>
+            </taxonomy>
+          </clade>
+          <clade>
+            <taxonomy>
+              <code>PLAYO</code>
+            </taxonomy>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <clade>
+          <taxonomy>
+            <code>PYRHO</code>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>i have no species information!</name>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <name>b_193</name>
+      <clade>
+        <name>b_115</name>
+        <clade>
+          <name>KINRD</name>
+          <taxonomy>
+            <id provider="uniprot">266940</id>
+            <code>KINRD</code>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>KOCRD</name>
+          <taxonomy>
+            <id provider="uniprot">378753</id>
+            <code>KOCRD</code>
+            <scientific_name>Kocuria rhizophila (strain ATCC 9341 / DSM 348 / NBRC 103217 / DC2201)</scientific_name>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>STRCO</name>
+          <taxonomy>
+            <id provider="uniprot">1902</id>
+            <code>STRCO</code>
+            <scientific_name>Streptomyces coelicolor</scientific_name>
+            <rank>species</rank>
+          </taxonomy>
+        </clade>
+        <clade>
+          <name>THEFY</name>
+          <taxonomy>
+            <id provider="uniprot">269800</id>
+            <code>THEFY</code>
+            <scientific_name>Thermobifida fusca (strain YX)</scientific_name>
+          </taxonomy>
+        </clade>
+        <clade>
+          <taxonomy>
+            <id provider="uniprot">1032480</id>
+            <code>MICPN</code>
+            <common_name>Microlunatus phosphovorus NM-1</common_name>
+            <rank>strain</rank>
+          </taxonomy>
+        </clade>
+      </clade>
+      <clade>
+        <name>BACTN</name>
+        <taxonomy>
+          <id provider="uniprot">818</id>
+          <code>BACTN</code>
+          <scientific_name>Bacteroides thetaiotaomicron</scientific_name>
+          <rank>species</rank>
+        </taxonomy>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

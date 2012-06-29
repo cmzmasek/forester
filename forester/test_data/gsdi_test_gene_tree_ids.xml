@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true">
+  <clade>
+    <clade>
+      <clade>
+        <clade>
+          <clade>
+            <clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <clade>
+                      <clade>
+                        <clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5833</id>
+                            </taxonomy>
+                            <sequence>
+                              <name>A</name>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">73239</id>
+                              <scientific_name>Plasmodium yoelii yoelii</scientific_name>
+                            </taxonomy>
+                            <sequence>
+                              <name>A</name>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <taxonomy>
+                            <id provider="uniprot">5825</id>
+                            <scientific_name>Plasmodium chabaudi</scientific_name>
+                          </taxonomy>
+                          <sequence>
+                            <name>A</name>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <taxonomy>
+                          <id provider="uniprot">73239</id>
+                          <scientific_name>Plasmodium yoelii yoelii</scientific_name>
+                        </taxonomy>
+                        <sequence>
+                          <name>B</name>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>i have no species</name>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">9606</id>
+                      <code>HUMAN</code>
+                      <scientific_name>Homo sapiens</scientific_name>
+                      <common_name>Human</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <sequence>
+                      <name>X</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <code>XXXXX</code>
+                  </taxonomy>
+                  <sequence>
+                    <name>X</name>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <taxonomy>
+                  <id provider="ncbi">3093</id>
+                  <scientific_name>Characium perforatum</scientific_name>
+                  <rank>species</rank>
+                </taxonomy>
+                <sequence>
+                  <name>X</name>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">9606</id>
+                      <code>HUMAN</code>
+                      <scientific_name>Homo sapiens</scientific_name>
+                      <common_name>Human</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <sequence>
+                      <name>A</name>
+                    </sequence>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">10090</id>
+                      <code>MOUSE</code>
+                      <scientific_name>Mus musculus</scientific_name>
+                      <common_name>Mouse</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <sequence>
+                      <name>A</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <id provider="uniprot">559292</id>
+                    <code>YEAST</code>
+                    <scientific_name>Saccharomyces cerevisiae (strain ATCC 204508 / S288c)</scientific_name>
+                    <common_name>Baker&apos;s yeast</common_name>
+                  </taxonomy>
+                  <sequence>
+                    <name>A</name>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">9606</id>
+                      <code>HUMAN</code>
+                      <scientific_name>Homo sapiens</scientific_name>
+                      <common_name>Human</common_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <sequence>
+                      <name>E</name>
+                    </sequence>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">559292</id>
+                      <code>YEAST</code>
+                      <scientific_name>Saccharomyces cerevisiae (strain ATCC 204508 / S288c)</scientific_name>
+                      <common_name>Baker&apos;s yeast</common_name>
+                    </taxonomy>
+                    <sequence>
+                      <name>E</name>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <taxonomy>
+                    <id provider="uniprot">10090</id>
+                    <code>MOUSE</code>
+                    <scientific_name>Mus musculus</scientific_name>
+                    <common_name>Mouse</common_name>
+                    <rank>species</rank>
+                  </taxonomy>
+                  <sequence>
+                    <name>F</name>
+                  </sequence>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">45351</id>
+                <code>NEMVE</code>
+                <scientific_name>Nematostella vectensis</scientific_name>
+                <common_name>Starlet sea anemone</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence>
+                <name>C</name>
+              </sequence>
+            </clade>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">7757</id>
+                <code>PETMA</code>
+                <scientific_name>Petromyzon marinus</scientific_name>
+                <common_name>Sea lamprey</common_name>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence>
+                <name>C</name>
+              </sequence>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <clade>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">1047171</id>
+                <code>MYCGR</code>
+                <scientific_name>Mycosphaerella graminicola</scientific_name>
+                <common_name>Speckled leaf blotch fungus</common_name>
+                <synonym>Septoria tritici</synonym>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence>
+                <name>D</name>
+              </sequence>
+            </clade>
+            <clade>
+              <taxonomy>
+                <id provider="uniprot">1047171</id>
+                <code>MYCGR</code>
+                <scientific_name>Mycosphaerella graminicola</scientific_name>
+                <common_name>Speckled leaf blotch fungus</common_name>
+                <synonym>Septoria tritici</synonym>
+                <rank>species</rank>
+              </taxonomy>
+              <sequence>
+                <name>D1</name>
+              </sequence>
+            </clade>
+          </clade>
+          <clade>
+            <taxonomy>
+              <id provider="uniprot">64363</id>
+              <code>MYCPJ</code>
+              <scientific_name>Mycosphaerella pini</scientific_name>
+              <common_name>Red band needle blight disease fungus</common_name>
+              <synonym>Dothistroma pini</synonym>
+              <rank>species</rank>
+            </taxonomy>
+            <sequence>
+              <name>D</name>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <taxonomy>
+          <id provider="uniprot">70601</id>
+          <code>PYRHO</code>
+          <scientific_name>Pyrococcus horikoshii (strain ATCC 700860 / DSM 12428 / JCM 9974 / NBRC 100139 / OT-3)</scientific_name>
+        </taxonomy>
+        <sequence>
+          <name>A</name>
+        </sequence>
+      </clade>
+    </clade>
+    <clade>
+      <taxonomy>
+        <id provider="uniprot">226186</id>
+        <code>BACTN</code>
+        <scientific_name>Bacteroides thetaiotaomicron (strain ATCC 29148 / DSM 2079 / NCTC 10582 / E50 / VPI-5482)</scientific_name>
+      </taxonomy>
+      <sequence>
+        <name>A</name>
+      </sequence>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
