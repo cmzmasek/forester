@@ -25,7 +25,7 @@ path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyl
 Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
 
 ==== Species tree ====
-Must be in phyloXML format unless option -q is used.
+Must be in phyloXML format unless option -q is used ([http://forester.googlecode.com/files/species.xml example]).
 
 === Output ===
 
