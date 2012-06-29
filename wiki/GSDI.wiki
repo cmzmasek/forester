@@ -7,10 +7,9 @@
 To infer duplication events on a gene tree given a trusted species tree.
 
 == Usage == 
-{{{
-java -Xmx1024m -cp
-path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyloXML format> <species tree> <outfile>
-}}}
+
+`java -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyloXML format> <species tree> <outfile>`
 
 === Options ===
 
