@@ -1080,12 +1080,12 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
                 sb.append( getNodeData().getSequence().getName() );
                 sb.append( " " );
             }
-            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
+            if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
                 sb.append( getNodeData().getSequence().getSymbol() );
                 sb.append( " " );
             }
-            else if ( getNodeData().getSequence().getAccession() != null ) {
-                sb.append( getNodeData().getTaxonomy().getIdentifier().toString() );
+            if ( getNodeData().getSequence().getAccession() != null ) {
+                sb.append( getNodeData().getSequence().getAccession().toString() );
                 sb.append( " " );
             }
         }
