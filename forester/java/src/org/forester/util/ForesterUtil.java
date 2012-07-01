@@ -96,6 +96,10 @@ public final class ForesterUtil {
         }
     }
 
+    public static  boolean isWindowns () {
+    return ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) > -1;
+    }
+    
     final public static String getForesterLibraryInformation() {
         return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE + ")";
     }

@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.phylogeny.Phylogeny;
@@ -215,6 +216,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration             _configuration;
     JMenuItem                 _remove_branch_color_item;
     Options                   _options;
+    InferenceManager         _inference_manager;
     final ProcessPool         _process_pool;
 
     MainFrame() {
@@ -901,6 +903,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _options = options;
     }
 
+    void setInferenceManager( final InferenceManager i ) {
+        _inference_manager = i;
+    }
+    
+    InferenceManager getInferenceManager() {
+        return _inference_manager;
+    }
+    
+    
     void setSelectedTypeInTypeMenu( final PHYLOGENY_GRAPHICS_TYPE type ) {
         setTypeMenuToAllUnselected();
         switch ( type ) {

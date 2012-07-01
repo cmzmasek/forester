@@ -292,6 +292,7 @@ public final class MainFrameApplication extends MainFrame {
         // hide until everything is ready
         setVisible( false );
         setOptions( Options.createInstance( _configuration ) );
+        setInferenceManager( InferenceManager.createInstance( _configuration ) );
         setPhylogeneticInferenceOptions( PhylogeneticInferenceOptions.createInstance( _configuration ) );
         _textframe = null;
         _species_tree = null;
@@ -667,14 +668,22 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     void buildPhylogeneticInferenceMenu() {
-        final InferenceManager inference_manager = InferenceManager.getInstance();
+        final InferenceManager im = getInferenceManager();
         _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
         _inference_menu.add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
         customizeJMenuItem( _inference_from_msa_item );
         _inference_from_msa_item.setToolTipText( "Basic phylogenetic inference from MSA" );
-        _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
-        customizeJMenuItem( _inference_from_seqs_item );
-        _inference_from_seqs_item.setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
+        if ( im.canDoMsa() ) {
+            _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
+            customizeJMenuItem( _inference_from_seqs_item );
+            _inference_from_seqs_item
+                    .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
+        }
+        else {
+            _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
+            customizeJMenuItem( _inference_from_seqs_item );
+            _inference_from_seqs_item.setEnabled( false );
+        }
         _jmenubar.add( _inference_menu );
     }
 
@@ -1360,7 +1369,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private File getCurrentDir() {
         if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
-            if ( ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) > -1 ) {
+            if ( ForesterUtil.isWindowns() ) {
                 try {
                     _current_dir = new File( WindowsUtils.getCurrentUserDesktopPath() );
                 }

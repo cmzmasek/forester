@@ -62,9 +62,6 @@ public final class Configuration {
     private boolean                         _use_tabbed_display                                    = false;
     private boolean                         _hide_controls_and_menus                               = false;
     private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
-    private File                            _mafft                                                 = null;
-    private File                            _clustalo                                              = null;
-    private File                            _fastme                                                = null;
     private SortedMap<String, WebLink>      _weblinks                                              = null;
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _antialias_screen                                      = true;
@@ -93,12 +90,17 @@ public final class Configuration {
     private boolean                         _show_domain_labels                                    = true;
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
-    private int                             _default_bootstrap_samples                             = -1;
     private boolean                         _show_default_node_shapes                              = false;
     private NodeShape                       _default_node_shape                                    = NodeShape.CIRCLE;
     private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private boolean                         _taxonomy_colorize_node_shapes                         = false;
+    private int                             _default_bootstrap_samples                             = -1;
+    private File                            _path_to_local_mafft                                   = null;
+    private File                            _path_to_local_kalign                                  = null;
+    private File                            _path_to_local_fastme                                  = null;
+    private File                            _path_to_local_raxml                                   = null;
+    private File                            _path_to_local_clustalo                                = null;
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -432,6 +434,22 @@ public final class Configuration {
 
     public int getDefaultBootstrapSamples() {
         return _default_bootstrap_samples;
+    }
+
+    public File getpathToLocalMafft() {
+        return _path_to_local_mafft;
+    }
+
+    public File getPathToLocalKalign() {
+        return _path_to_local_kalign;
+    }
+
+    public File getPathToLocalFastme() {
+        return _path_to_local_fastme;
+    }
+
+    public File getPathToLocalRaxml() {
+        return _path_to_local_raxml;
     }
 
     int getDefaultDisplayClicktoOption() {
@@ -804,6 +822,30 @@ public final class Configuration {
         _default_bootstrap_samples = default_bootstrap_samples;
     }
 
+    private void setPathToLocalMafft( final File path_to_local_mafft ) {
+        _path_to_local_mafft = path_to_local_mafft;
+    }
+
+    private void setPathToLocalKalign( final File path_to_local_kalign ) {
+        _path_to_local_kalign = path_to_local_kalign;
+    }
+
+    private void setPathToLocalFastme( final File path_to_local_fastme ) {
+        _path_to_local_fastme = path_to_local_fastme;
+    }
+
+    private void setPathToLocalRaxml( final File path_to_local_raxml ) {
+        _path_to_local_raxml = path_to_local_raxml;
+    }
+
+    public File getPathToLocalClustalOmega() {
+        return _path_to_local_clustalo;
+    }
+
+    public void setPathToLocalClustalOmega( final File path_to_local_clustalo ) {
+        _path_to_local_clustalo = path_to_local_clustalo;
+    }
+
     public void setDefaultNodeFill( final NodeFill default_node_fill ) {
         _default_node_fill = default_node_fill;
     }
@@ -930,18 +972,6 @@ public final class Configuration {
                 _ui = UI.UNKNOWN;
             }
         }
-        else if ( key.equals( "path_to_mafft" ) ) {
-            setPathToMafft( new File( ( String ) st.nextElement() ) );
-        }
-        else if ( key.equals( "path_to_clustalo" ) ) {
-            setPathToClustalOmega( new File( ( String ) st.nextElement() ) );
-        }
-        else if ( key.equals( "path_to_fastme" ) ) {
-            setPathToFastME( new File( ( String ) st.nextElement() ) );
-        }
-        else if ( key.equals( "path_to_mafft" ) ) {
-            setPathToMafft( new File( ( String ) st.nextElement() ) );
-        }
         else if ( key.equals( VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA ) ) {
             setValidatePhyloXmlAgainstSchema( parseBoolean( ( String ) st.nextElement() ) );
         }
@@ -1024,6 +1054,36 @@ public final class Configuration {
                 ForesterUtil
                         .printWarningMessage( Constants.PRG_NAME,
                                               "value for [default_number_of_bootstrap_resamples] cannot be negative" );
+            }
+        }
+        else if ( key.equals( "clustalo_local" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                setPathToLocalClustalOmega( new File( str ) );
+            }
+        }
+        else if ( key.equals( "mafft_local" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                setPathToLocalMafft( new File( str ) );
+            }
+        }
+        else if ( key.equals( "kalign_local" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                setPathToLocalKalign( new File( str ) );
+            }
+        }
+        else if ( key.equals( "fastme_local" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                setPathToLocalFastme( new File( str ) );
+            }
+        }
+        else if ( key.equals( "raxml_local" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                setPathToLocalRaxml( new File( str ) );
             }
         }
         else if ( key.equals( "show_scale" ) ) {
@@ -1515,30 +1575,6 @@ public final class Configuration {
 
     static String getDefaultFontFamilyName() {
         return DEFAULT_FONT_FAMILY;
-    }
-
-    public File getPathToMafft() {
-        return _mafft;
-    }
-
-    public File getPathToClustalOmega() {
-        return _clustalo;
-    }
-
-    public File getPathToFastME() {
-        return _fastme;
-    }
-
-    public void setPathToMafft( final File mafft ) {
-        _mafft = mafft;
-    }
-
-    public void setPathToClustalOmega( final File clustalo ) {
-        _clustalo = clustalo;
-    }
-
-    public void setPathToFastME( final File fastme ) {
-        _fastme = fastme;
     }
 
     static enum TRIPLET {
