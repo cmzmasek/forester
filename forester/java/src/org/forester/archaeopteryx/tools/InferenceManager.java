@@ -2,18 +2,18 @@
 package org.forester.archaeopteryx.tools;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.forester.archaeopteryx.Configuration;
-import org.forester.util.ForesterUtil;
 
 public final class InferenceManager {
 
-    private final File _path_to_local_mafft;
-    private final File _path_to_local_kalign;
-    private final File _path_to_local_fastme;
-    private final File _path_to_local_raxml;
-    private final File _path_to_local_clustalo;
+    private final static String DEFAULT_PATHS[] = { "C:\\Program Files\\", "C:\\Program Files (x86)\\", "/bin/",
+            "/usr/local/bin/", "/usr/bin/"     };
+    private final File          _path_to_local_mafft;
+    private final File          _path_to_local_kalign;
+    private final File          _path_to_local_fastme;
+    private final File          _path_to_local_raxml;
+    private final File          _path_to_local_clustalo;
 
     public static InferenceManager createInstance( final Configuration c ) {
         return new InferenceManager( c.getpathToLocalMafft(),
@@ -48,17 +48,31 @@ public final class InferenceManager {
         return _path_to_local_clustalo;
     }
 
-    private final static File createLocalPath( final File path ) {
-        if ( path == null ) {
-            return null;
+    private final static File createLocalPath( final File path, final String name ) {
+        if ( ( path != null ) && path.canExecute() && !path.isDirectory() ) {
+            return path;
         }
-        try {
-            if ( path.getCanonicalFile().canExecute() && !path.getCanonicalFile().isDirectory() ) {
-                return new File( path.getCanonicalFile().toString() );
+        File p1 = new File(  name );
+        if ( p1.canExecute() && !p1.isDirectory() ) {
+            return p1;
+        }
+        for( final String path_str : DEFAULT_PATHS ) {
+            try {
+                final File p2 = new File( path_str + name );
+                if ( p2.canExecute() && !p2.isDirectory() ) {
+                    return p2;
+                }
+                final File p3 = new File( path_str + name + ".exe" );
+                if ( p3.canExecute() && !p3.isDirectory() ) {
+                    return p3;
+                }
+                final File p4 = new File( path_str + name + ".bat" );
+                if ( p4.canExecute() && !p4.isDirectory() ) {
+                    return p4;
+                }
             }
-        }
-        catch ( final IOException e ) {
-            return null;
+            catch ( final Exception e ) {
+            }
         }
         return null;
     }
@@ -68,15 +82,10 @@ public final class InferenceManager {
                               final File path_to_local_fastme,
                               final File path_to_local_raxml,
                               final File path_to_local_clustalo ) {
-        _path_to_local_mafft = createLocalPath( path_to_local_mafft ) != null ? createLocalPath( path_to_local_mafft )
-                : createLocalPath( new File( "mafft" ) );
-        _path_to_local_kalign = createLocalPath( path_to_local_kalign ) != null ? createLocalPath( path_to_local_kalign )
-                : createLocalPath( new File( "kalign" ) );
-        _path_to_local_fastme = createLocalPath( path_to_local_fastme ) != null ? createLocalPath( path_to_local_fastme )
-                : createLocalPath( new File( "fastme" ) );
-        _path_to_local_raxml = createLocalPath( path_to_local_raxml ) != null ? createLocalPath( path_to_local_raxml )
-                : createLocalPath( new File( "raxml" ) );
-        _path_to_local_clustalo = createLocalPath( path_to_local_clustalo ) != null ? createLocalPath( path_to_local_clustalo )
-                : createLocalPath( new File( ForesterUtil.isWindowns() ? "clustalo.exe" : "clustalo" ) );
+        _path_to_local_mafft = createLocalPath( path_to_local_mafft, "mafft" );
+        _path_to_local_kalign = createLocalPath( path_to_local_kalign, "kalign" );
+        _path_to_local_fastme = createLocalPath( path_to_local_fastme, "fastme" );
+        _path_to_local_raxml = createLocalPath( path_to_local_raxml, "raxml" );
+        _path_to_local_clustalo = createLocalPath( path_to_local_clustalo, "clustalo" );
     }
 }

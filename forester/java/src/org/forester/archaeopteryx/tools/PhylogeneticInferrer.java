@@ -45,6 +45,7 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.msa.BasicMsa;
+import org.forester.msa.ClustalOmega;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaInferrer;
@@ -264,12 +265,24 @@ public class PhylogeneticInferrer extends RunnableProcess {
 
     private Msa runMAFFT( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {
         Msa msa = null;
-        final MsaInferrer mafft = Mafft.createInstance();
+        final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft().getCanonicalPath());
         try {
             msa = mafft.infer( input_seqs, opts );
         }
         catch ( final IOException e ) {
             System.out.println( mafft.getErrorDescription() );
+        }
+        return msa;
+    }
+    
+    private Msa runClustalOmega( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {
+        Msa msa = null;
+        final MsaInferrer clustalo = ClustalOmega.createInstance(_mf.getInferenceManager().getPathToLocalClustalo().getCanonicalPath());
+        try {
+            msa = clustalo.infer( input_seqs, opts );
+        }
+        catch ( final IOException e ) {
+            System.out.println( clustalo.getErrorDescription() );
         }
         return msa;
     }

@@ -907,7 +907,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _inference_manager = i;
     }
     
-    InferenceManager getInferenceManager() {
+    public InferenceManager getInferenceManager() {
         return _inference_manager;
     }
     

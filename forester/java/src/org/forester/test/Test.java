@@ -7951,8 +7951,22 @@ public final class Test {
             opts.add( "1000" );
             opts.add( "--localpair" );
             opts.add( "--quiet" );
+          
+                
+                String path = "";
+                final String os = ForesterUtil.OS_NAME.toLowerCase();
+                if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
+                    path = "/usr/local/bin/mafft";
+                }
+                else if ( os.indexOf( "win" ) >= 0 ) {
+                    path = "C:\\Program Files\\mafft-win\\mafft.bat";
+                }
+                else {
+                    path = "/home/czmasek/bin/mafft";
+                }
+               
             Msa msa = null;
-            final MsaInferrer mafft = Mafft.createInstance();
+            final MsaInferrer mafft = Mafft.createInstance( path );
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );
             if ( ( msa == null ) || ( msa.getLength() < 20 ) || ( msa.getNumberOfSequences() != 19 ) ) {
                 return false;

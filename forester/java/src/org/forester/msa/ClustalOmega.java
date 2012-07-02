@@ -31,12 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.FastaParser;
-import org.forester.util.ForesterUtil;
 import org.forester.util.SystemCommandExecutor;
 
-public final class Mafft implements MsaInferrer {
+public final class ClustalOmega implements MsaInferrer {
 
-    private final static String DEFAULT_PARAMETERS = "--maxiterate 1000 --localpair";
+    private final static String DEFAULT_PARAMETERS = "";
     private String              _error;
     private int                 _exit_code;
     private final String        _path_to_prg;
@@ -44,12 +43,12 @@ public final class Mafft implements MsaInferrer {
    
 
     public static MsaInferrer createInstance( final String path_to_prg ) throws IOException {
-        return new Mafft( path_to_prg );
+        return new ClustalOmega( path_to_prg );
     }
 
    
 
-    private Mafft( final String path_to_prg ) throws IOException {
+    private ClustalOmega( final String path_to_prg ) throws IOException {
         if ( !SystemCommandExecutor.isExecuteableFile( new File( path_to_prg ) ) ) {
             throw new IOException( "cannot execute MAFFT with \"" + path_to_prg + "\"" );
         }
@@ -90,12 +89,12 @@ public final class Mafft implements MsaInferrer {
         final StringBuilder stderr = command_executor.getStandardErrorFromCommand();
         _error = stderr.toString();
         if ( _exit_code != 0 ) {
-            throw new IOException( "MAFFT program failed, exit code: " + _exit_code + "\nCommand:\n" + my_opts
+            throw new IOException( "Clustal Omega program failed, exit code: " + _exit_code + "\nCommand:\n" + my_opts
                     + "\nError:\n" + stderr );
         }
         final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
         if ( ( stdout == null ) || ( stdout.length() < 2 ) ) {
-            throw new IOException( "MAFFT program did not produce any output\nCommand:\n" + my_opts + "\nError:\n"
+            throw new IOException( "Clustal Omega program did not produce any output\nCommand:\n" + my_opts + "\nError:\n"
                     + stderr );
         }
         final Msa msa = FastaParser.parseMsa( stdout.toString() );
