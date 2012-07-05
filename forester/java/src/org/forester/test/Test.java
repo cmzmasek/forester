@@ -687,7 +687,19 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        if ( Mafft.isInstalled() ) {
+        //----
+        String path = "";
+        final String os = ForesterUtil.OS_NAME.toLowerCase();
+        if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
+            path = "/usr/local/bin/mafft";
+        }
+        else if ( os.indexOf( "win" ) >= 0 ) {
+            path = "C:\\Program Files\\mafft-win\\mafft.bat";
+        }
+        else {
+            path = "/home/czmasek/bin/mafft";
+        }
+        if ( Mafft.isInstalled( path ) ) {
             System.out.print( "MAFFT (external program): " );
             if ( Test.testMafft() ) {
                 System.out.println( "OK." );
@@ -697,6 +709,7 @@ public final class Test {
                 System.out.println( "failed [will not count towards failed tests]" );
             }
         }
+        //----
         System.out.print( "Next nodes with collapsed: " );
         if ( Test.testNextNodeWithCollapsing() ) {
             System.out.println( "OK." );
@@ -7951,20 +7964,17 @@ public final class Test {
             opts.add( "1000" );
             opts.add( "--localpair" );
             opts.add( "--quiet" );
-          
-                
-                String path = "";
-                final String os = ForesterUtil.OS_NAME.toLowerCase();
-                if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
-                    path = "/usr/local/bin/mafft";
-                }
-                else if ( os.indexOf( "win" ) >= 0 ) {
-                    path = "C:\\Program Files\\mafft-win\\mafft.bat";
-                }
-                else {
-                    path = "/home/czmasek/bin/mafft";
-                }
-               
+            String path = "";
+            final String os = ForesterUtil.OS_NAME.toLowerCase();
+            if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
+                path = "/usr/local/bin/mafft";
+            }
+            else if ( os.indexOf( "win" ) >= 0 ) {
+                path = "C:\\Program Files\\mafft-win\\mafft.bat";
+            }
+            else {
+                path = "/home/czmasek/bin/mafft";
+            }
             Msa msa = null;
             final MsaInferrer mafft = Mafft.createInstance( path );
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );

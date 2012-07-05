@@ -216,7 +216,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration             _configuration;
     JMenuItem                 _remove_branch_color_item;
     Options                   _options;
-    InferenceManager         _inference_manager;
+    InferenceManager          _inference_manager;
     final ProcessPool         _process_pool;
 
     MainFrame() {
@@ -906,12 +906,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void setInferenceManager( final InferenceManager i ) {
         _inference_manager = i;
     }
-    
+
     public InferenceManager getInferenceManager() {
         return _inference_manager;
     }
-    
-    
+
     void setSelectedTypeInTypeMenu( final PHYLOGENY_GRAPHICS_TYPE type ) {
         setTypeMenuToAllUnselected();
         switch ( type ) {

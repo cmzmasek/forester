@@ -265,7 +265,8 @@ public class PhylogeneticInferrer extends RunnableProcess {
 
     private Msa runMAFFT( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {
         Msa msa = null;
-        final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft().getCanonicalPath());
+        final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft()
+                .getCanonicalPath() );
         try {
             msa = mafft.infer( input_seqs, opts );
         }
@@ -274,10 +275,12 @@ public class PhylogeneticInferrer extends RunnableProcess {
         }
         return msa;
     }
-    
-    private Msa runClustalOmega( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {
+
+    private Msa runClustalOmega( final File input_seqs, final List<String> opts ) throws IOException,
+            InterruptedException {
         Msa msa = null;
-        final MsaInferrer clustalo = ClustalOmega.createInstance(_mf.getInferenceManager().getPathToLocalClustalo().getCanonicalPath());
+        final MsaInferrer clustalo = ClustalOmega.createInstance( _mf.getInferenceManager().getPathToLocalClustalo()
+                .getCanonicalPath() );
         try {
             msa = clustalo.infer( input_seqs, opts );
         }

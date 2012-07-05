@@ -680,7 +680,8 @@ public final class MainFrameApplication extends MainFrame {
                     .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
         }
         else {
-            _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
+            _inference_menu
+                    .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
             customizeJMenuItem( _inference_from_seqs_item );
             _inference_from_seqs_item.setEnabled( false );
         }

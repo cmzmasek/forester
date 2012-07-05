@@ -52,7 +52,7 @@ public final class InferenceManager {
         if ( ( path != null ) && path.canExecute() && !path.isDirectory() ) {
             return path;
         }
-        File p1 = new File(  name );
+        final File p1 = new File( name );
         if ( p1.canExecute() && !p1.isDirectory() ) {
             return p1;
         }

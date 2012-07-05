@@ -29,11 +29,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public interface MsaInferrer {
+import org.forester.util.SystemCommandExecutor;
 
-    public String getErrorDescription();
+public abstract class MsaInferrer {
 
-    public int getExitCode();
+    public abstract String getErrorDescription();
 
-    public Msa infer( File path_to_input_seqs, List<String> opts ) throws IOException, InterruptedException;
+    public abstract int getExitCode();
+
+    public static boolean isInstalled( final String path_to_prg ) {
+        return SystemCommandExecutor.isExecuteableFile( new File( path_to_prg ) );
+    }
+
+    @Override
+    public Object clone() {
+        throw new NoSuchMethodError();
+    }
+
+    public abstract Msa infer( File path_to_input_seqs, List<String> opts ) throws IOException, InterruptedException;
 }

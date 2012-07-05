@@ -33,24 +33,20 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.util.SystemCommandExecutor;
 
-public final class ClustalOmega implements MsaInferrer {
+public final class ClustalOmega extends MsaInferrer {
 
     private final static String DEFAULT_PARAMETERS = "";
     private String              _error;
     private int                 _exit_code;
     private final String        _path_to_prg;
 
-   
-
     public static MsaInferrer createInstance( final String path_to_prg ) throws IOException {
         return new ClustalOmega( path_to_prg );
     }
 
-   
-
     private ClustalOmega( final String path_to_prg ) throws IOException {
-        if ( !SystemCommandExecutor.isExecuteableFile( new File( path_to_prg ) ) ) {
-            throw new IOException( "cannot execute MAFFT with \"" + path_to_prg + "\"" );
+        if ( !isInstalled( path_to_prg ) ) {
+            throw new IOException( "cannot execute Clustal Omega with \"" + path_to_prg + "\"" );
         }
         _path_to_prg = new String( path_to_prg );
         init();
@@ -58,11 +54,6 @@ public final class ClustalOmega implements MsaInferrer {
 
     public static String getDefaultParameters() {
         return DEFAULT_PARAMETERS;
-    }
-
-    @Override
-    public Object clone() {
-        throw new NoSuchMethodError();
     }
 
     @Override
@@ -94,8 +85,8 @@ public final class ClustalOmega implements MsaInferrer {
         }
         final StringBuilder stdout = command_executor.getStandardOutputFromCommand();
         if ( ( stdout == null ) || ( stdout.length() < 2 ) ) {
-            throw new IOException( "Clustal Omega program did not produce any output\nCommand:\n" + my_opts + "\nError:\n"
-                    + stderr );
+            throw new IOException( "Clustal Omega program did not produce any output\nCommand:\n" + my_opts
+                    + "\nError:\n" + stderr );
         }
         final Msa msa = FastaParser.parseMsa( stdout.toString() );
         return msa;
