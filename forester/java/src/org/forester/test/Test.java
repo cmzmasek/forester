@@ -699,9 +699,15 @@ public final class Test {
         else {
             path = "/home/czmasek/bin/mafft";
         }
+        if ( !Mafft.isInstalled( path ) ) {
+            path = "mafft";
+        }
+        if ( !Mafft.isInstalled( path ) ) {
+            path = "/usr/local/bin/mafft";
+        }
         if ( Mafft.isInstalled( path ) ) {
             System.out.print( "MAFFT (external program): " );
-            if ( Test.testMafft() ) {
+            if ( Test.testMafft( path ) ) {
                 System.out.println( "OK." );
                 succeeded++;
             }
@@ -7957,24 +7963,15 @@ public final class Test {
         return true;
     }
 
-    private static boolean testMafft() {
+    private static boolean testMafft( final String path ) {
         try {
             final List<String> opts = new ArrayList<String>();
             opts.add( "--maxiterate" );
             opts.add( "1000" );
             opts.add( "--localpair" );
             opts.add( "--quiet" );
-            String path = "";
-            final String os = ForesterUtil.OS_NAME.toLowerCase();
-            if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
-                path = "/usr/local/bin/mafft";
-            }
-            else if ( os.indexOf( "win" ) >= 0 ) {
-                path = "C:\\Program Files\\mafft-win\\mafft.bat";
-            }
-            else {
-                path = "/home/czmasek/bin/mafft";
-            }
+        
+         
             Msa msa = null;
             final MsaInferrer mafft = Mafft.createInstance( path );
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );
