@@ -1,5 +1,9 @@
 package org.forester.msa;
 
+import org.forester.sequence.Sequence;
+import org.forester.util.BasicDescriptiveStatistics;
+import org.forester.util.DescriptiveStatistics;
+
 
 public class MsaCompactor {
     
@@ -12,7 +16,20 @@ public class MsaCompactor {
     
     
     
-    private calc
+    private DescriptiveStatistics[] calc() {
+        final double gappiness[] = calcGappiness();
+        final DescriptiveStatistics stats[] = new DescriptiveStatistics[ _msa.getNumberOfSequences() ];
+        for ( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
+            stats[ row ] = new BasicDescriptiveStatistics();
+            for( int col = 0; col < _msa.getLength(); ++col ) {
+                if ( _msa.getResidueAt( row, col ) != Sequence.GAP ) {
+                    stats[ row ].addValue( gappiness[ col ] );
+                    
+                }
+            }
+        }
+        return stats;
+    }
     
     private double[] calcGappiness() {
         final double gappiness[] = new double[ _msa.getLength() ];
