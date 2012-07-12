@@ -27,7 +27,9 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 
+import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
 import org.forester.msa.MsaMethods;
@@ -76,7 +78,13 @@ public class mcc {
                 System.exit( 0 );
             }
             Msa msa = null;
-            msa = GeneralMsaParser.parse( new FileInputStream( in ) );
+            final InputStream is = new FileInputStream( in );
+            if ( FastaParser.isLikelyFasta( in ) ) {
+                msa = FastaParser.parseMsa( is );
+            }
+            else {
+                msa = GeneralMsaParser.parse( is );
+            }
             if ( cla.isOptionSet( FROM_OPTION ) ) {
                 singleCalc( in, from, to, msa );
             }

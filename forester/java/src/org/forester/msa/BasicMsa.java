@@ -28,8 +28,11 @@ package org.forester.msa;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
 import org.forester.sequence.Sequence.TYPE;
 import org.forester.util.ForesterUtil;
@@ -37,7 +40,7 @@ import org.forester.util.ForesterUtil;
 public class BasicMsa implements Msa {
 
     private final char[][] _data;
-    private final Object[] _identifiers;
+    private final String[] _identifiers;
     private final TYPE     _type;
 
     public BasicMsa( final int rows, final int columns, final TYPE type ) {
@@ -45,7 +48,7 @@ public class BasicMsa implements Msa {
             throw new IllegalArgumentException( "basic msa of size zero are illegal" );
         }
         _data = new char[ rows ][ columns ];
-        _identifiers = new Object[ rows ];
+        _identifiers = new String[ rows ];
         _type = type;
     }
 
@@ -53,6 +56,15 @@ public class BasicMsa implements Msa {
         _data = msa._data;
         _identifiers = msa._identifiers;
         _type = msa._type;
+    }
+
+    @Override
+    public List<Sequence> asSequenceList() {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int i = 0; i < getNumberOfSequences(); ++i ) {
+            seqs.add( getSequence( i ) );
+        }
+        return seqs;
     }
 
     private int determineMaxIdLength() {
@@ -67,7 +79,7 @@ public class BasicMsa implements Msa {
     }
 
     @Override
-    public Object getIdentifier( final int row ) {
+    public String getIdentifier( final int row ) {
         return _identifiers[ row ];
     }
 
@@ -87,6 +99,21 @@ public class BasicMsa implements Msa {
     }
 
     @Override
+    public Sequence getSequence( final String id ) {
+        for( int i = 0; i < getNumberOfSequences(); ++i ) {
+            if ( getIdentifier( i ).equals( id ) ) {
+                return getSequence( i );
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Sequence getSequence( final int row ) {
+        return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
+    }
+
+    @Override
     public StringBuffer getSequenceAsString( final int row ) {
         final StringBuffer sb = new StringBuffer( _data[ 0 ].length );
         for( int col = 0; col < _data[ 0 ].length; ++col ) {
@@ -101,7 +128,7 @@ public class BasicMsa implements Msa {
     }
 
     @Override
-    public void setIdentifier( final int row, final Object id ) {
+    public void setIdentifier( final int row, final String id ) {
         _identifiers[ row ] = id;
     }
 
@@ -140,6 +167,7 @@ public class BasicMsa implements Msa {
         if ( seqs.size() < 1 ) {
             throw new IllegalArgumentException( "cannot create basic msa from less than one sequence" );
         }
+        final Set<String> ids = new HashSet<String>();
         final int length = seqs.get( 0 ).getLength();
         final BasicMsa msa = new BasicMsa( seqs.size(), length, seqs.get( 0 ).getType() );
         for( int row = 0; row < seqs.size(); ++row ) {
@@ -150,6 +178,11 @@ public class BasicMsa implements Msa {
             if ( seq.getType() != msa.getType() ) {
                 throw new IllegalArgumentException( "illegal attempt to build msa from sequences of different type" );
             }
+            if ( ids.contains( seq.getIdentifier() ) ) {
+                throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers ["
+                        + seq.getIdentifier() + "]" );
+            }
+            ids.add( seq.getIdentifier() );
             msa.setIdentifier( row, seq.getIdentifier() );
             for( int col = 0; col < length; ++col ) {
                 msa._data[ row ][ col ] = seq.getResidueAt( col );

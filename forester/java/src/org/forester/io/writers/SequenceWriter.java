@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
 import org.forester.util.ForesterUtil;
 
@@ -13,21 +12,6 @@ public class SequenceWriter {
 
     public static enum SEQ_FORMAT {
         FASTA;
-    }
-
-    public static void main( final String[] args ) {
-        final Sequence s = BasicSequence.createAaSequence( "name", "abcdefghiiklmnap" );
-        System.out.println( s.toString() );
-        System.out.println( SequenceWriter.toFasta( s, 0 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 5 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 8 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 4 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 3 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 2 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 1 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 100 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 15 ).toString() );
-        System.out.println( SequenceWriter.toFasta( s, 16 ).toString() );
     }
 
     public static StringBuilder toFasta( final Sequence seq, final int width ) {

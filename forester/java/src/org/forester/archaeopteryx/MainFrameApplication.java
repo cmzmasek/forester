@@ -36,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -1976,12 +1977,12 @@ public final class MainFrameApplication extends MainFrame {
             setMsa( null );
             Msa msa = null;
             try {
-                if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
-                    msa = FastaParser.parseMsa( new FileInputStream( file ) );
-                    System.out.println( msa.toString() );
+                final InputStream is = new FileInputStream( file );
+                if ( FastaParser.isLikelyFasta( file ) ) {
+                    msa = FastaParser.parseMsa( is );
                 }
                 else {
-                    msa = GeneralMsaParser.parse( new FileInputStream( file ) );
+                    msa = GeneralMsaParser.parse( is );
                 }
             }
             catch ( final MsaFormatException e ) {

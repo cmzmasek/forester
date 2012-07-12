@@ -72,9 +72,22 @@ public final class MsaMethods {
         return gap_rows;
     }
 
-    synchronized public Msa removeGapColumns( final double max_allowed_gap_ratio,
-                                              final int min_allowed_length,
-                                              final Msa msa ) {
+    final public static Msa removeSequences( final Msa msa, final List<String> to_remove_ids ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_ids.contains( msa.getIdentifier( row ) ) ) {
+                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+            }
+        }
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
+    }
+
+    synchronized final public Msa removeGapColumns( final double max_allowed_gap_ratio,
+                                                    final int min_allowed_length,
+                                                    final Msa msa ) {
         init();
         if ( ( max_allowed_gap_ratio < 0 ) || ( max_allowed_gap_ratio > 1 ) ) {
             throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );
@@ -83,7 +96,7 @@ public final class MsaMethods {
         final boolean[] delete_cols = new boolean[ msa.getLength() ];
         int new_length = 0;
         for( int col = 0; col < msa.getLength(); ++col ) {
-            delete_cols[ col ] = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) > max_allowed_gap_ratio;
+            delete_cols[ col ] = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) >= max_allowed_gap_ratio;
             if ( !delete_cols[ col ] ) {
                 ++new_length;
             }

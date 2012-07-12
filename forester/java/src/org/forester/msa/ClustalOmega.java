@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.FastaParser;
+import org.forester.sequence.Sequence;
 import org.forester.util.SystemCommandExecutor;
 
 public final class ClustalOmega extends MsaInferrer {
@@ -95,5 +96,11 @@ public final class ClustalOmega extends MsaInferrer {
     private void init() {
         _error = null;
         _exit_code = -100;
+    }
+
+    @Override
+    public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

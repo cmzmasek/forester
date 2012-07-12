@@ -29,13 +29,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
+import org.forester.sequence.Sequence;
 import org.forester.sequence.Sequence.TYPE;
 
 public interface Msa {
 
-    public Object getIdentifier( int row );
+    public String getIdentifier( int row );
 
-    public void setIdentifier( int row, Object identifier );
+    public void setIdentifier( int row, String identifier );
 
     public int getLength();
 
@@ -44,6 +45,12 @@ public interface Msa {
     public char getResidueAt( int row, int col );
 
     public List<Character> getColumnAt( int col );
+
+    public Sequence getSequence( final String id );
+
+    public Sequence getSequence( final int row );
+
+    public List<Sequence> asSequenceList();
 
     public StringBuffer getSequenceAsString( int row );
 

@@ -68,6 +68,10 @@ public class FastaParser {
         }
     }
 
+    static public boolean isLikelyFasta( final File f ) throws IOException {
+        return isLikelyFasta( new FileInputStream( f ) );
+    }
+
     static public boolean isLikelyFasta( final InputStream is ) throws IOException {
         final BufferedReader reader = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
         String line = null;

@@ -25,12 +25,17 @@
 
 package org.forester.msa;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.FastaParser;
+import org.forester.io.writers.SequenceWriter;
+import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
+import org.forester.sequence.Sequence;
 import org.forester.util.SystemCommandExecutor;
 
 public final class Mafft extends MsaInferrer {
@@ -64,6 +69,18 @@ public final class Mafft extends MsaInferrer {
     @Override
     public int getExitCode() {
         return _exit_code;
+    }
+
+    @Override
+    public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
+        final File file = File.createTempFile( "__mafft_input_", ".fasta" );
+        file.deleteOnExit();
+        final BufferedWriter writer = new BufferedWriter( new FileWriter( file ) );
+        SequenceWriter.writeSeqs( seqs, writer, SEQ_FORMAT.FASTA, 100 );
+        writer.close();
+        final Msa msa = infer( file, opts );
+        file.delete();
+        return msa;
     }
 
     @Override

@@ -37,7 +37,7 @@ public interface Sequence {
     static final String        DNA_REGEXP      = "[^ACGTRYMKWSN\\-\\*]";
     static final String        RNA_REGEXP      = "[^ACGURYMKWSN\\-\\*]";
 
-    public abstract Object getIdentifier();
+    public abstract String getIdentifier();
 
     public abstract int getLength();
 

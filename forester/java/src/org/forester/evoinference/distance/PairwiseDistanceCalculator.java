@@ -150,7 +150,7 @@ public final class PairwiseDistanceCalculator {
 
     private void copyIdentifiers( final int s, final BasicSymmetricalDistanceMatrix d ) {
         for( int i = 0; i < s; i++ ) {
-            d.setIdentifier( i, ( String ) _msa.getIdentifier( i ) );
+            d.setIdentifier( i, _msa.getIdentifier( i ) );
         }
     }
 

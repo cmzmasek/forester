@@ -42,8 +42,6 @@ import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
 import org.forester.io.parsers.FastaParser;
-import org.forester.io.writers.SequenceWriter;
-import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.msa.BasicMsa;
 import org.forester.msa.ClustalOmega;
 import org.forester.msa.Mafft;
@@ -88,18 +86,18 @@ public class PhylogeneticInferrer extends RunnableProcess {
     }
 
     private Msa inferMsa() throws IOException, InterruptedException {
-        final File temp_seqs_file = File.createTempFile( "__msa__temp__", ".fasta" );
-        if ( DEBUG ) {
-            System.out.println();
-            System.out.println( "temp file: " + temp_seqs_file );
-            System.out.println();
-        }
-        //final File temp_seqs_file = new File( _options.getTempDir() + ForesterUtil.FILE_SEPARATOR + "s.fasta" );
-        final BufferedWriter writer = new BufferedWriter( new FileWriter( temp_seqs_file ) );
-        SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
-        writer.close();
+        //        final File temp_seqs_file = File.createTempFile( "__msa__temp__", ".fasta" );
+        //        if ( DEBUG ) {
+        //            System.out.println();
+        //            System.out.println( "temp file: " + temp_seqs_file );
+        //            System.out.println();
+        //        }
+        //        //final File temp_seqs_file = new File( _options.getTempDir() + ForesterUtil.FILE_SEPARATOR + "s.fasta" );
+        //        final BufferedWriter writer = new BufferedWriter( new FileWriter( temp_seqs_file ) );
+        //        SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
+        //        writer.close();
         final List<String> opts = processMafftOptions();
-        return runMAFFT( temp_seqs_file, opts );
+        return runMAFFT( _seqs, opts );
     }
 
     private List<String> processMafftOptions() {
@@ -263,12 +261,12 @@ public class PhylogeneticInferrer extends RunnableProcess {
         }
     }
 
-    private Msa runMAFFT( final File input_seqs, final List<String> opts ) throws IOException, InterruptedException {
+    private Msa runMAFFT( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
         Msa msa = null;
         final MsaInferrer mafft = Mafft.createInstance( _mf.getInferenceManager().getPathToLocalMafft()
                 .getCanonicalPath() );
         try {
-            msa = mafft.infer( input_seqs, opts );
+            msa = mafft.infer( seqs, opts );
         }
         catch ( final IOException e ) {
             System.out.println( mafft.getErrorDescription() );

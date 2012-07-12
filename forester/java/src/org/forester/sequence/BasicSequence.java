@@ -29,24 +29,24 @@ package org.forester.sequence;
 public class BasicSequence implements Sequence {
 
     private final char[] _mol_sequence;
-    private final Object _identifier;
+    private final String _identifier;
     private final TYPE   _type;
 
-    private BasicSequence( final Object identifier, final String mol_sequence, final TYPE type ) {
+    private BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
         _mol_sequence = mol_sequence.toCharArray();
         _identifier = identifier;
         _type = type;
     }
 
     // Only use if you know what you are doing!
-    public BasicSequence( final Object identifier, final char[] mol_sequence, final TYPE type ) {
+    public BasicSequence( final String identifier, final char[] mol_sequence, final TYPE type ) {
         _mol_sequence = mol_sequence;
         _identifier = identifier;
         _type = type;
     }
 
     @Override
-    public Object getIdentifier() {
+    public String getIdentifier() {
         return _identifier;
     }
 
@@ -90,17 +90,25 @@ public class BasicSequence implements Sequence {
         return sb.toString();
     }
 
-    public static Sequence createAaSequence( final Object identifier, final String mol_sequence ) {
+    public static Sequence copySequence( final Sequence seq ) {
+        final char[] s = new char[ seq.getMolecularSequence().length ];
+        for( int i = 0; i < seq.getMolecularSequence().length; i++ ) {
+            s[ i ] = seq.getMolecularSequence()[ i ];
+        }
+        return new BasicSequence( new String( seq.getIdentifier() ), s, seq.getType() );
+    }
+
+    public static Sequence createAaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                 .replaceAll( AA_REGEXP, Character.toString( UNSPECIFIED_AA ) ), TYPE.AA );
     }
 
-    public static Sequence createDnaSequence( final Object identifier, final String mol_sequence ) {
+    public static Sequence createDnaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                 .replaceAll( DNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.DNA );
     }
 
-    public static Sequence createRnaSequence( final Object identifier, final String mol_sequence ) {
+    public static Sequence createRnaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                 .replaceAll( RNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.RNA );
     }

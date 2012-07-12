@@ -7970,8 +7970,6 @@ public final class Test {
             opts.add( "1000" );
             opts.add( "--localpair" );
             opts.add( "--quiet" );
-        
-         
             Msa msa = null;
             final MsaInferrer mafft = Mafft.createInstance( path );
             msa = mafft.infer( new File( PATH_TO_TEST_DATA + "ncbi_sn.fasta" ), opts );
@@ -8553,9 +8551,9 @@ public final class Test {
     private static boolean testMsaQualityMethod() {
         try {
             final Sequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJ" );
-            final Sequence s1 = BasicSequence.createAaSequence( "a", "ABBXEFGHIJ" );
-            final Sequence s2 = BasicSequence.createAaSequence( "a", "AXCXEFGHIJ" );
-            final Sequence s3 = BasicSequence.createAaSequence( "a", "AXDDEFGHIJ" );
+            final Sequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJ" );
+            final Sequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJ" );
+            final Sequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ" );
             final List<Sequence> l = new ArrayList<Sequence>();
             l.add( s0 );
             l.add( s1 );

@@ -45,6 +45,11 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         init();
     }
 
+    public BasicDescriptiveStatistics( final String desc ) {
+        init();
+        setDescription( desc );
+    }
+
     /* (non-Javadoc)
      * @see org.forester.util.DescriptiveStatisticsI#addValue(double)
      */
