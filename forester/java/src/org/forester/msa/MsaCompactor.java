@@ -91,11 +91,17 @@ public class MsaCompactor {
 
     final private void removeViaGapAverage( final double mean_gapiness, final int step, final boolean realign )
             throws IOException, InterruptedException {
+        if ( step < 1 ) {
+            throw new IllegalArgumentException( "step cannot be less than 1" );
+        }
+        if ( mean_gapiness < 0 ) {
+            throw new IllegalArgumentException( "target average gap ratio cannot be less than 0" );
+        }
         if ( VERBOSE ) {
             System.out.println( "start: " + _msa.getLength() + " "
                     + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
         }
-        int counter = 0;
+        int counter = step;
         while ( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean() > mean_gapiness ) {
             removeWorstOffenders( step, 1, false );
             if ( realign ) {
@@ -111,11 +117,17 @@ public class MsaCompactor {
 
     final private void removeViaLength( final int length, final int step, final boolean realign ) throws IOException,
             InterruptedException {
+        if ( step < 1 ) {
+            throw new IllegalArgumentException( "step cannot be less than 1" );
+        }
+        if ( length < 11 ) {
+            throw new IllegalArgumentException( "target length cannot be less than 1" );
+        }
         if ( VERBOSE ) {
             System.out.println( "start: " + _msa.getLength() + " "
                     + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
         }
-        int counter = 0;
+        int counter = step;
         while ( _msa.getLength() > length ) {
             removeWorstOffenders( step, 1, false );
             if ( realign ) {
