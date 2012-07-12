@@ -82,9 +82,9 @@ public class MsaCompactor {
     final private void mafft() throws IOException, InterruptedException {
         final MsaInferrer mafft = Mafft.createInstance( "/home/czmasek/bin/mafft" );
         final List<String> opts = new ArrayList<String>();
-        opts.add( "--maxiterate" );
-        opts.add( "1000" );
-        opts.add( "--localpair" );
+        // opts.add( "--maxiterate" );
+        // opts.add( "1000" );
+        // opts.add( "--localpair" );
         opts.add( "--quiet" );
         _msa = mafft.infer( _msa.asSequenceList(), opts );
     }
