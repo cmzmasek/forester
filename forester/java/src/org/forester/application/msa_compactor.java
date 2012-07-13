@@ -20,6 +20,7 @@ public class msa_compactor {
     final static private String HELP_OPTION_2                 = "h";
     final static private String REMOVE_WORST_OFFENDERS_OPTION = "w";
     final static private String AV_GAPINESS_OPTION            = "a";
+    final static private String STEP_OPTION                   = "s";
     final static private String LENGTH_OPTION                 = "l";
     final static private String REALIGN_OPTION                = "r";
     final static private String PRG_NAME                      = "msa_compactor";
@@ -32,24 +33,23 @@ public class msa_compactor {
     public static void main( final String args[] ) {
         try {
             final CommandLineArguments cla = new CommandLineArguments( args );
-            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) ) {
+            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( cla.getNumberOfNames() != 2 ) ) {
                 printHelp();
                 System.exit( 0 );
             }
             final File in = cla.getFile( 0 );
+            final File out = cla.getFile( 1 );
             int worst_remove = -1;
             double av = -1;
             int length = -1;
-            final int step = 5;
+            int step = 1;
             boolean realign = false;
-            //            int to = 0;
-            //            int window = 0;
-            //            int step = 0;
             final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( REMOVE_WORST_OFFENDERS_OPTION );
             allowed_options.add( AV_GAPINESS_OPTION );
             allowed_options.add( LENGTH_OPTION );
             allowed_options.add( REALIGN_OPTION );
+            allowed_options.add( STEP_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -62,6 +62,9 @@ public class msa_compactor {
             }
             if ( cla.isOptionSet( LENGTH_OPTION ) ) {
                 length = cla.getOptionValueAsInt( LENGTH_OPTION );
+            }
+            if ( cla.isOptionSet( STEP_OPTION ) ) {
+                step = cla.getOptionValueAsInt( STEP_OPTION );
             }
             if ( cla.isOptionSet( REALIGN_OPTION ) ) {
                 realign = true;
@@ -82,20 +85,17 @@ public class msa_compactor {
             else {
                 msa = GeneralMsaParser.parse( is );
             }
-            System.out.println( msa.toString() );
-            System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).arithmeticMean() );
             MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
                 mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign );
             }
             else if ( av > 0 ) {
-                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign );
+                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, out, 50 );
             }
             else if ( length > 0 ) {
                 mc = MsaCompactor.reduceLength( msa, length, step, realign );
             }
-            System.out.println( mc.getMsa().toString() );
-            System.out.println( MsaMethods.calcBasicGapinessStatistics( mc.getMsa() ).arithmeticMean() );
+            System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
             for( final String id : mc.getRemovedSeqIds() ) {
                 System.out.println( id );
             }

@@ -85,6 +85,19 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
+    final public static Msa removeSequencesByRow( final Msa msa, final List<Integer> to_remove_rows ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_rows.contains( row ) ) {
+                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+            }
+        }
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
+    }
+
     synchronized final public Msa removeGapColumns( final double max_allowed_gap_ratio,
                                                     final int min_allowed_length,
                                                     final Msa msa ) {
@@ -165,5 +178,33 @@ public final class MsaMethods {
             stats.addValue( ( double ) calcGapSumPerColumn( msa, i ) / msa.getNumberOfSequences() );
         }
         return stats;
+    }
+
+    public static Msa removeSequencesByMinimalLength( final Msa msa, final int min_effective_length ) {
+        final List<Integer> to_remove_rows = new ArrayList<Integer>();
+        for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
+            int eff_length = 0;
+            for( int i = 0; i < msa.getLength(); ++i ) {
+                if ( msa.getResidueAt( seq, i ) != Sequence.GAP ) {
+                    eff_length++;
+                }
+            }
+            if ( eff_length < min_effective_length ) {
+                to_remove_rows.add( seq );
+            }
+        }
+        return removeSequencesByRow( msa, to_remove_rows );
+    }
+
+    public static double calcGapRatio( final Msa msa ) {
+        int gaps = 0;
+        for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
+            for( int i = 0; i < msa.getLength(); ++i ) {
+                if ( msa.getResidueAt( seq, i ) == Sequence.GAP ) {
+                    gaps++;
+                }
+            }
+        }
+        return ( double ) gaps / ( msa.getLength() * msa.getNumberOfSequences() );
     }
 }

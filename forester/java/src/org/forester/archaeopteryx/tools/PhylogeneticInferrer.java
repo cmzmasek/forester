@@ -46,6 +46,7 @@ import org.forester.msa.BasicMsa;
 import org.forester.msa.ClustalOmega;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
+import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.msa.ResampleableMsa;
@@ -201,7 +202,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
             }
             if ( DEBUG ) {
                 System.out.println( msa.toString() );
-                System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
+                System.out.println( MsaMethods.calcGapRatio( msa ) );
             }
             final MsaMethods msa_tools = MsaMethods.createInstance();
             if ( _options.isExecuteMsaProcessing() ) {
@@ -222,7 +223,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
             if ( DEBUG ) {
                 System.out.println( msa_tools.getIgnoredSequenceIds() );
                 System.out.println( msa.toString() );
-                System.out.println( MsaMethods.calcBasicGapinessStatistics( msa ).toString() );
+                System.out.println( MsaMethods.calcGapRatio( msa ) );
             }
             _msa = msa;
         }
@@ -293,7 +294,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
             try {
                 final BufferedWriter msa_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
                         + MSA_FILE_SUFFIX ) );
-                _msa.write( msa_writer );
+                _msa.write( msa_writer, MSA_FORMAT.PHYLIP );
                 msa_writer.close();
                 final BufferedWriter pwd_writer = new BufferedWriter( new FileWriter( _options.getIntermediateFilesBase()
                         + PWD_FILE_SUFFIX ) );

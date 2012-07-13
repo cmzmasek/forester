@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.forester.io.writers.SequenceWriter;
+import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
 import org.forester.sequence.Sequence.TYPE;
@@ -152,7 +154,24 @@ public class BasicMsa implements Msa {
     }
 
     @Override
-    public void write( final Writer w ) throws IOException {
+    public void write( final Writer w, final MSA_FORMAT format ) throws IOException {
+        switch ( format ) {
+            case PHYLIP:
+                writeToPhylip( w );
+                break;
+            case FASTA:
+                writeToFasta( w );
+                break;
+            default:
+                throw new RuntimeException( "unknown format " + format );
+        }
+    }
+
+    private void writeToFasta( final Writer w ) throws IOException {
+        SequenceWriter.writeSeqs( asSequenceList(), w, SEQ_FORMAT.FASTA, 100 );
+    }
+
+    private void writeToPhylip( final Writer w ) throws IOException {
         final int max = determineMaxIdLength() + 1;
         for( int row = 0; row < _data.length; ++row ) {
             w.write( ForesterUtil.pad( _identifiers[ row ].toString(), max, ' ', false ).toString() );

@@ -1,7 +1,9 @@
 
 package org.forester.msa;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
@@ -16,7 +19,11 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    private static final boolean    VERBOSE = true;
+    private static final boolean VERBOSE = true;
+
+    public static enum SORT_BY {
+        MAX, MEAN, MEDIAN;
+    }
     private Msa                     _msa;
     private final SortedSet<String> _removed_seq_ids;
 
@@ -45,9 +52,12 @@ public class MsaCompactor {
     public final static MsaCompactor reduceGapAverage( final Msa msa,
                                                        final double max_gap_average,
                                                        final int step,
-                                                       final boolean realign ) throws IOException, InterruptedException {
+                                                       final boolean realign,
+                                                       final File out,
+                                                       final int minimal_effective_length ) throws IOException,
+            InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
-        mc.removeViaGapAverage( max_gap_average, step, realign );
+        mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
         return mc;
     }
 
@@ -89,8 +99,12 @@ public class MsaCompactor {
         _msa = mafft.infer( _msa.asSequenceList(), opts );
     }
 
-    final private void removeViaGapAverage( final double mean_gapiness, final int step, final boolean realign )
-            throws IOException, InterruptedException {
+    final private void removeViaGapAverage( final double mean_gapiness,
+                                            final int step,
+                                            final boolean realign,
+                                            final File outfile,
+                                            final int minimal_effective_length ) throws IOException,
+            InterruptedException {
         if ( step < 1 ) {
             throw new IllegalArgumentException( "step cannot be less than 1" );
         }
@@ -98,21 +112,52 @@ public class MsaCompactor {
             throw new IllegalArgumentException( "target average gap ratio cannot be less than 0" );
         }
         if ( VERBOSE ) {
-            System.out.println( "start: " + _msa.getLength() + " "
-                    + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
+            System.out.println( "orig: " + msaStatsAsSB() );
+        }
+        if ( minimal_effective_length > 1 ) {
+            _msa = MsaMethods.removeSequencesByMinimalLength( _msa, minimal_effective_length );
+            if ( VERBOSE ) {
+                System.out.println( "short seq removal: " + msaStatsAsSB() );
+            }
         }
         int counter = step;
-        while ( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean() > mean_gapiness ) {
+        double gr;
+        do {
             removeWorstOffenders( step, 1, false );
             if ( realign ) {
                 mafft();
             }
+            gr = MsaMethods.calcGapRatio( _msa );
             if ( VERBOSE ) {
-                System.out.println( counter + ": " + _msa.getLength() + " "
-                        + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
+                System.out.println( counter + ": " + msaStatsAsSB() );
             }
+            write( outfile, gr );
             counter += step;
+        } while ( gr > mean_gapiness );
+        if ( VERBOSE ) {
+            System.out.println( "final: " + msaStatsAsSB() );
         }
+    }
+
+    final private void write( final File outfile, final double gr ) throws IOException {
+        writeMsa( outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_" + gr + ".aln" );
+    }
+
+    final private void writeMsa( final String outfile ) throws IOException {
+        final Writer w = ForesterUtil.createBufferedWriter( outfile );
+        _msa.write( w, MSA_FORMAT.PHYLIP );
+        w.close();
+    }
+
+    final private StringBuilder msaStatsAsSB() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( _msa.getLength() );
+        sb.append( "\t" );
+        sb.append( _msa.getNumberOfSequences() );
+        sb.append( "\t" );
+        sb.append( ForesterUtil.round( MsaMethods.calcGapRatio( _msa ), 4 ) );
+        sb.append( "\t" );
+        return sb;
     }
 
     final private void removeViaLength( final int length, final int step, final boolean realign ) throws IOException,
@@ -124,8 +169,7 @@ public class MsaCompactor {
             throw new IllegalArgumentException( "target length cannot be less than 1" );
         }
         if ( VERBOSE ) {
-            System.out.println( "start: " + _msa.getLength() + " "
-                    + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
+            System.out.println( "orig: " + msaStatsAsSB() );
         }
         int counter = step;
         while ( _msa.getLength() > length ) {
@@ -134,8 +178,7 @@ public class MsaCompactor {
                 mafft();
             }
             if ( VERBOSE ) {
-                System.out.println( counter + ": " + _msa.getLength() + " "
-                        + ForesterUtil.round( MsaMethods.calcBasicGapinessStatistics( _msa ).arithmeticMean(), 3 ) );
+                System.out.println( counter + ": " + msaStatsAsSB() );
             }
             counter += step;
         }
@@ -162,7 +205,7 @@ public class MsaCompactor {
     }
 
     private final static void sort( final DescriptiveStatistics stats[] ) {
-        Arrays.sort( stats, new DescriptiveStatisticsComparator( false ) );
+        Arrays.sort( stats, new DescriptiveStatisticsComparator( false, SORT_BY.MAX ) );
     }
 
     private final DescriptiveStatistics[] calc() {
@@ -190,21 +233,44 @@ public class MsaCompactor {
 
     final static class DescriptiveStatisticsComparator implements Comparator<DescriptiveStatistics> {
 
-        final boolean _ascending;
+        final private boolean _ascending;
+        final private SORT_BY _sort_by;
 
-        public DescriptiveStatisticsComparator( final boolean ascending ) {
+        public DescriptiveStatisticsComparator( final boolean ascending, final SORT_BY sort_by ) {
             _ascending = ascending;
+            _sort_by = sort_by;
         }
 
         @Override
         public final int compare( final DescriptiveStatistics s0, final DescriptiveStatistics s1 ) {
-            if ( s0.arithmeticMean() < s1.arithmeticMean() ) {
-                return _ascending ? -1 : 1;
+            switch ( _sort_by ) {
+                case MAX:
+                    if ( s0.getMax() < s1.getMax() ) {
+                        return _ascending ? -1 : 1;
+                    }
+                    else if ( s0.getMax() > s1.getMax() ) {
+                        return _ascending ? 1 : -1;
+                    }
+                    return 0;
+                case MEAN:
+                    if ( s0.arithmeticMean() < s1.arithmeticMean() ) {
+                        return _ascending ? -1 : 1;
+                    }
+                    else if ( s0.arithmeticMean() > s1.arithmeticMean() ) {
+                        return _ascending ? 1 : -1;
+                    }
+                    return 0;
+                case MEDIAN:
+                    if ( s0.median() < s1.median() ) {
+                        return _ascending ? -1 : 1;
+                    }
+                    else if ( s0.median() > s1.median() ) {
+                        return _ascending ? 1 : -1;
+                    }
+                    return 0;
+                default:
+                    return 0;
             }
-            else if ( s0.arithmeticMean() > s1.arithmeticMean() ) {
-                return _ascending ? 1 : -1;
-            }
-            return 0;
         }
     }
 }

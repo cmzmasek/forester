@@ -34,6 +34,10 @@ import org.forester.sequence.Sequence.TYPE;
 
 public interface Msa {
 
+    public static enum MSA_FORMAT {
+        FASTA, PHYLIP;
+    }
+
     public String getIdentifier( int row );
 
     public void setIdentifier( int row, String identifier );
@@ -58,5 +62,5 @@ public interface Msa {
 
     public void setResidueAt( final int row, final int col, final char residue );
 
-    public void write( Writer w ) throws IOException;
+    public void write( Writer w, MSA_FORMAT format ) throws IOException;
 }
