@@ -300,7 +300,7 @@ module Evoruby
                                     from = s[ 0 ]
                                     to = s[ 1 ]
                                     puts from + "-" + to
-                                    new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
+                                    new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from.to_i..to.to_i] ) )
                                 end   
                             }
                         end
