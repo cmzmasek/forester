@@ -224,8 +224,8 @@ module Evoruby
                         end
                         seq_name = values[ 1 ]
                         domain_ranges = nil
-                        if ( values.length > 2 )        
-                          domain_ranges_block = values[ 2 ]
+                        if ( values.length > 3 )        
+                          domain_ranges_block = values[ 3 ]
                           domain_ranges = domain_ranges_block.split( "/" )
                         end
                         if ( species != current_species )
