@@ -26,7 +26,7 @@ public class msa_compactor {
     final static private String PRG_NAME                      = "msa_compactor";
     final static private String PRG_DESC                      = "multiple sequnce aligment compactor";
     final static private String PRG_VERSION                   = "0.90";
-    final static private String PRG_DATE                      = "2012.07.11";
+    final static private String PRG_DATE                      = "2012.07.13";
     final static private String E_MAIL                        = "phylosoft@gmail.com";
     final static private String WWW                           = "www.phylosoft.org/forester/";
 

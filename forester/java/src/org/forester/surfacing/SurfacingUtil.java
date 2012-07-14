@@ -1192,16 +1192,30 @@ public final class SurfacingUtil {
                         || protein.getSpecies().getSpeciesId().equalsIgnoreCase( limit_to_species ) ) {
                     final List<Domain> domains = protein.getProteinDomains( domain_id );
                     if ( domains.size() > 0 ) {
-                        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-                        for( final Domain domain : domains ) {
-                            stats.addValue( domain.getPerSequenceEvalue() );
-                        }
                         out.write( protein.getSpecies().getSpeciesId() );
                         out.write( separator );
                         out.write( protein.getProteinId().getId() );
                         out.write( separator );
-                        out.write( "[" + FORMATTER.format( stats.median() ) + "]" );
+                        out.write( domain_id.toString() );
                         out.write( separator );
+                        for( final Domain domain : domains ) {
+                            out.write( "/" );
+                            out.write( domain.getFrom() + "-" + domain.getTo() );
+                        }
+                        out.write( "/" );
+                        out.write( separator );
+                        out.write( "{" );
+                        boolean first = true;
+                        for( final Domain domain : protein.getProteinDomains() ) {
+                            if ( first ) {
+                                first = false;
+                            }
+                            else {
+                                out.write( "," );
+                            }
+                            out.write( domain.getDomainId().toString() );
+                        }
+                        out.write( "}" );
                         if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
                                 .equals( SurfacingConstants.NONE ) ) ) {
                             out.write( protein.getDescription() );

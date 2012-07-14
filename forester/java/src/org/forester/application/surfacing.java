@@ -235,8 +235,8 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                                    = '#';
-    final static private String                               PRG_VERSION                                                                   = "2.250";
-    final static private String                               PRG_DATE                                                                      = "2012.05.07";
+    final static private String                               PRG_VERSION                                                                   = "2.251";
+    final static private String                               PRG_DATE                                                                      = "2012.07.13";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;

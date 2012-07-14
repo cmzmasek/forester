@@ -140,12 +140,13 @@ public class MsaCompactor {
     }
 
     final private void write( final File outfile, final double gr ) throws IOException {
-        writeMsa( outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_" + gr + ".aln" );
+        writeMsa( outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
+                + ForesterUtil.roundToInt( gr * 100 ) + ".aln" );
     }
 
     final private void writeMsa( final String outfile ) throws IOException {
         final Writer w = ForesterUtil.createBufferedWriter( outfile );
-        _msa.write( w, MSA_FORMAT.PHYLIP );
+        _msa.write( w, MSA_FORMAT.FASTA );
         w.close();
     }
 
