@@ -294,8 +294,8 @@ module Evoruby
                         
                         if  domain_ranges != nil 
                             domain_ranges.each { |range| 
-                            puts "reange:" + range + ":\n"  
-                                if range != nil
+                                puts "reange:" + range + ":\n"  
+                                if range != nil && range.length > 0
                                     s= range.split("-")
                                     from = s[ 0 ]
                                     to = s[ 1 ]
