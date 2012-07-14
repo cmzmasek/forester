@@ -209,6 +209,7 @@ module Evoruby
 
       File.open( input_file ) do | file |
         while line = file.gets
+          line.strip!
           if ( !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) )
             values = line.split( PROTEINS_LIST_FILE_SEPARATOR )
 
