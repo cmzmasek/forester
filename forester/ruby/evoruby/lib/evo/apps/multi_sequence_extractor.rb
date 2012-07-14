@@ -226,6 +226,7 @@ module Evoruby
                         domain_ranges = nil
                         if ( values.length > 3 )        
                           domain_ranges_block = values[ 3 ]
+                          puts "domain_ranges_bloc=" + domain_ranges_block
                           domain_ranges = domain_ranges_block.split( "/" )
                         end
                         if ( species != current_species )
