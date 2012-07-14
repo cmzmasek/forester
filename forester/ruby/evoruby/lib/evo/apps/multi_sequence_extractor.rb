@@ -246,7 +246,7 @@ module Evoruby
                                 my_readlink = File.readlink( my_path )
                             end
                             current_msa = read_fasta_file( my_file )
-                            end
+                            
 
                             if ( per_species_counter > 0 )
                                 print_counts( per_species_counter, log, Constants::LINE_DELIMITER )
@@ -334,7 +334,7 @@ module Evoruby
                 rescue Exception => e
                     Util.fatal_error( PRG_NAME, "error: " + e.to_s )
                 end
-           end
+            end
             
             begin
                 io.write_to_file( new_msa_normalized_ids, out_file_path_normalized_ids_fasta_file, fasta_writer )
