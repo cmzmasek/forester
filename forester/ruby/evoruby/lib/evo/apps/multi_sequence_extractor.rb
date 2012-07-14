@@ -37,7 +37,6 @@ module Evoruby
         FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
         NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
         PROTEINS_LIST_FILE_SEPARATOR        = "\t"
-        CACHE_GENOMES                       = false
 
         def run()
 
@@ -64,7 +63,7 @@ module Evoruby
                 exit( 0 )
             end
 
-            if ( cla.get_number_of_files != 3 && cla.get_number_of_files != 4 )
+            if ( cla.get_number_of_files != 4 && cla.get_number_of_files != 5 )
                 print_help
                 exit( -1 )
             end
@@ -81,10 +80,11 @@ module Evoruby
             seq_names_files_suffix = cla.get_file_name( 0 )
             input_dir              = cla.get_file_name( 1 )
             out_dir                = cla.get_file_name( 2 )
+            out_dir_doms           = cla.get_file_name( 3 )
             mapping_file            = nil
 
-            if ( cla.get_number_of_files == 4 )
-                mapping_file = cla.get_file_name( 3 )
+            if ( cla.get_number_of_files == 5 )
+                mapping_file = cla.get_file_name( 4 )
                 begin
                     Util.check_file_for_readability( mapping_file )
                 rescue ArgumentError => e
@@ -98,11 +98,17 @@ module Evoruby
             if  !File.exist?( out_dir )
                 Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir}] does not exist" )
             end
+              if  !File.exist?( out_dir_doms )
+                Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir_doms}] does not exist" )
+            end
             if !File.directory?( input_dir )
                 Util.fatal_error( PRG_NAME, "error: [#{input_dir}] is not a directory" )
             end
             if !File.directory?( out_dir )
                 Util.fatal_error( PRG_NAME, "error:  [#{out_dir}] is not a directory" )
+            end
+            if !File.directory?( out_dir_doms )
+                Util.fatal_error( PRG_NAME, "error:  [#{out_dir_doms}] is not a directory" )
             end
 
 
@@ -119,6 +125,8 @@ module Evoruby
             log << "Input dir                  : " + input_dir + ld
             puts( "Output dir                 : " + out_dir )
             log << "Output dir                 : " + out_dir + ld
+            puts( "Output dir domains         : " + out_dir_doms )
+            log << "Output dir domains         : " + out_dir_doms + ld
             if ( mapping_file != nil )
                 puts( "Mapping file               : " + mapping_file )
                 log << "Mapping file               : " + mapping_file + ld
@@ -147,6 +155,7 @@ module Evoruby
                     species_to_genomes,
                     log,
                     out_dir,
+                    out_dir_doms,
                     mapping_file )
             }
             puts
@@ -163,6 +172,7 @@ module Evoruby
                 species_to_genomes,
                 log,
                 out_dir,
+                out_dir_doms,
                 mapping_file )
 
             begin
@@ -170,15 +180,16 @@ module Evoruby
             rescue ArgumentError => e
                 Util.fatal_error( PRG_NAME, "error: " + e.to_s )
             end
-
             basename = File.basename( input_file, seq_names_files_suffix )
             out_file_path_fasta_file                = out_dir + Constants::FILE_SEPARATOR + basename + FASTA_SUFFIX
             out_file_path_normalized_ids_fasta_file = out_dir + Constants::FILE_SEPARATOR + basename + FASTA_WITH_NORMALIZED_IDS_SUFFIX
             out_file_path_ids_map                   = out_dir + Constants::FILE_SEPARATOR + basename + NORMALIZED_IDS_MAP_SUFFIX 
+            doms_out_file_path_fasta_file           = out_dir_doms + Constants::FILE_SEPARATOR + basename + FASTA_SUFFIX
             begin
                 Util.check_file_for_writability( out_file_path_fasta_file )
                 Util.check_file_for_writability( out_file_path_normalized_ids_fasta_file )
                 Util.check_file_for_writability( out_file_path_ids_map  )
+                Util.check_file_for_writability( doms_out_file_path_fasta_file  )
             rescue ArgumentError => e
                 Util.fatal_error( PRG_NAME, "error: " + e.to_s )
             end
@@ -194,6 +205,7 @@ module Evoruby
             current_msa            = nil
             new_msa                = Msa.new
             new_msa_normalized_ids = Msa.new
+            new_msa_domains = Msa.new
             per_species_counter = 0
 
             puts basename
@@ -202,6 +214,7 @@ module Evoruby
                 while line = file.gets
                     if ( !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) )
                         values = line.split( PROTEINS_LIST_FILE_SEPARATOR )
+                       
                         if ( values.length < 2 )
                             Util.fatal_error( PRG_NAME, "unexpected format: " + line )
                         end
@@ -210,6 +223,11 @@ module Evoruby
                           next
                         end
                         seq_name = values[ 1 ]
+                        domain_ranges = nil
+                        if ( values.length > 2 )        
+                          domain_ranges_block = values[ 2 ]
+                          domain_ranges = domain_ranges_block.split( "/" )
+                        end
                         if ( species != current_species )
                             current_species = species
                             my_file = input_dir + Constants::FILE_SEPARATOR + current_species
@@ -227,14 +245,7 @@ module Evoruby
                             if ( File.symlink?( my_path ) )
                                 my_readlink = File.readlink( my_path )
                             end
-                            current_msa = nil
-                            if ( CACHE_GENOMES && species_to_genomes.has_key?( species ) )
-                                current_msa = species_to_genomes[ species ]
-                            else
-                                current_msa = read_fasta_file( my_file )
-                                if CACHE_GENOMES
-                                    species_to_genomes[ species ] = current_msa
-                                end
+                            current_msa = read_fasta_file( my_file )
                             end
 
                             if ( per_species_counter > 0 )
@@ -271,11 +282,25 @@ module Evoruby
                         
                         ids_map_writer.write( normalized_id + ": " + seq.get_name + Constants::LINE_DELIMITER )
                         
+                        orig_name = nil
                         if ( seq != nil )
+                            orig_name = seq.get_name
                             seq.set_name( seq.get_name + " [" + current_species + "]" )
                             new_msa.add_sequence( seq )
                         else
                             Util.fatal_error( PRG_NAME, "unexected error: seq is nil" )
+                        end
+                        
+                        if  domain_ranges != nil 
+                            domain_ranges.each { |range| 
+                                if range != nil
+                                    s= range.split("-")
+                                    from = s[ 0 ]
+                                    to = s[ 1 ]
+                                    puts from + "-" + to
+                                    new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
+                                end   
+                            }
                         end
                         
                         new_msa_normalized_ids.add_sequence( Sequence.new( normalized_id, seq.get_sequence_as_string ) )
@@ -302,6 +327,14 @@ module Evoruby
             rescue Exception => e
                 Util.fatal_error( PRG_NAME, "error: " + e.to_s )
             end
+            
+            if  new_msa_domains != nil 
+                begin
+                    io.write_to_file( new_msa_domains, doms_out_file_path_fasta_file, fasta_writer )
+                rescue Exception => e
+                    Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+                end
+           end
             
             begin
                 io.write_to_file( new_msa_normalized_ids, out_file_path_normalized_ids_fasta_file, fasta_writer )
@@ -387,10 +420,10 @@ module Evoruby
             puts( "Usage:" )
             puts()
             puts( "  " + PRG_NAME + ".rb <sequence names file suffix> <input dir containing sequence names files " +
-                 "and possibly genome multiple-sequence ('fasta') files> <output directory> [mapping file for " +
+                 "and possibly genome multiple-sequence ('fasta') files> <output directory for sequences> <output directory for domains> [mapping file for " +
                  "genome multiple-sequence ('fasta') files not in input dir]" )
             puts()
-            puts( "  " + "Example: \"mse.rb .prot . seqs ../genome_locations.txt\"" )
+            puts( "  " + "Example: \"mse.rb .prot . seqs doms ../genome_locations.txt\"" )
             puts()
         end
 
