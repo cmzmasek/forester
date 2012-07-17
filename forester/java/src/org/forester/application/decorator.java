@@ -369,7 +369,7 @@ public final class decorator {
             ForesterUtil.unexpectedFatalError( decorator.PRG_NAME, e );
         }
         catch ( final Exception e ) {
-            ForesterUtil.fatalError( decorator.PRG_NAME, "failed to map [" + e + "]" );
+            ForesterUtil.fatalError( decorator.PRG_NAME, e.getLocalizedMessage()  );
         }
         try {
             final PhylogenyWriter w = new PhylogenyWriter();

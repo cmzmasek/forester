@@ -374,7 +374,7 @@ public final class SurfacingUtil {
                 }
                 for( int i = 0; i < nodes.size() - 1; ++i ) {
                     for( int j = i + 1; j < nodes.size(); ++j ) {
-                        final PhylogenyNode lca = PhylogenyMethods.getInstance().obtainLCA( nodes.get( i ),
+                        final PhylogenyNode lca = PhylogenyMethods.obtainLCA( nodes.get( i ),
                                                                                             nodes.get( j ) );
                         String rank = "unknown";
                         if ( lca.getNodeData().isHasTaxonomy()

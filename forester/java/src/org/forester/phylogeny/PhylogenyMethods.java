@@ -47,6 +47,7 @@ import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
+import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
@@ -62,7 +63,7 @@ import org.forester.util.ForesterUtil;
 public class PhylogenyMethods {
 
     private static PhylogenyMethods _instance      = null;
-    private final Set<Integer>      _temp_hash_set = new HashSet<Integer>();
+
     private PhylogenyNode           _farthest_1    = null;
     private PhylogenyNode           _farthest_2    = null;
 
@@ -70,6 +71,10 @@ public class PhylogenyMethods {
         // Hidden constructor.
     }
 
+    
+    
+    
+    
     /**
      * Calculates the distance between PhylogenyNodes node1 and node2.
      * 
@@ -114,6 +119,13 @@ public class PhylogenyMethods {
         return farthest_d;
     }
 
+    final public static Event getEventAtLCA( PhylogenyNode n1,
+                                             PhylogenyNode n2 ) {
+        return obtainLCA( n1, n2 ).getNodeData().getEvent();
+    }
+    
+    
+    
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -127,6 +139,29 @@ public class PhylogenyMethods {
         return _farthest_2;
     }
 
+    final public static void deleteNonOrthologousExternalNodes( final Phylogeny phy,
+                                                                final PhylogenyNode n) {
+        if ( n.isInternal() ) {
+            throw new IllegalArgumentException( "node is not external" );
+        }
+        
+        final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+        for ( PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode i = it.next();
+            if ( !PhylogenyMethods.getEventAtLCA( n, i ).isSpeciation() ) {
+                to_delete.add( i ); 
+            }
+        }
+        for( PhylogenyNode d : to_delete ) {
+            phy.deleteSubtree( d, true );
+        }
+        phy.clearHashIdToNodeMap();
+        phy.externalNodesHaveChanged();
+        
+    }
+    
+    
+    
     /**
      * Returns the LCA of PhylogenyNodes node1 and node2.
      * 
@@ -135,19 +170,19 @@ public class PhylogenyMethods {
      * @param node2
      * @return LCA of node1 and node2
      */
-    public PhylogenyNode obtainLCA( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        _temp_hash_set.clear();
+    public final static PhylogenyNode obtainLCA( final PhylogenyNode node1, final PhylogenyNode node2 ) {
+        final HashSet<Integer> ids_set = new HashSet<Integer>();
         PhylogenyNode n1 = node1;
         PhylogenyNode n2 = node2;
-        _temp_hash_set.add( n1.getId() );
+        ids_set.add( n1.getId() );
         while ( !n1.isRoot() ) {
             n1 = n1.getParent();
-            _temp_hash_set.add( n1.getId() );
+            ids_set.add( n1.getId() );
         }
-        while ( !_temp_hash_set.contains( n2.getId() ) && !n2.isRoot() ) {
+        while ( !ids_set.contains( n2.getId() ) && !n2.isRoot() ) {
             n2 = n2.getParent();
         }
-        if ( !_temp_hash_set.contains( n2.getId() ) ) {
+        if ( !ids_set.contains( n2.getId() ) ) {
             throw new IllegalArgumentException( "attempt to get LCA of two nodes which do not share a common root" );
         }
         return n2;

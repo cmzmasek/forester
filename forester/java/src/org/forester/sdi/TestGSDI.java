@@ -50,7 +50,7 @@ public final class TestGSDI {
     }
 
     private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
-        return PhylogenyMethods.getInstance().obtainLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
+        return PhylogenyMethods.obtainLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
     }
 
     public static boolean test() {
