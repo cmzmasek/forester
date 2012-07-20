@@ -64,6 +64,7 @@ public final class HmmscanPerDomainTableParser {
     private static final ReturnType       RETURN_TYPE_DEFAULT         = ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN;
     private static final boolean          IGNORE_DUFS_DEFAULT         = false;
     private static final int              MAX_ALLOWED_OVERLAP_DEFAULT = -1;
+    private static final boolean          IGNORE_REPLACED_RRMS        = true;
     private final Set<DomainId>           _filter;
     private final FilterType              _filter_type;
     private final File                    _input_file;
@@ -446,6 +447,10 @@ public final class HmmscanPerDomainTableParser {
             }
             else if ( isIgnoreDufs() && uc_id.startsWith( "DUF" ) ) {
                 ++_domains_ignored_due_to_duf;
+            }
+            else if ( IGNORE_REPLACED_RRMS
+                    && ( uc_id.contains( "RRM_1" ) || uc_id.contains( "RRM_3" ) || uc_id.contains( "RRM_5" ) || uc_id
+                            .contains( "RRM_6" ) ) ) {
             }
             else if ( isIgnoreVirusLikeIds()
                     && ( uc_id.contains( VIR ) || uc_id.contains( PHAGE ) || uc_id.contains( RETRO )
