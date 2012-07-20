@@ -23,15 +23,16 @@ module Evoruby
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
-    PRG_VERSION                        = "1.0.0"
+    PRG_VERSION                        = "1.01"
     PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "2008.08.13"
-    COPYRIGHT                          = "2008-2009 Christian M Zmasek"
+    PRG_DATE                           = "2012.07.19"
+    COPYRIGHT                          = "2008-2012 Christian M Zmasek"
     CONTACT                            = "phylosoft@gmail.com"
     WWW                                = "www.phylosoft.org"
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
 
+    EXT_OPTION                          = 'e'
     LOG_SUFFIX                          = ".mse_log"
     FASTA_SUFFIX                        = ".fasta"
     FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
@@ -69,6 +70,7 @@ module Evoruby
       end
 
       allowed_opts = Array.new
+      allowed_opts.push(EXT_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -89,6 +91,14 @@ module Evoruby
           Util.check_file_for_readability( mapping_file )
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+        end
+      end
+
+      extension = 0
+      if cla.is_option_set?(EXT_OPTION)
+        extension = cla.get_option_value_as_int(EXT_OPTION)
+        if extension < 0
+          extension = 0
         end
       end
 
@@ -131,6 +141,10 @@ module Evoruby
         puts( "Mapping file               : " + mapping_file )
         log << "Mapping file               : " + mapping_file + ld
       end
+      if ( extension > 0 )
+        puts( "Extension                  : " + extension.to_s )
+        log << "Extension                  : " + extension.to_s + ld
+      end
       log << "Date                       : " + Time.now.to_s + ld
       puts
 
@@ -154,7 +168,8 @@ module Evoruby
           log,
           out_dir,
           out_dir_doms,
-          mapping_file )
+          mapping_file,
+          extension )
       }
       puts
       Util.print_message( PRG_NAME, "OK" )
@@ -170,7 +185,8 @@ module Evoruby
         log,
         out_dir,
         out_dir_doms,
-        mapping_file )
+        mapping_file,
+        extension )
 
       begin
         Util.check_file_for_readability( input_file )
@@ -182,6 +198,10 @@ module Evoruby
       out_file_path_normalized_ids_fasta_file = out_dir + Constants::FILE_SEPARATOR + basename + FASTA_WITH_NORMALIZED_IDS_SUFFIX
       out_file_path_ids_map                   = out_dir + Constants::FILE_SEPARATOR + basename + NORMALIZED_IDS_MAP_SUFFIX
       doms_out_file_path_fasta_file           = out_dir_doms + Constants::FILE_SEPARATOR + basename + "_domains" + FASTA_SUFFIX
+      doms_ext_out_file_path_fasta_file           = nil
+      if extension > 0
+        doms_ext_out_file_path_fasta_file = out_dir_doms + Constants::FILE_SEPARATOR + basename + "_domains_ext_" + extension.to_s + FASTA_SUFFIX
+      end
       begin
         Util.check_file_for_writability( out_file_path_fasta_file )
         Util.check_file_for_writability( out_file_path_normalized_ids_fasta_file )
@@ -203,6 +223,7 @@ module Evoruby
       new_msa                = Msa.new
       new_msa_normalized_ids = Msa.new
       new_msa_domains = Msa.new
+      new_msa_domains_extended = Msa.new
       per_species_counter = 0
 
       puts basename
@@ -291,10 +312,22 @@ module Evoruby
             if  domain_ranges != nil
               domain_ranges.each { |range|
                 if range != nil && range.length > 0
-                  s= range.split("-")
-                  from = s[ 0 ]
-                  to = s[ 1 ]
-                  new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from.to_i..to.to_i] ) )
+                  s = range.split("-")
+                  from = s[ 0 ].to_i
+                  to = s[ 1 ].to_i
+                  new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
+                  if extension > 0
+                    from_e = from - extension
+                    if from_e < 0
+                      from_e = 0
+                    end
+                    to_e = to + extension
+                    if to_e > seq.get_sequence_as_string.length - 1
+                      to_e = seq.get_sequence_as_string.length - 1
+                    end
+                    new_msa_domains_extended.add_sequence( Sequence.new( orig_name + "/" + from + "-" + to  + " [ext: " + extension.to_s + "] [" + basename + "] [" + current_species + "]",
+                        seq.get_sequence_as_string[ from_e..to_e ] ) )
+                  end
                 end
               }
             end
@@ -324,9 +357,17 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
-      if  new_msa_domains != nil
+      if new_msa_domains != nil
         begin
           io.write_to_file( new_msa_domains, doms_out_file_path_fasta_file, fasta_writer )
+        rescue Exception => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+        end
+      end
+
+      if extension > 0 && new_msa_domains_extended != nil
+        begin
+          io.write_to_file( new_msa_domains_extended, doms_ext_out_file_path_fasta_file, fasta_writer )
         rescue Exception => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
@@ -418,6 +459,8 @@ module Evoruby
       puts( "  " + PRG_NAME + ".rb <sequence names file suffix> <input dir containing sequence names files " +
          "and possibly genome multiple-sequence ('fasta') files> <output directory for sequences> <output directory for domains> [mapping file for " +
          "genome multiple-sequence ('fasta') files not in input dir]" )
+      puts()
+      puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
       puts()
       puts( "  " + "Example: \"mse.rb .prot . seqs doms ../genome_locations.txt\"" )
       puts()
