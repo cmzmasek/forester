@@ -150,9 +150,13 @@ module Evoruby
         puts( "Mapping file               : " + mapping_file )
         log << "Mapping file               : " + mapping_file + ld
       end
-      if ( extension > 0 )
+      if extension > 0
         puts( "Extension                  : " + extension.to_s )
         log << "Extension                  : " + extension.to_s + ld
+      end
+      if extract_linkers
+        puts( "Extract linkers            : true" )
+        log << "Extract linkers            : true" + ld
       end
       log << "Date                       : " + Time.now.to_s + ld
       puts
@@ -237,9 +241,9 @@ module Evoruby
       new_msa_domains_extended = Msa.new
       per_species_counter = 0
       linkers = ""
-      
+
       puts basename
-      
+
       File.open( input_file ) do | file |
         while line = file.gets
           line.strip!
@@ -436,7 +440,7 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
-      
+
       if extract_linkers
         begin
           f = File.open( out_dir + Constants::FILE_SEPARATOR + basename +  LINKERS_SUFFIX , 'a' )
@@ -446,7 +450,7 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
       end
-      
+
 
     end
 
