@@ -315,7 +315,7 @@ module Evoruby
                   s = range.split("-")
                   from = s[ 0 ].to_i
                   to = s[ 1 ].to_i
-                  new_msa_domains.add_sequence( Sequence.new( orig_name + "/" + from.to_s + "-" + to.to_s + " [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
+                  new_msa_domains.add_sequence( Sequence.new( orig_name + " [" + from.to_s + "-" + to.to_s + "] [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
                   if extension > 0
                     from_e = from - extension
                     if from_e < 0
@@ -325,7 +325,7 @@ module Evoruby
                     if to_e > seq.get_sequence_as_string.length - 1
                       to_e = seq.get_sequence_as_string.length - 1
                     end
-                    new_msa_domains_extended.add_sequence( Sequence.new( orig_name + "/" + from.to_s + "-" + to.to_s  + " [ext: " + extension.to_s + "] [" + basename + "] [" + current_species + "]",
+                    new_msa_domains_extended.add_sequence( Sequence.new( orig_name + " [" + from.to_s + "-" + to.to_s  + "] [extended by " + extension.to_s + "] [" + basename + "] [" + current_species + "]",
                         seq.get_sequence_as_string[ from_e..to_e ] ) )
                   end
                 end
