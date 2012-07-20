@@ -35,6 +35,7 @@ module Evoruby
     EXT_OPTION                          = 'e'
     EXTRACT_LINKERS_OPTION              = 'l'
     LOG_SUFFIX                          = ".mse_log"
+    LINKERS_SUFFIX                      = ".linkers"
     FASTA_SUFFIX                        = ".fasta"
     FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
     NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
@@ -235,9 +236,10 @@ module Evoruby
       new_msa_domains = Msa.new
       new_msa_domains_extended = Msa.new
       per_species_counter = 0
-
+      linkers = ""
+      
       puts basename
-
+      
       File.open( input_file ) do | file |
         while line = file.gets
           line.strip!
@@ -380,7 +382,7 @@ module Evoruby
 
             new_msa_normalized_ids.add_sequence( Sequence.new( normalized_id, seq.get_sequence_as_string ) )
             if mod_line
-              puts mod_line
+              linkers << mod_line + Constants::LINE_DELIMITER
             end
           end # !Util.is_string_empty?( line ) && !(line =~ /\s*#/ )
         end # while line = file.gets
@@ -434,6 +436,17 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
+      
+      if extract_linkers
+        begin
+          f = File.open( out_dir + Constants::FILE_SEPARATOR + basename +  LINKERS_SUFFIX , 'a' )
+          f.print( linkers )
+          f.close
+        rescue Exception => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+        end
+      end
+      
 
     end
 
