@@ -23,9 +23,9 @@ module Evoruby
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
-    PRG_VERSION                        = "1.01"
+    PRG_VERSION                        = "1.02"
     PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "2012.07.19"
+    PRG_DATE                           = "2012.07.20"
     COPYRIGHT                          = "2008-2012 Christian M Zmasek"
     CONTACT                            = "phylosoft@gmail.com"
     WWW                                = "www.phylosoft.org"
@@ -364,7 +364,7 @@ module Evoruby
                       f = 0
                       t = from - 1
                       if extension > 0
-                        f = t - extension
+                        f = from - extension
                       end
                       mod_line = line + "\t[" + get_linker_sequence( f, t, seq ) + "|"
                     else
@@ -378,7 +378,7 @@ module Evoruby
                 f = prev_to + 1
                 t = seq.get_sequence_as_string.length - 1
                 if extension > 0
-                  t = f + extension
+                  t = prev_to + extension
                 end
                 mod_line += get_linker_sequence( f, t, seq ) + "]"
               end
@@ -441,7 +441,7 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
-      if extract_linkers
+      if extract_linkers && linkers != nil
         begin
           f = File.open( out_dir + Constants::FILE_SEPARATOR + basename +  LINKERS_SUFFIX , 'a' )
           f.print( linkers )
