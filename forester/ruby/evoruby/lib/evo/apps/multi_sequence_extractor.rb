@@ -33,11 +33,13 @@ module Evoruby
     HELP_OPTION_2                      = 'h'
 
     EXT_OPTION                          = 'e'
+    EXTRACT_LINKERS_OPTION              = 'l'
     LOG_SUFFIX                          = ".mse_log"
     FASTA_SUFFIX                        = ".fasta"
     FASTA_WITH_NORMALIZED_IDS_SUFFIX    = ".ni.fasta"
     NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
     PROTEINS_LIST_FILE_SEPARATOR        = "\t"
+
 
     def run()
 
@@ -71,6 +73,7 @@ module Evoruby
 
       allowed_opts = Array.new
       allowed_opts.push(EXT_OPTION)
+      allowed_opts.push(EXTRACT_LINKERS_OPTION)
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -100,6 +103,11 @@ module Evoruby
         if extension < 0
           extension = 0
         end
+      end
+
+      extract_linkers = false
+      if cla.is_option_set?(EXTRACT_LINKERS_OPTIO)
+        extract_linkers = true
       end
 
       if  !File.exist?( input_dir )
@@ -169,7 +177,8 @@ module Evoruby
           out_dir,
           out_dir_doms,
           mapping_file,
-          extension )
+          extension,
+          extract_linkers )
       }
       puts
       Util.print_message( PRG_NAME, "OK" )
@@ -186,7 +195,8 @@ module Evoruby
         out_dir,
         out_dir_doms,
         mapping_file,
-        extension )
+        extension,
+        extract_linkers )
 
       begin
         Util.check_file_for_readability( input_file )
@@ -231,9 +241,9 @@ module Evoruby
       File.open( input_file ) do | file |
         while line = file.gets
           line.strip!
-          if ( !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) )
+          if !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) 
             values = line.split( PROTEINS_LIST_FILE_SEPARATOR )
-
+            mod_line = nil
             if ( values.length < 2 )
               Util.fatal_error( PRG_NAME, "unexpected format: " + line )
             end
@@ -301,7 +311,7 @@ module Evoruby
             ids_map_writer.write( normalized_id + ": " + seq.get_name + Constants::LINE_DELIMITER )
 
             orig_name = nil
-            if ( seq != nil )
+            if seq != nil 
               orig_name = seq.get_name
               seq.set_name( seq.get_name + " [" + current_species + "]" )
               new_msa.add_sequence( seq )
@@ -309,13 +319,21 @@ module Evoruby
               Util.fatal_error( PRG_NAME, "unexected error: seq is nil" )
             end
 
-            if  domain_ranges != nil
+            if domain_ranges != nil
+              first = true
+              prev_to = -1
+
               domain_ranges.each { |range|
                 if range != nil && range.length > 0
                   s = range.split("-")
                   from = s[ 0 ].to_i
                   to = s[ 1 ].to_i
-                  new_msa_domains.add_sequence( Sequence.new( orig_name + " [" + from.to_s + "-" + to.to_s + "] [" + basename + "] [" + current_species + "]", seq.get_sequence_as_string[from..to] ) )
+                  new_msa_domains.add_sequence( Sequence.new( orig_name +
+                       " [" + from.to_s +
+                       "-" + to.to_s +
+                       "] [" + basename + "] [" +
+                       current_species + "]",
+                      seq.get_sequence_as_string[from..to] ) )
                   if extension > 0
                     from_e = from - extension
                     if from_e < 0
@@ -325,17 +343,47 @@ module Evoruby
                     if to_e > seq.get_sequence_as_string.length - 1
                       to_e = seq.get_sequence_as_string.length - 1
                     end
-                    new_msa_domains_extended.add_sequence( Sequence.new( orig_name + " [" + from.to_s + "-" + to.to_s  + "] [extended by " + extension.to_s + "] [" + basename + "] [" + current_species + "]",
+                    new_msa_domains_extended.add_sequence( Sequence.new( orig_name +
+                         " [" + from.to_s +
+                         "-" + to.to_s  +
+                         "] [extended by " +
+                         extension.to_s +
+                         "] [" + basename + "] [" +
+                         current_species + "]",
                         seq.get_sequence_as_string[ from_e..to_e ] ) )
+                  end # extension > 0
+                  if  extract_linkers
+                    if first
+                      first = false
+                      f = 0
+                      t = from - 1
+                      if extension > 0
+                        f = t - extension
+                      end
+                      mod_line = line + "\t[" + get_linker_sequence( f, t, seq ) + "|"
+                    else
+                      mod_line += get_linker_sequence( prev_to + 1, from - 1, seq ) + "|"
+                    end
+                    prev_to = to
                   end
-                end
+                end # range != nil && range.length > 0
               }
+              if extract_linkers && prev_to > 0
+                f = prev_to + 1
+                t = seq.get_sequence_as_string.length - 1
+                if extension > 0
+                  t = f + extension
+                end
+                mod_line += get_linker_sequence( f, t, seq ) + "]"
+              end
             end
 
             new_msa_normalized_ids.add_sequence( Sequence.new( normalized_id, seq.get_sequence_as_string ) )
-
-          end
-        end
+            if mod_line
+              puts mod_line
+            end
+          end # !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) 
+        end # while line = file.gets
 
       end
 
@@ -387,6 +435,21 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
+    end
+
+
+    def get_linker_sequence( from, to, seq )
+      if from < 0
+        from = 0
+      end
+      if to > seq.get_sequence_as_string.length - 1
+        to = seq.get_sequence_as_string.length - 1
+      end
+      if from > to
+        return ""
+      else
+        return from.to_s + "-" + to.to_s + ":" + seq.get_sequence_as_string[ from..to ]
+      end
     end
 
     def obtain_inputfiles( input_dir, seq_names_files_suffix )
@@ -461,6 +524,7 @@ module Evoruby
          "genome multiple-sequence ('fasta') files not in input dir]" )
       puts()
       puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
+      puts( "          -" + EXTRACT_LINKERS_OPTION  + ": to extend linkers" )
       puts()
       puts( "  " + "Example: \"mse.rb .prot . seqs doms ../genome_locations.txt\"" )
       puts()
