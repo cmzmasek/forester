@@ -106,7 +106,7 @@ module Evoruby
       end
 
       extract_linkers = false
-      if cla.is_option_set?(EXTRACT_LINKERS_OPTIO)
+      if cla.is_option_set?(EXTRACT_LINKERS_OPTION)
         extract_linkers = true
       end
 
@@ -241,7 +241,7 @@ module Evoruby
       File.open( input_file ) do | file |
         while line = file.gets
           line.strip!
-          if !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) 
+          if !Util.is_string_empty?( line ) && !(line =~ /\s*#/ )
             values = line.split( PROTEINS_LIST_FILE_SEPARATOR )
             mod_line = nil
             if ( values.length < 2 )
@@ -311,7 +311,7 @@ module Evoruby
             ids_map_writer.write( normalized_id + ": " + seq.get_name + Constants::LINE_DELIMITER )
 
             orig_name = nil
-            if seq != nil 
+            if seq != nil
               orig_name = seq.get_name
               seq.set_name( seq.get_name + " [" + current_species + "]" )
               new_msa.add_sequence( seq )
@@ -382,7 +382,7 @@ module Evoruby
             if mod_line
               puts mod_line
             end
-          end # !Util.is_string_empty?( line ) && !(line =~ /\s*#/ ) 
+          end # !Util.is_string_empty?( line ) && !(line =~ /\s*#/ )
         end # while line = file.gets
 
       end
@@ -523,10 +523,10 @@ module Evoruby
          "and possibly genome multiple-sequence ('fasta') files> <output directory for sequences> <output directory for domains> [mapping file for " +
          "genome multiple-sequence ('fasta') files not in input dir]" )
       puts()
-      puts(             "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
+      puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
       puts( "          -" + EXTRACT_LINKERS_OPTION  + "      : to extract linkers" )
       puts()
-      puts( "  " + "Example: \"mse.rb .prot . seqs doms ../genome_locations.txt\"" )
+      puts( "  " + "Example: \"mse.rb .prot . protein_seqs domain_seqs ../genome_locations.txt\"" )
       puts()
     end
 
