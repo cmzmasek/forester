@@ -523,8 +523,8 @@ module Evoruby
          "and possibly genome multiple-sequence ('fasta') files> <output directory for sequences> <output directory for domains> [mapping file for " +
          "genome multiple-sequence ('fasta') files not in input dir]" )
       puts()
-      puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
-      puts( "          -" + EXTRACT_LINKERS_OPTION  + ": to extend linkers" )
+      puts(             "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
+      puts( "          -" + EXTRACT_LINKERS_OPTION  + "      : to extract linkers" )
       puts()
       puts( "  " + "Example: \"mse.rb .prot . seqs doms ../genome_locations.txt\"" )
       puts()
