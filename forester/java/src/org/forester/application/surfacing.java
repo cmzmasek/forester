@@ -235,8 +235,8 @@ public class surfacing {
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                                    = '#';
-    final static private String                               PRG_VERSION                                                                   = "2.251";
-    final static private String                               PRG_DATE                                                                      = "2012.07.13";
+    final static private String                               PRG_VERSION                                                                   = "2.252";
+    final static private String                               PRG_DATE                                                                      = "2012.08.01";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -2327,10 +2327,11 @@ public class surfacing {
                                       protein_lists_per_species,
                                       domain_id_to_go_ids_map,
                                       go_id_to_term_map,
-                                      plus_minus_analysis_numbers );
+                                      plus_minus_analysis_numbers
+                                       );
         }
         if ( output_protein_lists_for_all_domains ) {
-            writeProteinListsForAllSpecies( out_dir, protein_lists_per_species, gwcd_list );
+            writeProteinListsForAllSpecies( out_dir, protein_lists_per_species, gwcd_list, 1.0 );
         }
         //        if ( ( intrees != null ) && ( intrees.length > 0 ) && ( inferred_trees != null ) && ( inferred_trees.size() > 0 ) ) {
         //            final StringBuilder parameters_sb = createParametersAsString( ignore_dufs,
@@ -2810,7 +2811,8 @@ public class surfacing {
 
     private static void writeProteinListsForAllSpecies( final File output_dir,
                                                         final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                                        final List<GenomeWideCombinableDomains> gwcd_list ) {
+                                                        final List<GenomeWideCombinableDomains> gwcd_list,
+                                                        final double domain_e_cutoff ) {
         final SortedSet<DomainId> all_domains = new TreeSet<DomainId>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
             all_domains.addAll( gwcd.getAllDomainIds() );
@@ -2824,7 +2826,8 @@ public class surfacing {
                                                    domain,
                                                    proteins_file_writer,
                                                    "\t",
-                                                   LIMIT_SPEC_FOR_PROT_EX );
+                                                   LIMIT_SPEC_FOR_PROT_EX,
+                                                    domain_e_cutoff );
                 proteins_file_writer.close();
             }
             catch ( final IOException e ) {

@@ -829,7 +829,8 @@ public final class DomainCountsDifferenceUtil {
                                            domain_id,
                                            proteins_file_writer,
                                            "\t",
-                                           surfacing.LIMIT_SPEC_FOR_PROT_EX );
+                                           surfacing.LIMIT_SPEC_FOR_PROT_EX,
+                                           -1 );
         proteins_file_writer.close();
         System.out.println( "Wrote proteins list to \"" + my_proteins_file + "\"" );
     }

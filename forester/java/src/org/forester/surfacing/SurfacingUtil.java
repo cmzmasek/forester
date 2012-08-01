@@ -1186,7 +1186,8 @@ public final class SurfacingUtil {
                                             final DomainId domain_id,
                                             final Writer out,
                                             final String separator,
-                                            final String limit_to_species ) throws IOException {
+                                            final String limit_to_species,
+                                            final double domain_e_cutoff ) throws IOException {
         for( final Species species : protein_lists_per_species.keySet() ) {
             for( final Protein protein : protein_lists_per_species.get( species ) ) {
                 if ( ForesterUtil.isEmpty( limit_to_species )
@@ -1200,19 +1201,29 @@ public final class SurfacingUtil {
                         out.write( domain_id.toString() );
                         out.write( separator );
                         for( final Domain domain : domains ) {
-                            out.write( "/" );
-                            out.write( domain.getFrom() + "-" + domain.getTo() );
+                            if ( domain_e_cutoff < 0 || domain.getPerDomainEvalue() <= domain_e_cutoff ) {
+                                 out.write( "/" );
+                                 out.write( domain.getFrom() + "-" + domain.getTo() );
+                            }
                         }
                         out.write( "/" );
                         out.write( separator );
                         
-                        Domain domain_ary[] = new Domain[ protein.getProteinDomains().size() ];
+                        final List<Domain> domain_list = new ArrayList<Domain>();
                         
-                        for( int i = 0; i < protein.getProteinDomains().size(); ++i ) {
-                            domain_ary[ i ] = protein.getProteinDomains().get( i );
+                        for( final Domain domain : protein.getProteinDomains() ) {
+                            if ( domain_e_cutoff < 0 || domain.getPerDomainEvalue() <= domain_e_cutoff ) {
+                                domain_list.add( domain );
+                            }
                         }
                         
-                        Arrays.sort( domain_ary, new DomainComparator( false ) );
+                        Domain domain_ary[] = new Domain[ domain_list.size() ];
+                        
+                        for( int i = 0; i < domain_list.size(); ++i ) {
+                            domain_ary[ i ] = domain_list.get( i );
+                        }
+                        
+                        Arrays.sort( domain_ary, new DomainComparator( true ) );
                        
                         out.write( "{" );
                         boolean first = true;
@@ -1225,10 +1236,8 @@ public final class SurfacingUtil {
                                 out.write( "," );
                             }
                             out.write( domain.getDomainId().toString() );
-                            out.write( ":" );
-                            out.write( domain.getFrom() );
-                            out.write( "-" );
-                            out.write( domain.getTo() );
+                            out.write( ":" + domain.getFrom() +  "-" + domain.getTo() );
+                            out.write( ":" + domain.getPerDomainEvalue() );
                         }
                         out.write( "}" );
                         if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
