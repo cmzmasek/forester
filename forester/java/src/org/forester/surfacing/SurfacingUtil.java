@@ -66,6 +66,7 @@ import org.forester.go.GoTerm;
 import org.forester.go.PfamToGoMapping;
 import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.writers.PhylogenyWriter;
+import org.forester.msa.MsaCompactor.SORT_BY;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -1204,9 +1205,19 @@ public final class SurfacingUtil {
                         }
                         out.write( "/" );
                         out.write( separator );
+                        
+                        Domain domain_ary[] = new Domain[ protein.getProteinDomains().size() ];
+                        
+                        for( int i = 0; i < protein.getProteinDomains().size(); ++i ) {
+                            domain_ary[ i ] = protein.getProteinDomains().get( i );
+                        }
+                        
+                        Arrays.sort( domain_ary, new DomainComparator( false ) );
+                       
                         out.write( "{" );
                         boolean first = true;
-                        for( final Domain domain : protein.getProteinDomains() ) {
+                        
+                        for( final Domain domain : domain_ary ) {
                             if ( first ) {
                                 first = false;
                             }
@@ -1214,6 +1225,10 @@ public final class SurfacingUtil {
                                 out.write( "," );
                             }
                             out.write( domain.getDomainId().toString() );
+                            out.write( ":" );
+                            out.write( domain.getFrom() );
+                            out.write( "-" );
+                            out.write( domain.getTo() );
                         }
                         out.write( "}" );
                         if ( !( ForesterUtil.isEmpty( protein.getDescription() ) || protein.getDescription()
@@ -2606,4 +2621,32 @@ public final class SurfacingUtil {
             e.printStackTrace();
         }
     }
+
+    final static class DomainComparator implements Comparator<Domain> {
+
+        final private boolean _ascending;
+
+        public DomainComparator( final boolean ascending ) {
+            _ascending = ascending;
+        }
+
+        @Override
+        public final int compare( final Domain d0, final Domain d1 ) {
+
+            if ( d0.getFrom() < d1.getFrom() ) {
+                return _ascending ? -1 : 1;
+            }
+            else if ( d0.getFrom() > d1.getFrom() ) {
+                return _ascending ? 1 : -1;
+            }
+            return 0;
+
+        }
+
+    }
 }
+
+
+
+
+
