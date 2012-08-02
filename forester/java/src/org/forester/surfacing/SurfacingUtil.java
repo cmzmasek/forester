@@ -1188,6 +1188,7 @@ public final class SurfacingUtil {
                                             final String separator,
                                             final String limit_to_species,
                                             final double domain_e_cutoff ) throws IOException {
+        System.out.println( "Per domain E-value: " + domain_e_cutoff );
         for( final Species species : protein_lists_per_species.keySet() ) {
             for( final Protein protein : protein_lists_per_species.get( species ) ) {
                 if ( ForesterUtil.isEmpty( limit_to_species )
