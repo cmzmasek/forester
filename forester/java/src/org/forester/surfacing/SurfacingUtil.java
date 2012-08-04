@@ -1189,11 +1189,14 @@ public final class SurfacingUtil {
                                             final String limit_to_species,
                                             final double domain_e_cutoff ) throws IOException {
         System.out.println( "Per domain E-value: " + domain_e_cutoff );
+        
         for( final Species species : protein_lists_per_species.keySet() ) {
+            System.out.println( species + ":" );
             for( final Protein protein : protein_lists_per_species.get( species ) ) {
                 if ( ForesterUtil.isEmpty( limit_to_species )
                         || protein.getSpecies().getSpeciesId().equalsIgnoreCase( limit_to_species ) ) {
                     final List<Domain> domains = protein.getProteinDomains( domain_id );
+                   
                     if ( domains.size() > 0 ) {
                         out.write( protein.getSpecies().getSpeciesId() );
                         out.write( separator );
@@ -1201,14 +1204,24 @@ public final class SurfacingUtil {
                         out.write( separator );
                         out.write( domain_id.toString() );
                         out.write( separator );
+                        int prev_to = -1;
+                       
                         for( final Domain domain : domains ) {
+                            
                             if ( domain_e_cutoff < 0 || domain.getPerDomainEvalue() <= domain_e_cutoff ) {
                                  out.write( "/" );
                                  out.write( domain.getFrom() + "-" + domain.getTo() );
+                                 if ( prev_to >= 0) {
+                                     final int l = domain.getFrom() - prev_to;
+                                     System.out.println( l );
+                                 }
+                                 prev_to = domain.getTo();
                             }
                         }
+                        
                         out.write( "/" );
                         out.write( separator );
+                       
                         
                         final List<Domain> domain_list = new ArrayList<Domain>();
                         
@@ -1252,6 +1265,7 @@ public final class SurfacingUtil {
                         }
                         out.write( SurfacingConstants.NL );
                     }
+                    
                 }
             }
         }
