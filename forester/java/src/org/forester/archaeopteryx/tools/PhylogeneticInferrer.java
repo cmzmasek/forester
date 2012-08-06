@@ -86,7 +86,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
         _options = options;
     }
 
-    private Msa inferMsa() throws IOException, InterruptedException {
+    private Msa inferMsa( final MSA_PRG msa_prg ) throws IOException, InterruptedException {
         //        final File temp_seqs_file = File.createTempFile( "__msa__temp__", ".fasta" );
         //        if ( DEBUG ) {
         //            System.out.println();
@@ -97,8 +97,17 @@ public class PhylogeneticInferrer extends RunnableProcess {
         //        final BufferedWriter writer = new BufferedWriter( new FileWriter( temp_seqs_file ) );
         //        SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
         //        writer.close();
-        final List<String> opts = processMafftOptions();
-        return runMAFFT( _seqs, opts );
+        switch ( msa_prg ) {
+            case MAFFT: 
+                return runMAFFT( _seqs, processMafftOptions() );
+                
+            case CLUSTAL_O:
+                return runClustalOmega( _seqs, processMafftOptions() );
+            default:
+                return null;
+        }
+        
+       
     }
 
     private List<String> processMafftOptions() {
@@ -160,7 +169,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
         if ( _msa == null ) {
             Msa msa = null;
             try {
-                msa = inferMsa();
+                msa = inferMsa( MSA_PRG.MAFFT );
             }
             catch ( final IOException e ) {
                 end( _mf );
@@ -275,13 +284,13 @@ public class PhylogeneticInferrer extends RunnableProcess {
         return msa;
     }
 
-    private Msa runClustalOmega( final File input_seqs, final List<String> opts ) throws IOException,
+    private Msa runClustalOmega( final List<Sequence> seqs, final List<String> opts ) throws IOException,
             InterruptedException {
         Msa msa = null;
         final MsaInferrer clustalo = ClustalOmega.createInstance( _mf.getInferenceManager().getPathToLocalClustalo()
                 .getCanonicalPath() );
         try {
-            msa = clustalo.infer( input_seqs, opts );
+            msa = clustalo.infer( seqs, opts );
         }
         catch ( final IOException e ) {
             System.out.println( clustalo.getErrorDescription() );
@@ -337,5 +346,9 @@ public class PhylogeneticInferrer extends RunnableProcess {
                 }
             }
         }
+    }
+    
+    public enum MSA_PRG {
+        MAFFT, CLUSTAL_O;
     }
 }

@@ -25,12 +25,16 @@
 
 package org.forester.msa;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.io.parsers.FastaParser;
+import org.forester.io.writers.SequenceWriter;
+import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.sequence.Sequence;
 import org.forester.util.SystemCommandExecutor;
 
@@ -67,6 +71,19 @@ public final class ClustalOmega extends MsaInferrer {
         return _exit_code;
     }
 
+    
+    public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
+        final File file = File.createTempFile( "__clustalo_input_", ".fasta" );
+        file.deleteOnExit();
+        final BufferedWriter writer = new BufferedWriter( new FileWriter( file ) );
+        SequenceWriter.writeSeqs( seqs, writer, SEQ_FORMAT.FASTA, 100 );
+        writer.close();
+        final Msa msa = infer( file, opts );
+        file.delete();
+        return msa;
+    }
+    
+    
     @Override
     public Msa infer( final File path_to_input_seqs, final List<String> opts ) throws IOException, InterruptedException {
         init();
@@ -98,9 +115,5 @@ public final class ClustalOmega extends MsaInferrer {
         _exit_code = -100;
     }
 
-    @Override
-    public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  
 }

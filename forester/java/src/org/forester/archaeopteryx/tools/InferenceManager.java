@@ -10,21 +10,19 @@ public final class InferenceManager {
     private final static String DEFAULT_PATHS[] = { "C:\\Program Files\\", "C:\\Program Files (x86)\\", "/bin/",
             "/usr/local/bin/", "/usr/bin/"     };
     private final File          _path_to_local_mafft;
-    private final File          _path_to_local_kalign;
     private final File          _path_to_local_fastme;
     private final File          _path_to_local_raxml;
     private final File          _path_to_local_clustalo;
 
     public static InferenceManager createInstance( final Configuration c ) {
         return new InferenceManager( c.getpathToLocalMafft(),
-                                     c.getPathToLocalKalign(),
                                      c.getPathToLocalFastme(),
                                      c.getPathToLocalRaxml(),
                                      c.getPathToLocalClustalOmega() );
     }
 
     public boolean canDoMsa() {
-        return ( getPathToLocalMafft() != null ) || ( getPathToLocalKalign() != null )
+        return ( getPathToLocalMafft() != null ) 
                 || ( getPathToLocalClustalo() != null );
     }
 
@@ -32,9 +30,7 @@ public final class InferenceManager {
         return _path_to_local_mafft;
     }
 
-    public File getPathToLocalKalign() {
-        return _path_to_local_kalign;
-    }
+    
 
     public File getPathToLocalFastme() {
         return _path_to_local_fastme;
@@ -78,12 +74,11 @@ public final class InferenceManager {
     }
 
     private InferenceManager( final File path_to_local_mafft,
-                              final File path_to_local_kalign,
                               final File path_to_local_fastme,
                               final File path_to_local_raxml,
                               final File path_to_local_clustalo ) {
         _path_to_local_mafft = createLocalPath( path_to_local_mafft, "mafft" );
-        _path_to_local_kalign = createLocalPath( path_to_local_kalign, "kalign" );
+      
         _path_to_local_fastme = createLocalPath( path_to_local_fastme, "fastme" );
         _path_to_local_raxml = createLocalPath( path_to_local_raxml, "raxml" );
         _path_to_local_clustalo = createLocalPath( path_to_local_clustalo, "clustalo" );

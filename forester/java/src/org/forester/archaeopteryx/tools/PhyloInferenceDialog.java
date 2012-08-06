@@ -78,13 +78,16 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     private JTextField                         _input_seqs_min_length_tf;
     private JTextField                         _input_seqs_max_length_tf;
     private JTextField                         _input_seqs_type_tf;
-    private JTextField                         _input_seqs_msa_program_name_tf;
-    private JTextField                         _input_seqs_msa_paramenters_tf;
+  
+    private JTextField                         _mafft_paramenters_tf;
+    private JTextField                         _clustalo_paramenters_tf;
     private JTextField                         _msa_processing_max_allowed_gap_ratio_tf;
     private JTextField                         _msa_processing_min_allowed_length_tf;
     private JTextField                         _random_seed_tf;
     private JCheckBox                          _execute_msa_processing_cb;
     private JCheckBox                          _msa_processing_remove_all_gap_columns_cb;
+    private JCheckBox                          _mafft_cb;
+    private JCheckBox                          _clustalo_cb;
     private JCheckBox                          _save_pwd_file_cb;
     private JCheckBox                          _save_processed_msa_cb;
     private JCheckBox                          _save_original_msa_cb;
@@ -108,9 +111,11 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             final JPanel inputfile_pnl_1 = new JPanel();
             final JPanel inputfile_pnl_2 = new JPanel();
             final JPanel inputfile_pnl_3 = new JPanel();
+            final JPanel inputfile_pnl_4 = new JPanel();
             inputfile_pnl_1.setLayout( new FlowLayout() );
             inputfile_pnl_2.setLayout( new FlowLayout() );
             inputfile_pnl_3.setLayout( new FlowLayout() );
+            inputfile_pnl_4.setLayout( new FlowLayout() );
             inputfile_pnl_1.add( new JLabel( "Input Sequence File:" ) );
             inputfile_pnl_1.add( _input_seqs_tf = new JTextField() );
             inputfile_pnl_1.add( _select_input_seqs_btn = new JButton( "Select Input File" ) );
@@ -125,11 +130,15 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             inputfile_pnl_2.add( _input_seqs_max_length_tf = new JTextField() );
             inputfile_pnl_2.add( new JLabel( "Type:" ) );
             inputfile_pnl_2.add( _input_seqs_type_tf = new JTextField() );
-            inputfile_pnl_3.add( new JLabel( "Mutiple Sequence Alignment: " ) );
-            inputfile_pnl_3.add( new JLabel( "Program: " ) );
-            inputfile_pnl_3.add( _input_seqs_msa_program_name_tf = new JTextField() );
+           
+            
+            inputfile_pnl_3.add( _mafft_cb = new JCheckBox( "MAFFT") );
             inputfile_pnl_3.add( new JLabel( "Parameters: " ) );
-            inputfile_pnl_3.add( _input_seqs_msa_paramenters_tf = new JTextField() );
+            inputfile_pnl_3.add( _mafft_paramenters_tf = new JTextField() );
+           
+            inputfile_pnl_4.add( _clustalo_cb = new  JCheckBox( "ClustalO") );
+            inputfile_pnl_4.add( new JLabel( "Parameters: " ) );
+            inputfile_pnl_4.add( _clustalo_paramenters_tf = new JTextField() );
             _input_seqs_median_length_tf.setColumns( 4 );
             _input_seqs_min_length_tf.setColumns( 4 );
             _input_seqs_max_length_tf.setColumns( 4 );
@@ -142,12 +151,16 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             _input_seqs_max_length_tf.setEditable( false );
             _input_seqs_number_tf.setEditable( false );
             _input_seqs_type_tf.setEditable( false );
-            _input_seqs_msa_program_name_tf.setEditable( false );
-            _input_seqs_msa_paramenters_tf.setColumns( 26 );
+           
+            _mafft_paramenters_tf.setColumns( 26 );
+            _mafft_paramenters_tf.setText( "--maxiterate 1000 --localpair" );
+            _clustalo_paramenters_tf.setColumns( 26 );
+            _clustalo_paramenters_tf.setText( "clustalo options" );
             _select_input_seqs_btn.addActionListener( this );
             _pnl.add( inputfile_pnl_1 );
             _pnl.add( inputfile_pnl_2 );
             _pnl.add( inputfile_pnl_3 );
+            _pnl.add( inputfile_pnl_4 );
         }
         else {
             setTitle( "Phylogenetic Inference (from already aligned sequences) " );
@@ -273,9 +286,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         _value = JOptionPane.CANCEL_OPTION;
         if ( from_unaligned_seqs ) {
             updateSeqsItems();
-            _input_seqs_msa_program_name_tf.setText( getPhylogeneticInferenceOptions().getMsaPrg() );
-            _input_seqs_msa_paramenters_tf.setText( getPhylogeneticInferenceOptions().getMsaPrgParameters() );
-        }
+              }
         else {
             updateMsaItems();
         }
@@ -376,8 +387,8 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     }
 
     private void processMsaPrgParameters() {
-        if ( _input_seqs_msa_paramenters_tf != null ) {
-            getPhylogeneticInferenceOptions().setMsaPrgParameters( _input_seqs_msa_paramenters_tf.getText() );
+        if ( _mafft_paramenters_tf != null ) {
+            getPhylogeneticInferenceOptions().setMsaPrgParameters( _mafft_paramenters_tf.getText() );
         }
     }
 

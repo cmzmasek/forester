@@ -97,7 +97,6 @@ public final class Configuration {
     private boolean                         _taxonomy_colorize_node_shapes                         = false;
     private int                             _default_bootstrap_samples                             = -1;
     private File                            _path_to_local_mafft                                   = null;
-    private File                            _path_to_local_kalign                                  = null;
     private File                            _path_to_local_fastme                                  = null;
     private File                            _path_to_local_raxml                                   = null;
     private File                            _path_to_local_clustalo                                = null;
@@ -440,9 +439,7 @@ public final class Configuration {
         return _path_to_local_mafft;
     }
 
-    public File getPathToLocalKalign() {
-        return _path_to_local_kalign;
-    }
+  
 
     public File getPathToLocalFastme() {
         return _path_to_local_fastme;
@@ -826,9 +823,7 @@ public final class Configuration {
         _path_to_local_mafft = path_to_local_mafft;
     }
 
-    private void setPathToLocalKalign( final File path_to_local_kalign ) {
-        _path_to_local_kalign = path_to_local_kalign;
-    }
+   
 
     private void setPathToLocalFastme( final File path_to_local_fastme ) {
         _path_to_local_fastme = path_to_local_fastme;
@@ -1068,12 +1063,7 @@ public final class Configuration {
                 setPathToLocalMafft( new File( str ) );
             }
         }
-        else if ( key.equals( "kalign_local" ) ) {
-            final String str = ( ( String ) st.nextElement() ).trim();
-            if ( !ForesterUtil.isEmpty( str ) ) {
-                setPathToLocalKalign( new File( str ) );
-            }
-        }
+       
         else if ( key.equals( "fastme_local" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
             if ( !ForesterUtil.isEmpty( str ) ) {
