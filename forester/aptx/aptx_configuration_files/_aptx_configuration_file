@@ -286,7 +286,6 @@ use_tabbed_display:      yes
 
 default_number_of_bootstrap_resamples: 100
 mafft_local:                            /bin/mafft
-kalign_local:                           /bin/kalign
 clustalo_local:                         C:\Users\zma\SOFTWARE\clustal-omega-1.1.0-win32\clustalo.exe
 fastme_local:                           /bin/fastme
 raxml_local:                            /bin/raxml
