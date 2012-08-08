@@ -157,7 +157,6 @@ public final class PhylogenyDecorator {
                     } // if ( new_values != null ) 
                 } // if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) )
                 else if ( picky ) {
-                    System.out.println( map.toString() );
                     throw new IllegalArgumentException( "\"" + name + "\" not found in name map" );
                 }
             }
