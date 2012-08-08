@@ -71,8 +71,8 @@ public final class decorator {
     final static private String  MAPPING_FILE_SEPARATOR_DEFAULT         = ":";
     final static private boolean USE_FIRST_SEPARATOR_ONLY               = true;
     final static private String  PRG_NAME                               = "decorator";
-    final static private String  PRG_VERSION                            = "1.10";
-    final static private String  PRG_DATE                               = "2009.10.08";
+    final static private String  PRG_VERSION                            = "1.11";
+    final static private String  PRG_DATE                               = "2012.08.08";
 
     private static void argumentsError() {
         System.out.println();

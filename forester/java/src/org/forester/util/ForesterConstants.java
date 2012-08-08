@@ -28,7 +28,7 @@ package org.forester.util;
 public final class ForesterConstants {
 
     public final static String  FORESTER_VERSION            = "1.005+";
-    public final static String  FORESTER_DATE               = "120629";
+    public final static String  FORESTER_DATE               = "120808";
     public final static String  PHYLO_XML_VERSION           = "1.10";
     public final static String  PHYLO_XML_LOCATION          = "http://www.phyloxml.org";
     public final static String  PHYLO_XML_XSD               = "phyloxml.xsd";
