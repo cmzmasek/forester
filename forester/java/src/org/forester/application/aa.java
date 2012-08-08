@@ -3,7 +3,10 @@ package org.forester.application;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.msa.Msa;
@@ -18,6 +21,7 @@ public class aa {
             final List<Sequence> orig = FastaParser
                     .parse( new FileInputStream( "C:\\Users\\zma\\Desktop\\RRMa_domains_ext_20.fasta" ) );
             final Msa msa = FastaParser.parseMsa( new FileInputStream( "C:\\Users\\zma\\Desktop\\test3_sorted.fasta" ) );
+            final Set<Sequence> all_found_seqs = new HashSet<Sequence>();
             for( int i = 0; i < msa.getNumberOfSequences(); ++i ) {
                 final String id = msa.getIdentifier( i );
                 final String id_ = id.substring( 0, id.indexOf( "_" ) );

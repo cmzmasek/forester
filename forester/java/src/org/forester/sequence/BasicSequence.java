@@ -26,6 +26,8 @@
 
 package org.forester.sequence;
 
+import org.forester.util.ForesterUtil;
+
 public class BasicSequence implements Sequence {
 
     private final char[] _mol_sequence;
@@ -33,6 +35,12 @@ public class BasicSequence implements Sequence {
     private final TYPE   _type;
 
     private BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
+        if ( ForesterUtil.isEmpty( identifier ) ) {
+            throw new IllegalArgumentException( "identifier of sequence cannot be empty");
+        }
+        if ( ForesterUtil.isEmpty( mol_sequence ) ) {
+            throw new IllegalArgumentException( "molecular sequence cannot be empty");
+        }
         _mol_sequence = mol_sequence.toCharArray();
         _identifier = identifier;
         _type = type;
@@ -40,6 +48,12 @@ public class BasicSequence implements Sequence {
 
     // Only use if you know what you are doing!
     public BasicSequence( final String identifier, final char[] mol_sequence, final TYPE type ) {
+        if ( ForesterUtil.isEmpty( identifier ) ) {
+            throw new IllegalArgumentException( "identifier of sequence cannot be empty");
+        }
+        if ( mol_sequence == null || mol_sequence.length < 1 ) {
+            throw new IllegalArgumentException( "molecular sequence cannot be empty");
+        }
         _mol_sequence = mol_sequence;
         _identifier = identifier;
         _type = type;
@@ -82,11 +96,32 @@ public class BasicSequence implements Sequence {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Sequence other = ( Sequence) obj;
+        if ( getMolecularSequenceAsString() .equals( other.getMolecularSequenceAsString() )) {
+            return true;
+        }
+        return false;
+    }
+ 
+    @Override
+    public int hashCode() {
+        return getMolecularSequenceAsString().hashCode();
+    }
+    
+    
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer();
         sb.append( _identifier.toString() );
-        sb.append( " " );
-        sb.append( new String( _mol_sequence ) );
+        sb.append( ": " );
+        sb.append( getMolecularSequenceAsString() );
         return sb.toString();
     }
 
@@ -111,5 +146,11 @@ public class BasicSequence implements Sequence {
     public static Sequence createRnaSequence( final String identifier, final String mol_sequence ) {
         return new BasicSequence( identifier, mol_sequence.toUpperCase().replaceAll( "\\.", GAP_STR )
                 .replaceAll( RNA_REGEXP, Character.toString( UNSPECIFIED_NUC ) ), TYPE.RNA );
+    }
+
+    @Override
+    public String getMolecularSequenceAsString() {
+       
+        return new String( getMolecularSequence() );
     }
 }
