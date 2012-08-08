@@ -45,6 +45,11 @@ public class aa {
                     }
                 }
                 if ( found > 0 ) {
+                    for( final Sequence found_seq : found_seqs ) {
+                        if ( found_seq.getLength() >= 85 ) {
+                            all_found_seqs.add( found_seq );
+                        }
+                    }
                     if ( found > 1 ) {
                         System.out.println( i + ": " + id + "=>" + id_ + " " + range );
                         System.out.println( "  found: " + found );
@@ -57,6 +62,10 @@ public class aa {
                     System.out.println( "ERROR: not found: " + id );
                     System.exit( -1 );
                 }
+            }
+            int i = 0;
+            for( Sequence sequence : all_found_seqs ) {
+                System.out.println( i++ + ": " + sequence );
             }
             System.out.println( "DONE." );
         }
