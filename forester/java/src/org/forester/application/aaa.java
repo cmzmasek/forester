@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.sequence.Sequence;
-import org.forester.util.ForesterUtil;
 
 public class aaa {
 
@@ -43,7 +42,7 @@ public class aaa {
             int unique_counter = 0;
             int duplicate_counter_gn_ra = 0;
             int duplicate_counter_mol_seq = 0;
-            String prev_gn = "____";
+            final List<String> new_seqs_unique = new ArrayList<String>();
             for( final String seq : new_seqs ) {
                 final Matcher matcher_ra = RANGE_PATTERN.matcher( seq );
                 final Matcher matcher_gn = GN_PATTERN.matcher( seq );
@@ -63,23 +62,7 @@ public class aaa {
                     final String mol_seq = seq.split( "\n" )[ 1 ];
                     if ( !mol_seq_set.contains( mol_seq ) ) {
                         mol_seq_set.add( mol_seq );
-                        if ( prev_gn.equals( gn ) ) {
-                            int count = same_protein_seqs.size();
-                            if ( count == 1 ) {
-                                System.out.println( seq );
-                            }
-                            else {
-                                int c = 1;
-                                for( final String s : same_protein_seqs ) {
-                                    System.out.println( new StringBuffer( s ).insert( s.indexOf( "|" ),
-                                                                                      "__" + c + "_OF_" + count )
-                                            .toString() );
-                                    c++;
-                                }
-                            }
-                        }
-                        prev_gn = gn;
-                        System.out.println( seq );
+                        new_seqs_unique.add( seq );
                         unique_counter++;
                     }
                     else {
@@ -90,12 +73,44 @@ public class aaa {
                     duplicate_counter_gn_ra++;
                 }
             }
+            String prev_gn = "___";
+            boolean is_first = true;
+            List<String> same_protein_seqs = new ArrayList<String>();
+            for( final String seq : new_seqs_unique ) {
+             
+                final Matcher matcher_gn = GN_PATTERN.matcher( seq );
+                matcher_gn.find();
+                final String gn = matcher_gn.group( 1 );
+                if ( !prev_gn.equals( gn ) && !is_first ) {
+                    doit( same_protein_seqs );
+                    same_protein_seqs = new ArrayList<String>();
+                }
+                prev_gn = gn;
+                is_first = false;
+                same_protein_seqs.add( seq );
+            }
+            doit( same_protein_seqs );
             System.out.println( "unique   : " + unique_counter );
             System.out.println( "duplicate because gn and range same: " + duplicate_counter_gn_ra );
             System.out.println( "duplicate because mol seq same     : " + duplicate_counter_mol_seq );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+        }
+    }
+
+    private static void doit( List<String> same_protein_seqs ) {
+        final int count = same_protein_seqs.size();
+        if ( count == 1 ) {
+            System.out.println( same_protein_seqs.get( 0 ) );
+        }
+        else {
+            int c = 1;
+            for( final String s : same_protein_seqs ) {
+                System.out.println( new StringBuffer( s ).insert( s.indexOf( "|" ),
+                                                                  "__" + c + "_OF_" + count ).toString() );
+                c++;
+            }
         }
     }
 }
