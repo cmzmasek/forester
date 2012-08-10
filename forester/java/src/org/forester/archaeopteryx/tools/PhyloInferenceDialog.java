@@ -78,7 +78,6 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     private JTextField                         _input_seqs_min_length_tf;
     private JTextField                         _input_seqs_max_length_tf;
     private JTextField                         _input_seqs_type_tf;
-  
     private JTextField                         _mafft_paramenters_tf;
     private JTextField                         _clustalo_paramenters_tf;
     private JTextField                         _msa_processing_max_allowed_gap_ratio_tf;
@@ -130,13 +129,10 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             inputfile_pnl_2.add( _input_seqs_max_length_tf = new JTextField() );
             inputfile_pnl_2.add( new JLabel( "Type:" ) );
             inputfile_pnl_2.add( _input_seqs_type_tf = new JTextField() );
-           
-            
-            inputfile_pnl_3.add( _mafft_cb = new JCheckBox( "MAFFT") );
+            inputfile_pnl_3.add( _mafft_cb = new JCheckBox( "MAFFT" ) );
             inputfile_pnl_3.add( new JLabel( "Parameters: " ) );
             inputfile_pnl_3.add( _mafft_paramenters_tf = new JTextField() );
-           
-            inputfile_pnl_4.add( _clustalo_cb = new  JCheckBox( "ClustalO") );
+            inputfile_pnl_4.add( _clustalo_cb = new JCheckBox( "ClustalO" ) );
             inputfile_pnl_4.add( new JLabel( "Parameters: " ) );
             inputfile_pnl_4.add( _clustalo_paramenters_tf = new JTextField() );
             _input_seqs_median_length_tf.setColumns( 4 );
@@ -151,7 +147,6 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             _input_seqs_max_length_tf.setEditable( false );
             _input_seqs_number_tf.setEditable( false );
             _input_seqs_type_tf.setEditable( false );
-           
             _mafft_paramenters_tf.setColumns( 26 );
             _mafft_paramenters_tf.setText( "--maxiterate 1000 --localpair" );
             _clustalo_paramenters_tf.setColumns( 26 );
@@ -286,7 +281,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
         _value = JOptionPane.CANCEL_OPTION;
         if ( from_unaligned_seqs ) {
             updateSeqsItems();
-              }
+        }
         else {
             updateMsaItems();
         }

@@ -71,7 +71,7 @@ public final class ClustalOmega extends MsaInferrer {
         return _exit_code;
     }
 
-    
+    @Override
     public Msa infer( final List<Sequence> seqs, final List<String> opts ) throws IOException, InterruptedException {
         final File file = File.createTempFile( "__clustalo_input_", ".fasta" );
         file.deleteOnExit();
@@ -82,8 +82,7 @@ public final class ClustalOmega extends MsaInferrer {
         file.delete();
         return msa;
     }
-    
-    
+
     @Override
     public Msa infer( final File path_to_input_seqs, final List<String> opts ) throws IOException, InterruptedException {
         init();
@@ -114,6 +113,4 @@ public final class ClustalOmega extends MsaInferrer {
         _error = null;
         _exit_code = -100;
     }
-
-  
 }

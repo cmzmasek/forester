@@ -67,18 +67,12 @@ public class BasicTableParser {
         final boolean use_start_of_comment_line = !( ForesterUtil.isEmpty( start_of_comment_line ) );
         while ( ( line = reader.readLine() ) != null ) {
             line = line.trim();
-            if ( !ForesterUtil.isEmpty( line) && 
-                    
-                    
-                     (( line.charAt( 0 ) == '"' && line.charAt( line.length() -1 ) == '"' && ForesterUtil.countChars( line, '"' ) == 2 ) 
-                             
-                             ||
-                             
-                             
-                      ( line.charAt( 0 ) == '\'' && line.charAt( line.length() -1 ) == '\'' && ForesterUtil.countChars( line, '\'' ) == 2  ) ) ) {
-                line = line.substring( 1, line.length() -1  ).trim();
+            if ( !ForesterUtil.isEmpty( line )
+                    && ( ( ( line.charAt( 0 ) == '"' ) && ( line.charAt( line.length() - 1 ) == '"' ) && ( ForesterUtil
+                            .countChars( line, '"' ) == 2 ) ) || ( ( line.charAt( 0 ) == '\'' )
+                            && ( line.charAt( line.length() - 1 ) == '\'' ) && ( ForesterUtil.countChars( line, '\'' ) == 2 ) ) ) ) {
+                line = line.substring( 1, line.length() - 1 ).trim();
             }
-            
             if ( saw_first_table
                     && ( ForesterUtil.isEmpty( line ) || ( tables_separated_by_single_string_line && ( line
                             .indexOf( column_delimiter ) < 0 ) ) ) ) {

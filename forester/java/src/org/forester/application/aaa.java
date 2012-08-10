@@ -2,6 +2,7 @@
 package org.forester.application;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,19 +13,29 @@ import java.util.regex.Pattern;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.sequence.Sequence;
+import org.forester.util.EasyWriter;
+import org.forester.util.ForesterUtil;
 
 public class aaa {
 
     public final static Pattern GN_PATTERN    = Pattern.compile( "GN=(\\S+)\\s" );     //use w+ instead of S+ for more stringent setting.
     public final static Pattern RANGE_PATTERN = Pattern.compile( "\\[(\\d+-\\d+)\\]" ); //use w+ instead of S+ for more stringent setting.
+    public final static int     MIN_LENGTH    = 85;
 
     public static void main( final String args[] ) {
         try {
+            final EasyWriter out = ( EasyWriter ) ForesterUtil.createEasyWriter( "aaa_out" );
             System.out.println( "STARTING..." );
+            final List<Sequence> too_short = new ArrayList<Sequence>();
             final List<Sequence> orig = FastaParser
                     .parse( new FileInputStream( "C:\\Users\\zma\\Desktop\\RRMa_domains_ext_20_2.fasta" ) );
+            final int initial_number = orig.size();
             final List<String> new_seqs = new ArrayList<String>();
             for( final Sequence seq : orig ) {
+                if ( seq.getLength() < MIN_LENGTH ) {
+                    too_short.add( seq );
+                    continue;
+                }
                 final Matcher matcher = GN_PATTERN.matcher( seq.getIdentifier() );
                 String gn = "";
                 if ( matcher.find() ) {
@@ -40,8 +51,8 @@ public class aaa {
             final Set<String> mol_seq_set = new HashSet<String>();
             Collections.sort( new_seqs );
             int unique_counter = 0;
-            int duplicate_counter_gn_ra = 0;
-            int duplicate_counter_mol_seq = 0;
+            final List<String> duplicate_gn_ra = new ArrayList<String>();
+            final List<String> duplicate_mol_seq = new ArrayList<String>();
             final List<String> new_seqs_unique = new ArrayList<String>();
             for( final String seq : new_seqs ) {
                 final Matcher matcher_ra = RANGE_PATTERN.matcher( seq );
@@ -66,49 +77,73 @@ public class aaa {
                         unique_counter++;
                     }
                     else {
-                        duplicate_counter_mol_seq++;
+                        duplicate_mol_seq.add( seq );
                     }
                 }
                 else {
-                    duplicate_counter_gn_ra++;
+                    duplicate_gn_ra.add( seq );
                 }
             }
             String prev_gn = "___";
             boolean is_first = true;
-            List<String> same_protein_seqs = new ArrayList<String>();
+            List<String> seqs_from_same_protein = new ArrayList<String>();
             for( final String seq : new_seqs_unique ) {
-             
                 final Matcher matcher_gn = GN_PATTERN.matcher( seq );
                 matcher_gn.find();
                 final String gn = matcher_gn.group( 1 );
                 if ( !prev_gn.equals( gn ) && !is_first ) {
-                    doit( same_protein_seqs );
-                    same_protein_seqs = new ArrayList<String>();
+                    doit( seqs_from_same_protein, out );
+                    seqs_from_same_protein = new ArrayList<String>();
                 }
                 prev_gn = gn;
                 is_first = false;
-                same_protein_seqs.add( seq );
+                seqs_from_same_protein.add( seq );
             }
-            doit( same_protein_seqs );
-            System.out.println( "unique   : " + unique_counter );
-            System.out.println( "duplicate because gn and range same: " + duplicate_counter_gn_ra );
-            System.out.println( "duplicate because mol seq same     : " + duplicate_counter_mol_seq );
+            doit( seqs_from_same_protein, out );
+            out.println( "" );
+            out.println( "" );
+            out.println( "Removed because same GN and region:" );
+            for( final String s : duplicate_gn_ra ) {
+                out.println( s );
+            }
+            out.println( "" );
+            out.println( "" );
+            out.println( "Removed because identical mol sequence:" );
+            for( final String s : duplicate_mol_seq ) {
+                out.println( s );
+            }
+            out.println( "" );
+            out.println( "" );
+            out.println( "Removed because too short:" );
+            for( final Sequence s : too_short ) {
+                out.println( s.toString() );
+            }
+            out.println( "" );
+            out.println( "" );
+            out.println( "initial:" + initial_number );
+            out.println( "ignored because shorter than " + MIN_LENGTH + "aa: " + too_short.size() );
+            out.println( "unique   : " + unique_counter );
+            out.println( "unique   : " + new_seqs_unique.size() );
+            out.println( "duplicate because gn and range same: " + duplicate_gn_ra.size() );
+            out.println( "duplicate because mol seq same     : " + duplicate_mol_seq.size() );
+            out.flush();
+            out.close();
+            System.out.println( "DONE " );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
         }
     }
 
-    private static void doit( List<String> same_protein_seqs ) {
+    private static void doit( final List<String> same_protein_seqs, final EasyWriter out ) throws IOException {
         final int count = same_protein_seqs.size();
         if ( count == 1 ) {
-            System.out.println( same_protein_seqs.get( 0 ) );
+            out.println( same_protein_seqs.get( 0 ) );
         }
         else {
             int c = 1;
             for( final String s : same_protein_seqs ) {
-                System.out.println( new StringBuffer( s ).insert( s.indexOf( "|" ),
-                                                                  "__" + c + "_OF_" + count ).toString() );
+                out.println( new StringBuffer( s ).insert( s.indexOf( "|" ), "__" + c + "_OF_" + count ).toString() );
                 c++;
             }
         }

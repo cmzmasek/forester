@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.msa.Msa;
@@ -41,7 +40,7 @@ public class aa {
                 final List<Sequence> found_seqs = new ArrayList<Sequence>();
                 for( final Sequence orig_seq : orig ) {
                     final String orig_seq_id = orig_seq.getIdentifier();
-                    if ( orig_seq_id.indexOf( id_ ) >= 0 && orig_seq_id.indexOf( "[" + range + "]" ) >= 0 ) {
+                    if ( ( orig_seq_id.indexOf( id_ ) >= 0 ) && ( orig_seq_id.indexOf( "[" + range + "]" ) >= 0 ) ) {
                         found++;
                         found_seqs.add( orig_seq );
                     }
@@ -49,8 +48,8 @@ public class aa {
                 if ( found > 0 ) {
                     for( final Sequence found_seq : found_seqs ) {
                         if ( found_seq.getLength() >= 85 ) {
-                            
-                            all_found_seqs.add( BasicSequence.createAaSequence( id, found_seq.getMolecularSequenceAsString() ) );
+                            all_found_seqs.add( BasicSequence.createAaSequence( id, found_seq
+                                    .getMolecularSequenceAsString() ) );
                         }
                     }
                     if ( found > 1 ) {
@@ -66,19 +65,17 @@ public class aa {
                     System.exit( -1 );
                 }
             }
-            String fasta_ary[] = new String[ all_found_seqs.size() ];
+            final String fasta_ary[] = new String[ all_found_seqs.size() ];
             int i = 0;
-            for( Sequence sequence : all_found_seqs ) {
+            for( final Sequence sequence : all_found_seqs ) {
                 fasta_ary[ i ] = ">" + sequence.getIdentifier() + "\n" + sequence.getMolecularSequenceAsString();
                 System.out.println( sequence );
                 i++;
             }
             Arrays.sort( fasta_ary );
-            
             for( int j = 0; j < fasta_ary.length; ++j ) {
-                System.out.println(  fasta_ary[ j ] );
+                System.out.println( fasta_ary[ j ] );
             }
-            
             System.out.println( "DONE." );
         }
         catch ( final Exception e ) {

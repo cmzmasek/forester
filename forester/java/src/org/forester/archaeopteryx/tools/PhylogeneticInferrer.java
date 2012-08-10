@@ -26,7 +26,6 @@
 package org.forester.archaeopteryx.tools;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,16 +97,13 @@ public class PhylogeneticInferrer extends RunnableProcess {
         //        SequenceWriter.writeSeqs( _seqs, writer, SEQ_FORMAT.FASTA, 100 );
         //        writer.close();
         switch ( msa_prg ) {
-            case MAFFT: 
+            case MAFFT:
                 return runMAFFT( _seqs, processMafftOptions() );
-                
             case CLUSTAL_O:
                 return runClustalOmega( _seqs, processMafftOptions() );
             default:
                 return null;
         }
-        
-       
     }
 
     private List<String> processMafftOptions() {
@@ -347,7 +343,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
             }
         }
     }
-    
+
     public enum MSA_PRG {
         MAFFT, CLUSTAL_O;
     }

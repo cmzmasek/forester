@@ -36,10 +36,10 @@ public class BasicSequence implements Sequence {
 
     private BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
-            throw new IllegalArgumentException( "identifier of sequence cannot be empty");
+            throw new IllegalArgumentException( "identifier of sequence cannot be empty" );
         }
         if ( ForesterUtil.isEmpty( mol_sequence ) ) {
-            throw new IllegalArgumentException( "molecular sequence cannot be empty");
+            throw new IllegalArgumentException( "molecular sequence cannot be empty" );
         }
         _mol_sequence = mol_sequence.toCharArray();
         _identifier = identifier;
@@ -49,10 +49,10 @@ public class BasicSequence implements Sequence {
     // Only use if you know what you are doing!
     public BasicSequence( final String identifier, final char[] mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
-            throw new IllegalArgumentException( "identifier of sequence cannot be empty");
+            throw new IllegalArgumentException( "identifier of sequence cannot be empty" );
         }
-        if ( mol_sequence == null || mol_sequence.length < 1 ) {
-            throw new IllegalArgumentException( "molecular sequence cannot be empty");
+        if ( ( mol_sequence == null ) || ( mol_sequence.length < 1 ) ) {
+            throw new IllegalArgumentException( "molecular sequence cannot be empty" );
         }
         _mol_sequence = mol_sequence;
         _identifier = identifier;
@@ -96,26 +96,25 @@ public class BasicSequence implements Sequence {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals( final Object obj ) {
+        if ( obj == null ) {
             return false;
         }
-        if (obj.getClass() != getClass()) {
+        if ( obj.getClass() != getClass() ) {
             return false;
         }
-        Sequence other = ( Sequence) obj;
-        if ( getMolecularSequenceAsString() .equals( other.getMolecularSequenceAsString() )) {
+        final Sequence other = ( Sequence ) obj;
+        if ( getMolecularSequenceAsString().equals( other.getMolecularSequenceAsString() ) ) {
             return true;
         }
         return false;
     }
- 
+
     @Override
     public int hashCode() {
         return getMolecularSequenceAsString().hashCode();
     }
-    
-    
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer();
@@ -150,7 +149,6 @@ public class BasicSequence implements Sequence {
 
     @Override
     public String getMolecularSequenceAsString() {
-       
         return new String( getMolecularSequence() );
     }
 }

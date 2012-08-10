@@ -439,8 +439,6 @@ public final class Configuration {
         return _path_to_local_mafft;
     }
 
-  
-
     public File getPathToLocalFastme() {
         return _path_to_local_fastme;
     }
@@ -823,8 +821,6 @@ public final class Configuration {
         _path_to_local_mafft = path_to_local_mafft;
     }
 
-   
-
     private void setPathToLocalFastme( final File path_to_local_fastme ) {
         _path_to_local_fastme = path_to_local_fastme;
     }
@@ -1063,7 +1059,6 @@ public final class Configuration {
                 setPathToLocalMafft( new File( str ) );
             }
         }
-       
         else if ( key.equals( "fastme_local" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
             if ( !ForesterUtil.isEmpty( str ) ) {

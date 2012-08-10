@@ -66,7 +66,6 @@ import org.forester.go.GoTerm;
 import org.forester.go.PfamToGoMapping;
 import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.writers.PhylogenyWriter;
-import org.forester.msa.MsaCompactor.SORT_BY;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -375,8 +374,7 @@ public final class SurfacingUtil {
                 }
                 for( int i = 0; i < nodes.size() - 1; ++i ) {
                     for( int j = i + 1; j < nodes.size(); ++j ) {
-                        final PhylogenyNode lca = PhylogenyMethods.obtainLCA( nodes.get( i ),
-                                                                                            nodes.get( j ) );
+                        final PhylogenyNode lca = PhylogenyMethods.obtainLCA( nodes.get( i ), nodes.get( j ) );
                         String rank = "unknown";
                         if ( lca.getNodeData().isHasTaxonomy()
                                 && !ForesterUtil.isEmpty( lca.getNodeData().getTaxonomy().getRank() ) ) {
@@ -1189,14 +1187,12 @@ public final class SurfacingUtil {
                                             final String limit_to_species,
                                             final double domain_e_cutoff ) throws IOException {
         System.out.println( "Per domain E-value: " + domain_e_cutoff );
-        
         for( final Species species : protein_lists_per_species.keySet() ) {
             System.out.println( species + ":" );
             for( final Protein protein : protein_lists_per_species.get( species ) ) {
                 if ( ForesterUtil.isEmpty( limit_to_species )
                         || protein.getSpecies().getSpeciesId().equalsIgnoreCase( limit_to_species ) ) {
                     final List<Domain> domains = protein.getProteinDomains( domain_id );
-                   
                     if ( domains.size() > 0 ) {
                         out.write( protein.getSpecies().getSpeciesId() );
                         out.write( separator );
@@ -1205,43 +1201,32 @@ public final class SurfacingUtil {
                         out.write( domain_id.toString() );
                         out.write( separator );
                         int prev_to = -1;
-                       
                         for( final Domain domain : domains ) {
-                            
-                            if ( domain_e_cutoff < 0 || domain.getPerDomainEvalue() <= domain_e_cutoff ) {
-                                 out.write( "/" );
-                                 out.write( domain.getFrom() + "-" + domain.getTo() );
-                                 if ( prev_to >= 0) {
-                                     final int l = domain.getFrom() - prev_to;
-                                     System.out.println( l );
-                                 }
-                                 prev_to = domain.getTo();
+                            if ( ( domain_e_cutoff < 0 ) || ( domain.getPerDomainEvalue() <= domain_e_cutoff ) ) {
+                                out.write( "/" );
+                                out.write( domain.getFrom() + "-" + domain.getTo() );
+                                if ( prev_to >= 0 ) {
+                                    final int l = domain.getFrom() - prev_to;
+                                    System.out.println( l );
+                                }
+                                prev_to = domain.getTo();
                             }
                         }
-                        
                         out.write( "/" );
                         out.write( separator );
-                       
-                        
                         final List<Domain> domain_list = new ArrayList<Domain>();
-                        
                         for( final Domain domain : protein.getProteinDomains() ) {
-                            if ( domain_e_cutoff < 0 || domain.getPerDomainEvalue() <= domain_e_cutoff ) {
+                            if ( ( domain_e_cutoff < 0 ) || ( domain.getPerDomainEvalue() <= domain_e_cutoff ) ) {
                                 domain_list.add( domain );
                             }
                         }
-                        
-                        Domain domain_ary[] = new Domain[ domain_list.size() ];
-                        
+                        final Domain domain_ary[] = new Domain[ domain_list.size() ];
                         for( int i = 0; i < domain_list.size(); ++i ) {
                             domain_ary[ i ] = domain_list.get( i );
                         }
-                        
                         Arrays.sort( domain_ary, new DomainComparator( true ) );
-                       
                         out.write( "{" );
                         boolean first = true;
-                        
                         for( final Domain domain : domain_ary ) {
                             if ( first ) {
                                 first = false;
@@ -1250,7 +1235,7 @@ public final class SurfacingUtil {
                                 out.write( "," );
                             }
                             out.write( domain.getDomainId().toString() );
-                            out.write( ":" + domain.getFrom() +  "-" + domain.getTo() );
+                            out.write( ":" + domain.getFrom() + "-" + domain.getTo() );
                             out.write( ":" + domain.getPerDomainEvalue() );
                         }
                         out.write( "}" );
@@ -1265,7 +1250,6 @@ public final class SurfacingUtil {
                         }
                         out.write( SurfacingConstants.NL );
                     }
-                    
                 }
             }
         }
@@ -2656,7 +2640,6 @@ public final class SurfacingUtil {
 
         @Override
         public final int compare( final Domain d0, final Domain d1 ) {
-
             if ( d0.getFrom() < d1.getFrom() ) {
                 return _ascending ? -1 : 1;
             }
@@ -2664,13 +2647,6 @@ public final class SurfacingUtil {
                 return _ascending ? 1 : -1;
             }
             return 0;
-
         }
-
     }
 }
-
-
-
-
-

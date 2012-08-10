@@ -22,15 +22,12 @@ public final class InferenceManager {
     }
 
     public boolean canDoMsa() {
-        return ( getPathToLocalMafft() != null ) 
-                || ( getPathToLocalClustalo() != null );
+        return ( getPathToLocalMafft() != null ) || ( getPathToLocalClustalo() != null );
     }
 
     public File getPathToLocalMafft() {
         return _path_to_local_mafft;
     }
-
-    
 
     public File getPathToLocalFastme() {
         return _path_to_local_fastme;
@@ -78,7 +75,6 @@ public final class InferenceManager {
                               final File path_to_local_raxml,
                               final File path_to_local_clustalo ) {
         _path_to_local_mafft = createLocalPath( path_to_local_mafft, "mafft" );
-      
         _path_to_local_fastme = createLocalPath( path_to_local_fastme, "fastme" );
         _path_to_local_raxml = createLocalPath( path_to_local_raxml, "raxml" );
         _path_to_local_clustalo = createLocalPath( path_to_local_clustalo, "clustalo" );

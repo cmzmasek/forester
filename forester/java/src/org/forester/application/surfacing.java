@@ -44,7 +44,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.Format;
 import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
@@ -224,7 +223,7 @@ public class surfacing {
     final static private long                                 JACKNIFE_RANDOM_SEED_DEFAULT                                                  = 19;
     final static private double                               JACKNIFE_RATIO_DEFAULT                                                        = 0.5;
     //final static private String  INFER_SPECIES_TREES_OPTION                                             = "species_tree_inference";
-     final static private String                               FILTER_POSITIVE_OPTION                                                        = "pos_filter";
+    final static private String                               FILTER_POSITIVE_OPTION                                                        = "pos_filter";
     final static private String                               FILTER_NEGATIVE_OPTION                                                        = "neg_filter";
     final static private String                               FILTER_NEGATIVE_DOMAINS_OPTION                                                = "neg_dom_filter";
     final static private String                               INPUT_FILES_FROM_FILE_OPTION                                                  = "input";
@@ -252,9 +251,7 @@ public class surfacing {
     private static final String                               PLUS_MINUS_ALL_GO_IDS_DOM_SUFFIX                                              = "_plus_minus_go_ids_all.txt";
     private static final String                               PLUS_MINUS_PASSING_GO_IDS_DOM_SUFFIX                                          = "_plus_minus_go_ids_passing.txt";
     private static final String                               OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS                                           = "all_prot";
-    final static private String                               OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION = "all_prot_e";
-    
-    
+    final static private String                               OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION                         = "all_prot_e";
     private static final boolean                              VERBOSE                                                                       = false;
     private static final String                               OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX              = "_fitch_dc_gains_counts";
     private static final String                               OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX                = "_fitch_dc_losses_counts";
@@ -544,8 +541,6 @@ public class surfacing {
         }
         return intrees;
     }
-
-   
 
     private static void log( final String msg, final Writer w ) {
         try {
@@ -861,7 +856,8 @@ public class surfacing {
             //
             if ( cla.isOptionSet( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION ) ) {
                 try {
-                    output_list_of_all_proteins_per_domain_e_value_max = cla.getOptionValueAsDouble( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION );
+                    output_list_of_all_proteins_per_domain_e_value_max = cla
+                            .getOptionValueAsDouble( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION );
                 }
                 catch ( final Exception e ) {
                     ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for per domain E-value maximum" );
@@ -916,7 +912,6 @@ public class surfacing {
                                              + "=<ordered domain sequences, domain ids separated by '~', sequences separated by '#'>" );
             }
             query_domain_ids = cla.getOptionValue( surfacing.SEQ_EXTRACT_OPTION );
-           
         }
         DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field = DOMAIN_SORT_FILD_DEFAULT;
         DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field_for_automated_pwc = DOMAIN_SORT_FILD_DEFAULT;
@@ -1389,9 +1384,10 @@ public class surfacing {
             System.out.println( "E-value maximum (inclusive) : " + e_value_max );
             html_desc.append( "<tr><td>E-value maximum (inclusive):</td><td>" + e_value_max + "</td></tr>" + nl );
         }
-        if ( output_protein_lists_for_all_domains  ) {
+        if ( output_protein_lists_for_all_domains ) {
             System.out.println( "Domain E-value max          : " + output_list_of_all_proteins_per_domain_e_value_max );
-            html_desc.append( "<tr><td>Protein lists: E-value maximum per domain (inclusive):</td><td>" + output_list_of_all_proteins_per_domain_e_value_max + "</td></tr>" + nl );
+            html_desc.append( "<tr><td>Protein lists: E-value maximum per domain (inclusive):</td><td>"
+                    + output_list_of_all_proteins_per_domain_e_value_max + "</td></tr>" + nl );
         }
         System.out.println( "Ignore DUFs                 : " + ignore_dufs );
         if ( ignore_virus_like_ids ) {
@@ -2331,13 +2327,14 @@ public class surfacing {
                                       protein_lists_per_species,
                                       domain_id_to_go_ids_map,
                                       go_id_to_term_map,
-                                      plus_minus_analysis_numbers
-                                       );
+                                      plus_minus_analysis_numbers );
         }
         if ( output_protein_lists_for_all_domains ) {
-            writeProteinListsForAllSpecies( out_dir, protein_lists_per_species, gwcd_list, output_list_of_all_proteins_per_domain_e_value_max );
+            writeProteinListsForAllSpecies( out_dir,
+                                            protein_lists_per_species,
+                                            gwcd_list,
+                                            output_list_of_all_proteins_per_domain_e_value_max );
         }
-       
         if ( all_bin_domain_combinations_gained_fitch != null ) {
             try {
                 executeFitchGainsAnalysis( new File( output_file
@@ -2502,7 +2499,6 @@ public class surfacing {
         }
     }
 
-  
     private static void printHelp() {
         System.out.println();
         System.out.println( "Usage:" );
@@ -2590,8 +2586,8 @@ public class surfacing {
         System.out.println( surfacing.DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS
                 + ": to output binary domain combinations for (downstream) graph analysis" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
-        System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION + ": e value max per domain for output of all proteins per domain" );
-        
+        System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION
+                + ": e value max per domain for output of all proteins per domain" );
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
@@ -2787,7 +2783,7 @@ public class surfacing {
                                                    proteins_file_writer,
                                                    "\t",
                                                    LIMIT_SPEC_FOR_PROT_EX,
-                                                    domain_e_cutoff );
+                                                   domain_e_cutoff );
                 proteins_file_writer.close();
             }
             catch ( final IOException e ) {

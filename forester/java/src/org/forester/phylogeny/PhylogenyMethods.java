@@ -62,19 +62,14 @@ import org.forester.util.ForesterUtil;
 
 public class PhylogenyMethods {
 
-    private static PhylogenyMethods _instance      = null;
-
-    private PhylogenyNode           _farthest_1    = null;
-    private PhylogenyNode           _farthest_2    = null;
+    private static PhylogenyMethods _instance   = null;
+    private PhylogenyNode           _farthest_1 = null;
+    private PhylogenyNode           _farthest_2 = null;
 
     private PhylogenyMethods() {
         // Hidden constructor.
     }
 
-    
-    
-    
-    
     /**
      * Calculates the distance between PhylogenyNodes node1 and node2.
      * 
@@ -119,13 +114,10 @@ public class PhylogenyMethods {
         return farthest_d;
     }
 
-    final public static Event getEventAtLCA( PhylogenyNode n1,
-                                             PhylogenyNode n2 ) {
+    final public static Event getEventAtLCA( final PhylogenyNode n1, final PhylogenyNode n2 ) {
         return obtainLCA( n1, n2 ).getNodeData().getEvent();
     }
-    
-    
-    
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
@@ -139,29 +131,24 @@ public class PhylogenyMethods {
         return _farthest_2;
     }
 
-    final public static void deleteNonOrthologousExternalNodes( final Phylogeny phy,
-                                                                final PhylogenyNode n) {
+    final public static void deleteNonOrthologousExternalNodes( final Phylogeny phy, final PhylogenyNode n ) {
         if ( n.isInternal() ) {
             throw new IllegalArgumentException( "node is not external" );
         }
-        
         final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
-        for ( PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+        for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode i = it.next();
             if ( !PhylogenyMethods.getEventAtLCA( n, i ).isSpeciation() ) {
-                to_delete.add( i ); 
+                to_delete.add( i );
             }
         }
-        for( PhylogenyNode d : to_delete ) {
+        for( final PhylogenyNode d : to_delete ) {
             phy.deleteSubtree( d, true );
         }
         phy.clearHashIdToNodeMap();
         phy.externalNodesHaveChanged();
-        
     }
-    
-    
-    
+
     /**
      * Returns the LCA of PhylogenyNodes node1 and node2.
      * 
