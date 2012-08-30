@@ -68,6 +68,7 @@ public final class PhylogenyDecorator {
                                                                             .compile( "^([a-fA-Z0-9]{1,5})_([A-Z0-9]{2,4}[A-Z])(\\d{1,4})$" );
     public final static boolean  SANITIZE                           = false;
     public final static boolean  VERBOSE                            = true;
+    private static final boolean CUT                                = true;
 
     private PhylogenyDecorator() {
         // Not needed.
@@ -239,6 +240,24 @@ public final class PhylogenyDecorator {
                 if ( intermediate_map != null ) {
                     name = PhylogenyDecorator.extractIntermediate( intermediate_map, name );
                 }
+                // int space_index = name.indexOf( " " );
+                //                if ( CUT && space_index > 0 ) {
+                //                    int y = name.lastIndexOf( "|" );
+                //                    name = name.substring( y + 1, space_index );
+                //                }
+                //                String new_value = null;
+                //                for( String key : map.keySet() ) {
+                //                    if ( key.indexOf( name ) >= 0 ) {
+                //                        if ( new_value == null ) {
+                //                            new_value = map.get( key );
+                //                        }
+                //                        else {
+                //                            System.out.println( name + " is not unique" );
+                //                            System.exit( -1 );
+                //                        }
+                //                    }
+                //                }
+                // if ( new_value != null ) {
                 if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) ) {
                     String new_value = map.get( name );
                     int x = 0;
