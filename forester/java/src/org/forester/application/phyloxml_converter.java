@@ -68,9 +68,10 @@ public class phyloxml_converter {
     final static private String  ORDER_SUBTREES                    = "o";
     final static private String  NO_TREE_LEVEL_INDENDATION         = "ni";
     final static private String  REPLACE_UNDER_SCORES              = "ru";
+    final static private String  IGNORE_QUOTES                     = "iqs";
     final static private String  PRG_NAME                          = "phyloxml_converter";
-    final static private String  PRG_VERSION                       = "1.30";
-    final static private String  PRG_DATE                          = "2011.03.01";
+    final static private String  PRG_VERSION                       = "1.301";
+    final static private String  PRG_DATE                          = "2012.08.31";
     final static private String  E_MAIL                            = "phylosoft@gmail.com";
     final static private String  WWW                               = "www.phylosoft.org/forester/";
     final static private boolean SPECIAL                           = false;
@@ -104,6 +105,7 @@ public class phyloxml_converter {
         allowed_options.add( REPLACE_UNDER_SCORES );
         allowed_options.add( EXTRACT_TAXONOMY );
         allowed_options.add( EXTRACT_TAXONOMY_PF );
+        allowed_options.add( IGNORE_QUOTES );
         if ( cla.getNumberOfNames() != 2 ) {
             System.out.println();
             System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
@@ -157,6 +159,10 @@ public class phyloxml_converter {
         else {
             ForesterUtil.fatalError( PRG_NAME, "unknown value for -\"" + FIELD_OPTION + "\" option: \""
                     + field_option_value + "\"" );
+        }
+        boolean ignore_quotes = false;
+        if ( cla.isOptionSet( IGNORE_QUOTES ) ) {
+            ignore_quotes = true;
         }
         boolean int_values_are_boots = false;
         if ( cla.isOptionSet( INTERNAL_NAMES_ARE_BOOT_SUPPPORT ) ) {
@@ -216,7 +222,7 @@ public class phyloxml_converter {
                     ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
                 }
                 ( ( NHXParser ) parser ).setReplaceUnderscores( replace_underscores );
-                ( ( NHXParser ) parser ).setIgnoreQuotes( false );
+                ( ( NHXParser ) parser ).setIgnoreQuotes( ignore_quotes );
             }
             else if ( parser instanceof NexusPhylogeniesParser ) {
                 ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( replace_underscores );
@@ -377,21 +383,22 @@ public class phyloxml_converter {
         System.out.println();
         System.out.println( " options: " );
         System.out.println( " -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT
-                + " : internal names in NH or NHX tree are bootstrap support values" );
-        System.out.println( " -" + REPLACE_UNDER_SCORES + ": replace all underscores with spaces" );
-        System.out.println( " -" + MIDPOINT_REROOT + " : midpoint reroot" );
-        System.out.println( " -" + ORDER_SUBTREES + " : order subtrees" );
+                + "  : internal names in NH or NHX tree are bootstrap support values" );
+        System.out.println( " -" + REPLACE_UNDER_SCORES + " : replace all underscores with spaces" );
+        System.out.println( " -" + MIDPOINT_REROOT + "  : midpoint reroot" );
+        System.out.println( " -" + ORDER_SUBTREES + "  : order subtrees" );
         System.out
                 .println( " -"
                         + EXTRACT_TAXONOMY
-                        + ": extract taxonomy to taxonomy code from \"seqname_TAXON\"-style names (cannot be used with the following field options: "
+                        + " : extract taxonomy to taxonomy code from \"seqname_TAXON\"-style names (cannot be used with the following field options: "
                         + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
         System.out
                 .println( " -"
                         + EXTRACT_TAXONOMY_PF
-                        + ": extract taxonomy to taxonomy code from Pfam (\"seqname_TAXON/x-y\") style names only (cannot be used with the following field options: "
+                        + " : extract taxonomy to taxonomy code from Pfam (\"seqname_TAXON/x-y\") style names only (cannot be used with the following field options: "
                         + FIELD_TAXONOMY_CODE + ", " + FIELD_TAXONOMY_COMM_NAME + ", " + FIELD_TAXONOMY_SCI_NAME + ")" );
-        System.out.println( " -" + NO_TREE_LEVEL_INDENDATION + ": no tree level indendation in phyloXML output" );
+        System.out.println( " -" + NO_TREE_LEVEL_INDENDATION + " : no tree level indendation in phyloXML output" );
+        System.out.println( " -" + IGNORE_QUOTES + ": ignore quotes and whitespace (e.g. \"a b\" becomes ab)" );
         System.out.println();
     }
 }
