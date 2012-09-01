@@ -134,6 +134,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _paste_subtree_item;
     private int                  _add_new_node_item;
     private int                  _edit_node_data_item;
+    private int                  _get_ext_desc_data;
     private int                  _blast_item;
     // zooming and quick tree manipulation buttons:
     private JButton              _zoom_in_x;
@@ -1186,6 +1187,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         else if ( action == _edit_node_data_item ) {
             setActionWhenNodeClicked( NodeClickAction.EDIT_NODE_DATA );
         }
+        else if ( action == _get_ext_desc_data ) {
+            setActionWhenNodeClicked( NodeClickAction.GET_EXT_DESC_DATA );
+        }
         else {
             throw new RuntimeException( "unknown action: " + action );
         }
@@ -1371,6 +1375,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             _blast_item = cb_index;
             addClickToOption( Configuration.blast, _configuration.getClickToTitle( Configuration.blast ) );
             if ( default_option == Configuration.blast ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
+            _get_ext_desc_data = cb_index;
+            addClickToOption( Configuration.get_ext_desc_data,
+                              _configuration.getClickToTitle( Configuration.get_ext_desc_data ) );
+            if ( default_option == Configuration.get_ext_desc_data ) {
                 selected_index = cb_index;
             }
             cb_index++;
@@ -1957,6 +1970,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         ADD_NEW_NODE,
         EDIT_NODE_DATA,
         SORT_DESCENDENTS,
+        GET_EXT_DESC_DATA,
         BLAST;
     }
 }

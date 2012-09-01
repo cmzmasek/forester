@@ -1337,9 +1337,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case SORT_DESCENDENTS:
                 sortDescendants( node );
                 break;
+            case GET_EXT_DESC_DATA:
+                getExtDescNodeData( node );
+                break;
             default:
                 throw new IllegalArgumentException( "unknown action: " + action );
         }
+    }
+
+    private void getExtDescNodeData( final PhylogenyNode node ) {
+        System.out.println( node.toString() );
     }
 
     final void increaseDomainStructureEvalueThreshold() {
