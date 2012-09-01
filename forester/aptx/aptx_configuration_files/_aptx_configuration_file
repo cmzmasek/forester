@@ -177,22 +177,23 @@ show_vector_data:               display   no
 #  Combo-box Display Selection
 #  ---------------------------
 #  Format: 'name: display/nodisplay'
-click_to: display_node_data    display
-click_to: collapse_uncollapse  display
-click_to: reroot               display
-click_to: subtree              display
-click_to: swap                 display
-click_to: sort_descendants     display
-click_to: color_subtree        display
-click_to: open_seq_web         display
-click_to: open_tax_web         display
-click_to: blast                display
-click_to: cut_subtree          display
-click_to: copy_subtree         display
-click_to: paste_subtree        display
-click_to: delete               display
-click_to: add_new_node         display
-click_to: edit_node_data       display
+click_to: display_node_data        display
+click_to: collapse_uncollapse      display
+click_to: reroot                   display
+click_to: subtree                  display
+click_to: swap                     display
+click_to: sort_descendants         display
+click_to: color_subtree            display
+click_to: open_seq_web             display
+click_to: open_tax_web             display
+click_to: blast                    display
+click_to: cut_subtree              display
+click_to: copy_subtree             display
+click_to: paste_subtree            display
+click_to: delete                   display
+click_to: add_new_node             display
+click_to: edit_node_data           display
+click_to: get_ext_descendents_data display
 
 #   Default click-to option (any of the above if set to "display")
 default_click_to: display_node_data
