@@ -38,6 +38,9 @@ import org.forester.util.ForesterUtil;
 
 public class NodeData implements PhylogenyData {
 
+    public enum NODE_DATA {
+        NODE_NAME, EVENT, SEQUENCE_NAME, SEQUENCE_SYMBOL, SEQUENCE_MOL_SEQ, SEQUENCE_ACC;
+    }
     private String                  _node_name;
     private Event                   _event;
     private List<Sequence>          _sequences;

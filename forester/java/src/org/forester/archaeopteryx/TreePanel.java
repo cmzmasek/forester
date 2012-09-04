@@ -1346,7 +1346,39 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private void getExtDescNodeData( final PhylogenyNode node ) {
-        System.out.println( node.toString() );
+        for( final PhylogenyNode n : node.getAllExternalDescendants() ) {
+            switch ( getOptions().getExtDescNodeDataToReturn() ) {
+                case NODE_NAME:
+                    System.out.println( n.getName() );
+                    break;
+                case SEQUENCE_NAME:
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+                        System.out.println( n.getNodeData().getSequence().getName() );
+                    }
+                    break;
+                case SEQUENCE_SYMBOL:
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
+                        System.out.println( n.getNodeData().getSequence().getSymbol() );
+                    }
+                    break;
+                case SEQUENCE_MOL_SEQ:
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        System.out.println( n.getNodeData().getSequence().getMolecularSequence() );
+                    }
+                    break;
+                case SEQUENCE_ACC:
+                    if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null ) ) {
+                        System.out.println( n.getNodeData().getSequence().getAccession().toString() );
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException( "unknown data element: "
+                            + getOptions().getExtDescNodeDataToReturn() );
+            }
+        }
     }
 
     final void increaseDomainStructureEvalueThreshold() {

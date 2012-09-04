@@ -28,6 +28,8 @@ package org.forester.archaeopteryx;
 import java.awt.Font;
 
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.data.NodeData;
+import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualization;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
@@ -78,6 +80,7 @@ final public class Options {
     private boolean                           _show_default_node_shapes;
     private boolean                           _show_confidence_stddev;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
+    private NODE_DATA                         _ext_desc_data_to_return;
 
     private Options() {
         init();
@@ -189,6 +192,7 @@ final public class Options {
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = true;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
+        _ext_desc_data_to_return = NODE_DATA.NODE_NAME;
     }
 
     boolean isShowConfidenceStddev() {
@@ -515,6 +519,9 @@ final public class Options {
             }
             instance.setTaxonomyColorizeNodeShapes( configuration.isTaxonomyColorizeNodeShapes() );
             instance.setShowDefaultNodeShapes( configuration.isShowDefaultNodeShapes() );
+            if ( configuration.getExtDescNodeDataToReturn() != null ) {
+                instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
+            }
         }
         return instance;
     }
@@ -551,5 +558,13 @@ final public class Options {
 
     public static enum PHYLOGENY_GRAPHICS_TYPE {
         RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
+    }
+
+    public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
+        return _ext_desc_data_to_return;
+    }
+
+    public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
+        _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 }
