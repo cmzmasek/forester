@@ -69,6 +69,13 @@ native_ui: ?
 #     Possible values: solid
 #                      gradient
 #                      none
+#  To determine what data field to return by clicking on "return external descendents data":
+#     'ext_descendents_data_to_return'
+#     Possible values: node_name
+#                      sequence_name
+#                      sequence_acc
+#                      sequence_mol_seq
+#                      sequence_symbol
 #  Taxonomy colorization of nodes (shapes) instead of labels: 'taxonomy_colorize_node_shapes': values: 'yes'/'no'
 #  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
 #  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
@@ -84,6 +91,7 @@ native_ui: ?
 #     during NH/NHX/Nexus file parsing (application only): 'extract_pfam_tax_codes_in_nh_parsing'
 #  Internal node labels are confidence values during NH/NHX/Nexus file parsing (application only):
 #     'internal_labels_are_confidence_values'
+
 
 
 min_confidence_value:                      0.0
@@ -118,7 +126,7 @@ allow_editing:                             yes
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 extract_taxonomy_codes_in_nh_parsing:      yes
-
+ext_descendents_data_to_return:            sequence_mol_seq
 
 
 #  phyloXML parsing
