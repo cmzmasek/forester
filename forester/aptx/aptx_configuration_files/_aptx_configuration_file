@@ -126,7 +126,7 @@ allow_editing:                             yes
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 extract_taxonomy_codes_in_nh_parsing:      yes
-ext_descendents_data_to_return:            sequence_mol_seq
+ext_descendents_data_to_return:            sequence_name
 
 
 #  phyloXML parsing
@@ -419,43 +419,7 @@ domain_color: PAAD_DAPIN    0x9999CC
 domain_color: NB-ARC        0x500050
 domain_color: WD40          0x888888
 domain_color: RVT_1         0x999900
-domain_color: NOPS          0x505000
-domain_color: RRM_1         0x004400
-domain_color: fn3           0xFFCC00
-domain_color: Ank           0xCC33FF
-domain_color: Pkinase       0x339900
-domain_color: Pkinase_Tyr   0x336600
-domain_color: ig            0x660066
-domain_color: zf-C3HC4      0x6699FF
-domain_color: zf-CCHC       0x6699EE
-domain_color: zf-C2H2       0x6699CC
-domain_color: zf-B_box      0x6699DD
-domain_color: PDZ           0x66FFCC
-domain_color: SH3_2         0x996600
-domain_color: MIRO          0xCCFF00
-domain_color: Myb_DNA-binding 0xDDDDDD
-domain_color: NHL           0x336666
-domain_color: PKD_channel   0x336666
-domain_color: Ion_trans     0x996666
-domain_color: CAP_GLY       0xCC9900
-domain_color: LRR_1         0xFFFF99
-domain_color: LRR_2         0xFFFF66
-domain_color: LRR_3         0xFFFF33
-domain_color: LRR_adjacent  0xFFFF00
-domain_color: LRRCT         0xFFCC99
-domain_color: LRRNT         0xFFCC66
-domain_color: LRRNT_2       0xFFCC33
-domain_color: Ank           0x990099
-domain_color: Sushi         0x004400
-domain_color: ZU5           0xFF9999
-domain_color: V-set         0x3399FF
-domain_color: TPR_1         0xFF1493
-domain_color: TPR_2         0xFF69B4
-domain_color: TPR_3         0xCD6090
-domain_color: TPR_4         0xFF6A6A
-domain_color: TPR_MLP1_2    0x33FF00
-domain_color: Collagen      0xFF7F00
-domain_color: MIF           0xADD8E6
+
 
 
 #  Annotation colors
