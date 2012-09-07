@@ -77,6 +77,6 @@ module Evoruby
     end
   end
   w = FastaWriter.new
-  w.write(unique_genes_msa, "uniques.fasta")
-  w.write(longest_non_unique_genes_msa, "non_uniques_longest.fasta")
+  w.write(unique_genes_msa, "seqs_from_unique_genes.fasta")
+  w.write(longest_non_unique_genes_msa, "longest_seqs_from_nonunique_genes.fasta")
 end
