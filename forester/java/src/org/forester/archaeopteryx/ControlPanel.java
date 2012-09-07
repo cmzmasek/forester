@@ -212,6 +212,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 displayedPhylogenyMightHaveChanged( false );
             }
+            else if ( e.getSource() == _show_domain_architectures ) {
+                search();
+                displayedPhylogenyMightHaveChanged( false );
+            }
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
                 if ( e.getSource() == getDisplayAsPhylogramCb() ) {
                     setDrawPhylogram( getDisplayAsPhylogramCb().isSelected() );
@@ -950,14 +954,18 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 query = query.trim();
                 if ( query.indexOf( '+' ) >= 0 ) {
-                    nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ), tree, getOptions()
-                            .isSearchCaseSensitive(), !getOptions().isMatchWholeTermsOnly() ) );
+                    nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
+                                                                         tree,
+                                                                         getOptions().isSearchCaseSensitive(),
+                                                                         !getOptions().isMatchWholeTermsOnly(),
+                                                                         isShowDomainArchitectures() ) );
                 }
                 else {
                     nodes.addAll( PhylogenyMethods.searchData( query,
                                                                tree,
                                                                getOptions().isSearchCaseSensitive(),
-                                                               !getOptions().isMatchWholeTermsOnly() ) );
+                                                               !getOptions().isMatchWholeTermsOnly(),
+                                                               isShowDomainArchitectures() ) );
                 }
             }
             if ( getOptions().isInverseSearchResult() ) {

@@ -55,6 +55,7 @@ public final class decorator {
     private static final String  NODE_NAME_FIELD                        = "n";
     final static private String  PICKY_OPTION                           = "p";
     final static private String  FIELD_OPTION                           = "f";
+    final static private String  TRIM_AFTER_TILDE_OPTION                = "t";
     final static private String  MOVE_DOMAIN_NUMBER_OPTION              = "mdn";       // Hidden expert option.
     final static private String  TREE_NAME_OPTION                       = "pn";
     final static private String  TREE_ID_OPTION                         = "pi";
@@ -112,6 +113,7 @@ public final class decorator {
         System.out.println( " -" + decorator.PROCESS_SIMILAR_TO_OPTION
                 + "    : process name \"intelligently\" and process information after \"similar to\" (only for -f=n)" );
         System.out.println( " -c     : cut name after first space (only for -f=n)" );
+        System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION + "    : trim after tilde" );
         System.out.println();
         System.exit( -1 );
     }
@@ -153,6 +155,7 @@ public final class decorator {
         allowed_options.add( decorator.TREE_ID_OPTION );
         allowed_options.add( decorator.TREE_DESC_OPTION );
         allowed_options.add( decorator.MOVE_DOMAIN_NUMBER_OPTION );
+        allowed_options.add( decorator.TRIM_AFTER_TILDE_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( decorator.PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -184,6 +187,7 @@ public final class decorator {
         boolean process_similar_to = false;
         boolean extract_bracketed_scientific_name = false;
         boolean move_domain_numbers_at_end_to_middle = false;
+        boolean trim_after_tilde = false;
         String tree_name = "";
         String tree_id = "";
         String tree_desc = "";
@@ -232,6 +236,12 @@ public final class decorator {
                     argumentsError();
                 }
                 process_similar_to = true;
+            }
+            if ( cla.isOptionSet( decorator.TRIM_AFTER_TILDE_OPTION ) ) {
+                if ( advanced_table ) {
+                    argumentsError();
+                }
+                trim_after_tilde = true;
             }
             if ( cla.isOptionSet( decorator.ALLOW_REMOVAL_OF_CHARS_OPTION ) ) {
                 numbers_of_chars_allowed_to_remove_if_not_found_in_map = cla
@@ -362,7 +372,8 @@ public final class decorator {
                                              process_name_intelligently,
                                              process_similar_to,
                                              numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                             move_domain_numbers_at_end_to_middle );
+                                             move_domain_numbers_at_end_to_middle,
+                                             trim_after_tilde );
             }
         }
         catch ( final NullPointerException e ) {

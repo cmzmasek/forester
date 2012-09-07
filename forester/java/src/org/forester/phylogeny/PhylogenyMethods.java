@@ -1331,7 +1331,8 @@ public class PhylogenyMethods {
     public static List<PhylogenyNode> searchData( final String query,
                                                   final Phylogeny phy,
                                                   final boolean case_sensitive,
-                                                  final boolean partial ) {
+                                                  final boolean partial,
+                                                  final boolean search_domains ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( phy.isEmpty() || ( query == null ) ) {
             return nodes;
@@ -1391,7 +1392,7 @@ public class PhylogenyMethods {
                               partial ) ) {
                 match = true;
             }
-            if ( !match && node.getNodeData().isHasSequence()
+            if ( search_domains && !match && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                 final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                 I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
@@ -1427,7 +1428,8 @@ public class PhylogenyMethods {
     public static List<PhylogenyNode> searchDataLogicalAnd( final String[] queries,
                                                             final Phylogeny phy,
                                                             final boolean case_sensitive,
-                                                            final boolean partial ) {
+                                                            final boolean partial,
+                                                            final boolean search_domains ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( phy.isEmpty() || ( queries == null ) || ( queries.length < 1 ) ) {
             return nodes;
@@ -1490,7 +1492,7 @@ public class PhylogenyMethods {
                                   partial ) ) {
                     match = true;
                 }
-                if ( !match && node.getNodeData().isHasSequence()
+                if ( search_domains && !match && node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
                     final DomainArchitecture da = node.getNodeData().getSequence().getDomainArchitecture();
                     I: for( int i = 0; i < da.getNumberOfDomains(); ++i ) {
@@ -1515,22 +1517,6 @@ public class PhylogenyMethods {
                             break I;
                         }
                     }
-                    //                    final String[] bcp_ary = node.getNodeData().getBinaryCharacters()
-                    //                            .getPresentCharactersAsStringArray();
-                    //                    I: for( final String bc : bcp_ary ) {
-                    //                        if ( match( bc, query, case_sensitive, partial ) ) {
-                    //                            match = true;
-                    //                            break I;
-                    //                        }
-                    //                    }
-                    //                    final String[] bcg_ary = node.getNodeData().getBinaryCharacters()
-                    //                            .getGainedCharactersAsStringArray();
-                    //                    I: for( final String bc : bcg_ary ) {
-                    //                        if ( match( bc, query, case_sensitive, partial ) ) {
-                    //                            match = true;
-                    //                            break I;
-                    //                        }
-                    //                    }
                 }
                 if ( !match ) {
                     all_matched = false;

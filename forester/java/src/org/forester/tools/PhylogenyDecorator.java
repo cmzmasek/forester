@@ -188,8 +188,9 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException, PhyloXmlDataFormatException {
+                                 final boolean move_domain_numbers_at_end_to_middle,
+                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+            PhyloXmlDataFormatException {
         PhylogenyDecorator.decorate( phylogeny,
                                      map,
                                      field,
@@ -200,7 +201,8 @@ public final class PhylogenyDecorator {
                                      process_name_intelligently,
                                      process_similar_to,
                                      numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                     move_domain_numbers_at_end_to_middle );
+                                     move_domain_numbers_at_end_to_middle,
+                                     trim_after_tilde );
     }
 
     /**
@@ -228,7 +230,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
+                                 final boolean move_domain_numbers_at_end_to_middle,
+                                 final boolean trim_after_tilde ) throws IllegalArgumentException,
             PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "Attempt to extract bracketed scientific name together with data field pointing to scientific name" );
@@ -236,6 +239,9 @@ public final class PhylogenyDecorator {
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             String name = node.getName();
+            if ( trim_after_tilde && ( name.indexOf( '~' ) > 0 ) ) {
+                name = name.substring( 0, name.indexOf( '~' ) );
+            }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
                     name = PhylogenyDecorator.extractIntermediate( intermediate_map, name );
@@ -384,8 +390,9 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException, PhyloXmlDataFormatException {
+                                 final boolean move_domain_numbers_at_end_to_middle,
+                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+            PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
             PhylogenyDecorator.decorate( phylogenies[ i ],
                                          map,
@@ -396,7 +403,8 @@ public final class PhylogenyDecorator {
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         move_domain_numbers_at_end_to_middle );
+                                         move_domain_numbers_at_end_to_middle,
+                                         trim_after_tilde );
         }
     }
 
@@ -410,8 +418,9 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle ) throws IllegalArgumentException,
-            NHXFormatException, PhyloXmlDataFormatException {
+                                 final boolean move_domain_numbers_at_end_to_middle,
+                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+            PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
             PhylogenyDecorator.decorate( phylogenies[ i ],
                                          map,
@@ -423,7 +432,8 @@ public final class PhylogenyDecorator {
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         move_domain_numbers_at_end_to_middle );
+                                         move_domain_numbers_at_end_to_middle,
+                                         trim_after_tilde );
         }
     }
 
