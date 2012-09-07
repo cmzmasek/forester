@@ -1,0 +1,82 @@
+#!/usr/local/bin/ruby -w
+
+
+require 'lib/evo/sequence/sequence'
+require 'lib/evo/msa/msa'
+require 'lib/evo/msa/msa_factory'
+require 'lib/evo/io/writer/fasta_writer'
+require 'lib/evo/io/parser/fasta_parser'
+
+
+module Evoruby
+
+  input = ARGV[ 0 ]
+  f = MsaFactory.new()
+
+  msa = nil
+
+  begin
+    msa = f.create_msa_from_file( input, FastaParser.new() )
+  rescue Exception => e
+    puts "error: " + e.to_s
+    exit
+  end
+
+  gn_to_seqs = Hash.new
+  unique_genes_msa = Msa.new
+  longest_non_unique_genes_msa = Msa.new
+  gn_re = /GN=(\S+)/
+  fragment_re = /fragment/i
+
+  frag_counter = 0
+
+  for i in 0 ... msa.get_number_of_seqs()
+    seq = msa.get_sequence( i )
+    name = seq.get_name
+
+    if fragment_re.match( name )
+      frag_counter += 1
+      next
+    end
+    gn_match = gn_re.match( name )
+    unless gn_match
+      puts "no match in " + name
+      exit
+    end
+    gn = gn_match[1]
+    unless gn_to_seqs.has_key?(gn)
+      gn_to_seqs[gn] = Msa.new
+    end
+    gn_to_seqs[gn].add_sequence(seq)
+  end
+
+  puts "Sequeunces ignored because \"fragment\" in desc: " + frag_counter.to_s
+  puts
+  puts
+
+  counter = 1
+  gn_to_seqs.each_pair do |gene,seqs|
+    if seqs.get_number_of_seqs > 1
+      puts counter.to_s + ": " + gene
+      puts seqs.to_fasta
+      puts
+      puts
+      counter += 1
+      longest = 0
+      longest_seq = nil
+      for j in 0 ... seqs.get_number_of_seqs()
+        current = seqs.get_sequence( j )
+        if current.get_length > longest
+          longest =  current.get_length
+          longest_seq = current
+        end
+      end
+      longest_non_unique_genes_msa.add_sequence(longest_seq)
+    else
+      unique_genes_msa.add_sequence( seqs.get_sequence( 0 ) )
+    end
+  end
+  w = FastaWriter.new
+  w.write(unique_genes_msa, "uniques.fasta")
+  w.write(longest_non_unique_genes_msa, "non_uniques_longest.fasta")
+end

@@ -155,26 +155,31 @@ module Evoruby
       @sequences.length
     end
 
-    def get_length()
-      if ( !is_aligned() )
+    def get_length
+      if !is_aligned()
         error_msg = "attempt to get length of unaligned msa"
         raise StandardError, error_msg, caller
       end
-      if ( get_number_of_seqs() < 1 )
+      if get_number_of_seqs() < 1
         -1
       else
         @sequences[ 0 ].get_length()
       end
     end
 
-    def to_str()
-      s = String.new()
-      for i in 0...get_number_of_seqs()
-        s += @sequences[ i ].to_str + Constants::LINE_DELIMITER
+    def to_str
+      to_fasta 
+    end
+
+    def to_fasta
+      s = String.new
+      for i in 0...get_number_of_seqs
+        s += @sequences[ i ].to_fasta + Constants::LINE_DELIMITER
       end
       s
     end
-
+    
+    
     def print_overlap_diagram( min_overlap = 1, io = STDOUT, max_name_length = 10 )
       if ( !is_aligned() )
         error_msg = "attempt to get overlap diagram of unaligned msa"
