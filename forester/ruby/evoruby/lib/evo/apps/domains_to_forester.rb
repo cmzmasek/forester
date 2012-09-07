@@ -56,6 +56,7 @@ module Evoruby
       File.open( domains_list_file ) do | file |
         while line = file.gets
           if !is_ignorable?( line )
+            
             a = line.split( column_delimiter )
             l = a.length
             if ( ( l < 4 ) || ( e_value_threshold >= 0.0 && l < 5 ) )
@@ -66,6 +67,14 @@ module Evoruby
             domain_name  = a[ 1 ]
             seq_from     = -1
             seq_to       = -1
+            ##########################################
+            if domain_name =~ /RRM_\d/
+              puts "ignoring " + line 
+              next
+            end
+            ##########################################
+            
+            
             begin
               seq_from = a[ 2 ].to_i
             rescue Exception
