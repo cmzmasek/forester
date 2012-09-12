@@ -29,19 +29,21 @@ module Evoruby
   fragment_re = /fragment/i
 
   frag_counter = 0
+  no_gn_counter = 0
 
   for i in 0 ... msa.get_number_of_seqs()
     seq = msa.get_sequence( i )
     name = seq.get_name
-
     if fragment_re.match( name )
+      puts "ignored because fragment: " + name
       frag_counter += 1
       next
     end
     gn_match = gn_re.match( name )
     unless gn_match
-      puts "no match in " + name
-      exit
+      puts "ignored because no GN=: " + name
+      no_gn_counter += 1
+      next
     end
     gn = gn_match[1]
     unless gn_to_seqs.has_key?(gn)
@@ -51,6 +53,7 @@ module Evoruby
   end
 
   puts "Sequeunces ignored because \"fragment\" in desc: " + frag_counter.to_s
+  puts "Sequeunces ignored because no \"GN=\" in desc  : " + no_gn_counter.to_s
   puts
   puts
 
