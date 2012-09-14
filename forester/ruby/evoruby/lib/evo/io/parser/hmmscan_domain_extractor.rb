@@ -37,7 +37,7 @@ module Evoruby
         add_domain_number_as_digit,
         add_domain_number_as_letter,
         trim_name,
-         add_species,
+        add_species,
         log )
 
       Util.check_file_for_readability( hmmsearch_output )
@@ -82,8 +82,8 @@ module Evoruby
             if domain_id != target_name
               next
             end
-            
-            
+
+
             sequence = $4
             number   = $10.to_i
             out_of   = $11.to_i
@@ -227,7 +227,7 @@ module Evoruby
         add_domain_number_as_digit,
         add_domain_number_as_letter,
         trim_name,
-        add_species      )
+        add_species )
       if ( number < 1 || out_of < 1 || number > out_of )
         error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
         raise ArgumentError, error_msg
@@ -247,11 +247,11 @@ module Evoruby
       end
       # hmmsearch is 1 based, wheres sequences are 0 bases in this package.
       seq = in_msa.get_sequence( seqs[ 0 ] ).get_subsequence( seq_from - 1, seq_to - 1 )
-      
+
       orig_name = seq.get_name
-      
+
       seq.set_name( orig_name.split[ 0 ] )
-      
+
       if add_position
         seq.set_name( seq.get_name + "_" + seq_from.to_s + "-" + seq_to.to_s )
       end
@@ -272,18 +272,18 @@ module Evoruby
         elsif ( add_domain_number )
           seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
         end
-        
+
         if add_species
           a = orig_name.rindex "["
           b = orig_name.rindex "]"
           unless a && b
-               error_msg = "species not found in " + orig_name
-               raise StandardError, error_msg
+            error_msg = "species not found in " + orig_name
+            raise StandardError, error_msg
           end
           species = orig_name[ a .. b ]
           seq.set_name( seq.get_name + " [" + species + "]" )
-        end  
-          
+        end
+
       end
 
       # if ( seq.get_name.length > 10 )

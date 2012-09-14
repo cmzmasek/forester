@@ -114,10 +114,10 @@ module Evoruby
       end
 
       add_species = false
-      if cla.is_option_set? ADD_SPECIES 
+      if cla.is_option_set? ADD_SPECIES
         add_species = true
       end
-      
+
       if ( add_domain_number_as_letter && add_domain_number_as_digit )
         puts( "attempt to add domain number as letter and digit at the same time" )
         print_help
@@ -223,7 +223,7 @@ module Evoruby
           add_domain_number_as_digit,
           add_domain_number_as_letter,
           trim,
-           add_species,
+          add_species,
           log )
       rescue ArgumentError, IOError, StandardError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
