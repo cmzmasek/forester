@@ -107,7 +107,8 @@ module Evoruby
                 add_domain_number,
                 add_domain_number_as_digit,
                 add_domain_number_as_letter,
-                trim_name )
+                trim_name ,
+                add_species )
               domain_pass_counter += 1
               count_species( sequence, passed_species_counts )
               if passed_seqs.find_by_name_start( sequence, true ).length < 1
