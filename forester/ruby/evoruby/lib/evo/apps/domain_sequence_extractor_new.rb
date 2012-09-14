@@ -30,6 +30,7 @@ module Evoruby
     ADD_DOMAIN_NUMBER_OPTION           = 'd'
     ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT  = 'dd'
     ADD_DOMAIN_NUMBER_OPTION_AS_LETTER = 'dl'
+    ADD_SPECIES                        = 's'
     TRIM_OPTION                        = 't'
     LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
     PASSED_SEQS_SUFFIX                 = '_domain_seq_extr_passed'
@@ -112,6 +113,11 @@ module Evoruby
         add_domain_number_as_digit = true
       end
 
+      add_species = false
+      if cla.is_option_set? ADD_SPECIES 
+        add_species = true
+      end
+      
       if ( add_domain_number_as_letter && add_domain_number_as_digit )
         puts( "attempt to add domain number as letter and digit at the same time" )
         print_help
@@ -217,6 +223,7 @@ module Evoruby
           add_domain_number_as_digit,
           add_domain_number_as_letter,
           trim,
+           add_species,
           log )
       rescue ArgumentError, IOError, StandardError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
@@ -258,6 +265,7 @@ module Evoruby
       puts( "           -" + ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT  + ": to add numbers to extracted domains as digit (example \"domain2\")" )
       puts( "           -" + ADD_DOMAIN_NUMBER_OPTION_AS_LETTER  + ": to add numbers to extracted domains as letter (example \"domaina\")" )
       puts( "           -" + TRIM_OPTION  + ": to remove the last 2 characters from sequence names" )
+      puts( "           -" + ADD_SPECIES  + ": to add species [in brackets]" )
       puts()
     end
 
