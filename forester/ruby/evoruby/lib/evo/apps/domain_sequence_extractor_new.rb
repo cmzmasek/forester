@@ -76,6 +76,7 @@ module Evoruby
       allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT )
       allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION_AS_LETTER )
       allowed_opts.push( TRIM_OPTION )
+      allowed_opts.push( ADD_SPECIES )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
