@@ -273,18 +273,6 @@ module Evoruby
         elsif ( add_domain_number )
           seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
         end
-
-        if add_species
-          a = orig_name.rindex "["
-          b = orig_name.rindex "]"
-          unless a && b
-            error_msg = "species not found in " + orig_name
-            raise StandardError, error_msg
-          end
-          species = orig_name[ a .. b ]
-          seq.set_name( seq.get_name + " [" + species + "]" )
-        end
-
       end
 
       # if ( seq.get_name.length > 10 )
@@ -292,7 +280,19 @@ module Evoruby
       #   raise StandardError, error_msg
       # end
 
+      if add_species
+        a = orig_name.rindex "["
+        b = orig_name.rindex "]"
+        unless a && b
+          error_msg = "species not found in " + orig_name
+          raise StandardError, error_msg
+        end
+        species = orig_name[ a .. b ]
+        seq.set_name( seq.get_name + " " + species )
+      end
+
       out_msa.add_sequence( seq )
+      
     end
 
     def count_species( sequence, species_counts_map )
