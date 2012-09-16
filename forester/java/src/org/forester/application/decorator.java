@@ -73,7 +73,7 @@ public final class decorator {
     final static private boolean USE_FIRST_SEPARATOR_ONLY               = true;
     final static private String  PRG_NAME                               = "decorator";
     final static private String  PRG_VERSION                            = "1.11";
-    final static private String  PRG_DATE                               = "2012.08.08";
+    final static private String  PRG_DATE                               = "2012.09.15";
 
     private static void argumentsError() {
         System.out.println();
@@ -85,7 +85,7 @@ public final class decorator {
         System.out.println( " -" + ADVANCED_TABLE_OPTION + " : table instead of one to one map (-f=<c>)" );
         System.out.println( " -r=<n> : allow to remove up to n characters from the end of the names" );
         System.out.println( "          in phylogenies infile if not found (in map) otherwise" );
-        System.out.println( " -p     : for picky, fails if node name not found in mapping table, default is off" );
+        System.out.println( " -p     : picky, fails if node name not found in mapping table" );
         System.out.println( " -" + TREE_NAME_OPTION + "=<s>: name for the phylogeny" );
         System.out.println( " -" + TREE_ID_OPTION + "=<s>: identifier for the phylogeny (in the form provider:value)" );
         System.out.println( " -" + TREE_DESC_OPTION + "=<s>: description for phylogenies" );
@@ -113,7 +113,8 @@ public final class decorator {
         System.out.println( " -" + decorator.PROCESS_SIMILAR_TO_OPTION
                 + "    : process name \"intelligently\" and process information after \"similar to\" (only for -f=n)" );
         System.out.println( " -c     : cut name after first space (only for -f=n)" );
-        System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION + "    : trim after tilde" );
+        System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION
+                + "     : trim node name to be replaced after tilde" );
         System.out.println();
         System.exit( -1 );
     }
@@ -313,12 +314,13 @@ public final class decorator {
         if ( !advanced_table ) {
             BasicTable<String> mapping_table = null;
             try {
-                mapping_table = BasicTableParser.parse( mapping_infile, separator, decorator.USE_FIRST_SEPARATOR_ONLY );
+                mapping_table = BasicTableParser.parse( mapping_infile, separator, false, true );
             }
             catch ( final Exception e ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME,
                                          "failed to read [" + mapping_infile + "] [" + e.getMessage() + "]" );
             }
+            System.out.println( mapping_table.toString() );
             if ( ( key_column < 0 ) || ( key_column >= mapping_table.getNumberOfColumns() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for key column" );
             }

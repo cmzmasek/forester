@@ -98,7 +98,12 @@ public class SymmetricalDistanceMatrixParser {
 
     public DistanceMatrix[] parse( final Object source ) throws IOException {
         reset();
-        final List<BasicTable<String>> tables = BasicTableParser.parse( source, VALUE_SEPARATOR, false, COMMENT, true );
+        final List<BasicTable<String>> tables = BasicTableParser.parse( source,
+                                                                        VALUE_SEPARATOR,
+                                                                        false,
+                                                                        false,
+                                                                        COMMENT,
+                                                                        true );
         final DistanceMatrix[] distance_matrices = new DistanceMatrix[ tables.size() ];
         int i = 0;
         for( final BasicTable<String> table : tables ) {

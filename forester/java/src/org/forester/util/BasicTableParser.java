@@ -39,15 +39,18 @@ public class BasicTableParser {
     }
 
     public static BasicTable<String> parse( final Object source, final String column_delimiter ) throws IOException {
-        return BasicTableParser.parse( source, column_delimiter, false, START_OF_COMMENT_LINE_DEFAULT, false ).get( 0 );
+        return BasicTableParser.parse( source, column_delimiter, false, false, START_OF_COMMENT_LINE_DEFAULT, false )
+                .get( 0 );
     }
 
     public static BasicTable<String> parse( final Object source,
                                             final String column_delimiter,
-                                            final boolean use_first_separator_only ) throws IOException {
+                                            final boolean use_first_separator_only,
+                                            final boolean use_last_separator_only ) throws IOException {
         return BasicTableParser.parse( source,
                                        column_delimiter,
                                        use_first_separator_only,
+                                       use_last_separator_only,
                                        START_OF_COMMENT_LINE_DEFAULT,
                                        false ).get( 0 );
     }
@@ -55,6 +58,7 @@ public class BasicTableParser {
     public static List<BasicTable<String>> parse( final Object source,
                                                   final String column_delimiter,
                                                   final boolean use_first_separator_only,
+                                                  final boolean use_last_separator_only,
                                                   final String start_of_comment_line,
                                                   final boolean tables_separated_by_single_string_line )
             throws IOException {
@@ -85,25 +89,36 @@ public class BasicTableParser {
             else if ( !ForesterUtil.isEmpty( line )
                     && ( !use_start_of_comment_line || !line.startsWith( start_of_comment_line ) ) ) {
                 saw_first_table = true;
-                final StringTokenizer st = new StringTokenizer( line, column_delimiter );
-                int col = 0;
-                if ( st.hasMoreTokens() ) {
-                    table.setValue( col++, row, st.nextToken().trim() );
-                }
-                if ( !use_first_separator_only ) {
-                    while ( st.hasMoreTokens() ) {
-                        table.setValue( col++, row, st.nextToken().trim() );
+                if ( use_last_separator_only ) {
+                    String e[] = line.split( column_delimiter );
+                    final StringBuffer rest = new StringBuffer();
+                    for( int i = 0; i < e.length - 1; ++i ) {
+                        rest.append( e[ i ].trim() );
                     }
+                    table.setValue( 0, row, e[ e.length - 1 ] );
+                    table.setValue( 1, row, rest.toString() );
                 }
                 else {
-                    final StringBuffer rest = new StringBuffer();
-                    while ( st.hasMoreTokens() ) {
-                        rest.append( st.nextToken() );
+                    final StringTokenizer st = new StringTokenizer( line, column_delimiter );
+                    int col = 0;
+                    if ( st.hasMoreTokens() ) {
+                        table.setValue( col++, row, st.nextToken().trim() );
                     }
-                    table.setValue( col++, row, rest.toString().trim() );
+                    if ( use_first_separator_only ) {
+                        final StringBuffer rest = new StringBuffer();
+                        while ( st.hasMoreTokens() ) {
+                            rest.append( st.nextToken() );
+                        }
+                        table.setValue( col++, row, rest.toString() );
+                    }
+                    else {
+                        while ( st.hasMoreTokens() ) {
+                            table.setValue( col++, row, st.nextToken().trim() );
+                        }
+                    }
                 }
-                ++row;
             }
+            ++row;
         }
         if ( !table.isEmpty() ) {
             tables.add( table );

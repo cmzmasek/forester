@@ -1733,6 +1733,7 @@ public final class Test {
             final List<BasicTable<String>> tl = BasicTableParser.parse( source2.toString(),
                                                                         ";",
                                                                         false,
+                                                                        false,
                                                                         "comment:",
                                                                         false );
             if ( tl.size() != 2 ) {

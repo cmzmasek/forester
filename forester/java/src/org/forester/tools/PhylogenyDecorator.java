@@ -234,7 +234,7 @@ public final class PhylogenyDecorator {
                                  final boolean trim_after_tilde ) throws IllegalArgumentException,
             PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
-            throw new IllegalArgumentException( "Attempt to extract bracketed scientific name together with data field pointing to scientific name" );
+            throw new IllegalArgumentException( "attempt to extract bracketed scientific name together with data field pointing to scientific name" );
         }
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
@@ -276,7 +276,7 @@ public final class PhylogenyDecorator {
                         new_value = new_value.trim();
                         new_value.replaceAll( "/\\s+/", " " );
                         if ( extract_bracketed_scientific_name && new_value.endsWith( "]" ) ) {
-                            extractBracketedScientificNames( node, new_value );
+                            new_value = extractBracketedScientificNames( node, new_value );
                         }
                         switch ( field ) {
                             case SEQUENCE_ANNOTATION_DESC:
@@ -445,11 +445,12 @@ public final class PhylogenyDecorator {
         return name;
     }
 
-    private static void extractBracketedScientificNames( final PhylogenyNode node, final String new_value ) {
+    private static String extractBracketedScientificNames( final PhylogenyNode node, final String new_value ) {
         final int i = new_value.lastIndexOf( "[" );
         final String scientific_name = new_value.substring( i + 1, new_value.length() - 1 );
         AptxUtil.ensurePresenceOfTaxonomy( node );
         node.getNodeData().getTaxonomy().setScientificName( scientific_name );
+        return new_value.substring( 0, i - 1 ).trim();
     }
 
     private static String extractIntermediate( final Map<String, String> intermediate_map, final String name ) {
@@ -489,7 +490,7 @@ public final class PhylogenyDecorator {
             throws IOException {
         final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
         BasicTable<String> mapping_table = null;
-        mapping_table = BasicTableParser.parse( mapping_table_file, "\t", false );
+        mapping_table = BasicTableParser.parse( mapping_table_file, "\t", false, false );
         for( int row = 0; row < mapping_table.getNumberOfRows(); ++row ) {
             final Map<String, String> row_map = new HashMap<String, String>();
             String name = null;
