@@ -47,33 +47,32 @@ import org.forester.util.ForesterUtil;
 
 public final class decorator {
 
-    private static final String  SEQUENCE_NAME_FIELD                    = "s";
-    private static final String  TAXONOMY_CODE_FIELD                    = "c";
-    private static final String  TAXONOMY_SCIENTIFIC_NAME_FIELD         = "sn";
-    private static final String  DS_FILED                               = "d";
-    private static final String  SEQUENCE_ANNOTATION_DESC               = "a";
-    private static final String  NODE_NAME_FIELD                        = "n";
-    final static private String  PICKY_OPTION                           = "p";
-    final static private String  FIELD_OPTION                           = "f";
-    final static private String  TRIM_AFTER_TILDE_OPTION                = "t";
-    final static private String  MOVE_DOMAIN_NUMBER_OPTION              = "mdn";       // Hidden expert option.
-    final static private String  TREE_NAME_OPTION                       = "pn";
-    final static private String  TREE_ID_OPTION                         = "pi";
-    final static private String  TREE_DESC_OPTION                       = "pd";
-    final static private String  EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION = "sn";
-    final static private String  PROCESS_NAME_INTELLIGENTLY_OPTION      = "x";
-    final static private String  PROCESS_SIMILAR_TO_OPTION              = "xs";
-    final static private String  CUT_NAME_AFTER_FIRST_SPACE_OPTION      = "c";
-    final static private String  ALLOW_REMOVAL_OF_CHARS_OPTION          = "r";
-    final static private String  ADVANCED_TABLE_OPTION                  = "table";
-    final static private String  KEY_COLUMN                             = "k";
-    final static private String  VALUE_COLUMN                           = "v";
-    final static private String  MAPPING_FILE_SEPARATOR_OPTION          = "s";
-    final static private String  MAPPING_FILE_SEPARATOR_DEFAULT         = ":";
-    final static private boolean USE_FIRST_SEPARATOR_ONLY               = true;
-    final static private String  PRG_NAME                               = "decorator";
-    final static private String  PRG_VERSION                            = "1.11";
-    final static private String  PRG_DATE                               = "2012.09.15";
+    private static final String SEQUENCE_NAME_FIELD                    = "s";
+    private static final String TAXONOMY_CODE_FIELD                    = "c";
+    private static final String TAXONOMY_SCIENTIFIC_NAME_FIELD         = "sn";
+    private static final String DS_FILED                               = "d";
+    private static final String SEQUENCE_ANNOTATION_DESC               = "a";
+    private static final String NODE_NAME_FIELD                        = "n";
+    final static private String PICKY_OPTION                           = "p";
+    final static private String FIELD_OPTION                           = "f";
+    final static private String TRIM_AFTER_TILDE_OPTION                = "t";
+    final static private String MOVE_DOMAIN_NUMBER_OPTION              = "mdn";       // Hidden expert option.
+    final static private String TREE_NAME_OPTION                       = "pn";
+    final static private String TREE_ID_OPTION                         = "pi";
+    final static private String TREE_DESC_OPTION                       = "pd";
+    final static private String EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION = "sn";
+    final static private String PROCESS_NAME_INTELLIGENTLY_OPTION      = "x";
+    final static private String PROCESS_SIMILAR_TO_OPTION              = "xs";
+    final static private String CUT_NAME_AFTER_FIRST_SPACE_OPTION      = "c";
+    final static private String ALLOW_REMOVAL_OF_CHARS_OPTION          = "r";
+    final static private String ADVANCED_TABLE_OPTION                  = "table";
+    final static private String KEY_COLUMN                             = "k";
+    final static private String VALUE_COLUMN                           = "v";
+    final static private String MAPPING_FILE_SEPARATOR_OPTION          = "s";
+    final static private String MAPPING_FILE_SEPARATOR_DEFAULT         = ":";
+    final static private String PRG_NAME                               = "decorator";
+    final static private String PRG_VERSION                            = "1.11";
+    final static private String PRG_DATE                               = "2012.09.15";
 
     private static void argumentsError() {
         System.out.println();
@@ -320,7 +319,6 @@ public final class decorator {
                 ForesterUtil.fatalError( decorator.PRG_NAME,
                                          "failed to read [" + mapping_infile + "] [" + e.getMessage() + "]" );
             }
-            System.out.println( mapping_table.toString() );
             if ( ( key_column < 0 ) || ( key_column >= mapping_table.getNumberOfColumns() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for key column" );
             }

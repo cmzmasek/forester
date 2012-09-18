@@ -93,7 +93,7 @@ public class BasicTableParser {
                     && ( !use_start_of_comment_line || !line.startsWith( start_of_comment_line ) ) ) {
                 saw_first_table = true;
                 if ( use_last_separator_only ) {
-                    String e[] = line.split( column_delimiter );
+                    final String e[] = line.split( column_delimiter );
                     final StringBuffer rest = new StringBuffer();
                     for( int i = 0; i < e.length - 1; ++i ) {
                         rest.append( e[ i ].trim() );
