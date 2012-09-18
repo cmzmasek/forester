@@ -62,6 +62,9 @@ public class BasicTableParser {
                                                   final String start_of_comment_line,
                                                   final boolean tables_separated_by_single_string_line )
             throws IOException {
+        if ( use_first_separator_only && use_last_separator_only ) {
+            throw new IllegalArgumentException();
+        }
         final BufferedReader reader = ForesterUtil.obtainReader( source );
         final List<BasicTable<String>> tables = new ArrayList<BasicTable<String>>();
         BasicTable<String> table = new BasicTable<String>();
@@ -95,8 +98,8 @@ public class BasicTableParser {
                     for( int i = 0; i < e.length - 1; ++i ) {
                         rest.append( e[ i ].trim() );
                     }
-                    table.setValue( 0, row, e[ e.length - 1 ] );
-                    table.setValue( 1, row, rest.toString() );
+                    table.setValue( 0, row, rest.toString() );
+                    table.setValue( 1, row, e[ e.length - 1 ] );
                 }
                 else {
                     final StringTokenizer st = new StringTokenizer( line, column_delimiter );
@@ -117,8 +120,8 @@ public class BasicTableParser {
                         }
                     }
                 }
+                ++row;
             }
-            ++row;
         }
         if ( !table.isEmpty() ) {
             tables.add( table );
