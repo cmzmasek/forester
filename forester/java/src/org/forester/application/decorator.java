@@ -69,7 +69,7 @@ public final class decorator {
     final static private String KEY_COLUMN                             = "k";
     final static private String VALUE_COLUMN                           = "v";
     final static private String MAPPING_FILE_SEPARATOR_OPTION          = "s";
-    final static private String MAPPING_FILE_SEPARATOR_DEFAULT         = ":";
+    final static private String MAPPING_FILE_SEPARATOR_DEFAULT         = ": ";
     final static private String PRG_NAME                               = "decorator";
     final static private String PRG_VERSION                            = "1.11";
     final static private String PRG_DATE                               = "2012.09.15";
