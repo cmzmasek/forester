@@ -227,7 +227,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private static Font               POPUP_FONT                        = new Font( Configuration.getDefaultFontFamilyName(),
                                                                                           Font.PLAIN,
                                                                                           12 );
-    private static final boolean            DRAW_MEAN_COUNTS                  = true;                                                     //TODO remove me later
     private Sequence                        _query_sequence                   = null;
     private final FontRenderContext         _frc                              = new FontRenderContext( null,
                                                                                                        false,
@@ -3206,28 +3205,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             .getLostCharactersAsStringBuffer().toString() );
                 }
                 else {
-                    if ( DRAW_MEAN_COUNTS && node.isInternal() ) {
-                        final List<PhylogenyNode> ec = node.getAllExternalDescendants();
-                        double sum = 0;
-                        int count = 0;
-                        for( final PhylogenyNode phylogenyNode : ec ) {
-                            count++;
-                            if ( phylogenyNode.getNodeData().getBinaryCharacters() != null ) {
-                                sum += phylogenyNode.getNodeData().getBinaryCharacters().getPresentCount();
-                            }
-                        }
-                        final double mean = ForesterUtil.round( sum / count, 1 );
-                        TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount() + " ["
-                                + mean + "]", node.getXcoord() + x + 4 + half_box_size, node.getYcoord()
-                                + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
-                    }
-                    else {
-                        TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount(),
-                                              node.getXcoord() + x + 4 + half_box_size,
-                                              node.getYcoord()
-                                                      + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ),
-                                              g );
-                    }
+                    TreePanel.drawString( " " + node.getNodeData().getBinaryCharacters().getPresentCount(),
+                                          node.getXcoord() + x + 4 + half_box_size,
+                                          node.getYcoord()
+                                                  + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ),
+                                          g );
                     paintGainedAndLostCharacters( g, node, "+"
                             + node.getNodeData().getBinaryCharacters().getGainedCount(), "-"
                             + node.getNodeData().getBinaryCharacters().getLostCount() );
@@ -3620,26 +3602,45 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( rds != null ) {
                     rds.setRenderingHeight( 6 );
                     int x = 0;
-                    if ( getControlPanel().isShowTaxonomyCode()
-                            && ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( node ) ) ) ) {
-                        x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( node ) + " " );
+                    if ( node.getNodeData().isHasTaxonomy() ) {
+                        if ( getControlPanel().isShowTaxonomyCode()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                                    .getTaxonomyCode()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowTaxonomyScientificNames()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) ) {
+                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                                    .getScientificName()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowTaxonomyCommonNames()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                                    .getCommonName()
+                                    + " " );
+                        }
                     }
-                    if ( getControlPanel().isShowGeneNames()
-                            && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) ) {
-                        x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName() + " " );
+                    if ( node.getNodeData().isHasSequence() ) {
+                        if ( getControlPanel().isShowGeneNames()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) ) {
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowGeneSymbols()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) ) {
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getSymbol()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowSequenceAcc()
+                                && ( node.getNodeData().getSequence().getAccession() != null ) ) {
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence()
+                                    .getAccession().toString()
+                                    + " " );
+                        }
                     }
-                    if ( getControlPanel().isShowGeneSymbols()
-                            && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) ) {
-                        x += getTreeFontSet()._fm_large
-                                .stringWidth( node.getNodeData().getSequence().getSymbol() + " " );
-                    }
-                    if ( getControlPanel().isShowSequenceAcc()
-                            && ( node.getNodeData().getSequence().getAccession() != null ) ) {
-                        x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getAccession()
-                                .toString()
-                                + " " );
-                    }
-                    if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
+                    if ( getControlPanel().isShowNodeNames() && !ForesterUtil.isEmpty( node.getName() ) ) {
                         x += getTreeFontSet()._fm_large.stringWidth( node.getName() + " " );
                     }
                     rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
