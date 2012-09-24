@@ -1309,6 +1309,9 @@ public final class Configuration {
                         + "] for [ext_descendents_data_to_return]" );
             }
         }
+        else if ( key.equals( "label_for_get_ext_descendents_data" ) ) {
+           set( ( String ) st.nextElement() ).replaceAll( "_", " " );
+        }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
