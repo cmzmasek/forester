@@ -38,6 +38,7 @@ module Evoruby
         add_domain_number_as_letter,
         trim_name,
         add_species,
+        min_linker,
         log )
 
       Util.check_file_for_readability( hmmsearch_output )
@@ -56,8 +57,13 @@ module Evoruby
       end
 
       out_msa = Msa.new
+
       failed_seqs = Msa.new
       passed_seqs = Msa.new
+      out_msa_pairs = nil
+      if min_linker
+        out_msa_pairs = Msa.new
+      end
 
       ld = Constants::LINE_DELIMITER
 
@@ -69,6 +75,12 @@ module Evoruby
       max_domain_copy_number_sequence    = ''
       failed_species_counts         = Hash.new
       passed_species_counts         = Hash.new
+
+      prev_sequence = nil
+      prev_number   = nil
+      prev_env_from = nil
+      prev_env_to   = nil
+      prev_i_e_value  = nil
 
       File.open( hmmsearch_output ) do | file |
         while line = file.gets
@@ -115,6 +127,34 @@ module Evoruby
                 add_sequence( sequence, in_msa, passed_seqs )
                 proteins_with_passing_domains += 1
               end
+
+              if min_linker
+                if  sequence == prev_sequence  && ( ( ( e_value_threshold.to_f < 0.0 ) || ( prev_i_e_value <= e_value_threshold  ) ) &&
+                     ( ( length_threshold.to_f <= 0 )   || (  ( prev_env_to - prev_env_from + 1 ) >= length_threshold.to_f    ) )  )
+                  diff = env_from - prev_env_to
+                  if diff <= min_linker
+                    extract_domain( sequence,
+                      prev_number.to_s + "/" + number.to_s,
+                      out_of,
+                      prev_env_from,
+                      env_to,
+                      in_msa,
+                      out_msa_pairs,
+                      false,
+                      true,
+                      false,
+                      false,
+                      trim_name ,
+                      add_species )
+                  end
+                end
+                prev_sequence = sequence
+                prev_number   = number
+                prev_env_from = env_from
+                prev_env_to   = env_to
+                prev_i_e_value  = i_e_value
+              end
+
             else
               print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
               log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
@@ -168,6 +208,15 @@ module Evoruby
         raise IOError, error_msg
       end
 
+      if out_msa_pairs
+        begin
+          io.write_to_file( out_msa_pairs, outfile+"_" + min_linker.to_s, w )
+        rescue Exception
+          error_msg = "could not write to \"" + outfile+"_" + min_linker.to_s + "\""
+          raise IOError, error_msg
+        end
+      end
+
       begin
         io.write_to_file( passed_seqs, passed_seqs_outfile, w )
       rescue Exception
@@ -200,7 +249,6 @@ module Evoruby
 
     private
 
-
     def add_sequence( sequence_name, in_msa, add_to_msa )
       seqs = in_msa.find_by_name_start( sequence_name, true )
       if ( seqs.length < 1 )
@@ -229,11 +277,11 @@ module Evoruby
         add_domain_number_as_letter,
         trim_name,
         add_species )
-      if ( number < 1 || out_of < 1 || number > out_of )
+      if  number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
         error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
         raise ArgumentError, error_msg
       end
-      if ( seq_from < 1 || seq_to < 1 || seq_from >= seq_to )
+      if  seq_from < 1 || seq_to < 1 || seq_from >= seq_to
         error_msg = "impossible: seq-f=" + seq_from.to_s + ", seq-t=" + seq_to.to_s
         raise ArgumentError, error_msg
       end
@@ -262,15 +310,15 @@ module Evoruby
       end
 
       if out_of != 1
-        if ( add_domain_number_as_digit )
+        if add_domain_number_as_digit
           seq.set_name( seq.get_name + number.to_s )
-        elsif ( add_domain_number_as_letter )
+        elsif add_domain_number_as_letter
           if number > 25
             error_msg = 'too many identical domains per sequence, cannot use letters to distinguish them'
             raise StandardError, error_msg
           end
           seq.set_name( seq.get_name + ( number + 96 ).chr )
-        elsif ( add_domain_number )
+        elsif add_domain_number
           seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
         end
       end
@@ -292,7 +340,7 @@ module Evoruby
       end
 
       out_msa.add_sequence( seq )
-      
+
     end
 
     def count_species( sequence, species_counts_map )
