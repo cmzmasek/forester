@@ -170,7 +170,7 @@ show_annotations:               nodisplay   no
 write_confidence_values:        display   ?
 write_events:                   nodisplay   no
 color_branches:                 display   no
-width_branches:                 display   no
+width_branches:                 nodisplay   no
 show_domain_architectures:      nodisplay   no
 show_binary_characters:         nodisplay   no
 show_binary_character_counts:   nodisplay   no
