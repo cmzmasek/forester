@@ -211,6 +211,7 @@ public final class Configuration {
     private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
     private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
     private NODE_DATA                       _ext_desc_data_to_return;
+   
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
@@ -1309,9 +1310,7 @@ public final class Configuration {
                         + "] for [ext_descendents_data_to_return]" );
             }
         }
-        else if ( key.equals( "label_for_get_ext_descendents_data" ) ) {
-           set( ( String ) st.nextElement() ).replaceAll( "_", " " );
-        }
+       
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1509,6 +1508,8 @@ public final class Configuration {
         }
     }
 
+  
+    
     public void setMinConfidenceValue( final double min_confidence_value ) {
         _min_confidence_value = min_confidence_value;
     }
