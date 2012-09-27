@@ -205,8 +205,6 @@ click_to: get_ext_descendents_data display
 #   Default click-to option (any of the above if set to "display")
 default_click_to: display_node_data
 
-#
-label_for_get_ext_descendents_data get_sequences
 
 #  Default Tree Display Colors
 #  ---------------------------
