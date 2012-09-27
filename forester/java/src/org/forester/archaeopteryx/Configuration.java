@@ -211,7 +211,7 @@ public final class Configuration {
     private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
     private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
     private NODE_DATA                       _ext_desc_data_to_return;
-   
+    private String _label_for_get_ext_descendents_data = "";
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
@@ -1310,7 +1310,9 @@ public final class Configuration {
                         + "] for [ext_descendents_data_to_return]" );
             }
         }
-       
+        else if ( key.equals( "label_for_get_ext_descendents_data" ) ) {
+           setLabelForGetExtDescendentsData( (( String ) st.nextElement() ).replaceAll( "_", " " ) );
+        }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1508,7 +1510,15 @@ public final class Configuration {
         }
     }
 
-  
+    private void setLabelForGetExtDescendentsData( String label_for_get_ext_descendents_data ) {
+        _label_for_get_ext_descendents_data = label_for_get_ext_descendents_data;
+       
+    }
+
+    public String getLabelForGetExtDescendentsData( ) {
+        return _label_for_get_ext_descendents_data ;
+       
+    }
     
     public void setMinConfidenceValue( final double min_confidence_value ) {
         _min_confidence_value = min_confidence_value;
@@ -1518,12 +1528,12 @@ public final class Configuration {
         _node_label_direction = node_label_direction;
     }
 
-    public void setNumberOfDigitsAfterCommaForBranchLengthValue( final short _number_of_digits_after_comma_for_branch_length_values ) {
-        this._number_of_digits_after_comma_for_branch_length_values = _number_of_digits_after_comma_for_branch_length_values;
+    public void setNumberOfDigitsAfterCommaForBranchLengthValue( final short number_of_digits_after_comma_for_branch_length_values ) {
+        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
     }
 
-    public void setNumberOfDigitsAfterCommaForConfidenceValues( final short _number_of_digits_after_comma_for_confidence_values ) {
-        this._number_of_digits_after_comma_for_confidence_values = _number_of_digits_after_comma_for_confidence_values;
+    public void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
+        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     private void setOvMaxHeight( final short ov_max_height ) {

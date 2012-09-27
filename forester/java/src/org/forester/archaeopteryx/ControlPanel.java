@@ -1391,6 +1391,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             _get_ext_desc_data = cb_index;
             addClickToOption( Configuration.get_ext_desc_data,
                               _configuration.getClickToTitle( Configuration.get_ext_desc_data ) );
+            if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
+                fixme
+                getConfiguration().getLabelForGetExtDescendentsData();
+            }
+            
             if ( default_option == Configuration.get_ext_desc_data ) {
                 selected_index = cb_index;
             }
