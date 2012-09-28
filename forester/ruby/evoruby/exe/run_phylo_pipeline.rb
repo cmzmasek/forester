@@ -29,7 +29,7 @@ module Evoruby
       d2f       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
       dsx       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/dsx.rb"
 
-      base_name   = ARGV[ 0 ]
+      input       = ARGV[ 0 ]
       hmm         = ARGV[ 1 ]
       length      = ARGV[ 2 ]
       e_value_exp = ARGV[ 3 ]
@@ -42,16 +42,19 @@ module Evoruby
         error "length exponent cannot be smaller than or equal to 1"
       end
 
-      if base_name.downcase.end_with?( ".fasta" )
-        base_name = base_name[ 0 .. base_name.length - 7 ]
-      elsif base_name.downcase.end_with?( ".fsa" )
-        base_name = base_name[ 0 .. base_name.length - 5 ]
+      base_name = nil
+      if input.downcase.end_with?( ".fasta" )
+        base_name = input[ 0 .. input.length - 7 ]
+      elsif input.downcase.end_with?( ".fsa" )
+        base_name = input[ 0 .. input.length - 5 ]
+      else
+         base_name = input
       end
 
       if do_domain_combination_analysis
 
         puts "hmmscan:"
-        cmd = "#{hmmscan} --nobias --domtblout #{base_name}_hmmscan_10 -E 10 #{PFAM}Pfam-A.hmm #{base_name}.fasta"
+        cmd = "#{hmmscan} --nobias --domtblout #{base_name}_hmmscan_10 -E 10 #{PFAM}Pfam-A.hmm #{input}"
         run_command( cmd )
         puts
 
@@ -61,19 +64,19 @@ module Evoruby
         puts
 
         puts "domain table to forester format:"
-        cmd = "#{d2f} -e=10 #{base_name}_hmmscan_10_domain_table #{base_name}.fasta #{base_name}_hmmscan_10.dff"
+        cmd = "#{d2f} -e=10 #{base_name}_hmmscan_10_domain_table #{input} #{base_name}_hmmscan_10.dff"
         run_command( cmd )
         puts
 
       end
 
       puts "hmmsearch:"
-      cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  #{PFAM}PFAM_A_HMMs/#{hmm}.hmm #{base_name}.fasta"
+      cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  #{PFAM}PFAM_A_HMMs/#{hmm}.hmm #{input}"
       run_command( cmd )
       puts
 
       puts "dsx:"
-      cmd = "#{dsx} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}.hmmsearch_#{hmm} #{base_name}.fasta #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
+      cmd = "#{dsx} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}.hmmsearch_#{hmm} #{input} #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
       run_command( cmd )
       puts
 
