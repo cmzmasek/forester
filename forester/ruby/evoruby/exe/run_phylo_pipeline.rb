@@ -20,11 +20,10 @@ module Evoruby
     D2F       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
     DSX       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/dsx.rb"
 
-
     def run
       unless ARGV.length >= 4 && ARGV.length <= 6
         error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> " +
-         "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 20] [hmmscan option, default is --nobias]"
+         "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 20] [hmmscan option, default is --nobias, --max for no heuristics]"
       end
 
       input       = ARGV[ 0 ]
@@ -54,6 +53,7 @@ module Evoruby
 
       base_name = get_base_name input
 
+      puts
       puts "1. hmmscan:"
       cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{base_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
       run_command( cmd )
