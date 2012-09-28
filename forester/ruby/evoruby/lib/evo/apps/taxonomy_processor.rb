@@ -48,8 +48,8 @@ module Evoruby
         WWW,
         STDOUT )
 
-      if ( ARGV == nil || ( ARGV.length != 3 && ARGV.length != 4 && ARGV.length != 5 && ARGV.length != 6 ) )
-        puts( "Usage: #{PRG_NAME}.rb [options] [input map file] <input sequences> <output sequences> <output id list>" )
+      if ( ARGV == nil || (  ARGV.length != 1 && ARGV.length != 3 && ARGV.length != 4 && ARGV.length != 5 && ARGV.length != 6 ) )
+        puts( "Usage: #{PRG_NAME}.rb [options] [input map file] <input sequences> [output sequences] [output id list]" )
         puts()
         puts( "  options: -" + EXTRACT_TAXONOMY_OPTION + ": to extract taxonomy information from bracketed expression" )
         puts()
@@ -62,11 +62,14 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
+      
       mapfile   = nil
       input     = nil
       output    = nil
       list_file = nil
 
+    
+      
       if cla.get_number_of_files == 4
         mapfile   = cla.get_file_name( 0 )
         input     = cla.get_file_name( 1 )
@@ -76,6 +79,16 @@ module Evoruby
         input     = cla.get_file_name( 0 )
         output    = cla.get_file_name( 1 )
         list_file = cla.get_file_name( 2 )
+      elsif cla.get_number_of_files == 1
+        input     = cla.get_file_name( 0 )  
+        i = nil
+        if input.downcase.end_with?( ".fasta" )
+          i = input[ 0 .. input.length - 6 ]
+        else
+          i = input
+        end  
+        output    = i + "_ni.fasta"
+        list_file = i + ".nim"
       end
 
 
