@@ -22,10 +22,10 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "2010.02.24"
+    PRG_DATE       = "2012.09.27"
     PRG_DESC       = "replacement of species names in multiple sequence files"
-    PRG_VERSION    = "1.01"
-    COPYRIGHT      = "2010 Christian M Zmasek"
+    PRG_VERSION    = "1.02"
+    COPYRIGHT      = "2012 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
 
@@ -62,14 +62,14 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
-      
+
       mapfile   = nil
       input     = nil
       output    = nil
       list_file = nil
 
-    
-      
+
+
       if cla.get_number_of_files == 4
         mapfile   = cla.get_file_name( 0 )
         input     = cla.get_file_name( 1 )
@@ -80,13 +80,15 @@ module Evoruby
         output    = cla.get_file_name( 1 )
         list_file = cla.get_file_name( 2 )
       elsif cla.get_number_of_files == 1
-        input     = cla.get_file_name( 0 )  
+        input     = cla.get_file_name( 0 )
         i = nil
         if input.downcase.end_with?( ".fasta" )
-          i = input[ 0 .. input.length - 6 ]
+          i = input[ 0 .. input.length - 7 ]
+        elsif input.downcase.end_with?( ".fsa" )
+          i = input[ 0 .. input.length - 5 ]
         else
           i = input
-        end  
+        end
         output    = i + "_ni.fasta"
         list_file = i + ".nim"
       end
@@ -212,7 +214,7 @@ module Evoruby
     def modify_name( desc, counter, file, species_map, extract_taxonomy )
       new_desc = nil
       my_species = nil
-     # if desc =~ /^>?\s*\S{1,10}_([0-9A-Z]{3,5})/
+      # if desc =~ /^>?\s*\S{1,10}_([0-9A-Z]{3,5})/
       if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif SIMPLE
