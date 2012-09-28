@@ -27,11 +27,13 @@ module Evoruby
 
     def run
       unless ARGV.length == 4
+        puts
         puts "arguments are: [inputfile].fasta [hmm-name] [min-length] [neg e-value exponent]"
+        puts
         exit
       end
 
-      pfam      = "/home/czmasek/DATA/PFAM/PFAM260/"
+      pfam      = "/home/czmasek/DATA/PFAM/PFAM260X/"
       hmmscan   = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
       hmmsearch = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmsearch"
       hsp       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
