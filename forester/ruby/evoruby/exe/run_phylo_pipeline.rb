@@ -23,8 +23,8 @@ module Evoruby
 
     def run
       unless ARGV.length >= 4 && ARGV.length <= 6
-        error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> +
-        <neg E-value exponent for domain extraction> [E-value for hmmscan, default is 20] [hmmscan option, default is --nobias]"
+        error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> " +
+         "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 20] [hmmscan option, default is --nobias]"
       end
 
       input       = ARGV[ 0 ]
@@ -53,19 +53,6 @@ module Evoruby
       end
 
       base_name = get_base_name input
-
-      #base_name = nil
-      #if input.downcase.end_with?( "_ni.fasta" )
-      #  base_name = input[ 0 .. input.length - 10 ]
-      #elsif input.downcase.end_with?( ".fasta" )
-      #  base_name = input[ 0 .. input.length - 7 ]
-      #elsif input.downcase.end_with?( "_ni.fsa" )
-      #  base_name = input[ 0 .. input.length - 8 ]
-      #elsif input.downcase.end_with?( ".fsa" )
-      #  base_name = input[ 0 .. input.length - 5 ]
-      #else
-      #  base_name = input
-      #end
 
       puts "1. hmmscan:"
       cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{base_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
