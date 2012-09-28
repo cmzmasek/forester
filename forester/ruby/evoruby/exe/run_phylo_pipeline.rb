@@ -31,6 +31,7 @@ module Evoruby
         exit
       end
 
+      pfam      = "/home/czmasek/DATA/PFAM/PFAM260/"
       hmmscan   = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
       hmmsearch = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmsearch"
       hsp       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
@@ -45,18 +46,18 @@ module Evoruby
 
       if do_domain_combination_analysis
 
-        cmd = "#{hmmscan} --nobias --domtblout #{base_name}_hmmscan_250_10 -E 10 /home/czmasek/DATA/PFAM/PFAM250/Pfam-A.hmm #{base_name}.fasta"
+        cmd = "#{hmmscan} --nobias --domtblout #{base_name}_hmmscan_10 -E 10 #{pfam}Pfam-A.hmm #{base_name}.fasta"
         run_command( cmd )
 
-        cmd = "#{hsp} #{base_name}_hmmscan_250_10 #{base_name}_hmmscan_250_10_domain_table"
+        cmd = "#{hsp} #{base_name}_hmmscan_10 #{base_name}_hmmscan_10_domain_table"
         run_command( cmd )
 
-        cmd = "#{d2f} -e=10 #{base_name}_hmmscan_250_10_domain_table #{base_name}.fasta #{base_name}_hmmscan_250_10.dff"
+        cmd = "#{d2f} -e=10 #{base_name}_hmmscan_10_domain_table #{base_name}.fasta #{base_name}_hmmscan_10.dff"
         run_command( cmd )
 
       end
 
-      cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  ~/DATA/PFAM/PFAM250/PFAM_A_HMMs/#{hmm}.hmm #{base_name}.fasta"
+      cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  #{pfam}PFAM_A_HMMs/#{hmm}.hmm #{base_name}.fasta"
       run_command( cmd )
 
       cmd = "#{dsx} -dd -e=1e-#{e_value_exp.to_s} -l=#{length} #{base_name}.hmmsearch_#{hmm} #{base_name}.fasta #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
