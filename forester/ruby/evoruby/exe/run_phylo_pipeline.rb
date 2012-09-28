@@ -15,7 +15,10 @@ module Evoruby
   class RunPhyloPipeline
 
     PFAM      = "/home/czmasek/DATA/PFAM/PFAM260X/"
-
+    HMMSCAN  = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
+    HSP       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
+    D2F       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
+    DSX       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/dsx.rb"
 
 
     def run
@@ -23,17 +26,16 @@ module Evoruby
         error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> <neg e-value exponent>"
       end
 
-      hmmscan   = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
-      hmmsearch = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmsearch"
-      hsp       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
-      d2f       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
-      dsx       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/dsx.rb"
+
+
 
       input       = ARGV[ 0 ]
       hmm         = ARGV[ 1 ]
       length      = ARGV[ 2 ].to_i
       e_value_exp = ARGV[ 3 ].to_i
-      do_domain_combination_analysis = true
+
+      hmmscan_option = "--nobias"
+      e_for_hmmscan = 100
 
       if e_value_exp < 0
         error "e-value exponent cannot be negative"
@@ -51,32 +53,23 @@ module Evoruby
         base_name = input
       end
 
-      if do_domain_combination_analysis
-
-        puts "hmmscan:"
-        cmd = "#{hmmscan} --nobias --domtblout #{base_name}_hmmscan_10 -E 10 #{PFAM}Pfam-A.hmm #{input}"
-        run_command( cmd )
-        puts
-
-        puts "hmmscan to simple domain table:"
-        cmd = "#{hsp} #{base_name}_hmmscan_10 #{base_name}_hmmscan_10_domain_table"
-        run_command( cmd )
-        puts
-
-        puts "domain table to forester format:"
-        cmd = "#{d2f} -e=10 #{base_name}_hmmscan_10_domain_table #{input} #{base_name}_hmmscan_10.dff"
-        run_command( cmd )
-        puts
-
-      end
-
-      puts "hmmsearch:"
-      cmd = "#{hmmsearch} --nobias -E 1000 --domtblout #{base_name}.hmmsearch_#{hmm}  #{PFAM}PFAM_A_HMMs/#{hmm}.hmm #{input}"
+      puts "1. hmmscan:"
+      cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{base_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
       run_command( cmd )
       puts
 
-      puts "dsx:"
-      cmd = "#{dsx} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}.hmmsearch_#{hmm} #{input} #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
+      puts "2. hmmscan to simple domain table:"
+      cmd = "#{HSP} #{base_name}_hmmscan_#{e_for_hmmscan.to_s} #{base_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
+      run_command( cmd )
+      puts
+
+      puts "3. domain table to forester format:"
+      cmd = "#{D2F} -e=10 #{base_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table #{input} #{base_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
+      run_command( cmd )
+      puts
+
+      puts "4. dsx:"
+      cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}.hmmsscan_#{e_for_hmmscan.to_s} #{input} #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
       run_command( cmd )
       puts
 
