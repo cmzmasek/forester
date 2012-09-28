@@ -22,36 +22,50 @@ module Evoruby
 
 
     def run
-      unless ARGV.length == 4
-        error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> <neg e-value exponent>"
+      unless ARGV.length >= 4 && ARGV.length <= 6
+        error "arguments are: <fasta formatted inputfile> <hmm-name> <min-length> +
+        <neg E-value exponent for domain extraction> [E-value for hmmscan, default is 20] [hmmscan option, default is --nobias]"
       end
-
-
-
 
       input       = ARGV[ 0 ]
       hmm         = ARGV[ 1 ]
       length      = ARGV[ 2 ].to_i
       e_value_exp = ARGV[ 3 ].to_i
 
+      e_for_hmmscan = 20
       hmmscan_option = "--nobias"
-      e_for_hmmscan = 100
+
+      if ARGV.length == 6
+        hmmscan_option = ARGV[ 5 ]
+      end
+      if ARGV.length == 5 || ARGV.length == 6
+        e_for_hmmscan = ARGV[ 4 ].to_i
+      end
 
       if e_value_exp < 0
-        error "e-value exponent cannot be negative"
+        error "E-value exponent for domain extraction cannot be negative"
       end
       if length <= 1
-        error "length exponent cannot be smaller than or equal to 1"
+        error "length cannot be smaller than or equal to 1"
+      end
+      if e_for_hmmscan < 1
+        error "E-value for hmmscan cannot be smaller than 1"
       end
 
-      base_name = nil
-      if input.downcase.end_with?( ".fasta" )
-        base_name = input[ 0 .. input.length - 7 ]
-      elsif input.downcase.end_with?( ".fsa" )
-        base_name = input[ 0 .. input.length - 5 ]
-      else
-        base_name = input
-      end
+      base_name = get_base_name input
+
+      #base_name = nil
+      #if input.downcase.end_with?( "_ni.fasta" )
+      #  base_name = input[ 0 .. input.length - 10 ]
+      #elsif input.downcase.end_with?( ".fasta" )
+      #  base_name = input[ 0 .. input.length - 7 ]
+      #elsif input.downcase.end_with?( "_ni.fsa" )
+      #  base_name = input[ 0 .. input.length - 8 ]
+      #elsif input.downcase.end_with?( ".fsa" )
+      #  base_name = input[ 0 .. input.length - 5 ]
+      #else
+      #  base_name = input
+      #end
 
       puts "1. hmmscan:"
       cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{base_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
@@ -69,15 +83,29 @@ module Evoruby
       puts
 
       puts "4. dsx:"
-      cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{base_name}_#{hmm}_e#{e_value_exp.to_s}_#{length}"
+      cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{base_name}_#{hmm}_ee#{e_value_exp.to_s}_#{length}"
       run_command( cmd )
       puts
 
     end
 
-    def run_command( cmd )
+    def run_command cmd
       puts cmd
       `#{cmd}`
+    end
+
+    def get_base_name n
+      if n.downcase.end_with?( "_ni.fasta" )
+        n[ 0 .. n.length - 10 ]
+      elsif n.downcase.end_with?( ".fasta" )
+        n[ 0 .. n.length - 7 ]
+      elsif n.downcase.end_with?( "_ni.fsa" )
+        n[ 0 .. n.length - 8 ]
+      elsif n.downcase.end_with?( ".fsa" )
+        n[ 0 .. n.length - 5 ]
+      else
+        n
+      end
     end
 
     def error msg
