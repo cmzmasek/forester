@@ -31,8 +31,8 @@ module Evoruby
 
       input       = ARGV[ 0 ]
       hmm         = ARGV[ 1 ]
-      length      = ARGV[ 2 ]
-      e_value_exp = ARGV[ 3 ]
+      length      = ARGV[ 2 ].to_i
+      e_value_exp = ARGV[ 3 ].to_i
       do_domain_combination_analysis = true
 
       if e_value_exp < 0
@@ -48,7 +48,7 @@ module Evoruby
       elsif input.downcase.end_with?( ".fsa" )
         base_name = input[ 0 .. input.length - 5 ]
       else
-         base_name = input
+        base_name = input
       end
 
       if do_domain_combination_analysis
