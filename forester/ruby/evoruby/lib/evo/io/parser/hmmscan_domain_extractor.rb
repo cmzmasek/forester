@@ -61,7 +61,7 @@ module Evoruby
       failed_seqs = Msa.new
       passed_seqs = Msa.new
       out_msa_pairs = nil
-      out_msa_distance_partners = nil
+      out_msa_distant_partners = nil
       out_msa_singlets = nil
       if min_linker
         out_msa_pairs = Msa.new
@@ -78,7 +78,7 @@ module Evoruby
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
 
-      prev_sequence = ""
+      prev_sequence = nil
       prev_number   = nil
       prev_env_from = nil
       prev_env_to   = nil
@@ -135,13 +135,13 @@ module Evoruby
                 if ( ( e_value_threshold < 0.0 ) || ( prev_i_e_value <= e_value_threshold  ) ) &&
                    ( ( length_threshold <= 0 )   || (  ( prev_env_to - prev_env_from + 1 ) >= length_threshold.to_f    ) )
 
-                  if sequence != prev_sequence
+                  if prev_sequence && sequence != prev_sequence
                     prev_is_pair = false
                   end
 
                   if out_of == 1
 
-                    if sequence == prev_sequence
+                    if rev_sequence && sequence == prev_sequence
                       puts "sequence == prev_sequence && out_of == 1"
                       exit
                     end
@@ -159,7 +159,7 @@ module Evoruby
                       trim_name ,
                       add_species )
 
-                  elsif sequence == prev_sequence
+                  elsif prev_sequence && sequence == prev_sequence
 
                     if  ( env_from - prev_env_to ) <= min_linker  #######
                       extract_domain( sequence,
@@ -273,7 +273,7 @@ module Evoruby
       end
 
       if out_msa_distant_partners
-        write_msa( out_msa_distant_partners, outfile +"_singles" )
+        write_msa( out_msa_distant_partners, outfile +"_dist" )
       end
 
 
