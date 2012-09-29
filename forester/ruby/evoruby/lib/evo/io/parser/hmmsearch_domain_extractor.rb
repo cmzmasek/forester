@@ -64,9 +64,8 @@ module Evoruby
             proteins_with_passing_domains = 0
             proteins_with_failing_domains = 0
             max_domain_copy_number_per_protein = -1
-            max_domain_copy_number_sequence    = ''
-            failed_species_counts         = Hash.new
-            passed_species_counts         = Hash.new
+            max_domain_copy_number_sequence    = ""
+        
 
             File.open( hmmsearch_output ) do | file |
                 while line = file.gets
@@ -88,6 +87,7 @@ module Evoruby
                         end
                         if ( ( ( e_value_threshold.to_f < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
                                  ( ( length_threshold.to_f <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f )  )
+                              
                             HmmsearchDomainExtractor.extract_domain( sequence,
                                 number,
                                 out_of,
@@ -100,8 +100,9 @@ module Evoruby
                                 add_domain_number_as_digit,
                                 add_domain_number_as_letter,
                                 trim_name )
+                              
                             domain_pass_counter += 1
-                            count_species( sequence, passed_species_counts )
+                          
                             if !passed_seqs.has?( sequence, true, false )
                                 HmmsearchDomainExtractor.add_sequence( sequence, in_msa, passed_seqs )
                                 proteins_with_passing_domains += 1
@@ -121,7 +122,7 @@ module Evoruby
                             print( Constants::LINE_DELIMITER )
                             log << Constants::LINE_DELIMITER
                             domain_fail_counter  += 1
-                            count_species( sequence, failed_species_counts )
+                           
                             if !failed_seqs.has?( sequence, true, false )
                                 HmmsearchDomainExtractor.add_sequence( sequence, in_msa, failed_seqs )
                                 proteins_with_failing_domains += 1
@@ -179,18 +180,12 @@ module Evoruby
             log << "proteins with passing domains: " + proteins_with_passing_domains.to_s + ld
             log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
             log << ld
-            log << 'passing domains counts per species: ' << ld
-            passed_species_counts.each_pair { | species, count | log << "#{species}: #{count}" << ld }
-            log << ld
-            log << 'failing domains counts per species: ' << ld
-            failed_species_counts.each_pair { | species, count | log << "#{species}: #{count}" << ld }
-            log << ld
+           
             return domain_pass_counter
 
         end # parse
 
         private
-
 
         def HmmsearchDomainExtractor.add_sequence( sequence_name, in_msa, add_to_msa )
             seqs = in_msa.find_by_name( sequence_name, true, false )
@@ -268,24 +263,9 @@ module Evoruby
             out_msa.add_sequence( seq )
         end
 
-        def count_species( sequence, species_counts_map )
-            species = get_species( sequence )
-            if species != nil
-                if !species_counts_map.has_key?( species )
-                    species_counts_map[ species ] = 1
-                else
-                    species_counts_map[ species ] = species_counts_map[ species ] + 1
-                end
-            end
-        end
+     
 
-        def get_species( sequence_name )
-            if sequence_name =~ /^.+_(.+)$/
-                return $1
-            else
-                return nil
-            end
-        end
+     
 
         def is_ignorable?( line )
             return ( line !~ /[A-Za-z0-9-]/ || line =~/^#/ )

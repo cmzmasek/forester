@@ -31,7 +31,7 @@ module Evoruby
     ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT  = 'dd'
     ADD_DOMAIN_NUMBER_OPTION_AS_LETTER = 'dl'
     ADD_SPECIES                        = 's'
-    MIN_LINKER_OPT                        = 'ml'
+    MIN_LINKER_OPT                     = 'ml'
     TRIM_OPTION                        = 't'
     LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
     PASSED_SEQS_SUFFIX                 = '_domain_seq_extr_passed'
