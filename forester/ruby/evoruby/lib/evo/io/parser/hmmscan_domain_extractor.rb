@@ -78,7 +78,7 @@ module Evoruby
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
 
-      prev_sequence = nil
+      prev_sequence = ""
       prev_number   = nil
       prev_env_from = nil
       prev_env_to   = nil
