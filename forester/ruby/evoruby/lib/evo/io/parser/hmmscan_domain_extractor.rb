@@ -141,10 +141,10 @@ module Evoruby
 
                   if out_of == 1
 
-                    if rev_sequence && sequence == prev_sequence
-                      puts "sequence == prev_sequence && out_of == 1"
-                      exit
-                    end
+                  #  if prev_sequence && sequence == prev_sequence
+                  #    puts "sequence == prev_sequence && out_of == 1"
+                  #    exit
+                  #  end
                     extract_domain( sequence,
                       number,
                       out_of,
