@@ -135,9 +135,9 @@ module Evoruby
                 if ( ( e_value_threshold < 0.0 ) || ( prev_i_e_value <= e_value_threshold  ) ) &&
                    ( ( length_threshold <= 0 )   || (  ( prev_env_to - prev_env_from + 1 ) >= length_threshold.to_f    ) )
 
-                  if prev_sequence && sequence != prev_sequence
-                    prev_is_pair = false
-                  end
+               #   if prev_sequence && sequence != prev_sequence
+               #     prev_is_pair = false
+               #   end
 
                   if out_of == 1
 
