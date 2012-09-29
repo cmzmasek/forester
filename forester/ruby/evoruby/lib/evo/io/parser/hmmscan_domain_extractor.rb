@@ -138,7 +138,7 @@ module Evoruby
                   if sequence != prev_sequence
                     prev_is_pair = false
                   end
-                  
+
                   if out_of == 1
 
                     if sequence == prev_sequence
@@ -240,169 +240,168 @@ module Evoruby
                 end
               end
             end
-          end
-        end
+          end # if !is_ignorable?( line ) && line =~ /^\S+\s+/
+        end #  while line = file.gets
+      end #   File.open( hmmsearch_output ) do | file |
 
-        if domain_pass_counter < 1
-          error_msg = "no domain sequences were extracted"
-          raise StandardError, error_msg
-        end
+      if domain_pass_counter < 1
+        error_msg = "no domain sequences were extracted"
+        raise StandardError, error_msg
+      end
 
+      log << Constants::LINE_DELIMITER
+      puts( "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s )
+      log << "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s
+      log << Constants::LINE_DELIMITER
+
+      if ( max_domain_copy_number_per_protein > 1 )
+        puts( "First protein with this copy number: " + max_domain_copy_number_sequence )
+        log << "First protein with this copy number: " + max_domain_copy_number_sequence
         log << Constants::LINE_DELIMITER
-        puts( "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s )
-        log << "Max domain copy number per protein : " + max_domain_copy_number_per_protein.to_s
-        log << Constants::LINE_DELIMITER
+      end
 
-        if ( max_domain_copy_number_per_protein > 1 )
-          puts( "First protein with this copy number: " + max_domain_copy_number_sequence )
-          log << "First protein with this copy number: " + max_domain_copy_number_sequence
-          log << Constants::LINE_DELIMITER
-        end
+      write_msa( out_msa, outfile  )
+      write_msa( passed_seqs, passed_seqs_outfile )
+      write_msa( failed_seqs, failed_seqs_outfile )
 
-        write_msa( out_msa, outfile  )
-        write_msa( passed_seqs, passed_seqs_outfile )
-        write_msa( failed_seqs, failed_seqs_outfile )
+      if out_msa_pairs
+        write_msa( out_msa_pairs, outfile +"_" + min_linker.to_s )
+      end
 
-        if out_msa_pairs
-          write_msa( out_msa_pairs, outfile +"_" + min_linker.to_s )
-        end
+      if out_msa_singlets
+        write_msa( out_msa_singlets, outfile +"_singles" )
+      end
 
-        if out_msa_singlets
-          write_msa( out_msa_singlets, outfile +"_singles" )
-        end
-
-        if out_msa_distant_partners
-          write_msa( out_msa_distant_partners, outfile +"_singles" )
-        end
-
-
-        log << ld
-        log << "passing domains              : " + domain_pass_counter.to_s + ld
-        log << "failing domains              : " + domain_fail_counter.to_s + ld
-        log << "proteins with passing domains: " + proteins_with_passing_domains.to_s + ld
-        log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
-        log << ld
-
-        return domain_pass_counter
-
-      end # parse
-
-
-      private
-
-      def write_msa( msa, filename )
-        io = MsaIO.new()
-        w = FastaWriter.new()
-        w.set_line_width( 60 )
-        w.clean( true )
-        begin
-          io.write_to_file( msa, filename, w )
-        rescue Exception
-          error_msg = "could not write to \"" + filename + "\""
-          raise IOError, error_msg
-        end
+      if out_msa_distant_partners
+        write_msa( out_msa_distant_partners, outfile +"_singles" )
       end
 
 
-      def add_sequence( sequence_name, in_msa, add_to_msa )
-        seqs = in_msa.find_by_name_start( sequence_name, true )
-        if ( seqs.length < 1 )
-          error_msg = "sequence \"" + sequence_name + "\" not found in sequence file"
-          raise StandardError, error_msg
-        end
-        if ( seqs.length > 1 )
-          error_msg = "sequence \"" + sequence_name + "\" not unique in sequence file"
-          raise StandardError, error_msg
-        end
-        seq = in_msa.get_sequence( seqs[ 0 ] )
-        add_to_msa.add_sequence( seq )
+      log << ld
+      log << "passing domains              : " + domain_pass_counter.to_s + ld
+      log << "failing domains              : " + domain_fail_counter.to_s + ld
+      log << "proteins with passing domains: " + proteins_with_passing_domains.to_s + ld
+      log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
+      log << ld
+
+      return domain_pass_counter
+
+    end # parse
+
+
+    private
+
+    def write_msa( msa, filename )
+      io = MsaIO.new()
+      w = FastaWriter.new()
+      w.set_line_width( 60 )
+      w.clean( true )
+      begin
+        io.write_to_file( msa, filename, w )
+      rescue Exception
+        error_msg = "could not write to \"" + filename + "\""
+        raise IOError, error_msg
+      end
+    end
+
+
+    def add_sequence( sequence_name, in_msa, add_to_msa )
+      seqs = in_msa.find_by_name_start( sequence_name, true )
+      if ( seqs.length < 1 )
+        error_msg = "sequence \"" + sequence_name + "\" not found in sequence file"
+        raise StandardError, error_msg
+      end
+      if ( seqs.length > 1 )
+        error_msg = "sequence \"" + sequence_name + "\" not unique in sequence file"
+        raise StandardError, error_msg
+      end
+      seq = in_msa.get_sequence( seqs[ 0 ] )
+      add_to_msa.add_sequence( seq )
+    end
+
+    # raises ArgumentError, StandardError
+    def extract_domain( sequence,
+        number,
+        out_of,
+        seq_from,
+        seq_to,
+        in_msa,
+        out_msa,
+        add_position,
+        add_domain_number,
+        add_domain_number_as_digit,
+        add_domain_number_as_letter,
+        trim_name,
+        add_species )
+      if  number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
+        error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
+        raise ArgumentError, error_msg
+      end
+      if  seq_from < 1 || seq_to < 1 || seq_from >= seq_to
+        error_msg = "impossible: seq-f=" + seq_from.to_s + ", seq-t=" + seq_to.to_s
+        raise ArgumentError, error_msg
+      end
+      seqs = in_msa.find_by_name_start( sequence, true )
+      if seqs.length < 1
+        error_msg = "sequence \"" + sequence + "\" not found in sequence file"
+        raise StandardError, error_msg
+      end
+      if seqs.length > 1
+        error_msg = "sequence \"" + sequence + "\" not unique in sequence file"
+        raise StandardError, error_msg
+      end
+      # hmmsearch is 1 based, wheres sequences are 0 bases in this package.
+      seq = in_msa.get_sequence( seqs[ 0 ] ).get_subsequence( seq_from - 1, seq_to - 1 )
+
+      orig_name = seq.get_name
+
+      seq.set_name( orig_name.split[ 0 ] )
+
+      if add_position
+        seq.set_name( seq.get_name + "_" + seq_from.to_s + "-" + seq_to.to_s )
       end
 
-      # raises ArgumentError, StandardError
-      def extract_domain( sequence,
-          number,
-          out_of,
-          seq_from,
-          seq_to,
-          in_msa,
-          out_msa,
-          add_position,
-          add_domain_number,
-          add_domain_number_as_digit,
-          add_domain_number_as_letter,
-          trim_name,
-          add_species )
-        if  number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
-          error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
-          raise ArgumentError, error_msg
-        end
-        if  seq_from < 1 || seq_to < 1 || seq_from >= seq_to
-          error_msg = "impossible: seq-f=" + seq_from.to_s + ", seq-t=" + seq_to.to_s
-          raise ArgumentError, error_msg
-        end
-        seqs = in_msa.find_by_name_start( sequence, true )
-        if seqs.length < 1
-          error_msg = "sequence \"" + sequence + "\" not found in sequence file"
-          raise StandardError, error_msg
-        end
-        if seqs.length > 1
-          error_msg = "sequence \"" + sequence + "\" not unique in sequence file"
-          raise StandardError, error_msg
-        end
-        # hmmsearch is 1 based, wheres sequences are 0 bases in this package.
-        seq = in_msa.get_sequence( seqs[ 0 ] ).get_subsequence( seq_from - 1, seq_to - 1 )
+      if trim_name
+        seq.set_name( seq.get_name[ 0, seq.get_name.length - TRIM_BY ] )
+      end
 
-        orig_name = seq.get_name
-
-        seq.set_name( orig_name.split[ 0 ] )
-
-        if add_position
-          seq.set_name( seq.get_name + "_" + seq_from.to_s + "-" + seq_to.to_s )
-        end
-
-        if trim_name
-          seq.set_name( seq.get_name[ 0, seq.get_name.length - TRIM_BY ] )
-        end
-
-        if out_of != 1
-          if add_domain_number_as_digit
-            seq.set_name( seq.get_name + number.to_s )
-          elsif add_domain_number_as_letter
-            if number > 25
-              error_msg = 'too many identical domains per sequence, cannot use letters to distinguish them'
-              raise StandardError, error_msg
-            end
-            seq.set_name( seq.get_name + ( number + 96 ).chr )
-          elsif add_domain_number
-            seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
-          end
-        end
-
-        # if ( seq.get_name.length > 10 )
-        #   error_msg = "sequence name [" + seq.get_name + "] is longer than 10 characters"
-        #   raise StandardError, error_msg
-        # end
-
-        if add_species
-          a = orig_name.rindex "["
-          b = orig_name.rindex "]"
-          unless a && b
-            error_msg = "species not found in " + orig_name
+      if out_of != 1
+        if add_domain_number_as_digit
+          seq.set_name( seq.get_name + number.to_s )
+        elsif add_domain_number_as_letter
+          if number > 25
+            error_msg = 'too many identical domains per sequence, cannot use letters to distinguish them'
             raise StandardError, error_msg
           end
-          species = orig_name[ a .. b ]
-          seq.set_name( seq.get_name + " " + species )
+          seq.set_name( seq.get_name + ( number + 96 ).chr )
+        elsif add_domain_number
+          seq.set_name( seq.get_name + "~" + number.to_s + "-" + out_of.to_s )
         end
-
-        out_msa.add_sequence( seq )
-
       end
 
-      def is_ignorable?( line )
-        return ( line !~ /[A-Za-z0-9-]/ || line =~/^#/ )
+      # if ( seq.get_name.length > 10 )
+      #   error_msg = "sequence name [" + seq.get_name + "] is longer than 10 characters"
+      #   raise StandardError, error_msg
+      # end
+
+      if add_species
+        a = orig_name.rindex "["
+        b = orig_name.rindex "]"
+        unless a && b
+          error_msg = "species not found in " + orig_name
+          raise StandardError, error_msg
+        end
+        species = orig_name[ a .. b ]
+        seq.set_name( seq.get_name + " " + species )
       end
+      out_msa.add_sequence( seq )
+    end
 
-    end # class HmmscanDomainExtractor
+    def is_ignorable?( line )
+      return ( line !~ /[A-Za-z0-9-]/ || line =~/^#/ )
+    end
 
-  end # module Evoruby
+  end # class HmmscanDomainExtractor
+
+end # module Evoruby
 
