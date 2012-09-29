@@ -73,6 +73,9 @@ module Evoruby
 
       domain_pass_counter     = 0
       domain_fail_counter     = 0
+      singlets_counter        = 0
+      distant_pairs_counter   = 0
+      close_pairs_counter     = 0
       proteins_with_passing_domains = 0
       proteins_with_failing_domains = 0
       max_domain_copy_number_per_protein = -1
@@ -82,7 +85,7 @@ module Evoruby
       prev_number   = nil
       prev_env_from = nil
       prev_env_to   = nil
-      prev_i_e_value  = nil
+      # prev_i_e_value  = nil
       prev_is_pair = false
 
       File.open( hmmsearch_output ) do | file |
@@ -109,7 +112,7 @@ module Evoruby
               max_domain_copy_number_per_protein = number
             end
             if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-                 ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f )  )
+                 ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
 
               extract_domain( sequence,
                 number,
@@ -132,36 +135,26 @@ module Evoruby
               end
 
               if min_linker
-                if ( ( e_value_threshold < 0.0 ) || ( prev_i_e_value <= e_value_threshold  ) ) &&
-                   ( ( length_threshold <= 0 )   || (  ( prev_env_to - prev_env_from + 1 ) >= length_threshold.to_f    ) )
-
-               #   if prev_sequence && sequence != prev_sequence
-               #     prev_is_pair = false
-               #   end
-
-                  if out_of == 1
-
-                  #  if prev_sequence && sequence == prev_sequence
-                  #    puts "sequence == prev_sequence && out_of == 1"
-                  #    exit
-                  #  end
-                    extract_domain( sequence,
-                      number,
-                      out_of,
-                      env_from,
-                      env_to,
-                      in_msa,
-                      out_msa_singlets,
-                      false,
-                      true,
-                      false,
-                      false,
-                      trim_name ,
-                      add_species )
-
-                  elsif prev_sequence && sequence == prev_sequence
-
-                    if  ( env_from - prev_env_to ) <= min_linker  #######
+                if out_of == 1
+                  extract_domain( sequence,
+                    number,
+                    out_of,
+                    env_from,
+                    env_to,
+                    in_msa,
+                    out_msa_singlets,
+                    false,
+                    true,
+                    false,
+                    false,
+                    trim_name,
+                    add_species )
+                  singlets_counter += 1
+                elsif prev_sequence
+                  if sequence != prev_sequence
+                    prev_is_pair = false
+                  else
+                    if ( env_from - prev_env_to ) <= min_linker
                       extract_domain( sequence,
                         prev_number.to_s + "+" + number.to_s,
                         out_of,
@@ -173,10 +166,11 @@ module Evoruby
                         true,
                         false,
                         false,
-                        trim_name ,
+                        trim_name,
                         add_species )
                       prev_is_pair = true
-                    else               #######
+                      close_pairs_counter += 2
+                    else
                       if !prev_is_pair
                         extract_domain( sequence,
                           prev_number,
@@ -189,8 +183,9 @@ module Evoruby
                           true,
                           false,
                           false,
-                          trim_name ,
+                          trim_name,
                           add_species )
+                        distant_pairs_counter += 1
                       end
                       if number == out_of
                         extract_domain( sequence,
@@ -204,41 +199,42 @@ module Evoruby
                           true,
                           false,
                           false,
-                          trim_name ,
+                          trim_name,
                           add_species )
+                        distant_pairs_counter += 1
                       end
                       prev_is_pair = false
-                    end                #######
+                    end
+                  end # sequence != prev_sequence else
+                end
+                prev_sequence = sequence
+                prev_number   = number
+                prev_env_from = env_from
+                prev_env_to   = env_to
+                #prev_i_e_value  = i_e_value
+              end # if min_linker
 
-                  end
-                  prev_sequence = sequence
-                  prev_number   = number
-                  prev_env_from = env_from
-                  prev_env_to   = env_to
-                  prev_i_e_value  = i_e_value
-                end
-
-              else
-                print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
-                log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
-                if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
-                  print( " iE=" + i_e_value.to_s )
-                  log << " iE=" + i_e_value.to_s
-                end
-                if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
-                  le = env_to - env_from + 1
-                  print( " l=" + le.to_s )
-                  log << " l=" + le.to_s
-                end
-                print( Constants::LINE_DELIMITER )
-                log << Constants::LINE_DELIMITER
-                domain_fail_counter  += 1
-
-                if failed_seqs.find_by_name_start( sequence, true ).length < 1
-                  add_sequence( sequence, in_msa, failed_seqs )
-                  proteins_with_failing_domains += 1
-                end
+            else
+              print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
+              log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
+              if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
+                print( " iE=" + i_e_value.to_s )
+                log << " iE=" + i_e_value.to_s
               end
+              if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
+                le = env_to - env_from + 1
+                print( " l=" + le.to_s )
+                log << " l=" + le.to_s
+              end
+              print( Constants::LINE_DELIMITER )
+              log << Constants::LINE_DELIMITER
+              domain_fail_counter  += 1
+
+              if failed_seqs.find_by_name_start( sequence, true ).length < 1
+                add_sequence( sequence, in_msa, failed_seqs )
+                proteins_with_failing_domains += 1
+              end
+
             end
           end # if !is_ignorable?( line ) && line =~ /^\S+\s+/
         end #  while line = file.gets
@@ -273,12 +269,17 @@ module Evoruby
       end
 
       if out_msa_distant_partners
-        write_msa( out_msa_distant_partners, outfile +"_dist" )
+        write_msa( out_msa_distant_partners, outfile + "_" + min_linker.to_s + "_isolated" );
       end
 
 
       log << ld
       log << "passing domains              : " + domain_pass_counter.to_s + ld
+      if ( min_linker )
+        log << "single domains               : " + singlets_counter.to_s + ld
+        log << "domains in close pairs       : " + close_pairs_counter.to_s + ld
+        log << "isolated domains             : " + distant_pairs_counter.to_s + ld
+      end
       log << "failing domains              : " + domain_fail_counter.to_s + ld
       log << "proteins with passing domains: " + proteins_with_passing_domains.to_s + ld
       log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
