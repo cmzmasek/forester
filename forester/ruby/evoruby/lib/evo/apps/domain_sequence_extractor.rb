@@ -150,20 +150,20 @@ module Evoruby
           Forester::Util.fatal_error( PRG_NAME, "attempt to use a negative length threshold", STDOUT )
         end
       end
-      
-      
-       min_linker = nil
-       if ( cla.is_option_set?( MIN_LINKER_OPT ) )
+
+
+      min_linker = nil
+      if ( cla.is_option_set?( MIN_LINKER_OPT ) )
         begin
-           min_linker = cla.get_option_value_as_int( MIN_LINKER_OPT )
+          min_linker = cla.get_option_value_as_int( MIN_LINKER_OPT )
         rescue ArgumentError => e
           Forester::Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
-         if ( !min_linker || min_linker > 100 || min_linker < -100 )
+        if ( !min_linker || min_linker > 100 || min_linker < -100 )
           Forester::Util.fatal_error( PRG_NAME, "unexpected value for min linker " + min_linker.to_s, STDOUT )
         end
       end
-      
+
 
       log = String.new
 
@@ -204,11 +204,11 @@ module Evoruby
         puts( "Trim names        : false" )
         log << "Trim names        : false" + ld
       end
-      
+
       if ( min_linker )
         puts( "Min linker        : " + min_linker.to_s )
         log << "Min linker        :  " + min_linker.to_s +  ld
-      
+
       end
 
 
@@ -249,10 +249,13 @@ module Evoruby
           add_species,
           min_linker,
           log )
-      rescue ArgumentError, IOError, StandardError => e
+      rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+
       rescue Exception => e
-        Util.fatal_error( PRG_NAME, "unexpected exception!: " + e.to_s, STDOUT )
+        puts e.backtrace
+        Util.fatal_error( PRG_NAME, "unexpected exception: " + e.to_s, STDOUT )
+
       end
 
       puts
