@@ -30,7 +30,9 @@ module Evoruby
         add_domain_number,
         trim_name ,
         add_species,
-        out_msa )
+        out_msa,
+        out_msa_singles,
+        passed_seqs )
 
       actual_out_of = hmmscan_datas.size
 
@@ -55,10 +57,48 @@ module Evoruby
           add_species )
         domain_pass_counter += 1
 
-        #   if passed_seqs.find_by_name_start( hmmscan_data.seq_name, true ).length < 1
-        #     add_sequence( hmmscan_data.seq_name, in_msa, passed_seqs )
-        #     proteins_with_passing_domains += 1
-        #   end
+        if passed_seqs.find_by_name_start( hmmscan_data.seq_name, true ).length < 1
+          add_sequence( hmmscan_data.seq_name, in_msa, passed_seqs )
+        end
+
+        if actual_out_of == 1
+          extract_domain( hmmscan_data.seq_name,
+            index + 1,
+            actual_out_of,
+            hmmscan_data.env_from,
+            hmmscan_data.env_to,
+            in_msa,
+            out_msa_singles,
+            add_position,
+            add_domain_number,
+            trim_name ,
+            add_species )
+        else
+
+              if (( first &&  next_env_from - env_to >=  min_linker )
+                   ||
+                 ( last && env_from - prev_env_to  >=  min_linker )
+                   ||
+                 ( !first && !last &&  ( next_env_from - env_to >=  min_linker ) && ( last && env_from - prev_env_to  >=  min_linker ) ))
+
+
+
+              elsif !first && ( env_from - prev_env_to ) <= min_linker
+                extract_domain( sequence,
+                  prev_number.to_s + "+" + number.to_s,
+                  out_of,
+                  prev_env_from,
+                  env_to,
+                  in_msa,
+                  out_msa_pairs,
+                  false,
+                  true,
+                  false,
+                  false,
+                  trim_name,
+                  add_species )
+              end
+        end
 
 =begin
         if min_linker
@@ -186,11 +226,11 @@ module Evoruby
       passed_seqs = Msa.new
       out_msa_pairs = nil
       out_msa_distant_partners = nil
-      out_msa_singlets = nil
+      out_msa_singles = nil
       if min_linker
         out_msa_pairs = Msa.new
         out_msa_distant_partners = Msa.new
-        out_msa_singlets = Msa.new
+        out_msa_singles = Msa.new
       end
 
       ld = Constants::LINE_DELIMITER
@@ -200,7 +240,6 @@ module Evoruby
       singlets_counter        = 0
       distant_pairs_counter   = 0
       close_pairs_counter     = 0
-      proteins_with_passing_domains = 0
       proteins_with_failing_domains = 0
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
@@ -236,7 +275,7 @@ module Evoruby
             i_e_value  = $13.to_f
 
             if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-                 ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
+                  ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
               hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
               if ( number > max_domain_copy_number_per_protein )
                 max_domain_copy_number_sequence    = sequence
@@ -276,7 +315,9 @@ module Evoruby
                 add_domain_number,
                 trim_name ,
                 add_species,
-                out_msa        )
+                out_msa,
+                out_msa_singles,
+                passed_seqs )
 
               hmmscan_datas.clear
             end
@@ -311,8 +352,8 @@ module Evoruby
         write_msa( out_msa_pairs, outfile +"_" + min_linker.to_s )
       end
 
-      if out_msa_singlets
-        write_msa( out_msa_singlets, outfile +"_singles" )
+      if out_msa_singles
+        write_msa( out_msa_singles, outfile +"_singles" )
       end
 
       if out_msa_distant_partners
@@ -328,7 +369,7 @@ module Evoruby
         log << "isolated domains             : " + distant_pairs_counter.to_s + ld
       end
       log << "failing domains              : " + domain_fail_counter.to_s + ld
-      log << "proteins with passing domains: " + proteins_with_passing_domains.to_s + ld
+      log << "proteins with passing domains: " + passed_seqs.length.to_s + ld
       log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
       log << ld
 
