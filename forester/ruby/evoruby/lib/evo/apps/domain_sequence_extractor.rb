@@ -17,9 +17,9 @@ module Evoruby
   class DomainSequenceExtractor
 
     PRG_NAME       = "dsx"
-    PRG_VERSION    = "1.000"
+    PRG_VERSION    = "2.000"
     PRG_DESC       = "extraction of domain sequences from hmmscan output"
-    PRG_DATE       = "20120906"
+    PRG_DATE       = "20121001"
     COPYRIGHT      = "2012 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
@@ -31,8 +31,8 @@ module Evoruby
     ADD_SPECIES                        = 's'
     MIN_LINKER_OPT                     = 'ml'
     LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
-    PASSED_SEQS_SUFFIX                 = '_domain_seq_extr_passed'
-    FAILED_SEQS_SUFFIX                 = '_domain_seq_extr_failed'
+    PASSED_SEQS_SUFFIX                 = '_with_passing_domains.fasta'
+    FAILED_SEQS_SUFFIX                 = '_with_no_passing_domains.fasta'
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
 
@@ -85,6 +85,13 @@ module Evoruby
       hmmsearch_output    = cla.get_file_name( 1 )
       fasta_sequence_file = cla.get_file_name( 2 )
       outfile             = cla.get_file_name( 3 )
+
+      if outfile.downcase.end_with?( ".fasta" )
+        outfile = outfile[ 0 .. outfile.length - 7 ]
+      elsif outfile.downcase.end_with?( ".fsa" )
+        outfile = outfile[ 0 .. outfile.length - 5 ]
+      end
+
 
       add_position = false
       if ( cla.is_option_set?( ADD_POSITION_OPTION ) )
@@ -148,7 +155,7 @@ module Evoruby
       log << "Hmmscan outputfile                     : " + hmmsearch_output + ld
       puts( "Fasta sequencefile (complete sequences): " + fasta_sequence_file )
       log << "Fasta sequencefile (complete sequences): " + fasta_sequence_file + ld
-      puts( "Outputfile                             : " + outfile )
+      puts( "Outputfile                             : " + outfile + ".fasta" )
       log << "Outputfile                             : " + outfile + ld
       puts( "Passed sequences outfile (fasta)       : " + outfile + PASSED_SEQS_SUFFIX )
       log << "Passed sequences outfile (fasta)       : " + outfile + PASSED_SEQS_SUFFIX + ld
@@ -223,10 +230,10 @@ module Evoruby
 
       puts
       Util.print_message( PRG_NAME, "extracted a total of " + domain_count.to_s + " domains" )
-      Util.print_message( PRG_NAME, "wrote;               " + outfile )
+      Util.print_message( PRG_NAME, "wrote;               " + outfile + ".fasta")
       Util.print_message( PRG_NAME, "wrote:               " + outfile + LOG_FILE_SUFFIX )
-      Util.print_message( PRG_NAME, "(wrote:              " + outfile + PASSED_SEQS_SUFFIX + ")" )
-      Util.print_message( PRG_NAME, "(wrote:              " + outfile + FAILED_SEQS_SUFFIX + ")" )
+      Util.print_message( PRG_NAME, "wrote:               " + outfile + PASSED_SEQS_SUFFIX )
+      Util.print_message( PRG_NAME, "wrote:               " + outfile + FAILED_SEQS_SUFFIX )
 
       begin
         f = File.open( outfile + LOG_FILE_SUFFIX, 'a' )

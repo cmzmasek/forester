@@ -38,7 +38,7 @@ module Evoruby
 
       Util.check_file_for_readability( hmmscan_output )
       Util.check_file_for_readability( fasta_sequence_file )
-      Util.check_file_for_writability( outfile )
+      Util.check_file_for_writability( outfile + ".fasta" )
       Util.check_file_for_writability( passed_seqs_outfile )
       Util.check_file_for_writability( failed_seqs_outfile )
 
@@ -56,7 +56,7 @@ module Evoruby
       failed_seqs = Msa.new
       passed_seqs = Msa.new
       out_msa_pairs = nil
-      out_msa_distant_partners = nil
+      out_msa_isolated = nil
       out_msa_singles = nil
       if min_linker
         out_msa_pairs = Msa.new
@@ -68,16 +68,11 @@ module Evoruby
 
       domain_pass_counter     = 0
       domain_fail_counter     = 0
-      singlets_counter        = 0
-      distant_pairs_counter   = 0
-      close_pairs_counter     = 0
       proteins_with_failing_domains = 0
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
 
-
       hmmscan_datas = Array.new
-
 
       File.open( hmmscan_output ) do | file |
         while line = file.gets
@@ -120,11 +115,6 @@ module Evoruby
               print( ld )
               log << ld
               domain_fail_counter  += 1
-
-              if failed_seqs.find_by_name_start( sequence, true ).length < 1
-                add_sequence( sequence, in_msa, failed_seqs )
-                proteins_with_failing_domains += 1
-              end
             end
 
             if number > out_of
@@ -132,19 +122,34 @@ module Evoruby
               raise StandardError, error_msg
             end
 
-            if number == out_of && !hmmscan_datas.empty?
-              domain_pass_counter += process_hmmscan_datas(  hmmscan_datas,
-                in_msa,
-                add_position,
-                add_domain_number,
-                add_species,
-                out_msa,
-                out_msa_singles,
-                out_msa_pairs,
-                out_msa_isolated,
-                passed_seqs,
-                min_linker )
-
+            if number == out_of
+              if !hmmscan_datas.empty?
+                process_hmmscan_datas( hmmscan_datas,
+                  in_msa,
+                  add_position,
+                  add_domain_number,
+                  add_species,
+                  out_msa,
+                  out_msa_singles,
+                  out_msa_pairs,
+                  out_msa_isolated,
+                  min_linker )
+                domain_pass_counter += hmmscan_datas.length
+                if passed_seqs.find_by_name_start( sequence, true ).length < 1
+                  add_sequence( sequence, in_msa, passed_seqs )
+                else
+                  error_msg = "this should not have happened"
+                  raise StandardError, error_msg
+                end
+              else
+                if failed_seqs.find_by_name_start( sequence, true ).length < 1
+                  add_sequence( sequence, in_msa, failed_seqs )
+                  proteins_with_failing_domains += 1
+                else
+                  error_msg = "this should not have happened"
+                  raise StandardError, error_msg
+                end
+              end
               hmmscan_datas.clear
             end
 
@@ -170,33 +175,33 @@ module Evoruby
         log << ld
       end
 
-      write_msa( out_msa, outfile  )
+      write_msa( out_msa, outfile + ".fasta"  )
       write_msa( passed_seqs, passed_seqs_outfile )
       write_msa( failed_seqs, failed_seqs_outfile )
 
       if out_msa_pairs
-        write_msa( out_msa_pairs, outfile +"_" + min_linker.to_s )
+        write_msa( out_msa_pairs, outfile +"_" + min_linker.to_s + ".fasta")
       end
 
       if out_msa_singles
-        write_msa( out_msa_singles, outfile +"_singles" )
+        write_msa( out_msa_singles, outfile +"_singles" + ".fasta")
       end
 
       if out_msa_isolated
-        write_msa( out_msa_isolated, outfile + "_" + min_linker.to_s + "_isolated" );
+        write_msa( out_msa_isolated, outfile + "_" + min_linker.to_s + "_isolated" + ".fasta");
       end
 
 
       log << ld
-      log << "passing domains              : " + domain_pass_counter.to_s + ld
+      log << "passing domains                 : " + domain_pass_counter.to_s + ld
       if ( min_linker )
-        log << "single domains               : " + singlets_counter.to_s + ld
-        log << "domains in close pairs       : " + close_pairs_counter.to_s + ld
-        log << "isolated domains             : " + distant_pairs_counter.to_s + ld
+        log << "single domains                  : " + out_msa_singles.get_number_of_seqs.to_s + ld
+        log << "domains in close pairs          : " + out_msa_pairs.get_number_of_seqs.to_s + ld
+        log << "isolated domains                : " + out_msa_isolated.get_number_of_seqs.to_s + ld
       end
-      log << "failing domains              : " + domain_fail_counter.to_s + ld
-      log << "proteins with passing domains: " + passed_seqs.get_number_of_seqs.to_s + ld
-      log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
+      log << "failing domains                 : " + domain_fail_counter.to_s + ld
+      log << "proteins with passing domains   : " + passed_seqs.get_number_of_seqs.to_s + ld
+      log << "proteins with no passing domains: " + proteins_with_failing_domains.to_s + ld
       log << ld
 
       return domain_pass_counter
@@ -243,12 +248,9 @@ module Evoruby
         out_msa_singles,
         out_msa_pairs,
         out_msa_isolated,
-        passed_seqs,
         min_linker )
 
       actual_out_of = hmmscan_datas.size
-
-      domain_pass_counter = 0;
 
       hmmscan_datas.each_with_index do |hmmscan_data, index|
         if hmmscan_data.number < ( index + 1 )
@@ -266,15 +268,8 @@ module Evoruby
           add_position,
           add_domain_number,
           add_species )
-        domain_pass_counter += 1
-
-        if passed_seqs.find_by_name_start( hmmscan_data.seq_name, true ).length < 1
-          add_sequence( hmmscan_data.seq_name, in_msa, passed_seqs )
-        end
-
 
         if min_linker
-
           if actual_out_of == 1
             extract_domain( hmmscan_data.seq_name,
               1,
@@ -289,15 +284,11 @@ module Evoruby
           else
             first = index == 0
             last = index == hmmscan_datas.length - 1
-            #  next_env_from = hmmscan_datas[ index + 1 ].env_from
-            #  env_to = hmmscan_data.env_to
-            #  env_from = hmmscan_data.env_from
-            #  prev_env_to = hmmscan_datas[ index - 1 ].env_to
 
-
-            if (( first && ( ( hmmscan_datas[ index + 1 ].env_from - hmmscan_data.env_to ) > min_linker) )  ||
-                 ( last && ( ( hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to )  >  min_linker ) ) ||
-                 ( !first && !last &&  (hmmscan_datas[ index + 1 ].env_from- hmmscan_data.env_to >  min_linker ) && ( last &&  hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to  >  min_linker ) ))
+            if ( ( first && ( ( hmmscan_datas[ index + 1 ].env_from - hmmscan_data.env_to ) > min_linker) )  ||
+                 ( last && ( ( hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to ) > min_linker ) ) ||
+                 ( !first && !last &&  ( ( hmmscan_datas[ index + 1 ].env_from - hmmscan_data.env_to ) > min_linker ) &&
+                   ( ( hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to ) > min_linker ) ) )
 
               extract_domain(  hmmscan_data.seq_name,
                 index + 1,
@@ -325,7 +316,6 @@ module Evoruby
           end
         end
       end # each
-      domain_pass_counter
     end # def process_hmmscan_data
 
     def extract_domain( sequence,
