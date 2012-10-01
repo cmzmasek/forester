@@ -23,7 +23,6 @@ module Evoruby
     def initialize
     end
 
-
     def process_hmmscan_datas( hmmscan_datas,
         in_msa,
         add_position,
@@ -32,6 +31,8 @@ module Evoruby
         add_species,
         out_msa,
         out_msa_singles,
+        out_msa_pairs,
+        out_msa_isolated,
         passed_seqs )
 
       actual_out_of = hmmscan_datas.size
@@ -64,7 +65,7 @@ module Evoruby
         if actual_out_of == 1
           extract_domain( hmmscan_data.seq_name,
             index + 1,
-            actual_out_of,
+            1,
             hmmscan_data.env_from,
             hmmscan_data.env_to,
             in_msa,
@@ -74,25 +75,30 @@ module Evoruby
             trim_name ,
             add_species )
         else
+          first = index == 0
+          last = index == hmmscan_datas.length - 1
+          next_env_from = hmmscan_datas[ index + 1 ].env_from
+          env_to = hmmscan_data.env_to
+          env_from = hmmscan_data.env_from
+          prev_env_to = hmmscan_datas[ index - 1 ].env_to
 
-              if (( first &&  next_env_from - env_to >=  min_linker )
+          
+              if (( first && ( ( next_env_from - env_to ) >  min_linker) )
                    ||
-                 ( last && env_from - prev_env_to  >=  min_linker )
+                 ( last && ( ( env_from - prev_env_to )  >  min_linker ) )
                    ||
-                 ( !first && !last &&  ( next_env_from - env_to >=  min_linker ) && ( last && env_from - prev_env_to  >=  min_linker ) ))
+                 ( !first && !last &&  ( next_env_from - env_to >  min_linker ) && ( last && env_from - prev_env_to  >  min_linker ) ))
 
 
 
-              elsif !first && ( env_from - prev_env_to ) <= min_linker
-                extract_domain( sequence,
-                  prev_number.to_s + "+" + number.to_s,
-                  out_of,
-                  prev_env_from,
-                  env_to,
+              elsif !first &&
+                extract_domain(  hmmscan_data.seq_name,
+                  index.to_s  + "+" + (index + 1).to_s,
+                  actual_out_of,
+                  hmmscan_datas[ index - 1 ].env_from,
+                  hmmscan_data.env_to,
                   in_msa,
                   out_msa_pairs,
-                  false,
-                  true,
                   false,
                   false,
                   trim_name,
