@@ -28,11 +28,8 @@ module Evoruby
     LENGTH_THRESHOLD_OPTION            = 'l'
     ADD_POSITION_OPTION                = 'p'
     ADD_DOMAIN_NUMBER_OPTION           = 'd'
-    ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT  = 'dd'
-    ADD_DOMAIN_NUMBER_OPTION_AS_LETTER = 'dl'
     ADD_SPECIES                        = 's'
     MIN_LINKER_OPT                     = 'ml'
-    TRIM_OPTION                        = 't'
     LOG_FILE_SUFFIX                    = '_domain_seq_extr.log'
     PASSED_SEQS_SUFFIX                 = '_domain_seq_extr_passed'
     FAILED_SEQS_SUFFIX                 = '_domain_seq_extr_failed'
@@ -74,9 +71,6 @@ module Evoruby
       allowed_opts.push( ADD_POSITION_OPTION )
       allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION )
       allowed_opts.push( LENGTH_THRESHOLD_OPTION )
-      allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT )
-      allowed_opts.push( ADD_DOMAIN_NUMBER_OPTION_AS_LETTER )
-      allowed_opts.push( TRIM_OPTION )
       allowed_opts.push( ADD_SPECIES )
       allowed_opts.push( MIN_LINKER_OPT )
 
@@ -97,34 +91,14 @@ module Evoruby
         add_position = true
       end
 
-      trim = false
-      if ( cla.is_option_set?( TRIM_OPTION ) )
-        trim = true
-      end
-
       add_domain_number           = false
-      add_domain_number_as_letter = false
-      add_domain_number_as_digit  = false
-
       if ( cla.is_option_set?( ADD_DOMAIN_NUMBER_OPTION ) )
         add_domain_number = true
-      end
-      if ( cla.is_option_set?( ADD_DOMAIN_NUMBER_OPTION_AS_LETTER ) )
-        add_domain_number_as_letter = true
-      end
-      if ( cla.is_option_set?( ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT ) )
-        add_domain_number_as_digit = true
       end
 
       add_species = false
       if cla.is_option_set? ADD_SPECIES
         add_species = true
-      end
-
-      if ( add_domain_number_as_letter && add_domain_number_as_digit )
-        puts( "attempt to add domain number as letter and digit at the same time" )
-        print_help
-        exit( -1 )
       end
 
       e_value_threshold = -1.0
@@ -196,15 +170,6 @@ module Evoruby
         puts( "Length threshold  : no threshold" )
         log << "Length threshold  : no threshold" + ld
       end
-
-      if ( trim )
-        puts( "Trim last 2 chars : true" )
-        log << "Trim last 2 chars : true" + ld
-      else
-        puts( "Trim names        : false" )
-        log << "Trim names        : false" + ld
-      end
-
       if ( min_linker )
         puts( "Min linker        : " + min_linker.to_s )
         log << "Min linker        :  " + min_linker.to_s +  ld
@@ -220,7 +185,7 @@ module Evoruby
         log << "Add positions (rel to complete seq) to extracted domains: false" + ld
       end
 
-      if ( add_domain_number || add_domain_number_as_digit || add_domain_number_as_letter )
+      if ( add_domain_number )
         puts( "Add numbers to extracted domains (in case of more than one domain per complete seq): true" )
         log << "Add numbers to extracted domains (in case of more than one domain per complete seq): true" + ld
       else
@@ -243,13 +208,11 @@ module Evoruby
           length_threshold,
           add_position,
           add_domain_number,
-          add_domain_number_as_digit,
-          add_domain_number_as_letter,
-          trim,
           add_species,
           min_linker,
           log )
       rescue ArgumentError, IOError => e
+        puts e.backtrace
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
 
       rescue Exception => e
@@ -289,9 +252,6 @@ module Evoruby
       puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i>: length threshold, default is no threshold" )
       puts( "           -" + ADD_POSITION_OPTION  + ": to add positions (rel to complete seq) to extracted domains" )
       puts( "           -" + ADD_DOMAIN_NUMBER_OPTION  + ": to add numbers to extracted domains (in case of more than one domain per complete seq) (example \"domain~2-3\")" )
-      puts( "           -" + ADD_DOMAIN_NUMBER_OPTION_AS_DIGIT  + ": to add numbers to extracted domains as digit (example \"domain2\")" )
-      puts( "           -" + ADD_DOMAIN_NUMBER_OPTION_AS_LETTER  + ": to add numbers to extracted domains as letter (example \"domaina\")" )
-      puts( "           -" + TRIM_OPTION  + ": to remove the last 2 characters from sequence names" )
       puts( "           -" + ADD_SPECIES  + ": to add species [in brackets]" )
       puts( "           -" + MIN_LINKER_OPT  + "=<i>: to extract pairs of same domains with a distance inbetween shorter than a given value" )
       puts()

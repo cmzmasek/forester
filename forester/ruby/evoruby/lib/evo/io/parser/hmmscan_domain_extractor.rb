@@ -18,180 +18,8 @@ module Evoruby
 
   class HmmscanDomainExtractor
 
-    TRIM_BY = 2
-
     def initialize
     end
-
-    def process_hmmscan_datas( hmmscan_datas,
-        in_msa,
-        add_position,
-        add_domain_number,
-        trim_name ,
-        add_species,
-        out_msa,
-        out_msa_singles,
-        out_msa_pairs,
-        out_msa_isolated,
-        passed_seqs )
-
-      actual_out_of = hmmscan_datas.size
-
-      domain_pass_counter = 0;
-
-      hmmscan_datas.each_with_index do |hmmscan_data, index|
-        if hmmscan_data.number < ( index + 1 )
-          error_msg = "hmmscan_data.number < ( index + 1 ) (this should not have happened)"
-          raise StandardError, error_msg
-        end
-
-        extract_domain( hmmscan_data.seq_name,
-          index + 1,
-          actual_out_of,
-          hmmscan_data.env_from,
-          hmmscan_data.env_to,
-          in_msa,
-          out_msa,
-          add_position,
-          add_domain_number,
-          trim_name ,
-          add_species )
-        domain_pass_counter += 1
-
-        if passed_seqs.find_by_name_start( hmmscan_data.seq_name, true ).length < 1
-          add_sequence( hmmscan_data.seq_name, in_msa, passed_seqs )
-        end
-
-        if actual_out_of == 1
-          extract_domain( hmmscan_data.seq_name,
-            index + 1,
-            1,
-            hmmscan_data.env_from,
-            hmmscan_data.env_to,
-            in_msa,
-            out_msa_singles,
-            add_position,
-            add_domain_number,
-            trim_name ,
-            add_species )
-        else
-          first = index == 0
-          last = index == hmmscan_datas.length - 1
-          next_env_from = hmmscan_datas[ index + 1 ].env_from
-          env_to = hmmscan_data.env_to
-          env_from = hmmscan_data.env_from
-          prev_env_to = hmmscan_datas[ index - 1 ].env_to
-
-          
-              if (( first && ( ( next_env_from - env_to ) >  min_linker) )
-                   ||
-                 ( last && ( ( env_from - prev_env_to )  >  min_linker ) )
-                   ||
-                 ( !first && !last &&  ( next_env_from - env_to >  min_linker ) && ( last && env_from - prev_env_to  >  min_linker ) ))
-
-
-
-              elsif !first &&
-                extract_domain(  hmmscan_data.seq_name,
-                  index.to_s  + "+" + (index + 1).to_s,
-                  actual_out_of,
-                  hmmscan_datas[ index - 1 ].env_from,
-                  hmmscan_data.env_to,
-                  in_msa,
-                  out_msa_pairs,
-                  false,
-                  false,
-                  trim_name,
-                  add_species )
-              end
-        end
-
-=begin
-        if min_linker
-          if out_of == 1
-            extract_domain( sequence,
-              number,
-              out_of,
-              env_from,
-              env_to,
-              in_msa,
-              out_msa_singlets,
-              false,
-              true,
-              false,
-              false,
-              trim_name,
-              add_species )
-            singlets_counter += 1
-          elsif prev_sequence
-            if sequence != prev_sequence
-              prev_is_pair = false
-            else
-              if ( env_from - prev_env_to ) <= min_linker
-                extract_domain( sequence,
-                  prev_number.to_s + "+" + number.to_s,
-                  out_of,
-                  prev_env_from,
-                  env_to,
-                  in_msa,
-                  out_msa_pairs,
-                  false,
-                  true,
-                  false,
-                  false,
-                  trim_name,
-                  add_species )
-                prev_is_pair = true
-                close_pairs_counter += 2
-              else
-                if !prev_is_pair
-                  extract_domain( sequence,
-                    prev_number,
-                    out_of,
-                    prev_env_from,
-                    prev_env_to,
-                    in_msa,
-                    out_msa_distant_partners,
-                    false,
-                    true,
-                    false,
-                    false,
-                    trim_name,
-                    add_species )
-                  distant_pairs_counter += 1
-                end
-                if number == out_of
-                  extract_domain( sequence,
-                    number,
-                    out_of,
-                    env_from,
-                    env_to,
-                    in_msa,
-                    out_msa_distant_partners,
-                    false,
-                    true,
-                    false,
-                    false,
-                    trim_name,
-                    add_species )
-                  distant_pairs_counter += 1
-                end
-                prev_is_pair = false
-              end
-            end # sequence != prev_sequence else
-          end
-          prev_sequence = sequence
-          prev_number   = number
-          prev_env_from = env_from
-          prev_env_to   = env_to
-          #prev_i_e_value  = i_e_value
-        end # if min_linker
-=end
-
-      end # each
-      domain_pass_counter
-    end # def process_hmmscan_data
-
 
     # raises ArgumentError, IOError, StandardError
     def parse( domain_id,
@@ -204,9 +32,6 @@ module Evoruby
         length_threshold,
         add_position,
         add_domain_number,
-        add_domain_number_as_digit,
-        add_domain_number_as_letter,
-        trim_name,
         add_species,
         min_linker,
         log )
@@ -235,7 +60,7 @@ module Evoruby
       out_msa_singles = nil
       if min_linker
         out_msa_pairs = Msa.new
-        out_msa_distant_partners = Msa.new
+        out_msa_isolated = Msa.new
         out_msa_singles = Msa.new
       end
 
@@ -249,13 +74,6 @@ module Evoruby
       proteins_with_failing_domains = 0
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
-
-      prev_sequence = nil
-      prev_number   = nil
-      prev_env_from = nil
-      prev_env_to   = nil
-      # prev_i_e_value  = nil
-      prev_is_pair = false
 
 
       hmmscan_datas = Array.new
@@ -281,7 +99,7 @@ module Evoruby
             i_e_value  = $13.to_f
 
             if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-                  ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
+                 ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
               hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
               if ( number > max_domain_copy_number_per_protein )
                 max_domain_copy_number_sequence    = sequence
@@ -319,11 +137,13 @@ module Evoruby
                 in_msa,
                 add_position,
                 add_domain_number,
-                trim_name ,
                 add_species,
                 out_msa,
                 out_msa_singles,
-                passed_seqs )
+                out_msa_pairs,
+                out_msa_isolated,
+                passed_seqs,
+                min_linker )
 
               hmmscan_datas.clear
             end
@@ -362,8 +182,8 @@ module Evoruby
         write_msa( out_msa_singles, outfile +"_singles" )
       end
 
-      if out_msa_distant_partners
-        write_msa( out_msa_distant_partners, outfile + "_" + min_linker.to_s + "_isolated" );
+      if out_msa_isolated
+        write_msa( out_msa_isolated, outfile + "_" + min_linker.to_s + "_isolated" );
       end
 
 
@@ -375,7 +195,7 @@ module Evoruby
         log << "isolated domains             : " + distant_pairs_counter.to_s + ld
       end
       log << "failing domains              : " + domain_fail_counter.to_s + ld
-      log << "proteins with passing domains: " + passed_seqs.length.to_s + ld
+      log << "proteins with passing domains: " + passed_seqs.get_number_of_seqs.to_s + ld
       log << "proteins with failing domains: " + proteins_with_failing_domains.to_s + ld
       log << ld
 
@@ -414,6 +234,99 @@ module Evoruby
       add_to_msa.add_sequence( seq )
     end
 
+    def process_hmmscan_datas( hmmscan_datas,
+        in_msa,
+        add_position,
+        add_domain_number,
+        add_species,
+        out_msa,
+        out_msa_singles,
+        out_msa_pairs,
+        out_msa_isolated,
+        passed_seqs,
+        min_linker )
+
+      actual_out_of = hmmscan_datas.size
+
+      domain_pass_counter = 0;
+
+      hmmscan_datas.each_with_index do |hmmscan_data, index|
+        if hmmscan_data.number < ( index + 1 )
+          error_msg = "hmmscan_data.number < ( index + 1 ) (this should not have happened)"
+          raise StandardError, error_msg
+        end
+
+        extract_domain( hmmscan_data.seq_name,
+          index + 1,
+          actual_out_of,
+          hmmscan_data.env_from,
+          hmmscan_data.env_to,
+          in_msa,
+          out_msa,
+          add_position,
+          add_domain_number,
+          add_species )
+        domain_pass_counter += 1
+
+        if passed_seqs.find_by_name_start( hmmscan_data.seq_name, true ).length < 1
+          add_sequence( hmmscan_data.seq_name, in_msa, passed_seqs )
+        end
+
+
+        if min_linker
+
+          if actual_out_of == 1
+            extract_domain( hmmscan_data.seq_name,
+              1,
+              1,
+              hmmscan_data.env_from,
+              hmmscan_data.env_to,
+              in_msa,
+              out_msa_singles,
+              add_position,
+              add_domain_number,
+              add_species )
+          else
+            first = index == 0
+            last = index == hmmscan_datas.length - 1
+            #  next_env_from = hmmscan_datas[ index + 1 ].env_from
+            #  env_to = hmmscan_data.env_to
+            #  env_from = hmmscan_data.env_from
+            #  prev_env_to = hmmscan_datas[ index - 1 ].env_to
+
+
+            if (( first && ( ( hmmscan_datas[ index + 1 ].env_from - hmmscan_data.env_to ) > min_linker) )  ||
+                 ( last && ( ( hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to )  >  min_linker ) ) ||
+                 ( !first && !last &&  (hmmscan_datas[ index + 1 ].env_from- hmmscan_data.env_to >  min_linker ) && ( last &&  hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to  >  min_linker ) ))
+
+              extract_domain(  hmmscan_data.seq_name,
+                index + 1,
+                actual_out_of,
+                hmmscan_data.env_from,
+                hmmscan_data.env_to,
+                in_msa,
+                out_msa_isolated,
+                add_position,
+                add_domain_number,
+                add_species )
+
+            elsif !first
+              extract_domain(  hmmscan_data.seq_name,
+                index.to_s  + "+" + ( index + 1 ).to_s,
+                actual_out_of,
+                hmmscan_datas[ index - 1 ].env_from,
+                hmmscan_data.env_to,
+                in_msa,
+                out_msa_pairs,
+                add_position,
+                add_domain_number,
+                add_species )
+            end
+          end
+        end
+      end # each
+      domain_pass_counter
+    end # def process_hmmscan_data
 
     def extract_domain( sequence,
         number,
@@ -424,7 +337,6 @@ module Evoruby
         out_msa,
         add_position,
         add_domain_number,
-        trim_name,
         add_species )
       if  number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
         error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
@@ -452,10 +364,6 @@ module Evoruby
 
       if add_position
         seq.set_name( seq.get_name + "_" + seq_from.to_s + "-" + seq_to.to_s )
-      end
-
-      if trim_name
-        seq.set_name( seq.get_name[ 0, seq.get_name.length - TRIM_BY ] )
       end
 
       if out_of != 1 && add_domain_number
