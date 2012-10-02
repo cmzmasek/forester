@@ -8,7 +8,7 @@
 # $Id: fasta_tap.rb,v 1.1 2009/01/20 20:44:54 cmzmasek Exp $
 
 
-require 'lib/evo/tools/fasta_taxonomy_processor'
+require 'lib/evo/tool/fasta_taxonomy_processor'
 
 module Evoruby
 

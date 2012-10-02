@@ -9,7 +9,7 @@
 #
 # last modified: 2009/10/07
 
-require 'lib/evo/tools/evo_nursery'
+require 'lib/evo/tool/evo_nursery'
 
 module Evoruby
 

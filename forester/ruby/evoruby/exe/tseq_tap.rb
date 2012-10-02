@@ -8,7 +8,7 @@
 # $Id: tseq_tap.rb,v 1.1 2008/12/31 06:00:08 cmzmasek Exp $
 
 
-require 'lib/evo/tools/tseq_taxonomy_processor'
+require 'lib/evo/tool/tseq_taxonomy_processor'
 
 module Evoruby
 

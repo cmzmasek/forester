@@ -9,7 +9,7 @@
 #
 # last modified: 06/11/2007
 
-require 'lib/evo/tools/domain_sequence_extractor'
+require 'lib/evo/tool/domain_sequence_extractor'
 
 module Evoruby
 

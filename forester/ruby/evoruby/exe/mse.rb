@@ -8,7 +8,7 @@
 # $Id: mse.rb,v 1.2 2008/08/28 17:09:06 cmzmasek Exp $
 
 
-require 'lib/evo/tools/multi_sequence_extractor'
+require 'lib/evo/tool/multi_sequence_extractor'
 
 module Evoruby
     
