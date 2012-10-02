@@ -219,7 +219,6 @@ module Evoruby
           min_linker,
           log )
       rescue ArgumentError, IOError => e
-        puts e.backtrace
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
 
       rescue Exception => e
