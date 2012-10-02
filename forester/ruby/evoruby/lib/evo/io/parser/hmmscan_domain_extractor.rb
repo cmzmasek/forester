@@ -58,10 +58,22 @@ module Evoruby
       out_msa_pairs = nil
       out_msa_isolated = nil
       out_msa_singles = nil
+      out_msa_single_domains_protein_seqs = nil
+      out_msa_close_pairs_protein_seqs = nil
+      out_msa_close_pairs_only_protein_seqs = nil
+      out_msa_isolated_protein_seqs = nil
+      out_msa_isolated_only_protein_seqs = nil
+      out_msa_isolated_and_close_pair_protein_seqs = nil
       if min_linker
         out_msa_pairs = Msa.new
         out_msa_isolated = Msa.new
         out_msa_singles = Msa.new
+        out_msa_single_domains_protein_seqs = Msa.new
+        out_msa_close_pairs_protein_seqs = Msa.new
+        out_msa_close_pairs_only_protein_seqs = Msa.new
+        out_msa_isolated_protein_seqs = Msa.new
+        out_msa_isolated_only_protein_seqs = Msa.new
+        out_msa_isolated_and_close_pair_protein_seqs  = Msa.new
       end
 
       ld = Constants::LINE_DELIMITER
@@ -133,7 +145,13 @@ module Evoruby
                   out_msa_singles,
                   out_msa_pairs,
                   out_msa_isolated,
-                  min_linker )
+                  min_linker,
+                  out_msa_single_domains_protein_seqs,
+                  out_msa_close_pairs_protein_seqs,
+                  out_msa_close_pairs_only_protein_seqs,
+                  out_msa_isolated_protein_seqs,
+                  out_msa_isolated_only_protein_seqs,
+                  out_msa_isolated_and_close_pair_protein_seqs )
                 domain_pass_counter += hmmscan_datas.length
                 if passed_seqs.find_by_name_start( sequence, true ).length < 1
                   add_sequence( sequence, in_msa, passed_seqs )
@@ -156,8 +174,6 @@ module Evoruby
           end
         end #  while line = file.gets
       end # File.open( hmmsearch_output ) do | file |
-
-
 
       if domain_pass_counter < 1
         error_msg = "no domain sequences were extracted"
@@ -184,11 +200,35 @@ module Evoruby
       end
 
       if out_msa_singles
-        write_msa( out_msa_singles, outfile +"_singles" + ".fasta")
+        write_msa( out_msa_singles, outfile +"_singles.fasta")
       end
 
       if out_msa_isolated
-        write_msa( out_msa_isolated, outfile + "_" + min_linker.to_s + "_isolated" + ".fasta");
+        write_msa( out_msa_isolated, outfile + "_" + min_linker.to_s + "_isolated.fasta");
+      end
+
+      if out_msa_single_domains_protein_seqs
+        write_msa( out_msa_single_domains_protein_seqs, outfile +"_proteins_with_singles.fasta" )
+      end
+
+      if out_msa_close_pairs_protein_seqs
+        write_msa( out_msa_close_pairs_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_close_pairs.fasta" )
+      end
+
+      if out_msa_close_pairs_only_protein_seqs
+        write_msa( out_msa_close_pairs_only_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_with_close_pairs_only.fasta" )
+      end
+
+      if  out_msa_isolated_protein_seqs
+        write_msa(  out_msa_isolated_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_with_isolated_domains.fasta" )
+      end
+
+      if out_msa_isolated_only_protein_seqs
+        write_msa( out_msa_isolated_only_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_with_isolated_domains_only.fasta" )
+      end
+
+      if out_msa_isolated_and_close_pair_protein_seqs
+        write_msa( out_msa_isolated_and_close_pair_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_with_isolated_and_close_pairs.fasta" )
       end
 
 
@@ -196,7 +236,7 @@ module Evoruby
       log << "passing domains                 : " + domain_pass_counter.to_s + ld
       if ( min_linker )
         log << "single domains                  : " + out_msa_singles.get_number_of_seqs.to_s + ld
-        log << "domains in close pairs          : " + out_msa_pairs.get_number_of_seqs.to_s + ld
+        log << "domains in close pairs          : " + (2 * out_msa_pairs.get_number_of_seqs).to_s + ld
         log << "isolated domains                : " + out_msa_isolated.get_number_of_seqs.to_s + ld
       end
       log << "failing domains                 : " + domain_fail_counter.to_s + ld
@@ -248,9 +288,20 @@ module Evoruby
         out_msa_singles,
         out_msa_pairs,
         out_msa_isolated,
-        min_linker )
+        min_linker,
+        out_msa_single_domains_protein_seqs,
+        out_msa_close_pairs_protein_seqs,
+        out_msa_close_pairs_only_protein_seqs,
+        out_msa_isolated_protein_seqs,
+        out_msa_isolated_only_protein_seqs,
+        out_msa_isolated_and_close_pair_protein_seqs )
 
       actual_out_of = hmmscan_datas.size
+      saw_close_pair = false
+      saw_isolated = false
+
+      seq_name = ""
+      prev_seq_name = nil
 
       hmmscan_datas.each_with_index do |hmmscan_data, index|
         if hmmscan_data.number < ( index + 1 )
@@ -258,7 +309,9 @@ module Evoruby
           raise StandardError, error_msg
         end
 
-        extract_domain( hmmscan_data.seq_name,
+        seq_name =  hmmscan_data.seq_name
+
+        extract_domain( seq_name,
           index + 1,
           actual_out_of,
           hmmscan_data.env_from,
@@ -271,7 +324,7 @@ module Evoruby
 
         if min_linker
           if actual_out_of == 1
-            extract_domain( hmmscan_data.seq_name,
+            extract_domain( seq_name,
               1,
               1,
               hmmscan_data.env_from,
@@ -281,6 +334,13 @@ module Evoruby
               add_position,
               add_domain_number,
               add_species )
+            if out_msa_single_domains_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+              add_sequence( seq_name, in_msa, out_msa_single_domains_protein_seqs )
+            else
+              error_msg = "this should not have happened"
+              raise StandardError, error_msg
+            end
+
           else
             first = index == 0
             last = index == hmmscan_datas.length - 1
@@ -290,7 +350,7 @@ module Evoruby
                  ( !first && !last &&  ( ( hmmscan_datas[ index + 1 ].env_from - hmmscan_data.env_to ) > min_linker ) &&
                    ( ( hmmscan_data.env_from - hmmscan_datas[ index - 1 ].env_to ) > min_linker ) ) )
 
-              extract_domain(  hmmscan_data.seq_name,
+              extract_domain( seq_name,
                 index + 1,
                 actual_out_of,
                 hmmscan_data.env_from,
@@ -300,9 +360,10 @@ module Evoruby
                 add_position,
                 add_domain_number,
                 add_species )
+              saw_isolated = true
 
             elsif !first
-              extract_domain(  hmmscan_data.seq_name,
+              extract_domain( seq_name,
                 index.to_s  + "+" + ( index + 1 ).to_s,
                 actual_out_of,
                 hmmscan_datas[ index - 1 ].env_from,
@@ -312,10 +373,54 @@ module Evoruby
                 add_position,
                 add_domain_number,
                 add_species )
+              saw_close_pair = true
             end
           end
         end
+        if prev_seq_name && prev_seq_name != seq_name
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+        prev_seq_name = seq_name
       end # each
+      if saw_isolated
+        if out_msa_isolated_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+          add_sequence( seq_name, in_msa, out_msa_isolated_protein_seqs )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      end
+      if saw_close_pair
+        if out_msa_close_pairs_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+          add_sequence( seq_name, in_msa, out_msa_close_pairs_protein_seqs )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      end
+      if saw_close_pair && saw_isolated
+        if out_msa_isolated_and_close_pair_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+          add_sequence( seq_name, in_msa, out_msa_isolated_and_close_pair_protein_seqs )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      elsif saw_close_pair
+        if out_msa_close_pairs_only_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+          add_sequence( seq_name, in_msa, out_msa_close_pairs_only_protein_seqs )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      elsif saw_isolated
+        if out_msa_isolated_only_protein_seqs.find_by_name_start( seq_name, true ).length < 1
+          add_sequence( seq_name, in_msa, out_msa_isolated_only_protein_seqs )
+        else
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      end
     end # def process_hmmscan_data
 
     def extract_domain( sequence,
