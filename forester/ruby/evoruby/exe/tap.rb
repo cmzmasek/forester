@@ -9,7 +9,7 @@
 #
 # last modified: 05/18/2007
 
-require 'lib/evo/apps/taxonomy_processor'
+require 'lib/evo/tools/taxonomy_processor'
 
 module Evoruby
 

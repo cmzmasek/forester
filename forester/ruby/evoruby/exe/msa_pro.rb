@@ -9,7 +9,7 @@
 #
 
 
-require 'lib/evo/apps/msa_processor'
+require 'lib/evo/tools/msa_processor'
 
 module Evoruby
 

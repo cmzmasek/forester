@@ -9,7 +9,7 @@
 #
 # last modified: 06/11/2007
 
-require 'lib/evo/apps/domains_to_forester'
+require 'lib/evo/tools/domains_to_forester'
 
 module Evoruby
 

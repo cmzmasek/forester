@@ -8,7 +8,7 @@
 # $Id: fae.rb,v 1.1 2008/09/10 02:16:34 cmzmasek Exp $
 
 
-require 'lib/evo/apps/fasta_extractor'
+require 'lib/evo/tools/fasta_extractor'
 
 module Evoruby
     

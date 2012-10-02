@@ -9,7 +9,7 @@
 #
  
 
-require 'lib/evo/apps/phylogenies_decorator'
+require 'lib/evo/tools/phylogenies_decorator'
 
 module Evoruby
 

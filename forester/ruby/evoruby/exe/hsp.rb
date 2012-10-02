@@ -9,7 +9,7 @@
 #
 # last modified: 11/24/2009
 
-require 'lib/evo/apps/hmmscan_parser'
+require 'lib/evo/tools/hmmscan_parser'
 
 module Evoruby
 
