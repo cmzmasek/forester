@@ -231,17 +231,35 @@ module Evoruby
         write_msa( out_msa_isolated_and_close_pair_protein_seqs, outfile + "_" + min_linker.to_s + "_proteins_with_isolated_and_close_pairs.fasta" )
       end
 
+      if min_linker
+        if ( out_msa_single_domains_protein_seqs.get_number_of_seqs +
+             out_msa_close_pairs_only_protein_seqs.get_number_of_seqs +
+             out_msa_isolated_only_protein_seqs.get_number_of_seqs +
+             out_msa_isolated_and_close_pair_protein_seqs.get_number_of_seqs ) != passed_seqs.get_number_of_seqs
+          error_msg = "this should not have happened"
+          raise StandardError, error_msg
+        end
+      end
 
       log << ld
-      log << "passing domains                 : " + domain_pass_counter.to_s + ld
-      if ( min_linker )
-        log << "single domains                  : " + out_msa_singles.get_number_of_seqs.to_s + ld
-        log << "domains in close pairs          : " + (2 * out_msa_pairs.get_number_of_seqs).to_s + ld
-        log << "isolated domains                : " + out_msa_isolated.get_number_of_seqs.to_s + ld
+      log << "passing domains                             : " + domain_pass_counter.to_s + ld
+      log << "failing domains                             : " + domain_fail_counter.to_s + ld
+      log << "input proteins                              : " + in_msa.get_number_of_seqs.to_s + ld
+      log << "proteins with passing domains               : " + passed_seqs.get_number_of_seqs.to_s + ld
+      log << "proteins with no passing domains            : " + proteins_with_failing_domains.to_s + ld
+      if min_linker
+        log << "min linker length                           : " + min_linker.to_s + ld
+        log << "single domains                              : " + out_msa_singles.get_number_of_seqs.to_s + ld
+        log << "domains in close pairs                      : " + (2 * out_msa_pairs.get_number_of_seqs).to_s + ld
+        log << "isolated domains                            : " + out_msa_isolated.get_number_of_seqs.to_s + ld
+        log << "proteins wih single domains                 : " + out_msa_single_domains_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins wih close pair domains             : " + out_msa_close_pairs_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins wih close pair domains only        : " + out_msa_close_pairs_only_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins wih isolated domains               : " + out_msa_isolated_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins wih isolated domains only          : " + out_msa_isolated_only_protein_seqs.get_number_of_seqs.to_s + ld
+        log << "proteins wih close pair and isolated domains: " + out_msa_isolated_and_close_pair_protein_seqs.get_number_of_seqs.to_s + ld
       end
-      log << "failing domains                 : " + domain_fail_counter.to_s + ld
-      log << "proteins with passing domains   : " + passed_seqs.get_number_of_seqs.to_s + ld
-      log << "proteins with no passing domains: " + proteins_with_failing_domains.to_s + ld
+
       log << ld
 
       return domain_pass_counter
