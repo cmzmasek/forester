@@ -139,6 +139,7 @@ ext_descendents_data_to_return:            node_name
 #label_for_get_ext_descendents_data:        Get_Node_Data         
 
 
+
 #  phyloXML parsing
 #  ----------------
 #  To ensure compatibility with all current and future 
@@ -150,6 +151,7 @@ ext_descendents_data_to_return:            node_name
 #  'validate_against_phyloxml_xsd_schema: true'
 
 validate_against_phyloxml_xsd_schema: true
+
 
 
 #  Checkbox Display Selection
@@ -191,6 +193,7 @@ show_properties:                display   no
 show_vector_data:               display   no
 
 
+
 #  Combo-box Display Selection
 #  ---------------------------
 #  Format: 'name: display/nodisplay'
@@ -214,6 +217,7 @@ click_to: get_ext_descendents_data display
 
 #   Default click-to option (any of the above if set to "display")
 default_click_to: display_node_data
+
 
 
 #  Default Tree Display Colors
@@ -253,6 +257,7 @@ gui_button_background_color:          0x404040
 gui_menu_background_color:            0x000000
 gui_menu_text_color:                  0xFFFFFF
 gui_button_border_color:              0x000000
+
 
 
 #  Domain Structure Display Colors
