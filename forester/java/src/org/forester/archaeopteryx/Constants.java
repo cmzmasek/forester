@@ -36,7 +36,7 @@ import org.forester.util.ForesterConstants;
 
 public final class Constants {
 
-    final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
+    final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = false;
     public final static boolean __RELEASE                                                     = false;                                                    // TODO remove me
     public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                    // TODO remove me
     public final static boolean __SYNTH_LF                                                    = false;                                                    // TODO remove me
