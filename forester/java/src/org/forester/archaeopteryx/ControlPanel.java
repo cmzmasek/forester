@@ -1389,13 +1389,38 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
             _get_ext_desc_data = cb_index;
-            addClickToOption( Configuration.get_ext_desc_data,
-                              _configuration.getClickToTitle( Configuration.get_ext_desc_data ) );
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
-                fixme
-                getConfiguration().getLabelForGetExtDescendentsData();
+                addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
+                        .getLabelForGetExtDescendentsData() );
             }
-            
+            else {
+                String s = ";";
+                switch ( getConfiguration().getExtDescNodeDataToReturn() ) {
+                    case NODE_NAME:
+                        s = "Node Names";
+                        break;
+                    case SEQUENCE_ACC:
+                        s = "Sequence Accessors";
+                        break;
+                    case SEQUENCE_MOL_SEQ:
+                        s = "Molecular Sequence";
+                        break;
+                    case SEQUENCE_NAME:
+                        s = "Sequence Names";
+                        break;
+                    case SEQUENCE_SYMBOL:
+                        s = "Sequence Symbols";
+                        break;
+                    case TAXONOMY_CODE:
+                        s = "Taxonomy Codes";
+                        break;
+                    case TAXONOMY_SCIENTIFIC_NAME:
+                        s = "Scientific names";
+                        break;
+                }
+                final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
+                addClickToOption( Configuration.get_ext_desc_data, label );
+            }
             if ( default_option == Configuration.get_ext_desc_data ) {
                 selected_index = cb_index;
             }

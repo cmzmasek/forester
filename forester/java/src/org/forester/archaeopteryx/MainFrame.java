@@ -1112,47 +1112,39 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     }
 
     void displayBasicInformation() {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
-            return;
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
         }
-        _textframe = TextFrame.instantiate( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ) );
     }
 
     void viewAsNexus() {
-        removeTextFrame();
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty()
-                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 20000 ) ) {
-            return;
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( _mainpanel.getCurrentPhylogeny().toNexus( getOptions().getNhConversionSupportValueStyle() ) );
         }
-        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNexus( getOptions()
-                .getNhConversionSupportValueStyle() ) );
     }
 
     void viewAsNH() {
-        removeTextFrame();
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty()
-                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 20000 ) ) {
-            return;
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( _mainpanel.getCurrentPhylogeny()
+                    .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ) );
         }
-        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny()
-                .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ) );
     }
 
     void viewAsNHX() {
-        removeTextFrame();
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty()
-                || ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
-            return;
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( _mainpanel.getCurrentPhylogeny().toNewHampshireX() );
         }
-        _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toNewHampshireX() );
     }
 
     void viewAsXML() {
-        removeTextFrame();
-        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty()
-                && ( _mainpanel.getCurrentPhylogeny().getNumberOfExternalNodes() <= 10000 ) ) {
-            _textframe = TextFrame.instantiate( _mainpanel.getCurrentPhylogeny().toPhyloXML( 0 ) );
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( _mainpanel.getCurrentPhylogeny().toPhyloXML( 0 ) );
         }
+    }
+
+    public void showTextFrame( final String s ) {
+        removeTextFrame();
+        _textframe = TextFrame.instantiate( s );
     }
 
     /**

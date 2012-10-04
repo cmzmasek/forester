@@ -55,6 +55,9 @@ import org.forester.util.ForesterUtil;
 
 public final class Configuration {
 
+    public enum EXT_NODE_DATA_RETURN_ON {
+        CONSOLE, WINODW;
+    }
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static final String             WEB_LINK_KEY                                           = "web_link";
     private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
@@ -175,7 +178,7 @@ public final class Configuration {
             { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Blast", "display" },
             { "Cut Subtree", "display" }, { "Copy Subtree", "display" }, { "Paste Subtree", "display" },
             { "Delete Subtree/Node", "display" }, { "Add New Node", "display" }, { "Edit Node Data", "display" },
-            { "Sort Descendants", "display" }, { "Get External Node Data", "display" }            };
+            { "Sort Descendants", "display" }, { "Return", "display" }                            };
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
     // --------------
@@ -210,8 +213,9 @@ public final class Configuration {
     private Color                           _gui_button_border_color                               = Constants.BUTTON_BORDER_COLOR_DEFAULT;
     private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
     private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
-    private NODE_DATA                       _ext_desc_data_to_return;
-    private String _label_for_get_ext_descendents_data = "";
+    private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.NODE_NAME;
+    private String                          _label_for_get_ext_descendents_data                    = "";
+    private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.CONSOLE;
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
@@ -705,7 +709,7 @@ public final class Configuration {
     private double parseDouble( final String str ) {
         double d = 0.0;
         try {
-            d = Double.parseDouble( str );
+            d = Double.parseDouble( str.trim() );
         }
         catch ( final Exception e ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse double from [" + str + "]" );
@@ -717,7 +721,7 @@ public final class Configuration {
     private float parseFloat( final String str ) {
         float f = 0.0f;
         try {
-            f = Float.parseFloat( str );
+            f = Float.parseFloat( str.trim() );
         }
         catch ( final Exception e ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse float from [" + str + "]" );
@@ -729,7 +733,7 @@ public final class Configuration {
     private int parseInt( final String str ) {
         int i = -1;
         try {
-            i = Integer.parseInt( str );
+            i = Integer.parseInt( str.trim() );
         }
         catch ( final Exception e ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse integer from [" + str + "]" );
@@ -741,7 +745,7 @@ public final class Configuration {
     private short parseShort( final String str ) {
         short i = -1;
         try {
-            i = Short.parseShort( str );
+            i = Short.parseShort( str.trim() );
         }
         catch ( final Exception e ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not parse short from [" + str + "]" );
@@ -936,10 +940,10 @@ public final class Configuration {
      * Set a key-value(s) tuple
      */
     private void setKeyValue( final StringTokenizer st ) {
-        String key = ( String ) st.nextElement();
-        key = key.replace( ':', ' ' );
-        key = key.trim();
-        key = key.toLowerCase();
+        final String key = ( ( String ) st.nextElement() ).replace( ':', ' ' ).trim().toLowerCase();
+        if ( !st.hasMoreElements() ) {
+            return;
+        }
         // Handle single value settings first:
         if ( key.equals( "default_click_to" ) ) {
             final String clickto_name = ( String ) st.nextElement();
@@ -1127,11 +1131,11 @@ public final class Configuration {
             _use_tabbed_display = parseBoolean( ( String ) st.nextElement() );
         }
         else if ( key.equals( "overview_width" ) ) {
-            final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
+            final short i = parseShort( ( ( String ) st.nextElement() ) );
             setOvMaxWidth( i );
         }
         else if ( key.equals( "overview_height" ) ) {
-            final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
+            final short i = parseShort( ( ( String ) st.nextElement() ) );
             setOvMaxHeight( i );
         }
         else if ( key.equals( "overview_placement_type" ) ) {
@@ -1305,13 +1309,39 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "sequence_symbol" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_SYMBOL );
             }
+            else if ( s.equalsIgnoreCase( "taxonomy_scientific_name" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_SCIENTIFIC_NAME );
+            }
+            else if ( s.equalsIgnoreCase( "taxonomy_code" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_CODE );
+            }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
                         + "] for [ext_descendents_data_to_return]" );
             }
         }
         else if ( key.equals( "label_for_get_ext_descendents_data" ) ) {
-           setLabelForGetExtDescendentsData( (( String ) st.nextElement() ).replaceAll( "_", " " ) );
+            final String s = ( ( String ) st.nextElement() ).trim();
+            if ( ForesterUtil.isEmpty( s ) || ( s.length() < 2 ) ) {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "illegal value [" + s
+                        + "] for [label_for_get_ext_descendents_data]" );
+            }
+            else {
+                setLabelForGetExtDescendentsData( s.replaceAll( "_", " " ) );
+            }
+        }
+        else if ( key.equals( "ext_descendents_data_to_return_on" ) ) {
+            final String s = ( ( String ) st.nextElement() ).trim().toLowerCase();
+            if ( s.equals( "console" ) ) {
+                setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.CONSOLE );
+            }
+            else if ( s.equals( "window" ) ) {
+                setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.WINODW );
+            }
+            else {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
+                        + "] for [ext_descendents_data_to_return_on]" );
+            }
         }
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
@@ -1510,16 +1540,14 @@ public final class Configuration {
         }
     }
 
-    private void setLabelForGetExtDescendentsData( String label_for_get_ext_descendents_data ) {
+    private void setLabelForGetExtDescendentsData( final String label_for_get_ext_descendents_data ) {
         _label_for_get_ext_descendents_data = label_for_get_ext_descendents_data;
-       
     }
 
-    public String getLabelForGetExtDescendentsData( ) {
-        return _label_for_get_ext_descendents_data ;
-       
+    public String getLabelForGetExtDescendentsData() {
+        return _label_for_get_ext_descendents_data;
     }
-    
+
     public void setMinConfidenceValue( final double min_confidence_value ) {
         _min_confidence_value = min_confidence_value;
     }
@@ -1618,5 +1646,13 @@ public final class Configuration {
 
     public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
         _ext_desc_data_to_return = ext_desc_data_to_return;
+    }
+
+    public EXT_NODE_DATA_RETURN_ON getExtNodeDataReturnOn() {
+        return _ext_node_data_return_on;
+    }
+
+    private void setExtNodeDataReturnOn( final EXT_NODE_DATA_RETURN_ON ext_node_data_return_on ) {
+        _ext_node_data_return_on = ext_node_data_return_on;
     }
 }

@@ -89,6 +89,7 @@ import javax.swing.JTextArea;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 
+import org.forester.archaeopteryx.Configuration.EXT_NODE_DATA_RETURN_ON;
 import org.forester.archaeopteryx.ControlPanel.NodeClickAction;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
@@ -1345,37 +1346,65 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private void getExtDescNodeData( final PhylogenyNode node ) {
+        final List<String> data = new ArrayList<String>();
         for( final PhylogenyNode n : node.getAllExternalDescendants() ) {
             switch ( getOptions().getExtDescNodeDataToReturn() ) {
                 case NODE_NAME:
-                    System.out.println( n.getName() );
+                    if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                        data.add( n.getName() );
+                    }
                     break;
                 case SEQUENCE_NAME:
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
-                        System.out.println( n.getNodeData().getSequence().getName() );
+                        data.add( n.getNodeData().getSequence().getName() );
                     }
                     break;
                 case SEQUENCE_SYMBOL:
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
-                        System.out.println( n.getNodeData().getSequence().getSymbol() );
+                        data.add( n.getNodeData().getSequence().getSymbol() );
                     }
                     break;
                 case SEQUENCE_MOL_SEQ:
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
-                        System.out.println( n.getNodeData().getSequence().getMolecularSequence() );
+                        data.add( n.getNodeData().getSequence().getMolecularSequence() );
                     }
                     break;
                 case SEQUENCE_ACC:
                     if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null ) ) {
-                        System.out.println( n.getNodeData().getSequence().getAccession().toString() );
+                        data.add( n.getNodeData().getSequence().getAccession().toString() );
+                    }
+                    break;
+                case TAXONOMY_SCIENTIFIC_NAME:
+                    if ( n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        data.add( n.getNodeData().getTaxonomy().getScientificName() );
+                    }
+                    break;
+                case TAXONOMY_CODE:
+                    if ( n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                        data.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
                     }
                     break;
                 default:
                     throw new IllegalArgumentException( "unknown data element: "
                             + getOptions().getExtDescNodeDataToReturn() );
+            }
+            if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
+                for( final String d : data ) {
+                    System.out.println( d );
+                }
+            }
+            else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
+                final StringBuilder sb = new StringBuilder();
+                for( final String d : data ) {
+                    sb.append( d );
+                    sb.append( "\n" );
+                }
+                getMainPanel().getMainFrame().showTextFrame( sb.toString() );
             }
         }
     }
