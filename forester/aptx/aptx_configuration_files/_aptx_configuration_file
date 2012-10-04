@@ -69,13 +69,21 @@ native_ui: ?
 #     Possible values: solid
 #                      gradient
 #                      none
-#  To determine what data field to return by clicking on "return external descendents data":
-#     'ext_descendents_data_to_return'
+#
+#  To determine what data field to return by clicking on "Return ...": 'ext_descendents_data_to_return'
 #     Possible values: node_name
 #                      sequence_name
 #                      sequence_acc
 #                      sequence_mol_seq
 #                      sequence_symbol
+#                      taxonomy_scientific_name
+#                      taxonomy_code
+#  To determine where to return data by clicking on "Return ...": 'ext_descendents_data_to_return_on'
+#     Possible values: window
+#                      console
+#  To override label for menu item to return data of external nodes (default ""Return ..."): 'label_for_get_ext_descendents_data'
+#     Example: 'label_for_get_ext_descendents_data: Get_Node_Data'
+# 
 #  Taxonomy colorization of nodes (shapes) instead of labels: 'taxonomy_colorize_node_shapes': values: 'yes'/'no'
 #  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
 #  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
@@ -126,7 +134,9 @@ allow_editing:                             yes
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 extract_taxonomy_codes_in_nh_parsing:      yes
-ext_descendents_data_to_return:            sequence_name
+ext_descendents_data_to_return_on:         window
+ext_descendents_data_to_return:            node_name
+#label_for_get_ext_descendents_data:        Get_Node_Data         
 
 
 #  phyloXML parsing

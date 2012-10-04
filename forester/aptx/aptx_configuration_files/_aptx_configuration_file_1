@@ -76,6 +76,8 @@ native_ui: ?
 #                      sequence_acc
 #                      sequence_mol_seq
 #                      sequence_symbol
+#                      taxonomy_scientific_name
+#                      taxonomy_code
 #  Taxonomy colorization of nodes (shapes) instead of labels: 'taxonomy_colorize_node_shapes': values: 'yes'/'no'
 #  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
 #  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
