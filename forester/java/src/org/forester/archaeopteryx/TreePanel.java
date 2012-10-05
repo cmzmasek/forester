@@ -463,18 +463,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.WARNING_MESSAGE );
             return;
         }
-        if ( node.getNodeData().isHasSequence() ) {
+        if ( node.getNodeData().isHasSequence() || !ForesterUtil.isEmpty( node.getName() ) ) {
             final String query = Blast.obtainQueryForBlast( node );
+            System.out.println( "query for BLAST is: " + query );
             boolean nucleotide = false;
-            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getType() ) ) {
-                if ( !node.getNodeData().getSequence().getType().toLowerCase().equals( PhyloXmlUtil.SEQ_TYPE_PROTEIN ) ) {
-                    nucleotide = true;
-                }
-            }
-            else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-                nucleotide = !ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence().getMolecularSequence() );
-            }
             if ( !ForesterUtil.isEmpty( query ) ) {
+                if ( node.getNodeData().isHasSequence() ) {
+                    if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getType() ) ) {
+                        if ( !node.getNodeData().getSequence().getType().toLowerCase()
+                                .equals( PhyloXmlUtil.SEQ_TYPE_PROTEIN ) ) {
+                            nucleotide = true;
+                        }
+                    }
+                    else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        nucleotide = !ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence()
+                                .getMolecularSequence() );
+                    }
+                }
                 JApplet applet = null;
                 if ( isApplet() ) {
                     applet = obtainApplet();
@@ -1524,12 +1529,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private boolean isCanBlast( final PhylogenyNode node ) {
-        return ( node.getNodeData().isHasSequence()
-                && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil.isEmpty( node
-                        .getNodeData().getSequence().getAccession().getValue() ) )
-                        || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) || !ForesterUtil
-                        .isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) && Blast
-                .isContainsQueryForBlast( node ) );
+        return ( ( node.getNodeData().isHasSequence() && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil
+                .isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) )
+                || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) || !ForesterUtil.isEmpty( node
+                .getNodeData().getSequence().getMolecularSequence() ) ) ) || ( ( !ForesterUtil.isEmpty( node.getName() ) ) && Blast
+                .isContainsQueryForBlast( node ) ) );
     }
 
     final boolean isCanCollapse() {

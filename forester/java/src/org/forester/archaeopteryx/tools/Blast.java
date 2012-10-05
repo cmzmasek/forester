@@ -39,7 +39,9 @@ import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Identifier;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceIdParser;
 import org.forester.ws.wabi.RestUtil;
 
 public final class Blast {
@@ -74,20 +76,35 @@ public final class Blast {
 
     final public static String obtainQueryForBlast( final PhylogenyNode node ) {
         String query = "";
-        if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-            query = node.getNodeData().getSequence().getMolecularSequence();
-        }
-        else if ( ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
-            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
-                query = node.getNodeData().getSequence().getAccession().getSource() + "%7C";
+        if ( node.getNodeData().isHasSequence() ) {
+            if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                query = node.getNodeData().getSequence().getMolecularSequence();
             }
-            query += node.getNodeData().getSequence().getAccession().getValue();
+            else if ( ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
+                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
+                    query = node.getNodeData().getSequence().getAccession().getSource() + "%7C";
+                }
+                query += node.getNodeData().getSequence().getAccession().getValue();
+            }
+            else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
+                final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getNodeData().getSequence()
+                        .getName() );
+                if ( acc != null ) {
+                    query = acc.getSource() + "%7C" + acc.getValue();
+                }
+            }
         }
-        else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-            final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getNodeData().getSequence().getName() );
+        else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+            final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getName() );
             if ( acc != null ) {
                 query = acc.getSource() + "%7C" + acc.getValue();
+            }
+            else {
+                final Identifier id = SequenceIdParser.parse( node.getName() );
+                if ( id != null ) {
+                    query = id.getValue();
+                }
             }
         }
         return query;

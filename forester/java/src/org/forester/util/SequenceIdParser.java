@@ -76,6 +76,10 @@ public final class SequenceIdParser {
         return null;
     }
 
+    public static boolean isProtein( final String query ) {
+        return GENBANK_PROTEIN_AC_PATTERN.matcher( query ).lookingAt();
+    }
+
     /**
      * Returns null if no match.
      * 
