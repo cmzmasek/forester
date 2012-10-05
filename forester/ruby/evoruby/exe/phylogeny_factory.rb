@@ -9,7 +9,7 @@
 #
  
 
-require 'lib/evo/tools/phylogeny_factory'
+require 'lib/evo/tool/phylogeny_factory'
 
 module Evoruby
 
