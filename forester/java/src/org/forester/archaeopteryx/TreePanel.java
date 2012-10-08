@@ -1409,7 +1409,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     sb.append( d );
                     sb.append( "\n" );
                 }
-                getMainPanel().getMainFrame().showTextFrame( sb.toString() );
+                if ( getMainPanel().getMainFrame() == null ) {
+                    // Must be "E" applet version.
+                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() ).showTextFrame( sb
+                            .toString() );
+                }
+                else {
+                    getMainPanel().getMainFrame().showTextFrame( sb.toString() );
+                }
             }
         }
     }

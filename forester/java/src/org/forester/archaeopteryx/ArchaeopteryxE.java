@@ -72,6 +72,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _view_as_NH_item;
     private JMenuItem            _view_as_NHX_item;
     private JMenuItem            _view_as_nexus_item;
+    private JMenuItem            _display_basic_information_item;
     private JMenu                _type_menu;
     private JCheckBoxMenuItem    _rectangular_type_cbmi;
     private JCheckBoxMenuItem    _triangular_type_cbmi;
@@ -146,6 +147,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _switch_colors_mi ) {
             switchColors();
+        }
+        else if ( o == _display_basic_information_item ) {
+            displayBasicInformation();
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();
@@ -559,11 +563,14 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     void buildViewMenu() {
-        _view_jmenu = MainFrame.createMenu( "View as Text", getConfiguration() );
+        _view_jmenu = MainFrame.createMenu( "View", getConfiguration() );
+        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
+        _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
         _view_jmenu.add( _view_as_NHX_item = new JMenuItem( "View as NHX" ) );
         _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
+        customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
         customizeJMenuItem( _view_as_NHX_item );
         customizeJMenuItem( _view_as_XML_item );
@@ -1063,39 +1070,39 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     void viewAsNexus() {
-        removeTextFrame();
-        if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
-                || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
-            return;
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toNexus( getOptions()
+                    .getNhConversionSupportValueStyle() ) );
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNexus() );
     }
 
     void viewAsNH() {
-        removeTextFrame();
-        if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
-                || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
-            return;
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshire() );
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNewHampshire() );
     }
 
     void viewAsNHX() {
-        removeTextFrame();
-        if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
-                || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
-            return;
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshireX() );
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toNewHampshireX() );
     }
 
     void viewAsXML() {
-        removeTextFrame();
-        if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
-                || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
-            return;
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ) );
         }
-        _textframe = TextFrame.instantiate( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ) );
+    }
+
+    void displayBasicInformation() {
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ) );
+        }
+    }
+
+    public void showTextFrame( final String s ) {
+        removeTextFrame();
+        _textframe = TextFrame.instantiate( s );
     }
 
     static void setupScreenTextAntialias( final List<TreePanel> treepanels, final boolean antialias ) {

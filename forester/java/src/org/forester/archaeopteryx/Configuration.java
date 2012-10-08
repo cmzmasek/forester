@@ -215,7 +215,7 @@ public final class Configuration {
     private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
     private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.NODE_NAME;
     private String                          _label_for_get_ext_descendents_data                    = "";
-    private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.CONSOLE;
+    private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
