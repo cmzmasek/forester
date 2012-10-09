@@ -295,7 +295,7 @@ public final class MainFrameApplication extends MainFrame {
         setOptions( Options.createInstance( _configuration ) );
         setInferenceManager( InferenceManager.createInstance( _configuration ) );
         setPhylogeneticInferenceOptions( PhylogeneticInferenceOptions.createInstance( _configuration ) );
-        _textframe = null;
+        //     _textframe = null; #~~~~
         _species_tree = null;
         // set title
         setTitle( Constants.PRG_NAME + " " + Constants.VERSION + " (" + Constants.PRG_DATE + ")" );
@@ -1330,7 +1330,7 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     void exit() {
-        removeTextFrame();
+        removeAllTextFrames();
         _mainpanel.terminate();
         _contentpane.removeAll();
         setVisible( false );

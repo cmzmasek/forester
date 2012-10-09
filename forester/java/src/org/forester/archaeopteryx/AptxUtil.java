@@ -581,7 +581,7 @@ public final class AptxUtil {
             }
             desc.append( "\n" );
             final DescriptiveStatistics bs = PhylogenyMethods.calculatBranchLengthStatistics( phy );
-            if ( bs.getN() > 2 ) {
+            if ( bs.getN() > 3 ) {
                 desc.append( "\n" );
                 desc.append( "Branch-length statistics: " );
                 desc.append( "\n" );
@@ -597,9 +597,11 @@ public final class AptxUtil {
                 desc.append( "\n" );
                 desc.append( "    Maximum: " + ForesterUtil.round( bs.getMax(), 6 ) );
                 desc.append( "\n" );
-                desc.append( "\n" );
-                final AsciiHistogram histo = new AsciiHistogram( bs );
-                desc.append( histo.toStringBuffer( 12, '#', 40, 7, "    " ) );
+                if ( Math.abs( bs.getMax() - bs.getMin() ) > 0.0001 ) {
+                    desc.append( "\n" );
+                    final AsciiHistogram histo = new AsciiHistogram( bs );
+                    desc.append( histo.toStringBuffer( 12, '#', 40, 7, "    " ) );
+                }
             }
             final DescriptiveStatistics ds = PhylogenyMethods.calculatNumberOfDescendantsPerNodeStatistics( phy );
             if ( ds.getN() > 2 ) {

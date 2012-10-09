@@ -62,7 +62,7 @@ public final class MainFrameApplet extends MainFrame {
         _applet = parent_applet;
         setConfiguration( configuration );
         setOptions( Options.createInstance( configuration ) );
-        _textframe = null;
+        //_textframes = null; //~~~~
         URL url = null;
         Phylogeny[] phys = null;
         // Get URL to tree file

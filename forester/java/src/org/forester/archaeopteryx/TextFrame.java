@@ -41,6 +41,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.LinkedList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -53,24 +54,26 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
     /**
      * 
      */
-    private static final long serialVersionUID = -5012834229705518363L;
-    private static Color      ta_text_color    = new Color( 0, 0, 0 ),
+    private static final long           serialVersionUID = -5012834229705518363L;
+    private static Color                ta_text_color    = new Color( 0, 0, 0 ),
             ta_background_color = new Color( 240, 240, 240 ), background_color = new Color( 215, 215, 215 ),
             button_background_color = new Color( 215, 215, 215 ), button_text_color = new Color( 0, 0, 0 );
-    private final static Font button_font      = new Font( "Helvetica", Font.PLAIN, 10 ),
+    private final static Font           button_font      = new Font( "Helvetica", Font.PLAIN, 10 ),
             ta_font = new Font( "Helvetica", Font.PLAIN, 10 );
-    private boolean           can_use_clipboard;
-    private final String      text;
-    private final JTextArea   jtextarea;
-    private final JButton     close_button;
-    private JButton           copy_button;
-    private final JPanel      buttonjpanel;
-    private final Container   contentpane;
+    private boolean                     can_use_clipboard;
+    private final String                text;
+    private final JTextArea             jtextarea;
+    private final JButton               close_button;
+    private JButton                     copy_button;
+    private final JPanel                buttonjpanel;
+    private final Container             contentpane;
+    private final LinkedList<TextFrame> _tframes;
 
-    private TextFrame( final String s ) {
+    private TextFrame( final String s, final String title, final LinkedList<TextFrame> tframes ) {
         // first things first
-        setTitle( Constants.PRG_NAME );
+        setTitle( title );
         text = s;
+        _tframes = tframes;
         // check to see if we have permission to use the clipboard:
         can_use_clipboard = true;
         final SecurityManager sm = System.getSecurityManager();
@@ -118,7 +121,7 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
 
             @Override
             public void windowClosing( final WindowEvent e ) {
-                close();
+                removeMe();
             }
         } );
         setVisible( true );
@@ -128,7 +131,7 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
     public void actionPerformed( final ActionEvent e ) {
         final Object o = e.getSource();
         if ( o == close_button ) {
-            close();
+            removeMe();
         }
         else if ( o == copy_button ) {
             copy();
@@ -138,6 +141,14 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
     void close() {
         setVisible( false );
         dispose();
+    }
+
+    void removeMe() {
+        final int i = _tframes.indexOf( this );
+        if ( i >= 0 ) {
+            _tframes.remove( i );
+        }
+        close();
     }
 
     private void copy() {
@@ -154,7 +165,7 @@ final class TextFrame extends JFrame implements ActionListener, ClipboardOwner {
     public void lostOwnership( final Clipboard clipboard, final Transferable contents ) {
     }
 
-    static TextFrame instantiate( final String s ) {
-        return new TextFrame( s );
+    static TextFrame instantiate( final String s, final String title, final LinkedList<TextFrame> tframes ) {
+        return new TextFrame( s, title, tframes );
     }
 }

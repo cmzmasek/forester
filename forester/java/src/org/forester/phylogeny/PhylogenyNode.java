@@ -492,9 +492,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         return _id;
     }
 
-    /**
-     * Returns the name of this node.
-     */
     @Override
     final public String getName() {
         return getNodeData().getNodeName();

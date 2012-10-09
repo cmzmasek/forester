@@ -11,7 +11,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
@@ -62,7 +65,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _small_fonts_mi;
     private JMenuItem            _medium_fonts_mi;
     private JMenuItem            _large_fonts_mi;
-    private TextFrame            _textframe;
     private JMenu                _tools_menu;
     private JMenuItem            _taxcolor_item;
     private JMenuItem            _confcolor_item;
@@ -119,6 +121,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem            _choose_node_size_mi;
     private JCheckBoxMenuItem    _taxonomy_colorize_node_shapes_cbmi;
     private JCheckBoxMenuItem    _show_confidence_stddev_cbmi;
+    final LinkedList<TextFrame>  _textframes      = new LinkedList<TextFrame>(); ;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -281,7 +284,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             MainFrame.about();
         }
         else if ( o == _help_item ) {
-            MainFrame.help( getConfiguration().getWebLinks() );
+            help( getConfiguration().getWebLinks() );
         }
         else if ( o == _website_item ) {
             try {
@@ -318,6 +321,64 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         repaint();
     }
 
+    void help( final Map<String, WebLink> weblinks ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "Display options\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
+        sb.append( "Clickable tree nodes\n" );
+        sb.append( "--------------------\n" );
+        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
+        sb.append( "or by right clicking:\n" );
+        sb.append( "o  Display Node Data -- display information for a node\n" );
+        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
+        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
+        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
+        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
+        sb.append( "o  Colorize Subtree -- color a subtree\n" );
+        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
+        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
+        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
+        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
+        sb.append( "Zooming\n" );
+        sb.append( "---------\n" );
+        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
+        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
+        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
+        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
+        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
+        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
+        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
+        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
+        sb.append( "Quick tree manipulation:\n" );
+        sb.append( "------------------------\n" );
+        sb.append( "Order Subtrees -- order the tree by branch length\n" );
+        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
+        sb.append( "Memory problems (Java heap space error)\n" );
+        sb.append( "---------------------------------------\n" );
+        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
+        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
+        sb.append( "the '-Xmx' Java command line option. For example:\n" );
+        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
+        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
+            sb.append( "Active web links\n" );
+            sb.append( "--------------------\n" );
+            for( final String key : weblinks.keySet() ) {
+                sb.append( " " + weblinks.get( key ).toString() + "\n" );
+            }
+        }
+        sb.append( "\n" );
+        sb.append( "phyloXML\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
+        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
+        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
+        sb.append( "\n" );
+        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
+        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
+        TextFrame.instantiate( sb.toString(), "Help", _textframes );
+    }
+
     /**
      * This method returns the current phylogeny as a string in the chosen format
      * 
@@ -326,7 +387,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
      * @author Herve Menager
      */
     public String getCurrentPhylogeny( final String format ) {
-        removeTextFrame();
+        removeAllTextFrames();
         if ( ( getMainPanel().getCurrentPhylogeny() == null ) || getMainPanel().getCurrentPhylogeny().isEmpty()
                 || ( getMainPanel().getCurrentPhylogeny().getNumberOfExternalNodes() > 10000 ) ) {
             return new String();
@@ -652,7 +713,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     @Override
     public void destroy() {
         AptxUtil.printAppletMessage( NAME, "going to be destroyed " );
-        removeTextFrame();
+        removeAllTextFrames();
         if ( getMainPanel() != null ) {
             getMainPanel().terminate();
         }
@@ -840,13 +901,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private void removeBranchColors() {
         if ( getMainPanel().getCurrentPhylogeny() != null ) {
             AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
-        }
-    }
-
-    void removeTextFrame() {
-        if ( _textframe != null ) {
-            _textframe.close();
-            _textframe = null;
         }
     }
 
@@ -1069,40 +1123,88 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         ( ( JCheckBoxMenuItem ) o ).setSelected( true );
     }
 
+    void displayBasicInformation() {
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            String title = "Basic Information";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+            }
+            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ), title );
+        }
+    }
+
     void viewAsNexus() {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            String title = "Nexus";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+            }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toNexus( getOptions()
-                    .getNhConversionSupportValueStyle() ) );
+                                   .getNhConversionSupportValueStyle() ),
+                           title );
         }
     }
 
     void viewAsNH() {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshire() );
+            String title = "New Hampshire";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+            }
+            showTextFrame( getMainPanel().getCurrentPhylogeny()
+                                   .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
+                           title );
         }
     }
 
     void viewAsNHX() {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshireX() );
+            String title = "NHX";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+            }
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshireX(), title );
         }
     }
 
     void viewAsXML() {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ) );
+            String title = "phyloXML";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+            }
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ), title );
         }
     }
 
-    void displayBasicInformation() {
-        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ) );
+    public void showTextFrame( final String s, final String title ) {
+        checkTextFrames();
+        _textframes.addLast( TextFrame.instantiate( s, title, _textframes ) );
+    }
+
+    void checkTextFrames() {
+        if ( _textframes.size() > 5 ) {
+            try {
+                if ( _textframes.getFirst() != null ) {
+                    _textframes.getFirst().removeMe();
+                }
+                else {
+                    _textframes.removeFirst();
+                }
+            }
+            catch ( final NoSuchElementException e ) {
+                // Ignore.
+            }
         }
     }
 
-    public void showTextFrame( final String s ) {
-        removeTextFrame();
-        _textframe = TextFrame.instantiate( s );
+    void removeAllTextFrames() {
+        for( final TextFrame tf : _textframes ) {
+            if ( tf != null ) {
+                tf.close();
+            }
+        }
+        _textframes.clear();
     }
 
     static void setupScreenTextAntialias( final List<TreePanel> treepanels, final boolean antialias ) {

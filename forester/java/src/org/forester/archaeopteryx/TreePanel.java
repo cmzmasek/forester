@@ -369,7 +369,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             errorMessageNoCutCopyPasteInUnrootedDisplay();
             return;
         }
-        final String label = getASimpleTextRepresentationOfANode( node );
+        final String label = createASimpleTextRepresentationOfANode( node );
         String msg = "";
         if ( ForesterUtil.isEmpty( label ) ) {
             msg = "How to add the new, empty node?";
@@ -875,7 +875,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        final String label = getASimpleTextRepresentationOfANode( node );
+        final String label = createASimpleTextRepresentationOfANode( node );
         final int r = JOptionPane.showConfirmDialog( null,
                                                      "Cut subtree" + label + "?",
                                                      "Confirm Cutting of Subtree",
@@ -928,7 +928,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        final String label = getASimpleTextRepresentationOfANode( node );
+        final String label = createASimpleTextRepresentationOfANode( node );
         final Object[] options = { "Node only", "Entire subtree", "Cancel" };
         final int r = JOptionPane.showOptionDialog( this,
                                                     "Delete" + label + "?",
@@ -1095,7 +1095,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return null;
     }
 
-    final private String getASimpleTextRepresentationOfANode( final PhylogenyNode node ) {
+    final private String createASimpleTextRepresentationOfANode( final PhylogenyNode node ) {
         final String tax = PhylogenyMethods.getSpecies( node );
         String label = node.getName();
         if ( !ForesterUtil.isEmpty( label ) && !ForesterUtil.isEmpty( tax ) ) {
@@ -1398,26 +1398,49 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     throw new IllegalArgumentException( "unknown data element: "
                             + getOptions().getExtDescNodeDataToReturn() );
             }
-            if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
-                for( final String d : data ) {
-                    System.out.println( d );
-                }
+        } // for loop
+        if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
+            for( final String d : data ) {
+                System.out.println( d );
             }
-            else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
-                final StringBuilder sb = new StringBuilder();
-                for( final String d : data ) {
-                    sb.append( d );
-                    sb.append( "\n" );
-                }
-                if ( getMainPanel().getMainFrame() == null ) {
-                    // Must be "E" applet version.
-                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() ).showTextFrame( sb
-                            .toString() );
-                }
-                else {
-                    getMainPanel().getMainFrame().showTextFrame( sb.toString() );
-                }
+        }
+        else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
+            final StringBuilder sb = new StringBuilder();
+            for( final String d : data ) {
+                sb.append( d );
+                sb.append( "\n" );
             }
+            if ( getMainPanel().getMainFrame() == null ) {
+                // Must be "E" applet version.
+                ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
+                        .showTextFrame( sb.toString(), node + " " + obtainTitleForExtDescNodeData() );
+            }
+            else {
+                getMainPanel().getMainFrame().showTextFrame( sb.toString(),
+                                                             node + " " + obtainTitleForExtDescNodeData() );
+            }
+        }
+    }
+
+    private final String obtainTitleForExtDescNodeData() {
+        switch ( getOptions().getExtDescNodeDataToReturn() ) {
+            case NODE_NAME:
+                return "Node Names";
+            case SEQUENCE_NAME:
+                return "Sequence Names";
+            case SEQUENCE_SYMBOL:
+                return "Sequence Symbols";
+            case SEQUENCE_MOL_SEQ:
+                return "Molecular Sequences";
+            case SEQUENCE_ACC:
+                return "Sequence Accessors";
+            case TAXONOMY_SCIENTIFIC_NAME:
+                return "Scientific Names";
+            case TAXONOMY_CODE:
+                return "Taxonomy Codes";
+            default:
+                throw new IllegalArgumentException( "unknown data element: "
+                        + getOptions().getExtDescNodeDataToReturn() );
         }
     }
 
@@ -4270,7 +4293,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        final String label = getASimpleTextRepresentationOfANode( getCutOrCopiedTree().getRoot() );
+        final String label = createASimpleTextRepresentationOfANode( getCutOrCopiedTree().getRoot() );
         final Object[] options = { "As sibling", "As descendant", "Cancel" };
         final int r = JOptionPane.showOptionDialog( this,
                                                     "How to paste subtree" + label + "?",
