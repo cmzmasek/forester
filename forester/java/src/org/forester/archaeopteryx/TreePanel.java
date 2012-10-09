@@ -107,6 +107,7 @@ import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
+import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualization;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
@@ -1343,14 +1344,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sortDescendants( node );
                 break;
             case GET_EXT_DESC_DATA:
-                getExtDescNodeData( node );
+                showExtDescNodeData( node );
                 break;
             default:
                 throw new IllegalArgumentException( "unknown action: " + action );
         }
     }
 
-    private void getExtDescNodeData( final PhylogenyNode node ) {
+    private void showExtDescNodeData( final PhylogenyNode node ) {
         final List<String> data = new ArrayList<String>();
         for( final PhylogenyNode n : node.getAllExternalDescendants() ) {
             switch ( getOptions().getExtDescNodeDataToReturn() ) {
@@ -1378,7 +1379,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                     break;
                 case SEQUENCE_ACC:
-                    if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null ) ) {
+                    if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null )
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAccession().toString() ) ) {
                         data.add( n.getNodeData().getSequence().getAccession().toString() );
                     }
                     break;
@@ -1394,6 +1396,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         data.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
                     }
                     break;
+                case UNKNOWN:
+                    AptxUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
+                    break;
                 default:
                     throw new IllegalArgumentException( "unknown data element: "
                             + getOptions().getExtDescNodeDataToReturn() );
@@ -1401,23 +1406,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         } // for loop
         if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
             for( final String d : data ) {
-                System.out.println( d );
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    System.out.println( d );
+                }
             }
         }
         else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
             final StringBuilder sb = new StringBuilder();
             for( final String d : data ) {
-                sb.append( d );
-                sb.append( "\n" );
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    sb.append( d );
+                    sb.append( "\n" );
+                }
             }
-            if ( getMainPanel().getMainFrame() == null ) {
-                // Must be "E" applet version.
-                ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
-                        .showTextFrame( sb.toString(), node + " " + obtainTitleForExtDescNodeData() );
+            if ( sb.length() < 1 ) {
+                AptxUtil.showInformationMessage( this,
+                                                 "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
+                                                 "Descendants of selected node do not contain selected data" );
             }
             else {
-                getMainPanel().getMainFrame().showTextFrame( sb.toString(),
-                                                             node + " " + obtainTitleForExtDescNodeData() );
+                final String title = "External Descendants "
+                        + ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.UNKNOWN ? "Data"
+                                : obtainTitleForExtDescNodeData() ) + " (" + data.size() + "/"
+                        + node.getNumberOfExternalNodes() + ") For Node " + node;
+                if ( getMainPanel().getMainFrame() == null ) {
+                    // Must be "E" applet version.
+                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() ).showTextFrame( sb
+                            .toString(), title );
+                }
+                else {
+                    getMainPanel().getMainFrame().showTextFrame( sb.toString(), title );
+                }
             }
         }
     }
@@ -1438,6 +1457,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return "Scientific Names";
             case TAXONOMY_CODE:
                 return "Taxonomy Codes";
+            case UNKNOWN:
+                return "User Selected Data";
             default:
                 throw new IllegalArgumentException( "unknown data element: "
                         + getOptions().getExtDescNodeDataToReturn() );

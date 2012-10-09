@@ -46,7 +46,8 @@ public class NodeData implements PhylogenyData {
         SEQUENCE_MOL_SEQ,
         SEQUENCE_ACC,
         TAXONOMY_SCIENTIFIC_NAME,
-        TAXONOMY_CODE;
+        TAXONOMY_CODE,
+        UNKNOWN;
     }
     private String                  _node_name;
     private Event                   _event;

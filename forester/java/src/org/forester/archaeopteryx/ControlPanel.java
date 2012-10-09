@@ -1415,7 +1415,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                         s = "Taxonomy Codes";
                         break;
                     case TAXONOMY_SCIENTIFIC_NAME:
-                        s = "Scientific names";
+                        s = "Scientific Names";
+                        break;
+                    case UNKNOWN:
+                        s = "User Selected Data";
                         break;
                 }
                 final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
