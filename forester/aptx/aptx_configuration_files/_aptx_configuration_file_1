@@ -78,6 +78,7 @@ native_ui: ?
 #                      sequence_symbol
 #                      taxonomy_scientific_name
 #                      taxonomy_code
+#                      user_selected 
 #  To determine where to return data by clicking on "Return ...": 'ext_descendents_data_to_return_on'
 #     Possible values: window
 #                      console
