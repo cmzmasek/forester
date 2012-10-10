@@ -38,7 +38,6 @@ import javax.swing.JApplet;
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.util.ForesterUtil;
 import org.forester.util.SequenceIdParser;
@@ -80,31 +79,31 @@ public final class Blast {
             if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
                 query = node.getNodeData().getSequence().getMolecularSequence();
             }
-            else if ( ( node.getNodeData().getSequence().getAccession() != null )
+            if ( ForesterUtil.isEmpty( query ) && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
-                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
-                    query = node.getNodeData().getSequence().getAccession().getSource() + "%7C";
-                }
-                query += node.getNodeData().getSequence().getAccession().getValue();
-            }
-            else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-                final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getNodeData().getSequence()
-                        .getName() );
-                if ( acc != null ) {
-                    query = acc.getSource() + "%7C" + acc.getValue();
-                }
-            }
-        }
-        else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-            final Accession acc = AptxUtil.obtainSequenceAccessionFromName( node.getName() );
-            if ( acc != null ) {
-                query = acc.getSource() + "%7C" + acc.getValue();
-            }
-            else {
-                final Identifier id = SequenceIdParser.parse( node.getName() );
+                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getAccession()
+                        .getValue() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
+            }
+            if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
+                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getName() );
+                if ( id != null ) {
+                    query = id.getValue();
+                }
+            }
+            if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
+                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getSymbol() );
+                if ( id != null ) {
+                    query = id.getValue();
+                }
+            }
+        }
+        if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getName() ) ) {
+            final Identifier id = SequenceIdParser.parse( node.getName() );
+            if ( id != null ) {
+                query = id.getValue();
             }
         }
         return query;

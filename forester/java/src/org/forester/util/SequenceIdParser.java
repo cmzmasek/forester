@@ -59,6 +59,9 @@ public final class SequenceIdParser {
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325. 
     private final static Pattern REFSEQ_PATTERN                  = Pattern
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}_\\d{6,})(?:[^a-zA-Z0-9]|\\Z)" );
+    // See: http://web.expasy.org/docs/userman.html#ID_line
+    private final static Pattern TREMBL_PATTERN                  = Pattern
+                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z][0-9][A-Z0-9]{3}[0-9])(?:[^a-zA-Z0-9]|\\Z)" );
 
     /**
      * Returns null if no match.
@@ -73,10 +76,22 @@ public final class SequenceIdParser {
         if ( !ForesterUtil.isEmpty( v ) ) {
             return new Identifier( v, Identifier.REFSEQ );
         }
+        v = parseTrEMBLAccessor( s );
+        if ( !ForesterUtil.isEmpty( v ) ) {
+            return new Identifier( v, Identifier.SP );
+        }
         return null;
     }
 
-    public static boolean isProtein( final String query ) {
+    public final static boolean isProtein( final String query ) {
+        final String r1 = parseRefSeqAccessor( query );
+        if ( !ForesterUtil.isEmpty( r1 ) && ( r1.charAt( 1 ) == 'P' ) ) {
+            return true;
+        }
+        final String r2 = parseTrEMBLAccessor( query );
+        if ( !ForesterUtil.isEmpty( r2 ) ) {
+            return true;
+        }
         return GENBANK_PROTEIN_AC_PATTERN.matcher( query ).lookingAt();
     }
 
@@ -112,6 +127,18 @@ public final class SequenceIdParser {
      */
     private final static String parseRefSeqAccessor( final String query ) {
         final Matcher m = REFSEQ_PATTERN.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        return null;
+    }
+
+    /**
+     * Returns null if no match.
+     * 
+     */
+    private final static String parseTrEMBLAccessor( final String query ) {
+        final Matcher m = TREMBL_PATTERN.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );
         }

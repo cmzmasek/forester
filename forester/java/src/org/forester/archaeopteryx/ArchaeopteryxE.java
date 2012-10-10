@@ -53,75 +53,76 @@ import org.forester.util.ForesterUtil;
 // </applet>
 public class ArchaeopteryxE extends JApplet implements ActionListener {
 
-    private final static String  NAME             = "ArchaeopteryxE";
-    private static final long    serialVersionUID = -1220055577935759443L;
-    private Configuration        _configuration;
-    private MainPanelApplets     _main_panel;
-    private JMenuBar             _jmenubar;
-    private JMenu                _options_jmenu;
-    private JMenu                _font_size_menu;
-    private JMenuItem            _super_tiny_fonts_mi;
-    private JMenuItem            _tiny_fonts_mi;
-    private JMenuItem            _small_fonts_mi;
-    private JMenuItem            _medium_fonts_mi;
-    private JMenuItem            _large_fonts_mi;
-    private JMenu                _tools_menu;
-    private JMenuItem            _taxcolor_item;
-    private JMenuItem            _confcolor_item;
-    private JMenuItem            _midpoint_root_item;
-    private JMenu                _view_jmenu;
-    private JMenuItem            _view_as_XML_item;
-    private JMenuItem            _view_as_NH_item;
-    private JMenuItem            _view_as_NHX_item;
-    private JMenuItem            _view_as_nexus_item;
-    private JMenuItem            _display_basic_information_item;
-    private JMenu                _type_menu;
-    private JCheckBoxMenuItem    _rectangular_type_cbmi;
-    private JCheckBoxMenuItem    _triangular_type_cbmi;
-    private JCheckBoxMenuItem    _curved_type_cbmi;
-    private JCheckBoxMenuItem    _convex_type_cbmi;
-    private JCheckBoxMenuItem    _euro_type_cbmi;
-    private JCheckBoxMenuItem    _rounded_type_cbmi;
-    private JCheckBoxMenuItem    _unrooted_type_cbmi;
-    private JCheckBoxMenuItem    _circular_type_cbmi;
-    private JMenuItem            _help_item;
-    private JMenuItem            _about_item;
-    private JMenu                _help_jmenu;
-    private JMenuItem            _website_item;
-    private JMenuItem            _phyloxml_website_item;
-    private JMenuItem            _phyloxml_ref_item;
-    private JMenuItem            _aptx_ref_item;
-    private JMenuItem            _remove_branch_color_item;
-    private JMenuItem            _infer_common_sn_names_item;
-    private JCheckBoxMenuItem    _show_domain_labels;
-    private JCheckBoxMenuItem    _color_labels_same_as_parent_branch;
-    private JCheckBoxMenuItem    _abbreviate_scientific_names;
-    private JCheckBoxMenuItem    _screen_antialias_cbmi;
-    private JCheckBoxMenuItem    _background_gradient_cbmi;
-    private JRadioButtonMenuItem _non_lined_up_cladograms_rbmi;
-    private JRadioButtonMenuItem _uniform_cladograms_rbmi;
-    private JRadioButtonMenuItem _ext_node_dependent_cladogram_rbmi;
-    private Options              _options;
-    private JMenuItem            _choose_font_mi;
-    private JMenuItem            _switch_colors_mi;
-    JCheckBoxMenuItem            _label_direction_cbmi;
-    private JCheckBoxMenuItem    _show_scale_cbmi;
-    private JCheckBoxMenuItem    _search_case_senstive_cbmi;
-    private JCheckBoxMenuItem    _search_whole_words_only_cbmi;
-    private JCheckBoxMenuItem    _inverse_search_result_cbmi;
-    private JCheckBoxMenuItem    _show_overview_cbmi;
-    private JMenuItem            _choose_minimal_confidence_mi;
-    private JCheckBoxMenuItem    _show_branch_length_values_cbmi;
-    private JMenuItem            _collapse_species_specific_subtrees;
-    private JMenuItem            _overview_placment_mi;
-    private ButtonGroup          _radio_group_1;
-    private JCheckBoxMenuItem    _show_default_node_shapes_cbmi;
-    private JMenuItem            _cycle_node_shape_mi;
-    private JMenuItem            _cycle_node_fill_mi;
-    private JMenuItem            _choose_node_size_mi;
-    private JCheckBoxMenuItem    _taxonomy_colorize_node_shapes_cbmi;
-    private JCheckBoxMenuItem    _show_confidence_stddev_cbmi;
-    final LinkedList<TextFrame>  _textframes      = new LinkedList<TextFrame>(); ;
+    private final static String         NAME                  = "ArchaeopteryxE";
+    private static final long           serialVersionUID      = -1220055577935759443L;
+    private Configuration               _configuration;
+    private MainPanelApplets            _main_panel;
+    private JMenuBar                    _jmenubar;
+    private JMenu                       _options_jmenu;
+    private JMenu                       _font_size_menu;
+    private JMenuItem                   _super_tiny_fonts_mi;
+    private JMenuItem                   _tiny_fonts_mi;
+    private JMenuItem                   _small_fonts_mi;
+    private JMenuItem                   _medium_fonts_mi;
+    private JMenuItem                   _large_fonts_mi;
+    private JMenu                       _tools_menu;
+    private JMenuItem                   _taxcolor_item;
+    private JMenuItem                   _confcolor_item;
+    private JMenuItem                   _midpoint_root_item;
+    private JMenu                       _view_jmenu;
+    private JMenuItem                   _view_as_XML_item;
+    private JMenuItem                   _view_as_NH_item;
+    private JMenuItem                   _view_as_NHX_item;
+    private JMenuItem                   _view_as_nexus_item;
+    private JMenuItem                   _display_basic_information_item;
+    private JMenu                       _type_menu;
+    private JCheckBoxMenuItem           _rectangular_type_cbmi;
+    private JCheckBoxMenuItem           _triangular_type_cbmi;
+    private JCheckBoxMenuItem           _curved_type_cbmi;
+    private JCheckBoxMenuItem           _convex_type_cbmi;
+    private JCheckBoxMenuItem           _euro_type_cbmi;
+    private JCheckBoxMenuItem           _rounded_type_cbmi;
+    private JCheckBoxMenuItem           _unrooted_type_cbmi;
+    private JCheckBoxMenuItem           _circular_type_cbmi;
+    private JMenuItem                   _help_item;
+    private JMenuItem                   _about_item;
+    private JMenu                       _help_jmenu;
+    private JMenuItem                   _website_item;
+    private JMenuItem                   _phyloxml_website_item;
+    private JMenuItem                   _phyloxml_ref_item;
+    private JMenuItem                   _aptx_ref_item;
+    private JMenuItem                   _remove_branch_color_item;
+    private JMenuItem                   _infer_common_sn_names_item;
+    private JCheckBoxMenuItem           _show_domain_labels;
+    private JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
+    private JCheckBoxMenuItem           _abbreviate_scientific_names;
+    private JCheckBoxMenuItem           _screen_antialias_cbmi;
+    private JCheckBoxMenuItem           _background_gradient_cbmi;
+    private JRadioButtonMenuItem        _non_lined_up_cladograms_rbmi;
+    private JRadioButtonMenuItem        _uniform_cladograms_rbmi;
+    private JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
+    private Options                     _options;
+    private JMenuItem                   _choose_font_mi;
+    private JMenuItem                   _switch_colors_mi;
+    JCheckBoxMenuItem                   _label_direction_cbmi;
+    private JCheckBoxMenuItem           _show_scale_cbmi;
+    private JCheckBoxMenuItem           _search_case_senstive_cbmi;
+    private JCheckBoxMenuItem           _search_whole_words_only_cbmi;
+    private JCheckBoxMenuItem           _inverse_search_result_cbmi;
+    private JCheckBoxMenuItem           _show_overview_cbmi;
+    private JMenuItem                   _choose_minimal_confidence_mi;
+    private JCheckBoxMenuItem           _show_branch_length_values_cbmi;
+    private JMenuItem                   _collapse_species_specific_subtrees;
+    private JMenuItem                   _overview_placment_mi;
+    private ButtonGroup                 _radio_group_1;
+    private JCheckBoxMenuItem           _show_default_node_shapes_cbmi;
+    private JMenuItem                   _cycle_node_shape_mi;
+    private JMenuItem                   _cycle_node_fill_mi;
+    private JMenuItem                   _choose_node_size_mi;
+    private JCheckBoxMenuItem           _taxonomy_colorize_node_shapes_cbmi;
+    private JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
+    private final LinkedList<TextFrame> _textframes           = new LinkedList<TextFrame>();
+    private String                      _ext_node_data_buffer = "";
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -377,6 +378,27 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
         sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
         TextFrame.instantiate( sb.toString(), "Help", _textframes );
+    }
+
+    void setCurrentExternalNodesDataBuffer( final String s ) {
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            _ext_node_data_buffer = s.trim();
+        }
+        else {
+            _ext_node_data_buffer = "";
+        }
+    }
+
+    /**
+     * This method returns the current external node data which
+     * has been selected by the user by clicking the "Return ..."
+     * menu item. This method is expected to be called from Javascript or
+     * something like it.
+     * 
+     * @return current external node data as String
+     */
+    public String getCurrentExternalNodesDataBuffer() {
+        return _ext_node_data_buffer;
     }
 
     /**

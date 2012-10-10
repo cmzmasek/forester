@@ -8672,8 +8672,30 @@ public final class Test {
                 return false;
             }
             // 
+            id = SequenceIdParser.parse( "P4A123" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "P4A123" ) || !id.getProvider().equals( "sp" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getProvider() );
+                }
+                return false;
+            }
+            // 
+            id = SequenceIdParser.parse( "pllf[pok P4A123_osdjfosnqo035-9233332904i000490 vf tmv x45" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
+                    || !id.getValue().equals( "P4A123" ) || !id.getProvider().equals( "sp" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getProvider() );
+                }
+                return false;
+            }
+            // 
             id = SequenceIdParser.parse( "XP_12345" );
             if ( id != null ) {
+                System.out.println( "value   =" + id.getValue() );
+                System.out.println( "provider=" + id.getProvider() );
                 return false;
             }
             // lcl_91970_unknown_

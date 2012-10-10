@@ -36,6 +36,7 @@ public final class Identifier implements PhylogenyData {
 
     final public static String NCBI   = "ncbi";
     final public static String REFSEQ = "refseq";
+    final public static String SP     = "sp";
     final private String       _value;
     final private String       _provider;
     final private String       _value_provider;

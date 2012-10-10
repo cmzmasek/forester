@@ -125,6 +125,7 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceIdParser;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
@@ -459,26 +460,41 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private void blast( final PhylogenyNode node ) {
         if ( !isCanBlast( node ) ) {
             JOptionPane.showMessageDialog( this,
-                                           "No sequence information present",
+                                           "Insufficient information present",
                                            "Cannot Blast",
-                                           JOptionPane.WARNING_MESSAGE );
+                                           JOptionPane.INFORMATION_MESSAGE );
             return;
         }
-        if ( node.getNodeData().isHasSequence() || !ForesterUtil.isEmpty( node.getName() ) ) {
+        else {
             final String query = Blast.obtainQueryForBlast( node );
             System.out.println( "query for BLAST is: " + query );
-            boolean nucleotide = false;
+            char type = '?';
             if ( !ForesterUtil.isEmpty( query ) ) {
                 if ( node.getNodeData().isHasSequence() ) {
                     if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getType() ) ) {
-                        if ( !node.getNodeData().getSequence().getType().toLowerCase()
+                        if ( node.getNodeData().getSequence().getType().toLowerCase()
                                 .equals( PhyloXmlUtil.SEQ_TYPE_PROTEIN ) ) {
-                            nucleotide = true;
+                            type = 'p';
+                        }
+                        else {
+                            type = 'n';
                         }
                     }
                     else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-                        nucleotide = !ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence()
-                                .getMolecularSequence() );
+                        if ( ForesterUtil.seqIsLikelyToBeAa( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+                            type = 'p';
+                        }
+                        else {
+                            type = 'n';
+                        }
+                    }
+                }
+                if ( type == '?' ) {
+                    if ( SequenceIdParser.isProtein( query ) ) {
+                        type = 'p';
+                    }
+                    else {
+                        type = 'n';
                     }
                 }
                 JApplet applet = null;
@@ -486,7 +502,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     applet = obtainApplet();
                 }
                 try {
-                    Blast.openNcbiBlastWeb( query, nucleotide, applet, this );
+                    Blast.openNcbiBlastWeb( query, type == 'n', applet, this );
                 }
                 catch ( final Exception e ) {
                     e.printStackTrace();
@@ -1431,8 +1447,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         + node.getNumberOfExternalNodes() + ") For Node " + node;
                 if ( getMainPanel().getMainFrame() == null ) {
                     // Must be "E" applet version.
-                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() ).showTextFrame( sb
-                            .toString(), title );
+                    final ArchaeopteryxE ae = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
+                    final String s = sb.toString().trim();
+                    ae.showTextFrame( s, title );
+                    ae.setCurrentExternalNodesDataBuffer( s );
                 }
                 else {
                     getMainPanel().getMainFrame().showTextFrame( sb.toString(), title );
@@ -1580,11 +1598,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private boolean isCanBlast( final PhylogenyNode node ) {
-        return ( ( node.getNodeData().isHasSequence() && ( ( ( node.getNodeData().getSequence().getAccession() != null ) && !ForesterUtil
-                .isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) )
-                || !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) || !ForesterUtil.isEmpty( node
-                .getNodeData().getSequence().getMolecularSequence() ) ) ) || ( ( !ForesterUtil.isEmpty( node.getName() ) ) && Blast
-                .isContainsQueryForBlast( node ) ) );
+        if ( !node.getNodeData().isHasSequence() && ForesterUtil.isEmpty( node.getName() ) ) {
+            return false;
+        }
+        return Blast.isContainsQueryForBlast( node );
     }
 
     final boolean isCanCollapse() {

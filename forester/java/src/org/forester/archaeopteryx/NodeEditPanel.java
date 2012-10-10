@@ -825,7 +825,7 @@ class NodeEditPanel extends JPanel {
                 break;
             case SEQ_MOL_SEQ:
                 AptxUtil.ensurePresenceOfSequence( getMyNode() );
-                getMyNode().getNodeData().getSequence().setMolecularSequence( value );
+                getMyNode().getNodeData().getSequence().setMolecularSequence( value.replaceAll( "[^a-zA-Z-]", "" ) );
                 break;
             case SEQ_NAME:
                 AptxUtil.ensurePresenceOfSequence( getMyNode() );
