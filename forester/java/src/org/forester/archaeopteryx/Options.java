@@ -192,7 +192,7 @@ final public class Options {
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = true;
         _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _ext_desc_data_to_return = NODE_DATA.NODE_NAME;
+        _ext_desc_data_to_return = NODE_DATA.UNKNOWN;
     }
 
     boolean isShowConfidenceStddev() {
