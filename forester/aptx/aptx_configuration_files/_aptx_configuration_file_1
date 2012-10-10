@@ -135,7 +135,7 @@ allow_editing:                             yes
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 extract_taxonomy_codes_in_nh_parsing:      yes
-ext_descendents_data_to_return_on:         console
+ext_descendents_data_to_return_on:         window
 ext_descendents_data_to_return:            node_name
 #label_for_get_ext_descendents_data:        Get_Node_Data         
 
