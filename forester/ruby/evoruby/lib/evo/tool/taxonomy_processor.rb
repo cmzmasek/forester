@@ -215,6 +215,8 @@ module Evoruby
       new_desc = nil
       my_species = nil
       # if desc =~ /^>?\s*\S{1,10}_([0-9A-Z]{3,5})/
+      desc.gsub!( /:\s+/, ":" ) #new
+      desc.gsub!( /\s+/, " " ) #new
       if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif SIMPLE
