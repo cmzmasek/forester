@@ -48,7 +48,7 @@ module Evoruby
         WWW,
         STDOUT )
 
-      if ( ARGV == nil || (  ARGV.length != 1 && ARGV.length != 3 && ARGV.length != 4 && ARGV.length != 5 && ARGV.length != 6 ) )
+      if ( ARGV == nil || ( ARGV.length != 1 && ARGV.length != 2 && ARGV.length != 3 && ARGV.length != 4 && ARGV.length != 5 && ARGV.length != 6 ) )
         puts( "Usage: #{PRG_NAME}.rb [options] [input map file] <input sequences> [output sequences] [output id list]" )
         puts()
         puts( "  options: -" + EXTRACT_TAXONOMY_OPTION + ": to extract taxonomy information from bracketed expression" )
