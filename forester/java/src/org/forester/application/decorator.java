@@ -47,32 +47,32 @@ import org.forester.util.ForesterUtil;
 
 public final class decorator {
 
-    private static final String SEQUENCE_NAME_FIELD                    = "s";
-    private static final String TAXONOMY_CODE_FIELD                    = "c";
-    private static final String TAXONOMY_SCIENTIFIC_NAME_FIELD         = "sn";
-    private static final String DS_FILED                               = "d";
-    private static final String SEQUENCE_ANNOTATION_DESC               = "a";
-    private static final String NODE_NAME_FIELD                        = "n";
-    final static private String PICKY_OPTION                           = "p";
-    final static private String FIELD_OPTION                           = "f";
-    final static private String TRIM_AFTER_TILDE_OPTION                = "t";
-    final static private String MOVE_DOMAIN_NUMBER_OPTION              = "mdn";       // Hidden expert option.
-    final static private String TREE_NAME_OPTION                       = "pn";
-    final static private String TREE_ID_OPTION                         = "pi";
-    final static private String TREE_DESC_OPTION                       = "pd";
-    final static private String EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION = "sn";
-    final static private String PROCESS_NAME_INTELLIGENTLY_OPTION      = "x";
-    final static private String PROCESS_SIMILAR_TO_OPTION              = "xs";
-    final static private String CUT_NAME_AFTER_FIRST_SPACE_OPTION      = "c";
-    final static private String ALLOW_REMOVAL_OF_CHARS_OPTION          = "r";
-    final static private String ADVANCED_TABLE_OPTION                  = "table";
-    final static private String KEY_COLUMN                             = "k";
-    final static private String VALUE_COLUMN                           = "v";
-    final static private String MAPPING_FILE_SEPARATOR_OPTION          = "s";
-    final static private String MAPPING_FILE_SEPARATOR_DEFAULT         = ": ";
-    final static private String PRG_NAME                               = "decorator";
-    final static private String PRG_VERSION                            = "1.11";
-    final static private String PRG_DATE                               = "2012.09.15";
+    private static final String SEQUENCE_NAME_FIELD                     = "s";
+    private static final String TAXONOMY_CODE_FIELD                     = "c";
+    private static final String TAXONOMY_SCIENTIFIC_NAME_FIELD          = "sn";
+    private static final String DS_FILED                                = "d";
+    private static final String SEQUENCE_ANNOTATION_DESC                = "a";
+    private static final String NODE_NAME_FIELD                         = "n";
+    final static private String PICKY_OPTION                            = "p";
+    final static private String FIELD_OPTION                            = "f";
+    final static private String TRIM_AFTER_TILDE_OPTION                 = "t";
+    final static private String TREE_NAME_OPTION                        = "pn";
+    final static private String TREE_ID_OPTION                          = "pi";
+    final static private String TREE_DESC_OPTION                        = "pd";
+    final static private String EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION  = "sn";
+    final static private String EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION = "tc";
+    final static private String PROCESS_NAME_INTELLIGENTLY_OPTION       = "x";
+    final static private String PROCESS_SIMILAR_TO_OPTION               = "xs";
+    final static private String CUT_NAME_AFTER_FIRST_SPACE_OPTION       = "c";
+    final static private String ALLOW_REMOVAL_OF_CHARS_OPTION           = "r";
+    final static private String ADVANCED_TABLE_OPTION                   = "table";
+    final static private String KEY_COLUMN                              = "k";
+    final static private String VALUE_COLUMN                            = "v";
+    final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
+    final static private String MAPPING_FILE_SEPARATOR_DEFAULT          = ": ";
+    final static private String PRG_NAME                                = "decorator";
+    final static private String PRG_VERSION                             = "1.11";
+    final static private String PRG_DATE                                = "2012.09.15";
 
     private static void argumentsError() {
         System.out.println();
@@ -105,7 +105,9 @@ public final class decorator {
         System.out.println( " -v=<n> : value column in mapping table (0 based)," );
         System.out.println( "          data which with to decorate - default is 1" );
         System.out.println( " -" + EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION
-                + "    : to extract bracketed scientific names" );
+                + "    : to extract bracketed scientific names, e.g. [Nematostella vectensis]" );
+        System.out.println( " -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION
+                + "    : to extract bracketed taxonomic codes, e.g. [NEMVE]" );
         System.out.println( " -s=<c> : column separator in mapping file, default is \""
                 + decorator.MAPPING_FILE_SEPARATOR_DEFAULT + "\"" );
         System.out.println( " -x     : process name \"intelligently\" (only for -f=n)" );
@@ -154,7 +156,6 @@ public final class decorator {
         allowed_options.add( decorator.TREE_NAME_OPTION );
         allowed_options.add( decorator.TREE_ID_OPTION );
         allowed_options.add( decorator.TREE_DESC_OPTION );
-        allowed_options.add( decorator.MOVE_DOMAIN_NUMBER_OPTION );
         allowed_options.add( decorator.TRIM_AFTER_TILDE_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
@@ -186,7 +187,7 @@ public final class decorator {
         boolean process_name_intelligently = false;
         boolean process_similar_to = false;
         boolean extract_bracketed_scientific_name = false;
-        boolean move_domain_numbers_at_end_to_middle = false;
+        boolean extract_bracketed_tax_code = false;
         boolean trim_after_tilde = false;
         String tree_name = "";
         String tree_id = "";
@@ -206,6 +207,12 @@ public final class decorator {
                     argumentsError();
                 }
                 extract_bracketed_scientific_name = true;
+            }
+            if ( cla.isOptionSet( decorator.EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION ) ) {
+                if ( advanced_table ) {
+                    argumentsError();
+                }
+                extract_bracketed_tax_code = true;
             }
             if ( cla.isOptionSet( decorator.KEY_COLUMN ) ) {
                 if ( advanced_table ) {
@@ -247,9 +254,6 @@ public final class decorator {
                 numbers_of_chars_allowed_to_remove_if_not_found_in_map = cla
                         .getOptionValueAsInt( decorator.ALLOW_REMOVAL_OF_CHARS_OPTION );
             }
-            if ( cla.isOptionSet( decorator.MOVE_DOMAIN_NUMBER_OPTION ) ) {
-                move_domain_numbers_at_end_to_middle = true;
-            }
             if ( cla.isOptionSet( decorator.FIELD_OPTION ) ) {
                 field_str = cla.getOptionValue( decorator.FIELD_OPTION );
                 if ( field_str.equals( NODE_NAME_FIELD ) ) {
@@ -261,6 +265,7 @@ public final class decorator {
                 else if ( field_str.equals( DS_FILED ) ) {
                     field = FIELD.DOMAIN_STRUCTURE;
                     extract_bracketed_scientific_name = false;
+                    extract_bracketed_tax_code = false;
                 }
                 else if ( field_str.equals( TAXONOMY_CODE_FIELD ) ) {
                     field = FIELD.TAXONOMY_CODE;
@@ -271,6 +276,7 @@ public final class decorator {
                 else if ( field_str.equals( TAXONOMY_SCIENTIFIC_NAME_FIELD ) ) {
                     field = FIELD.TAXONOMY_SCIENTIFIC_NAME;
                     extract_bracketed_scientific_name = false;
+                    extract_bracketed_tax_code = false;
                 }
                 else {
                     ForesterUtil.fatalError( decorator.PRG_NAME, "unknown value for \"" + decorator.FIELD_OPTION
@@ -298,6 +304,9 @@ public final class decorator {
         if ( process_similar_to && cut_name_after_space ) {
             ForesterUtil.fatalError( decorator.PRG_NAME, "attempt to use -" + decorator.PROCESS_SIMILAR_TO_OPTION
                     + " and -c option together" );
+        }
+        if ( extract_bracketed_scientific_name && extract_bracketed_tax_code ) {
+            argumentsError();
         }
         Phylogeny[] phylogenies = null;
         try {
@@ -367,12 +376,12 @@ public final class decorator {
                                              map,
                                              field,
                                              extract_bracketed_scientific_name,
+                                             extract_bracketed_tax_code,
                                              picky,
                                              cut_name_after_space,
                                              process_name_intelligently,
                                              process_similar_to,
                                              numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                             move_domain_numbers_at_end_to_middle,
                                              trim_after_tilde );
             }
         }

@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.archaeopteryx.AptxUtil;
@@ -183,25 +182,25 @@ public final class PhylogenyDecorator {
                                  final Map<String, String> map,
                                  final FIELD field,
                                  final boolean extract_bracketed_scientific_name,
+                                 final boolean extract_bracketed_tax_code,
                                  final boolean picky,
                                  final boolean cut_name_after_space,
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         PhylogenyDecorator.decorate( phylogeny,
                                      map,
                                      field,
                                      extract_bracketed_scientific_name,
+                                     extract_bracketed_tax_code,
                                      picky,
                                      null,
                                      cut_name_after_space,
                                      process_name_intelligently,
                                      process_similar_to,
                                      numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                     move_domain_numbers_at_end_to_middle,
                                      trim_after_tilde );
     }
 
@@ -224,13 +223,13 @@ public final class PhylogenyDecorator {
                                  final Map<String, String> map,
                                  final FIELD field,
                                  final boolean extract_bracketed_scientific_name,
+                                 final boolean extract_bracketed_tax_code,
                                  final boolean picky,
                                  final Map<String, String> intermediate_map,
                                  final boolean cut_name_after_space,
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException,
             PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
@@ -277,6 +276,9 @@ public final class PhylogenyDecorator {
                         new_value.replaceAll( "/\\s+/", " " );
                         if ( extract_bracketed_scientific_name && new_value.endsWith( "]" ) ) {
                             new_value = extractBracketedScientificNames( node, new_value );
+                        }
+                        else if ( extract_bracketed_tax_code && new_value.endsWith( "]" ) ) {
+                            new_value = extractBracketedTaxCodes( node, new_value );
                         }
                         switch ( field ) {
                             case SEQUENCE_ANNOTATION_DESC:
@@ -356,9 +358,6 @@ public final class PhylogenyDecorator {
                             default:
                                 throw new RuntimeException( "unknown field \"" + field + "\"" );
                         }
-                        if ( move_domain_numbers_at_end_to_middle && ( field != FIELD.NODE_NAME ) ) {
-                            node.setName( moveDomainNumbersAtEnd( node.getName() ) );
-                        }
                     }
                 }
                 else if ( picky ) {
@@ -385,12 +384,12 @@ public final class PhylogenyDecorator {
                                  final Map<String, String> map,
                                  final FIELD field,
                                  final boolean extract_bracketed_scientific_name,
+                                 final boolean extract_bracketed_tax_code,
                                  final boolean picky,
                                  final boolean cut_name_after_space,
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
@@ -398,12 +397,12 @@ public final class PhylogenyDecorator {
                                          map,
                                          field,
                                          extract_bracketed_scientific_name,
+                                         extract_bracketed_tax_code,
                                          picky,
                                          cut_name_after_space,
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         move_domain_numbers_at_end_to_middle,
                                          trim_after_tilde );
         }
     }
@@ -412,13 +411,13 @@ public final class PhylogenyDecorator {
                                  final Map<String, String> map,
                                  final FIELD field,
                                  final boolean extract_bracketed_scientific_name,
+                                 final boolean extract_bracketed_tax_code,
                                  final boolean picky,
                                  final Map<String, String> intermediate_map,
                                  final boolean cut_name_after_space,
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean move_domain_numbers_at_end_to_middle,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         for( int i = 0; i < phylogenies.length; ++i ) {
@@ -426,13 +425,13 @@ public final class PhylogenyDecorator {
                                          map,
                                          field,
                                          extract_bracketed_scientific_name,
+                                         extract_bracketed_tax_code,
                                          picky,
                                          intermediate_map,
                                          cut_name_after_space,
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         move_domain_numbers_at_end_to_middle,
                                          trim_after_tilde );
         }
     }
@@ -450,6 +449,19 @@ public final class PhylogenyDecorator {
         final String scientific_name = new_value.substring( i + 1, new_value.length() - 1 );
         AptxUtil.ensurePresenceOfTaxonomy( node );
         node.getNodeData().getTaxonomy().setScientificName( scientific_name );
+        return new_value.substring( 0, i - 1 ).trim();
+    }
+
+    private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
+        final int i = new_value.lastIndexOf( "[" );
+        final String tc = new_value.substring( i + 1, new_value.length() - 1 );
+        AptxUtil.ensurePresenceOfTaxonomy( node );
+        try {
+            node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
+        }
         return new_value.substring( 0, i - 1 ).trim();
     }
 
@@ -471,19 +483,6 @@ public final class PhylogenyDecorator {
             System.out.println( new_name + "  " );
         }
         return new_name;
-    }
-
-    private static String moveDomainNumbersAtEnd( final String node_name ) {
-        final Matcher m = NODENAME_SEQNUMBER_TAXDOMAINNUMBER.matcher( node_name );
-        if ( m.matches() ) {
-            final String seq_number = m.group( 1 );
-            final String tax = m.group( 2 );
-            final String domain_number = m.group( 3 );
-            return seq_number + "_[" + domain_number + "]_" + tax;
-        }
-        else {
-            return node_name;
-        }
     }
 
     public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )
