@@ -61,6 +61,12 @@ public class Distribution implements PhylogenyData {
     }
 
     public boolean isEmpty() {
+        if ( ForesterUtil.isEmpty( _desc ) && ( ( getPoints() != null ) && ( getPoints().size() == 1 ) )
+                && ForesterUtil.isEmpty( _polygons ) ) {
+            if ( Point.isSeemsEmpty( getPoints().get( 0 ) ) ) {
+                return true;
+            }
+        }
         return ForesterUtil.isEmpty( _desc ) && ForesterUtil.isEmpty( _points ) && ForesterUtil.isEmpty( _polygons );
     }
 
@@ -79,7 +85,7 @@ public class Distribution implements PhylogenyData {
         int i = 0;
         if ( getPoints() != null ) {
             for( final Point point : getPoints() ) {
-                if ( point != null ) {
+                if ( ( point != null ) && !Point.isSeemsEmpty( point ) ) {
                     sb.append( ForesterUtil.LINE_SEPARATOR );
                     sb.append( " Point " + i + ": " );
                     sb.append( point.asSimpleText() );
@@ -162,12 +168,16 @@ public class Distribution implements PhylogenyData {
         final String ind = indentation + PhylogenyWriter.PHYLO_XML_INTENDATION_BASE;
         if ( getPoints() != null ) {
             for( final Point point : getPoints() ) {
-                point.toPhyloXML( writer, level, ind );
+                if ( ( point != null ) && !Point.isSeemsEmpty( point ) ) {
+                    point.toPhyloXML( writer, level, ind );
+                }
             }
         }
         if ( getPolygons() != null ) {
             for( final Polygon polygon : getPolygons() ) {
-                polygon.toPhyloXML( writer, level, ind );
+                if ( polygon != null ) {
+                    polygon.toPhyloXML( writer, level, ind );
+                }
             }
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );

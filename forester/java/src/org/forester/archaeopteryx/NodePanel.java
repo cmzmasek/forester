@@ -317,7 +317,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         addSubelement( category, DIST_DESCRIPTION, dist.getDesc() );
         if ( ( dist.getPoints() != null ) && ( dist.getPoints().size() > 0 ) ) {
             final Point p0 = dist.getPoints().get( 0 );
-            if ( p0 != null ) {
+            if ( ( p0 != null ) && !Point.isSeemsEmpty( p0 ) ) {
                 addSubelement( category, DIST_GEODETIC_DATUM, p0.getGeodeticDatum() );
                 addSubelement( category, DIST_LATITUDE, String.valueOf( p0.getLatitude() ) );
                 addSubelement( category, DIST_LONGITUDE, String.valueOf( p0.getLongitude() ) );

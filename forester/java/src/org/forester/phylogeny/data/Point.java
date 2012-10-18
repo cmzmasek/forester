@@ -149,4 +149,13 @@ public class Point implements PhylogenyData {
     public String toString() {
         return asSimpleText().toString();
     }
+
+    static public final boolean isSeemsEmpty( final Point p ) {
+        return ( ( ( p.getAltitude() == null ) || ( p.getAltitude().compareTo( BigDecimal.ZERO ) <= 0 ) )
+                && ( ( p.getLongitude() == null ) || ( p.getLongitude().compareTo( BigDecimal.ZERO ) <= 0 ) )
+                && ( ( p.getLatitude() == null ) || ( p.getLatitude().compareTo( BigDecimal.ZERO ) <= 0 ) )
+                && ( ForesterUtil.isEmpty( p.getGeodeticDatum() ) || p.getGeodeticDatum()
+                        .equalsIgnoreCase( UNKNOWN_GEODETIC_DATUM ) ) && ( ForesterUtil.isEmpty( p.getAltiudeUnit() ) || p
+                .getAltiudeUnit().equalsIgnoreCase( "?" ) ) );
+    }
 }
