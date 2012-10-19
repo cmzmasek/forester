@@ -26,7 +26,7 @@ require 'lib/evo/io/parser/fasta_parser'
 require 'lib/evo/io/parser/ncbi_tseq_parser'
 require 'lib/evo/io/parser/hmmsearch_domain_extractor'
 require 'lib/evo/tool/domain_sequence_extractor'
-require 'lib/evo/tool/hmmscan_parser'
+require 'lib/evo/tool/hmmscan_summary'
 require 'lib/evo/tool/domains_to_forester'
 require 'lib/evo/io/parser/general_msa_parser'
 require 'lib/evo/io/parser/basic_table_parser'
@@ -823,7 +823,7 @@ module Evoruby
 
         def test_hmmscan_parser()
             begin
-                h = Evoruby::HmmscanParser.new()
+                h = Evoruby::HmmscanSummary.new()
             rescue Exception => e
                 puts()
                 puts( e.to_s )

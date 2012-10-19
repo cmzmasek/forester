@@ -9,11 +9,11 @@
 #
 # last modified: 11/24/2009
 
-require 'lib/evo/tool/hmmscan_parser'
+require 'lib/evo/tool/hmmscan_summary'
 
 module Evoruby
 
-    hsp = HmmscanParser.new()
+    hsp = HmmscanSummary.new()
 
     hsp.run()
 

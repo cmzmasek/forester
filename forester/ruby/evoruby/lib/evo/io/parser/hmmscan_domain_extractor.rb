@@ -12,6 +12,8 @@ require 'lib/evo/msa/msa_factory'
 require 'lib/evo/io/msa_io'
 require 'lib/evo/io/writer/fasta_writer'
 require 'lib/evo/io/parser/fasta_parser'
+require 'lib/evo/io/parser/hmmscan_parser'
+
 
 
 module Evoruby
@@ -84,96 +86,89 @@ module Evoruby
       max_domain_copy_number_per_protein = -1
       max_domain_copy_number_sequence    = ""
 
-      hmmscan_datas = Array.new
+      hmmscan_datas = []
 
-      File.open( hmmscan_output ) do | file |
-        while line = file.gets
-          if !is_ignorable?( line ) && line =~ /^\S+\s+/
+      hmmscan_parser = HmmscanParser.new( hmmscan_output )
+      results = hmmscan_parser.parse
 
-            #         tn      acc     tlen    query   acc     qlen    Evalue  score   bias    #       of      c-E     i-E     score   bias    hf      ht      af      at      ef      et      acc     desc
-            #         1       2       3       4       5       6       7       8       9       10      11      12      13      14      15      16      17      18      19      20      21      22      23
-            line =~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/
+      results.each do | r |
+        if domain_id != r.model
+          next
+        end
 
-            if domain_id != $1
-              next
-            end
+        sequence  = r.query
+        number    = r.number
+        out_of    = r.out_of
+        env_from  = r.env_from
+        env_to    = r.env_to
+        i_e_value = r.i_e_value
 
-            sequence = $4
-            number   = $10.to_i
-            out_of   = $11.to_i
-            env_from = $20.to_i
-            env_to   = $21.to_i
-            i_e_value  = $13.to_f
+        if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
+             ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
+          hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
+          if ( number > max_domain_copy_number_per_protein )
+            max_domain_copy_number_sequence    = sequence
+            max_domain_copy_number_per_protein = number
+          end
+        else # failed
+          print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
+          log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
+          if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
+            print( " iE=" + i_e_value.to_s )
+            log << " iE=" + i_e_value.to_s
+          end
+          if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
+            le = env_to - env_from + 1
+            print( " l=" + le.to_s )
+            log << " l=" + le.to_s
+          end
+          print( ld )
+          log << ld
+          domain_fail_counter  += 1
+        end
 
-            if ( ( ( e_value_threshold < 0.0 ) || ( i_e_value <= e_value_threshold ) ) &&
-                 ( ( length_threshold <= 0 )   || ( env_to - env_from + 1 ) >= length_threshold.to_f ) )
-              hmmscan_datas << HmmsearchData.new( sequence, number, out_of, env_from, env_to, i_e_value )
-              if ( number > max_domain_copy_number_per_protein )
-                max_domain_copy_number_sequence    = sequence
-                max_domain_copy_number_per_protein = number
-              end
-            else # failed
-              print( domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)" )
-              log << domain_fail_counter.to_s + ": " + sequence.to_s + " did not meet threshold(s)"
-              if ( ( e_value_threshold.to_f >= 0.0 ) && ( i_e_value > e_value_threshold ) )
-                print( " iE=" + i_e_value.to_s )
-                log << " iE=" + i_e_value.to_s
-              end
-              if ( ( length_threshold.to_f > 0 ) && ( env_to - env_from + 1 ) < length_threshold.to_f )
-                le = env_to - env_from + 1
-                print( " l=" + le.to_s )
-                log << " l=" + le.to_s
-              end
-              print( ld )
-              log << ld
-              domain_fail_counter  += 1
-            end
+        if number > out_of
+          error_msg = "number > out_of ! (this should not have happened)"
+          raise StandardError, error_msg
+        end
 
-            if number > out_of
-              error_msg = "number > out_of ! (this should not have happened)"
+        if number == out_of
+          if !hmmscan_datas.empty?
+            process_hmmscan_datas( hmmscan_datas,
+              in_msa,
+              add_position,
+              add_domain_number,
+              add_species,
+              out_msa,
+              out_msa_singles,
+              out_msa_pairs,
+              out_msa_isolated,
+              min_linker,
+              out_msa_single_domains_protein_seqs,
+              out_msa_close_pairs_protein_seqs,
+              out_msa_close_pairs_only_protein_seqs,
+              out_msa_isolated_protein_seqs,
+              out_msa_isolated_only_protein_seqs,
+              out_msa_isolated_and_close_pair_protein_seqs )
+            domain_pass_counter += hmmscan_datas.length
+            if passed_seqs.find_by_name_start( sequence, true ).length < 1
+              add_sequence( sequence, in_msa, passed_seqs )
+            else
+              error_msg = "this should not have happened"
               raise StandardError, error_msg
             end
-
-            if number == out_of
-              if !hmmscan_datas.empty?
-                process_hmmscan_datas( hmmscan_datas,
-                  in_msa,
-                  add_position,
-                  add_domain_number,
-                  add_species,
-                  out_msa,
-                  out_msa_singles,
-                  out_msa_pairs,
-                  out_msa_isolated,
-                  min_linker,
-                  out_msa_single_domains_protein_seqs,
-                  out_msa_close_pairs_protein_seqs,
-                  out_msa_close_pairs_only_protein_seqs,
-                  out_msa_isolated_protein_seqs,
-                  out_msa_isolated_only_protein_seqs,
-                  out_msa_isolated_and_close_pair_protein_seqs )
-                domain_pass_counter += hmmscan_datas.length
-                if passed_seqs.find_by_name_start( sequence, true ).length < 1
-                  add_sequence( sequence, in_msa, passed_seqs )
-                else
-                  error_msg = "this should not have happened"
-                  raise StandardError, error_msg
-                end
-              else
-                if failed_seqs.find_by_name_start( sequence, true ).length < 1
-                  add_sequence( sequence, in_msa, failed_seqs )
-                  proteins_with_failing_domains += 1
-                else
-                  error_msg = "this should not have happened"
-                  raise StandardError, error_msg
-                end
-              end
-              hmmscan_datas.clear
+          else
+            if failed_seqs.find_by_name_start( sequence, true ).length < 1
+              add_sequence( sequence, in_msa, failed_seqs )
+              proteins_with_failing_domains += 1
+            else
+              error_msg = "this should not have happened"
+              raise StandardError, error_msg
             end
-
           end
-        end #  while line = file.gets
-      end # File.open( hmmsearch_output ) do | file |
+          hmmscan_datas.clear
+        end
+      end
 
       if domain_pass_counter < 1
         error_msg = "no domain sequences were extracted"
