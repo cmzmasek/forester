@@ -26,7 +26,7 @@ module Evoruby
     WWW            = "www.phylosoft.org"
 
     DELIMITER_OPTION              = "d"
-    I_E_VALUE_THRESHOLD_OPTION    = "e"
+    I_E_VALUE_THRESHOLD_OPTION    = "ie"
     FS_E_VALUE_THRESHOLD_OPTION   = "pe"
     HMM_FOR_PROTEIN_OUTPUT        = "m"
     IGNORE_DUF_OPTION             = "i"
@@ -34,128 +34,15 @@ module Evoruby
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
+    USE_AVOID_HMMS = true
+    AVOID_HHMS = [ "RRM_1", "RRM_2", "RRM_3", "RRM_4", "RRM_5", "RRM_6" ]
+    LIMIT_FOR_CLOSE_DOMAINS = 20
+
     def initialize
       @domain_counts = Hash.new
     end
 
-    # raises ArgumentError, IOError
-    def parse( inpath,
-        outpath,
-        column_delimiter,
-        i_e_value_threshold,
-        ignore_dufs,
-        get_descriptions,
-        fs_e_value_threshold,
-        hmm_for_protein_output )
-      Util.check_file_for_readability( inpath )
-      Util.check_file_for_writability( outpath )
-
-      outfile = File.open( outpath, "a" )
-
-      query     = ""
-      desc      = ""
-      model     = ""
-      env_from  = ""
-      env_to    = ""
-      i_e_value = ""
-
-      hmmscan_results_per_protein = []
-
-      hmmscan_parser = HmmscanParser.new( inpath )
-
-      prev_query = ""
-
-      hmmscan_parser.parse.each do | r |
-        model     = r.model
-        query     = r.query
-        i_e_value = r.i_e_value
-        env_from  = r.env_from
-        env_to    = r.env_to
-
-        if ( ( i_e_value_threshold < 0.0 ) || ( i_e_value <= i_e_value_threshold ) ) &&
-           ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
-          count_model( model )
-          outfile.print( query +
-             column_delimiter )
-          if ( get_descriptions )
-            outfile.print( desc +
-               column_delimiter )
-          end
-          outfile.print( model +
-             column_delimiter +
-             env_from.to_s +
-             column_delimiter +
-             env_to.to_s +
-             column_delimiter +
-             i_e_value.to_s )
-          outfile.print( Constants::LINE_DELIMITER )
-        end
-
-        if  !prev_query.empty? && prev_query != query
-          if !hmmscan_results_per_protein.empty?
-            process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-              fs_e_value_threshold,
-              hmm_for_protein_output  )
-          end
-          hmmscan_results_per_protein.clear
-        end
-        prev_query = query
-        hmmscan_results_per_protein << r
-      end
-      if !hmmscan_results_per_protein.empty?
-        process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-          fs_e_value_threshold,
-          hmm_for_protein_output  )
-      end
-      outfile.flush()
-      outfile.close()
-
-    end # def parse
-
-    def count_model( model )
-      if ( @domain_counts.has_key?( model ) )
-        count = @domain_counts[ model ].to_i
-        count += 1
-        @domain_counts[ model ] = count
-      else
-        @domain_counts[ model ] = 1
-      end
-    end
-
-    def process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-        fs_e_value_threshold,
-        hmm_for_protein_output )
-
-      fs_e_value = -1
-      hmmscan_results_per_protein.each do | r |
-        if r.model ==  hmm_for_protein_output
-          fs_e_value = r.fs_e_value
-          if fs_e_value > fs_e_value_threshold
-            return
-          end
-        end
-      end
-
-
-      first = hmmscan_results_per_protein[ 0 ]
-      s = ""
-      s << first.query + "\t"
-      s << fs_e_value.to_s + "\t"
-      s << first.qlen.to_s + "\t"
-      # s << first.fs_e_value.to_s + "\t"
-      # s << first.out_of.to_s + "\t"
-      hmmscan_results_per_protein.each do | r |
-        s <<  r.model + "|"
-      end
-      puts s
-    end
-
-
-    def get_domain_counts()
-      return @domain_counts
-    end
-
-    def run()
+    def run
 
       Util.print_program_information( PRG_NAME,
         PRG_VERSION,
@@ -234,7 +121,6 @@ module Evoruby
         end
       end
 
-
       hmm_for_protein_output = ""
       if ( cla.is_option_set?( HMM_FOR_PROTEIN_OUTPUT ) )
         begin
@@ -243,7 +129,6 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
-
 
       ignore_dufs = false
       if ( cla.is_option_set?( IGNORE_DUF_OPTION ) )
@@ -312,7 +197,238 @@ module Evoruby
       Util.print_message( PRG_NAME, 'OK' )
       puts
 
-    end # def run()
+    end # def run
+
+    private
+
+    # raises ArgumentError, IOError
+    def parse( inpath,
+        outpath,
+        column_delimiter,
+        i_e_value_threshold,
+        ignore_dufs,
+        get_descriptions,
+        fs_e_value_threshold,
+        hmm_for_protein_output )
+      Util.check_file_for_readability( inpath )
+      Util.check_file_for_writability( outpath )
+
+      outfile = File.open( outpath, "a" )
+
+      query     = ""
+      desc      = ""
+      model     = ""
+      env_from  = ""
+      env_to    = ""
+      i_e_value = ""
+
+      hmmscan_results_per_protein = []
+
+      hmmscan_parser = HmmscanParser.new( inpath )
+
+      prev_query = ""
+
+      hmmscan_parser.parse.each do | r |
+        model     = r.model
+        query     = r.query
+        i_e_value = r.i_e_value
+        env_from  = r.env_from
+        env_to    = r.env_to
+
+        if ( ( i_e_value_threshold < 0.0 ) || ( i_e_value <= i_e_value_threshold ) ) &&
+           ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
+          count_model( model )
+          outfile.print( query +
+             column_delimiter )
+          if ( get_descriptions )
+            outfile.print( desc +
+               column_delimiter )
+          end
+          outfile.print( model +
+             column_delimiter +
+             env_from.to_s +
+             column_delimiter +
+             env_to.to_s +
+             column_delimiter +
+             i_e_value.to_s )
+          outfile.print( Constants::LINE_DELIMITER )
+        end
+
+        if !hmm_for_protein_output.empty?
+          if  !prev_query.empty? && prev_query != query
+            if !hmmscan_results_per_protein.empty?
+              process_hmmscan_results_per_protein( hmmscan_results_per_protein,
+                fs_e_value_threshold,
+                hmm_for_protein_output,
+                i_e_value_threshold )
+            end
+            hmmscan_results_per_protein.clear
+          end
+          prev_query = query
+
+          if USE_AVOID_HMMS
+            if !AVOID_HHMS.include? r.model
+              hmmscan_results_per_protein << r
+            end
+          else
+            hmmscan_results_per_protein << r
+          end
+        end
+      end
+      if !hmm_for_protein_output.empty?
+        if !hmmscan_results_per_protein.empty?
+          process_hmmscan_results_per_protein( hmmscan_results_per_protein,
+            fs_e_value_threshold,
+            hmm_for_protein_output,
+            i_e_value_threshold )
+        end
+      end
+      outfile.flush()
+      outfile.close()
+
+    end # def parse
+
+    def count_model( model )
+      if ( @domain_counts.has_key?( model ) )
+        count = @domain_counts[ model ].to_i
+        count += 1
+        @domain_counts[ model ] = count
+      else
+        @domain_counts[ model ] = 1
+      end
+    end
+
+    def process_hmmscan_results_per_protein( hmmscan_results_per_protein,
+        fs_e_value_threshold,
+        hmm_for_protein_output,
+        i_e_value_threshold )
+
+      dc = 0
+      # filter according to i-Evalue threshold
+      # abort if fs Evalue too high
+      hmmscan_results_per_protein_filtered = []
+
+      hmmscan_results_per_protein.each do | r |
+        if r.model == hmm_for_protein_output
+          if r.fs_e_value > fs_e_value_threshold
+            return
+          end
+        end
+        if r.i_e_value <= i_e_value_threshold
+          hmmscan_results_per_protein_filtered << r
+          if r.model == hmm_for_protein_output
+            dc += 1
+          end
+        end
+      end
+
+      if dc == 0
+        # passed on protein E-value, failed in per domain E-values
+        return
+      end
+
+      hmmscan_results_per_protein_filtered.sort! { |r1,r2| r1.env_from <=> r2.env_from }
+
+      own = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+        if r.model == hmm_for_protein_output
+          own = r
+        end
+      end
+
+      s = ""
+      s << own.query + "\t"
+      s << "HUMAN" + "\t"
+      s << own.fs_e_value.to_s + "\t"
+      s << own.qlen.to_s + "\t"
+      s << dc.to_s + "\t"
+      s << hmmscan_results_per_protein_filtered.length.to_s + "\t"
+      hmmscan_results_per_protein_filtered.each do | r |
+        s << r.model + " "
+      end
+      s << "\t"
+
+      overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
+
+      s << overview   + "\t"
+
+      s << calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )  + "\t"
+
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+
+        if  prev_r != nil
+          s << make_interdomain_sequence( r.env_from - prev_r.env_to - 1 )
+        else
+          s << make_interdomain_sequence( r.env_from, false )
+        end
+        s << r.model
+        s << "["
+        s << r.env_from.to_s << "-" << r.env_to.to_s
+        s << "|ie=" << r.i_e_value.to_s
+        s << "|ce=" << r.c_e_value.to_s
+        s << "]"
+        prev_r = r
+      end
+      s << make_interdomain_sequence( own.qlen - prev_r.env_from, false )
+      puts s
+    end
+
+
+    def calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )
+      linkers = ""
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+        if r.model == hmm_for_protein_output
+          if  prev_r != nil
+            linkers << ( r.env_from - prev_r.env_to - 1 ).to_s + " "
+          end
+          prev_r = r
+        end
+      end
+      linkers
+    end
+
+    def get_domain_counts()
+      return @domain_counts
+    end
+
+    def make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
+      overview = ""
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+        if r.model == hmm_for_protein_output
+          if prev_r == nil
+            overview << hmm_for_protein_output
+          else
+            if  ( r.env_from - prev_r.env_to - 1 ) <= LIMIT_FOR_CLOSE_DOMAINS
+              overview << "~" << hmm_for_protein_output
+            else
+              overview << "----" << hmm_for_protein_output
+            end
+          end
+          prev_r = r
+        end
+      end
+      overview
+    end
+
+    def make_interdomain_sequence( d, mark_short = true )
+      s = ""
+      d /= 20
+      if d >= 10
+        s << "----//----"
+      elsif d >= 1
+        d.times do
+          s << "-"
+        end
+      elsif mark_short
+        s << "~"
+      end
+      s
+    end
+
+
 
     def print_help()
       puts( "Usage:" )
@@ -328,6 +444,6 @@ module Evoruby
       puts()
     end
 
-  end # class HmmscanParser
+  end # class
 
 end # module Evoruby
