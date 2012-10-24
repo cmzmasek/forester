@@ -21,7 +21,7 @@ module Evoruby
     PRG_NAME       = "hsp"
     PRG_VERSION    = "2.000"
     PRG_DESC       = "hmmscan summary"
-    PRG_DATE       = "2012.10.19"
+    PRG_DATE       = "2012.10.23"
     COPYRIGHT      = "2012 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
@@ -79,7 +79,7 @@ module Evoruby
       allowed_opts.push( IGNORE_DUF_OPTION )
       allowed_opts.push( PARSE_OUT_DESCRIPITION_OPTION )
       allowed_opts.push( HMM_FOR_PROTEIN_OUTPUT )
-       allowed_opts.push( UNIPROT )
+      allowed_opts.push( UNIPROT )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -305,7 +305,8 @@ module Evoruby
           process_hmmscan_results_per_protein( hmmscan_results_per_protein,
             fs_e_value_threshold,
             hmm_for_protein_output,
-            i_e_value_threshold )
+            i_e_value_threshold, 
+             uniprot_entries )
         end
       end
       outfile.flush()
@@ -337,7 +338,8 @@ module Evoruby
     def process_hmmscan_results_per_protein( hmmscan_results_per_protein,
         fs_e_value_threshold,
         hmm_for_protein_output,
-        i_e_value_threshold )
+        i_e_value_threshold,
+         uniprot_entries      )
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -383,7 +385,8 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-
+     s <<  uniprot_entries[  own.query ]
+       s << "\t"
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
       s << overview   + "\t"

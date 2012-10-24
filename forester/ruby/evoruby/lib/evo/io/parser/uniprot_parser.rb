@@ -37,9 +37,11 @@ module Evoruby
       dr = []
       read = false
       File.open( @file ).each do | line |
-        if line.index ID == 0
+        if line.index( ID ) == 0
+          puts line 
           ids.each do | id |
-            if line.index id == 0
+            puts " " + id
+            if line.index( id ) == 0
               read = true
               break
             end
@@ -51,7 +53,7 @@ module Evoruby
             e = UniprotEntry.new
             e.de = de
             e.dr = dr
-            entries << e
+            entries[ id ] = e
             de = []
             dr = []
           else
