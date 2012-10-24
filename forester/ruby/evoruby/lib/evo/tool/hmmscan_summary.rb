@@ -1,17 +1,18 @@
 #
-# = lib/evo/apps/hmmscan_parser.rb - HmmscanParser class
+# = lib/evo/tool/hmmscan_summary.rb - HmmscanSummary class
 #
-# Copyright::  Copyright (C) 2006-2007 Christian M. Zmasek
+# Copyright::  Copyright (C) 2012 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
 # $Id: hmmscan_parser.rb,v 1.5 2010/12/13 19:00:11 cmzmasek Exp $
 #
-# last modified: 11/24/2009
+# last modified: 121003
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_parser'
+require 'lib/evo/io/parser/uniprot_parser'
 
 module Evoruby
 
@@ -19,7 +20,7 @@ module Evoruby
 
     PRG_NAME       = "hsp"
     PRG_VERSION    = "2.000"
-    PRG_DESC       = "hmmscan parser"
+    PRG_DESC       = "hmmscan summary"
     PRG_DATE       = "2012.10.19"
     COPYRIGHT      = "2012 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
@@ -31,6 +32,7 @@ module Evoruby
     HMM_FOR_PROTEIN_OUTPUT        = "m"
     IGNORE_DUF_OPTION             = "i"
     PARSE_OUT_DESCRIPITION_OPTION = "a"
+    UNIPROT                       = "u"
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
@@ -77,6 +79,7 @@ module Evoruby
       allowed_opts.push( IGNORE_DUF_OPTION )
       allowed_opts.push( PARSE_OUT_DESCRIPITION_OPTION )
       allowed_opts.push( HMM_FOR_PROTEIN_OUTPUT )
+       allowed_opts.push( UNIPROT )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -129,6 +132,15 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
+      
+      uniprot = ""
+       if ( cla.is_option_set?( UNIPROT ) )
+        begin
+           uniprot = cla.get_option_value( UNIPROT )
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+      end
 
       ignore_dufs = false
       if ( cla.is_option_set?( IGNORE_DUF_OPTION ) )
@@ -163,13 +175,16 @@ module Evoruby
       else
         puts( "column delimiter     : " + column_delimiter )
       end
-      if ( fs_e_value_threshold >= 0.0 )
+      if fs_e_value_threshold >= 0.0 
         puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
       else
         puts( "E-value threshold   : no threshold" )
       end
-      if ( !hmm_for_protein_output.empty? )
+      if !hmm_for_protein_output.empty? 
         puts( "HMM for proteins    : " + hmm_for_protein_output )
+      end
+      if !uniprot.empty? 
+        puts( "Uniprot             : " + uniprot )
       end
       puts()
 
@@ -181,7 +196,8 @@ module Evoruby
           ignore_dufs,
           parse_descriptions,
           fs_e_value_threshold,
-          hmm_for_protein_output )
+          hmm_for_protein_output,
+          uniprot )
       rescue ArgumentError, IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
@@ -209,10 +225,19 @@ module Evoruby
         ignore_dufs,
         get_descriptions,
         fs_e_value_threshold,
-        hmm_for_protein_output )
+        hmm_for_protein_output,
+        uniprot )
       Util.check_file_for_readability( inpath )
       Util.check_file_for_writability( outpath )
 
+      hmmscan_parser = HmmscanParser.new( inpath )
+      results = hmmscan_parser.parse
+      
+      uniprot_entries = nil
+      if !uniprot.empty? 
+        uniprot_entries = read_uniprot( results, uniprot  )
+      end
+      
       outfile = File.open( outpath, "a" )
 
       query     = ""
@@ -224,11 +249,11 @@ module Evoruby
 
       hmmscan_results_per_protein = []
 
-      hmmscan_parser = HmmscanParser.new( inpath )
+      
 
       prev_query = ""
 
-      hmmscan_parser.parse.each do | r |
+      results.each do | r |
         model     = r.model
         query     = r.query
         i_e_value = r.i_e_value
@@ -288,6 +313,17 @@ module Evoruby
 
     end # def parse
 
+    
+     def read_uniprot( hmmscan_results, uniprot  )  
+        ids = []
+         hmmscan_results.each do | r |
+           ids << r.query
+         end 
+         uniprot_parser = UniprotParser.new uniprot
+         uniprot_entries = uniprot_parser.parse ids 
+         uniprot_entries
+      end
+    
     def count_model( model )
       if ( @domain_counts.has_key?( model ) )
         count = @domain_counts[ model ].to_i
