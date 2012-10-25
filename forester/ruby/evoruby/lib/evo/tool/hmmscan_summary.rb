@@ -8,11 +8,14 @@
 #
 # last modified: 121003
 
+require 'set'
+
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_parser'
 require 'lib/evo/io/parser/uniprot_parser'
+require 'lib/evo/io/web/uniprotkb'
 
 module Evoruby
 
@@ -45,6 +48,9 @@ module Evoruby
     end
 
     def run
+
+      ukb = UniprotKB.new
+      ukb.get
 
       Util.print_program_information( PRG_NAME,
         PRG_VERSION,
@@ -132,11 +138,11 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
-      
+
       uniprot = ""
-       if ( cla.is_option_set?( UNIPROT ) )
+      if ( cla.is_option_set?( UNIPROT ) )
         begin
-           uniprot = cla.get_option_value( UNIPROT )
+          uniprot = cla.get_option_value( UNIPROT )
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
@@ -175,15 +181,15 @@ module Evoruby
       else
         puts( "column delimiter     : " + column_delimiter )
       end
-      if fs_e_value_threshold >= 0.0 
+      if fs_e_value_threshold >= 0.0
         puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
       else
         puts( "E-value threshold   : no threshold" )
       end
-      if !hmm_for_protein_output.empty? 
+      if !hmm_for_protein_output.empty?
         puts( "HMM for proteins    : " + hmm_for_protein_output )
       end
-      if !uniprot.empty? 
+      if !uniprot.empty?
         puts( "Uniprot             : " + uniprot )
       end
       puts()
@@ -198,7 +204,7 @@ module Evoruby
           fs_e_value_threshold,
           hmm_for_protein_output,
           uniprot )
-      rescue ArgumentError, IOError => e
+      rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
       domain_counts = get_domain_counts()
@@ -227,17 +233,20 @@ module Evoruby
         fs_e_value_threshold,
         hmm_for_protein_output,
         uniprot )
+
+
+
       Util.check_file_for_readability( inpath )
       Util.check_file_for_writability( outpath )
 
       hmmscan_parser = HmmscanParser.new( inpath )
       results = hmmscan_parser.parse
-      
+
       uniprot_entries = nil
-      if !uniprot.empty? 
+      if !uniprot.empty? && !hmm_for_protein_output.empty?
         uniprot_entries = read_uniprot( results, uniprot  )
       end
-      
+
       outfile = File.open( outpath, "a" )
 
       query     = ""
@@ -249,7 +258,7 @@ module Evoruby
 
       hmmscan_results_per_protein = []
 
-      
+
 
       prev_query = ""
 
@@ -285,7 +294,8 @@ module Evoruby
               process_hmmscan_results_per_protein( hmmscan_results_per_protein,
                 fs_e_value_threshold,
                 hmm_for_protein_output,
-                i_e_value_threshold )
+                i_e_value_threshold,
+                uniprot_entries )
             end
             hmmscan_results_per_protein.clear
           end
@@ -300,31 +310,37 @@ module Evoruby
           end
         end
       end
-      if !hmm_for_protein_output.empty?
-        if !hmmscan_results_per_protein.empty?
-          process_hmmscan_results_per_protein( hmmscan_results_per_protein,
-            fs_e_value_threshold,
-            hmm_for_protein_output,
-            i_e_value_threshold, 
-             uniprot_entries )
-        end
+      if !hmm_for_protein_output.empty? && !hmmscan_results_per_protein.empty?
+        process_hmmscan_results_per_protein( hmmscan_results_per_protein,
+          fs_e_value_threshold,
+          hmm_for_protein_output,
+          i_e_value_threshold,
+          uniprot_entries )
       end
+
       outfile.flush()
       outfile.close()
 
     end # def parse
 
-    
-     def read_uniprot( hmmscan_results, uniprot  )  
-        ids = []
-         hmmscan_results.each do | r |
-           ids << r.query
-         end 
-         uniprot_parser = UniprotParser.new uniprot
-         uniprot_entries = uniprot_parser.parse ids 
-         uniprot_entries
+    def process_id( id )
+      if  id =~ /(sp|tr)\|\S+\|(\S+)/
+        id = $2
       end
-    
+      id
+    end
+
+    def read_uniprot( hmmscan_results, uniprot  )
+      ids = Set.new
+      hmmscan_results.each do | r |
+
+        ids << process_id( r.query )
+      end
+      uniprot_parser = UniprotParser.new uniprot
+      uniprot_entries = uniprot_parser.parse ids
+      uniprot_entries
+    end
+
     def count_model( model )
       if ( @domain_counts.has_key?( model ) )
         count = @domain_counts[ model ].to_i
@@ -339,7 +355,7 @@ module Evoruby
         fs_e_value_threshold,
         hmm_for_protein_output,
         i_e_value_threshold,
-         uniprot_entries      )
+        uniprot_entries )
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -385,8 +401,23 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-     s <<  uniprot_entries[  own.query ]
-       s << "\t"
+      e = uniprot_entries[ process_id( own.query ) ]
+      if e != nil && e.de != nil
+        e.de.each { |i| s << i + " " }
+      else
+        s << "-"
+      end
+      s << "\t"
+
+      if e != nil && e.gn != nil
+        e.gn.each { |i| s << i + " " }
+      else
+        s << "-"
+      end
+
+
+
+      s << "\t"
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
       s << overview   + "\t"

@@ -28,38 +28,37 @@ module Evoruby
       @file = file
     end
 
-   
 
     def parse( ids )
-      #ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
-      entries = []
+      entries = Hash.new
       de = []
       dr = []
-      read = false
+      id = nil
       File.open( @file ).each do | line |
         if line.index( ID ) == 0
-          puts line 
-          ids.each do | id |
-            puts " " + id
-            if line.index( id ) == 0
-              read = true
+          #   puts line
+          ids.each do | i |
+            #puts " " + i
+            if line.include?( i ) && line.split[ 1 ] == i
+              id = i
               break
             end
           end
         end
-        if read
-          if line.index LAST == 0
-            read = false
+        if id != nil
+          if line.include?( LAST ) && line.index( LAST ) == 0
             e = UniprotEntry.new
             e.de = de
             e.dr = dr
             entries[ id ] = e
+            puts id
+            id = nil
             de = []
             dr = []
           else
-            if line.index DE == 0
+            if line.include?( DE ) && line.index( DE ) == 0
               add( line, de )
-            elsif line.index DR == 0
+            elsif line.include?( DR ) && line.index( DR ) == 0
               add( line, dr )
             end
           end
