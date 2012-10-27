@@ -14,7 +14,6 @@ require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_parser'
-require 'lib/evo/io/parser/uniprot_parser'
 require 'lib/evo/io/web/uniprotkb'
 
 module Evoruby
@@ -49,8 +48,7 @@ module Evoruby
 
     def run
 
-      ukb = UniprotKB.new
-      ukb.get
+
 
       Util.print_program_information( PRG_NAME,
         PRG_VERSION,
@@ -242,11 +240,6 @@ module Evoruby
       hmmscan_parser = HmmscanParser.new( inpath )
       results = hmmscan_parser.parse
 
-      uniprot_entries = nil
-      if !uniprot.empty? && !hmm_for_protein_output.empty?
-        uniprot_entries = read_uniprot( results, uniprot  )
-      end
-
       outfile = File.open( outpath, "a" )
 
       query     = ""
@@ -295,7 +288,7 @@ module Evoruby
                 fs_e_value_threshold,
                 hmm_for_protein_output,
                 i_e_value_threshold,
-                uniprot_entries )
+                true )
             end
             hmmscan_results_per_protein.clear
           end
@@ -315,7 +308,7 @@ module Evoruby
           fs_e_value_threshold,
           hmm_for_protein_output,
           i_e_value_threshold,
-          uniprot_entries )
+          true )
       end
 
       outfile.flush()
@@ -330,16 +323,7 @@ module Evoruby
       id
     end
 
-    def read_uniprot( hmmscan_results, uniprot  )
-      ids = Set.new
-      hmmscan_results.each do | r |
 
-        ids << process_id( r.query )
-      end
-      uniprot_parser = UniprotParser.new uniprot
-      uniprot_entries = uniprot_parser.parse ids
-      uniprot_entries
-    end
 
     def count_model( model )
       if ( @domain_counts.has_key?( model ) )
@@ -355,7 +339,7 @@ module Evoruby
         fs_e_value_threshold,
         hmm_for_protein_output,
         i_e_value_threshold,
-        uniprot_entries )
+        uniprotkb )
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -401,19 +385,30 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-      e = uniprot_entries[ process_id( own.query ) ]
-      if e != nil && e.de != nil
-        e.de.each { |i| s << i + " " }
+      e = UniprotKB::get_entry_by_id( process_id( own.query ) )
+      # if e != nil && e.de != nil
+      #   e.de.each do |i|
+      #
+      #   end
+      # else
+      #   s << "-"
+      # end
+      s << "\t"
+      if e != nil && e.dr != nil
+        e.dr.each do | dr |
+          if dr != nil
+            if dr =~ /PDB;\s+([A-Z0-9]{4});/
+              s << $1
+
+            end
+          end
+        end
       else
         s << "-"
       end
       s << "\t"
 
-      if e != nil && e.gn != nil
-        e.gn.each { |i| s << i + " " }
-      else
-        s << "-"
-      end
+
 
 
 
