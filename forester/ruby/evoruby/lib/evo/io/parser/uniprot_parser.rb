@@ -77,6 +77,20 @@ module Evoruby
     attr_accessor :pe
     attr_accessor :kw
 
+    def get_pdb_ids
+      ids = []
+      if dr != nil
+        dr.each do | dr |
+          if dr != nil
+            if dr =~ /PDB;\s+([A-Z0-9]{4});/
+              ids << $1
+            end
+          end
+        end
+      end
+      ids
+    end
+
   end
 
 

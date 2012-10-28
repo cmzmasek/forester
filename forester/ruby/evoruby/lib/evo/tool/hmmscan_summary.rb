@@ -66,7 +66,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-           cla.is_option_set?( HELP_OPTION_2 ) )
+            cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -263,21 +263,21 @@ module Evoruby
         env_to    = r.env_to
 
         if ( ( i_e_value_threshold < 0.0 ) || ( i_e_value <= i_e_value_threshold ) ) &&
-           ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
+            ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
           count_model( model )
           outfile.print( query +
-             column_delimiter )
+              column_delimiter )
           if ( get_descriptions )
             outfile.print( desc +
-               column_delimiter )
+                column_delimiter )
           end
           outfile.print( model +
-             column_delimiter +
-             env_from.to_s +
-             column_delimiter +
-             env_to.to_s +
-             column_delimiter +
-             i_e_value.to_s )
+              column_delimiter +
+              env_from.to_s +
+              column_delimiter +
+              env_to.to_s +
+              column_delimiter +
+              i_e_value.to_s )
           outfile.print( Constants::LINE_DELIMITER )
         end
 
@@ -386,36 +386,15 @@ module Evoruby
       end
       s << "\t"
       e = UniprotKB::get_entry_by_id( process_id( own.query ) )
-      # if e != nil && e.de != nil
-      #   e.de.each do |i|
-      #
-      #   end
-      # else
-      #   s << "-"
-      # end
-      s << "\t"
-      if e != nil && e.dr != nil
-        e.dr.each do | dr |
-          if dr != nil
-            if dr =~ /PDB;\s+([A-Z0-9]{4});/
-              s << $1
 
-            end
-          end
-        end
-      else
-        s << "-"
+      if e != nil
+        s << uniprot_annotation( e )
+        s << "\uniprot_annotationt"
       end
-      s << "\t"
 
-
-
-
-
-      s << "\t"
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
-      s << overview   + "\t"
+      s << overview  + "\t"
 
       s << calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )  + "\t"
 
@@ -439,6 +418,18 @@ module Evoruby
       puts s
     end
 
+    def uniprot_annotation( e )
+      s = ""
+      pdb_ids = e.get_pdb_ids
+      if !pdb_ids.empty?
+        pdb_ids.each do | pdb |
+          s << pdb << ", "
+        end
+      else
+        s << "-"
+      end
+      s
+    end
 
     def calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )
       linkers = ""
