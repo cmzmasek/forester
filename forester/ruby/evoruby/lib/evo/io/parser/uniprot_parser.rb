@@ -23,8 +23,8 @@ module Evoruby
     DR = "DR"
     LAST = '//'
 
-    def initialize 
-      
+    def initialize
+
     end
 
 
@@ -33,7 +33,7 @@ module Evoruby
       dr = []
       id = nil
       lines.each do | line |
-    
+
         if line.include?( ID ) && line.index( ID ) == 0
           id = line.split[ 1 ]
         elsif id != nil
@@ -91,7 +91,47 @@ module Evoruby
       ids
     end
 
+    def get_go_descriptions
+      gos = []
+      if dr != nil
+        dr.each do | dr |
+          if dr != nil
+            if dr =~ /GO;\s+GO:\d+(.+);\s+([^;]+)/
+              gos << $1
+            end
+          end
+        end
+      end
+      gos
+    end
+
+    def get_full_name
+      DE   RecName: Full=Apoptosis regulator Bcl-2;
+    end
+
+
+     def get_reactome_descriptions
+      s = []
+      if dr != nil
+        dr.each do | dr |
+          if dr != nil
+            if dr =~ /Reactome;\s+REACT_\d+;\s+([^.]+)/
+              s << $1
+            end
+          end
+        end
+      end
+      s
+    end
+
+
   end
+
+
+
+
+
+
 
 
 end # module Evoruby
