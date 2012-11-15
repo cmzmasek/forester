@@ -1612,15 +1612,37 @@ public class PhylogenyMethods {
      */
     public static int taxonomyBasedDeletionOfExternalNodes( final Phylogeny reference, final Phylogeny to_be_stripped ) {
         final Set<String> ref_ext_taxo = new HashSet<String>();
-        final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator it = reference.iteratorExternalForward(); it.hasNext(); ) {
-            ref_ext_taxo.add( getSpecies( it.next() ) );
+            final PhylogenyNode n = it.next();
+            if ( !n.getNodeData().isHasTaxonomy() ) {
+                throw new IllegalArgumentException( "no taxonomic data in node: " + n );
+            }
+            //  ref_ext_taxo.add( getSpecies( n ) );
+            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                ref_ext_taxo.add( n.getNodeData().getTaxonomy().getScientificName() );
+            }
+            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                ref_ext_taxo.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
+            }
         }
+        System.out.println( "  ref_ext_tax:" );
+        for( final String string : ref_ext_taxo ) {
+            System.out.println( string );
+        }
+        final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator it = to_be_stripped.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if ( !ref_ext_taxo.contains( getSpecies( n ) ) ) {
+            if ( !n.getNodeData().isHasTaxonomy() ) {
                 nodes_to_delete.add( n );
             }
+            else if ( !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getScientificName() ) )
+                    && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                nodes_to_delete.add( n );
+            }
+        }
+        System.out.println( "  to delete:" );
+        for( final PhylogenyNode string : nodes_to_delete ) {
+            System.out.println( string.getNodeData().getTaxonomy().getTaxonomyCode() );
         }
         for( final PhylogenyNode phylogenyNode : nodes_to_delete ) {
             to_be_stripped.deleteSubtree( phylogenyNode, true );

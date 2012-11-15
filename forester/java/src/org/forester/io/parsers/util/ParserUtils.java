@@ -238,7 +238,8 @@ public final class ParserUtils {
             if ( s.length > 1 ) {
                 final String str = s[ 1 ];
                 //   if (  str.length() < 6  ) {
-                if ( ( str.length() < 5 ) && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) ) ) {
+                if ( ( str.length() < 5 )
+                        && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) || str.startsWith( "CAP" ) ) ) {
                     return str.substring( 0, 3 );
                 }
                 final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( str );

@@ -33,12 +33,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 import org.forester.evoinference.matrix.distance.DistanceMatrix;
+import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.SymmetricalDistanceMatrixParser;
-import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -62,7 +65,7 @@ public final class RIO {
     private HashMap<String, HashMap<String, Integer>> _sn_hash_maps;                          // HashMap of HashMaps
     private DistanceMatrix                            _m;
     private HashMap<String, Double>                   _l;
-    private String[]                                  _seq_names;
+    private List<String>                              _seq_names;
     private int                                       _bootstraps;
     private int                                       _ext_nodes_;
     private long                                      _time;
@@ -239,34 +242,47 @@ public final class RIO {
         if ( RIO.TIME ) {
             _time = System.currentTimeMillis();
         }
-        if ( !gene_trees_file.exists() ) {
-            throw new IllegalArgumentException( gene_trees_file.getAbsolutePath() + " does not exist." );
-        }
-        else if ( !gene_trees_file.isFile() ) {
-            throw new IllegalArgumentException( gene_trees_file.getAbsolutePath() + " is not a file." );
-        }
         // Read in first tree to get its sequence names
         // and strip species_tree.
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final Phylogeny gene_tree = factory.create( gene_trees_file, new PhyloXmlParser() )[ 0 ];
+        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
+        if ( p instanceof NHXParser ) {
+            final NHXParser nhx = ( NHXParser ) p;
+            nhx.setReplaceUnderscores( false );
+            nhx.setIgnoreQuotes( true );
+            nhx.setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+        }
+        final Phylogeny gene_tree = factory.create( gene_trees_file, p )[ 0 ];
+        System.out.println( "species " + species_tree.toString() );
         // Removes from species_tree all species not found in gene_tree.
         PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_tree, species_tree );
+        // System.out.println( "gene " + gene_tree.toString() );
+        // System.out.println( "species " + species_tree.toString() );
         // Removes from gene_tree all species not found in species_tree.
+        //        Archaeopteryx.createApplication( gene_tree );
+        //        Archaeopteryx.createApplication( species_tree );
+        //        try {
+        //            Thread.sleep( 40000 );
+        //        }
+        //        catch ( InterruptedException e ) {
+        //            // TODO Auto-generated catch block
+        //            e.printStackTrace();
+        //        }
         PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_tree );
         _seq_names = getAllExternalSequenceNames( gene_tree );
-        if ( ( _seq_names == null ) || ( _seq_names.length < 1 ) ) {
-            return;
+        if ( ( _seq_names == null ) || ( _seq_names.size() < 1 ) ) {
+            throw new IOException( "could not get sequence names" );
         }
         _o_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _so_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _up_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _sn_hash_maps = new HashMap<String, HashMap<String, Integer>>();
-        _o_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.length ) );
-        _so_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.length ) );
-        _up_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.length ) );
-        _sn_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.length ) );
+        _o_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
+        _so_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
+        _up_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
+        _sn_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         // Go through all gene trees in the file.
-        final Phylogeny[] gene_trees = factory.create( gene_trees_file, new PhyloXmlParser() );
+        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         for( final Phylogeny gt : gene_trees ) {
             bs++;
             // Removes from gene_tree all species not found in species_tree.
@@ -278,6 +294,20 @@ public final class RIO {
         if ( RIO.TIME ) {
             _time = ( System.currentTimeMillis() - _time );
         }
+    }
+
+    public List<PhylogenyNode> getNodesViaSequenceName( final Phylogeny phy, final String seq_name ) {
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getName().equals( seq_name ) ) {
+                nodes.add( n );
+            }
+            if ( !n.getNodeData().isHasSequence() && n.getName().equals( seq_name ) ) {
+                nodes.add( n );
+            }
+        }
+        return nodes;
     }
 
     // Helper method which performs the actual ortholog inference for
@@ -299,7 +329,7 @@ public final class RIO {
                                            true,
                                            1 )[ 0 ];
         setExtNodesOfAnalyzedGeneTrees( assigned_tree.getNumberOfExternalNodes() );
-        nodes = assigned_tree.getNodesViaSequenceName( query );
+        nodes = getNodesViaSequenceName( assigned_tree, query );
         if ( nodes.size() > 1 ) {
             throw new IllegalArgumentException( "node named [" + query + "] not unique" );
         }
@@ -348,9 +378,9 @@ public final class RIO {
         if ( o_hashmap == null ) {
             throw new RuntimeException( "Orthologs for " + seq_name + " were not established." );
         }
-        if ( _seq_names.length > 0 ) {
-            I: for( int i = 0; i < _seq_names.length; ++i ) {
-                name = _seq_names[ i ];
+        if ( _seq_names.size() > 0 ) {
+            I: for( int i = 0; i < _seq_names.size(); ++i ) {
+                name = _seq_names.get( i );
                 if ( name.equals( seq_name ) ) {
                     continue I;
                 }
@@ -434,7 +464,7 @@ public final class RIO {
         value1 = 0.0, value2 = 0.0, value3 = 0.0, value4 = 0.0, d = 0.0;
         final ArrayList<Tuplet> nv = new ArrayList<Tuplet>();
         if ( ( _o_hash_maps == null ) || ( _so_hash_maps == null ) || ( _sn_hash_maps == null ) ) {
-            throw new RuntimeException( "Orthologs have not been calculated (successfully)" );
+            //TODO ~~~      throw new RuntimeException( "Orthologs have not been calculated (successfully)" );
         }
         if ( ( sort < 0 ) || ( sort > 17 ) ) {
             sort = 12;
@@ -458,12 +488,12 @@ public final class RIO {
         s_hashmap = getInferredSuperOrthologs( query_name );
         n_hashmap = getInferredSubtreeNeighbors( query_name );
         if ( ( o_hashmap == null ) || ( s_hashmap == null ) || ( n_hashmap == null ) ) {
-            throw new RuntimeException( "Orthologs for " + query_name + " were not established" );
+            //TODO ~~~    throw new RuntimeException( "Orthologs for " + query_name + " were not established" );
         }
         final StringBuffer orthologs = new StringBuffer();
-        if ( _seq_names.length > 0 ) {
-            I: for( int i = 0; i < _seq_names.length; ++i ) {
-                name = _seq_names[ i ];
+        if ( _seq_names.size() > 0 ) {
+            I: for( int i = 0; i < _seq_names.size(); ++i ) {
+                name = _seq_names.get( i );
                 if ( name.equals( query_name ) ) {
                     continue I;
                 }
@@ -570,7 +600,7 @@ public final class RIO {
     // Helper method for inferredOrthologTableToFile.
     // Returns individual rows for the table as String.
     private String inferredOrthologsToTableHelper( final String name2,
-                                                   final String[] names,
+                                                   final List<String> names,
                                                    final int j,
                                                    final boolean super_orthologs ) {
         HashMap<String, Integer> hashmap = null;
@@ -585,8 +615,8 @@ public final class RIO {
         if ( hashmap == null ) {
             throw new RuntimeException( "Unexpected failure in method inferredOrthologsToTableHelper" );
         }
-        for( int i = 0; i < names.length; ++i ) {
-            name = names[ i ];
+        for( int i = 0; i < names.size(); ++i ) {
+            name = names.get( i );
             if ( !hashmap.containsKey( name ) ) {
                 value = 0;
             }
@@ -630,19 +660,16 @@ public final class RIO {
         if ( _seq_names == null ) {
             throw new RuntimeException( "inferredOrthologTableToFile: seq_names_ is null." );
         }
-        Arrays.sort( _seq_names );
+        Collections.sort( _seq_names );
         out = new PrintWriter( new FileWriter( outfile ), true );
-        if ( out == null ) {
-            throw new RuntimeException( "inferredOrthologTableToFile: failure to create PrintWriter." );
-        }
         line = "\t\t\t\t";
-        for( int i = 0; i < _seq_names.length; ++i ) {
+        for( int i = 0; i < _seq_names.size(); ++i ) {
             line += ( i + ")\t" );
         }
         line += "\n";
         out.println( line );
-        for( int i = 0; i < _seq_names.length; ++i ) {
-            name = _seq_names[ i ];
+        for( int i = 0; i < _seq_names.size(); ++i ) {
+            name = _seq_names.get( i );
             if ( name.length() < 8 ) {
                 line = i + ")\t" + name + "\t\t\t";
             }
@@ -713,9 +740,9 @@ public final class RIO {
         if ( sp_hashmap == null ) {
             throw new RuntimeException( "Ultra paralogs for " + query_name + " were not established" );
         }
-        if ( _seq_names.length > 0 ) {
-            I: for( int i = 0; i < _seq_names.length; ++i ) {
-                name = _seq_names[ i ];
+        if ( _seq_names.size() > 0 ) {
+            I: for( int i = 0; i < _seq_names.size(); ++i ) {
+                name = _seq_names.get( i );
                 if ( name.equals( query_name ) ) {
                     continue I;
                 }
@@ -825,7 +852,14 @@ public final class RIO {
             throw new RuntimeException( "Unexpected failure in method updateHash." );
         }
         for( int j = 0; j < nodes.size(); ++j ) {
-            final String seq_name = ( nodes.get( j ) ).getNodeData().getSequence().getName();
+            String seq_name;
+            if ( ( nodes.get( j ) ).getNodeData().isHasSequence()
+                    && !ForesterUtil.isEmpty( ( nodes.get( j ) ).getNodeData().getSequence().getName() ) ) {
+                seq_name = ( nodes.get( j ) ).getNodeData().getSequence().getName();
+            }
+            else {
+                seq_name = ( nodes.get( j ) ).getName();
+            }
             if ( hash_map.containsKey( seq_name ) ) {
                 hash_map.put( seq_name, hash_map.get( seq_name ) + 1 );
             }
@@ -989,14 +1023,19 @@ public final class RIO {
         return s;
     }
 
-    private static String[] getAllExternalSequenceNames( final Phylogeny phy ) {
-        if ( phy.isEmpty() ) {
-            return null;
-        }
-        int i = 0;
-        final String[] names = new String[ phy.getNumberOfExternalNodes() ];
+    private static List<String> getAllExternalSequenceNames( final Phylogeny phy ) {
+        final List<String> names = new ArrayList<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-            names[ i++ ] = iter.next().getNodeData().getSequence().getName();
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+                names.add( n.getNodeData().getSequence().getName() );
+            }
+            else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                names.add( n.getName() );
+            }
+            else {
+                throw new IllegalArgumentException( "node has no (sequence) name: " + n );
+            }
         }
         return names;
     }
