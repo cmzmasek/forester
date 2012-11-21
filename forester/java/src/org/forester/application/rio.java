@@ -447,7 +447,6 @@ public class rio {
                 output.append( rio_instance
                         .inferredUltraParalogsToString( seq_name, sort > 2, threshold_ultra_paralogs ) );
             }
-            rio_instance.inferredOrthologTableToFile( new File( "table" ) );
             output.append( "\n\nSort priority: " + RIO.getOrder( sort ) );
             output.append( "\nExt nodes    : " + rio_instance.getExtNodesOfAnalyzedGeneTrees() );
             output.append( "\nSamples      : " + rio_instance.getBootstraps() + "\n" );
