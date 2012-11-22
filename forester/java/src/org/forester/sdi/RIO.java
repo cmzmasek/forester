@@ -32,8 +32,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.forester.datastructures.IntMatrix;
 import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.SymmetricalDistanceMatrixParser;
@@ -72,6 +75,49 @@ public final class RIO {
      */
     public RIO() {
         reset();
+    }
+
+    public IntMatrix calculateOrthologTable( Phylogeny[] gene_trees ) {
+        List<String> labels = new ArrayList<String>();
+        Set<String> labels_set = new HashSet<String>();
+        String label;
+        for( PhylogenyNode n : gene_trees[ 0 ].getExternalNodes() ) {
+            if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+                label = n.getNodeData().getSequence().getName();
+            }
+            else if ( n.getNodeData().isHasSequence()
+                    && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
+                label = n.getNodeData().getSequence().getSymbol();
+            }
+            else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                label = n.getName();
+            }
+            else {
+                throw new IllegalArgumentException( "node " + n + " has no appropriate label" );
+            }
+            if ( labels_set.contains( label ) ) {
+                throw new IllegalArgumentException( "label " + label + " is not unique" );
+            }
+            labels_set.add( label );
+            labels.add( label );
+        }
+        IntMatrix m = new IntMatrix( labels );
+        int counter = 0;
+        for( Phylogeny gt : gene_trees ) {
+            System.out.println( counter );
+            counter++;
+            for( int x = 0; x < m.size(); ++x ) {
+                PhylogenyNode nx = gt.getNode( m.getLabel( x ) );
+                for( int y = 0; y < m.size(); ++y ) {
+                    PhylogenyNode ny = gt.getNode( m.getLabel( y ) );
+                    if ( PhylogenyMethods.isAreOrthologous( nx, ny ) ) {
+                        m.set( x, y, m.get( x, y ) + 1 );
+                        //System.out.println( x + " " + y );
+                    }
+                }
+            }
+        }
+        return m;
     }
 
     /**
@@ -268,13 +314,17 @@ public final class RIO {
         _sn_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         // Go through all gene trees in the file.
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
+        Phylogeny[] assigned_trees = new Phylogeny[ gene_trees.length ];
+        int c = 0;
         for( final Phylogeny gt : gene_trees ) {
             bs++;
             // Removes from gene_tree all species not found in species_tree.
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gt );
-            inferOrthologsHelper( gt, species_tree, query );
+            assigned_trees[ c++ ] = inferOrthologsHelper( gt, species_tree, query );
             // System.out.println( bs );
         }
+        IntMatrix m = calculateOrthologTable( assigned_trees );
+        System.out.println( m.toString() );
         setBootstraps( bs );
         if ( RIO.TIME ) {
             _time = ( System.currentTimeMillis() - _time );
@@ -297,7 +347,7 @@ public final class RIO {
 
     // Helper method which performs the actual ortholog inference for
     // the external node with seqname query.
-    private void inferOrthologsHelper( final Phylogeny gene_tree, final Phylogeny species_tree, final String query )
+    private Phylogeny inferOrthologsHelper( final Phylogeny gene_tree, final Phylogeny species_tree, final String query )
             throws SDIException {
         Phylogeny assigned_tree = null;
         List<PhylogenyNode> nodes = null;
@@ -331,6 +381,7 @@ public final class RIO {
         updateHash( _sn_hash_maps, query, subtree_neighbors );
         ultra_paralogs = PhylogenyMethods.getUltraParalogousNodes( query_node );
         updateHash( _up_hash_maps, query, ultra_paralogs );
+        return assigned_tree;
     }
 
     /**

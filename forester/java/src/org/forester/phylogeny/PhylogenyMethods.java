@@ -201,7 +201,7 @@ public class PhylogenyMethods {
         return nodes;
     }
 
-    public boolean isAreOrthologous( final PhylogenyNode node1, final PhylogenyNode node2 ) {
+    public static boolean isAreOrthologous( final PhylogenyNode node1, final PhylogenyNode node2 ) {
         return !obtainLCA( node1, node2 ).isDuplication();
     }
 
