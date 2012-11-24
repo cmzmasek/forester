@@ -39,7 +39,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 public final class ModelingUtils {
 
     static double calculateBranchLengthSum( final PhylogenyNode n1, final PhylogenyNode n2 ) {
-        final PhylogenyNode lca = PhylogenyMethods.obtainLCA( n1, n2 );
+        final PhylogenyNode lca = PhylogenyMethods.calculateLCA( n1, n2 );
         return ModelingUtils.calculateBranchLengthSumHelper( n1, lca )
                 + ModelingUtils.calculateBranchLengthSumHelper( n2, lca );
     }
@@ -57,7 +57,7 @@ public final class ModelingUtils {
     }
 
     static int calculateBranchSum( final PhylogenyNode n1, final PhylogenyNode n2 ) {
-        final PhylogenyNode lca = PhylogenyMethods.obtainLCA( n1, n2 );
+        final PhylogenyNode lca = PhylogenyMethods.calculateLCA( n1, n2 );
         return ModelingUtils.calculateBranchSumHelper( n1, lca ) + ModelingUtils.calculateBranchSumHelper( n2, lca );
     }
 

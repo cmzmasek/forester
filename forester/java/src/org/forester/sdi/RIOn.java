@@ -64,7 +64,7 @@ public class RIOn {
                 if ( i != j ) {
                     final PhylogenyNode node_i = external_nodes.get( i );
                     final PhylogenyNode node_j = external_nodes.get( j );
-                    final PhylogenyNode lca = PhylogenyMethods.obtainLCA( node_i, node_j );
+                    final PhylogenyNode lca = PhylogenyMethods.calculateLCA( node_i, node_j );
                     final Event event = lca.getNodeData().getEvent();
                     final String node_i_name = node_i.getNodeData().getSequence().getName();
                     final String node_j_name = node_j.getNodeData().getSequence().getName();

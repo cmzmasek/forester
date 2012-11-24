@@ -136,7 +136,7 @@ public final class Test {
 
     private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
         final PhylogenyMethods pm = PhylogenyMethods.getInstance();
-        return pm.obtainLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
+        return pm.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
     }
 
     public static boolean isEqual( final double a, final double b ) {
@@ -3211,199 +3211,199 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p1 = factory.create( "((((((A,B)ab,C)abc,D)abcd,E)abcde,F)abcdef,(G,H)gh)abcdefgh",
                                                  new NHXParser() )[ 0 ];
-            final PhylogenyNode A = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "A" ) );
+            final PhylogenyNode A = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "A" ) );
             if ( !A.getName().equals( "A" ) ) {
                 return false;
             }
-            final PhylogenyNode gh = PhylogenyMethods.obtainLCA( p1.getNode( "gh" ), p1.getNode( "gh" ) );
+            final PhylogenyNode gh = PhylogenyMethods.calculateLCA( p1.getNode( "gh" ), p1.getNode( "gh" ) );
             if ( !gh.getName().equals( "gh" ) ) {
                 return false;
             }
-            final PhylogenyNode ab = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "B" ) );
+            final PhylogenyNode ab = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "B" ) );
             if ( !ab.getName().equals( "ab" ) ) {
                 return false;
             }
-            final PhylogenyNode ab2 = PhylogenyMethods.obtainLCA( p1.getNode( "B" ), p1.getNode( "A" ) );
+            final PhylogenyNode ab2 = PhylogenyMethods.calculateLCA( p1.getNode( "B" ), p1.getNode( "A" ) );
             if ( !ab2.getName().equals( "ab" ) ) {
                 return false;
             }
-            final PhylogenyNode gh2 = PhylogenyMethods.obtainLCA( p1.getNode( "H" ), p1.getNode( "G" ) );
+            final PhylogenyNode gh2 = PhylogenyMethods.calculateLCA( p1.getNode( "H" ), p1.getNode( "G" ) );
             if ( !gh2.getName().equals( "gh" ) ) {
                 return false;
             }
-            final PhylogenyNode gh3 = PhylogenyMethods.obtainLCA( p1.getNode( "G" ), p1.getNode( "H" ) );
+            final PhylogenyNode gh3 = PhylogenyMethods.calculateLCA( p1.getNode( "G" ), p1.getNode( "H" ) );
             if ( !gh3.getName().equals( "gh" ) ) {
                 return false;
             }
-            final PhylogenyNode abc = PhylogenyMethods.obtainLCA( p1.getNode( "C" ), p1.getNode( "A" ) );
+            final PhylogenyNode abc = PhylogenyMethods.calculateLCA( p1.getNode( "C" ), p1.getNode( "A" ) );
             if ( !abc.getName().equals( "abc" ) ) {
                 return false;
             }
-            final PhylogenyNode abc2 = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "C" ) );
+            final PhylogenyNode abc2 = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "C" ) );
             if ( !abc2.getName().equals( "abc" ) ) {
                 return false;
             }
-            final PhylogenyNode abcd = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "D" ) );
+            final PhylogenyNode abcd = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "D" ) );
             if ( !abcd.getName().equals( "abcd" ) ) {
                 return false;
             }
-            final PhylogenyNode abcd2 = PhylogenyMethods.obtainLCA( p1.getNode( "D" ), p1.getNode( "A" ) );
+            final PhylogenyNode abcd2 = PhylogenyMethods.calculateLCA( p1.getNode( "D" ), p1.getNode( "A" ) );
             if ( !abcd2.getName().equals( "abcd" ) ) {
                 return false;
             }
-            final PhylogenyNode abcdef = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "F" ) );
+            final PhylogenyNode abcdef = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "F" ) );
             if ( !abcdef.getName().equals( "abcdef" ) ) {
                 return false;
             }
-            final PhylogenyNode abcdef2 = PhylogenyMethods.obtainLCA( p1.getNode( "F" ), p1.getNode( "A" ) );
+            final PhylogenyNode abcdef2 = PhylogenyMethods.calculateLCA( p1.getNode( "F" ), p1.getNode( "A" ) );
             if ( !abcdef2.getName().equals( "abcdef" ) ) {
                 return false;
             }
-            final PhylogenyNode abcdef3 = PhylogenyMethods.obtainLCA( p1.getNode( "ab" ), p1.getNode( "F" ) );
+            final PhylogenyNode abcdef3 = PhylogenyMethods.calculateLCA( p1.getNode( "ab" ), p1.getNode( "F" ) );
             if ( !abcdef3.getName().equals( "abcdef" ) ) {
                 return false;
             }
-            final PhylogenyNode abcdef4 = PhylogenyMethods.obtainLCA( p1.getNode( "F" ), p1.getNode( "ab" ) );
+            final PhylogenyNode abcdef4 = PhylogenyMethods.calculateLCA( p1.getNode( "F" ), p1.getNode( "ab" ) );
             if ( !abcdef4.getName().equals( "abcdef" ) ) {
                 return false;
             }
-            final PhylogenyNode abcde = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "E" ) );
+            final PhylogenyNode abcde = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "E" ) );
             if ( !abcde.getName().equals( "abcde" ) ) {
                 return false;
             }
-            final PhylogenyNode abcde2 = PhylogenyMethods.obtainLCA( p1.getNode( "E" ), p1.getNode( "A" ) );
+            final PhylogenyNode abcde2 = PhylogenyMethods.calculateLCA( p1.getNode( "E" ), p1.getNode( "A" ) );
             if ( !abcde2.getName().equals( "abcde" ) ) {
                 return false;
             }
-            final PhylogenyNode r = PhylogenyMethods.obtainLCA( p1.getNode( "abcdefgh" ), p1.getNode( "abcdefgh" ) );
+            final PhylogenyNode r = PhylogenyMethods.calculateLCA( p1.getNode( "abcdefgh" ), p1.getNode( "abcdefgh" ) );
             if ( !r.getName().equals( "abcdefgh" ) ) {
                 return false;
             }
-            final PhylogenyNode r2 = PhylogenyMethods.obtainLCA( p1.getNode( "A" ), p1.getNode( "H" ) );
+            final PhylogenyNode r2 = PhylogenyMethods.calculateLCA( p1.getNode( "A" ), p1.getNode( "H" ) );
             if ( !r2.getName().equals( "abcdefgh" ) ) {
                 return false;
             }
-            final PhylogenyNode r3 = PhylogenyMethods.obtainLCA( p1.getNode( "H" ), p1.getNode( "A" ) );
+            final PhylogenyNode r3 = PhylogenyMethods.calculateLCA( p1.getNode( "H" ), p1.getNode( "A" ) );
             if ( !r3.getName().equals( "abcdefgh" ) ) {
                 return false;
             }
-            final PhylogenyNode abcde3 = PhylogenyMethods.obtainLCA( p1.getNode( "E" ), p1.getNode( "abcde" ) );
+            final PhylogenyNode abcde3 = PhylogenyMethods.calculateLCA( p1.getNode( "E" ), p1.getNode( "abcde" ) );
             if ( !abcde3.getName().equals( "abcde" ) ) {
                 return false;
             }
-            final PhylogenyNode abcde4 = PhylogenyMethods.obtainLCA( p1.getNode( "abcde" ), p1.getNode( "E" ) );
+            final PhylogenyNode abcde4 = PhylogenyMethods.calculateLCA( p1.getNode( "abcde" ), p1.getNode( "E" ) );
             if ( !abcde4.getName().equals( "abcde" ) ) {
                 return false;
             }
-            final PhylogenyNode ab3 = PhylogenyMethods.obtainLCA( p1.getNode( "ab" ), p1.getNode( "B" ) );
+            final PhylogenyNode ab3 = PhylogenyMethods.calculateLCA( p1.getNode( "ab" ), p1.getNode( "B" ) );
             if ( !ab3.getName().equals( "ab" ) ) {
                 return false;
             }
-            final PhylogenyNode ab4 = PhylogenyMethods.obtainLCA( p1.getNode( "B" ), p1.getNode( "ab" ) );
+            final PhylogenyNode ab4 = PhylogenyMethods.calculateLCA( p1.getNode( "B" ), p1.getNode( "ab" ) );
             if ( !ab4.getName().equals( "ab" ) ) {
                 return false;
             }
             final Phylogeny p2 = factory.create( "(a,b,(((c,d)cd,e)cde,f)cdef)r", new NHXParser() )[ 0 ];
-            final PhylogenyNode cd = PhylogenyMethods.obtainLCA( p2.getNode( "c" ), p2.getNode( "d" ) );
+            final PhylogenyNode cd = PhylogenyMethods.calculateLCA( p2.getNode( "c" ), p2.getNode( "d" ) );
             if ( !cd.getName().equals( "cd" ) ) {
                 return false;
             }
-            final PhylogenyNode cd2 = PhylogenyMethods.obtainLCA( p2.getNode( "d" ), p2.getNode( "c" ) );
+            final PhylogenyNode cd2 = PhylogenyMethods.calculateLCA( p2.getNode( "d" ), p2.getNode( "c" ) );
             if ( !cd2.getName().equals( "cd" ) ) {
                 return false;
             }
-            final PhylogenyNode cde = PhylogenyMethods.obtainLCA( p2.getNode( "c" ), p2.getNode( "e" ) );
+            final PhylogenyNode cde = PhylogenyMethods.calculateLCA( p2.getNode( "c" ), p2.getNode( "e" ) );
             if ( !cde.getName().equals( "cde" ) ) {
                 return false;
             }
-            final PhylogenyNode cde2 = PhylogenyMethods.obtainLCA( p2.getNode( "e" ), p2.getNode( "c" ) );
+            final PhylogenyNode cde2 = PhylogenyMethods.calculateLCA( p2.getNode( "e" ), p2.getNode( "c" ) );
             if ( !cde2.getName().equals( "cde" ) ) {
                 return false;
             }
-            final PhylogenyNode cdef = PhylogenyMethods.obtainLCA( p2.getNode( "c" ), p2.getNode( "f" ) );
+            final PhylogenyNode cdef = PhylogenyMethods.calculateLCA( p2.getNode( "c" ), p2.getNode( "f" ) );
             if ( !cdef.getName().equals( "cdef" ) ) {
                 return false;
             }
-            final PhylogenyNode cdef2 = PhylogenyMethods.obtainLCA( p2.getNode( "d" ), p2.getNode( "f" ) );
+            final PhylogenyNode cdef2 = PhylogenyMethods.calculateLCA( p2.getNode( "d" ), p2.getNode( "f" ) );
             if ( !cdef2.getName().equals( "cdef" ) ) {
                 return false;
             }
-            final PhylogenyNode cdef3 = PhylogenyMethods.obtainLCA( p2.getNode( "f" ), p2.getNode( "d" ) );
+            final PhylogenyNode cdef3 = PhylogenyMethods.calculateLCA( p2.getNode( "f" ), p2.getNode( "d" ) );
             if ( !cdef3.getName().equals( "cdef" ) ) {
                 return false;
             }
-            final PhylogenyNode rt = PhylogenyMethods.obtainLCA( p2.getNode( "c" ), p2.getNode( "a" ) );
+            final PhylogenyNode rt = PhylogenyMethods.calculateLCA( p2.getNode( "c" ), p2.getNode( "a" ) );
             if ( !rt.getName().equals( "r" ) ) {
                 return false;
             }
             final Phylogeny p3 = factory
                     .create( "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
                              new NHXParser() )[ 0 ];
-            final PhylogenyNode bc_3 = PhylogenyMethods.obtainLCA( p3.getNode( "b" ), p3.getNode( "c" ) );
+            final PhylogenyNode bc_3 = PhylogenyMethods.calculateLCA( p3.getNode( "b" ), p3.getNode( "c" ) );
             if ( !bc_3.getName().equals( "bc" ) ) {
                 return false;
             }
-            final PhylogenyNode ac_3 = PhylogenyMethods.obtainLCA( p3.getNode( "a" ), p3.getNode( "c" ) );
+            final PhylogenyNode ac_3 = PhylogenyMethods.calculateLCA( p3.getNode( "a" ), p3.getNode( "c" ) );
             if ( !ac_3.getName().equals( "abc" ) ) {
                 return false;
             }
-            final PhylogenyNode ad_3 = PhylogenyMethods.obtainLCA( p3.getNode( "a" ), p3.getNode( "d" ) );
+            final PhylogenyNode ad_3 = PhylogenyMethods.calculateLCA( p3.getNode( "a" ), p3.getNode( "d" ) );
             if ( !ad_3.getName().equals( "abcde" ) ) {
                 return false;
             }
-            final PhylogenyNode af_3 = PhylogenyMethods.obtainLCA( p3.getNode( "a" ), p3.getNode( "f" ) );
+            final PhylogenyNode af_3 = PhylogenyMethods.calculateLCA( p3.getNode( "a" ), p3.getNode( "f" ) );
             if ( !af_3.getName().equals( "abcdef" ) ) {
                 return false;
             }
-            final PhylogenyNode ag_3 = PhylogenyMethods.obtainLCA( p3.getNode( "a" ), p3.getNode( "g" ) );
+            final PhylogenyNode ag_3 = PhylogenyMethods.calculateLCA( p3.getNode( "a" ), p3.getNode( "g" ) );
             if ( !ag_3.getName().equals( "" ) ) {
                 return false;
             }
             if ( !ag_3.isRoot() ) {
                 return false;
             }
-            final PhylogenyNode al_3 = PhylogenyMethods.obtainLCA( p3.getNode( "a" ), p3.getNode( "l" ) );
+            final PhylogenyNode al_3 = PhylogenyMethods.calculateLCA( p3.getNode( "a" ), p3.getNode( "l" ) );
             if ( !al_3.getName().equals( "" ) ) {
                 return false;
             }
             if ( !al_3.isRoot() ) {
                 return false;
             }
-            final PhylogenyNode kl_3 = PhylogenyMethods.obtainLCA( p3.getNode( "k" ), p3.getNode( "l" ) );
+            final PhylogenyNode kl_3 = PhylogenyMethods.calculateLCA( p3.getNode( "k" ), p3.getNode( "l" ) );
             if ( !kl_3.getName().equals( "" ) ) {
                 return false;
             }
             if ( !kl_3.isRoot() ) {
                 return false;
             }
-            final PhylogenyNode fl_3 = PhylogenyMethods.obtainLCA( p3.getNode( "f" ), p3.getNode( "l" ) );
+            final PhylogenyNode fl_3 = PhylogenyMethods.calculateLCA( p3.getNode( "f" ), p3.getNode( "l" ) );
             if ( !fl_3.getName().equals( "" ) ) {
                 return false;
             }
             if ( !fl_3.isRoot() ) {
                 return false;
             }
-            final PhylogenyNode gk_3 = PhylogenyMethods.obtainLCA( p3.getNode( "g" ), p3.getNode( "k" ) );
+            final PhylogenyNode gk_3 = PhylogenyMethods.calculateLCA( p3.getNode( "g" ), p3.getNode( "k" ) );
             if ( !gk_3.getName().equals( "ghijk" ) ) {
                 return false;
             }
             final Phylogeny p4 = factory.create( "(a,b,c)r", new NHXParser() )[ 0 ];
-            final PhylogenyNode r_4 = PhylogenyMethods.obtainLCA( p4.getNode( "b" ), p4.getNode( "c" ) );
+            final PhylogenyNode r_4 = PhylogenyMethods.calculateLCA( p4.getNode( "b" ), p4.getNode( "c" ) );
             if ( !r_4.getName().equals( "r" ) ) {
                 return false;
             }
             final Phylogeny p5 = factory.create( "((a,b),c,d)root", new NHXParser() )[ 0 ];
-            final PhylogenyNode r_5 = PhylogenyMethods.obtainLCA( p5.getNode( "a" ), p5.getNode( "c" ) );
+            final PhylogenyNode r_5 = PhylogenyMethods.calculateLCA( p5.getNode( "a" ), p5.getNode( "c" ) );
             if ( !r_5.getName().equals( "root" ) ) {
                 return false;
             }
             final Phylogeny p6 = factory.create( "((a,b),c,d)rot", new NHXParser() )[ 0 ];
-            final PhylogenyNode r_6 = PhylogenyMethods.obtainLCA( p6.getNode( "c" ), p6.getNode( "a" ) );
+            final PhylogenyNode r_6 = PhylogenyMethods.calculateLCA( p6.getNode( "c" ), p6.getNode( "a" ) );
             if ( !r_6.getName().equals( "rot" ) ) {
                 return false;
             }
             final Phylogeny p7 = factory.create( "(((a,b)x,c)x,d,e)rott", new NHXParser() )[ 0 ];
-            final PhylogenyNode r_7 = PhylogenyMethods.obtainLCA( p7.getNode( "a" ), p7.getNode( "e" ) );
+            final PhylogenyNode r_7 = PhylogenyMethods.calculateLCA( p7.getNode( "a" ), p7.getNode( "e" ) );
             if ( !r_7.getName().equals( "rott" ) ) {
                 return false;
             }

@@ -2747,7 +2747,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             double r = 0;
             if ( !n.isRoot() ) {
-                r = 1 - ( ( ( double ) _circ_max_depth - PhylogenyMethods.calculateDepth( n ) ) / _circ_max_depth );
+                r = 1 - ( ( ( double ) _circ_max_depth -  n.calculateDepth() ) / _circ_max_depth );
             }
             final double theta = sum / descs.size();
             n.setXcoord( ( float ) ( center_x + r * radius * Math.cos( theta ) ) );
@@ -2776,7 +2776,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             float r = 0;
             if ( !n.isRoot() ) {
-                r = 1 - ( ( ( float ) _circ_max_depth - PhylogenyMethods.calculateDepth( n ) ) / _circ_max_depth );
+                r = 1 - ( ( ( float ) _circ_max_depth - n.calculateDepth()  ) / _circ_max_depth );
             }
             final double theta = _urt_nodeid_angle_map.get( n.getId() );
             n.setXSecondary( ( float ) ( center_x + radius * r * Math.cos( theta ) ) );

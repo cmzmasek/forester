@@ -79,7 +79,7 @@ public class PhylogenyMethods {
      * @return distance between node1 and node2
      */
     public double calculateDistance( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        final PhylogenyNode lca = obtainLCA( node1, node2 );
+        final PhylogenyNode lca =calculateLCA( node1, node2 );
         final PhylogenyNode n1 = node1;
         final PhylogenyNode n2 = node2;
         return ( PhylogenyMethods.getDistance( n1, lca ) + PhylogenyMethods.getDistance( n2, lca ) );
@@ -115,7 +115,7 @@ public class PhylogenyMethods {
     }
 
     final public static Event getEventAtLCA( final PhylogenyNode n1, final PhylogenyNode n2 ) {
-        return obtainLCA( n1, n2 ).getNodeData().getEvent();
+        return calculateLCA( n1, n2 ).getNodeData().getEvent();
     }
 
     @Override
@@ -157,22 +157,35 @@ public class PhylogenyMethods {
      * @param node2
      * @return LCA of node1 and node2
      */
-    public final static PhylogenyNode obtainLCA( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        final HashSet<Integer> ids_set = new HashSet<Integer>();
-        PhylogenyNode n1 = node1;
-        PhylogenyNode n2 = node2;
-        ids_set.add( n1.getId() );
-        while ( !n1.isRoot() ) {
-            n1 = n1.getParent();
-            ids_set.add( n1.getId() );
+    public final static PhylogenyNode calculateLCA( PhylogenyNode node1, PhylogenyNode node2 ) {
+        if ( node1 == node2 ) {
+            return node1;
         }
-        while ( !ids_set.contains( n2.getId() ) && !n2.isRoot() ) {
-            n2 = n2.getParent();
+        if (( node1.getParent() == node2.getParent() ) /*&& node1.getParent() != null */ ) {
+            return node1.getParent();
         }
-        if ( !ids_set.contains( n2.getId() ) ) {
-            throw new IllegalArgumentException( "attempt to get LCA of two nodes which do not share a common root" );
+        int depth1 = node1.calculateDepth() ;
+        int depth2 = node2.calculateDepth() ;
+        while ( ( depth1 > -1 ) && ( depth2 > -1 ) ) {
+            if ( depth1 > depth2 ) {
+                node1 = node1.getParent();
+                depth1--;
+            }
+            else if ( depth2 > depth1 ) {
+                node2 = node2.getParent();
+                depth2--;
+            }
+            else {
+                if ( node1 == node2 ) {
+                    return node1;
+                }
+                node1 = node1.getParent();
+                node2 = node2.getParent();
+                depth1--;
+                depth2--;
+            }
         }
-        return n2;
+        throw new IllegalArgumentException( "illegal attempt to calculate LCA of two nodes which do not share a common root" );
     }
 
     /**
@@ -202,7 +215,7 @@ public class PhylogenyMethods {
     }
 
     public static boolean isAreOrthologous( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        return !obtainLCA( node1, node2 ).isDuplication();
+        return !calculateLCA( node1, node2 ).isDuplication();
     }
 
     public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {
@@ -551,28 +564,6 @@ public class PhylogenyMethods {
         }
     }
 
-    public static int calculateDepth( final PhylogenyNode node ) {
-        PhylogenyNode n = node;
-        int steps = 0;
-        while ( !n.isRoot() ) {
-            steps++;
-            n = n.getParent();
-        }
-        return steps;
-    }
-
-    public static double calculateDistanceToRoot( final PhylogenyNode node ) {
-        PhylogenyNode n = node;
-        double d = 0.0;
-        while ( !n.isRoot() ) {
-            if ( n.getDistanceToParent() > 0.0 ) {
-                d += n.getDistanceToParent();
-            }
-            n = n.getParent();
-        }
-        return d;
-    }
-
     public static short calculateMaxBranchesToLeaf( final PhylogenyNode node ) {
         if ( node.isExternal() ) {
             return 0;
@@ -600,7 +591,7 @@ public class PhylogenyMethods {
         int max = 0;
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            final int steps = calculateDepth( node );
+            final int steps = node.calculateDepth();
             if ( steps > max ) {
                 max = steps;
             }
@@ -612,7 +603,7 @@ public class PhylogenyMethods {
         double max = 0.0;
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            final double d = calculateDistanceToRoot( node );
+            final double d = node.calculateDistanceToRoot();
             if ( d > max ) {
                 max = d;
             }
@@ -783,18 +774,17 @@ public class PhylogenyMethods {
 
     public static void deleteExternalNodesNegativeSelection( final String[] node_names_to_delete, final Phylogeny p )
             throws IllegalArgumentException {
-        for( int i = 0; i < node_names_to_delete.length; ++i ) {
-            if ( ForesterUtil.isEmpty( node_names_to_delete[ i ] ) ) {
+        for( final String element : node_names_to_delete ) {
+            if ( ForesterUtil.isEmpty( element ) ) {
                 continue;
             }
             List<PhylogenyNode> nodes = null;
-            nodes = p.getNodes( node_names_to_delete[ i ] );
+            nodes = p.getNodes( element );
             final Iterator<PhylogenyNode> it = nodes.iterator();
             while ( it.hasNext() ) {
                 final PhylogenyNode n = it.next();
                 if ( !n.isExternal() ) {
-                    throw new IllegalArgumentException( "attempt to delete non-external node \""
-                            + node_names_to_delete[ i ] + "\"" );
+                    throw new IllegalArgumentException( "attempt to delete non-external node \"" + element + "\"" );
                 }
                 p.deleteSubtree( n, true );
             }

@@ -265,8 +265,8 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             }
         }
         if ( !phylogeny_node.isRoot() ) {
-            addSubelement( category, "Depth", String.valueOf( PhylogenyMethods.calculateDepth( phylogeny_node ) ) );
-            final double d = PhylogenyMethods.calculateDistanceToRoot( phylogeny_node );
+            addSubelement( category, "Depth", String.valueOf( phylogeny_node.calculateDepth()  ) );
+            final double d = phylogeny_node.calculateDistanceToRoot();
             if ( d > 0 ) {
                 addSubelement( category, "Distance to root", String.valueOf( ForesterUtil.FORMATTER_6.format( d ) ) );
             }

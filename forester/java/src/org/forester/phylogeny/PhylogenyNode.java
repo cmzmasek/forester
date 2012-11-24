@@ -735,6 +735,30 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         return true;
     }
 
+    public final int calculateDepth() {
+        PhylogenyNode n = this;
+        int steps = 0;
+        while ( n._parent != null ) {
+            steps++;
+            n = n._parent;
+        }
+        return steps;
+    }
+    
+    public final double calculateDistanceToRoot() {
+        PhylogenyNode n = this;
+        double d = 0.0;
+        while ( n._parent != null ) {
+            if ( n._distance_parent > 0.0 ) {
+                d += n._distance_parent;
+            }
+            n = n._parent;
+        }
+        return d;
+    }
+
+    
+    
     /**
      * Checks whether this PhylogenyNode is a root.
      * 
