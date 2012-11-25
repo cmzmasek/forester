@@ -31,14 +31,7 @@ import java.util.Stack;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
-// import java.util.Iterator; TODO should implement this, not some iterator of
-// this package.
-/*
- * @author Christian M. Zmasek
- * 
- * @version 1.020 -- last modified: 10/10/05
- */
-public class PreorderTreeIterator implements PhylogenyNodeIterator {
+public final class PreorderTreeIterator implements PhylogenyNodeIterator {
 
     final private Phylogeny            _tree;
     final private Stack<PhylogenyNode> _stack;
@@ -62,58 +55,50 @@ public class PreorderTreeIterator implements PhylogenyNodeIterator {
         reset( node );
     }
 
-    private Stack<PhylogenyNode> getStack() {
-        return _stack;
-    }
-
-    private Phylogeny getTree() {
-        return _tree;
-    }
-
     /*
      * (non-Javadoc)
      * 
      * @see java.util.Iterator#hasNext()
      */
     @Override
-    public boolean hasNext() {
-        return !getStack().isEmpty();
+    public final boolean hasNext() {
+        return !_stack.isEmpty();
     }
 
     /**
      * Advances the Iterator by one.
      */
     @Override
-    public PhylogenyNode next() throws NoSuchElementException {
+    public final PhylogenyNode next() throws NoSuchElementException {
         if ( !hasNext() ) {
             throw new NoSuchElementException( "Attempt to call \"next()\" on iterator which has no more next elements." );
         }
-        final PhylogenyNode node = getStack().pop();
+        final PhylogenyNode node = _stack.pop();
         if ( !node.isExternal() ) {
             for( int i = node.getNumberOfDescendants() - 1; i >= 0; --i ) {
-                getStack().push( node.getChildNode( i ) );
+                _stack.push( node.getChildNode( i ) );
             }
         }
         return node;
-    } // next()
+    }
 
     /**
      * Not supported.
      * 
      */
     @Override
-    public void remove() {
+    public final void remove() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void reset() {
-        getStack().clear();
-        getStack().push( getTree().getRoot() );
+    public final void reset() {
+        _stack.clear();
+        _stack.push( _tree.getRoot() );
     }
 
-    private void reset( final PhylogenyNode node ) {
-        getStack().clear();
-        getStack().push( node );
+    private final void reset( final PhylogenyNode node ) {
+        _stack.clear();
+        _stack.push( node );
     }
-} // End of class PreorderTreeIterator.
+}

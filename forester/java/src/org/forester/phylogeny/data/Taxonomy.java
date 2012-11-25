@@ -251,7 +251,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
                 && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() )
                 && ForesterUtil.isEmpty( getRank() ) && ForesterUtil.isEmpty( _uris )
                 && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) && ForesterUtil
-                .isEmpty( _lineage ) );
+                    .isEmpty( _lineage ) );
     }
 
     /**

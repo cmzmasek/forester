@@ -60,7 +60,7 @@ public final class NeighborJoining {
             }
             //  _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
             i_m = _mappings[ i ];
-            _d_values[ otu1_m ][ i_m ] = ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] - 2 ) / 2;
+            _d_values[ otu1_m ][ i_m ] = ( ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] ) - 2 ) / 2;
         }
     }
 
@@ -195,14 +195,14 @@ public final class NeighborJoining {
             j_m = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
                 //  _m_values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + r_j ) / ( _n - 2 );
-                _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( _r[ i ] + r_j ) / ( _n_2 );
+                _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( ( _r[ i ] + r_j ) / ( _n_2 ) );
             }
         }
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
-        for( int i = otu2; i < _mappings.length - 1; ++i ) {
+        for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
             _mappings[ i ] = _mappings[ i + 1 ];
         }
     }

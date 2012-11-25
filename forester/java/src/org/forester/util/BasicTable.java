@@ -107,7 +107,7 @@ public class BasicTable<E> {
     }
 
     public E getValue( final int col, final int row ) throws IllegalArgumentException {
-        if ( ( row > getNumberOfRows() - 1 ) || ( row < 0 ) ) {
+        if ( ( row > ( getNumberOfRows() - 1 ) ) || ( row < 0 ) ) {
             throw new IllegalArgumentException( "value for row (" + row + ") is out of range [number of rows: "
                     + getNumberOfRows() + "]" );
         }
@@ -151,10 +151,10 @@ public class BasicTable<E> {
         if ( ( row < 0 ) || ( col < 0 ) ) {
             throw new IllegalArgumentException( "attempt to use negative values for row or column" );
         }
-        if ( row > getNumberOfRows() - 1 ) {
+        if ( row > ( getNumberOfRows() - 1 ) ) {
             setMaxRow( row );
         }
-        if ( col > getNumberOfColumns() - 1 ) {
+        if ( col > ( getNumberOfColumns() - 1 ) ) {
             setMaxCol( col );
         }
         final String row_key = "" + row;
@@ -175,11 +175,11 @@ public class BasicTable<E> {
         for( int row = 0; row < getNumberOfRows(); ++row ) {
             for( int col = 0; col < getNumberOfColumns(); ++col ) {
                 sb.append( getValue( col, row ) );
-                if ( col < getNumberOfColumns() - 1 ) {
+                if ( col < ( getNumberOfColumns() - 1 ) ) {
                     sb.append( " " );
                 }
             }
-            if ( row < getNumberOfRows() - 1 ) {
+            if ( row < ( getNumberOfRows() - 1 ) ) {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
         }

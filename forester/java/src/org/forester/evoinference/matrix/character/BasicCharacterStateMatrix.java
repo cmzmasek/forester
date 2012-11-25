@@ -326,7 +326,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
             final String c = getCharacter( character );
             writer.write( c != null ? ForesterUtil.pad( c, longest, ' ', false ).toString() : ForesterUtil
                     .pad( "", longest, ' ', false ).toString() );
-            if ( character < getNumberOfCharacters() - 1 ) {
+            if ( character < ( getNumberOfCharacters() - 1 ) ) {
                 writer.write( ' ' );
             }
         }
@@ -340,11 +340,11 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
                 final S state = getState( identifier, character );
                 writer.write( state != null ? ForesterUtil.pad( state.toString(), longest, ' ', false ).toString()
                         : ForesterUtil.pad( "", longest, ' ', false ).toString() );
-                if ( character < getNumberOfCharacters() - 1 ) {
+                if ( character < ( getNumberOfCharacters() - 1 ) ) {
                     writer.write( ' ' );
                 }
             }
-            if ( identifier < getNumberOfIdentifiers() - 1 ) {
+            if ( identifier < ( getNumberOfIdentifiers() - 1 ) ) {
                 writer.write( ForesterUtil.LINE_SEPARATOR );
             }
         }
@@ -384,12 +384,12 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
                 final String state = getState( identifier, character ).toString();
                 writer.write( state != null ? ForesterUtil.pad( state, pad, ' ', false ).toString() : ForesterUtil
                         .pad( "", pad, ' ', false ).toString() );
-                if ( character < getNumberOfCharacters() - 1 ) {
+                if ( character < ( getNumberOfCharacters() - 1 ) ) {
                     writer.write( ' ' );
                     writer.write( ' ' );
                 }
             }
-            if ( identifier < getNumberOfIdentifiers() - 1 ) {
+            if ( identifier < ( getNumberOfIdentifiers() - 1 ) ) {
                 writer.write( ForesterUtil.LINE_SEPARATOR );
             }
         }
@@ -472,7 +472,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
             w.write( "  " + ( i + 1 ) + " '" );
             w.write( getCharacter( i ) );
             w.write( "'" );
-            if ( i < getNumberOfCharacters() - 1 ) {
+            if ( i < ( getNumberOfCharacters() - 1 ) ) {
                 w.write( "," );
                 w.write( ForesterUtil.LINE_SEPARATOR );
             }
@@ -505,7 +505,7 @@ public class BasicCharacterStateMatrix<S> implements CharacterStateMatrix<S> {
                 }
                 w.write( state.toString() );
             }
-            if ( identifier < getNumberOfIdentifiers() - 1 ) {
+            if ( identifier < ( getNumberOfIdentifiers() - 1 ) ) {
                 w.write( ForesterUtil.LINE_SEPARATOR );
             }
         }

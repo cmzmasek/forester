@@ -137,7 +137,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
                 sb.append( ":" );
                 sb.append( getCombinableDomainIdToCountsMap().get( domain_id ) );
             }
-            if ( i < ids.size() - 1 ) {
+            if ( i < ( ids.size() - 1 ) ) {
                 sb.append( "," );
             }
         }

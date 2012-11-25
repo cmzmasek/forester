@@ -188,19 +188,7 @@ public class MsaCompactor {
     final private DescriptiveStatistics[] calcStats() {
         final DescriptiveStatistics stats[] = calc();
         sort( stats );
-        for( int i = 0; i < stats.length; ++i ) {
-            final DescriptiveStatistics s = stats[ i ];
-            //            System.out.print( s.getDescription() );
-            //            System.out.print( "\t" );
-            //            System.out.print( s.arithmeticMean() );
-            //            System.out.print( "\t(" );
-            //            System.out.print( s.arithmeticMean() );
-            //            System.out.print( ")" );
-            //            System.out.print( "\t" );
-            //            System.out.print( s.getMin() );
-            //            System.out.print( "\t" );
-            //            System.out.print( s.getMax() );
-            //            System.out.println();
+        for( final DescriptiveStatistics s : stats ) {
         }
         return stats;
     }

@@ -174,7 +174,7 @@ public class goac {
                 final int counts = counts_id.get( id );
                 double percentage = 0.0;
                 if ( sum > 0 ) {
-                    percentage = 100.0 * counts / ( sum );
+                    percentage = ( 100.0 * counts ) / ( sum );
                 }
                 System.out.println( counts + "\t" + counts + "/" + sum + "\t" + percentage + "\t" + id + "\t"
                         + goid_to_term_map.get( id ).getName() );

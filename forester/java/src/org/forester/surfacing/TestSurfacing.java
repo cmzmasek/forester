@@ -442,8 +442,8 @@ public class TestSurfacing {
             if ( !sa.getSpecies().contains( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa.getMeanSimilarityScore(),
-                                         ( 2.0 / 5 + 0 + 2.0 / 3 + 1.0 / 5 + 1.0 / 2 + 2.0 / 7 ) / 6 ) ) {
+            if ( !TestSurfacing.isEqual( sa.getMeanSimilarityScore(), ( ( 2.0 / 5 ) + 0 + ( 2.0 / 3 ) + ( 1.0 / 5 )
+                    + ( 1.0 / 2 ) + ( 2.0 / 7 ) ) / 6 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa.getStandardDeviationOfSimilarityScore(), ( 0.23410788192183737 ) ) ) {
@@ -514,7 +514,7 @@ public class TestSurfacing {
             if ( !sc.getSpecies().contains( new BasicSpecies( "nemve" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sc.getMeanSimilarityScore(), ( 2.0 / 5 + 2.0 / 3 + 1.0 / 2 ) / 3 ) ) {
+            if ( !TestSurfacing.isEqual( sc.getMeanSimilarityScore(), ( ( 2.0 / 5 ) + ( 2.0 / 3 ) + ( 1.0 / 2 ) ) / 3 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sc.getStandardDeviationOfSimilarityScore(), 0.13471506281091264 ) ) {
@@ -592,8 +592,8 @@ public class TestSurfacing {
             if ( !sa2.getSpeciesData().keySet().contains( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa2.getMeanSimilarityScore(),
-                                         ( 2.0 / 5 + 0 + 2.0 / 3 + 1.0 / 6 + 1.0 / 2 + 2.0 / 8 ) / 6 ) ) {
+            if ( !TestSurfacing.isEqual( sa2.getMeanSimilarityScore(), ( ( 2.0 / 5 ) + 0 + ( 2.0 / 3 ) + ( 1.0 / 6 )
+                    + ( 1.0 / 2 ) + ( 2.0 / 8 ) ) / 6 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa2.getStandardDeviationOfSimilarityScore(), ( 0.2404663678647683 ) ) ) {
@@ -736,14 +736,15 @@ public class TestSurfacing {
             if ( sa4_d.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).size() != 5 ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa4_d.getMeanSimilarityScore(), ( 1 + 1 - 11.0 / 13 + 1 - 11.0 / 13 + 1 + 1
-                    + 1 - 11.0 / 13 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa4_d.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 11.0 / 13 ) ) + 1 ) - ( 11.0 / 13 ) ) + 1 + 1 + 1 ) - ( 11.0 / 13 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa4_d.getMaximalSimilarityScore(), 1.0 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa4_d.getMinimalSimilarityScore(), ( 1 - 11.0 / 13 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa4_d.getMinimalSimilarityScore(), ( 1 - ( 11.0 / 13 ) ) ) ) {
                 return false;
             }
             if ( sa4_d.getN() != 6 ) {
@@ -777,14 +778,15 @@ public class TestSurfacing {
             if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "X" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa4_p.getMeanSimilarityScore(),
-                                         ( 1 + 1 - 2.0 / 4 + 1 - 2.0 / 4 + 1 + 1 + 1 - 2.0 / 4 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa4_p.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 2.0 / 4 ) ) + 1 ) - ( 2.0 / 4 ) ) + 1 + 1 + 1 ) - ( 2.0 / 4 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa4_p.getMaximalSimilarityScore(), 1 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa4_p.getMinimalSimilarityScore(), ( 1 - 2.0 / 4 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa4_p.getMinimalSimilarityScore(), ( 1 - ( 2.0 / 4 ) ) ) ) {
                 return false;
             }
             if ( sa4_p.getN() != 6 ) {
@@ -851,14 +853,15 @@ public class TestSurfacing {
             if ( !sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa5_d.getMeanSimilarityScore(), ( 1 + 1 - 11.0 / 13 + 1 - 11.0 / 13 + 1 + 1
-                    + 1 - 11.0 / 13 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa5_d.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 11.0 / 13 ) ) + 1 ) - ( 11.0 / 13 ) ) + 1 + 1 + 1 ) - ( 11.0 / 13 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa5_d.getMaximalSimilarityScore(), 1.0 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa5_d.getMinimalSimilarityScore(), ( 1 - 11.0 / 13 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa5_d.getMinimalSimilarityScore(), ( 1 - ( 11.0 / 13 ) ) ) ) {
                 return false;
             }
             if ( sa5_d.getN() != 6 ) {
@@ -901,14 +904,15 @@ public class TestSurfacing {
             if ( !sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa5_p.getMeanSimilarityScore(),
-                                         ( 1 + 1 - 2.0 / 4 + 1 - 2.0 / 4 + 1 + 1 + 1 - 2.0 / 4 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa5_p.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 2.0 / 4 ) ) + 1 ) - ( 2.0 / 4 ) ) + 1 + 1 + 1 ) - ( 2.0 / 4 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa5_p.getMaximalSimilarityScore(), 1 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa5_p.getMinimalSimilarityScore(), ( 1 - 2.0 / 4 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa5_p.getMinimalSimilarityScore(), ( 1 - ( 2.0 / 4 ) ) ) ) {
                 return false;
             }
             if ( sa5_p.getN() != 6 ) {
@@ -984,14 +988,15 @@ public class TestSurfacing {
             if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "X" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa6_d.getMeanSimilarityScore(), ( 1 + 1 - 11.0 / 13 + 1 - 11.0 / 13 + 1 + 1
-                    + 1 - 11.0 / 13 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa6_d.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 11.0 / 13 ) ) + 1 ) - ( 11.0 / 13 ) ) + 1 + 1 + 1 ) - ( 11.0 / 13 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa6_d.getMaximalSimilarityScore(), 1.0 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa6_d.getMinimalSimilarityScore(), ( 1 - 11.0 / 13 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa6_d.getMinimalSimilarityScore(), ( 1 - ( 11.0 / 13 ) ) ) ) {
                 return false;
             }
             if ( sa6_d.getN() != 6 ) {
@@ -1034,14 +1039,15 @@ public class TestSurfacing {
             if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa6_p.getMeanSimilarityScore(),
-                                         ( 1 + 1 - 2.0 / 4 + 1 - 2.0 / 4 + 1 + 1 + 1 - 2.0 / 4 ) / 6.0 ) ) {
+            if ( !TestSurfacing
+                    .isEqual( sa6_p.getMeanSimilarityScore(),
+                              ( ( ( ( ( ( 1 + 1 ) - ( 2.0 / 4 ) ) + 1 ) - ( 2.0 / 4 ) ) + 1 + 1 + 1 ) - ( 2.0 / 4 ) ) / 6.0 ) ) {
                 return false;
             }
             if ( !TestSurfacing.isEqual( sa6_p.getMaximalSimilarityScore(), 1 ) ) {
                 return false;
             }
-            if ( !TestSurfacing.isEqual( sa6_p.getMinimalSimilarityScore(), ( 1 - 2.0 / 4 ) ) ) {
+            if ( !TestSurfacing.isEqual( sa6_p.getMinimalSimilarityScore(), ( 1 - ( 2.0 / 4 ) ) ) ) {
                 return false;
             }
             if ( sa6_p.getN() != 6 ) {
@@ -1996,7 +2002,7 @@ public class TestSurfacing {
             two.setKeyDomainCount( 3 );
             final PairwiseDomainSimilarityCalculator calc = new DomainCountsBasedPairwiseSimilarityCalculator();
             PairwiseDomainSimilarity s1 = calc.calculateSimilarity( one, two );
-            if ( !TestSurfacing.isEqual( s1.getSimilarityScore(), 1.0 - ( 3 - 2.0 ) / ( 2 + 3 ) ) ) {
+            if ( !TestSurfacing.isEqual( s1.getSimilarityScore(), 1.0 - ( ( 3 - 2.0 ) / ( 2 + 3 ) ) ) ) {
                 return false;
             }
             if ( s1.getDifferenceInCounts() != ( 2 - 3 ) ) {
@@ -2014,7 +2020,7 @@ public class TestSurfacing {
             one.setKeyDomainCount( 1 );
             two.setKeyDomainCount( 1000 );
             s1 = calc.calculateSimilarity( one, two );
-            if ( !TestSurfacing.isEqual( s1.getSimilarityScore(), 1.0 - 999.0 / 1001 ) ) {
+            if ( !TestSurfacing.isEqual( s1.getSimilarityScore(), 1.0 - ( 999.0 / 1001 ) ) ) {
                 return false;
             }
             if ( s1.getDifferenceInCounts() != ( 1 - 1000 ) ) {
@@ -3435,17 +3441,17 @@ public class TestSurfacing {
                 return false;
             }
             if ( !isEqual( calc_ni.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 25.0 - 5.0 ) / 25.0 ) ) {
+                           1.0 - ( ( 25.0 - 5.0 ) / 25.0 ) ) ) {
                 return false;
             }
             if ( !isEqual( calc_i.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 22.0 - 3.0 ) / 22.0 ) ) {
+                           1.0 - ( ( 22.0 - 3.0 ) / 22.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_ni.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 14.0 - 4.0 ) / 14.0 ) ) {
+            if ( !isEqual( calc_ni.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 14.0 - 4.0 ) / 14.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_i.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 14.0 - 4.0 ) / 14.0 ) ) {
+            if ( !isEqual( calc_i.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 14.0 - 4.0 ) / 14.0 ) ) ) {
                 return false;
             }
             final Domain u = new BasicDomain( "u", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
@@ -3761,34 +3767,34 @@ public class TestSurfacing {
                 return false;
             }
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 1.0 - 1.0 ) / 1.0 ) ) {
+                           1.0 - ( ( 1.0 - 1.0 ) / 1.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 4.0 - 3.0 ) / 4.0 ) ) {
+            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 4.0 - 3.0 ) / 4.0 ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( false );
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 5.0 - 2.0 ) / 5.0 ) ) {
+                           1.0 - ( ( 5.0 - 2.0 ) / 5.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 6.0 - 4.0 ) / 6.0 ) ) {
+            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 6.0 - 4.0 ) / 6.0 ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( true );
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 1.0 - 1.0 ) / 1.0 ) ) {
+                           1.0 - ( ( 1.0 - 1.0 ) / 1.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 4.0 - 3.0 ) / 4.0 ) ) {
+            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 4.0 - 3.0 ) / 4.0 ) ) ) {
                 return false;
             }
             calc_u.deleteAllDomainIdsToIgnore();
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
-                           1.0 - ( 5.0 - 2.0 ) / 5.0 ) ) {
+                           1.0 - ( ( 5.0 - 2.0 ) / 5.0 ) ) ) {
                 return false;
             }
-            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( 6.0 - 4.0 ) / 6.0 ) ) {
+            if ( !isEqual( calc_u.calculateSharedDomainsBasedGenomeSimilarityScore(), 1.0 - ( ( 6.0 - 4.0 ) / 6.0 ) ) ) {
                 return false;
             }
         }

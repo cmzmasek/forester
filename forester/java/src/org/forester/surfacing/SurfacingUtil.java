@@ -372,7 +372,7 @@ public final class SurfacingUtil {
                         nodes.add( n );
                     }
                 }
-                for( int i = 0; i < nodes.size() - 1; ++i ) {
+                for( int i = 0; i < ( nodes.size() - 1 ); ++i ) {
                     for( int j = i + 1; j < nodes.size(); ++j ) {
                         final PhylogenyNode lca = PhylogenyMethods.calculateLCA( nodes.get( i ), nodes.get( j ) );
                         String rank = "unknown";
@@ -1621,58 +1621,50 @@ public final class SurfacingUtil {
                     + all_pfams_encountered.size() );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams without a mapping                 : "
                     + pfams_without_mappings_counter + " ["
-                    + ( 100 * pfams_without_mappings_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * pfams_without_mappings_counter ) / all_pfams_encountered.size() ) + "%]" );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams without mapping to proc. or func. : "
                     + pfams_without_mappings_to_bp_or_mf_counter + " ["
-                    + ( 100 * pfams_without_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing.PRG_NAME,
-                                         "Pfams with a mapping                    : " + pfams_with_mappings_counter
-                                                 + " ["
-                                                 + ( 100 * pfams_with_mappings_counter / all_pfams_encountered.size() )
-                                                 + "%]" );
+                    + ( ( 100 * pfams_without_mappings_to_bp_or_mf_counter ) / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with a mapping                    : "
+                    + pfams_with_mappings_counter + " ["
+                    + ( ( 100 * pfams_with_mappings_counter ) / all_pfams_encountered.size() ) + "%]" );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with a mapping to proc. or func.  : "
                     + pfams_with_mappings_to_bp_or_mf_counter + " ["
-                    + ( 100 * pfams_with_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
-            ForesterUtil.programMessage( surfacing.PRG_NAME,
-                                         "Pfams with mapping to biological process: " + biological_process_counter
-                                                 + " ["
-                                                 + ( 100 * biological_process_counter / all_pfams_encountered.size() )
-                                                 + "%]" );
-            ForesterUtil.programMessage( surfacing.PRG_NAME,
-                                         "Pfams with mapping to molecular function: " + molecular_function_counter
-                                                 + " ["
-                                                 + ( 100 * molecular_function_counter / all_pfams_encountered.size() )
-                                                 + "%]" );
-            ForesterUtil.programMessage( surfacing.PRG_NAME,
-                                         "Pfams with mapping to cellular component: " + cellular_component_counter
-                                                 + " ["
-                                                 + ( 100 * cellular_component_counter / all_pfams_encountered.size() )
-                                                 + "%]" );
+                    + ( ( 100 * pfams_with_mappings_to_bp_or_mf_counter ) / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with mapping to biological process: "
+                    + biological_process_counter + " ["
+                    + ( ( 100 * biological_process_counter ) / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with mapping to molecular function: "
+                    + molecular_function_counter + " ["
+                    + ( ( 100 * molecular_function_counter ) / all_pfams_encountered.size() ) + "%]" );
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Pfams with mapping to cellular component: "
+                    + cellular_component_counter + " ["
+                    + ( ( 100 * cellular_component_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Sum of Pfams encountered                : " + all_pfams_encountered.size() );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams without a mapping                 : " + pfams_without_mappings_counter
-                    + " [" + ( 100 * pfams_without_mappings_counter / all_pfams_encountered.size() ) + "%]" );
+                    + " [" + ( ( 100 * pfams_without_mappings_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams without mapping to proc. or func. : "
                     + pfams_without_mappings_to_bp_or_mf_counter + " ["
-                    + ( 100 * pfams_without_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * pfams_without_mappings_to_bp_or_mf_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams with a mapping                    : " + pfams_with_mappings_counter + " ["
-                    + ( 100 * pfams_with_mappings_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * pfams_with_mappings_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams with a mapping to proc. or func.  : "
                     + pfams_with_mappings_to_bp_or_mf_counter + " ["
-                    + ( 100 * pfams_with_mappings_to_bp_or_mf_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * pfams_with_mappings_to_bp_or_mf_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams with mapping to biological process: " + biological_process_counter + " ["
-                    + ( 100 * biological_process_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * biological_process_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams with mapping to molecular function: " + molecular_function_counter + " ["
-                    + ( 100 * molecular_function_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * molecular_function_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.write( "# Pfams with mapping to cellular component: " + cellular_component_counter + " ["
-                    + ( 100 * cellular_component_counter / all_pfams_encountered.size() ) + "%]" );
+                    + ( ( 100 * cellular_component_counter ) / all_pfams_encountered.size() ) + "%]" );
             summary_writer.write( ForesterUtil.LINE_SEPARATOR );
             summary_writer.close();
         }

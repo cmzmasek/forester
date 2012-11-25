@@ -77,11 +77,11 @@ public final class RIO {
         reset();
     }
 
-    public IntMatrix calculateOrthologTable( Phylogeny[] gene_trees ) {
-        List<String> labels = new ArrayList<String>();
-        Set<String> labels_set = new HashSet<String>();
+    public IntMatrix calculateOrthologTable( final Phylogeny[] gene_trees ) {
+        final List<String> labels = new ArrayList<String>();
+        final Set<String> labels_set = new HashSet<String>();
         String label;
-        for( PhylogenyNode n : gene_trees[ 0 ].getExternalNodes() ) {
+        for( final PhylogenyNode n : gene_trees[ 0 ].getExternalNodes() ) {
             if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
                 label = n.getNodeData().getSequence().getName();
             }
@@ -101,16 +101,17 @@ public final class RIO {
             labels_set.add( label );
             labels.add( label );
         }
-        IntMatrix m = new IntMatrix( labels );
+        final IntMatrix m = new IntMatrix( labels );
         int counter = 0;
-        for( Phylogeny gt : gene_trees ) {
+        for( final Phylogeny gt : gene_trees ) {
             System.out.println( counter );
             counter++;
+            PhylogenyMethods.preOrderReId( gt );
             for( int x = 0; x < m.size(); ++x ) {
-                PhylogenyNode nx = gt.getNode( m.getLabel( x ) );
+                final PhylogenyNode nx = gt.getNode( m.getLabel( x ) );
                 for( int y = 0; y < m.size(); ++y ) {
-                    PhylogenyNode ny = gt.getNode( m.getLabel( y ) );
-                    if ( PhylogenyMethods.isAreOrthologous( nx, ny ) ) {
+                    final PhylogenyNode ny = gt.getNode( m.getLabel( y ) );
+                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, ny ).isDuplication() ) {
                         m.set( x, y, m.get( x, y ) + 1 );
                         //System.out.println( x + " " + y );
                     }
@@ -137,7 +138,7 @@ public final class RIO {
             return 0.0;
         }
         final int i = h.get( name );
-        return ( i * 100.0 / getBootstraps() );
+        return ( ( i * 100.0 ) / getBootstraps() );
     }
 
     /**
@@ -314,7 +315,7 @@ public final class RIO {
         _sn_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         // Go through all gene trees in the file.
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        Phylogeny[] assigned_trees = new Phylogeny[ gene_trees.length ];
+        final Phylogeny[] assigned_trees = new Phylogeny[ gene_trees.length ];
         int c = 0;
         for( final Phylogeny gt : gene_trees ) {
             bs++;
@@ -323,7 +324,7 @@ public final class RIO {
             assigned_trees[ c++ ] = inferOrthologsHelper( gt, species_tree, query );
             // System.out.println( bs );
         }
-        IntMatrix m = calculateOrthologTable( assigned_trees );
+        final IntMatrix m = calculateOrthologTable( assigned_trees );
         System.out.println( m.toString() );
         setBootstraps( bs );
         if ( RIO.TIME ) {
@@ -372,8 +373,7 @@ public final class RIO {
             throw new IllegalArgumentException( "no node containing a sequence named [" + query + "] found" );
         }
         final PhylogenyNode query_node = nodes.get( 0 );
-        final PhylogenyMethods methods = PhylogenyMethods.getInstance();
-        orthologs = methods.getOrthologousNodes( assigned_tree, query_node );
+        orthologs = PhylogenyMethods.getOrthologousNodes( assigned_tree, query_node );
         updateHash( _o_hash_maps, query, orthologs );
         super_orthologs = PhylogenyMethods.getSuperOrthologousNodes( query_node );
         updateHash( _so_hash_maps, query, super_orthologs );
@@ -616,12 +616,12 @@ public final class RIO {
                     nv_array[ j ] = nv.get( j );
                 }
                 Arrays.sort( nv_array );
-                for( int i = 0; i < nv_array.length; ++i ) {
-                    name = nv_array[ i ].getKey();
-                    value1 = nv_array[ i ].getValue1();
-                    value2 = nv_array[ i ].getValue2();
-                    value3 = nv_array[ i ].getValue3();
-                    value4 = nv_array[ i ].getValue4();
+                for( final Tuplet element : nv_array ) {
+                    name = element.getKey();
+                    value1 = element.getValue1();
+                    value2 = element.getValue2();
+                    value3 = element.getValue3();
+                    value4 = element.getValue4();
                     orthologs.append( addNameAndValues( name, value1, value2, value3, value4, sort ) );
                 }
             }
@@ -708,10 +708,10 @@ public final class RIO {
                 else {
                     sort = 90;
                 }
-                for( int i = 0; i < nv_array.length; ++i ) {
-                    name = nv_array[ i ].getKey();
-                    value1 = nv_array[ i ].getValue1();
-                    value2 = nv_array[ i ].getValue2();
+                for( final Tuplet element : nv_array ) {
+                    name = element.getKey();
+                    value1 = element.getValue1();
+                    value2 = element.getValue2();
                     ultra_paralogs += addNameAndValues( name, value1, value2, 0.0, 0.0, sort );
                 }
             }

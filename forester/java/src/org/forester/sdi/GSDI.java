@@ -35,6 +35,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Taxonomy;
@@ -93,7 +94,7 @@ public final class GSDI extends SDI {
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
         _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
         linkNodesOfG();
-        getSpeciesTree().preOrderReId();
+        PhylogenyMethods.preOrderReId( getSpeciesTree() );
         geneTreePostOrderTraversal();
     }
 

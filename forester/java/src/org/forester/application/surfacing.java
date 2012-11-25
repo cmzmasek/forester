@@ -2024,12 +2024,13 @@ public class surfacing {
                                          "Average of proteins with a least one domain assigned: "
                                                  + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
                                                  + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)" );
-            ForesterUtil.programMessage( PRG_NAME, "Range of proteins with a least one domain assigned: " + 100
-                    * protein_coverage_stats.getMin() + "%-" + 100 * protein_coverage_stats.getMax() + "%" );
+            ForesterUtil.programMessage( PRG_NAME, "Range of proteins with a least one domain assigned: "
+                    + ( 100 * protein_coverage_stats.getMin() ) + "%-" + ( 100 * protein_coverage_stats.getMax() )
+                    + "%" );
             log( "Average of prot with a least one dom assigned  : " + ( 100 * protein_coverage_stats.arithmeticMean() )
                     + "% (+/-" + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)", log_writer );
-            log( "Range of prot with a least one dom assigned    : " + 100 * protein_coverage_stats.getMin() + "%-"
-                    + 100 * protein_coverage_stats.getMax() + "%", log_writer );
+            log( "Range of prot with a least one dom assigned    : " + ( 100 * protein_coverage_stats.getMin() ) + "%-"
+                    + ( 100 * protein_coverage_stats.getMax() ) + "%", log_writer );
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
@@ -2306,7 +2307,7 @@ public class surfacing {
                                 System.out.print( ", not mapped domains = " + mapping_results.getSumOfFailures() );
                                 if ( total_domains > 0 ) {
                                     System.out.println( ", mapped ratio = "
-                                            + ( 100 * mapping_results.getSumOfSuccesses() / total_domains ) + "%" );
+                                            + ( ( 100 * mapping_results.getSumOfSuccesses() ) / total_domains ) + "%" );
                                 }
                                 else {
                                     System.out.println( ", mapped ratio = n/a (total domains = 0 )" );
@@ -2440,7 +2441,7 @@ public class surfacing {
         for( final Entry<Integer, Integer> entry : all_genomes_domains_per_potein_histo.entrySet() ) {
             sum += entry.getValue();
         }
-        final double percentage = 100.0 * ( sum - all_genomes_domains_per_potein_histo.get( 1 ) ) / sum;
+        final double percentage = ( 100.0 * ( sum - all_genomes_domains_per_potein_histo.get( 1 ) ) ) / sum;
         ForesterUtil.programMessage( PRG_NAME, "Percentage of multidomain proteins: " + percentage + "%" );
         log( "Percentage of multidomain proteins:            : " + percentage + "%", log_writer );
     }
@@ -2488,12 +2489,12 @@ public class surfacing {
             }
             System.out.println( "--" );
         }
-        for( int i = 0; i < input_file_properties.length; ++i ) {
+        for( final String[] input_file_propertie : input_file_properties ) {
             try {
-                intree.getNode( input_file_properties[ i ][ 1 ] );
+                intree.getNode( input_file_propertie[ 1 ] );
             }
             catch ( final IllegalArgumentException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "node named [" + input_file_properties[ i ][ 1 ]
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "node named [" + input_file_propertie[ 1 ]
                         + "] not present/not unique in input tree" );
             }
         }

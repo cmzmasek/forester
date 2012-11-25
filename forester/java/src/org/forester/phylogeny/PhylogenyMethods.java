@@ -79,7 +79,7 @@ public class PhylogenyMethods {
      * @return distance between node1 and node2
      */
     public double calculateDistance( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        final PhylogenyNode lca =calculateLCA( node1, node2 );
+        final PhylogenyNode lca = calculateLCA( node1, node2 );
         final PhylogenyNode n1 = node1;
         final PhylogenyNode n2 = node2;
         return ( PhylogenyMethods.getDistance( n1, lca ) + PhylogenyMethods.getDistance( n2, lca ) );
@@ -161,11 +161,11 @@ public class PhylogenyMethods {
         if ( node1 == node2 ) {
             return node1;
         }
-        if (( node1.getParent() == node2.getParent() ) /*&& node1.getParent() != null */ ) {
+        if ( ( node1.getParent() == node2.getParent() ) ) {
             return node1.getParent();
         }
-        int depth1 = node1.calculateDepth() ;
-        int depth2 = node2.calculateDepth() ;
+        int depth1 = node1.calculateDepth();
+        int depth2 = node2.calculateDepth();
         while ( ( depth1 > -1 ) && ( depth2 > -1 ) ) {
             if ( depth1 > depth2 ) {
                 node1 = node1.getParent();
@@ -188,6 +188,39 @@ public class PhylogenyMethods {
         throw new IllegalArgumentException( "illegal attempt to calculate LCA of two nodes which do not share a common root" );
     }
 
+    public static final void preOrderReId( final Phylogeny phy ) {
+        if ( phy.isEmpty() ) {
+            return;
+        }
+        phy.setIdToNodeMap( null );
+        int i = PhylogenyNode.getNodeCount();
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            it.next().setId( i++ );
+        }
+        PhylogenyNode.setNodeCount( i );
+    }
+
+    /**
+     * Returns the LCA of PhylogenyNodes node1 and node2.
+     * Precondition: ids are in pre-order (or level-order).
+     * 
+     * 
+     * @param node1
+     * @param node2
+     * @return LCA of node1 and node2
+     */
+    public final static PhylogenyNode calculateLCAonTreeWithIdsInPreOrder( PhylogenyNode node1, PhylogenyNode node2 ) {
+        while ( node1 != node2 ) {
+            if ( node1.getId() > node2.getId() ) {
+                node1 = node1.getParent();
+            }
+            else {
+                node2 = node2.getParent();
+            }
+        }
+        return node1;
+    }
+
     /**
      * Returns all orthologs of the external PhylogenyNode n of this Phylogeny.
      * Orthologs are returned as List of node references.
@@ -202,20 +235,17 @@ public class PhylogenyMethods {
      *         of this Phylogeny, null if this Phylogeny is empty or if n is
      *         internal
      */
-    public List<PhylogenyNode> getOrthologousNodes( final Phylogeny phy, final PhylogenyNode node ) {
+    public final static List<PhylogenyNode> getOrthologousNodes( final Phylogeny phy, final PhylogenyNode node ) {
         final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        PhylogenyMethods.preOrderReId( phy );
         final PhylogenyNodeIterator it = phy.iteratorExternalForward();
         while ( it.hasNext() ) {
             final PhylogenyNode temp_node = it.next();
-            if ( ( temp_node != node ) && isAreOrthologous( node, temp_node ) ) {
+            if ( ( temp_node != node ) && !calculateLCAonTreeWithIdsInPreOrder( node, temp_node ).isDuplication() ) {
                 nodes.add( temp_node );
             }
         }
         return nodes;
-    }
-
-    public static boolean isAreOrthologous( final PhylogenyNode node1, final PhylogenyNode node2 ) {
-        return !calculateLCA( node1, node2 ).isDuplication();
     }
 
     public final static Phylogeny[] readPhylogenies( final PhylogenyParser parser, final File file ) throws IOException {

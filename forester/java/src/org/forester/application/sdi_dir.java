@@ -211,8 +211,8 @@ public class sdi_dir {
         suffix = suffix.trim();
         out = new PrintWriter( new FileWriter( outfile ), true );
         //nodecount0 = PhylogenyNode.getNodeCount();
-        for( int i = 0; i < filenames.length; ++i ) {
-            filename = filenames[ i ];
+        for( final String filename2 : filenames ) {
+            filename = filename2;
             if ( ( suffix.length() < 1 ) || filename.endsWith( suffix ) ) {
                 final File gene_tree_file = new File( indir.getPath(), filename );
                 if ( gene_tree_file.exists() && gene_tree_file.isFile() ) {
@@ -285,7 +285,7 @@ public class sdi_dir {
                         }
                         out.println();
                         if ( write_trees ) {
-                            outtree = new File( outdir, new File( filenames[ i ] ).getName() );
+                            outtree = new File( outdir, new File( filename2 ).getName() );
                             final PhylogenyWriter writer = new PhylogenyWriter();
                             writer.toPhyloXML( outtree, trees[ 0 ], 1 );
                         }

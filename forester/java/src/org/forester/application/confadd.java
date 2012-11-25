@@ -204,7 +204,7 @@ public class confadd {
         }
         double value = 1;
         if ( norm > 0 ) {
-            value = norm / ( 1 + last - first );
+            value = norm / ( ( 1 + last ) - first );
         }
         ForesterUtil.programMessage( PRG_NAME, "first topology to use: " + first );
         String is_last = "";
@@ -212,7 +212,7 @@ public class confadd {
             is_last = " (corresponds to last topology in file)";
         }
         ForesterUtil.programMessage( PRG_NAME, "last topology to use : " + last + is_last );
-        ForesterUtil.programMessage( PRG_NAME, "sum of topologies used as evaluators: " + ( last - first + 1 ) );
+        ForesterUtil.programMessage( PRG_NAME, "sum of topologies used as evaluators: " + ( ( last - first ) + 1 ) );
         if ( norm > 0 ) {
             ForesterUtil.programMessage( PRG_NAME, "normalizer: " + norm + " (" + ForesterUtil.round( value, 6 ) + ")" );
         }

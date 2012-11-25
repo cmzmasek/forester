@@ -28,6 +28,7 @@
 package org.forester.sdi;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Event;
 
@@ -84,7 +85,7 @@ public class SDIse extends SDI {
     public SDIse( final Phylogeny gene_tree, final Phylogeny species_tree ) throws SDIException {
         super( gene_tree, species_tree );
         _duplications_sum = 0;
-        getSpeciesTree().preOrderReId();
+        PhylogenyMethods.preOrderReId( getSpeciesTree() );
         linkNodesOfG();
         geneTreePostOrderTraversal( getGeneTree().getRoot() );
     }

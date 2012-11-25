@@ -136,7 +136,7 @@ public final class Test {
 
     private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
         final PhylogenyMethods pm = PhylogenyMethods.getInstance();
-        return pm.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
+        return PhylogenyMethods.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
     }
 
     public static boolean isEqual( final double a, final double b ) {
@@ -477,6 +477,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Finding of LCA 2: " );
+        if ( Test.testGetLCA2() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Calculation of distance between nodes: " );
         if ( Test.testGetDistance() ) {
             System.out.println( "OK." );
@@ -699,13 +708,13 @@ public final class Test {
         else {
             path = "/home/czmasek/bin/mafft";
         }
-        if ( !Mafft.isInstalled( path ) ) {
+        if ( !MsaInferrer.isInstalled( path ) ) {
             path = "mafft";
         }
-        if ( !Mafft.isInstalled( path ) ) {
+        if ( !MsaInferrer.isInstalled( path ) ) {
             path = "/usr/local/bin/mafft";
         }
-        if ( Mafft.isInstalled( path ) ) {
+        if ( MsaInferrer.isInstalled( path ) ) {
             System.out.print( "MAFFT (external program): " );
             if ( Test.testMafft( path ) ) {
                 System.out.println( "OK." );
@@ -3415,6 +3424,291 @@ public final class Test {
         return true;
     }
 
+    private static boolean testGetLCA2() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny p1 = factory.create( "((((((A,B)ab,C)abc,D)abcd,E)abcde,F)abcdef,(G,H)gh)abcdefgh",
+                                                 new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p1 );
+            final PhylogenyNode A = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                          p1.getNode( "A" ) );
+            if ( !A.getName().equals( "A" ) ) {
+                return false;
+            }
+            final PhylogenyNode gh = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "gh" ),
+                                                                                           p1.getNode( "gh" ) );
+            if ( !gh.getName().equals( "gh" ) ) {
+                return false;
+            }
+            final PhylogenyNode ab = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                           p1.getNode( "B" ) );
+            if ( !ab.getName().equals( "ab" ) ) {
+                return false;
+            }
+            final PhylogenyNode ab2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "B" ),
+                                                                                            p1.getNode( "A" ) );
+            if ( !ab2.getName().equals( "ab" ) ) {
+                return false;
+            }
+            final PhylogenyNode gh2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "H" ),
+                                                                                            p1.getNode( "G" ) );
+            if ( !gh2.getName().equals( "gh" ) ) {
+                return false;
+            }
+            final PhylogenyNode gh3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "G" ),
+                                                                                            p1.getNode( "H" ) );
+            if ( !gh3.getName().equals( "gh" ) ) {
+                return false;
+            }
+            final PhylogenyNode abc = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "C" ),
+                                                                                            p1.getNode( "A" ) );
+            if ( !abc.getName().equals( "abc" ) ) {
+                return false;
+            }
+            final PhylogenyNode abc2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                             p1.getNode( "C" ) );
+            if ( !abc2.getName().equals( "abc" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcd = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                             p1.getNode( "D" ) );
+            if ( !abcd.getName().equals( "abcd" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcd2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "D" ),
+                                                                                              p1.getNode( "A" ) );
+            if ( !abcd2.getName().equals( "abcd" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcdef = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                               p1.getNode( "F" ) );
+            if ( !abcdef.getName().equals( "abcdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcdef2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "F" ),
+                                                                                                p1.getNode( "A" ) );
+            if ( !abcdef2.getName().equals( "abcdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcdef3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "ab" ),
+                                                                                                p1.getNode( "F" ) );
+            if ( !abcdef3.getName().equals( "abcdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcdef4 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "F" ),
+                                                                                                p1.getNode( "ab" ) );
+            if ( !abcdef4.getName().equals( "abcdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcde = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                              p1.getNode( "E" ) );
+            if ( !abcde.getName().equals( "abcde" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcde2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "E" ),
+                                                                                               p1.getNode( "A" ) );
+            if ( !abcde2.getName().equals( "abcde" ) ) {
+                return false;
+            }
+            final PhylogenyNode r = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "abcdefgh" ),
+                                                                                          p1.getNode( "abcdefgh" ) );
+            if ( !r.getName().equals( "abcdefgh" ) ) {
+                return false;
+            }
+            final PhylogenyNode r2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "A" ),
+                                                                                           p1.getNode( "H" ) );
+            if ( !r2.getName().equals( "abcdefgh" ) ) {
+                return false;
+            }
+            final PhylogenyNode r3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "H" ),
+                                                                                           p1.getNode( "A" ) );
+            if ( !r3.getName().equals( "abcdefgh" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcde3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "E" ),
+                                                                                               p1.getNode( "abcde" ) );
+            if ( !abcde3.getName().equals( "abcde" ) ) {
+                return false;
+            }
+            final PhylogenyNode abcde4 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "abcde" ),
+                                                                                               p1.getNode( "E" ) );
+            if ( !abcde4.getName().equals( "abcde" ) ) {
+                return false;
+            }
+            final PhylogenyNode ab3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "ab" ),
+                                                                                            p1.getNode( "B" ) );
+            if ( !ab3.getName().equals( "ab" ) ) {
+                return false;
+            }
+            final PhylogenyNode ab4 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p1.getNode( "B" ),
+                                                                                            p1.getNode( "ab" ) );
+            if ( !ab4.getName().equals( "ab" ) ) {
+                return false;
+            }
+            final Phylogeny p2 = factory.create( "(a,b,(((c,d)cd,e)cde,f)cdef)r", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p2 );
+            final PhylogenyNode cd = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "c" ),
+                                                                                           p2.getNode( "d" ) );
+            if ( !cd.getName().equals( "cd" ) ) {
+                return false;
+            }
+            final PhylogenyNode cd2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "d" ),
+                                                                                            p2.getNode( "c" ) );
+            if ( !cd2.getName().equals( "cd" ) ) {
+                return false;
+            }
+            final PhylogenyNode cde = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "c" ),
+                                                                                            p2.getNode( "e" ) );
+            if ( !cde.getName().equals( "cde" ) ) {
+                return false;
+            }
+            final PhylogenyNode cde2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "e" ),
+                                                                                             p2.getNode( "c" ) );
+            if ( !cde2.getName().equals( "cde" ) ) {
+                return false;
+            }
+            final PhylogenyNode cdef = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "c" ),
+                                                                                             p2.getNode( "f" ) );
+            if ( !cdef.getName().equals( "cdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode cdef2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "d" ),
+                                                                                              p2.getNode( "f" ) );
+            if ( !cdef2.getName().equals( "cdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode cdef3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "f" ),
+                                                                                              p2.getNode( "d" ) );
+            if ( !cdef3.getName().equals( "cdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode rt = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p2.getNode( "c" ),
+                                                                                           p2.getNode( "a" ) );
+            if ( !rt.getName().equals( "r" ) ) {
+                return false;
+            }
+            final Phylogeny p3 = factory
+                    .create( "((((a,(b,c)bc)abc,(d,e)de)abcde,f)abcdef,(((g,h)gh,(i,j)ij)ghij,k)ghijk,l)",
+                             new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p3 );
+            final PhylogenyNode bc_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "b" ),
+                                                                                             p3.getNode( "c" ) );
+            if ( !bc_3.getName().equals( "bc" ) ) {
+                return false;
+            }
+            final PhylogenyNode ac_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "a" ),
+                                                                                             p3.getNode( "c" ) );
+            if ( !ac_3.getName().equals( "abc" ) ) {
+                return false;
+            }
+            final PhylogenyNode ad_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "a" ),
+                                                                                             p3.getNode( "d" ) );
+            if ( !ad_3.getName().equals( "abcde" ) ) {
+                return false;
+            }
+            final PhylogenyNode af_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "a" ),
+                                                                                             p3.getNode( "f" ) );
+            if ( !af_3.getName().equals( "abcdef" ) ) {
+                return false;
+            }
+            final PhylogenyNode ag_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "a" ),
+                                                                                             p3.getNode( "g" ) );
+            if ( !ag_3.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !ag_3.isRoot() ) {
+                return false;
+            }
+            final PhylogenyNode al_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "a" ),
+                                                                                             p3.getNode( "l" ) );
+            if ( !al_3.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !al_3.isRoot() ) {
+                return false;
+            }
+            final PhylogenyNode kl_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "k" ),
+                                                                                             p3.getNode( "l" ) );
+            if ( !kl_3.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !kl_3.isRoot() ) {
+                return false;
+            }
+            final PhylogenyNode fl_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "f" ),
+                                                                                             p3.getNode( "l" ) );
+            if ( !fl_3.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !fl_3.isRoot() ) {
+                return false;
+            }
+            final PhylogenyNode gk_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p3.getNode( "g" ),
+                                                                                             p3.getNode( "k" ) );
+            if ( !gk_3.getName().equals( "ghijk" ) ) {
+                return false;
+            }
+            final Phylogeny p4 = factory.create( "(a,b,c)r", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p4 );
+            final PhylogenyNode r_4 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p4.getNode( "b" ),
+                                                                                            p4.getNode( "c" ) );
+            if ( !r_4.getName().equals( "r" ) ) {
+                return false;
+            }
+            final Phylogeny p5 = factory.create( "((a,b),c,d)root", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p5 );
+            final PhylogenyNode r_5 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p5.getNode( "a" ),
+                                                                                            p5.getNode( "c" ) );
+            if ( !r_5.getName().equals( "root" ) ) {
+                return false;
+            }
+            final Phylogeny p6 = factory.create( "((a,b),c,d)rot", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p6 );
+            final PhylogenyNode r_6 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p6.getNode( "c" ),
+                                                                                            p6.getNode( "a" ) );
+            if ( !r_6.getName().equals( "rot" ) ) {
+                return false;
+            }
+            final Phylogeny p7 = factory.create( "(((a,b)x,c)x,d,e)rott", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p7 );
+            final PhylogenyNode r_7 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "a" ),
+                                                                                            p7.getNode( "e" ) );
+            if ( !r_7.getName().equals( "rott" ) ) {
+                return false;
+            }
+            final PhylogenyNode r_71 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "e" ),
+                                                                                             p7.getNode( "a" ) );
+            if ( !r_71.getName().equals( "rott" ) ) {
+                return false;
+            }
+            final PhylogenyNode r_72 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "e" ),
+                                                                                             p7.getNode( "rott" ) );
+            if ( !r_72.getName().equals( "rott" ) ) {
+                return false;
+            }
+            final PhylogenyNode r_73 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "rott" ),
+                                                                                             p7.getNode( "a" ) );
+            if ( !r_73.getName().equals( "rott" ) ) {
+                return false;
+            }
+            final PhylogenyNode r_74 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "rott" ),
+                                                                                             p7.getNode( "rott" ) );
+            if ( !r_74.getName().equals( "rott" ) ) {
+                return false;
+            }
+            final PhylogenyNode r_75 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p7.getNode( "e" ),
+                                                                                             p7.getNode( "e" ) );
+            if ( !r_75.getName().equals( "e" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testHmmscanOutputParser() {
         final String test_dir = Test.PATH_TO_TEST_DATA;
         try {
@@ -5775,46 +6069,46 @@ public final class Test {
             if ( p.getNode( "r" ).getId() != count ) {
                 return false;
             }
-            if ( p.getNode( "A" ).getId() != count + 1 ) {
+            if ( p.getNode( "A" ).getId() != ( count + 1 ) ) {
                 return false;
             }
-            if ( p.getNode( "B" ).getId() != count + 1 ) {
+            if ( p.getNode( "B" ).getId() != ( count + 1 ) ) {
                 return false;
             }
-            if ( p.getNode( "C" ).getId() != count + 1 ) {
+            if ( p.getNode( "C" ).getId() != ( count + 1 ) ) {
                 return false;
             }
-            if ( p.getNode( "1" ).getId() != count + 2 ) {
+            if ( p.getNode( "1" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "2" ).getId() != count + 2 ) {
+            if ( p.getNode( "2" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "3" ).getId() != count + 2 ) {
+            if ( p.getNode( "3" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "4" ).getId() != count + 2 ) {
+            if ( p.getNode( "4" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "5" ).getId() != count + 2 ) {
+            if ( p.getNode( "5" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "6" ).getId() != count + 2 ) {
+            if ( p.getNode( "6" ).getId() != ( count + 2 ) ) {
                 return false;
             }
-            if ( p.getNode( "a" ).getId() != count + 3 ) {
+            if ( p.getNode( "a" ).getId() != ( count + 3 ) ) {
                 return false;
             }
-            if ( p.getNode( "b" ).getId() != count + 3 ) {
+            if ( p.getNode( "b" ).getId() != ( count + 3 ) ) {
                 return false;
             }
-            if ( p.getNode( "X" ).getId() != count + 4 ) {
+            if ( p.getNode( "X" ).getId() != ( count + 4 ) ) {
                 return false;
             }
-            if ( p.getNode( "Y" ).getId() != count + 4 ) {
+            if ( p.getNode( "Y" ).getId() != ( count + 4 ) ) {
                 return false;
             }
-            if ( p.getNode( "Z" ).getId() != count + 4 ) {
+            if ( p.getNode( "Z" ).getId() != ( count + 4 ) ) {
                 return false;
             }
         }

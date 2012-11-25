@@ -83,8 +83,8 @@ public class pfam2go_extractor {
             final GoId go_id = pfam_to_go_mapping.getValue();
             final Set<GoId> supers = GoUtils.getAllSuperGoIds( go_id, goid_to_term_map );
             supers.add( go_id );
-            for( int i = 0; i < queries.length; ++i ) {
-                if ( supers.contains( queries[ i ] ) ) {
+            for( final GoId querie : queries ) {
+                if ( supers.contains( querie ) ) {
                     pfams.add( domain_id.toString() );
                 }
             }

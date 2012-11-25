@@ -150,7 +150,7 @@ public class TreeSplitMatrix {
         if ( q_counts != counts ) {
             positive_matches = false;
         }
-        if ( q_counts != keySet().size() - counts ) {
+        if ( q_counts != ( keySet().size() - counts ) ) {
             negative_matches = false;
         }
         if ( !positive_matches && !negative_matches ) {

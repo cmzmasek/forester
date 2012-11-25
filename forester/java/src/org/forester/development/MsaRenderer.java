@@ -150,7 +150,7 @@ public class MsaRenderer extends JComponent {
     @Override
     public Dimension getPreferredSize() {
         final int width = ( getWellSize() + 1 ) * ( getColumns() + 1 );
-        final int hight = ( getWellSize() + 1 ) * ( getRows() + 1 ) + 30;
+        final int hight = ( ( getWellSize() + 1 ) * ( getRows() + 1 ) ) + 30;
         return new Dimension( width, hight );
     }
 
@@ -168,7 +168,7 @@ public class MsaRenderer extends JComponent {
     private void initializeWells() {
         _wells = new AbstractRenderer[ getRows() + 1 ][ getColumns() + 1 ];
         for( int row = 0; row < getRows(); row++ ) {
-            for( int col = 0; col < getColumns() + 1; col++ ) {
+            for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
                 AbstractRenderer r;
                 if ( col == getColumns() ) {
                     //  r = new LabelRenderer( PlateData.ALPHABET[ row % PlateData.ALPHABET.length ] + "", this );
@@ -183,7 +183,7 @@ public class MsaRenderer extends JComponent {
                 //  setAbstractRenderer( r, row, col );
             }
         }
-        for( int col = 0; col < getColumns() + 1; col++ ) {
+        for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
             //  AbstractRenderer r;
             if ( col == getColumns() ) {
                 //      r = new LabelRenderer( "", this );
@@ -221,8 +221,8 @@ public class MsaRenderer extends JComponent {
         // g
         //         .drawString( "Number:" + getPlateData().getName() + " Replicate:"
         //                 + ( getPlateData().getReplicateNumber() + 1 ), 10, 20 );
-        for( int row = 0; row < getRows() + 1; row++ ) {
-            for( int col = 0; col < getColumns() + 1; col++ ) {
+        for( int row = 0; row < ( getRows() + 1 ); row++ ) {
+            for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
                 getAbstractRenderer( row, col ).paint( g );
             }
         }
@@ -245,11 +245,11 @@ public class MsaRenderer extends JComponent {
     public void resetWellSize( final int well_size ) {
         setWellSize( well_size );
         final int factor = well_size + 0;
-        for( int row = 0; row < getRows() + 1; row++ ) {
-            for( int col = 0; col < getColumns() + 1; col++ ) {
+        for( int row = 0; row < ( getRows() + 1 ); row++ ) {
+            for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
                 final AbstractRenderer r = getAbstractRenderer( row, col );
-                r.setX( 10 + factor * col );
-                r.setY( factor * row + 30 );
+                r.setX( 10 + ( factor * col ) );
+                r.setY( ( factor * row ) + 30 );
                 r.setWellSize( well_size );
             }
         }
@@ -296,19 +296,19 @@ public class MsaRenderer extends JComponent {
     }
 
     private void setIsSelectedOfAll( final boolean isSelected ) {
-        for( int col = 0; col < getColumns() + 1; col++ ) {
+        for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
             setIsSelectedOfColumn( col, isSelected );
         }
     }
 
     private void setIsSelectedOfColumn( final int column, final boolean isSelected ) {
-        for( int row = 0; row < getRows() + 1; row++ ) {
+        for( int row = 0; row < ( getRows() + 1 ); row++ ) {
             getAbstractRenderer( row, column ).setIsSelected( isSelected );
         }
     }
 
     private void setIsSelectedOfRow( final int row, final boolean isSelected ) {
-        for( int col = 0; col < getColumns() + 1; col++ ) {
+        for( int col = 0; col < ( getColumns() + 1 ); col++ ) {
             getAbstractRenderer( row, col ).setIsSelected( isSelected );
         }
     }

@@ -273,7 +273,7 @@ public final class TreeColorSet {
     }
 
     void cycleColorScheme() {
-        if ( getCurrentColorScheme() >= _color_schemes.length - 1 ) {
+        if ( getCurrentColorScheme() >= ( _color_schemes.length - 1 ) ) {
             setColorSchema( 0 );
         }
         else {

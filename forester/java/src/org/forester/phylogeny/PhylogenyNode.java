@@ -461,7 +461,7 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
             previous_node = current_node;
             current_node = current_node.getParent();
         }
-        if ( index < current_node.getNumberOfDescendants() - 1 ) {
+        if ( index < ( current_node.getNumberOfDescendants() - 1 ) ) {
             current_node = current_node.getChildNode( index + 1 );
         }
         while ( current_node.isInternal() && !current_node.isCollapse() ) {
@@ -744,7 +744,7 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         }
         return steps;
     }
-    
+
     public final double calculateDistanceToRoot() {
         PhylogenyNode n = this;
         double d = 0.0;
@@ -757,8 +757,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
         return d;
     }
 
-    
-    
     /**
      * Checks whether this PhylogenyNode is a root.
      * 

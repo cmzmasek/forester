@@ -84,7 +84,7 @@ public class strip {
         }
         else {
             names = new String[ args.length - 3 ];
-            for( int i = 0; i < args.length - 3; ++i ) {
+            for( int i = 0; i < ( args.length - 3 ); ++i ) {
                 names[ i ] = args[ i + 3 ];
             }
         }

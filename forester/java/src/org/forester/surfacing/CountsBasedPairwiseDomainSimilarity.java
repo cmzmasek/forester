@@ -48,7 +48,7 @@ public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimila
         if ( abs_copy_number_difference > counts_sum ) {
             throw new IllegalArgumentException( "attempt to use absolute copy number difference larger than copy number sum" );
         }
-        _score = 1.0 - ( double ) abs_copy_number_difference / counts_sum;
+        _score = 1.0 - ( ( double ) abs_copy_number_difference / counts_sum );
     }
 
     /**

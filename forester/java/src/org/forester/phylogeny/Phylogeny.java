@@ -853,18 +853,6 @@ public class Phylogeny {
         PhylogenyNode.setNodeCount( max + 1 );
     }
 
-    public void preOrderReId() {
-        if ( isEmpty() ) {
-            return;
-        }
-        setIdToNodeMap( null );
-        int i = PhylogenyNode.getNodeCount();
-        for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); ) {
-            it.next().setId( i++ );
-        }
-        PhylogenyNode.setNodeCount( i );
-    }
-
     /**
      * Prints descriptions of all external Nodes of this Phylogeny to
      * System.out.
@@ -1152,7 +1140,7 @@ public class Phylogeny {
         _identifier = identifier;
     }
 
-    private void setIdToNodeMap( final HashMap<Integer, PhylogenyNode> idhash ) {
+    public void setIdToNodeMap( final HashMap<Integer, PhylogenyNode> idhash ) {
         _id_to_node_map = idhash;
     }
 

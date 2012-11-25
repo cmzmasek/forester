@@ -232,6 +232,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     /**
      * Action performed.
      */
+    @Override
     public void actionPerformed( final ActionEvent e ) {
         final Object o = e.getSource();
         boolean is_applet = false;
@@ -555,6 +556,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // See "Swing's Threading Policy".
         SwingUtilities.invokeLater( new Runnable() {
 
+            @Override
             public void run() {
                 doUpdateProcessMenu();
             }

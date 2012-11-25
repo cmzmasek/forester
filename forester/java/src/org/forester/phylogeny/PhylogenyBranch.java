@@ -132,10 +132,10 @@ public class PhylogenyBranch implements Edge {
                 hc_2 = node_2_hc;
             }
         }
-        result = PRIME * result + ( ( _data == null ) ? 0 : _data.hashCode() );
-        result = PRIME * result + ( _is_directed ? 1231 : 1237 );
-        result = PRIME * result + hc_1;
-        result = PRIME * result + hc_2;
+        result = ( PRIME * result ) + ( ( _data == null ) ? 0 : _data.hashCode() );
+        result = ( PRIME * result ) + ( _is_directed ? 1231 : 1237 );
+        result = ( PRIME * result ) + hc_1;
+        result = ( PRIME * result ) + hc_2;
         return result;
     }
 

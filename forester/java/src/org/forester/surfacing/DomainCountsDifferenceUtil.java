@@ -556,7 +556,7 @@ public final class DomainCountsDifferenceUtil {
         for( final BinaryDomainCombination bdc : all_bdcs ) {
             if ( ( high_copy_base_values.get( bdc ) > 0 ) && ( high_copy_target_values.get( bdc ) > 0 )
                     && ( high_copy_base_values.get( bdc ) >= low_copy_values.get( bdc ) ) ) {
-                if ( high_copy_target_values.get( bdc ) >= min_diff + ( factor * low_copy_values.get( bdc ) ) ) {
+                if ( high_copy_target_values.get( bdc ) >= ( min_diff + ( factor * low_copy_values.get( bdc ) ) ) ) {
                     if ( low_copy_values.get( bdc ) <= 0.0 ) {
                         ++total_absense_counter;
                     }
@@ -680,8 +680,8 @@ public final class DomainCountsDifferenceUtil {
         for( final DomainId domain_id : all_domains ) {
             if ( ( high_copy_base_values.get( domain_id ) > 0 ) && ( high_copy_target_values.get( domain_id ) > 0 )
                     && ( high_copy_base_values.get( domain_id ) >= low_copy_values.get( domain_id ) ) ) {
-                if ( high_copy_target_values.get( domain_id ) >= min_diff
-                        + ( factor * low_copy_values.get( domain_id ) ) ) {
+                if ( high_copy_target_values.get( domain_id ) >= ( min_diff + ( factor * low_copy_values
+                        .get( domain_id ) ) ) ) {
                     if ( low_copy_values.get( domain_id ) <= 0.0 ) {
                         ++total_absense_counter;
                     }

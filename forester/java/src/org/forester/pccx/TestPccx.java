@@ -65,53 +65,53 @@ public class TestPccx {
             final CoverageCalculator cc = CoverageCalculator.getInstance( new ExternalNodeBasedCoverageMethod(),
                                                                           options );
             Coverage cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 / 2 + 1.0 / 3 + 1.0 / 4 + 1.0 / 7 + 1.0 / 7 + 1.0 / 7
-                    + 1.0 / 7 + 1.0 / 5 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + ( 1.0 / 2 ) + ( 1.0 / 3 ) + ( 1.0 / 4 ) + ( 1.0 / 7 )
+                    + ( 1.0 / 7 ) + ( 1.0 / 7 ) + ( 1.0 / 7 ) + ( 1.0 / 5 ) ) / 9 ) ) {
                 return false;
             }
             names.add( "B" );
             names.add( "B" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + 1.0 / 3 + 1.0 / 4 + 1.0 / 7 + 1.0 / 7 + 1.0 / 7 + 1.0
-                    / 7 + 1.0 / 5 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + ( 1.0 / 3 ) + ( 1.0 / 4 ) + ( 1.0 / 7 ) + ( 1.0 / 7 )
+                    + ( 1.0 / 7 ) + ( 1.0 / 7 ) + ( 1.0 / 5 ) ) / 9 ) ) {
                 return false;
             }
             names.add( "G" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx
-                    .isEqual( cov.getScore(),
-                              ( 1.0 + 1.0 + 1.0 / 3 + 1.0 / 4 + 1.0 / 4 + 1.0 / 4 + 1.0 + 1.0 / 2 + 1.0 / 4 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + ( 1.0 / 3 ) + ( 1.0 / 4 ) + ( 1.0 / 4 ) + ( 1.0 / 4 )
+                    + 1.0 + ( 1.0 / 2 ) + ( 1.0 / 4 ) ) / 9 ) ) {
                 return false;
             }
             names.add( "E" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(),
-                                    ( 1.0 + 1.0 + 1.0 / 3 + 1.0 / 4 + 1.0 + 1.0 / 2 + 1.0 + 1.0 / 2 + 1.0 / 4 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + ( 1.0 / 3 ) + ( 1.0 / 4 ) + 1.0 + ( 1.0 / 2 ) + 1.0
+                    + ( 1.0 / 2 ) + ( 1.0 / 4 ) ) / 9 ) ) {
                 return false;
             }
             names.add( "X" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(),
-                                    ( 1.0 + 1.0 + 1.0 / 3 + 1.0 / 3 + 1.0 + 1.0 / 2 + 1.0 + 1.0 / 2 + 1.0 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + ( 1.0 / 3 ) + ( 1.0 / 3 ) + 1.0 + ( 1.0 / 2 ) + 1.0
+                    + ( 1.0 / 2 ) + 1.0 ) / 9 ) ) {
                 return false;
             }
             names.add( "C" );
             names.add( "C" );
             names.add( "C" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(),
-                                    ( 1.0 + 1.0 + 1.0 + 1.0 / 3 + 1.0 + 1.0 / 2 + 1.0 + 1.0 / 2 + 1.0 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + 1.0 + ( 1.0 / 3 ) + 1.0 + ( 1.0 / 2 ) + 1.0
+                    + ( 1.0 / 2 ) + 1.0 ) / 9 ) ) {
                 return false;
             }
             names.add( "D" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx
-                    .isEqual( cov.getScore(), ( 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 / 2 + 1.0 + 1.0 / 2 + 1.0 ) / 9 ) ) {
+            if ( !TestPccx.isEqual( cov.getScore(),
+                                    ( 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + ( 1.0 / 2 ) + 1.0 + ( 1.0 / 2 ) + 1.0 ) / 9 ) ) {
                 return false;
             }
             names.add( "F" );
             cov = cc.calculateCoverage( phylogenies, names, false );
-            if ( !TestPccx.isEqual( cov.getScore(), ( 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 / 2 + 1.0 ) / 9 ) ) {
+            if ( !TestPccx
+                    .isEqual( cov.getScore(), ( 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 1.0 + ( 1.0 / 2 ) + 1.0 ) / 9 ) ) {
                 return false;
             }
             names.add( "H" );
@@ -195,23 +195,27 @@ public class TestPccx {
             final CoverageCalculator cc2 = CoverageCalculator.getInstance( new ExternalNodeBasedCoverageMethod(),
                                                                            options2 );
             Coverage cov2 = cc2.calculateCoverage( phylogenies2, names2, false );
-            final double nf = 1 / ( 1 / 0.1 + 1 / 0.7 + 1 / 1.0 + 1 / 1.7 + 1 / 0.3 + 1 / 0.4 + 1 / 0.5 + 1 / 0.6 + 1 / 2.0 );
-            if ( !TestPccx.isEqual( cov2.getScore(), ( 1 / 0.1 + ( 1 / 0.8 + 1 / 0.2 + 1 / 0.15 ) / 3 + 1 / 1.3 + 1
-                    / 4.0 + 1 / 6.4 + 1 / 6.5 + 1 / 6.7 + 1 / 6.8 + 1 / 5.6 )
+            final double nf = 1 / ( ( 1 / 0.1 ) + ( 1 / 0.7 ) + ( 1 / 1.0 ) + ( 1 / 1.7 ) + ( 1 / 0.3 ) + ( 1 / 0.4 )
+                    + ( 1 / 0.5 ) + ( 1 / 0.6 ) + ( 1 / 2.0 ) );
+            if ( !TestPccx.isEqual( cov2.getScore(), ( ( 1 / 0.1 )
+                    + ( ( ( 1 / 0.8 ) + ( 1 / 0.2 ) + ( 1 / 0.15 ) ) / 3 ) + ( 1 / 1.3 ) + ( 1 / 4.0 ) + ( 1 / 6.4 )
+                    + ( 1 / 6.5 ) + ( 1 / 6.7 ) + ( 1 / 6.8 ) + ( 1 / 5.6 ) )
                     * nf ) ) {
                 return false;
             }
             names2.add( "C" );
             cov2 = cc2.calculateCoverage( phylogenies2, names2, false );
-            if ( !TestPccx.isEqual( cov2.getScore(), ( 1 / 0.1 + ( 1 / 0.8 + 1 / 0.2 + 1 / 0.15 ) / 3 + 1 / 1.0 + 1
-                    / 4.0 + 1 / 6.4 + 1 / 6.5 + 1 / 6.7 + 1 / 6.8 + 1 / 5.6 )
+            if ( !TestPccx.isEqual( cov2.getScore(), ( ( 1 / 0.1 )
+                    + ( ( ( 1 / 0.8 ) + ( 1 / 0.2 ) + ( 1 / 0.15 ) ) / 3 ) + ( 1 / 1.0 ) + ( 1 / 4.0 ) + ( 1 / 6.4 )
+                    + ( 1 / 6.5 ) + ( 1 / 6.7 ) + ( 1 / 6.8 ) + ( 1 / 5.6 ) )
                     * nf ) ) {
                 return false;
             }
             names2.add( "E" );
             cov2 = cc2.calculateCoverage( phylogenies2, names2, false );
-            if ( !TestPccx.isEqual( cov2.getScore(), ( 1 / 0.1 + ( 1 / 0.8 + 1 / 0.2 + 1 / 0.15 ) / 3 + 1 / 1.0 + +1
-                    / 4.0 + 1 / 0.3 + 1 / 0.7 + 1 / 3.1 + 1 / 3.2 + 1 / 4.8 )
+            if ( !TestPccx.isEqual( cov2.getScore(), ( ( 1 / 0.1 )
+                    + ( ( ( 1 / 0.8 ) + ( 1 / 0.2 ) + ( 1 / 0.15 ) ) / 3 ) + ( 1 / 1.0 ) + ( +1 / 4.0 ) + ( 1 / 0.3 )
+                    + ( 1 / 0.7 ) + ( 1 / 3.1 ) + ( 1 / 3.2 ) + ( 1 / 4.8 ) )
                     * nf ) ) {
                 return false;
             }

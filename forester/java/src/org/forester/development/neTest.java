@@ -37,7 +37,7 @@ public class neTest {
     //    }  /* coeffs */
     // compute cosine and sine of theta
     void coeffs( final double x, final double y, final DoublePointer c, final DoublePointer s, final double accuracy ) {
-        final double root = Math.sqrt( x * x + y * y );
+        final double root = Math.sqrt( ( x * x ) + ( y * y ) );
         if ( root < accuracy ) {
             c.setValue( 1.0 );
             s.setValue( 0.0 );
@@ -124,7 +124,7 @@ public class neTest {
             do {
                 TEMP = a[ i - 2 ][ i - 2 ] - a[ i - 1 ][ i - 1 ];
                 TEMP1 = a[ i - 1 ][ i - 2 ];
-                d = Math.sqrt( TEMP * TEMP + TEMP1 * TEMP1 );
+                d = Math.sqrt( ( TEMP * TEMP ) + ( TEMP1 * TEMP1 ) );
                 approx = a[ i - 2 ][ i - 2 ] + a[ i - 1 ][ i - 1 ];
                 if ( a[ i - 1 ][ i - 1 ] < a[ i - 2 ][ i - 2 ] ) {
                     approx = ( approx - d ) / 2.0;
@@ -181,13 +181,13 @@ public class neTest {
         double d;
         for( k = 0; k < n; k++ ) {
             if ( left ) {
-                d = ctheta * a[ i - 1 ][ k ] + stheta * a[ j - 1 ][ k ];
-                a[ j - 1 ][ k ] = ctheta * a[ j - 1 ][ k ] - stheta * a[ i - 1 ][ k ];
+                d = ( ctheta * a[ i - 1 ][ k ] ) + ( stheta * a[ j - 1 ][ k ] );
+                a[ j - 1 ][ k ] = ( ctheta * a[ j - 1 ][ k ] ) - ( stheta * a[ i - 1 ][ k ] );
                 a[ i - 1 ][ k ] = d;
             }
             else {
-                d = ctheta * a[ k ][ i - 1 ] + stheta * a[ k ][ j - 1 ];
-                a[ k ][ j - 1 ] = ctheta * a[ k ][ j - 1 ] - stheta * a[ k ][ i - 1 ];
+                d = ( ctheta * a[ k ][ i - 1 ] ) + ( stheta * a[ k ][ j - 1 ] );
+                a[ k ][ j - 1 ] = ( ctheta * a[ k ][ j - 1 ] ) - ( stheta * a[ k ][ i - 1 ] );
                 a[ k ][ i - 1 ] = d;
             }
         }

@@ -68,7 +68,7 @@ public class AsciiHistogram {
         }
         for( int i = 0; i < bins.length; ++i ) {
             final int count = bins[ i ];
-            final double label = ForesterUtil.round( ( min + i * ( 1.0 / binning_factor ) ), digits );
+            final double label = ForesterUtil.round( ( min + ( i * ( 1.0 / binning_factor ) ) ), digits );
             if ( !ForesterUtil.isEmpty( indent ) ) {
                 sb.append( indent );
             }

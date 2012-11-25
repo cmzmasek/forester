@@ -182,7 +182,7 @@ public final class CommandLineArguments {
         for( int i = 0; i < args.length; ++i ) {
             final String arg = args[ i ].trim();
             _command_line_str += arg;
-            if ( i < args.length - 1 ) {
+            if ( i < ( args.length - 1 ) ) {
                 _command_line_str += " ";
             }
             if ( arg.startsWith( CommandLineArguments.EXTENDED_OPTIONS_PREFIX ) ) {

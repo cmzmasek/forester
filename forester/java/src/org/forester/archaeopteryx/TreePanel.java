@@ -347,6 +347,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    @Override
     final public void actionPerformed( final ActionEvent e ) {
         boolean done = false;
         final JMenuItem node_popup_menu_item = ( JMenuItem ) e.getSource();
@@ -1098,7 +1099,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return null;
         }
-        final int half_box_size_plus_wiggle = getOptions().getDefaultNodeShapeSize() / 2 + WIGGLE;
+        final int half_box_size_plus_wiggle = ( getOptions().getDefaultNodeShapeSize() / 2 ) + WIGGLE;
         for( final PhylogenyNodeIterator iter = _phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( ( _phylogeny.isRooted() || !node.isRoot() || ( node.getNumberOfDescendants() > 2 ) )
@@ -1490,9 +1491,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void increaseOvSize() {
-        if ( ( getOvMaxWidth() < getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect().getWidth() / 2 )
-                && ( getOvMaxHeight() < getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect()
-                        .getHeight() / 2 ) ) {
+        if ( ( getOvMaxWidth() < ( getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect().getWidth() / 2 ) )
+                && ( getOvMaxHeight() < ( getMainPanel().getCurrentScrollPane().getViewport().getVisibleRect()
+                        .getHeight() / 2 ) ) ) {
             setOvMaxWidth( getOvMaxWidth() + 5 );
             setOvMaxHeight( getOvMaxHeight() + 5 );
             updateOvSettings();
@@ -1519,7 +1520,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setTreeFile( null );
         setEdited( false );
         initializeOvSettings();
-        setStartingAngle( TWO_PI * 3 / 4 );
+        setStartingAngle( ( TWO_PI * 3 ) / 4 );
         final ImageLoader il = new ImageLoader( this );
         new Thread( il ).start();
     }
@@ -1569,24 +1570,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final boolean inOv( final MouseEvent e ) {
-        return ( ( e.getX() > getVisibleRect().x + getOvXPosition() + 1 )
-                && ( e.getX() < getVisibleRect().x + getOvXPosition() + getOvMaxWidth() - 1 )
-                && ( e.getY() > getVisibleRect().y + getOvYPosition() + 1 ) && ( e.getY() < getVisibleRect().y
-                + getOvYPosition() + getOvMaxHeight() - 1 ) );
+        return ( ( e.getX() > ( getVisibleRect().x + getOvXPosition() + 1 ) )
+                && ( e.getX() < ( ( getVisibleRect().x + getOvXPosition() + getOvMaxWidth() ) - 1 ) )
+                && ( e.getY() > ( getVisibleRect().y + getOvYPosition() + 1 ) ) && ( e.getY() < ( ( getVisibleRect().y
+                + getOvYPosition() + getOvMaxHeight() ) - 1 ) ) );
     }
 
     final boolean inOvRectangle( final MouseEvent e ) {
-        return ( ( e.getX() >= getOvRectangle().getX() - 1 )
-                && ( e.getX() <= getOvRectangle().getX() + getOvRectangle().getWidth() + 1 )
-                && ( e.getY() >= getOvRectangle().getY() - 1 ) && ( e.getY() <= getOvRectangle().getY()
-                + getOvRectangle().getHeight() + 1 ) );
+        return ( ( e.getX() >= ( getOvRectangle().getX() - 1 ) )
+                && ( e.getX() <= ( getOvRectangle().getX() + getOvRectangle().getWidth() + 1 ) )
+                && ( e.getY() >= ( getOvRectangle().getY() - 1 ) ) && ( e.getY() <= ( getOvRectangle().getY()
+                + getOvRectangle().getHeight() + 1 ) ) );
     }
 
     final private boolean inOvVirtualRectangle( final int x, final int y ) {
-        return ( ( x >= getOvVirtualRectangle().x - 1 )
-                && ( x <= getOvVirtualRectangle().x + getOvVirtualRectangle().width + 1 )
-                && ( y >= getOvVirtualRectangle().y - 1 ) && ( y <= getOvVirtualRectangle().y
-                + getOvVirtualRectangle().height + 1 ) );
+        return ( ( x >= ( getOvVirtualRectangle().x - 1 ) )
+                && ( x <= ( getOvVirtualRectangle().x + getOvVirtualRectangle().width + 1 ) )
+                && ( y >= ( getOvVirtualRectangle().y - 1 ) ) && ( y <= ( getOvVirtualRectangle().y
+                + getOvVirtualRectangle().height + 1 ) ) );
     }
 
     final private boolean inOvVirtualRectangle( final MouseEvent e ) {
@@ -1691,16 +1692,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getControlPanel().isShowTaxonomyImages() ) {
             y_dist = 40 + ( int ) getYdistance();
         }
-        return ( ( node.getYcoord() < getVisibleRect().getMinY() - y_dist )
-                || ( node.getYcoord() > getVisibleRect().getMaxY() + y_dist ) || ( ( node.getParent() != null ) && ( node
+        return ( ( node.getYcoord() < ( getVisibleRect().getMinY() - y_dist ) )
+                || ( node.getYcoord() > ( getVisibleRect().getMaxY() + y_dist ) ) || ( ( node.getParent() != null ) && ( node
                 .getParent().getXcoord() > getVisibleRect().getMaxX() ) ) );
     }
 
     final private boolean isNodeDataInvisibleUnrootedCirc( final PhylogenyNode node ) {
-        return ( ( node.getYcoord() < getVisibleRect().getMinY() - 20 )
-                || ( node.getYcoord() > getVisibleRect().getMaxY() + 20 )
-                || ( node.getXcoord() < getVisibleRect().getMinX() - 20 ) || ( node.getXcoord() > getVisibleRect()
-                .getMaxX() + 20 ) );
+        return ( ( node.getYcoord() < ( getVisibleRect().getMinY() - 20 ) )
+                || ( node.getYcoord() > ( getVisibleRect().getMaxY() + 20 ) )
+                || ( node.getXcoord() < ( getVisibleRect().getMinX() - 20 ) ) || ( node.getXcoord() > ( getVisibleRect()
+                .getMaxX() + 20 ) ) );
     }
 
     final private boolean isNonLinedUpCladogram() {
@@ -1982,9 +1983,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getOptions().isShowOverview() && isOvOn() && isInOv() ) {
             final double w_ratio = getVisibleRect().width / getOvRectangle().getWidth();
             final double h_ratio = getVisibleRect().height / getOvRectangle().getHeight();
-            double x = ( e.getX() - getVisibleRect().x - getOvXPosition() - getOvRectangle().getWidth() / 2.0 )
+            double x = ( e.getX() - getVisibleRect().x - getOvXPosition() - ( getOvRectangle().getWidth() / 2.0 ) )
                     * w_ratio;
-            double y = ( e.getY() - getVisibleRect().y - getOvYPosition() - getOvRectangle().getHeight() / 2.0 )
+            double y = ( e.getY() - getVisibleRect().y - getOvYPosition() - ( getOvRectangle().getHeight() / 2.0 ) )
                     * h_ratio;
             if ( x < 0 ) {
                 x = 0;
@@ -2081,8 +2082,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double w_ratio = getVisibleRect().width / getOvRectangle().getWidth();
         final double h_ratio = getVisibleRect().height / getOvRectangle().getHeight();
         final Point scroll_position = getMainPanel().getCurrentScrollPane().getViewport().getViewPosition();
-        double dx = ( w_ratio * e.getX() - w_ratio * getLastDragPointX() );
-        double dy = ( h_ratio * e.getY() - h_ratio * getLastDragPointY() );
+        double dx = ( ( w_ratio * e.getX() ) - ( w_ratio * getLastDragPointX() ) );
+        double dy = ( ( h_ratio * e.getY() ) - ( h_ratio * getLastDragPointY() ) );
         scroll_position.x = ForesterUtil.roundToInt( scroll_position.x + dx );
         scroll_position.y = ForesterUtil.roundToInt( scroll_position.y + dy );
         if ( scroll_position.x <= 0 ) {
@@ -2174,6 +2175,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setCursor( ARROW_CURSOR );
     }
 
+    @Override
     final public void mouseWheelMoved( final MouseWheelEvent e ) {
         final int notches = e.getWheelRotation();
         if ( inOvVirtualRectangle( e ) ) {
@@ -2401,7 +2403,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double root_y = _root.getYcoord();
         final double dx = root_x - p.getXcoord();
         final double dy = root_y - p.getYcoord();
-        final double parent_radius = Math.sqrt( dx * dx + dy * dy );
+        final double parent_radius = Math.sqrt( ( dx * dx ) + ( dy * dy ) );
         final double arc = ( _urt_nodeid_angle_map.get( p.getId() ) ) - angle;
         assignGraphicsForBranchWithColorForParentBranch( c, false, g, to_pdf, to_graphics_file );
         if ( ( c.isFirstChildNode() || c.isLastChildNode() )
@@ -2418,7 +2420,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( c.isExternal() ) {
             final boolean is_in_found_nodes = isInFoundNodes( c );
             if ( ( _dynamic_hiding_factor > 1 ) && !is_in_found_nodes
-                    && ( _urt_nodeid_index_map.get( c.getId() ) % _dynamic_hiding_factor != 1 ) ) {
+                    && ( ( _urt_nodeid_index_map.get( c.getId() ) % _dynamic_hiding_factor ) != 1 ) ) {
                 return;
             }
             paintNodeDataUnrootedCirc( g, c, to_pdf, to_graphics_file, radial_labels, 0, is_in_found_nodes );
@@ -2432,7 +2434,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final double dx = root_x - p.getXSecondary();
         final double dy = root_y - p.getYSecondary();
         final double arc = ( _urt_nodeid_angle_map.get( p.getId() ) ) - angle;
-        final double parent_radius = Math.sqrt( dx * dx + dy * dy );
+        final double parent_radius = Math.sqrt( ( dx * dx ) + ( dy * dy ) );
         g.setColor( getTreeColorSet().getOvColor() );
         if ( ( c.isFirstChildNode() || c.isLastChildNode() ) && ( Math.abs( arc ) > 0.02 ) ) {
             final double r2 = 2.0 * parent_radius;
@@ -2549,8 +2551,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) ) {
                 if ( !to_graphics_file
                         && !to_pdf
-                        && ( ( ( y2 < getVisibleRect().getMinY() - 20 ) && ( y1 < getVisibleRect().getMinY() - 20 ) ) || ( ( y2 > getVisibleRect()
-                                .getMaxY() + 20 ) && ( y1 > getVisibleRect().getMaxY() + 20 ) ) ) ) {
+                        && ( ( ( y2 < ( getVisibleRect().getMinY() - 20 ) ) && ( y1 < ( getVisibleRect().getMinY() - 20 ) ) ) || ( ( y2 > ( getVisibleRect()
+                                .getMaxY() + 20 ) ) && ( y1 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) ) {
                     // Do nothing.
                 }
                 else {
@@ -2584,7 +2586,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             // draw the horizontal line
             if ( !to_graphics_file && !to_pdf
-                    && ( ( y2 < getVisibleRect().getMinY() - 20 ) || ( y2 > getVisibleRect().getMaxY() + 20 ) ) ) {
+                    && ( ( y2 < ( getVisibleRect().getMinY() - 20 ) ) || ( y2 > ( getVisibleRect().getMaxY() + 20 ) ) ) ) {
                 return;
             }
             float x1_r = 0;
@@ -2708,8 +2710,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         double current_angle = starting_angle;
         for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            n.setXSecondary( ( float ) ( center_x + radius * Math.cos( current_angle ) ) );
-            n.setYSecondary( ( float ) ( center_y + radius * Math.sin( current_angle ) ) );
+            n.setXSecondary( ( float ) ( center_x + ( radius * Math.cos( current_angle ) ) ) );
+            n.setYSecondary( ( float ) ( center_y + ( radius * Math.sin( current_angle ) ) ) );
             _urt_nodeid_angle_map.put( n.getId(), current_angle );
             current_angle += ( TWO_PI / circ_num_ext_nodes );
         }
@@ -2747,11 +2749,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             double r = 0;
             if ( !n.isRoot() ) {
-                r = 1 - ( ( ( double ) _circ_max_depth -  n.calculateDepth() ) / _circ_max_depth );
+                r = 1 - ( ( ( double ) _circ_max_depth - n.calculateDepth() ) / _circ_max_depth );
             }
             final double theta = sum / descs.size();
-            n.setXcoord( ( float ) ( center_x + r * radius * Math.cos( theta ) ) );
-            n.setYcoord( ( float ) ( center_y + r * radius * Math.sin( theta ) ) );
+            n.setXcoord( ( float ) ( center_x + ( r * radius * Math.cos( theta ) ) ) );
+            n.setYcoord( ( float ) ( center_y + ( r * radius * Math.sin( theta ) ) ) );
             _urt_nodeid_angle_map.put( n.getId(), theta );
             for( final PhylogenyNode desc : descs ) {
                 paintBranchCircular( n, desc, g, radial_labels, to_pdf, to_graphics_file );
@@ -2776,11 +2778,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             float r = 0;
             if ( !n.isRoot() ) {
-                r = 1 - ( ( ( float ) _circ_max_depth - n.calculateDepth()  ) / _circ_max_depth );
+                r = 1 - ( ( ( float ) _circ_max_depth - n.calculateDepth() ) / _circ_max_depth );
             }
             final double theta = _urt_nodeid_angle_map.get( n.getId() );
-            n.setXSecondary( ( float ) ( center_x + radius * r * Math.cos( theta ) ) );
-            n.setYSecondary( ( float ) ( center_y + radius * r * Math.sin( theta ) ) );
+            n.setXSecondary( ( float ) ( center_x + ( radius * r * Math.cos( theta ) ) ) );
+            n.setYSecondary( ( float ) ( center_y + ( radius * r * Math.sin( theta ) ) ) );
             for( final PhylogenyNode desc : descs ) {
                 paintBranchCircularLite( n, desc, g );
             }
@@ -3237,7 +3239,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 x += CONFIDENCE_LEFT_MARGIN + confidenceWidth;
                             }
                         }
-                        if ( x + nodeTextBoundsWidth > 0 ) /* we only underline if there is something displayed */
+                        if ( ( x + nodeTextBoundsWidth ) > 0 ) /* we only underline if there is something displayed */
                         {
                             if ( nodeTextBoundsWidth == 0 ) {
                                 nodeTextBoundsWidth -= 3; /* the gap between taxonomy code and node name should not be underlined if nothing comes after it */
@@ -3370,11 +3372,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         // y = y - ( 0.9 * getYdistance() );
                         final double hs = bi.getHeight() * scaling_factor;
-                        double ws = bi.getWidth() * scaling_factor + offset;
+                        double ws = ( bi.getWidth() * scaling_factor ) + offset;
                         final double my_y = y - ( 0.5 * hs );
                         final int x_w = ( int ) ( x + ws + 0.5 );
                         final int y_h = ( int ) ( my_y + hs + 0.5 );
-                        if ( ( x_w - x > 7 ) && ( y_h - my_y > 7 ) ) {
+                        if ( ( ( x_w - x ) > 7 ) && ( ( y_h - my_y ) > 7 ) ) {
                             g.drawImage( bi,
                                          ( int ) ( x + 0.5 + offset ),
                                          ( int ) ( my_y + 0.5 ),
@@ -3671,8 +3673,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( dynamically_hide
                 && !is_in_found_nodes
-                && ( ( node.isExternal() && ( _external_node_index % dynamic_hiding_factor != 1 ) ) || ( !node
-                        .isExternal() && ( ( new_x_min < 20 ) || ( _y_distance * node.getNumberOfExternalNodes() < getTreeFontSet()._fm_large
+                && ( ( node.isExternal() && ( ( _external_node_index % dynamic_hiding_factor ) != 1 ) ) || ( !node
+                        .isExternal() && ( ( new_x_min < 20 ) || ( ( _y_distance * node.getNumberOfExternalNodes() ) < getTreeFontSet()._fm_large
                         .getHeight() ) ) ) ) ) {
             return;
         }
@@ -3779,8 +3781,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float y_ratio = ( float ) getHeight() / getVisibleRect().y;
         final float width = getOvMaxWidth() / w_ratio;
         final float height = getOvMaxHeight() / h_ratio;
-        final float x = getVisibleRect().x + getOvXPosition() + getOvMaxWidth() / x_ratio;
-        final float y = getVisibleRect().y + getOvYPosition() + getOvMaxHeight() / y_ratio;
+        final float x = getVisibleRect().x + getOvXPosition() + ( getOvMaxWidth() / x_ratio );
+        final float y = getVisibleRect().y + getOvYPosition() + ( getOvMaxHeight() / y_ratio );
         g.setColor( getTreeColorSet().getFoundColor() );
         getOvRectangle().setRect( x, y, width, height );
         if ( ( width < 6 ) && ( height < 6 ) ) {
@@ -3891,8 +3893,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             //    paintNodeRectangular( g, it.next(), to_pdf, getControlPanel().isDynamicallyHideData()
             //            && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
             //}
-            for( int i = 0; i < _nodes_in_preorder.length; ++i ) {
-                paintNodeRectangular( g, _nodes_in_preorder[ i ], to_pdf, getControlPanel().isDynamicallyHideData()
+            for( final PhylogenyNode element : _nodes_in_preorder ) {
+                paintNodeRectangular( g, element, to_pdf, getControlPanel().isDynamicallyHideData()
                         && ( dynamic_hiding_factor > 1 ), dynamic_hiding_factor, to_graphics_file );
             }
             if ( getOptions().isShowScale() && getControlPanel().isDrawPhylogram() && ( getScaleDistance() > 0.0 ) ) {
@@ -3932,7 +3934,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             paintUnrooted( _phylogeny.getRoot(),
                            angle,
-                           ( float ) ( angle + 2 * Math.PI ),
+                           ( float ) ( angle + ( 2 * Math.PI ) ),
                            radial_labels,
                            g,
                            to_pdf,
@@ -3953,7 +3955,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 g.setColor( getTreeColorSet().getOvColor() );
                 paintUnrootedLite( _phylogeny.getRoot(),
                                    angle,
-                                   angle + 2 * Math.PI,
+                                   angle + ( 2 * Math.PI ),
                                    g,
                                    ( getUrtFactorOv() / ( getVisibleRect().width / getOvMaxWidth() ) ) );
                 paintOvRectangle( g );
@@ -4017,8 +4019,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         //for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
         //    paintNodeLite( g, it.next() );
         //}
-        for( int i = 0; i < _nodes_in_preorder.length; ++i ) {
-            paintNodeLite( g, _nodes_in_preorder[ i ] );
+        for( final PhylogenyNode element : _nodes_in_preorder ) {
+            paintNodeLite( g, element );
         }
         paintOvRectangle( g );
     }
@@ -4253,9 +4255,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 length = getUrtFactor();
             }
-            final double mid_angle = current_angle + arc_size / 2;
-            final float new_x = ( float ) ( x + Math.cos( mid_angle ) * length );
-            final float new_y = ( float ) ( y + Math.sin( mid_angle ) * length );
+            final double mid_angle = current_angle + ( arc_size / 2 );
+            final float new_x = ( float ) ( x + ( Math.cos( mid_angle ) * length ) );
+            final float new_y = ( float ) ( y + ( Math.sin( mid_angle ) * length ) );
             desc.setXcoord( new_x );
             desc.setYcoord( new_y );
             paintUnrooted( desc, current_angle, current_angle + arc_size, radial_labels, g, to_pdf, to_graphics_file );
@@ -4275,8 +4277,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                           final Graphics2D g,
                                           final float urt_ov_factor ) {
         if ( n.isRoot() ) {
-            final int x_pos = ( int ) ( getVisibleRect().x + getOvXPosition() + getOvMaxWidth() / 2 );
-            final int y_pos = ( int ) ( getVisibleRect().y + getOvYPosition() + getOvMaxHeight() / 2 );
+            final int x_pos = ( int ) ( getVisibleRect().x + getOvXPosition() + ( getOvMaxWidth() / 2 ) );
+            final int y_pos = ( int ) ( getVisibleRect().y + getOvYPosition() + ( getOvMaxHeight() / 2 ) );
             n.setXSecondary( x_pos );
             n.setYSecondary( y_pos );
         }
@@ -4303,9 +4305,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 length = urt_ov_factor;
             }
-            final double mid_angle = current_angle + arc_size / 2;
-            final float new_x = ( float ) ( x + Math.cos( mid_angle ) * length );
-            final float new_y = ( float ) ( y + Math.sin( mid_angle ) * length );
+            final double mid_angle = current_angle + ( arc_size / 2 );
+            final float new_x = ( float ) ( x + ( Math.cos( mid_angle ) * length ) );
+            final float new_y = ( float ) ( y + ( Math.sin( mid_angle ) * length ) );
             desc.setXSecondary( new_x );
             desc.setYSecondary( new_y );
             if ( isInFoundNodes( desc ) ) {
@@ -4350,7 +4352,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         final Phylogeny buffer_phy = getCutOrCopiedTree().copy();
         buffer_phy.setAllNodesToNotCollapse();
-        buffer_phy.preOrderReId();
+        PhylogenyMethods.preOrderReId( buffer_phy );
         buffer_phy.setRooted( true );
         boolean need_to_show_whole = false;
         if ( paste_as_sibling ) {
@@ -4394,6 +4396,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    @Override
     final public int print( final Graphics g, final PageFormat page_format, final int page_index )
             throws PrinterException {
         if ( page_index > 0 ) {
@@ -4433,7 +4436,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _node_frame_index--;
         _node_frames[ i ] = null;
         if ( i < _node_frame_index ) {
-            for( int j = 0; j < _node_frame_index - 1; j++ ) {
+            for( int j = 0; j < ( _node_frame_index - 1 ); j++ ) {
                 _node_frames[ j ] = _node_frames[ j + 1 ];
             }
             _node_frames[ _node_frame_index ] = null;
@@ -5230,7 +5233,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void updateOvSizes() {
-        if ( ( getWidth() > 1.05 * getVisibleRect().width ) || ( getHeight() > 1.05 * getVisibleRect().height ) ) {
+        if ( ( getWidth() > ( 1.05 * getVisibleRect().width ) ) || ( getHeight() > ( 1.05 * getVisibleRect().height ) ) ) {
             setOvOn( true );
             float l = getLongestExtNodeInfo();
             final float w_ratio = getOvMaxWidth() / getWidth();

@@ -214,6 +214,6 @@ public class BasicDomain implements Domain {
 
     @Override
     public int getLength() {
-        return 1 + getTo() - getFrom();
+        return ( 1 + getTo() ) - getFrom();
     }
 }

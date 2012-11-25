@@ -95,7 +95,7 @@ public class BasicTableParser {
                 if ( use_last_separator_only ) {
                     final String e[] = line.split( column_delimiter );
                     final StringBuffer rest = new StringBuffer();
-                    for( int i = 0; i < e.length - 1; ++i ) {
+                    for( int i = 0; i < ( e.length - 1 ); ++i ) {
                         rest.append( e[ i ].trim() );
                     }
                     table.setValue( 0, row, rest.toString() );

@@ -94,14 +94,14 @@ public abstract class SDI {
             computeMappingCostHelper( g.getChildNode1() );
             computeMappingCostHelper( g.getChildNode2() );
             if ( ( g.getLink() != g.getChildNode1().getLink() ) && ( g.getLink() != g.getChildNode2().getLink() ) ) {
-                _mapping_cost += ( g.getChildNode1().getLink().getId() + g.getChildNode2().getLink().getId()
+                _mapping_cost += ( ( g.getChildNode1().getLink().getId() + g.getChildNode2().getLink().getId() )
                         - ( 2 * g.getLink().getId() ) - 2 );
             }
             else if ( ( g.getLink() != g.getChildNode1().getLink() ) && ( g.getLink() == g.getChildNode2().getLink() ) ) {
-                _mapping_cost += ( g.getChildNode1().getLink().getId() - g.getLink().getId() + 1 );
+                _mapping_cost += ( ( g.getChildNode1().getLink().getId() - g.getLink().getId() ) + 1 );
             }
             else if ( ( g.getLink() == g.getChildNode1().getLink() ) && ( g.getLink() != g.getChildNode2().getLink() ) ) {
-                _mapping_cost += ( g.getChildNode2().getLink().getId() - g.getLink().getId() + 1 );
+                _mapping_cost += ( ( g.getChildNode2().getLink().getId() - g.getLink().getId() ) + 1 );
             }
             else {
                 _mapping_cost++;

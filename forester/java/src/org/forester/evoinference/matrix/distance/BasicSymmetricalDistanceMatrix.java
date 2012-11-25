@@ -134,12 +134,12 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
             }
             for( int col = 0; col < getSize(); ++col ) {
                 w.write( PHYLIP_FORMATTER.format( getValue( col, row ) ) );
-                if ( col < getSize() - 1 ) {
+                if ( col < ( getSize() - 1 ) ) {
                     w.write( ' ' );
                     w.write( ' ' );
                 }
             }
-            if ( row < getSize() - 1 ) {
+            if ( row < ( getSize() - 1 ) ) {
                 w.write( ForesterUtil.LINE_SEPARATOR );
             }
         }
@@ -165,12 +165,12 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
             //sb.append( "" );
             for( int col = 0; col < getSize(); ++col ) {
                 sb.append( PHYLIP_FORMATTER.format( getValue( col, row ) ) );
-                if ( col < getSize() - 1 ) {
+                if ( col < ( getSize() - 1 ) ) {
                     sb.append( ' ' );
                     sb.append( ' ' );
                 }
             }
-            if ( row < getSize() - 1 ) {
+            if ( row < ( getSize() - 1 ) ) {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
             }
         }

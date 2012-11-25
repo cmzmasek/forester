@@ -113,7 +113,7 @@ public final class RenderableVector implements RenderablePhylogenyData {
         final double width = ( double ) DEFAULT_WIDTH / _values.size();
         for( int i = 0; i < _values.size(); ++i ) {
             g.setColor( calculateColor( _values.get( i ) ) );
-            _rectangle.setFrame( start + i * width, y - 0.5, width, getRenderingHeight() );
+            _rectangle.setFrame( start + ( i * width ), y - 0.5, width, getRenderingHeight() );
             g.fill( _rectangle );
         }
     }

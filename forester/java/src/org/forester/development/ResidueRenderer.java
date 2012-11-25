@@ -72,9 +72,9 @@ public class ResidueRenderer extends AbstractRenderer {
             value = max;
         }
         final double x = ( 255D * ( value - min ) ) / ( max - min );
-        final int red = ( int ) ( minColor.getRed() + x * calcFactor( minColor.getRed(), maxColor.getRed() ) );
-        final int green = ( int ) ( minColor.getGreen() + x * calcFactor( minColor.getGreen(), maxColor.getGreen() ) );
-        final int blue = ( int ) ( minColor.getBlue() + x * calcFactor( minColor.getBlue(), maxColor.getBlue() ) );
+        final int red = ( int ) ( minColor.getRed() + ( x * calcFactor( minColor.getRed(), maxColor.getRed() ) ) );
+        final int green = ( int ) ( minColor.getGreen() + ( x * calcFactor( minColor.getGreen(), maxColor.getGreen() ) ) );
+        final int blue = ( int ) ( minColor.getBlue() + ( x * calcFactor( minColor.getBlue(), maxColor.getBlue() ) ) );
         return new Color( red, green, blue );
     }
 
@@ -99,18 +99,18 @@ public class ResidueRenderer extends AbstractRenderer {
         }
         if ( value < mean ) {
             final double x = ( 255D * ( value - min ) ) / ( mean - min );
-            final int red = ( int ) ( minColor.getRed() + x * calcFactor( minColor.getRed(), meanColor.getRed() ) );
-            final int green = ( int ) ( minColor.getGreen() + x
-                    * calcFactor( minColor.getGreen(), meanColor.getGreen() ) );
-            final int blue = ( int ) ( minColor.getBlue() + x * calcFactor( minColor.getBlue(), meanColor.getBlue() ) );
+            final int red = ( int ) ( minColor.getRed() + ( x * calcFactor( minColor.getRed(), meanColor.getRed() ) ) );
+            final int green = ( int ) ( minColor.getGreen() + ( x * calcFactor( minColor.getGreen(),
+                                                                                meanColor.getGreen() ) ) );
+            final int blue = ( int ) ( minColor.getBlue() + ( x * calcFactor( minColor.getBlue(), meanColor.getBlue() ) ) );
             return new Color( red, green, blue );
         }
         if ( value > mean ) {
             final double x = ( 255D * ( value - mean ) ) / ( max - mean );
-            final int red = ( int ) ( meanColor.getRed() + x * calcFactor( meanColor.getRed(), maxColor.getRed() ) );
-            final int green = ( int ) ( meanColor.getGreen() + x
-                    * calcFactor( meanColor.getGreen(), maxColor.getGreen() ) );
-            final int blue = ( int ) ( meanColor.getBlue() + x * calcFactor( meanColor.getBlue(), maxColor.getBlue() ) );
+            final int red = ( int ) ( meanColor.getRed() + ( x * calcFactor( meanColor.getRed(), maxColor.getRed() ) ) );
+            final int green = ( int ) ( meanColor.getGreen() + ( x * calcFactor( meanColor.getGreen(),
+                                                                                 maxColor.getGreen() ) ) );
+            final int blue = ( int ) ( meanColor.getBlue() + ( x * calcFactor( meanColor.getBlue(), maxColor.getBlue() ) ) );
             return new Color( red, green, blue );
         }
         else {

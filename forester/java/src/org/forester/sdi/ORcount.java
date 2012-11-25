@@ -162,8 +162,8 @@ public class ORcount {
                 final String all_j = ORcount.all_species[ j ].trim().toUpperCase();
                 final String[] a = { all_i };
                 final String[] b = { all_j };
-                for( int k = 0; k < trees.length; ++k ) {
-                    countSharedAncestralClades( trees[ k ], bootstrap_threshold, a, b );
+                for( final Phylogeny tree : trees ) {
+                    countSharedAncestralClades( tree, bootstrap_threshold, a, b );
                 }
             }
         }
@@ -171,8 +171,8 @@ public class ORcount {
         if ( ( ORcount.group_1 != null ) && ( ORcount.group_2 != null ) && ( ORcount.group_1.length > 0 )
                 && ( ORcount.group_2.length > 0 ) ) {
             setGroup1Vs2Counter( 0 );
-            for( int k = 0; k < trees.length; ++k ) {
-                countSharedAncestralClades( trees[ k ], bootstrap_threshold, ORcount.group_1, ORcount.group_2 );
+            for( final Phylogeny tree : trees ) {
+                countSharedAncestralClades( tree, bootstrap_threshold, ORcount.group_1, ORcount.group_2 );
             }
             System.out.println( "\nCount [(" + ForesterUtil.stringArrayToString( ORcount.group_1 ) + ") vs ("
                     + ForesterUtil.stringArrayToString( ORcount.group_2 ) + ")] = " + getGroup1Vs2Counter() );
@@ -181,8 +181,8 @@ public class ORcount {
 
     public void countSuperOrthologousRelations( final int bootstrap_threshold ) {
         reset();
-        for( int i = 0; i < _trees.length; ++i ) {
-            countSuperOrthologousRelations( _trees[ i ], bootstrap_threshold );
+        for( final Phylogeny _tree : _trees ) {
+            countSuperOrthologousRelations( _tree, bootstrap_threshold );
         }
     }
 
@@ -269,7 +269,7 @@ public class ORcount {
         }
         final Object[] species_array = _species.keySet().toArray();
         final int s = species_array.length;
-        for( int i = 0; i < s - 1; ++i ) {
+        for( int i = 0; i < ( s - 1 ); ++i ) {
             final String species = ( String ) species_array[ i ];
             System.out.println();
             System.out.println( species + ":" );

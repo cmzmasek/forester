@@ -73,8 +73,8 @@ public class aa {
                 i++;
             }
             Arrays.sort( fasta_ary );
-            for( int j = 0; j < fasta_ary.length; ++j ) {
-                System.out.println( fasta_ary[ j ] );
+            for( final String element : fasta_ary ) {
+                System.out.println( element );
             }
             System.out.println( "DONE." );
         }

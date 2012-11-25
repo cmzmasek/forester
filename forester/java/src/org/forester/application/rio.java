@@ -273,17 +273,17 @@ public class rio {
         else if ( ( args.length < 3 ) || ( args.length > 18 ) ) {
             errorInCommandLine();
         }
-        for( int i = 0; i < args.length; ++i ) {
-            if ( args[ i ].trim().charAt( 0 ) != 'p' ) {
-                if ( args[ i ].trim().length() < 3 ) {
+        for( final String arg2 : args ) {
+            if ( arg2.trim().charAt( 0 ) != 'p' ) {
+                if ( arg2.trim().length() < 3 ) {
                     errorInCommandLine();
                 }
                 else {
-                    arg = args[ i ].trim().substring( 2 );
+                    arg = arg2.trim().substring( 2 );
                 }
             }
             try {
-                switch ( args[ i ].trim().charAt( 0 ) ) {
+                switch ( arg2.trim().charAt( 0 ) ) {
                     case 'M':
                         multiple_trees_file = new File( arg );
                         break;

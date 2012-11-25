@@ -273,7 +273,7 @@ public class NodeData implements PhylogenyData {
         return ( getDate() != null )
                 && ( !ForesterUtil.isEmpty( getDate().getDesc() ) || !ForesterUtil.isNull( getDate().getMax() )
                         || !ForesterUtil.isNull( getDate().getMin() ) || !ForesterUtil.isNull( getDate().getValue() ) || !ForesterUtil
-                        .isEmpty( getDate().getUnit() ) );
+                            .isEmpty( getDate().getUnit() ) );
     }
 
     public boolean isHasDistribution() {

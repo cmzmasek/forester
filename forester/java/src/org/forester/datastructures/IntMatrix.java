@@ -49,7 +49,7 @@ public final class IntMatrix {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for( int x = 0; x < size(); ++x ) {
             if ( getLabel( x ) != null ) {
                 sb.append( getLabel( x ) );

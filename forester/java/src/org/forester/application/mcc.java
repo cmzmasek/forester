@@ -129,15 +129,15 @@ public class mcc {
             step = 1;
         }
         final double id_ratios[] = new double[ msa.getLength() ];
-        for( int i = 0; i <= msa.getLength() - 1; ++i ) {
+        for( int i = 0; i <= ( msa.getLength() - 1 ); ++i ) {
             id_ratios[ i ] = MsaMethods.calculateIdentityRatio( msa, i );
         }
         String min_pos = "";
         String max_pos = "";
         double min = 1;
         double max = 0;
-        for( int i = 0; i <= msa.getLength() - 1; i += step ) {
-            int to = i + window - 1;
+        for( int i = 0; i <= ( msa.getLength() - 1 ); i += step ) {
+            int to = ( i + window ) - 1;
             if ( to > ( msa.getLength() - 1 ) ) {
                 to = msa.getLength() - 1;
             }

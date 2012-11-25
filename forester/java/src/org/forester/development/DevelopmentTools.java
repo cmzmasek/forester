@@ -182,7 +182,7 @@ public final class DevelopmentTools {
         final Random r = new Random();
         PhylogenyNode n = t.getFirstExternalNode();
         while ( n != null ) {
-            final String code = ( ( Math.abs( r.nextInt() ) % ( ma - mi + 1 ) ) + mi ) + "";
+            final String code = ( ( Math.abs( r.nextInt() ) % ( ( ma - mi ) + 1 ) ) + mi ) + "";
             try {
                 PhylogenyMethods.setTaxonomyCode( n, code );
             }

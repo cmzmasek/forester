@@ -372,11 +372,9 @@ public final class PhylogenyDecorator {
                                  final boolean picky,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map )
             throws IllegalArgumentException, NHXFormatException, PhyloXmlDataFormatException {
-        for( int i = 0; i < phylogenies.length; ++i ) {
-            PhylogenyDecorator.decorate( phylogenies[ i ],
-                                         map,
-                                         picky,
-                                         numbers_of_chars_allowed_to_remove_if_not_found_in_map );
+        for( final Phylogeny phylogenie : phylogenies ) {
+            PhylogenyDecorator
+                    .decorate( phylogenie, map, picky, numbers_of_chars_allowed_to_remove_if_not_found_in_map );
         }
     }
 
@@ -392,8 +390,8 @@ public final class PhylogenyDecorator {
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
-        for( int i = 0; i < phylogenies.length; ++i ) {
-            PhylogenyDecorator.decorate( phylogenies[ i ],
+        for( final Phylogeny phylogenie : phylogenies ) {
+            PhylogenyDecorator.decorate( phylogenie,
                                          map,
                                          field,
                                          extract_bracketed_scientific_name,
@@ -420,8 +418,8 @@ public final class PhylogenyDecorator {
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
                                  final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
-        for( int i = 0; i < phylogenies.length; ++i ) {
-            PhylogenyDecorator.decorate( phylogenies[ i ],
+        for( final Phylogeny phylogenie : phylogenies ) {
+            PhylogenyDecorator.decorate( phylogenie,
                                          map,
                                          field,
                                          extract_bracketed_scientific_name,

@@ -351,8 +351,8 @@ public final class decorator {
                 phylogenies[ 0 ].setIdentifier( new Identifier( s_ary[ 1 ], s_ary[ 0 ] ) );
             }
             if ( !ForesterUtil.isEmpty( tree_desc ) ) {
-                for( int i = 0; i < phylogenies.length; ++i ) {
-                    phylogenies[ i ].setDescription( tree_desc );
+                for( final Phylogeny phylogenie : phylogenies ) {
+                    phylogenie.setDescription( tree_desc );
                 }
             }
         }

@@ -190,8 +190,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
             final ProteinDomain d = _domain_structure.getDomain( i );
             if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
-                final double xa = start + d.getFrom() * f;
-                final double xb = xa + d.getLength() * f;
+                final double xa = start + ( d.getFrom() * f );
+                final double xb = xa + ( d.getLength() * f );
                 if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels() ) {
                     g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
                     g.setColor( getConfiguration().getDomainStructureFontColor() );

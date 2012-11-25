@@ -107,7 +107,7 @@ public class ProteinDomain implements PhylogenyData {
     }
 
     public int getLength() {
-        return ( getTo() - getFrom() + 1 );
+        return ( ( getTo() - getFrom() ) + 1 );
     }
 
     public String getName() {

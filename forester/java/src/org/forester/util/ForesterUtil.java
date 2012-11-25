@@ -482,7 +482,7 @@ public final class ForesterUtil {
     }
 
     final public static boolean isEven( final int n ) {
-        return n % 2 == 0;
+        return ( n % 2 ) == 0;
     }
 
     /**
@@ -502,10 +502,9 @@ public final class ForesterUtil {
         if ( ( a.length < 1 ) || ( b.length < 1 ) ) {
             return false;
         }
-        for( int i = 0; i < a.length; ++i ) {
-            final String ai = a[ i ];
-            for( int j = 0; j < b.length; ++j ) {
-                if ( ( ai != null ) && ( b[ j ] != null ) && ai.equals( b[ j ] ) ) {
+        for( final String ai : a ) {
+            for( final String element : b ) {
+                if ( ( ai != null ) && ( element != null ) && ai.equals( element ) ) {
                     return true;
                 }
             }
@@ -808,7 +807,7 @@ public final class ForesterUtil {
      */
     final public static String removeWhiteSpace( String s ) {
         int i;
-        for( i = 0; i <= s.length() - 1; i++ ) {
+        for( i = 0; i <= ( s.length() - 1 ); i++ ) {
             if ( ( s.charAt( i ) == ' ' ) || ( s.charAt( i ) == '\t' ) || ( s.charAt( i ) == '\n' )
                     || ( s.charAt( i ) == '\r' ) ) {
                 s = s.substring( 0, i ) + s.substring( i + 1 );
@@ -874,7 +873,7 @@ public final class ForesterUtil {
     final public static String stringArrayToString( final String[] a, final String separator ) {
         final StringBuilder sb = new StringBuilder();
         if ( ( a != null ) && ( a.length > 0 ) ) {
-            for( int i = 0; i < a.length - 1; ++i ) {
+            for( int i = 0; i < ( a.length - 1 ); ++i ) {
                 sb.append( a[ i ] + separator );
             }
             sb.append( a[ a.length - 1 ] );
@@ -897,7 +896,7 @@ public final class ForesterUtil {
     final public static String stringListToString( final List<String> l, final String separator ) {
         final StringBuilder sb = new StringBuilder();
         if ( ( l != null ) && ( l.size() > 0 ) ) {
-            for( int i = 0; i < l.size() - 1; ++i ) {
+            for( int i = 0; i < ( l.size() - 1 ); ++i ) {
                 sb.append( l.get( i ) + separator );
             }
             sb.append( l.get( l.size() - 1 ) );
@@ -955,7 +954,7 @@ public final class ForesterUtil {
                 ls = -1;
                 start = i + 1;
             }
-            if ( i > start + width - 1 ) {
+            if ( i > ( ( start + width ) - 1 ) ) {
                 if ( ls != -1 ) {
                     sb.setCharAt( ls, '\n' );
                     start = ls + 1;

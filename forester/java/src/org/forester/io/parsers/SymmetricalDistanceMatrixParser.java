@@ -142,7 +142,7 @@ public class SymmetricalDistanceMatrixParser {
             throw new IOException( "illegal format for distance [" + table_value + "] at [" + ( col - 1 ) + ", " + row
                     + "]" );
         }
-        distance_matrix.setValue( col - 1 + col_offset, row, d );
+        distance_matrix.setValue( ( col - 1 ) + col_offset, row, d );
     }
 
     private DistanceMatrix transform( final BasicTable<String> table ) throws IllegalArgumentException, IOException {
@@ -154,7 +154,7 @@ public class SymmetricalDistanceMatrixParser {
         if ( table.getNumberOfColumns() == table.getNumberOfRows() ) {
             first_line_is_size = true;
         }
-        else if ( table.getNumberOfColumns() != table.getNumberOfRows() + 1 ) {
+        else if ( table.getNumberOfColumns() != ( table.getNumberOfRows() + 1 ) ) {
             throw new IllegalArgumentException( "attempt to create distance matrix with illegal dimensions [columns: "
                     + table.getNumberOfColumns() + ", rows: " + table.getNumberOfRows() + "]" );
         }
@@ -163,7 +163,7 @@ public class SymmetricalDistanceMatrixParser {
         if ( first_line_is_size ) {
             start_row = 1;
         }
-        for( int row = 0; row < table.getNumberOfRows() - start_row; row++ ) {
+        for( int row = 0; row < ( table.getNumberOfRows() - start_row ); row++ ) {
             distance_matrix.setIdentifier( row, table.getValue( 0, row + start_row ) );
             switch ( getInputMatrixType() ) {
                 case LOWER_TRIANGLE:
