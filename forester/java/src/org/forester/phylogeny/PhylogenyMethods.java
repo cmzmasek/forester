@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -244,6 +245,15 @@ public class PhylogenyMethods {
             if ( ( temp_node != node ) && !calculateLCAonTreeWithIdsInPreOrder( node, temp_node ).isDuplication() ) {
                 nodes.add( temp_node );
             }
+        }
+        return nodes;
+    }
+
+    public static final HashMap<String, PhylogenyNode> createNameToExtNodeMap( final Phylogeny phy ) {
+        final HashMap<String, PhylogenyNode> nodes = new HashMap<String, PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            nodes.put( n.getName(), n );
         }
         return nodes;
     }

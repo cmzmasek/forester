@@ -77,7 +77,7 @@ public final class RIO {
         reset();
     }
 
-    public IntMatrix calculateOrthologTable( final Phylogeny[] gene_trees ) {
+    public static IntMatrix calculateOrthologTable( final Phylogeny[] gene_trees ) {
         final List<String> labels = new ArrayList<String>();
         final Set<String> labels_set = new HashSet<String>();
         String label;
@@ -107,13 +107,12 @@ public final class RIO {
             System.out.println( counter );
             counter++;
             PhylogenyMethods.preOrderReId( gt );
+            final HashMap<String, PhylogenyNode> map = PhylogenyMethods.createNameToExtNodeMap( gt );
             for( int x = 0; x < m.size(); ++x ) {
-                final PhylogenyNode nx = gt.getNode( m.getLabel( x ) );
+                final PhylogenyNode nx = map.get( m.getLabel( x ) );
                 for( int y = 0; y < m.size(); ++y ) {
-                    final PhylogenyNode ny = gt.getNode( m.getLabel( y ) );
-                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, ny ).isDuplication() ) {
-                        m.set( x, y, m.get( x, y ) + 1 );
-                        //System.out.println( x + " " + y );
+                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, map.get( m.getLabel( y ) ) ).isDuplication() ) {
+                        m.inreaseByOne( x, y );
                     }
                 }
             }

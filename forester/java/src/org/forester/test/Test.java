@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
+import org.forester.datastructures.IntMatrix;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -63,6 +64,7 @@ import org.forester.pccx.TestPccx;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyBranch;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
@@ -84,6 +86,8 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.Protein;
+import org.forester.sdi.GSDI;
+import org.forester.sdi.RIO;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
 import org.forester.sdi.SDIse;
@@ -515,6 +519,15 @@ public final class Test {
         }
         System.out.print( "GSDI: " );
         if ( TestGSDI.test() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Ortholog table: " );
+        if ( Test.testOrthologTable() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -2027,7 +2040,6 @@ public final class Test {
                     .create( "((A,C),X);((A,X),C);(A,C);((((A,B),C),D),E);((A,B),((E,D),C));(((A,B),C),(E,D));(A,(((E,D),C),B));(B,(A,((E,D),C)));(C,((E,D),(A,B)));(D,(E,((A,B),C)));((((A,C)ac,D)acd,E)acde,B)abcd",
                              new NHXParser() );
             ConfidenceAssessor.evaluate( "bootstrap", ev_b, t_b, false, 1 );
-            // Archaeopteryx.createApplication( t_b ); //TODO use me again me working here...
             if ( !isEqual( t_b.getNode( "ac" ).getBranchData().getConfidence( 0 ).getValue(), 4 ) ) {
                 return false;
             }
@@ -6928,6 +6940,28 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testOrthologTable() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny s1 = factory.create( Test.PATH_TO_TEST_DATA + "rio_species.xml", new PhyloXmlParser() )[ 0 ];
+            final NHXParser p = new NHXParser();
+            p.setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+            final Phylogeny g1[] = factory.create( new File( Test.PATH_TO_TEST_DATA
+                    + "rio_Bcl-2_e1_20_mafft_05_40_fme.mlt" ), p );
+            for( final Phylogeny gt : g1 ) {
+                gt.setRooted( true );
+                final GSDI sdi = new GSDI( gt, s1, true, true, true );
+            }
+            final IntMatrix m = RIO.calculateOrthologTable( g1 );
+            System.out.println( m.toString() );
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
             return false;
         }
         return true;

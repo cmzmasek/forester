@@ -616,7 +616,7 @@ public final class NHXParser implements PhylogenyParser {
             return Double.valueOf( str ).doubleValue();
         }
         catch ( final NumberFormatException ex ) {
-            throw new NHXFormatException( "error in NH/NHX formatted data: failed to parse number from :" + "\"" + str
+            throw new NHXFormatException( "error in NH/NHX formatted data: failed to parse number from " + "\"" + str
                     + "\"" );
         }
     }
