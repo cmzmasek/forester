@@ -1655,10 +1655,6 @@ public class PhylogenyMethods {
                 ref_ext_taxo.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
             }
         }
-        System.out.println( "  ref_ext_tax:" );
-        for( final String string : ref_ext_taxo ) {
-            System.out.println( string );
-        }
         final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator it = to_be_stripped.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -1669,10 +1665,6 @@ public class PhylogenyMethods {
                     && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
                 nodes_to_delete.add( n );
             }
-        }
-        System.out.println( "  to delete:" );
-        for( final PhylogenyNode string : nodes_to_delete ) {
-            System.out.println( string.getNodeData().getTaxonomy().getTaxonomyCode() );
         }
         for( final PhylogenyNode phylogenyNode : nodes_to_delete ) {
             to_be_stripped.deleteSubtree( phylogenyNode, true );

@@ -56,14 +56,12 @@ public final class RIO {
     private final static boolean                      ROOT_BY_MINIMIZING_MAPPING_COST = false;
     private final static boolean                      ROOT_BY_MINIMIZING_SUM_OF_DUPS  = true;
     private final static boolean                      ROOT_BY_MINIMIZING_TREE_HEIGHT  = true;
-    private final static boolean                      TIME                            = false;
     private HashMap<String, HashMap<String, Integer>> _o_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _so_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _up_hash_maps;
     private List<String>                              _seq_names;
     private int                                       _samples;
     private int                                       _ext_nodes_;
-    private long                                      _time;
 
     /**
      * Default constructor.
@@ -116,7 +114,6 @@ public final class RIO {
         return m;
     }
 
-   
     public final int getNumberOfSamples() {
         return _samples;
     }
@@ -200,16 +197,6 @@ public final class RIO {
     }
 
     /**
-     * Returns the time (in ms) needed to run "inferOrthologs". Final variable
-     * TIME needs to be set to true.
-     * 
-     * @return time (in ms) needed to run method "inferOrthologs"
-     */
-    public long getTime() {
-        return _time;
-    }
-
-    /**
      * Infers the orthologs (as well the "super orthologs", the "subtree
      * neighbors", and the "ultra paralogs") for each external node of the gene
      * Trees in multiple tree File gene_trees_file (=output of PHYLIP NEIGHBOR,
@@ -237,9 +224,6 @@ public final class RIO {
     public void inferOrthologs( final File gene_trees_file, final Phylogeny species_tree, final String query )
             throws IOException, SDIException {
         int bs = 0;
-        if ( RIO.TIME ) {
-            _time = System.currentTimeMillis();
-        }
         // Read in first tree to get its sequence names
         // and strip species_tree.
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -250,12 +234,11 @@ public final class RIO {
             nhx.setIgnoreQuotes( true );
             nhx.setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
         }
-        final Phylogeny gene_tree = factory.create( gene_trees_file, p )[ 0 ];
-        System.out.println( "species " + species_tree.toString() );
+        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         // Removes from species_tree all species not found in gene_tree.
-        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_tree, species_tree );
-        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_tree );
-        _seq_names = getAllExternalSequenceNames( gene_tree );
+        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
+        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_trees[ 0 ] );
+        _seq_names = getAllExternalSequenceNames( gene_trees[ 0 ] );
         if ( ( _seq_names == null ) || ( _seq_names.size() < 1 ) ) {
             throw new IOException( "could not get sequence names" );
         }
@@ -266,22 +249,18 @@ public final class RIO {
         _so_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         _up_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         // Go through all gene trees in the file.
-        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         final Phylogeny[] assigned_trees = new Phylogeny[ gene_trees.length ];
+        System.out.println( "gene trees" + gene_trees.length );
         int c = 0;
         for( final Phylogeny gt : gene_trees ) {
             bs++;
             // Removes from gene_tree all species not found in species_tree.
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gt );
             assigned_trees[ c++ ] = inferOrthologsHelper( gt, species_tree, query );
-            // System.out.println( bs );
         }
         final IntMatrix m = calculateOrthologTable( assigned_trees );
         System.out.println( m.toString() );
-        setNumberOfSamples( bs );
-        if ( RIO.TIME ) {
-            _time = ( System.currentTimeMillis() - _time );
-        }
+        setNumberOfSamples( gene_trees.length );
     }
 
     public List<PhylogenyNode> getNodesViaSequenceName( final Phylogeny phy, final String seq_name ) {
@@ -394,21 +373,6 @@ public final class RIO {
      * <li>0 : Ortholog
      * <li>1 : Ortholog, Super ortholog
      * <li>2 : Super ortholog, Ortholog
-     * <li>3 : Ortholog, Distance
-     * <li>4 : Distance, Ortholog
-     * <li>5 : Ortholog, Super ortholog, Distance
-     * <li>6 : Ortholog, Distance, Super ortholog
-     * <li>7 : Super ortholog, Ortholog, Distance
-     * <li>8 : Super ortholog, Distance, Ortholog
-     * <li>9 : Distance, Ortholog, Super ortholog
-     * <li>10 : Distance, Super ortholog, Ortholog
-     * <li>11 : Ortholog, Subtree neighbor, Distance
-     * <li>12 : Ortholog, Subtree neighbor, Super ortholog, Distance (default)
-     * <li>13 : Ortholog, Super ortholog, Subtree neighbor, Distance
-     * <li>14 : Subtree neighbor, Ortholog, Super ortholog, Distance
-     * <li>15 : Subtree neighbor, Distance, Ortholog, Super ortholog
-     * <li>16 : Ortholog, Distance, Subtree neighbor, Super ortholog
-     * <li>17 : Ortholog, Subtree neighbor, Distance, Super ortholog
      * </ul>
      * <p>
      * Returns "-" if no putative orthologs have been found (given
@@ -590,14 +554,13 @@ public final class RIO {
         _seq_names = null;
         _samples = 1;
         _ext_nodes_ = 0;
-        _time = 0;
     }
 
-   
     private void setNumberOfSamples( int i ) {
         if ( i < 1 ) {
             i = 1;
         }
+        System.out.println( "samples: " + i );
         _samples = i;
     }
 
@@ -823,5 +786,5 @@ public final class RIO {
             _p = new int[ 2 ];
             _p[ 0 ] = _p[ 1 ] = +1;
         }
-    } // Tuplet
+    } // ResultLine
 }

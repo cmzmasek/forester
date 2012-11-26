@@ -272,6 +272,8 @@ public final class NHXParser implements PhylogenyParser {
         setPhylogenies( new ArrayList<Phylogeny>() );
         setCladeLevel( 0 );
         newCurrentAnotation();
+        setCurrentPhylogeny( null );
+        setCurrentNode( null );
         int i = 0;
         while ( true ) {
             char c = '\b';
@@ -400,10 +402,6 @@ public final class NHXParser implements PhylogenyParser {
         }
         return getPhylogeniesAsArray();
     } // parse()
-
-    public Phylogeny parseNext() throws IOException, NHXFormatException {
-        return null;
-    }
 
     /**
      * Called if a closing paren is encountered.
