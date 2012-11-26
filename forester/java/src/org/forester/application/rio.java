@@ -29,10 +29,8 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Vector;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -42,10 +40,7 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
-import org.forester.sdi.DistanceCalculator;
 import org.forester.sdi.RIO;
-import org.forester.sdi.SDIException;
-import org.forester.sdi.SDIR;
 import org.forester.util.ForesterUtil;
 
 public class rio {
@@ -134,138 +129,24 @@ public class rio {
         System.exit( -1 );
     }
 
-    // Uses DistanceCalculator to calculate distances.
-    private final static StringBuffer getDistances( final File tree_file_for_dist_val,
-                                                    final File outfile,
-                                                    final Phylogeny species_tree,
-                                                    final String seq_name,
-                                                    final ArrayList<String> al_ortholog_names_for_dc,
-                                                    final HashMap<String, Integer> ortholog_hashmap,
-                                                    final HashMap<String, Integer> super_ortholog_hashmap,
-                                                    final int warn_more_than_one_ortho,
-                                                    final int warn_no_orthos,
-                                                    final double warn_one_ortho,
-                                                    final int bootstraps,
-                                                    final double t_orthologs_dc ) throws IOException, SDIException {
-        Phylogeny consensus_tree = null;
-        Phylogeny
-        // to be a consensus tree.
-        assigned_cons_tree = null;
-        final SDIR sdiunrooted = new SDIR();
-        final ArrayList<PhylogenyNode> al_ortholog_nodes = new ArrayList<PhylogenyNode>();
-        double m = 0.0;
-        double sd = 0.0;
-        double d = 0.0;
-        int n = 0;
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        consensus_tree = factory.create( tree_file_for_dist_val, new PhyloXmlParser() )[ 0 ];
-        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, consensus_tree );
-        assigned_cons_tree = sdiunrooted.infer( consensus_tree,
-                                                species_tree,
-                                                rio.MINIMIZE_COST,
-                                                rio.MINIMIZE_DUPS,
-                                                rio.MINIMIZE_HEIGHT,
-                                                true,
-                                                1 )[ 0 ];
-        final DistanceCalculator dc = new DistanceCalculator();
-        final StringBuffer sb = new StringBuffer();
-        sb.append( "Given the threshold for distance calculations (" + ForesterUtil.roundToInt( t_orthologs_dc )
-                + "): " );
-        // No orthologs.
-        if ( al_ortholog_names_for_dc.size() == 0 ) {
-            dc.setTree( assigned_cons_tree );
-            // Remark. Calculation of mean and sd _does_ include the node
-            // with seq_name.
-            m = dc.getMean();
-            sd = dc.getStandardDeviation();
-            d = dc.getDistanceToRoot( seq_name );
-            n = dc.getN();
-            sb.append( "No sequence is considered orthologous to query."
-                    + "\ndistance of query to root                     = " + ForesterUtil.FORMATTER_06.format( d )
-                    + "\nmean of distances (for all sequences) to root = " + ForesterUtil.FORMATTER_06.format( m )
-                    + "\nsd of distances (for all sequences) to root   = " + ForesterUtil.FORMATTER_06.format( sd )
-                    + "\nn (sum of sequences in alignment plus query)  = " + n );
-            if ( !( ( ( m - ( warn_no_orthos * sd ) ) < d ) && ( ( m + ( warn_no_orthos * sd ) ) > d ) ) ) {
-                sb.append( "\nWARNING: distance of query to root is outside of mean+/-" + warn_no_orthos + "*sd!" );
-            }
-        }
-        // One ortholog.
-        else if ( al_ortholog_names_for_dc.size() == 1 ) {
-            final String name_of_ortholog = al_ortholog_names_for_dc.get( 0 );
-            al_ortholog_nodes.add( assigned_cons_tree.getNode( name_of_ortholog ) );
-            al_ortholog_nodes.add( assigned_cons_tree.getNode( seq_name ) );
-            dc.setTreeAndExtNodes( assigned_cons_tree, al_ortholog_nodes );
-            // Remark. Calculation of mean _does_ include the node
-            // with seq_name.
-            d = dc.getDistanceToLCA( seq_name );
-            final double d_o = dc.getDistanceToLCA( name_of_ortholog );
-            sb.append( "One sequence is considered orthologous to query." + "\nLCA is LCA of query and its ortholog."
-                    + "\ndistance of query to LCA    = " + ForesterUtil.FORMATTER_06.format( d )
-                    + "\ndistance of ortholog to LCA = " + ForesterUtil.FORMATTER_06.format( d_o ) );
-            if ( ( d_o > 0.0 )
-                    && ( d > 0.0 )
-                    && ( ( ( d_o >= d ) && ( ( d_o / d ) > warn_one_ortho ) ) || ( ( d_o < d ) && ( ( d / d_o ) > warn_one_ortho ) ) ) ) {
-                sb.append( "\nWARNING: Ratio of distances to LCA is greater than " + warn_one_ortho + "!" );
-            }
-            else if ( ( ( d_o == 0.0 ) || ( d == 0.0 ) ) && ( ( d_o != 0.0 ) || ( d != 0.0 ) ) ) {
-                sb.append( "\nWARNING: Ratio could not be calculated, " + " one distance is 0.0!" );
-            }
-        }
-        // More than one ortholog.
-        else {
-            for( int i = 0; i < al_ortholog_names_for_dc.size(); ++i ) {
-                al_ortholog_nodes.add( assigned_cons_tree.getNodeViaSequenceName( al_ortholog_names_for_dc.get( i ) ) );
-            }
-            al_ortholog_nodes.add( assigned_cons_tree.getNodesViaSequenceName( seq_name ).get( 0 ) );
-            dc.setTreeAndExtNodes( assigned_cons_tree, al_ortholog_nodes );
-            // Remark. Calculation of mean and sd _does_ include the node
-            // with seq_name.
-            m = dc.getMean();
-            sd = dc.getStandardDeviation();
-            d = dc.getDistanceToLCA( seq_name );
-            n = dc.getN();
-            sb.append( "More than one sequence is considered orthologous to query."
-                    + "\nLCA is LCA of query and its orthologs."
-                    + "\ndistance of query to LCA                               = "
-                    + ForesterUtil.FORMATTER_06.format( d )
-                    + "\nmean of distances (for query and its orthologs) to LCA = "
-                    + ForesterUtil.FORMATTER_06.format( m )
-                    + "\nsd of distances (for query and its orthologs) to LCA   = "
-                    + ForesterUtil.FORMATTER_06.format( sd )
-                    + "\nn (sum of orthologs plus query)                        = " + n );
-            if ( !( ( ( m - ( warn_more_than_one_ortho * sd ) ) < d ) && ( ( m + ( warn_more_than_one_ortho * sd ) ) > d ) ) ) {
-                sb.append( "\n!WARNING: distance of query to LCA is outside of mean+/-" + warn_more_than_one_ortho
-                        + "*sd!" );
-            }
-        }
-        return sb;
-    }
-
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME, PRG_VERSION, PRG_DATE, E_MAIL, WWW );
         File species_tree_file = null;
         File multiple_trees_file = null;
         File outfile = null;
-        File distance_matrix_file = null;
-        File tree_file_for_dist_val = null;
-        File tree_file_for_avg_bs = null;
         String seq_name = "";
         String arg = "";
         boolean output_ultraparalogs = false;
         ArrayList<String> orthologs_al_for_dc = null;
         double t_orthologs = 0.0;
-        double t_sn = 0.0;
         double t_orthologs_dc = 0.0;
+        double threshold_ultra_paralogs = 0.0;
         double[] bs_mean_sd = null;
         int sort = 13;
         Phylogeny species_tree = null;
         RIO rio_instance = null;
         PrintWriter out = null;
         long time = 0;
-        int warn_no_orthos = WARN_NO_ORTHOS_DEFAULT;
-        int warn_more_than_one_ortho = WARN_MORE_THAN_ONE_ORTHO_DEFAULT;
-        double warn_one_ortho = WARN_ONE_ORTHO_DEFAULT;
-        double threshold_ultra_paralogs = THRESHOLD_ULTRA_PARALOGS_DEFAULT;
         if ( args.length < 2 ) {
             printHelp();
             System.exit( 0 );
@@ -296,15 +177,6 @@ public class rio {
                     case 'O':
                         outfile = new File( arg );
                         break;
-                    case 'D':
-                        distance_matrix_file = new File( arg );
-                        break;
-                    case 'T':
-                        tree_file_for_dist_val = new File( arg );
-                        break;
-                    case 't':
-                        tree_file_for_avg_bs = new File( arg );
-                        break;
                     case 'p':
                         output_ultraparalogs = true;
                         break;
@@ -317,23 +189,8 @@ public class rio {
                     case 'L':
                         t_orthologs = Double.parseDouble( arg );
                         break;
-                    case 'B':
-                        t_sn = Double.parseDouble( arg );
-                        break;
-                    case 'U':
-                        t_orthologs_dc = Double.parseDouble( arg );
-                        break;
                     case 'v':
                         threshold_ultra_paralogs = Double.parseDouble( arg );
-                        break;
-                    case 'X':
-                        warn_more_than_one_ortho = Integer.parseInt( arg );
-                        break;
-                    case 'Y':
-                        warn_no_orthos = Integer.parseInt( arg );
-                        break;
-                    case 'Z':
-                        warn_one_ortho = Double.parseDouble( arg );
                         break;
                     default:
                         errorInCommandLine();
@@ -347,10 +204,7 @@ public class rio {
                 || ( outfile == null ) ) {
             errorInCommandLine();
         }
-        if ( ( sort < 0 ) || ( sort > 17 ) ) {
-            errorInCommandLine();
-        }
-        if ( ( sort > 2 ) && ( distance_matrix_file == null ) ) {
+        if ( ( sort < 0 ) || ( sort > 2 ) ) {
             errorInCommandLine();
         }
         if ( VERBOSE ) {
@@ -358,30 +212,12 @@ public class rio {
             System.out.println( "Seq name:                                     " + seq_name );
             System.out.println( "Species tree file:                            " + species_tree_file );
             System.out.println( "Outfile:                                      " + outfile );
-            if ( distance_matrix_file != null ) {
-                System.out.println( "Distance matrix file:                         " + distance_matrix_file );
-            }
-            if ( tree_file_for_dist_val != null ) {
-                if ( tree_file_for_avg_bs == null ) {
-                    System.out.println( "Phy to read dists and calc mean support from: " + tree_file_for_dist_val );
-                }
-                else {
-                    System.out.println( "Phylogeny to read dist values from:                " + tree_file_for_dist_val );
-                }
-            }
-            if ( tree_file_for_avg_bs != null ) {
-                System.out.println( "Phylogeny to calc mean bootstrap from:             " + tree_file_for_avg_bs );
-            }
             System.out.println( "Sort:                                         " + sort );
             System.out.println( "Threshold orthologs:                          " + t_orthologs );
-            System.out.println( "Threshold subtree neighborings:               " + t_sn );
             System.out.println( "Threshold orthologs for distance calc.:       " + t_orthologs_dc );
             if ( output_ultraparalogs ) {
                 System.out.println( "Threshold ultra paralogs:                     " + threshold_ultra_paralogs );
             }
-            System.out.println( "More than one ortholog  sd diff:              " + warn_more_than_one_ortho );
-            System.out.println( "No  orthologs           sd diff:              " + warn_no_orthos );
-            System.out.println( "One ortholog            factor :              " + warn_one_ortho + "\n" );
         }
         if ( TIME && VERBOSE ) {
             time = System.currentTimeMillis();
@@ -405,51 +241,15 @@ public class rio {
         rio_instance = new RIO();
         final StringBuffer output = new StringBuffer();
         try {
-            if ( distance_matrix_file != null ) {
-                rio_instance.readDistanceMatrix( distance_matrix_file );
-            }
             rio_instance.inferOrthologs( multiple_trees_file, species_tree.copy(), seq_name );
-            output.append( rio_instance.inferredOrthologsToString( seq_name, sort, t_orthologs, t_sn ) );
-            if ( tree_file_for_dist_val != null ) {
-                orthologs_al_for_dc = rio_instance.inferredOrthologsToArrayList( seq_name, t_orthologs_dc );
-                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                if ( tree_file_for_avg_bs != null ) {
-                    final Phylogeny p = factory.create( tree_file_for_avg_bs, new PhyloXmlParser() )[ 0 ];
-                    bs_mean_sd = calculateMeanBoostrapValue( p );
-                }
-                else {
-                    final Phylogeny p = factory.create( tree_file_for_dist_val, new PhyloXmlParser() )[ 0 ];
-                    bs_mean_sd = calculateMeanBoostrapValue( p );
-                }
-                if ( ( bs_mean_sd != null ) && ( bs_mean_sd.length == 2 ) ) {
-                    final double bs_mean = bs_mean_sd[ 0 ];
-                    final double bs_sd = bs_mean_sd[ 1 ];
-                    output.append( "\n\nMean bootstrap value of consensus tree (sd): "
-                            + ForesterUtil.roundToInt( ( bs_mean * 100.0 ) / rio_instance.getBootstraps() ) + "% (+/-"
-                            + ForesterUtil.roundToInt( ( bs_sd * 100.0 ) / rio_instance.getBootstraps() ) + "%)\n" );
-                }
-                output.append( "\n\nDistance values:\n" );
-                output.append( getDistances( tree_file_for_dist_val,
-                                             outfile,
-                                             species_tree,
-                                             seq_name,
-                                             orthologs_al_for_dc,
-                                             rio_instance.getInferredOrthologs( seq_name ),
-                                             rio_instance.getInferredSuperOrthologs( seq_name ),
-                                             warn_more_than_one_ortho,
-                                             warn_no_orthos,
-                                             warn_one_ortho,
-                                             rio_instance.getBootstraps(),
-                                             t_orthologs_dc ) );
-            }
+            output.append( rio_instance.inferredOrthologsToString( seq_name, sort, t_orthologs ) );
             if ( output_ultraparalogs ) {
                 output.append( "\n\nUltra paralogs:\n" );
-                output.append( rio_instance
-                        .inferredUltraParalogsToString( seq_name, sort > 2, threshold_ultra_paralogs ) );
+                output.append( rio_instance.inferredUltraParalogsToString( seq_name, threshold_ultra_paralogs ) );
             }
             output.append( "\n\nSort priority: " + RIO.getOrder( sort ) );
             output.append( "\nExt nodes    : " + rio_instance.getExtNodesOfAnalyzedGeneTrees() );
-            output.append( "\nSamples      : " + rio_instance.getBootstraps() + "\n" );
+            output.append( "\nSamples      : " + rio_instance.getNumberOfSamples() + "\n" );
             out = new PrintWriter( new FileWriter( outfile ), true );
         }
         catch ( final Exception e ) {
@@ -473,25 +273,8 @@ public class rio {
         System.out.println( "N= (String) Query sequence name (mandatory)" );
         System.out.println( "S= (String) Species tree file (mandatory)" );
         System.out.println( "O= (String) Output file name -- overwritten without warning! (mandatory)" );
-        System.out.println( "D= (String) Distance matrix file for pairwise distances" );
-        System.out.println( "T= (String) Phylogeny file for distances of query to LCA" );
-        System.out.println( "            of orthologs and for mean bootstrap value (if t= is not used)," );
-        System.out.println( "            must be binary )" );
-        System.out.println( "t= (String) Phylogeny file for mean bootstrap value (if this option is used," );
-        System.out.println( "            the mean bootstrap value is not calculated from the tree read in" );
-        System.out.println( "            with T=), not necessary binary" );
-        System.out.println( "p           To output ultra paralogs" );
         System.out.println( "P= (int)    Sort priority" );
         System.out.println( "L= (double) Threshold orthologs for output" );
-        System.out.println( "U= (double) Threshold orthologs for distance calculation" );
-        System.out.println( "X= (int)    More than one ortholog: " );
-        System.out.println( "            numbers of sd the dist. to LCA has to differ from mean to generate a warning" );
-        System.out.println( "Y= (int)    No orthologs:" );
-        System.out.println( "            Numbers of sd the dist to root has to differ from mean to generate a warning" );
-        System.out.println( "Z= (double) One ortholog:" );
-        System.out.println( "            threshold for factor between the two distances to their LCA (larger/smaller)" );
-        System.out.println( "            to generate a warning" );
-        System.out.println();
         System.out.println( " Sort priority (\"P=\"):" );
         System.out.println( RIO.getOrderHelp().toString() );
         System.out.println();

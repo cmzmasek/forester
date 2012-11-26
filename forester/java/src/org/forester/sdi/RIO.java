@@ -37,9 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.forester.datastructures.IntMatrix;
-import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.io.parsers.PhylogenyParser;
-import org.forester.io.parsers.SymmetricalDistanceMatrixParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
@@ -62,11 +60,8 @@ public final class RIO {
     private HashMap<String, HashMap<String, Integer>> _o_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _so_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _up_hash_maps;
-    private HashMap<String, HashMap<String, Integer>> _sn_hash_maps;                          // HashMap of HashMaps
-    private DistanceMatrix                            _m;
-    private HashMap<String, Double>                   _l;
     private List<String>                              _seq_names;
-    private int                                       _bootstraps;
+    private int                                       _samples;
     private int                                       _ext_nodes_;
     private long                                      _time;
 
@@ -121,13 +116,9 @@ public final class RIO {
         return m;
     }
 
-    /**
-     * Returns the numbers of trees analyzed.
-     * 
-     * @return the numbers of trees analyzed
-     */
-    public final int getBootstraps() {
-        return _bootstraps;
+   
+    public final int getNumberOfSamples() {
+        return _samples;
     }
 
     // Helper method for inferredOrthologsToString.
@@ -138,37 +129,7 @@ public final class RIO {
             return 0.0;
         }
         final int i = h.get( name );
-        return ( ( i * 100.0 ) / getBootstraps() );
-    }
-
-    /**
-     * Returns the distance to a sequences/taxa after a distance list file has
-     * been read in with readDistanceList(File). Throws an exception if name is
-     * not found or if no list has been read in.
-     * 
-     * @param name
-     *            a sequence name
-     */
-    public final double getDistance( String name ) {
-        double distance = 0.0;
-        name = name.trim();
-        if ( _l == null ) {
-            throw new RuntimeException( "Distance list has probably not been read in (successfully)." );
-        }
-        if ( _l.get( name ) == null ) {
-            throw new IllegalArgumentException( name + " not found." );
-        }
-        distance = ( _l.get( name ) ).doubleValue();
-        return distance;
-    }
-
-    public final double getDistance( final String name1, final String name2 ) {
-        try {
-            return _m.getValue( _m.getIndex( name1 ), _m.getIndex( name2 ) );
-        }
-        catch ( final Exception e ) {
-            return 1;
-        }
+        return ( ( i * 100.0 ) / getNumberOfSamples() );
     }
 
     /**
@@ -198,13 +159,6 @@ public final class RIO {
             return null;
         }
         return _o_hash_maps.get( seq_name );
-    }
-
-    private final HashMap<String, Integer> getInferredSubtreeNeighbors( final String seq_name ) {
-        if ( _sn_hash_maps == null ) {
-            return null;
-        }
-        return _sn_hash_maps.get( seq_name );
     }
 
     /**
@@ -308,11 +262,9 @@ public final class RIO {
         _o_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _so_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _up_hash_maps = new HashMap<String, HashMap<String, Integer>>();
-        _sn_hash_maps = new HashMap<String, HashMap<String, Integer>>();
         _o_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         _so_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         _up_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
-        _sn_hash_maps.put( query, new HashMap<String, Integer>( _seq_names.size() ) );
         // Go through all gene trees in the file.
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         final Phylogeny[] assigned_trees = new Phylogeny[ gene_trees.length ];
@@ -326,7 +278,7 @@ public final class RIO {
         }
         final IntMatrix m = calculateOrthologTable( assigned_trees );
         System.out.println( m.toString() );
-        setBootstraps( bs );
+        setNumberOfSamples( bs );
         if ( RIO.TIME ) {
             _time = ( System.currentTimeMillis() - _time );
         }
@@ -356,7 +308,6 @@ public final class RIO {
         List<PhylogenyNode> orthologs = null;
         List<PhylogenyNode> super_orthologs = null;
         List<PhylogenyNode> ultra_paralogs = null;
-        List<PhylogenyNode> subtree_neighbors = null;
         assigned_tree = sdiunrooted.infer( gene_tree,
                                            species_tree,
                                            RIO.ROOT_BY_MINIMIZING_MAPPING_COST,
@@ -377,8 +328,6 @@ public final class RIO {
         updateHash( _o_hash_maps, query, orthologs );
         super_orthologs = PhylogenyMethods.getSuperOrthologousNodes( query_node );
         updateHash( _so_hash_maps, query, super_orthologs );
-        subtree_neighbors = getSubtreeNeighbors( query_node, 2 );
-        updateHash( _sn_hash_maps, query, subtree_neighbors );
         ultra_paralogs = PhylogenyMethods.getUltraParalogousNodes( query_node );
         updateHash( _up_hash_maps, query, ultra_paralogs );
         return assigned_tree;
@@ -486,27 +435,20 @@ public final class RIO {
      * @see #inferOrthologs(File,Phylogeny)
      * @see #getOrder(int)
      */
-    public StringBuffer inferredOrthologsToString( final String query_name,
-                                                   int sort,
-                                                   double threshold_orthologs,
-                                                   double threshold_subtreeneighborings ) {
+    public StringBuffer inferredOrthologsToString( final String query_name, int sort, double threshold_orthologs ) {
         HashMap<String, Integer> o_hashmap = null;
         HashMap<String, Integer> s_hashmap = null;
-        HashMap<String, Integer> n_hashmap = null;
         String name = "";
-        double o = 0.0, // Orthologs.
-        s = 0.0, // Super orthologs.
-        sn = 0.0, // Subtree neighbors.
-        value1 = 0.0, value2 = 0.0, value3 = 0.0, value4 = 0.0, d = 0.0;
-        final ArrayList<Tuplet> nv = new ArrayList<Tuplet>();
-        if ( ( _o_hash_maps == null ) || ( _so_hash_maps == null ) || ( _sn_hash_maps == null ) ) {
-            throw new RuntimeException( "Orthologs have not been calculated (successfully)" );
+        double o = 0.0; // Orthologs.
+        double s = 0.0; // Super orthologs.
+        double value1 = 0.0;
+        double value2 = 0.0;
+        final ArrayList<ResultLine> nv = new ArrayList<ResultLine>();
+        if ( ( _o_hash_maps == null ) || ( _so_hash_maps == null ) ) {
+            throw new RuntimeException( "orthologs have not been calculated (successfully)" );
         }
-        if ( ( sort < 0 ) || ( sort > 17 ) ) {
-            sort = 12;
-        }
-        if ( ( sort > 2 ) && ( _m == null ) && ( _l == null ) ) {
-            throw new RuntimeException( "Distance list or matrix have not been read in (successfully)" );
+        if ( ( sort < 0 ) || ( sort > 2 ) ) {
+            sort = 1;
         }
         if ( threshold_orthologs < 0.0 ) {
             threshold_orthologs = 0.0;
@@ -514,16 +456,9 @@ public final class RIO {
         else if ( threshold_orthologs > 100.0 ) {
             threshold_orthologs = 100.0;
         }
-        if ( threshold_subtreeneighborings < 0.0 ) {
-            threshold_subtreeneighborings = 0.0;
-        }
-        else if ( threshold_subtreeneighborings > 100.0 ) {
-            threshold_subtreeneighborings = 100.0;
-        }
         o_hashmap = getInferredOrthologs( query_name );
         s_hashmap = getInferredSuperOrthologs( query_name );
-        n_hashmap = getInferredSubtreeNeighbors( query_name );
-        if ( ( o_hashmap == null ) || ( s_hashmap == null ) || ( n_hashmap == null ) ) {
+        if ( ( o_hashmap == null ) || ( s_hashmap == null ) ) {
             throw new RuntimeException( "Orthologs for " + query_name + " were not established" );
         }
         final StringBuffer orthologs = new StringBuffer();
@@ -537,92 +472,33 @@ public final class RIO {
                 if ( o < threshold_orthologs ) {
                     continue I;
                 }
-                sn = getBootstrapValueFromHash( n_hashmap, name );
-                if ( sn < threshold_subtreeneighborings ) {
-                    continue I;
-                }
                 s = getBootstrapValueFromHash( s_hashmap, name );
-                if ( sort >= 3 ) {
-                    if ( _m != null ) {
-                        d = getDistance( query_name, name );
-                    }
-                    else {
-                        d = getDistance( name );
-                    }
-                }
                 switch ( sort ) {
                     case 0:
-                        nv.add( new Tuplet( name, o, 5 ) );
+                        nv.add( new ResultLine( name, o, 5 ) );
                         break;
                     case 1:
-                        nv.add( new Tuplet( name, o, s, 5 ) );
+                        nv.add( new ResultLine( name, o, s, 5 ) );
                         break;
                     case 2:
-                        nv.add( new Tuplet( name, s, o, 5 ) );
-                        break;
-                    case 3:
-                        nv.add( new Tuplet( name, o, d, 1 ) );
-                        break;
-                    case 4:
-                        nv.add( new Tuplet( name, d, o, 0 ) );
-                        break;
-                    case 5:
-                        nv.add( new Tuplet( name, o, s, d, 2 ) );
-                        break;
-                    case 6:
-                        nv.add( new Tuplet( name, o, d, s, 1 ) );
-                        break;
-                    case 7:
-                        nv.add( new Tuplet( name, s, o, d, 2 ) );
-                        break;
-                    case 8:
-                        nv.add( new Tuplet( name, s, d, o, 1 ) );
-                        break;
-                    case 9:
-                        nv.add( new Tuplet( name, d, o, s, 0 ) );
-                        break;
-                    case 10:
-                        nv.add( new Tuplet( name, d, s, o, 0 ) );
-                        break;
-                    case 11:
-                        nv.add( new Tuplet( name, o, sn, d, 2 ) );
-                        break;
-                    case 12:
-                        nv.add( new Tuplet( name, o, sn, s, d, 3 ) );
-                        break;
-                    case 13:
-                        nv.add( new Tuplet( name, o, s, sn, d, 3 ) );
-                        break;
-                    case 14:
-                        nv.add( new Tuplet( name, sn, o, s, d, 3 ) );
-                        break;
-                    case 15:
-                        nv.add( new Tuplet( name, sn, d, o, s, 1 ) );
-                        break;
-                    case 16:
-                        nv.add( new Tuplet( name, o, d, sn, s, 1 ) );
-                        break;
-                    case 17:
-                        nv.add( new Tuplet( name, o, sn, d, s, 2 ) );
+                        nv.add( new ResultLine( name, s, o, 5 ) );
                         break;
                     default:
-                        nv.add( new Tuplet( name, o, 5 ) );
+                        nv.add( new ResultLine( name, o, 5 ) );
                 }
             } // End of I for loop.
             if ( ( nv != null ) && ( nv.size() > 0 ) ) {
                 orthologs.append( "[seq name]\t\t[ortho]\t[st-n]\t[sup-o]\t[dist]" + ForesterUtil.LINE_SEPARATOR );
-                final Tuplet[] nv_array = new Tuplet[ nv.size() ];
+                final ResultLine[] nv_array = new ResultLine[ nv.size() ];
                 for( int j = 0; j < nv.size(); ++j ) {
                     nv_array[ j ] = nv.get( j );
                 }
                 Arrays.sort( nv_array );
-                for( final Tuplet element : nv_array ) {
+                for( final ResultLine element : nv_array ) {
                     name = element.getKey();
                     value1 = element.getValue1();
                     value2 = element.getValue2();
-                    value3 = element.getValue3();
-                    value4 = element.getValue4();
-                    orthologs.append( addNameAndValues( name, value1, value2, value3, value4, sort ) );
+                    orthologs.append( addNameAndValues( name, value1, value2, sort ) );
                 }
             }
         }
@@ -649,14 +525,14 @@ public final class RIO {
      * @return String containing the inferred orthologs, String containing "-"
      *         if no orthologs have been found null in case of error
      */
-    public String inferredUltraParalogsToString( final String query_name,
-                                                 final boolean return_dists,
-                                                 double threshold_ultra_paralogs ) {
+    public String inferredUltraParalogsToString( final String query_name, double threshold_ultra_paralogs ) {
         HashMap<String, Integer> sp_hashmap = null;
         String name = "", ultra_paralogs = "";
         int sort = 0;
-        double sp = 0.0, value1 = 0.0, value2 = 0.0, d = 0.0;
-        final List<Tuplet> nv = new ArrayList<Tuplet>();
+        double sp = 0.0;
+        double value1 = 0.0;
+        double value2 = 0.0;
+        final List<ResultLine> nv = new ArrayList<ResultLine>();
         if ( threshold_ultra_paralogs < 1.0 ) {
             threshold_ultra_paralogs = 1.0;
         }
@@ -665,9 +541,6 @@ public final class RIO {
         }
         if ( _up_hash_maps == null ) {
             throw new RuntimeException( "Ultra paralogs have not been calculated (successfully)." );
-        }
-        if ( return_dists && ( _m == null ) && ( _l == null ) ) {
-            throw new RuntimeException( "Distance list or matrix have not been read in (successfully)." );
         }
         sp_hashmap = getInferredUltraParalogs( query_name );
         if ( sp_hashmap == null ) {
@@ -683,36 +556,20 @@ public final class RIO {
                 if ( sp < threshold_ultra_paralogs ) {
                     continue I;
                 }
-                if ( return_dists ) {
-                    if ( _m != null ) {
-                        d = getDistance( query_name, name );
-                    }
-                    else {
-                        d = getDistance( name );
-                    }
-                    nv.add( new Tuplet( name, sp, d, 1 ) );
-                }
-                else {
-                    nv.add( new Tuplet( name, sp, 5 ) );
-                }
+                nv.add( new ResultLine( name, sp, 5 ) );
             } // End of I for loop.
             if ( ( nv != null ) && ( nv.size() > 0 ) ) {
-                final Tuplet[] nv_array = new Tuplet[ nv.size() ];
+                final ResultLine[] nv_array = new ResultLine[ nv.size() ];
                 for( int j = 0; j < nv.size(); ++j ) {
                     nv_array[ j ] = nv.get( j );
                 }
                 Arrays.sort( nv_array );
-                if ( return_dists ) {
-                    sort = 91;
-                }
-                else {
-                    sort = 90;
-                }
-                for( final Tuplet element : nv_array ) {
+                sort = 90;
+                for( final ResultLine element : nv_array ) {
                     name = element.getKey();
                     value1 = element.getValue1();
                     value2 = element.getValue2();
-                    ultra_paralogs += addNameAndValues( name, value1, value2, 0.0, 0.0, sort );
+                    ultra_paralogs += addNameAndValues( name, value1, value2, sort );
                 }
             }
         }
@@ -723,19 +580,6 @@ public final class RIO {
         return ultra_paralogs;
     }
 
-    public final void readDistanceMatrix( final File matrix_file ) throws IOException {
-        DistanceMatrix[] matrices = null;
-        final SymmetricalDistanceMatrixParser parser = SymmetricalDistanceMatrixParser.createInstance();
-        matrices = parser.parse( matrix_file );
-        if ( ( matrices == null ) || ( matrices.length == 0 ) ) {
-            throw new IOException( "failed to parse distance matrix from [" + matrix_file + "]" );
-        }
-        if ( matrices.length > 1 ) {
-            throw new IOException( "[" + matrix_file + "] contains more than once distance matrix" );
-        }
-        _m = matrices[ 0 ];
-    }
-
     /**
      * Brings this into the same state as immediately after construction.
      */
@@ -744,23 +588,17 @@ public final class RIO {
         _so_hash_maps = null;
         _up_hash_maps = null;
         _seq_names = null;
-        _m = null;
-        _l = null;
-        _bootstraps = 1;
+        _samples = 1;
         _ext_nodes_ = 0;
         _time = 0;
     }
 
-    /**
-     * Sets the numbers of trees analyzed.
-     * @param the
-     *            numbers of trees analyzed
-     */
-    private void setBootstraps( int i ) {
+   
+    private void setNumberOfSamples( int i ) {
         if ( i < 1 ) {
             i = 1;
         }
-        _bootstraps = i;
+        _samples = i;
     }
 
     /**
@@ -807,8 +645,6 @@ public final class RIO {
     private final static String addNameAndValues( final String name,
                                                   final double value1,
                                                   final double value2,
-                                                  final double value3,
-                                                  final double value4,
                                                   final int sort ) {
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#####" );
         df.setDecimalSeparatorAlwaysShown( false );
@@ -826,110 +662,14 @@ public final class RIO {
             case 0:
                 line += addToLine( value1, df );
                 line += "-\t";
-                line += "-\t";
-                line += "-\t";
                 break;
             case 1:
                 line += addToLine( value1, df );
-                line += "-\t";
                 line += addToLine( value2, df );
-                line += "-\t";
                 break;
             case 2:
                 line += addToLine( value2, df );
-                line += "-\t";
                 line += addToLine( value1, df );
-                line += "-\t";
-                break;
-            case 3:
-                line += addToLine( value1, df );
-                line += "-\t";
-                line += "-\t";
-                line += addToLine( value2, df );
-                break;
-            case 4:
-                line += addToLine( value2, df );
-                line += "-\t";
-                line += "-\t";
-                line += addToLine( value1, df );
-                break;
-            case 5:
-                line += addToLine( value1, df );
-                line += "-\t";
-                line += addToLine( value2, df );
-                line += addToLine( value3, df );
-                break;
-            case 6:
-                line += addToLine( value1, df );
-                line += "-\t";
-                line += addToLine( value3, df );
-                line += addToLine( value2, df );
-                break;
-            case 7:
-                line += addToLine( value2, df );
-                line += "-\t";
-                line += addToLine( value1, df );
-                line += addToLine( value3, df );
-                break;
-            case 8:
-                line += addToLine( value3, df );
-                line += "-\t";
-                line += addToLine( value1, df );
-                line += addToLine( value2, df );
-                break;
-            case 9:
-                line += addToLine( value2, df );
-                line += "-\t";
-                line += addToLine( value3, df );
-                line += addToLine( value1, df );
-                break;
-            case 10:
-                line += addToLine( value3, df );
-                line += "-\t";
-                line += addToLine( value2, df );
-                line += addToLine( value1, df );
-                break;
-            case 11:
-                line += addToLine( value1, df );
-                line += addToLine( value2, df );
-                line += "-\t";
-                line += addToLine( value3, df );
-                break;
-            case 12:
-                line += addToLine( value1, df );
-                line += addToLine( value2, df );
-                line += addToLine( value3, df );
-                line += addToLine( value4, df );
-                break;
-            case 13:
-                line += addToLine( value1, df );
-                line += addToLine( value3, df );
-                line += addToLine( value2, df );
-                line += addToLine( value4, df );
-                break;
-            case 14:
-                line += addToLine( value2, df );
-                line += addToLine( value1, df );
-                line += addToLine( value3, df );
-                line += addToLine( value4, df );
-                break;
-            case 15:
-                line += addToLine( value3, df );
-                line += addToLine( value1, df );
-                line += addToLine( value4, df );
-                line += addToLine( value2, df );
-                break;
-            case 16:
-                line += addToLine( value1, df );
-                line += addToLine( value3, df );
-                line += addToLine( value4, df );
-                line += addToLine( value2, df );
-                break;
-            case 17:
-                line += addToLine( value1, df );
-                line += addToLine( value2, df );
-                line += addToLine( value4, df );
-                line += addToLine( value3, df );
                 break;
             case 90:
                 line += addToLine( value1, df );
@@ -947,7 +687,7 @@ public final class RIO {
     // Helper for addNameAndValues.
     private final static String addToLine( final double value, final java.text.DecimalFormat df ) {
         String s = "";
-        if ( value != Tuplet.DEFAULT ) {
+        if ( value != ResultLine.DEFAULT ) {
             s = df.format( value ) + "\t";
         }
         else {
@@ -996,51 +736,6 @@ public final class RIO {
             case 2:
                 order = "super orthologies > orthologies";
                 break;
-            case 3:
-                order = "orthologies > distance to query";
-                break;
-            case 4:
-                order = "distance to query > orthologies";
-                break;
-            case 5:
-                order = "orthologies > super orthologies > distance to query";
-                break;
-            case 6:
-                order = "orthologies > distance to query > super orthologies";
-                break;
-            case 7:
-                order = "super orthologies > orthologies > distance to query";
-                break;
-            case 8:
-                order = "super orthologies > distance to query > orthologies";
-                break;
-            case 9:
-                order = "distance to query > orthologies > super orthologies";
-                break;
-            case 10:
-                order = "distance to query > super orthologies > orthologies";
-                break;
-            case 11:
-                order = "orthologies > subtree neighbors > distance to query";
-                break;
-            case 12:
-                order = "orthologies > subtree neighbors > super orthologies > distance to query";
-                break;
-            case 13:
-                order = "orthologies > super orthologies > subtree neighbors > distance to query";
-                break;
-            case 14:
-                order = "subtree neighbors > orthologies > super orthologies > distance to query";
-                break;
-            case 15:
-                order = "subtree neighbors > distance to query > orthologies > super orthologies";
-                break;
-            case 16:
-                order = "orthologies > distance to query > subtree neighbors > super orthologies";
-                break;
-            case 17:
-                order = "orthologies > subtree neighbors > distance to query > super orthologies";
-                break;
             default:
                 order = "orthologies";
                 break;
@@ -1053,48 +748,80 @@ public final class RIO {
         sb.append( "  0: orthologies" + ForesterUtil.LINE_SEPARATOR );
         sb.append( "  1: orthologies > super orthologies" + ForesterUtil.LINE_SEPARATOR );
         sb.append( "  2: super orthologies > orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  3: orthologies > distance to query" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  4: distance to query > orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  5: orthologies > super orthologies > distance to query" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  6: orthologies > distance to query > super orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  7: super orthologies > orthologies > distance to query" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  8: super orthologies > distance to query > orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( "  9: distance to query > orthologies > super orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 10: distance to query > super orthologies > orthologies" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 11: orthologies > subtree neighbors > distance to query" + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 12: orthologies > subtree neighbors > super orthologies > distance to query"
-                + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 13: orthologies > super orthologies > subtree neighbors > distance to query"
-                + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 14: subtree neighbors > orthologies > super orthologies > distance to query"
-                + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 15: subtree neighbors > distance to query > orthologies > super orthologies"
-                + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 16: orthologies > distance to query > subtree neighbors > super orthologies"
-                + ForesterUtil.LINE_SEPARATOR );
-        sb.append( " 17: orthologies > subtree neighbors > distance to query > super orthologies"
-                + ForesterUtil.LINE_SEPARATOR );
         return sb;
     }
 
-    private final static List<PhylogenyNode> getSubtreeNeighbors( final PhylogenyNode query, final int level ) {
-        PhylogenyNode node = query;
-        if ( !node.isExternal() ) {
-            return null;
+    class ResultLine implements Comparable<ResultLine> {
+
+        public static final int DEFAULT = -999;
+        private final String    _key;
+        private final double    _value1;
+        private final double    _value2;
+        private int[]           _p;
+
+        ResultLine() {
+            setSigns();
+            _key = "";
+            _value1 = ResultLine.DEFAULT;
+            _value2 = ResultLine.DEFAULT;
         }
-        if ( !node.isRoot() ) {
-            node = node.getParent();
-        }
-        if ( level == 2 ) {
-            if ( !node.isRoot() ) {
-                node = node.getParent();
+
+        ResultLine( final String name, final double value1, final double value2, final int c ) {
+            setSigns();
+            _key = name;
+            _value1 = value1;
+            _value2 = value2;
+            if ( ( c >= 0 ) && ( c <= 2 ) ) {
+                _p[ c ] = -1;
             }
         }
-        else {
-            throw new IllegalArgumentException( "currently only supporting level 2 subtree neighbors " );
+
+        ResultLine( final String name, final double value1, final int c ) {
+            setSigns();
+            _key = name;
+            _value1 = value1;
+            _value2 = ResultLine.DEFAULT;
+            if ( c == 0 ) {
+                _p[ 0 ] = -1;
+            }
         }
-        final List<PhylogenyNode> sn = node.getAllExternalDescendants();
-        sn.remove( query );
-        return sn;
-    }
+
+        @Override
+        public int compareTo( final ResultLine n ) {
+            if ( ( getValue1() != ResultLine.DEFAULT ) && ( n.getValue1() != ResultLine.DEFAULT ) ) {
+                if ( getValue1() < n.getValue1() ) {
+                    return _p[ 0 ];
+                }
+                if ( getValue1() > n.getValue1() ) {
+                    return ( -_p[ 0 ] );
+                }
+            }
+            if ( ( getValue2() != ResultLine.DEFAULT ) && ( n.getValue2() != ResultLine.DEFAULT ) ) {
+                if ( getValue2() < n.getValue2() ) {
+                    return _p[ 1 ];
+                }
+                if ( getValue2() > n.getValue2() ) {
+                    return ( -_p[ 1 ] );
+                }
+            }
+            return ( getKey().compareTo( n.getKey() ) );
+        }
+
+        String getKey() {
+            return _key;
+        }
+
+        double getValue1() {
+            return _value1;
+        }
+
+        double getValue2() {
+            return _value2;
+        }
+
+        private void setSigns() {
+            _p = new int[ 2 ];
+            _p[ 0 ] = _p[ 1 ] = +1;
+        }
+    } // Tuplet
 }
