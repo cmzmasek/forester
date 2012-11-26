@@ -31,7 +31,7 @@ public final class IntMatrix {
     final public void set( final int x, final int y, final int value ) {
         _data[ x ][ y ] = value;
     }
-    
+
     final public void inreaseByOne( final int x, final int y ) {
         _data[ x ][ y ]++;
     }

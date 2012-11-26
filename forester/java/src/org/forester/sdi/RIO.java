@@ -111,7 +111,8 @@ public final class RIO {
             for( int x = 0; x < m.size(); ++x ) {
                 final PhylogenyNode nx = map.get( m.getLabel( x ) );
                 for( int y = 0; y < m.size(); ++y ) {
-                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, map.get( m.getLabel( y ) ) ).isDuplication() ) {
+                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, map.get( m.getLabel( y ) ) )
+                            .isDuplication() ) {
                         m.inreaseByOne( x, y );
                     }
                 }
