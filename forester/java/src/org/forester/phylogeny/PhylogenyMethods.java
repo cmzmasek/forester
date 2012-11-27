@@ -583,16 +583,14 @@ public class PhylogenyMethods {
         return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
     }
 
-    // Helper for getUltraParalogousNodes( PhylogenyNode ).
-    public static boolean areAllChildrenDuplications( final PhylogenyNode n ) {
+    public final static boolean isAllDecendentsAreDuplications( final PhylogenyNode n ) {
         if ( n.isExternal() ) {
-            return false;
+            return true;
         }
         else {
             if ( n.isDuplication() ) {
-                //FIXME test me!
                 for( final PhylogenyNode desc : n.getDescendants() ) {
-                    if ( !areAllChildrenDuplications( desc ) ) {
+                    if ( !isAllDecendentsAreDuplications( desc ) ) {
                         return false;
                     }
                 }
@@ -1148,9 +1146,9 @@ public class PhylogenyMethods {
         // FIXME test me
         PhylogenyNode node = n;
         if ( !node.isExternal() ) {
-            return null;
+            throw new IllegalArgumentException( "attempt to get ultra-paralogous nodes of internal node" );
         }
-        while ( !node.isRoot() && node.getParent().isDuplication() && areAllChildrenDuplications( node.getParent() ) ) {
+        while ( !node.isRoot() && node.getParent().isDuplication() && isAllDecendentsAreDuplications( node.getParent() ) ) {
             node = node.getParent();
         }
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();

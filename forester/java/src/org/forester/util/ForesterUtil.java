@@ -335,6 +335,16 @@ public final class ForesterUtil {
         System.exit( -1 );
     }
 
+    public static void fatalErrorIfFileNotReadable( final String prg_name, final File file ) {
+        final String error = isReadableFile( file );
+        if ( !isEmpty( error ) ) {
+            System.err.println();
+            System.err.println( "[" + prg_name + "] > " + error );
+            System.err.println();
+            System.exit( -1 );
+        }
+    }
+
     public static String[] file2array( final File file ) throws IOException {
         final List<String> list = file2list( file );
         final String[] ary = new String[ list.size() ];

@@ -53,9 +53,8 @@ import org.forester.util.ForesterUtil;
  */
 public final class RIO {
 
-    private final static boolean                      ROOT_BY_MINIMIZING_MAPPING_COST = false;
-    private final static boolean                      ROOT_BY_MINIMIZING_SUM_OF_DUPS  = true;
-    private final static boolean                      ROOT_BY_MINIMIZING_TREE_HEIGHT  = true;
+    private final static boolean                      ROOT_BY_MINIMIZING_SUM_OF_DUPS = true;
+    private final static boolean                      ROOT_BY_MINIMIZING_TREE_HEIGHT = true;
     private HashMap<String, HashMap<String, Integer>> _o_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _so_hash_maps;
     private HashMap<String, HashMap<String, Integer>> _up_hash_maps;
@@ -289,7 +288,7 @@ public final class RIO {
         List<PhylogenyNode> ultra_paralogs = null;
         assigned_tree = sdiunrooted.infer( gene_tree,
                                            species_tree,
-                                           RIO.ROOT_BY_MINIMIZING_MAPPING_COST,
+                                           false,
                                            RIO.ROOT_BY_MINIMIZING_SUM_OF_DUPS,
                                            RIO.ROOT_BY_MINIMIZING_TREE_HEIGHT,
                                            true,
