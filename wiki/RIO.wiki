@@ -38,8 +38,9 @@ The gene trees ideally are in phyloXML,with taxonomy and sequence data in approp
 Must be in phyloXML format  ([http://forester.googlecode.com/files/species.xml example]).
 
 
-=== Example ===
+=== Examples ===
 `rio gene_trees.nh species.xml outfile -q=BCL2_HUMAN -t=outtable -u -cu=60 -co=60`
+
 `rio gene_trees.nh species.xml -t=outtable`
 
 
