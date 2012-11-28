@@ -1,0 +1,64 @@
+#summary generalized speciation duplication inference
+
+= Generalized Speciation Duplication Inference =
+
+== Purpose ==
+
+To infer duplication events on a gene tree given a trusted species tree.
+
+== Usage == 
+{{{
+java -Xmx1024m -cp
+path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyloXML format> <species tree> <outfile>
+}}}
+=== Options ===
+
+  * -g: to allow stripping of gene tree nodes without a matching species in the species tree
+ 
+  * -m: use most parimonious duplication model for GSDI: assign nodes as speciations which would otherwise be assiged as potential duplications due tp polytomies in the species tree
+
+  * -q: to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)
+
+  * -b: to use SDIse algorithm instead of GSDI algorithm (for binary species trees)
+
+==== Gene tree ====
+Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
+
+==== Species tree ====
+Must be in phyloXML format unless option -q is used ([http://forester.googlecode.com/files/species.xml example]).
+
+=== Output ===
+
+Besides the main output of a gene tree with duplications and speciations assigned to all of its internal nodes, this program also produces the following:
+  * a log file, ending in `"_gsdi_log.txt"` ([http://forester.googlecode.com/files/wnt_gsdi_log.txt example])
+  * a species tree file which only contains external nodes with were needed for the reconciliation, ending in `"_species_tree_used.xml"`
+  * if the gene tree contains species with scientific species names such as "Pyrococcus horikoshii strain ATCC 700860" and if a mapping cannot be establish based on these, GSDI will attempt to map by removing the "strain" (or "subspecies") information, these will be listed in a file ending in `"_gsdi_remapped.txt"`.
+
+=== Taxonomic mapping between gene and species tree ===
+
+GSDI can establish a taxonomic mapping between gene and species tree on the following three data fields:
+  * scientific names (e.g. "Pyrococcus horikoshii")
+  * taxonomic identifiers (e.g. "35932" from uniprot or ncbi)
+  * taxonomy codes (e.g. "PYRHO") 
+
+
+
+=== Example ===
+`gsdi -g -q gene_tree.xml tree_of_life.nwk out.xml`
+
+
+=== Example files ===
+  * [http://forester.googlecode.com/files/wnt_gene_tree.xml gene tree]
+  * [http://forester.googlecode.com/files/species.xml species tree]
+  * [http://forester.googlecode.com/files/wnt_gsdi_log.txt log file (output)]
+
+
+== Reference ==
+
+Zmasek CM and Eddy SR "A simple algorithm to infer gene duplication and speciation events on a gene tree" [http://bioinformatics.oxfordjournals.org/content/17/9/821.abstract Bioinformatics, 17, 821-828]
+ 
+
+
+== Download ==
+
+Download forester.jar here: http://code.google.com/p/forester/downloads/list
