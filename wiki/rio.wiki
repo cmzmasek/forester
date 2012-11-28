@@ -25,6 +25,11 @@ path/to/forester.jar org.forester.application.rio [options] <gene trees file> <s
 
   * -cu: cutoff for ultra-paralog output (default: 50)
 
+==== Sort ====
+
+  0: orthologies
+  1: orthologies > super orthologies
+  2: super orthologies > orthologies
 
 ==== Gene tree ====
 Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
