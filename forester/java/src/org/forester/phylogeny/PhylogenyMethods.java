@@ -1063,13 +1063,14 @@ public class PhylogenyMethods {
      * @param n
      *            external PhylogenyNode whose strictly speciation related Nodes
      *            are to be returned
-     * @return Vector of references to all strictly speciation related Nodes of
+     * @return References to all strictly speciation related Nodes of
      *         PhylogenyNode n of this Phylogeny, null if this Phylogeny is
      *         empty or if n is internal
      */
     public static List<PhylogenyNode> getSuperOrthologousNodes( final PhylogenyNode n ) {
         // FIXME
-        PhylogenyNode node = n, deepest = null;
+        PhylogenyNode node = n;
+        PhylogenyNode deepest = null;
         final List<PhylogenyNode> v = new ArrayList<PhylogenyNode>();
         if ( !node.isExternal() ) {
             return null;
