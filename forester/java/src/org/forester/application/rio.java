@@ -261,25 +261,31 @@ public class rio {
     }
 
     private final static void printHelp() {
-        System.out.println( "usage:" );
+        System.out.println( "Usage" );
         System.out.println();
         System.out.println( PRG_NAME + " [options] <gene trees file> <species tree file> [outfile]" );
         System.out.println();
-        System.out.println( " options:" );
-        System.out.println();
-        System.out.println( " -" + CUTOFF_ORTHO_OPTION + " : cutoff for ortholog output (default: 50)" );
-        System.out.println( " -" + TABLE_OUTPUT_OPTION + "  : file-name for output table" );
-        System.out.println( " -" + QUERY_OPTION + "  : name for query (sequence/node)" );
-        System.out.println( " -" + SORT_OPTION + "  : sort (default: 2)" );
-        System.out.println( " -" + OUTPUT_ULTRA_P_OPTION
+        System.out.println( " Options" );
+        System.out.println( "  -" + CUTOFF_ORTHO_OPTION + " : cutoff for ortholog output (default: 50)" );
+        System.out.println( "  -" + TABLE_OUTPUT_OPTION + "  : file-name for output table" );
+        System.out.println( "  -" + QUERY_OPTION + "  : name for query (sequence/node)" );
+        System.out.println( "  -" + SORT_OPTION + "  : sort (default: 2)" );
+        System.out.println( "  -" + OUTPUT_ULTRA_P_OPTION
                 + "  : to output ultra-paralogs (species specific expansions/paralogs)" );
-        System.out.println( " -" + CUTOFF_ULTRA_P_OPTION + " : cutoff for ultra-paralog output (default: 50)" );
+        System.out.println( "  -" + CUTOFF_ULTRA_P_OPTION + " : cutoff for ultra-paralog output (default: 50)" );
         System.out.println();
-        System.out.println( " sort:" );
+        System.out.println( " Sort" );
         System.out.println( RIO.getOrderHelp().toString() );
-        System.out.println();
+        System.out.println( " Formats" );
+        System.out.println( "  The species tree is expected to be in phyloXML format." );
         System.out
-                .println( " example: \"rio gene_trees.nh species.xml outfile -q=D_HUMAN -t=outtable -u -cu=60 -co=60\"" );
+                .println( "  The gene trees ideally are in phyloXML as well, but can also be in New Hamphshire (Newick)" );
+        System.out.println( "  or Nexus format as long as species information can be extracted from the gene names" );
+        System.out.println( "  (e.g. \"HUMAN\" from \"BCL2_HUMAN\")." );
+        System.out.println();
+        System.out.println( " Examples" );
+        System.out.println( "  \"rio gene_trees.nh species.xml outfile -q=BCL2_HUMAN -t=outtable -u -cu=60 -co=60\"" );
+        System.out.println( "  \"rio gene_trees.nh species.xml -t=outtable\"" );
         System.out.println();
         System.exit( -1 );
     }
