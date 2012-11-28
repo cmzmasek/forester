@@ -4,22 +4,27 @@
 
 == Purpose ==
 
-To infer duplication events on a gene tree given a trusted species tree.
+RIO (Resampled Inference of Orthologs) is a method for automated phylogenomics based on explicit phylogenetic inference. RIO analyses are performed over resampled phylogenetic trees to estimate the reliability of orthology assignments.
 
 == Usage == 
 {{{
 java -Xmx1024m -cp
-path/to/forester.jar org.forester.application.rio [-options] <gene tree in phyloXML format> <species tree> <outfile>
+path/to/forester.jar org.forester.application.rio [options] <gene trees file> <species tree file> [outfile]
 }}}
 === Options ===
 
-  * -g: to allow stripping of gene tree nodes without a matching species in the species tree
- 
-  * -m: use most parimonious duplication model for GSDI: assign nodes as speciations which would otherwise be assiged as potential duplications due tp polytomies in the species tree
+  * -co: cutoff for ortholog output (default: 50) 
+  
+  * -t : file-name for output table
+  
+  * -q : name for query (sequence/node)
 
-  * -q: to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)
+  * -s : sort (default: 2)
 
-  * -b: to use SDIse algorithm instead of GSDI algorithm (for binary species trees)
+  * -u : to output ultra-paralogs (species specific expansions/paralogs)
+
+  * -cu: cutoff for ultra-paralog output (default: 50)
+
 
 ==== Gene tree ====
 Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
