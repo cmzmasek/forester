@@ -27,15 +27,16 @@ path/to/forester.jar org.forester.application.rio [options] <gene trees file> <s
 
 ==== Sort ====
 
-  0: orthologies
-  1: orthologies > super orthologies
-  2: super orthologies > orthologies
+  * 0: orthologies
+  * 1: orthologies > super orthologies
+  * 2: super orthologies > orthologies
 
-==== Gene tree ====
-Must be in phyloXM format, with taxonomy and sequence data in appropriate fields ([http://forester.googlecode.com/files/wnt_gene_tree.xml example]).
+==== Gene trees ====
+The gene trees ideally are in phyloXML, but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be extracted from the gene names
+  (e.g. "HUMAN" from "BCL2_HUMAN").
 
 ==== Species tree ====
-Must be in phyloXML format unless option -q is used ([http://forester.googlecode.com/files/species.xml example]).
+Must be in phyloXML format  ([http://forester.googlecode.com/files/species.xml example]).
 
 === Output ===
 
