@@ -1,6 +1,6 @@
-#summary generalized speciation duplication inference
+#summary resampled inference of orthologs
 
-= Generalized Speciation Duplication Inference =
+= RIO: Resampled Inference of Orthologs =
 
 == Purpose ==
 
@@ -9,7 +9,7 @@ To infer duplication events on a gene tree given a trusted species tree.
 == Usage == 
 {{{
 java -Xmx1024m -cp
-path/to/forester.jar org.forester.application.gsdi [-options] <gene tree in phyloXML format> <species tree> <outfile>
+path/to/forester.jar org.forester.application.rio [-options] <gene tree in phyloXML format> <species tree> <outfile>
 }}}
 === Options ===
 
@@ -53,7 +53,9 @@ GSDI can establish a taxonomic mapping between gene and species tree on the foll
   * [http://forester.googlecode.com/files/wnt_gsdi_log.txt log file (output)]
 
 
-== Reference ==
+== References ==
+
+Zmasek CM and Eddy SR "RIO: Analyzing proteomes by automated phylogenomics using resampled inference of orthologs" [http://www.biomedcentral.com/1471-2105/3/14/ BMC Bioinformatics 2002, 3:14]
 
 Zmasek CM and Eddy SR "A simple algorithm to infer gene duplication and speciation events on a gene tree" [http://bioinformatics.oxfordjournals.org/content/17/9/821.abstract Bioinformatics, 17, 821-828]
  
