@@ -32,10 +32,10 @@ path/to/forester.jar org.forester.application.rio [options] <gene trees file> <s
   * 2: super orthologies > orthologies
 
 ==== Gene trees ====
-The gene trees ideally are in phyloXML,with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN").
+The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN").
 
 ==== Species tree ====
-Must be in phyloXML format  ([http://forester.googlecode.com/files/species.xml example]).
+Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species.xml example]).
 
 
 === Examples ===
@@ -56,6 +56,8 @@ Must be in phyloXML format  ([http://forester.googlecode.com/files/species.xml e
 Zmasek CM and Eddy SR "RIO: Analyzing proteomes by automated phylogenomics using resampled inference of orthologs" [http://www.biomedcentral.com/1471-2105/3/14/ BMC Bioinformatics 2002, 3:14]
 
 Zmasek CM and Eddy SR "A simple algorithm to infer gene duplication and speciation events on a gene tree" [http://bioinformatics.oxfordjournals.org/content/17/9/821.abstract Bioinformatics, 17, 821-828]
+
+Han M and Zmasek CM "phyloXML: XML for evolutionary biology and comparative genomics" [http://www.biomedcentral.com/1471-2105/10/356/ BMC Bioinformatics 2009, 10:356]
  
 
 == Download ==
