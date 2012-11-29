@@ -16,7 +16,7 @@ java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene tre
   
   * -t : file-name for output table
   
-  * -q : name for query (sequence/node), if this is bing used, indicating an <outfile> is required
+  * -q : name for query (sequence/node), if this is bing used, [outfile] is required as well
 
   * -s : sort (default: 2)
 
