@@ -150,6 +150,7 @@ public final class Configuration {
     final static int                        edit_node_data                                         = 14;
     final static int                        sort_descendents                                       = 15;
     final static int                        get_ext_desc_data                                      = 16;
+    final static int                        select_nodes                                           = 17;
     // ---------------------------
     // Display options for trees
     // ---------------------------
@@ -178,7 +179,7 @@ public final class Configuration {
             { "Open Sequence Web", "display" }, { "Open Taxonomy Web", "display" }, { "Blast", "display" },
             { "Cut Subtree", "display" }, { "Copy Subtree", "display" }, { "Paste Subtree", "display" },
             { "Delete Subtree/Node", "display" }, { "Add New Node", "display" }, { "Edit Node Data", "display" },
-            { "Sort Descendants", "display" }, { "Return", "display" }                            };
+            { "Sort Descendants", "display" }, { "Return", "display" }, { "Select Node(s)", "display" } };
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
     // --------------
@@ -414,6 +415,9 @@ public final class Configuration {
         }
         else if ( name.equals( "edit_node_data" ) ) {
             index = Configuration.edit_node_data;
+        }
+        else if ( name.equals( "select_nodes" ) ) {
+            index = Configuration.select_nodes;
         }
         else if ( name.equals( "display_node_popup" ) ) {
             ForesterUtil.printWarningMessage( Constants.PRG_NAME,
