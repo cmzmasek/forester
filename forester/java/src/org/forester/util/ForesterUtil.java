@@ -61,6 +61,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Distribution;
+import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Taxonomy;
+
 public final class ForesterUtil {
 
     public final static String       FILE_SEPARATOR                   = System.getProperty( "file.separator" );
@@ -88,6 +93,30 @@ public final class ForesterUtil {
     }
 
     private ForesterUtil() {
+    }
+
+    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasTaxonomy() ) {
+            node.getNodeData().setTaxonomy( new Taxonomy() );
+        }
+    }
+
+    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasSequence() ) {
+            node.getNodeData().setSequence( new Sequence() );
+        }
+    }
+
+    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDistribution() ) {
+            node.getNodeData().setDistribution( new Distribution( "" ) );
+        }
+    }
+
+    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDate() ) {
+            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
+        }
     }
 
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {

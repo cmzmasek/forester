@@ -36,15 +36,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
+import javax.swing.Box;
 import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
@@ -54,7 +59,9 @@ import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
 import org.forester.util.ForesterConstants;
@@ -137,6 +144,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _move_node_names_to_tax_sn_jmi;
     JMenuItem                   _move_node_names_to_seq_names_jmi;
     JMenuItem                   _extract_tax_code_from_node_names_jmi;
+    JMenuItem                   _annotate_item;
     // font size menu:
     JMenuItem                   _super_tiny_fonts_item;
     JMenuItem                   _tiny_fonts_item;
@@ -220,13 +228,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Options                     _options;
     InferenceManager            _inference_manager;
     final ProcessPool           _process_pool;
+    private String              _previous_node_annotation_ref;
 
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
-    }
-
-    public ProcessPool getProcessPool() {
-        return _process_pool;
     }
 
     /**
@@ -285,6 +290,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             midpointRoot();
+        }
+        else if ( o == _annotate_item ) {
+            annotateSequences();
         }
         else if ( o == _switch_colors_mi ) {
             switchColors();
@@ -483,18 +491,45 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _contentpane.repaint();
     }
 
-    boolean isSubtreeDisplayed() {
-        if ( getCurrentTreePanel() != null ) {
-            if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
-                JOptionPane
-                        .showMessageDialog( this,
-                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
-                                            "Operation can not be exectuted on a sub-tree",
-                                            JOptionPane.WARNING_MESSAGE );
-                return true;
+    public Configuration getConfiguration() {
+        return _configuration;
+    }
+
+    public InferenceManager getInferenceManager() {
+        return _inference_manager;
+    }
+
+    public MainPanel getMainPanel() {
+        return _mainpanel;
+    }
+
+    public Options getOptions() {
+        return _options;
+    }
+
+    public ProcessPool getProcessPool() {
+        return _process_pool;
+    }
+
+    public void showTextFrame( final String s, final String title ) {
+        checkTextFrames();
+        _textframes.addLast( TextFrame.instantiate( s, title, _textframes ) );
+    }
+
+    public void showWhole() {
+        _mainpanel.getControlPanel().showWhole();
+    }
+
+    public void updateProcessMenu() {
+        // In general Swing is not thread safe.
+        // See "Swing's Threading Policy".
+        SwingUtilities.invokeLater( new Runnable() {
+
+            @Override
+            public void run() {
+                doUpdateProcessMenu();
             }
-        }
-        return false;
+        } );
     }
 
     void activateSaveAllIfNeeded() {
@@ -551,44 +586,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add( _help_jmenu );
     }
 
-    public void updateProcessMenu() {
-        // In general Swing is not thread safe.
-        // See "Swing's Threading Policy".
-        SwingUtilities.invokeLater( new Runnable() {
-
-            @Override
-            public void run() {
-                doUpdateProcessMenu();
-            }
-        } );
-    }
-
-    private void doUpdateProcessMenu() {
-        if ( _process_pool.size() > 0 ) {
-            if ( _process_menu == null ) {
-                _process_menu = createMenu( "", getConfiguration() );
-                _process_menu.setForeground( Color.RED );
-            }
-            _process_menu.removeAll();
-            final String text = "processes running: " + _process_pool.size();
-            _process_menu.setText( text );
-            _jmenubar.add( _process_menu );
-            for( int i = 0; i < _process_pool.size(); ++i ) {
-                final ProcessRunning p = _process_pool.getProcessByIndex( i );
-                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]" ) ) );
-            }
-        }
-        else {
-            if ( _process_menu != null ) {
-                _process_menu.removeAll();
-                _jmenubar.remove( _process_menu );
-            }
-        }
-        _jmenubar.validate();
-        _jmenubar.repaint();
-        repaint();
-    }
-
     void buildTypeMenu() {
         _type_menu = createMenu( TYPE_MENU_HEADER, getConfiguration() );
         _type_menu.add( _rectangular_type_cbmi = new JCheckBoxMenuItem( MainFrame.RECTANGULAR_TYPE_CBMI_LABEL ) );
@@ -629,74 +626,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _jmenubar.add( _view_jmenu );
     }
 
-    private void chooseFont() {
-        final FontChooser fc = new FontChooser();
-        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
-        fc.showDialog( this, "Select the Base Font" );
-        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
-    }
-
-    private void chooseMinimalConfidence() {
-        final String s = ( String ) JOptionPane
-                .showInputDialog( this,
-                                  "Please enter the minimum for confidence values to be displayed.\n"
-                                          + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
-                                  "Minimal Confidence Value",
-                                  JOptionPane.QUESTION_MESSAGE,
-                                  null,
-                                  null,
-                                  getOptions().getMinConfidenceValue() );
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if ( !ForesterUtil.isEmpty( m_str ) ) {
-                try {
-                    m = Double.parseDouble( m_str );
+    void checkTextFrames() {
+        if ( _textframes.size() > 5 ) {
+            try {
+                if ( _textframes.getFirst() != null ) {
+                    _textframes.getFirst().removeMe();
                 }
-                catch ( final Exception ex ) {
-                    success = false;
+                else {
+                    _textframes.removeFirst();
                 }
             }
-            else {
-                success = false;
-            }
-            if ( success && ( m >= 0.0 ) ) {
-                getOptions().setMinConfidenceValue( m );
-            }
-        }
-    }
-
-    static void chooseNodeSize( final Options options, final Component parent ) {
-        final String s = ( String ) JOptionPane.showInputDialog( parent,
-                                                                 "Please enter the default size for node shapes.\n"
-                                                                         + "[current value: "
-                                                                         + options.getDefaultNodeShapeSize() + "]\n",
-                                                                 "Node Shape Size",
-                                                                 JOptionPane.QUESTION_MESSAGE,
-                                                                 null,
-                                                                 null,
-                                                                 options.getDefaultNodeShapeSize() );
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if ( !ForesterUtil.isEmpty( m_str ) ) {
-                try {
-                    m = Double.parseDouble( m_str );
-                }
-                catch ( final Exception ex ) {
-                    success = false;
-                }
-            }
-            else {
-                success = false;
-            }
-            if ( success && ( m >= 0.0 ) ) {
-                final short size = ForesterUtil.roundToShort( m );
-                if ( size >= 0.0 ) {
-                    options.setDefaultNodeShapeSize( size );
-                }
+            catch ( final NoSuchElementException e ) {
+                // Ignore.
             }
         }
     }
@@ -713,12 +654,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         dispose();
     }
 
-    void confColor() {
-        if ( _mainpanel.getCurrentTreePanel() != null ) {
-            _mainpanel.getCurrentTreePanel().confColor();
-        }
-    }
-
     void colorRank() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
             final String[] ranks = AptxUtil.getAllPossibleRanks();
@@ -733,6 +668,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( !ForesterUtil.isEmpty( rank ) ) {
                 _mainpanel.getCurrentTreePanel().colorRank( rank );
             }
+        }
+    }
+
+    void confColor() {
+        if ( _mainpanel.getCurrentTreePanel() != null ) {
+            _mainpanel.getCurrentTreePanel().confColor();
         }
     }
 
@@ -769,6 +710,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             item.setSelected( is_selected );
             item.addActionListener( this );
+        }
+    }
+
+    void displayBasicInformation() {
+        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            String title = "Basic Information";
+            if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
+                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
+            }
+            showTextFrame( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ), title );
         }
     }
 
@@ -815,10 +766,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    public Configuration getConfiguration() {
-        return _configuration;
-    }
-
     TreePanel getCurrentTreePanel() {
         return getMainPanel().getCurrentTreePanel();
     }
@@ -831,16 +778,106 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _label_direction_cbmi;
     }
 
-    public MainPanel getMainPanel() {
-        return _mainpanel;
-    }
-
     JMenuBar getMenuBarOfMainFrame() {
         return _jmenubar;
     }
 
-    public Options getOptions() {
-        return _options;
+    void help( final Map<String, WebLink> weblinks ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "Display options\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
+        sb.append( "Clickable tree nodes\n" );
+        sb.append( "--------------------\n" );
+        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
+        sb.append( "or by right clicking:\n" );
+        sb.append( "o  Display Node Data -- display information for a node\n" );
+        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
+        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
+        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
+        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
+        sb.append( "o  Colorize Subtree -- color a subtree\n" );
+        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
+        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
+        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
+        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
+        sb.append( "Zooming\n" );
+        sb.append( "---------\n" );
+        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
+        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
+        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
+        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
+        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
+        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
+        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
+        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
+        sb.append( "Quick tree manipulation:\n" );
+        sb.append( "------------------------\n" );
+        sb.append( "Order Subtrees -- order the tree by branch length\n" );
+        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
+        sb.append( "Memory problems (Java heap space error)\n" );
+        sb.append( "---------------------------------------\n" );
+        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
+        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
+        sb.append( "the '-Xmx' Java command line option. For example:\n" );
+        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
+        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
+            sb.append( "Active web links\n" );
+            sb.append( "--------------------\n" );
+            for( final String key : weblinks.keySet() ) {
+                sb.append( " " + weblinks.get( key ).toString() + "\n" );
+            }
+        }
+        // + "General remarks\n"
+        // + "---------------\n"
+        // +
+        // "o  The application version permits copying to the clipboard \n"
+        // +
+        // "    in the \"View\"|\"View as ...\" frame (either by control-c or button press).\n"
+        // +
+        // "o  Changes made to a subtree affect this subtree and its subtrees,\n"
+        // + "    but not any of its parent tree(s).\n"
+        // +
+        // "o  Archaeopteryx tries to detect whether the numerical values in a NH tree\n"
+        // +
+        // "    are likely to be bootstrap values instead of branch length values.\n\n"
+        // +
+        // " Remarks regarding SDI (Speciation Duplication Inference):\n"
+        // +
+        // "o  Each external node of the gene tree (in display) needs to be associated with\n"
+        // +
+        // "    a species: either directly through the \"Species\" field, or the species\n"
+        // +
+        // "    is part of the sequence name in the form \"XXXX_SPECIES\"\n"
+        // +
+        // "    (e.g. \"ACON_DROME\" or \"ACON_DROME/123-4489\" which is also acceptable).\n"
+        // +
+        // "o  A species tree for each species of the gene tree needs to be loaded with\n"
+        // +
+        // "   \"SDI\"|\"Load species tree\" prior the SDI execution.\n"
+        // +
+        // "o  !External nodes of the gene tree associated with species not present in\n"
+        // +
+        // "    the species tree are REMOVED prior to SDI execution!\n"
+        // +
+        // "o  Both the gene tree and the species tree must be completely binary.\n"
+        // +
+        // "o  Duplications and speciations are a function of the position of the root.\n"
+        // +
+        // "    Hence, after each manual \"Root/Reroot\"ing some duplications will be\n"
+        // + "    incorrect and need to be inferred again\n"
+        // +
+        // "    with: \"SDI\"|\"SDI (Speciation Duplication Inference)\n\n"
+        sb.append( "\n" );
+        sb.append( "phyloXML\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
+        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
+        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
+        sb.append( "\n" );
+        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
+        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
+        TextFrame.instantiate( sb.toString(), "Help", _textframes );
     }
 
     void initializeTypeMenu( final Options options ) {
@@ -873,6 +910,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    boolean isSubtreeDisplayed() {
+        if ( getCurrentTreePanel() != null ) {
+            if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
+                JOptionPane
+                        .showMessageDialog( this,
+                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                            "Operation can not be exectuted on a sub-tree",
+                                            JOptionPane.WARNING_MESSAGE );
+                return true;
+            }
+        }
+        return false;
+    }
+
     void midpointRoot() {
         if ( _mainpanel.getCurrentTreePanel() != null ) {
             _mainpanel.getCurrentTreePanel().midpointRoot();
@@ -884,28 +935,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     void readPhylogeniesFromWebservice( final int i ) {
         final UrlTreeReader reader = new UrlTreeReader( this, i );
         new Thread( reader ).start();
-    }
-
-    private void removeBranchColors() {
-        if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
-        }
-    }
-
-    void checkTextFrames() {
-        if ( _textframes.size() > 5 ) {
-            try {
-                if ( _textframes.getFirst() != null ) {
-                    _textframes.getFirst().removeMe();
-                }
-                else {
-                    _textframes.removeFirst();
-                }
-            }
-            catch ( final NoSuchElementException e ) {
-                // Ignore.
-            }
-        }
     }
 
     void removeAllTextFrames() {
@@ -921,16 +950,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _configuration = configuration;
     }
 
-    void setOptions( final Options options ) {
-        _options = options;
-    }
-
     void setInferenceManager( final InferenceManager i ) {
         _inference_manager = i;
     }
 
-    public InferenceManager getInferenceManager() {
-        return _inference_manager;
+    void setOptions( final Options options ) {
+        _options = options;
     }
 
     void setSelectedTypeInTypeMenu( final PHYLOGENY_GRAPHICS_TYPE type ) {
@@ -974,10 +999,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _rectangular_type_cbmi.setSelected( false );
         _unrooted_type_cbmi.setSelected( false );
         _circular_type_cbmi.setSelected( false );
-    }
-
-    public void showWhole() {
-        _mainpanel.getControlPanel().showWhole();
     }
 
     void switchColors() {
@@ -1133,16 +1154,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         ( ( JCheckBoxMenuItem ) o ).setSelected( true );
     }
 
-    void displayBasicInformation() {
-        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
-            String title = "Basic Information";
-            if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
-            }
-            showTextFrame( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ), title );
-        }
-    }
-
     void viewAsNexus() {
         if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
             String title = "Nexus";
@@ -1186,9 +1197,141 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    public void showTextFrame( final String s, final String title ) {
-        checkTextFrames();
-        _textframes.addLast( TextFrame.instantiate( s, title, _textframes ) );
+    private void annotateSequences() {
+        if ( getCurrentTreePanel() != null ) {
+            final Set<Integer> nodes = getCurrentTreePanel().getFoundNodes();
+            if ( ( nodes == null ) || nodes.isEmpty() ) {
+                JOptionPane
+                        .showMessageDialog( this,
+                                            "Need to select nodes, either via direct selection or via the \"Search\" function",
+                                            "No nodes selected for annotation",
+                                            JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final JTextField xField = new JTextField( 10 );
+                final JTextField yField = new JTextField( 20 );
+                xField.setText( ForesterUtil.isEmpty( getPreviousNodeAnnotationReference() ) ? ""
+                        : getPreviousNodeAnnotationReference() );
+                final JPanel myPanel = new JPanel();
+                myPanel.add( new JLabel( "Reference " ) );
+                myPanel.add( xField );
+                myPanel.add( Box.createHorizontalStrut( 15 ) );
+                myPanel.add( new JLabel( "Description " ) );
+                myPanel.add( yField );
+                final int result = JOptionPane.showConfirmDialog( null,
+                                                                  myPanel,
+                                                                  "Enter the sequence annotation(s) for the "
+                                                                          + nodes.size() + " selected nodes",
+                                                                  JOptionPane.OK_CANCEL_OPTION );
+                if ( result == JOptionPane.OK_OPTION ) {
+                    String ref = xField.getText();
+                    String desc = yField.getText();
+                    if ( ref != null ) {
+                        ref = ref.trim();
+                        ref = ref.replaceAll( "\\s+", " " );
+                    }
+                    if ( desc != null ) {
+                        desc = desc.trim();
+                        desc = desc.replaceAll( "\\s+", " " );
+                    }
+                    if ( ref != null ) {
+                        setPreviousNodeAnnotationReference( ref );
+                    }
+                    if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
+                        for( final Integer id : nodes ) {
+                            final PhylogenyNode n = phy.getNode( id );
+                            ForesterUtil.ensurePresenceOfSequence( n );
+                            final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()
+                                    : new Annotation( ref );
+                            if ( !ForesterUtil.isEmpty( desc ) ) {
+                                ann.setDesc( desc );
+                            }
+                            n.getNodeData().getSequence().addAnnotation( ann );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String getPreviousNodeAnnotationReference() {
+        return _previous_node_annotation_ref;
+    }
+
+    private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
+        _previous_node_annotation_ref = previous_node_annotation_ref;
+    }
+
+    private void chooseFont() {
+        final FontChooser fc = new FontChooser();
+        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
+        fc.showDialog( this, "Select the Base Font" );
+        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
+    }
+
+    private void chooseMinimalConfidence() {
+        final String s = ( String ) JOptionPane
+                .showInputDialog( this,
+                                  "Please enter the minimum for confidence values to be displayed.\n"
+                                          + "[current value: " + getOptions().getMinConfidenceValue() + "]\n",
+                                  "Minimal Confidence Value",
+                                  JOptionPane.QUESTION_MESSAGE,
+                                  null,
+                                  null,
+                                  getOptions().getMinConfidenceValue() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                getOptions().setMinConfidenceValue( m );
+            }
+        }
+    }
+
+    private void doUpdateProcessMenu() {
+        if ( _process_pool.size() > 0 ) {
+            if ( _process_menu == null ) {
+                _process_menu = createMenu( "", getConfiguration() );
+                _process_menu.setForeground( Color.RED );
+            }
+            _process_menu.removeAll();
+            final String text = "processes running: " + _process_pool.size();
+            _process_menu.setText( text );
+            _jmenubar.add( _process_menu );
+            for( int i = 0; i < _process_pool.size(); ++i ) {
+                final ProcessRunning p = _process_pool.getProcessByIndex( i );
+                _process_menu.add( customizeJMenuItem( new JMenuItem( p.getName() + " [" + p.getStart() + "]" ) ) );
+            }
+        }
+        else {
+            if ( _process_menu != null ) {
+                _process_menu.removeAll();
+                _jmenubar.remove( _process_menu );
+            }
+        }
+        _jmenubar.validate();
+        _jmenubar.repaint();
+        repaint();
+    }
+
+    private void removeBranchColors() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+        }
     }
 
     /**
@@ -1224,6 +1367,40 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog( null, about, Constants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
     }
 
+    static void chooseNodeSize( final Options options, final Component parent ) {
+        final String s = ( String ) JOptionPane.showInputDialog( parent,
+                                                                 "Please enter the default size for node shapes.\n"
+                                                                         + "[current value: "
+                                                                         + options.getDefaultNodeShapeSize() + "]\n",
+                                                                 "Node Shape Size",
+                                                                 JOptionPane.QUESTION_MESSAGE,
+                                                                 null,
+                                                                 null,
+                                                                 options.getDefaultNodeShapeSize() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
+                }
+                catch ( final Exception ex ) {
+                    success = false;
+                }
+            }
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                final short size = ForesterUtil.roundToShort( m );
+                if ( size >= 0.0 ) {
+                    options.setDefaultNodeShapeSize( size );
+                }
+            }
+        }
+    }
+
     static String createCurrentFontDesc( final TreeFontSet tree_font_set ) {
         return tree_font_set.getLargeFont().getFamily() + " " + tree_font_set.getLargeFont().getSize();
     }
@@ -1248,28 +1425,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         label.setSelected( false );
         label.setEnabled( false );
         return label;
-    }
-
-    static void cycleOverview( final Options op, final TreePanel tree_panel ) {
-        switch ( op.getOvPlacement() ) {
-            case LOWER_LEFT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
-                break;
-            case LOWER_RIGHT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_LEFT );
-                break;
-            case UPPER_LEFT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_RIGHT );
-                break;
-            case UPPER_RIGHT:
-                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
-                break;
-            default:
-                throw new RuntimeException( "unknown placement: " + op.getOvPlacement() );
-        }
-        if ( tree_panel != null ) {
-            tree_panel.updateOvSettings();
-        }
     }
 
     static void cycleNodeFill( final Options op, final TreePanel tree_panel ) {
@@ -1301,110 +1456,25 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void help( final Map<String, WebLink> weblinks ) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( "Display options\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
-        sb.append( "Clickable tree nodes\n" );
-        sb.append( "--------------------\n" );
-        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
-        sb.append( "or by right clicking:\n" );
-        sb.append( "o  Display Node Data -- display information for a node\n" );
-        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
-        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
-        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
-        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
-        sb.append( "o  Colorize Subtree -- color a subtree\n" );
-        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
-        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
-        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
-        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
-        sb.append( "Zooming\n" );
-        sb.append( "---------\n" );
-        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
-        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
-        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
-        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
-        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
-        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
-        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
-        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
-        sb.append( "Quick tree manipulation:\n" );
-        sb.append( "------------------------\n" );
-        sb.append( "Order Subtrees -- order the tree by branch length\n" );
-        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
-        sb.append( "Memory problems (Java heap space error)\n" );
-        sb.append( "---------------------------------------\n" );
-        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
-        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
-        sb.append( "the '-Xmx' Java command line option. For example:\n" );
-        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
-        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
-            sb.append( "Active web links\n" );
-            sb.append( "--------------------\n" );
-            for( final String key : weblinks.keySet() ) {
-                sb.append( " " + weblinks.get( key ).toString() + "\n" );
-            }
+    static void cycleOverview( final Options op, final TreePanel tree_panel ) {
+        switch ( op.getOvPlacement() ) {
+            case LOWER_LEFT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT );
+                break;
+            case LOWER_RIGHT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_LEFT );
+                break;
+            case UPPER_LEFT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.UPPER_RIGHT );
+                break;
+            case UPPER_RIGHT:
+                op.setOvPlacement( Options.OVERVIEW_PLACEMENT_TYPE.LOWER_RIGHT );
+                break;
+            default:
+                throw new RuntimeException( "unknown placement: " + op.getOvPlacement() );
         }
-        // + "General remarks\n"
-        // + "---------------\n"
-        // +
-        // "o  The application version permits copying to the clipboard \n"
-        // +
-        // "    in the \"View\"|\"View as ...\" frame (either by control-c or button press).\n"
-        // +
-        // "o  Changes made to a subtree affect this subtree and its subtrees,\n"
-        // + "    but not any of its parent tree(s).\n"
-        // +
-        // "o  Archaeopteryx tries to detect whether the numerical values in a NH tree\n"
-        // +
-        // "    are likely to be bootstrap values instead of branch length values.\n\n"
-        // +
-        // " Remarks regarding SDI (Speciation Duplication Inference):\n"
-        // +
-        // "o  Each external node of the gene tree (in display) needs to be associated with\n"
-        // +
-        // "    a species: either directly through the \"Species\" field, or the species\n"
-        // +
-        // "    is part of the sequence name in the form \"XXXX_SPECIES\"\n"
-        // +
-        // "    (e.g. \"ACON_DROME\" or \"ACON_DROME/123-4489\" which is also acceptable).\n"
-        // +
-        // "o  A species tree for each species of the gene tree needs to be loaded with\n"
-        // +
-        // "   \"SDI\"|\"Load species tree\" prior the SDI execution.\n"
-        // +
-        // "o  !External nodes of the gene tree associated with species not present in\n"
-        // +
-        // "    the species tree are REMOVED prior to SDI execution!\n"
-        // +
-        // "o  Both the gene tree and the species tree must be completely binary.\n"
-        // +
-        // "o  Duplications and speciations are a function of the position of the root.\n"
-        // +
-        // "    Hence, after each manual \"Root/Reroot\"ing some duplications will be\n"
-        // + "    incorrect and need to be inferred again\n"
-        // +
-        // "    with: \"SDI\"|\"SDI (Speciation Duplication Inference)\n\n"
-        sb.append( "\n" );
-        sb.append( "phyloXML\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
-        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
-        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
-        sb.append( "\n" );
-        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
-        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
-        TextFrame.instantiate( sb.toString(), "Help", _textframes );
-    }
-
-    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
-        if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
-            mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
-        }
-        else {
-            mi.setText( "Cycle Overview Placement..." );
+        if ( tree_panel != null ) {
+            tree_panel.updateOvSettings();
         }
     }
 
@@ -1425,6 +1495,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else {
             mi.setText( "Cycle Node Shape Fill Type..." );
+        }
+    }
+
+    static void setOvPlacementColorChooseMenuItem( final JMenuItem mi, final Options options ) {
+        if ( ( options != null ) && ( options.getOvPlacement() != null ) ) {
+            mi.setText( "Cycle Overview Placement... (current: " + options.getOvPlacement() + ")" );
+        }
+        else {
+            mi.setText( "Cycle Overview Placement..." );
         }
     }
 

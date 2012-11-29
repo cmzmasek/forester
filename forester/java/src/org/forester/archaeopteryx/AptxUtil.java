@@ -72,8 +72,6 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
-import org.forester.phylogeny.data.Distribution;
-import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -94,6 +92,243 @@ public final class AptxUtil {
                                                                          .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
+    }
+
+    public static MaskFormatter createMaskFormatter( final String s ) {
+        MaskFormatter formatter = null;
+        try {
+            formatter = new MaskFormatter( s );
+        }
+        catch ( final ParseException e ) {
+            throw new IllegalArgumentException( e );
+        }
+        return formatter;
+    }
+
+    final static public boolean isHasAtLeastNodeWithEvent( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getNodeData().isHasEvent() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if at least one branch has a length larger than zero.
+     * 
+     * 
+     * @param phy
+     */
+    final static public boolean isHasAtLeastOneBranchLengthLargerThanZero( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getDistanceToParent() > 0.0 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            if ( it.next().getBranchData().isHasConfidences() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final public static void launchWebBrowser( final URI uri,
+                                               final boolean is_applet,
+                                               final JApplet applet,
+                                               final String frame_name ) throws IOException {
+        if ( is_applet ) {
+            applet.getAppletContext().showDocument( uri.toURL(), frame_name );
+        }
+        else {
+            // This requires Java 1.6:
+            // =======================
+            // boolean no_desktop = false;
+            // try {
+            // if ( Desktop.isDesktopSupported() ) {
+            // System.out.println( "desktop supported" );
+            // final Desktop dt = Desktop.getDesktop();
+            // dt.browse( uri );
+            // }
+            // else {
+            // no_desktop = true;
+            // }
+            // }
+            // catch ( final Exception ex ) {
+            // ex.printStackTrace();
+            // no_desktop = true;
+            // }
+            // catch ( final Error er ) {
+            // er.printStackTrace();
+            // no_desktop = true;
+            // }
+            // if ( no_desktop ) {
+            // System.out.println( "desktop not supported" );
+            try {
+                openUrlInWebBrowser( uri.toString() );
+            }
+            catch ( final Exception e ) {
+                throw new IOException( e );
+            }
+            // }
+        }
+    }
+
+    public final static Accession obtainSequenceAccessionFromName( final String sequence_name ) {
+        final String n = sequence_name.trim();
+        final Matcher matcher1 = seq_identifier_pattern_1.matcher( n );
+        String group1 = "";
+        String group2 = "";
+        if ( matcher1.matches() ) {
+            group1 = matcher1.group( 1 );
+            group2 = matcher1.group( 2 );
+        }
+        else {
+            final Matcher matcher2 = seq_identifier_pattern_2.matcher( n );
+            if ( matcher2.matches() ) {
+                group1 = matcher2.group( 1 );
+                group2 = matcher2.group( 2 );
+            }
+        }
+        if ( ForesterUtil.isEmpty( group1 ) || ForesterUtil.isEmpty( group2 ) ) {
+            return null;
+        }
+        return new Accession( group2, group1 );
+    }
+
+    public final static void printWarningMessage( final String name, final String message ) {
+        System.out.println( "[" + name + "] > " + message );
+    }
+
+    final public static void showErrorMessage( final Component parent, final String error_msg ) {
+        printAppletMessage( Constants.PRG_NAME, error_msg );
+        JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
+                + "] Error", JOptionPane.ERROR_MESSAGE );
+    }
+
+    public final static void showExtDescNodeDataUserSelectedHelper( final ControlPanel cp,
+                                                                    final PhylogenyNode node,
+                                                                    final List<String> data ) {
+        final StringBuilder sb = new StringBuilder();
+        if ( cp.isShowNodeNames() && !ForesterUtil.isEmpty( node.getName() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getName(), sb );
+        }
+        if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getName(), sb );
+        }
+        if ( cp.isShowGeneSymbols() && node.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(), sb );
+        }
+        if ( cp.isShowSequenceAcc() && node.getNodeData().isHasSequence()
+                && ( node.getNodeData().getSequence().getAccession() != null )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().toString() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getAccession().toString(), sb );
+        }
+        if ( cp.isShowTaxonomyCode() && node.getNodeData().isHasTaxonomy()
+                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getTaxonomyCode(), sb );
+        }
+        if ( cp.isShowTaxonomyScientificNames() && node.getNodeData().isHasTaxonomy()
+                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getScientificName(), sb );
+        }
+        if ( ( cp.isShowGeneNames() || cp.isShowGeneSymbols() || cp.isShowSequenceAcc() )
+                && node.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getMolecularSequence(), sb );
+        }
+        final String s = sb.toString().trim();
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            data.add( s );
+        }
+    }
+
+    public final static void showExtDescNodeDataUserSelectedHelperHelper( final String s, final StringBuilder sb ) {
+        if ( sb.length() > 0 ) {
+            sb.append( "\t" );
+        }
+        sb.append( s );
+    }
+
+    final public static void showInformationMessage( final Component parent, final String title, final String msg ) {
+        JOptionPane.showMessageDialog( parent, msg, title, JOptionPane.INFORMATION_MESSAGE );
+    }
+
+    public static void writePhylogenyToGraphicsFile( final File intree,
+                                                     final File outfile,
+                                                     final int width,
+                                                     final int height,
+                                                     final GraphicsExportType type,
+                                                     final Configuration config ) throws IOException {
+        final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
+        Phylogeny[] phys = null;
+        phys = PhylogenyMethods.readPhylogenies( parser, intree );
+        writePhylogenyToGraphicsFile( phys[ 0 ], outfile, width, height, type, config );
+    }
+
+    public static void writePhylogenyToGraphicsFile( final Phylogeny phy,
+                                                     final File outfile,
+                                                     final int width,
+                                                     final int height,
+                                                     final GraphicsExportType type,
+                                                     final Configuration config ) throws IOException {
+        final Phylogeny[] phys = new Phylogeny[ 1 ];
+        phys[ 0 ] = phy;
+        final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
+        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
+                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
+        mf.end();
+    }
+
+    public final static void writePhylogenyToGraphicsFileNonInteractive( final File outfile,
+                                                                         final int width,
+                                                                         final int height,
+                                                                         final TreePanel tree_panel,
+                                                                         final ControlPanel ac,
+                                                                         final GraphicsExportType type,
+                                                                         final Options options ) throws IOException {
+        tree_panel.setParametersForPainting( width, height, true );
+        tree_panel.resetPreferredSize();
+        tree_panel.repaint();
+        final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
+                                                                   RenderingHints.VALUE_RENDER_QUALITY );
+        rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
+        if ( options.isAntialiasPrint() ) {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        }
+        else {
+            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
+            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
+        }
+        final Phylogeny phylogeny = tree_panel.getPhylogeny();
+        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
+            return;
+        }
+        if ( outfile.isDirectory() ) {
+            throw new IOException( "\"" + outfile + "\" is a directory" );
+        }
+        final BufferedImage buffered_img = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
+        final Graphics2D g2d = buffered_img.createGraphics();
+        g2d.setRenderingHints( rendering_hints );
+        tree_panel.paintPhylogeny( g2d, false, true, width, height, 0, 0 );
+        if ( type == GraphicsExportType.TIFF ) {
+            writeToTiff( outfile, buffered_img );
+        }
+        else {
+            ImageIO.write( buffered_img, type.toString(), outfile );
+        }
+        g2d.dispose();
     }
 
     final static void addPhylogeniesToTabs( final Phylogeny[] phys,
@@ -231,7 +466,7 @@ public final class AptxUtil {
         return iter.hasNext();
     }
 
-    final public static void collapseSpeciesSpecificSubtrees( final Phylogeny phy ) {
+    final static void collapseSpeciesSpecificSubtrees( final Phylogeny phy ) {
         boolean inferred = false;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -263,14 +498,6 @@ public final class AptxUtil {
         final PhylogenyNodeIterator it = new PreorderTreeIterator( node );
         while ( it.hasNext() ) {
             it.next().setCollapse( collapse );
-        }
-    }
-
-    private static void colorizeSubtree( final PhylogenyNode node, final BranchColor c ) {
-        node.getBranchData().setBranchColor( c );
-        final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( node );
-        for( final PhylogenyNode desc : descs ) {
-            desc.getBranchData().setBranchColor( c );
         }
     }
 
@@ -522,17 +749,6 @@ public final class AptxUtil {
         return desc.toString();
     }
 
-    public static MaskFormatter createMaskFormatter( final String s ) {
-        MaskFormatter formatter = null;
-        try {
-            formatter = new MaskFormatter( s );
-        }
-        catch ( final ParseException e ) {
-            throw new IllegalArgumentException( e );
-        }
-        return formatter;
-    }
-
     /**
      * Exits with -1.
      * 
@@ -549,31 +765,7 @@ public final class AptxUtil {
         System.exit( -1 );
     }
 
-    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDate() ) {
-            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
-        }
-    }
-
-    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDistribution() ) {
-            node.getNodeData().setDistribution( new Distribution( "" ) );
-        }
-    }
-
-    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasSequence() ) {
-            node.getNodeData().setSequence( new Sequence() );
-        }
-    }
-
-    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasTaxonomy() ) {
-            node.getNodeData().setTaxonomy( new Taxonomy() );
-        }
-    }
-
-    public static String[] getAllPossibleRanks() {
+    final static String[] getAllPossibleRanks() {
         final String[] str_array = new String[ PhyloXmlUtil.TAXONOMY_RANKS_LIST.size() - 2 ];
         int i = 0;
         for( final String e : PhyloXmlUtil.TAXONOMY_RANKS_LIST ) {
@@ -627,42 +819,6 @@ public final class AptxUtil {
         return true;
     }
 
-    final static public boolean isHasAtLeastNodeWithEvent( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getNodeData().isHasEvent() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if at least one branch has a length larger than zero.
-     * 
-     * 
-     * @param phy
-     */
-    final static public boolean isHasAtLeastOneBranchLengthLargerThanZero( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getDistanceToParent() > 0.0 ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    final static public boolean isHasAtLeastOneBranchWithSupportValues( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            if ( it.next().getBranchData().isHasConfidences() ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     final static boolean isJava15() {
         try {
             final String s = ForesterUtil.JAVA_VERSION;
@@ -708,47 +864,6 @@ public final class AptxUtil {
         }
     }
 
-    final public static void launchWebBrowser( final URI uri,
-                                               final boolean is_applet,
-                                               final JApplet applet,
-                                               final String frame_name ) throws IOException {
-        if ( is_applet ) {
-            applet.getAppletContext().showDocument( uri.toURL(), frame_name );
-        }
-        else {
-            // This requires Java 1.6:
-            // =======================
-            // boolean no_desktop = false;
-            // try {
-            // if ( Desktop.isDesktopSupported() ) {
-            // System.out.println( "desktop supported" );
-            // final Desktop dt = Desktop.getDesktop();
-            // dt.browse( uri );
-            // }
-            // else {
-            // no_desktop = true;
-            // }
-            // }
-            // catch ( final Exception ex ) {
-            // ex.printStackTrace();
-            // no_desktop = true;
-            // }
-            // catch ( final Error er ) {
-            // er.printStackTrace();
-            // no_desktop = true;
-            // }
-            // if ( no_desktop ) {
-            // System.out.println( "desktop not supported" );
-            try {
-                openUrlInWebBrowser( uri.toString() );
-            }
-            catch ( final Exception e ) {
-                throw new IOException( e );
-            }
-            // }
-        }
-    }
-
     final static void lookAtSomeTreePropertiesForAptxControlSettings( final Phylogeny t,
                                                                       final ControlPanel atv_control,
                                                                       final Configuration configuration ) {
@@ -791,66 +906,6 @@ public final class AptxUtil {
         }
     }
 
-    final private static char normalizeCharForRGB( char c ) {
-        c -= 65;
-        c *= 10.2;
-        c = c > 255 ? 255 : c;
-        c = c < 0 ? 0 : c;
-        return c;
-    }
-
-    public final static Accession obtainSequenceAccessionFromName( final String sequence_name ) {
-        final String n = sequence_name.trim();
-        final Matcher matcher1 = seq_identifier_pattern_1.matcher( n );
-        String group1 = "";
-        String group2 = "";
-        if ( matcher1.matches() ) {
-            group1 = matcher1.group( 1 );
-            group2 = matcher1.group( 2 );
-        }
-        else {
-            final Matcher matcher2 = seq_identifier_pattern_2.matcher( n );
-            if ( matcher2.matches() ) {
-                group1 = matcher2.group( 1 );
-                group2 = matcher2.group( 2 );
-            }
-        }
-        if ( ForesterUtil.isEmpty( group1 ) || ForesterUtil.isEmpty( group2 ) ) {
-            return null;
-        }
-        return new Accession( group2, group1 );
-    }
-
-    final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
-            SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException, InterruptedException {
-        final String os = System.getProperty( "os.name" );
-        final Runtime runtime = Runtime.getRuntime();
-        if ( os.toLowerCase().startsWith( "win" ) ) {
-            Runtime.getRuntime().exec( "rundll32 url.dll,FileProtocolHandler " + url );
-        }
-        else if ( isMac() ) {
-            final Class<?> file_mgr = Class.forName( "com.apple.eio.FileManager" );
-            final Method open_url = file_mgr.getDeclaredMethod( "openURL", new Class[] { String.class } );
-            open_url.invoke( null, new Object[] { url } );
-        }
-        else {
-            final String[] browsers = { "firefox", "opera", "konqueror", "mozilla", "netscape", "epiphany" };
-            String browser = null;
-            for( int i = 0; ( i < browsers.length ) && ( browser == null ); ++i ) {
-                if ( runtime.exec( new String[] { "which", browsers[ i ] } ).waitFor() == 0 ) {
-                    browser = browsers[ i ];
-                }
-            }
-            if ( browser == null ) {
-                throw new IOException( "could not find a web browser to open [" + url + "] in" );
-            }
-            else {
-                runtime.exec( new String[] { browser, url } );
-            }
-        }
-    }
-
     final static void openWebsite( final String url, final boolean is_applet, final JApplet applet ) throws IOException {
         try {
             AptxUtil.launchWebBrowser( new URI( url ), is_applet, applet, Constants.PRG_NAME );
@@ -862,10 +917,6 @@ public final class AptxUtil {
 
     final static void printAppletMessage( final String applet_name, final String message ) {
         System.out.println( "[" + applet_name + "] > " + message );
-    }
-
-    public final static void printWarningMessage( final String name, final String message ) {
-        System.out.println( "[" + name + "] > " + message );
     }
 
     final static Phylogeny[] readPhylogeniesFromUrl( final URL url, final boolean phyloxml_validate_against_xsd )
@@ -885,62 +936,6 @@ public final class AptxUtil {
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             it.next().getBranchData().setBranchColor( null );
         }
-    }
-
-    final public static void showErrorMessage( final Component parent, final String error_msg ) {
-        printAppletMessage( Constants.PRG_NAME, error_msg );
-        JOptionPane.showMessageDialog( parent, error_msg, "[" + Constants.PRG_NAME + " " + Constants.VERSION
-                + "] Error", JOptionPane.ERROR_MESSAGE );
-    }
-
-    public final static void showExtDescNodeDataUserSelectedHelper( final ControlPanel cp,
-                                                                    final PhylogenyNode node,
-                                                                    final List<String> data ) {
-        final StringBuilder sb = new StringBuilder();
-        if ( cp.isShowNodeNames() && !ForesterUtil.isEmpty( node.getName() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getName(), sb );
-        }
-        if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getName(), sb );
-        }
-        if ( cp.isShowGeneSymbols() && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(), sb );
-        }
-        if ( cp.isShowSequenceAcc() && node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().toString() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getAccession().toString(), sb );
-        }
-        if ( cp.isShowTaxonomyCode() && node.getNodeData().isHasTaxonomy()
-                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getTaxonomyCode(), sb );
-        }
-        if ( cp.isShowTaxonomyScientificNames() && node.getNodeData().isHasTaxonomy()
-                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getScientificName(), sb );
-        }
-        if ( ( cp.isShowGeneNames() || cp.isShowGeneSymbols() || cp.isShowSequenceAcc() )
-                && node.getNodeData().isHasSequence()
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
-            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getMolecularSequence(), sb );
-        }
-        final String s = sb.toString().trim();
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            data.add( s );
-        }
-    }
-
-    public final static void showExtDescNodeDataUserSelectedHelperHelper( final String s, final StringBuilder sb ) {
-        if ( sb.length() > 0 ) {
-            sb.append( "\t" );
-        }
-        sb.append( s );
-    }
-
-    final public static void showInformationMessage( final Component parent, final String title, final String msg ) {
-        JOptionPane.showMessageDialog( parent, msg, title, JOptionPane.INFORMATION_MESSAGE );
     }
 
     final static void unexpectedError( final Error err ) {
@@ -1034,32 +1029,6 @@ public final class AptxUtil {
         return msg;
     }
 
-    public static void writePhylogenyToGraphicsFile( final File intree,
-                                                     final File outfile,
-                                                     final int width,
-                                                     final int height,
-                                                     final GraphicsExportType type,
-                                                     final Configuration config ) throws IOException {
-        final PhylogenyParser parser = ParserUtils.createParserDependingOnFileType( intree, true );
-        Phylogeny[] phys = null;
-        phys = PhylogenyMethods.readPhylogenies( parser, intree );
-        writePhylogenyToGraphicsFile( phys[ 0 ], outfile, width, height, type, config );
-    }
-
-    public static void writePhylogenyToGraphicsFile( final Phylogeny phy,
-                                                     final File outfile,
-                                                     final int width,
-                                                     final int height,
-                                                     final GraphicsExportType type,
-                                                     final Configuration config ) throws IOException {
-        final Phylogeny[] phys = new Phylogeny[ 1 ];
-        phys[ 0 ] = phy;
-        final MainFrameApplication mf = MainFrameApplication.createInstance( phys, config );
-        AptxUtil.writePhylogenyToGraphicsFileNonInteractive( outfile, width, height, mf.getMainPanel()
-                .getCurrentTreePanel(), mf.getMainPanel().getControlPanel(), type, mf.getOptions() );
-        mf.end();
-    }
-
     final static String writePhylogenyToGraphicsFile( final String file_name,
                                                       int width,
                                                       int height,
@@ -1134,47 +1103,6 @@ public final class AptxUtil {
         return msg;
     }
 
-    public final static void writePhylogenyToGraphicsFileNonInteractive( final File outfile,
-                                                                         final int width,
-                                                                         final int height,
-                                                                         final TreePanel tree_panel,
-                                                                         final ControlPanel ac,
-                                                                         final GraphicsExportType type,
-                                                                         final Options options ) throws IOException {
-        tree_panel.setParametersForPainting( width, height, true );
-        tree_panel.resetPreferredSize();
-        tree_panel.repaint();
-        final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
-                                                                   RenderingHints.VALUE_RENDER_QUALITY );
-        rendering_hints.put( RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY );
-        if ( options.isAntialiasPrint() ) {
-            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-        }
-        else {
-            rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
-            rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
-        }
-        final Phylogeny phylogeny = tree_panel.getPhylogeny();
-        if ( ( phylogeny == null ) || phylogeny.isEmpty() ) {
-            return;
-        }
-        if ( outfile.isDirectory() ) {
-            throw new IOException( "\"" + outfile + "\" is a directory" );
-        }
-        final BufferedImage buffered_img = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
-        final Graphics2D g2d = buffered_img.createGraphics();
-        g2d.setRenderingHints( rendering_hints );
-        tree_panel.paintPhylogeny( g2d, false, true, width, height, 0, 0 );
-        if ( type == GraphicsExportType.TIFF ) {
-            writeToTiff( outfile, buffered_img );
-        }
-        else {
-            ImageIO.write( buffered_img, type.toString(), outfile );
-        }
-        g2d.dispose();
-    }
-
     final static void writeToTiff( final File file, final BufferedImage image ) throws IOException {
         // See: http://log.robmeek.com/2005/08/write-tiff-in-java.html
         ImageWriter writer = null;
@@ -1202,6 +1130,52 @@ public final class AptxUtil {
         // Convert to an IIOImage:
         final IIOImage iio_image = new IIOImage( image, null, null );
         writer.write( null, iio_image, image_write_param );
+    }
+
+    private static void colorizeSubtree( final PhylogenyNode node, final BranchColor c ) {
+        node.getBranchData().setBranchColor( c );
+        final List<PhylogenyNode> descs = PhylogenyMethods.getAllDescendants( node );
+        for( final PhylogenyNode desc : descs ) {
+            desc.getBranchData().setBranchColor( c );
+        }
+    }
+
+    final private static char normalizeCharForRGB( char c ) {
+        c -= 65;
+        c *= 10.2;
+        c = c > 255 ? 255 : c;
+        c = c < 0 ? 0 : c;
+        return c;
+    }
+
+    final private static void openUrlInWebBrowser( final String url ) throws IOException, ClassNotFoundException,
+            SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException, InterruptedException {
+        final String os = System.getProperty( "os.name" );
+        final Runtime runtime = Runtime.getRuntime();
+        if ( os.toLowerCase().startsWith( "win" ) ) {
+            Runtime.getRuntime().exec( "rundll32 url.dll,FileProtocolHandler " + url );
+        }
+        else if ( isMac() ) {
+            final Class<?> file_mgr = Class.forName( "com.apple.eio.FileManager" );
+            final Method open_url = file_mgr.getDeclaredMethod( "openURL", new Class[] { String.class } );
+            open_url.invoke( null, new Object[] { url } );
+        }
+        else {
+            final String[] browsers = { "firefox", "opera", "konqueror", "mozilla", "netscape", "epiphany" };
+            String browser = null;
+            for( int i = 0; ( i < browsers.length ) && ( browser == null ); ++i ) {
+                if ( runtime.exec( new String[] { "which", browsers[ i ] } ).waitFor() == 0 ) {
+                    browser = browsers[ i ];
+                }
+            }
+            if ( browser == null ) {
+                throw new IOException( "could not find a web browser to open [" + url + "] in" );
+            }
+            else {
+                runtime.exec( new String[] { browser, url } );
+            }
+        }
     }
 
     // See: http://www.xml.nig.ac.jp/tutorial/rest/index.html#2.2

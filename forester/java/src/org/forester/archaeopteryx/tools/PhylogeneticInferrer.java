@@ -34,7 +34,6 @@ import java.util.regex.Matcher;
 
 import javax.swing.JOptionPane;
 
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
@@ -328,15 +327,15 @@ public class PhylogeneticInferrer extends RunnableProcess {
                     final String seq_name = name_m.group( 3 );
                     final String tax_sn = name_m.group( 4 );
                     if ( !ForesterUtil.isEmpty( acc_source ) && !ForesterUtil.isEmpty( acc ) ) {
-                        AptxUtil.ensurePresenceOfSequence( node );
+                        ForesterUtil.ensurePresenceOfSequence( node );
                         node.getNodeData().getSequence( 0 ).setAccession( new Accession( acc, acc_source ) );
                     }
                     if ( !ForesterUtil.isEmpty( seq_name ) ) {
-                        AptxUtil.ensurePresenceOfSequence( node );
+                        ForesterUtil.ensurePresenceOfSequence( node );
                         node.getNodeData().getSequence( 0 ).setName( seq_name );
                     }
                     if ( !ForesterUtil.isEmpty( tax_sn ) ) {
-                        AptxUtil.ensurePresenceOfTaxonomy( node );
+                        ForesterUtil.ensurePresenceOfTaxonomy( node );
                         node.getNodeData().getTaxonomy( 0 ).setScientificName( tax_sn );
                     }
                 }

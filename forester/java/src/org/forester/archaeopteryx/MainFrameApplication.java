@@ -914,6 +914,9 @@ public final class MainFrameApplication extends MainFrame {
         _remove_branch_color_item.setToolTipText( "To delete branch color values from the current phylogeny" );
         customizeJMenuItem( _remove_branch_color_item );
         _tools_menu.addSeparator();
+        _tools_menu.add( _annotate_item = new JMenuItem( "Annotate Sequences of Selected Nodes" ) );
+        customizeJMenuItem( _annotate_item );
+        _tools_menu.addSeparator();
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
         customizeJMenuItem( _midpoint_root_item );
         _tools_menu.addSeparator();

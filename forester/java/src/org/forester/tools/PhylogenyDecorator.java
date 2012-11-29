@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
@@ -92,63 +91,63 @@ public final class PhylogenyDecorator {
                     }
                     if ( new_values != null ) {
                         if ( new_values.containsKey( TP_TAXONOMY_CODE ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy().setTaxonomyCode( new_values.get( TP_TAXONOMY_CODE ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_ID )
                                 && new_values.containsKey( TP_TAXONOMY_ID_PROVIDER ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData()
                                     .getTaxonomy()
                                     .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ),
                                                                     new_values.get( TP_TAXONOMY_ID_PROVIDER ) ) );
                         }
                         else if ( new_values.containsKey( TP_TAXONOMY_ID ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy()
                                     .setIdentifier( new Identifier( new_values.get( TP_TAXONOMY_ID ) ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_SN ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy().setScientificName( new_values.get( TP_TAXONOMY_SN ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_CN ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy().setCommonName( new_values.get( TP_TAXONOMY_CN ) );
                         }
                         if ( new_values.containsKey( TP_TAXONOMY_SYN ) ) {
-                            AptxUtil.ensurePresenceOfTaxonomy( node );
+                            ForesterUtil.ensurePresenceOfTaxonomy( node );
                             node.getNodeData().getTaxonomy().getSynonyms().add( new_values.get( TP_TAXONOMY_SYN ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_ACCESSION )
                                 && new_values.containsKey( TP_SEQ_ACCESSION_SOURCE ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
+                            ForesterUtil.ensurePresenceOfSequence( node );
                             node.getNodeData()
                                     .getSequence()
                                     .setAccession( new Accession( new_values.get( TP_SEQ_ACCESSION ),
                                                                   new_values.get( TP_SEQ_ACCESSION_SOURCE ) ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_ANNOTATION_DESC ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
-                            final Annotation ann = new Annotation( "?" );
+                            ForesterUtil.ensurePresenceOfSequence( node );
+                            final Annotation ann = new Annotation();
                             ann.setDesc( new_values.get( TP_SEQ_ANNOTATION_DESC ) );
                             node.getNodeData().getSequence().addAnnotation( ann );
                         }
                         if ( new_values.containsKey( TP_SEQ_ANNOTATION_REF ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
+                            ForesterUtil.ensurePresenceOfSequence( node );
                             final Annotation ann = new Annotation( new_values.get( TP_SEQ_ANNOTATION_REF ) );
                             node.getNodeData().getSequence().addAnnotation( ann );
                         }
                         if ( new_values.containsKey( TP_SEQ_SYMBOL ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
+                            ForesterUtil.ensurePresenceOfSequence( node );
                             node.getNodeData().getSequence().setSymbol( new_values.get( TP_SEQ_SYMBOL ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_NAME ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
+                            ForesterUtil.ensurePresenceOfSequence( node );
                             node.getNodeData().getSequence().setName( new_values.get( TP_SEQ_NAME ) );
                         }
                         if ( new_values.containsKey( TP_SEQ_MOL_SEQ ) ) {
-                            AptxUtil.ensurePresenceOfSequence( node );
+                            ForesterUtil.ensurePresenceOfSequence( node );
                             node.getNodeData().getSequence().setMolecularSequence( new_values.get( TP_SEQ_MOL_SEQ ) );
                         }
                         if ( new_values.containsKey( TP_NODE_NAME ) ) {
@@ -306,14 +305,14 @@ public final class PhylogenyDecorator {
                                 if ( PhylogenyDecorator.VERBOSE ) {
                                     System.out.println( name + ": " + new_value );
                                 }
-                                AptxUtil.ensurePresenceOfTaxonomy( node );
+                                ForesterUtil.ensurePresenceOfTaxonomy( node );
                                 node.getNodeData().getTaxonomy().setTaxonomyCode( new_value );
                                 break;
                             case TAXONOMY_SCIENTIFIC_NAME:
                                 if ( PhylogenyDecorator.VERBOSE ) {
                                     System.out.println( name + ": " + new_value );
                                 }
-                                AptxUtil.ensurePresenceOfTaxonomy( node );
+                                ForesterUtil.ensurePresenceOfTaxonomy( node );
                                 node.getNodeData().getTaxonomy().setScientificName( new_value );
                                 break;
                             case SEQUENCE_NAME:
@@ -445,7 +444,7 @@ public final class PhylogenyDecorator {
     private static String extractBracketedScientificNames( final PhylogenyNode node, final String new_value ) {
         final int i = new_value.lastIndexOf( "[" );
         final String scientific_name = new_value.substring( i + 1, new_value.length() - 1 );
-        AptxUtil.ensurePresenceOfTaxonomy( node );
+        ForesterUtil.ensurePresenceOfTaxonomy( node );
         node.getNodeData().getTaxonomy().setScientificName( scientific_name );
         return new_value.substring( 0, i - 1 ).trim();
     }
@@ -453,7 +452,7 @@ public final class PhylogenyDecorator {
     private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
         final int i = new_value.lastIndexOf( "[" );
         final String tc = new_value.substring( i + 1, new_value.length() - 1 );
-        AptxUtil.ensurePresenceOfTaxonomy( node );
+        ForesterUtil.ensurePresenceOfTaxonomy( node );
         try {
             node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
         }

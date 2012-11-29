@@ -111,7 +111,6 @@ import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualization;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
-import org.forester.phylogeny.data.PhylogenyData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -223,9 +222,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private boolean                         _edited                           = false;
     private Popup                           _node_desc_popup;
     private JTextArea                       _rollover_popup;
-    // private final int                       _box_size;
-    // private final int                       _half_box_size;
-    //private final short                     _skip_counter                     = 0;
     private final StringBuffer              _popup_buffer                     = new StringBuffer();
     final private static Font               POPUP_FONT                        = new Font( Configuration.getDefaultFontFamilyName(),
                                                                                           Font.PLAIN,
@@ -1728,12 +1724,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final void selectNode( final PhylogenyNode node ) {
         if ( ( getFoundNodes() != null ) && getFoundNodes().contains( node.getId() ) ) {
             getFoundNodes().remove( node.getId() );
+            getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
+            if ( getFoundNodes().size() < 1 ) {
+                getControlPanel().searchReset();
+            }
         }
         else {
+            getControlPanel().getSearchFoundCountsLabel().setVisible( true );
+            getControlPanel().getSearchResetButton().setEnabled( true );
+            getControlPanel().getSearchResetButton().setVisible( true );
             if ( getFoundNodes() == null ) {
                 setFoundNodes( new HashSet<Integer>() );
             }
             getFoundNodes().add( node.getId() );
+            getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
         }
     }
 
@@ -2244,12 +2248,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private Color calculateColorForAnnotation( final PhylogenyData ann ) {
+    final private Color calculateColorForAnnotation( final Annotation ann ) {
         Color c = getTreeColorSet().getAnnotationColor();
         if ( getControlPanel().isColorAccordingToAnnotation() && ( getControlPanel().getAnnotationColors() != null ) ) {
-            c = getControlPanel().getAnnotationColors().get( ann.asSimpleText().toString() );
-            if ( c == null ) {
-                c = getTreeColorSet().getAnnotationColor();
+            final String ann_str = !ForesterUtil.isEmpty( ann.getRef() ) ? ann.getRef() : ann.getDesc();
+            if ( !ForesterUtil.isEmpty( ann_str ) ) {
+                c = getControlPanel().getAnnotationColors().get( ann_str );
+                if ( c == null ) {
+                    c = AptxUtil.calculateColorFromString( ann_str );
+                    getControlPanel().getAnnotationColors().put( ann_str, c );
+                }
+                if ( c == null ) {
+                    c = getTreeColorSet().getAnnotationColor();
+                }
             }
         }
         return c;
@@ -3840,6 +3851,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
         }
+        else if ( getControlPanel().isColorAccordingToAnnotation()
+                && ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAnnotations() != null ) && ( !node
+                        .getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
+            g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotation( 0 ) ) );
+        }
         else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
@@ -3979,7 +3995,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 g.setColor( Color.BLACK );
             }
-            else {
+            else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
             final String ann_str = ann.asSimpleText().toString();

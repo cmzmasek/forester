@@ -201,18 +201,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 }
                 displayedPhylogenyMightHaveChanged( true );
             }
-            else if ( e.getSource() == _color_according_to_annotation ) {
-                if ( ( _show_annotation != null ) && _color_according_to_annotation.isSelected() ) {
-                    _show_annotation.setSelected( true );
-                }
-                displayedPhylogenyMightHaveChanged( false );
-            }
-            else if ( e.getSource() == _show_annotation ) {
-                if ( ( _color_according_to_annotation != null ) && !_show_annotation.isSelected() ) {
-                    _color_according_to_annotation.setSelected( false );
-                }
-                displayedPhylogenyMightHaveChanged( false );
-            }
             else if ( e.getSource() == _show_domain_architectures ) {
                 search();
                 displayedPhylogenyMightHaveChanged( false );
@@ -304,6 +292,132 @@ final class ControlPanel extends JPanel implements ActionListener {
         catch ( final Error err ) {
             AptxUtil.unexpectedError( err );
         }
+    }
+
+    public JCheckBox getColorAccSpeciesCb() {
+        return _color_acc_species;
+    }
+
+    public JCheckBox getColorBranchesCb() {
+        return _color_branches_cb;
+    }
+
+    public JCheckBox getDisplayAsPhylogramCb() {
+        return _display_as_phylogram_cb;
+    }
+
+    public JCheckBox getDynamicallyHideData() {
+        return _dynamically_hide_data;
+    }
+
+    public JCheckBox getNodeDescPopupCb() {
+        return _node_desc_popup_cb;
+    }
+
+    public Sequence getSelectedQuerySequence() {
+        return _selected_query_seq;
+    }
+
+    public JComboBox getSequenceRelationBox() {
+        if ( _show_sequence_relations == null ) {
+            _show_sequence_relations = new JComboBox();
+            _show_sequence_relations.setFocusable( false );
+            _show_sequence_relations.setMaximumRowCount( 20 );
+            _show_sequence_relations.setFont( ControlPanel.js_font );
+            if ( !_configuration.isUseNativeUI() ) {
+                _show_sequence_relations.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
+                _show_sequence_relations.setForeground( getConfiguration().getGuiButtonTextColor() );
+            }
+            _show_sequence_relations.addItem( "-----" );
+            _show_sequence_relations.setToolTipText( "To display orthology information for selected query" );
+        }
+        return _show_sequence_relations;
+    }
+
+    /* GUILHEM_BEG */
+    public JComboBox getSequenceRelationTypeBox() {
+        if ( _sequence_relation_type_box == null ) {
+            _sequence_relation_type_box = new JComboBox();
+            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE.values() ) {
+                _sequence_relation_type_box.addItem( type );
+            }
+            _sequence_relation_type_box.addActionListener( new ActionListener() {
+
+                @Override
+                public void actionPerformed( final ActionEvent e ) {
+                    if ( _mainpanel.getCurrentPhylogeny() != null ) {
+                        setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
+                    }
+                }
+            } );
+        }
+        return _sequence_relation_type_box;
+    }
+
+    public JCheckBox getShowEventsCb() {
+        return _show_events;
+    }
+
+    public JCheckBox getWriteConfidenceCb() {
+        return _write_confidence;
+    }
+
+    public boolean isShowProperties() {
+        return ( ( _show_properties_cb != null ) && _show_properties_cb.isSelected() );
+    }
+
+    public boolean isShowTaxonomyImages() {
+        return ( ( _show_taxo_images_cb != null ) && _show_taxo_images_cb.isSelected() );
+    }
+
+    public boolean isShowVectorData() {
+        return ( ( _show_vector_data_cb != null ) && _show_vector_data_cb.isSelected() );
+    }
+
+    public void setSequenceRelationQueries( final Collection<Sequence> sequenceRelationQueries ) {
+        final JComboBox box = getSequenceRelationBox();
+        while ( box.getItemCount() > 1 ) {
+            box.removeItemAt( 1 );
+        }
+        final HashMap<String, Sequence> sequencesByName = new HashMap<String, Sequence>();
+        final SequenceRelation.SEQUENCE_RELATION_TYPE relationType = ( SequenceRelation.SEQUENCE_RELATION_TYPE ) _sequence_relation_type_box
+                .getSelectedItem();
+        if ( relationType == null ) {
+            return;
+        }
+        final ArrayList<String> sequenceNamesToAdd = new ArrayList<String>();
+        for( final Sequence seq : sequenceRelationQueries ) {
+            if ( seq.hasSequenceRelations() ) {
+                boolean fFoundForCurrentType = false;
+                for( final SequenceRelation sq : seq.getSequenceRelations() ) {
+                    if ( sq.getType().equals( relationType ) ) {
+                        fFoundForCurrentType = true;
+                        break;
+                    }
+                }
+                if ( fFoundForCurrentType ) {
+                    sequenceNamesToAdd.add( seq.getName() );
+                    sequencesByName.put( seq.getName(), seq );
+                }
+            }
+        }
+        // sort sequences by name before adding them to the combo
+        final String[] sequenceNameArray = sequenceNamesToAdd.toArray( new String[ sequenceNamesToAdd.size() ] );
+        Arrays.sort( sequenceNameArray, String.CASE_INSENSITIVE_ORDER );
+        for( final String seqName : sequenceNameArray ) {
+            box.addItem( seqName );
+        }
+        for( final ItemListener oldItemListener : box.getItemListeners() ) {
+            box.removeItemListener( oldItemListener );
+        }
+        box.addItemListener( new ItemListener() {
+
+            @Override
+            public void itemStateChanged( final ItemEvent e ) {
+                _selected_query_seq = sequencesByName.get( e.getItem() );
+                _mainpanel.getCurrentTreePanel().repaint();
+            }
+        } );
     }
 
     void activateButtonToReturnToSuperTree( int index ) {
@@ -530,16 +644,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }// addCheckbox
 
-    private void addClickToOption( final int which, final String title ) {
-        _click_to_combobox.addItem( title );
-        _click_to_names.add( title );
-        _all_click_to_names.put( new Integer( which ), title );
-        if ( !_configuration.isUseNativeUI() ) {
-            _click_to_combobox.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
-            _click_to_combobox.setForeground( getConfiguration().getGuiButtonTextColor() );
-        }
-    }
-
     void addJButton( final JButton jb, final JPanel p ) {
         jb.setFocusPainted( false );
         jb.setFont( ControlPanel.jcb_font );
@@ -571,58 +675,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         p.add( tf );
         tf.addActionListener( this );
     }
-
-    /* GUILHEM_BEG */
-    private void addSequenceRelationBlock() {
-        final JLabel spacer = new JLabel( "" );
-        spacer.setSize( 1, 1 );
-        add( spacer );
-        final JLabel mainLabel = new JLabel( "Sequence relations to display" );
-        final JLabel typeLabel = customizeLabel( new JLabel( "(type) " ), getConfiguration() );
-        typeLabel.setFont( ControlPanel.js_font.deriveFont( 7 ) );
-        getSequenceRelationTypeBox().setFocusable( false );
-        _sequence_relation_type_box.setFont( ControlPanel.js_font );
-        if ( !_configuration.isUseNativeUI() ) {
-            _sequence_relation_type_box.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
-            _sequence_relation_type_box.setForeground( getConfiguration().getGuiButtonTextColor() );
-        }
-        _sequence_relation_type_box.setRenderer( new ListCellRenderer() {
-
-            @Override
-            public Component getListCellRendererComponent( final JList list,
-                                                           final Object value,
-                                                           final int index,
-                                                           final boolean isSelected,
-                                                           final boolean cellHasFocus ) {
-                final Component component = new DefaultListCellRenderer().getListCellRendererComponent( list,
-                                                                                                        value,
-                                                                                                        index,
-                                                                                                        isSelected,
-                                                                                                        cellHasFocus );
-                if ( ( value != null ) && ( value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE ) ) {
-                    ( ( DefaultListCellRenderer ) component ).setText( SequenceRelation
-                            .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
-                }
-                return component;
-            }
-        } );
-        final GridBagLayout gbl = new GridBagLayout();
-        _sequence_relation_type_box.setMinimumSize( new Dimension( 115, 17 ) );
-        _sequence_relation_type_box.setPreferredSize( new Dimension( 115, 20 ) );
-        final JPanel horizGrid = new JPanel( gbl );
-        horizGrid.setBackground( getBackground() );
-        horizGrid.add( typeLabel );
-        horizGrid.add( _sequence_relation_type_box );
-        add( customizeLabel( mainLabel, getConfiguration() ) );
-        add( horizGrid );
-        add( getSequenceRelationBox() );
-        if ( _configuration.doDisplayOption( Configuration.show_relation_confidence ) ) {
-            addCheckbox( Configuration.show_relation_confidence,
-                         _configuration.getDisplayTitle( Configuration.show_relation_confidence ) );
-            setCheckbox( Configuration.show_relation_confidence,
-                         _configuration.doCheckOption( Configuration.show_relation_confidence ) );
-        }
-    }// addSequenceRelationBlock
 
     void deactivateButtonToReturnToSuperTree() {
         _return_to_super_tree.setText( RETURN_TO_SUPER_TREE_TEXT );
@@ -672,14 +724,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _annotation_colors;
     }
 
-    public JCheckBox getColorBranchesCb() {
-        return _color_branches_cb;
-    }
-
-    public JCheckBox getColorAccSpeciesCb() {
-        return _color_acc_species;
-    }
-
     Configuration getConfiguration() {
         return _configuration;
     }
@@ -688,85 +732,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getMainPanel().getCurrentTreePanel();
     }
 
-    public JCheckBox getDisplayAsPhylogramCb() {
-        return _display_as_phylogram_cb;
-    }
-
-    public JCheckBox getDynamicallyHideData() {
-        return _dynamically_hide_data;
-    }
-
-    /* GUILHEM_END */
-    private List<Boolean> getIsDrawPhylogramList() {
-        return _draw_phylogram;
-    }
-
     MainPanel getMainPanel() {
         return _mainpanel;
-    }
-
-    public JCheckBox getNodeDescPopupCb() {
-        return _node_desc_popup_cb;
     }
 
     Options getOptions() {
         return getMainPanel().getOptions();
     }
 
-    private JLabel getSearchFoundCountsLabel() {
-        return _search_found_label;
-    }
-
-    private JButton getSearchResetButton() {
-        return _search_reset_button;
-    }
-
     JTextField getSearchTextField() {
         return _search_tf;
-    }
-
-    public Sequence getSelectedQuerySequence() {
-        return _selected_query_seq;
-    }
-
-    public JComboBox getSequenceRelationBox() {
-        if ( _show_sequence_relations == null ) {
-            _show_sequence_relations = new JComboBox();
-            _show_sequence_relations.setFocusable( false );
-            _show_sequence_relations.setMaximumRowCount( 20 );
-            _show_sequence_relations.setFont( ControlPanel.js_font );
-            if ( !_configuration.isUseNativeUI() ) {
-                _show_sequence_relations.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
-                _show_sequence_relations.setForeground( getConfiguration().getGuiButtonTextColor() );
-            }
-            _show_sequence_relations.addItem( "-----" );
-            _show_sequence_relations.setToolTipText( "To display orthology information for selected query" );
-        }
-        return _show_sequence_relations;
-    }
-
-    /* GUILHEM_BEG */
-    public JComboBox getSequenceRelationTypeBox() {
-        if ( _sequence_relation_type_box == null ) {
-            _sequence_relation_type_box = new JComboBox();
-            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE.values() ) {
-                _sequence_relation_type_box.addItem( type );
-            }
-            _sequence_relation_type_box.addActionListener( new ActionListener() {
-
-                @Override
-                public void actionPerformed( final ActionEvent e ) {
-                    if ( _mainpanel.getCurrentPhylogeny() != null ) {
-                        setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
-                    }
-                }
-            } );
-        }
-        return _sequence_relation_type_box;
-    }
-
-    public JCheckBox getShowEventsCb() {
-        return _show_events;
     }
 
     List<String> getSingleClickToNames() {
@@ -775,16 +750,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     Map<String, Color> getSpeciesColors() {
         return _species_colors;
-    }
-
-    public JCheckBox getWriteConfidenceCb() {
-        return _write_confidence;
-    }
-
-    private void init() {
-        _draw_phylogram = new ArrayList<Boolean>();
-        setSpeciesColors( new HashMap<String, Color>() );
-        setAnnotationColors( new HashMap<String, Color>() );
     }
 
     boolean isAntialiasScreenText() {
@@ -805,10 +770,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isDrawPhylogram() {
         return isDrawPhylogram( getMainPanel().getCurrentTabIndex() );
-    }
-
-    private boolean isDrawPhylogram( final int index ) {
-        return getIsDrawPhylogramList().get( index );
     }
 
     boolean isDynamicallyHideData() {
@@ -847,14 +808,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
     }
 
-    public boolean isShowVectorData() {
-        return ( ( _show_vector_data_cb != null ) && _show_vector_data_cb.isSelected() );
-    }
-
-    public boolean isShowProperties() {
-        return ( ( _show_properties_cb != null ) && _show_properties_cb.isSelected() );
-    }
-
     boolean isShowGeneSymbols() {
         return ( ( _show_gene_symbols != null ) && _show_gene_symbols.isSelected() );
     }
@@ -881,10 +834,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowTaxonomyCode() {
         return ( ( _show_taxo_code != null ) && _show_taxo_code.isSelected() );
-    }
-
-    public boolean isShowTaxonomyImages() {
-        return ( ( _show_taxo_images_cb != null ) && _show_taxo_images_cb.isSelected() );
     }
 
     boolean isShowTaxonomyCommonNames() {
@@ -931,66 +880,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             getSearchResetButton().setEnabled( false );
             getSearchResetButton().setVisible( false );
             searchReset();
-        }
-    }
-
-    private void search( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
-        getSearchFoundCountsLabel().setVisible( true );
-        getSearchResetButton().setEnabled( true );
-        getSearchResetButton().setVisible( true );
-        String[] queries = null;
-        List<PhylogenyNode> nodes = null;
-        if ( query_str.indexOf( ',' ) >= 0 ) {
-            queries = query_str.split( ",+" );
-        }
-        else {
-            queries = new String[ 1 ];
-            queries[ 0 ] = query_str.trim();
-        }
-        if ( ( queries != null ) && ( queries.length > 0 ) ) {
-            nodes = new ArrayList<PhylogenyNode>();
-            for( String query : queries ) {
-                if ( ForesterUtil.isEmpty( query ) ) {
-                    continue;
-                }
-                query = query.trim();
-                if ( query.indexOf( '+' ) >= 0 ) {
-                    nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
-                                                                         tree,
-                                                                         getOptions().isSearchCaseSensitive(),
-                                                                         !getOptions().isMatchWholeTermsOnly(),
-                                                                         isShowDomainArchitectures() ) );
-                }
-                else {
-                    nodes.addAll( PhylogenyMethods.searchData( query,
-                                                               tree,
-                                                               getOptions().isSearchCaseSensitive(),
-                                                               !getOptions().isMatchWholeTermsOnly(),
-                                                               isShowDomainArchitectures() ) );
-                }
-            }
-            if ( getOptions().isInverseSearchResult() ) {
-                final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList( tree );
-                all.removeAll( nodes );
-                nodes = all;
-            }
-        }
-        if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
-            main_panel.getCurrentTreePanel().setFoundNodes( new HashSet<Integer>() );
-            for( final PhylogenyNode node : nodes ) {
-                main_panel.getCurrentTreePanel().getFoundNodes().add( node.getId() );
-            }
-            setSearchFoundCountsOnLabel( nodes.size() );
-        }
-        else {
-            setSearchFoundCountsOnLabel( 0 );
-            searchReset();
-        }
-    }
-
-    private void searchReset() {
-        if ( getMainPanel().getCurrentTreePanel() != null ) {
-            getMainPanel().getCurrentTreePanel().setFoundNodes( null );
         }
     }
 
@@ -1219,10 +1108,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         setDrawPhylogram( getMainPanel().getCurrentTabIndex(), b );
     }
 
-    private void setDrawPhylogram( final int index, final boolean b ) {
-        getIsDrawPhylogramList().set( index, b );
-    }
-
     void setDrawPhylogramEnabled( final boolean b ) {
         getDisplayAsPhylogramCb().setEnabled( b );
     }
@@ -1243,56 +1128,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         // }
     }
 
-    private void setSearchFoundCountsOnLabel( final int counts ) {
-        getSearchFoundCountsLabel().setText( "Found: " + counts );
-    }
-
-    public void setSequenceRelationQueries( final Collection<Sequence> sequenceRelationQueries ) {
-        final JComboBox box = getSequenceRelationBox();
-        while ( box.getItemCount() > 1 ) {
-            box.removeItemAt( 1 );
-        }
-        final HashMap<String, Sequence> sequencesByName = new HashMap<String, Sequence>();
-        final SequenceRelation.SEQUENCE_RELATION_TYPE relationType = ( SequenceRelation.SEQUENCE_RELATION_TYPE ) _sequence_relation_type_box
-                .getSelectedItem();
-        if ( relationType == null ) {
-            return;
-        }
-        final ArrayList<String> sequenceNamesToAdd = new ArrayList<String>();
-        for( final Sequence seq : sequenceRelationQueries ) {
-            if ( seq.hasSequenceRelations() ) {
-                boolean fFoundForCurrentType = false;
-                for( final SequenceRelation sq : seq.getSequenceRelations() ) {
-                    if ( sq.getType().equals( relationType ) ) {
-                        fFoundForCurrentType = true;
-                        break;
-                    }
-                }
-                if ( fFoundForCurrentType ) {
-                    sequenceNamesToAdd.add( seq.getName() );
-                    sequencesByName.put( seq.getName(), seq );
-                }
-            }
-        }
-        // sort sequences by name before adding them to the combo
-        final String[] sequenceNameArray = sequenceNamesToAdd.toArray( new String[ sequenceNamesToAdd.size() ] );
-        Arrays.sort( sequenceNameArray, String.CASE_INSENSITIVE_ORDER );
-        for( final String seqName : sequenceNameArray ) {
-            box.addItem( seqName );
-        }
-        for( final ItemListener oldItemListener : box.getItemListeners() ) {
-            box.removeItemListener( oldItemListener );
-        }
-        box.addItemListener( new ItemListener() {
-
-            @Override
-            public void itemStateChanged( final ItemEvent e ) {
-                _selected_query_seq = sequencesByName.get( e.getItem() );
-                _mainpanel.getCurrentTreePanel().repaint();
-            }
-        } );
-    }
-
     void setShowEvents( final boolean show_events ) {
         if ( getShowEventsCb() == null ) {
             _show_events = new JCheckBox( "" );
@@ -1302,204 +1137,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setSpeciesColors( final Map<String, Color> species_colors ) {
         _species_colors = species_colors;
-    }
-
-    private void setupClickToOptions() {
-        final int default_option = _configuration.getDefaultDisplayClicktoOption();
-        int selected_index = 0;
-        int cb_index = 0;
-        if ( _configuration.doDisplayClickToOption( Configuration.display_node_data ) ) {
-            _show_data_item = cb_index;
-            addClickToOption( Configuration.display_node_data,
-                              _configuration.getClickToTitle( Configuration.display_node_data ) );
-            if ( default_option == Configuration.display_node_data ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.collapse_uncollapse ) ) {
-            _collapse_cb_item = cb_index;
-            addClickToOption( Configuration.collapse_uncollapse,
-                              _configuration.getClickToTitle( Configuration.collapse_uncollapse ) );
-            if ( default_option == Configuration.collapse_uncollapse ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.reroot ) ) {
-            _reroot_cb_item = cb_index;
-            addClickToOption( Configuration.reroot, _configuration.getClickToTitle( Configuration.reroot ) );
-            if ( default_option == Configuration.reroot ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.subtree ) ) {
-            _subtree_cb_item = cb_index;
-            addClickToOption( Configuration.subtree, _configuration.getClickToTitle( Configuration.subtree ) );
-            if ( default_option == Configuration.subtree ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.swap ) ) {
-            _swap_cb_item = cb_index;
-            addClickToOption( Configuration.swap, _configuration.getClickToTitle( Configuration.swap ) );
-            if ( default_option == Configuration.swap ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
-            _sort_descendents_item = cb_index;
-            addClickToOption( Configuration.sort_descendents,
-                              _configuration.getClickToTitle( Configuration.sort_descendents ) );
-            if ( default_option == Configuration.sort_descendents ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.color_subtree ) ) {
-            _color_subtree_cb_item = cb_index;
-            addClickToOption( Configuration.color_subtree, _configuration.getClickToTitle( Configuration.color_subtree ) );
-            if ( default_option == Configuration.color_subtree ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.open_seq_web ) ) {
-            _open_seq_web_item = cb_index;
-            addClickToOption( Configuration.open_seq_web, _configuration.getClickToTitle( Configuration.open_seq_web ) );
-            if ( default_option == Configuration.open_seq_web ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.open_tax_web ) ) {
-            _open_tax_web_item = cb_index;
-            addClickToOption( Configuration.open_tax_web, _configuration.getClickToTitle( Configuration.open_tax_web ) );
-            if ( default_option == Configuration.open_tax_web ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.blast ) ) {
-            _blast_item = cb_index;
-            addClickToOption( Configuration.blast, _configuration.getClickToTitle( Configuration.blast ) );
-            if ( default_option == Configuration.blast ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
-            _get_ext_desc_data = cb_index;
-            if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
-                addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
-                        .getLabelForGetExtDescendentsData() );
-            }
-            else {
-                String s = ";";
-                switch ( getConfiguration().getExtDescNodeDataToReturn() ) {
-                    case NODE_NAME:
-                        s = "Node Names";
-                        break;
-                    case SEQUENCE_ACC:
-                        s = "Sequence Accessors";
-                        break;
-                    case SEQUENCE_MOL_SEQ:
-                        s = "Molecular Sequence";
-                        break;
-                    case SEQUENCE_NAME:
-                        s = "Sequence Names";
-                        break;
-                    case SEQUENCE_SYMBOL:
-                        s = "Sequence Symbols";
-                        break;
-                    case TAXONOMY_CODE:
-                        s = "Taxonomy Codes";
-                        break;
-                    case TAXONOMY_SCIENTIFIC_NAME:
-                        s = "Scientific Names";
-                        break;
-                    case UNKNOWN:
-                        s = "User Selected Data";
-                        break;
-                }
-                final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
-                addClickToOption( Configuration.get_ext_desc_data, label );
-            }
-            if ( default_option == Configuration.get_ext_desc_data ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
-        if ( getOptions().isEditable() ) {
-            if ( _configuration.doDisplayClickToOption( Configuration.cut_subtree ) ) {
-                _cut_subtree_item = cb_index;
-                addClickToOption( Configuration.cut_subtree, _configuration.getClickToTitle( Configuration.cut_subtree ) );
-                if ( default_option == Configuration.cut_subtree ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.copy_subtree ) ) {
-                _copy_subtree_item = cb_index;
-                addClickToOption( Configuration.copy_subtree,
-                                  _configuration.getClickToTitle( Configuration.copy_subtree ) );
-                if ( default_option == Configuration.copy_subtree ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.paste_subtree ) ) {
-                _paste_subtree_item = cb_index;
-                addClickToOption( Configuration.paste_subtree,
-                                  _configuration.getClickToTitle( Configuration.paste_subtree ) );
-                if ( default_option == Configuration.paste_subtree ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.delete_subtree_or_node ) ) {
-                _delete_node_or_subtree_item = cb_index;
-                addClickToOption( Configuration.delete_subtree_or_node,
-                                  _configuration.getClickToTitle( Configuration.delete_subtree_or_node ) );
-                if ( default_option == Configuration.delete_subtree_or_node ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.add_new_node ) ) {
-                _add_new_node_item = cb_index;
-                addClickToOption( Configuration.add_new_node,
-                                  _configuration.getClickToTitle( Configuration.add_new_node ) );
-                if ( default_option == Configuration.add_new_node ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.edit_node_data ) ) {
-                _edit_node_data_item = cb_index;
-                addClickToOption( Configuration.edit_node_data,
-                                  _configuration.getClickToTitle( Configuration.edit_node_data ) );
-                if ( default_option == Configuration.edit_node_data ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.select_nodes ) ) {
-                _select_nodes_item = cb_index;
-                addClickToOption( Configuration.select_nodes,
-                                  _configuration.getClickToTitle( Configuration.select_nodes ) );
-                if ( default_option == Configuration.select_nodes ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-        }
-        // Set default selection and its action
-        _click_to_combobox.setSelectedIndex( selected_index );
-        setClickToAction( selected_index );
     }
 
     /* GUILHEM_END */
@@ -1558,140 +1195,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton( _decr_domain_structure_evalue_thr, d2_panel );
         addJTextField( _domain_structure_evalue_thr_tf, d2_panel );
         addJButton( _incr_domain_structure_evalue_thr, d2_panel );
-    }
-
-    private void setupDisplayCheckboxes() {
-        if ( _configuration.doDisplayOption( Configuration.display_as_phylogram ) ) {
-            addCheckbox( Configuration.display_as_phylogram,
-                         _configuration.getDisplayTitle( Configuration.display_as_phylogram ) );
-            setCheckbox( Configuration.display_as_phylogram,
-                         _configuration.doCheckOption( Configuration.display_as_phylogram ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.dynamically_hide_data ) ) {
-            addCheckbox( Configuration.dynamically_hide_data,
-                         _configuration.getDisplayTitle( Configuration.dynamically_hide_data ) );
-            setCheckbox( Configuration.dynamically_hide_data,
-                         _configuration.doCheckOption( Configuration.dynamically_hide_data ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.node_data_popup ) ) {
-            addCheckbox( Configuration.node_data_popup, _configuration.getDisplayTitle( Configuration.node_data_popup ) );
-            setCheckbox( Configuration.node_data_popup, _configuration.doCheckOption( Configuration.node_data_popup ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.display_internal_data ) ) {
-            addCheckbox( Configuration.display_internal_data,
-                         _configuration.getDisplayTitle( Configuration.display_internal_data ) );
-            setCheckbox( Configuration.display_internal_data,
-                         _configuration.doCheckOption( Configuration.display_internal_data ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.color_according_to_species ) ) {
-            addCheckbox( Configuration.color_according_to_species,
-                         _configuration.getDisplayTitle( Configuration.color_according_to_species ) );
-            setCheckbox( Configuration.color_according_to_species,
-                         _configuration.doCheckOption( Configuration.color_according_to_species ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.color_according_to_annotation ) ) {
-            addCheckbox( Configuration.color_according_to_annotation,
-                         _configuration.getDisplayTitle( Configuration.color_according_to_annotation ) );
-            setCheckbox( Configuration.color_according_to_annotation,
-                         _configuration.doCheckOption( Configuration.color_according_to_annotation ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.color_branches ) ) {
-            addCheckbox( Configuration.color_branches, _configuration.getDisplayTitle( Configuration.color_branches ) );
-            setCheckbox( Configuration.color_branches, _configuration.doCheckOption( Configuration.color_branches ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.width_branches ) ) {
-            addCheckbox( Configuration.width_branches, _configuration.getDisplayTitle( Configuration.width_branches ) );
-            setCheckbox( Configuration.width_branches, _configuration.doCheckOption( Configuration.width_branches ) );
-        }
-        final JLabel label = new JLabel( "Display Data:" );
-        label.setFont( ControlPanel.jcb_bold_font );
-        if ( !getConfiguration().isUseNativeUI() ) {
-            label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
-        }
-        add( label );
-        if ( _configuration.doDisplayOption( Configuration.show_node_names ) ) {
-            addCheckbox( Configuration.show_node_names, _configuration.getDisplayTitle( Configuration.show_node_names ) );
-            setCheckbox( Configuration.show_node_names, _configuration.doCheckOption( Configuration.show_node_names ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_tax_code ) ) {
-            addCheckbox( Configuration.show_tax_code, _configuration.getDisplayTitle( Configuration.show_tax_code ) );
-            setCheckbox( Configuration.show_tax_code, _configuration.doCheckOption( Configuration.show_tax_code ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_scientific_names ) ) {
-            addCheckbox( Configuration.show_taxonomy_scientific_names,
-                         _configuration.getDisplayTitle( Configuration.show_taxonomy_scientific_names ) );
-            setCheckbox( Configuration.show_taxonomy_scientific_names,
-                         _configuration.doCheckOption( Configuration.show_taxonomy_scientific_names ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_common_names ) ) {
-            addCheckbox( Configuration.show_taxonomy_common_names,
-                         _configuration.getDisplayTitle( Configuration.show_taxonomy_common_names ) );
-            setCheckbox( Configuration.show_taxonomy_common_names,
-                         _configuration.doCheckOption( Configuration.show_taxonomy_common_names ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
-            addCheckbox( Configuration.show_taxonomy_images,
-                         _configuration.getDisplayTitle( Configuration.show_taxonomy_images ) );
-            setCheckbox( Configuration.show_taxonomy_images,
-                         _configuration.doCheckOption( Configuration.show_taxonomy_images ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_gene_symbols ) ) {
-            addCheckbox( Configuration.show_gene_symbols,
-                         _configuration.getDisplayTitle( Configuration.show_gene_symbols ) );
-            setCheckbox( Configuration.show_gene_symbols,
-                         _configuration.doCheckOption( Configuration.show_gene_symbols ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_gene_names ) ) {
-            addCheckbox( Configuration.show_gene_names, _configuration.getDisplayTitle( Configuration.show_gene_names ) );
-            setCheckbox( Configuration.show_gene_names, _configuration.doCheckOption( Configuration.show_gene_names ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_sequence_acc ) ) {
-            addCheckbox( Configuration.show_sequence_acc,
-                         _configuration.getDisplayTitle( Configuration.show_sequence_acc ) );
-            setCheckbox( Configuration.show_sequence_acc,
-                         _configuration.doCheckOption( Configuration.show_sequence_acc ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_annotation ) ) {
-            addCheckbox( Configuration.show_annotation, _configuration.getDisplayTitle( Configuration.show_annotation ) );
-            setCheckbox( Configuration.show_annotation, _configuration.doCheckOption( Configuration.show_annotation ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_binary_characters ) ) {
-            addCheckbox( Configuration.show_binary_characters,
-                         _configuration.getDisplayTitle( Configuration.show_binary_characters ) );
-            setCheckbox( Configuration.show_binary_characters,
-                         _configuration.doCheckOption( Configuration.show_binary_characters ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_binary_character_counts ) ) {
-            addCheckbox( Configuration.show_binary_character_counts,
-                         _configuration.getDisplayTitle( Configuration.show_binary_character_counts ) );
-            setCheckbox( Configuration.show_binary_character_counts,
-                         _configuration.doCheckOption( Configuration.show_binary_character_counts ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_domain_architectures ) ) {
-            addCheckbox( Configuration.show_domain_architectures,
-                         _configuration.getDisplayTitle( Configuration.show_domain_architectures ) );
-            setCheckbox( Configuration.show_domain_architectures,
-                         _configuration.doCheckOption( Configuration.show_domain_architectures ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
-            addCheckbox( Configuration.write_confidence_values,
-                         _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
-            setCheckbox( Configuration.write_confidence_values,
-                         _configuration.doCheckOption( Configuration.write_confidence_values ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.write_events ) ) {
-            addCheckbox( Configuration.write_events, _configuration.getDisplayTitle( Configuration.write_events ) );
-            setCheckbox( Configuration.write_events, _configuration.doCheckOption( Configuration.write_events ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_vector_data ) ) {
-            addCheckbox( Configuration.show_vector_data,
-                         _configuration.getDisplayTitle( Configuration.show_vector_data ) );
-            setCheckbox( Configuration.show_vector_data, _configuration.doCheckOption( Configuration.show_vector_data ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_properties ) ) {
-            addCheckbox( Configuration.show_properties, _configuration.getDisplayTitle( Configuration.show_properties ) );
-            setCheckbox( Configuration.show_properties, _configuration.doCheckOption( Configuration.show_properties ) );
-        }
     }
 
     void setupSearchTools() {
@@ -1753,27 +1256,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJTextField( _search_tf, s_panel_1 );
         s_panel_2.add( _search_found_label );
         addJButton( _search_reset_button, s_panel_2 );
-    }
-
-    private void setVisibilityOfDomainStrucureControls() {
-        if ( _zoom_in_domain_structure != null ) {
-            if ( isShowDomainArchitectures() ) {
-                _domain_display_label.setVisible( true );
-                _zoom_in_domain_structure.setVisible( true );
-                _zoom_out_domain_structure.setVisible( true );
-                _decr_domain_structure_evalue_thr.setVisible( true );
-                _incr_domain_structure_evalue_thr.setVisible( true );
-                _domain_structure_evalue_thr_tf.setVisible( true );
-            }
-            else {
-                _domain_display_label.setVisible( false );
-                _zoom_in_domain_structure.setVisible( false );
-                _zoom_out_domain_structure.setVisible( false );
-                _decr_domain_structure_evalue_thr.setVisible( false );
-                _incr_domain_structure_evalue_thr.setVisible( false );
-                _domain_structure_evalue_thr_tf.setVisible( false );
-            }
-        }
     }
 
     /**
@@ -1996,6 +1478,512 @@ final class ControlPanel extends JPanel implements ActionListener {
                     - ( sb.getVisibleAmount() / 2.0 ) ) );
             treepanel.resetPreferredSize();
             treepanel.updateOvSizes();
+        }
+    }
+
+    private void addClickToOption( final int which, final String title ) {
+        _click_to_combobox.addItem( title );
+        _click_to_names.add( title );
+        _all_click_to_names.put( new Integer( which ), title );
+        if ( !_configuration.isUseNativeUI() ) {
+            _click_to_combobox.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
+            _click_to_combobox.setForeground( getConfiguration().getGuiButtonTextColor() );
+        }
+    }
+
+    /* GUILHEM_BEG */
+    private void addSequenceRelationBlock() {
+        final JLabel spacer = new JLabel( "" );
+        spacer.setSize( 1, 1 );
+        add( spacer );
+        final JLabel mainLabel = new JLabel( "Sequence relations to display" );
+        final JLabel typeLabel = customizeLabel( new JLabel( "(type) " ), getConfiguration() );
+        typeLabel.setFont( ControlPanel.js_font.deriveFont( 7 ) );
+        getSequenceRelationTypeBox().setFocusable( false );
+        _sequence_relation_type_box.setFont( ControlPanel.js_font );
+        if ( !_configuration.isUseNativeUI() ) {
+            _sequence_relation_type_box.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
+            _sequence_relation_type_box.setForeground( getConfiguration().getGuiButtonTextColor() );
+        }
+        _sequence_relation_type_box.setRenderer( new ListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent( final JList list,
+                                                           final Object value,
+                                                           final int index,
+                                                           final boolean isSelected,
+                                                           final boolean cellHasFocus ) {
+                final Component component = new DefaultListCellRenderer().getListCellRendererComponent( list,
+                                                                                                        value,
+                                                                                                        index,
+                                                                                                        isSelected,
+                                                                                                        cellHasFocus );
+                if ( ( value != null ) && ( value instanceof SequenceRelation.SEQUENCE_RELATION_TYPE ) ) {
+                    ( ( DefaultListCellRenderer ) component ).setText( SequenceRelation
+                            .getPrintableNameByType( ( SequenceRelation.SEQUENCE_RELATION_TYPE ) value ) );
+                }
+                return component;
+            }
+        } );
+        final GridBagLayout gbl = new GridBagLayout();
+        _sequence_relation_type_box.setMinimumSize( new Dimension( 115, 17 ) );
+        _sequence_relation_type_box.setPreferredSize( new Dimension( 115, 20 ) );
+        final JPanel horizGrid = new JPanel( gbl );
+        horizGrid.setBackground( getBackground() );
+        horizGrid.add( typeLabel );
+        horizGrid.add( _sequence_relation_type_box );
+        add( customizeLabel( mainLabel, getConfiguration() ) );
+        add( horizGrid );
+        add( getSequenceRelationBox() );
+        if ( _configuration.doDisplayOption( Configuration.show_relation_confidence ) ) {
+            addCheckbox( Configuration.show_relation_confidence,
+                         _configuration.getDisplayTitle( Configuration.show_relation_confidence ) );
+            setCheckbox( Configuration.show_relation_confidence,
+                         _configuration.doCheckOption( Configuration.show_relation_confidence ) );
+        }
+    }// addSequenceRelationBlock
+
+    /* GUILHEM_END */
+    private List<Boolean> getIsDrawPhylogramList() {
+        return _draw_phylogram;
+    }
+
+    JLabel getSearchFoundCountsLabel() {
+        return _search_found_label;
+    }
+
+    JButton getSearchResetButton() {
+        return _search_reset_button;
+    }
+
+    private void init() {
+        _draw_phylogram = new ArrayList<Boolean>();
+        setSpeciesColors( new HashMap<String, Color>() );
+        setAnnotationColors( new HashMap<String, Color>() );
+    }
+
+    private boolean isDrawPhylogram( final int index ) {
+        return getIsDrawPhylogramList().get( index );
+    }
+
+    private void search( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
+        getSearchFoundCountsLabel().setVisible( true );
+        getSearchResetButton().setEnabled( true );
+        getSearchResetButton().setVisible( true );
+        String[] queries = null;
+        List<PhylogenyNode> nodes = null;
+        if ( query_str.indexOf( ',' ) >= 0 ) {
+            queries = query_str.split( ",+" );
+        }
+        else {
+            queries = new String[ 1 ];
+            queries[ 0 ] = query_str.trim();
+        }
+        if ( ( queries != null ) && ( queries.length > 0 ) ) {
+            nodes = new ArrayList<PhylogenyNode>();
+            for( String query : queries ) {
+                if ( ForesterUtil.isEmpty( query ) ) {
+                    continue;
+                }
+                query = query.trim();
+                if ( query.indexOf( '+' ) >= 0 ) {
+                    nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
+                                                                         tree,
+                                                                         getOptions().isSearchCaseSensitive(),
+                                                                         !getOptions().isMatchWholeTermsOnly(),
+                                                                         isShowDomainArchitectures() ) );
+                }
+                else {
+                    nodes.addAll( PhylogenyMethods.searchData( query,
+                                                               tree,
+                                                               getOptions().isSearchCaseSensitive(),
+                                                               !getOptions().isMatchWholeTermsOnly(),
+                                                               isShowDomainArchitectures() ) );
+                }
+            }
+            if ( getOptions().isInverseSearchResult() ) {
+                final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList( tree );
+                all.removeAll( nodes );
+                nodes = all;
+            }
+        }
+        if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
+            main_panel.getCurrentTreePanel().setFoundNodes( new HashSet<Integer>() );
+            for( final PhylogenyNode node : nodes ) {
+                main_panel.getCurrentTreePanel().getFoundNodes().add( node.getId() );
+            }
+            setSearchFoundCountsOnLabel( nodes.size() );
+        }
+        else {
+            setSearchFoundCountsOnLabel( 0 );
+            searchReset();
+        }
+    }
+
+    void searchReset() {
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().setFoundNodes( null );
+        }
+    }
+
+    private void setDrawPhylogram( final int index, final boolean b ) {
+        getIsDrawPhylogramList().set( index, b );
+    }
+
+    void setSearchFoundCountsOnLabel( final int counts ) {
+        getSearchFoundCountsLabel().setText( "Found: " + counts );
+    }
+
+    private void setupClickToOptions() {
+        final int default_option = _configuration.getDefaultDisplayClicktoOption();
+        int selected_index = 0;
+        int cb_index = 0;
+        if ( _configuration.doDisplayClickToOption( Configuration.display_node_data ) ) {
+            _show_data_item = cb_index;
+            addClickToOption( Configuration.display_node_data,
+                              _configuration.getClickToTitle( Configuration.display_node_data ) );
+            if ( default_option == Configuration.display_node_data ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.collapse_uncollapse ) ) {
+            _collapse_cb_item = cb_index;
+            addClickToOption( Configuration.collapse_uncollapse,
+                              _configuration.getClickToTitle( Configuration.collapse_uncollapse ) );
+            if ( default_option == Configuration.collapse_uncollapse ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.reroot ) ) {
+            _reroot_cb_item = cb_index;
+            addClickToOption( Configuration.reroot, _configuration.getClickToTitle( Configuration.reroot ) );
+            if ( default_option == Configuration.reroot ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.subtree ) ) {
+            _subtree_cb_item = cb_index;
+            addClickToOption( Configuration.subtree, _configuration.getClickToTitle( Configuration.subtree ) );
+            if ( default_option == Configuration.subtree ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.swap ) ) {
+            _swap_cb_item = cb_index;
+            addClickToOption( Configuration.swap, _configuration.getClickToTitle( Configuration.swap ) );
+            if ( default_option == Configuration.swap ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.sort_descendents ) ) {
+            _sort_descendents_item = cb_index;
+            addClickToOption( Configuration.sort_descendents,
+                              _configuration.getClickToTitle( Configuration.sort_descendents ) );
+            if ( default_option == Configuration.sort_descendents ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.color_subtree ) ) {
+            _color_subtree_cb_item = cb_index;
+            addClickToOption( Configuration.color_subtree, _configuration.getClickToTitle( Configuration.color_subtree ) );
+            if ( default_option == Configuration.color_subtree ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.open_seq_web ) ) {
+            _open_seq_web_item = cb_index;
+            addClickToOption( Configuration.open_seq_web, _configuration.getClickToTitle( Configuration.open_seq_web ) );
+            if ( default_option == Configuration.open_seq_web ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.open_tax_web ) ) {
+            _open_tax_web_item = cb_index;
+            addClickToOption( Configuration.open_tax_web, _configuration.getClickToTitle( Configuration.open_tax_web ) );
+            if ( default_option == Configuration.open_tax_web ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.blast ) ) {
+            _blast_item = cb_index;
+            addClickToOption( Configuration.blast, _configuration.getClickToTitle( Configuration.blast ) );
+            if ( default_option == Configuration.blast ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
+            _get_ext_desc_data = cb_index;
+            if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
+                addClickToOption( Configuration.get_ext_desc_data, getConfiguration()
+                        .getLabelForGetExtDescendentsData() );
+            }
+            else {
+                String s = ";";
+                switch ( getConfiguration().getExtDescNodeDataToReturn() ) {
+                    case NODE_NAME:
+                        s = "Node Names";
+                        break;
+                    case SEQUENCE_ACC:
+                        s = "Sequence Accessors";
+                        break;
+                    case SEQUENCE_MOL_SEQ:
+                        s = "Molecular Sequence";
+                        break;
+                    case SEQUENCE_NAME:
+                        s = "Sequence Names";
+                        break;
+                    case SEQUENCE_SYMBOL:
+                        s = "Sequence Symbols";
+                        break;
+                    case TAXONOMY_CODE:
+                        s = "Taxonomy Codes";
+                        break;
+                    case TAXONOMY_SCIENTIFIC_NAME:
+                        s = "Scientific Names";
+                        break;
+                    case UNKNOWN:
+                        s = "User Selected Data";
+                        break;
+                }
+                final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
+                addClickToOption( Configuration.get_ext_desc_data, label );
+            }
+            if ( default_option == Configuration.get_ext_desc_data ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( getOptions().isEditable() ) {
+            if ( _configuration.doDisplayClickToOption( Configuration.cut_subtree ) ) {
+                _cut_subtree_item = cb_index;
+                addClickToOption( Configuration.cut_subtree, _configuration.getClickToTitle( Configuration.cut_subtree ) );
+                if ( default_option == Configuration.cut_subtree ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.copy_subtree ) ) {
+                _copy_subtree_item = cb_index;
+                addClickToOption( Configuration.copy_subtree,
+                                  _configuration.getClickToTitle( Configuration.copy_subtree ) );
+                if ( default_option == Configuration.copy_subtree ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.paste_subtree ) ) {
+                _paste_subtree_item = cb_index;
+                addClickToOption( Configuration.paste_subtree,
+                                  _configuration.getClickToTitle( Configuration.paste_subtree ) );
+                if ( default_option == Configuration.paste_subtree ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.delete_subtree_or_node ) ) {
+                _delete_node_or_subtree_item = cb_index;
+                addClickToOption( Configuration.delete_subtree_or_node,
+                                  _configuration.getClickToTitle( Configuration.delete_subtree_or_node ) );
+                if ( default_option == Configuration.delete_subtree_or_node ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.add_new_node ) ) {
+                _add_new_node_item = cb_index;
+                addClickToOption( Configuration.add_new_node,
+                                  _configuration.getClickToTitle( Configuration.add_new_node ) );
+                if ( default_option == Configuration.add_new_node ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.edit_node_data ) ) {
+                _edit_node_data_item = cb_index;
+                addClickToOption( Configuration.edit_node_data,
+                                  _configuration.getClickToTitle( Configuration.edit_node_data ) );
+                if ( default_option == Configuration.edit_node_data ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+            if ( _configuration.doDisplayClickToOption( Configuration.select_nodes ) ) {
+                _select_nodes_item = cb_index;
+                addClickToOption( Configuration.select_nodes,
+                                  _configuration.getClickToTitle( Configuration.select_nodes ) );
+                if ( default_option == Configuration.select_nodes ) {
+                    selected_index = cb_index;
+                }
+                cb_index++;
+            }
+        }
+        // Set default selection and its action
+        _click_to_combobox.setSelectedIndex( selected_index );
+        setClickToAction( selected_index );
+    }
+
+    private void setupDisplayCheckboxes() {
+        if ( _configuration.doDisplayOption( Configuration.display_as_phylogram ) ) {
+            addCheckbox( Configuration.display_as_phylogram,
+                         _configuration.getDisplayTitle( Configuration.display_as_phylogram ) );
+            setCheckbox( Configuration.display_as_phylogram,
+                         _configuration.doCheckOption( Configuration.display_as_phylogram ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.dynamically_hide_data ) ) {
+            addCheckbox( Configuration.dynamically_hide_data,
+                         _configuration.getDisplayTitle( Configuration.dynamically_hide_data ) );
+            setCheckbox( Configuration.dynamically_hide_data,
+                         _configuration.doCheckOption( Configuration.dynamically_hide_data ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.node_data_popup ) ) {
+            addCheckbox( Configuration.node_data_popup, _configuration.getDisplayTitle( Configuration.node_data_popup ) );
+            setCheckbox( Configuration.node_data_popup, _configuration.doCheckOption( Configuration.node_data_popup ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.display_internal_data ) ) {
+            addCheckbox( Configuration.display_internal_data,
+                         _configuration.getDisplayTitle( Configuration.display_internal_data ) );
+            setCheckbox( Configuration.display_internal_data,
+                         _configuration.doCheckOption( Configuration.display_internal_data ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.color_according_to_species ) ) {
+            addCheckbox( Configuration.color_according_to_species,
+                         _configuration.getDisplayTitle( Configuration.color_according_to_species ) );
+            setCheckbox( Configuration.color_according_to_species,
+                         _configuration.doCheckOption( Configuration.color_according_to_species ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.color_according_to_annotation ) ) {
+            addCheckbox( Configuration.color_according_to_annotation,
+                         _configuration.getDisplayTitle( Configuration.color_according_to_annotation ) );
+            setCheckbox( Configuration.color_according_to_annotation,
+                         _configuration.doCheckOption( Configuration.color_according_to_annotation ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.color_branches ) ) {
+            addCheckbox( Configuration.color_branches, _configuration.getDisplayTitle( Configuration.color_branches ) );
+            setCheckbox( Configuration.color_branches, _configuration.doCheckOption( Configuration.color_branches ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.width_branches ) ) {
+            addCheckbox( Configuration.width_branches, _configuration.getDisplayTitle( Configuration.width_branches ) );
+            setCheckbox( Configuration.width_branches, _configuration.doCheckOption( Configuration.width_branches ) );
+        }
+        final JLabel label = new JLabel( "Display Data:" );
+        label.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        add( label );
+        if ( _configuration.doDisplayOption( Configuration.show_node_names ) ) {
+            addCheckbox( Configuration.show_node_names, _configuration.getDisplayTitle( Configuration.show_node_names ) );
+            setCheckbox( Configuration.show_node_names, _configuration.doCheckOption( Configuration.show_node_names ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_tax_code ) ) {
+            addCheckbox( Configuration.show_tax_code, _configuration.getDisplayTitle( Configuration.show_tax_code ) );
+            setCheckbox( Configuration.show_tax_code, _configuration.doCheckOption( Configuration.show_tax_code ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_scientific_names ) ) {
+            addCheckbox( Configuration.show_taxonomy_scientific_names,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_scientific_names ) );
+            setCheckbox( Configuration.show_taxonomy_scientific_names,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_scientific_names ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_common_names ) ) {
+            addCheckbox( Configuration.show_taxonomy_common_names,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_common_names ) );
+            setCheckbox( Configuration.show_taxonomy_common_names,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_common_names ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
+            addCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_images ) );
+            setCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_images ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_gene_symbols ) ) {
+            addCheckbox( Configuration.show_gene_symbols,
+                         _configuration.getDisplayTitle( Configuration.show_gene_symbols ) );
+            setCheckbox( Configuration.show_gene_symbols,
+                         _configuration.doCheckOption( Configuration.show_gene_symbols ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_gene_names ) ) {
+            addCheckbox( Configuration.show_gene_names, _configuration.getDisplayTitle( Configuration.show_gene_names ) );
+            setCheckbox( Configuration.show_gene_names, _configuration.doCheckOption( Configuration.show_gene_names ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_sequence_acc ) ) {
+            addCheckbox( Configuration.show_sequence_acc,
+                         _configuration.getDisplayTitle( Configuration.show_sequence_acc ) );
+            setCheckbox( Configuration.show_sequence_acc,
+                         _configuration.doCheckOption( Configuration.show_sequence_acc ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_annotation ) ) {
+            addCheckbox( Configuration.show_annotation, _configuration.getDisplayTitle( Configuration.show_annotation ) );
+            setCheckbox( Configuration.show_annotation, _configuration.doCheckOption( Configuration.show_annotation ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_binary_characters ) ) {
+            addCheckbox( Configuration.show_binary_characters,
+                         _configuration.getDisplayTitle( Configuration.show_binary_characters ) );
+            setCheckbox( Configuration.show_binary_characters,
+                         _configuration.doCheckOption( Configuration.show_binary_characters ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_binary_character_counts ) ) {
+            addCheckbox( Configuration.show_binary_character_counts,
+                         _configuration.getDisplayTitle( Configuration.show_binary_character_counts ) );
+            setCheckbox( Configuration.show_binary_character_counts,
+                         _configuration.doCheckOption( Configuration.show_binary_character_counts ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_domain_architectures ) ) {
+            addCheckbox( Configuration.show_domain_architectures,
+                         _configuration.getDisplayTitle( Configuration.show_domain_architectures ) );
+            setCheckbox( Configuration.show_domain_architectures,
+                         _configuration.doCheckOption( Configuration.show_domain_architectures ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
+            addCheckbox( Configuration.write_confidence_values,
+                         _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
+            setCheckbox( Configuration.write_confidence_values,
+                         _configuration.doCheckOption( Configuration.write_confidence_values ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.write_events ) ) {
+            addCheckbox( Configuration.write_events, _configuration.getDisplayTitle( Configuration.write_events ) );
+            setCheckbox( Configuration.write_events, _configuration.doCheckOption( Configuration.write_events ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_vector_data ) ) {
+            addCheckbox( Configuration.show_vector_data,
+                         _configuration.getDisplayTitle( Configuration.show_vector_data ) );
+            setCheckbox( Configuration.show_vector_data, _configuration.doCheckOption( Configuration.show_vector_data ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_properties ) ) {
+            addCheckbox( Configuration.show_properties, _configuration.getDisplayTitle( Configuration.show_properties ) );
+            setCheckbox( Configuration.show_properties, _configuration.doCheckOption( Configuration.show_properties ) );
+        }
+    }
+
+    private void setVisibilityOfDomainStrucureControls() {
+        if ( _zoom_in_domain_structure != null ) {
+            if ( isShowDomainArchitectures() ) {
+                _domain_display_label.setVisible( true );
+                _zoom_in_domain_structure.setVisible( true );
+                _zoom_out_domain_structure.setVisible( true );
+                _decr_domain_structure_evalue_thr.setVisible( true );
+                _incr_domain_structure_evalue_thr.setVisible( true );
+                _domain_structure_evalue_thr_tf.setVisible( true );
+            }
+            else {
+                _domain_display_label.setVisible( false );
+                _zoom_in_domain_structure.setVisible( false );
+                _zoom_out_domain_structure.setVisible( false );
+                _decr_domain_structure_evalue_thr.setVisible( false );
+                _incr_domain_structure_evalue_thr.setVisible( false );
+                _domain_structure_evalue_thr_tf.setVisible( false );
+            }
         }
     }
 

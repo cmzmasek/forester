@@ -47,23 +47,28 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
 
     public Annotation( final String ref ) {
         if ( ForesterUtil.isEmpty( ref ) ) {
-            throw new IllegalArgumentException( "illegal attempt to create Annotation with null or empty reference" );
+            throw new IllegalArgumentException( "annotation reference is empty or null" );
         }
         if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.length() < 3 ) ) {
-            throw new IllegalArgumentException( "illegal format for Annotation reference: [" + ref + "]" );
+            throw new IllegalArgumentException( "illegal format for annotation reference: [" + ref + "]" );
         }
         _ref = ref;
         init();
     }
 
+    public Annotation() {
+        _ref = "";
+        init();
+    }
+
     @Override
     public StringBuffer asSimpleText() {
-        return new StringBuffer( getDesc() );
+        return new StringBuffer( !ForesterUtil.isEmpty( getRef() ) ? getRef() : getDesc() );
     }
 
     @Override
     public StringBuffer asText() {
-        return new StringBuffer( getDesc() );
+        return asSimpleText();
     }
 
     @Override
