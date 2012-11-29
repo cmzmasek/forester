@@ -214,6 +214,7 @@ click_to: paste_subtree            display
 click_to: delete                   display
 click_to: add_new_node             display
 click_to: edit_node_data           display
+click_to: select_nodes             display
 click_to: get_ext_descendents_data display
 
 #   Default click-to option (any of the above if set to "display")

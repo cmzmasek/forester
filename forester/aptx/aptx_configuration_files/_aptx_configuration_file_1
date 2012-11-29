@@ -213,6 +213,7 @@ click_to: paste_subtree            nodisplay
 click_to: delete                   nodisplay
 click_to: add_new_node             nodisplay
 click_to: edit_node_data           display
+click_to: select_nodes             nodisplay
 click_to: get_ext_descendents_data display
 
 #   Default click-to option (any of the above if set to "display")
