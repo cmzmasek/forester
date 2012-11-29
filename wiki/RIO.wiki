@@ -35,13 +35,15 @@ Either output of all vs. all ortholgy support with -t=`<`output table`>` and/or 
   * 2: super orthologies > orthologies
 
 ==== Gene trees ====
-The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN").
+The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN") ([http://forester.googlecode.com/files/gene_trees_rio.nh example]).
 
 ==== Species tree ====
-Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species.xml example]).
+Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species_tree_rio.xml example]).
 
 
 === Examples ===
+`rio gene_trees_rio.nh species_tree_rio.xml outfile -q=D_HUMAN -t=outtable -u -cu=10 -co=10`
+
 `rio gene_trees.nh species.xml outfile -q=BCL2_HUMAN -t=outtable -u -cu=60 -co=60`
 
 `rio gene_trees.nh species.xml -t=outtable`
@@ -50,7 +52,7 @@ Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([ht
 === Example files ===
   * [http://forester.googlecode.com/files/gene_trees_rio.nh gene trees file]
   * [http://forester.googlecode.com/files/species_tree_rio.xml species tree file]
-  * [http://forester.googlecode.com/files/rio_outfile.txt output, for query "D_HUMAN"]
+  * [http://forester.googlecode.com/files/rio_outfile.txt output] (for query "D_HUMAN")
 
 
 == References ==
