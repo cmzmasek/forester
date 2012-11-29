@@ -26,8 +26,7 @@ java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene tre
 
 ==== Note ====
 
-Either output of all vs. all ortholgy support with -t=`<`output table`>`and/or output for 
-one query sequence with -q and a  `[`outfile`]` are required.
+Either output of all vs. all ortholgy support with -t=`<`output table`>` and/or output for one query sequence with -q and a  `[`outfile`]` are required.
 
 ==== Sort ====
 
@@ -48,12 +47,11 @@ Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([ht
 `rio gene_trees.nh species.xml -t=outtable`
 
 
-<wiki:comment>
 === Example files ===
-  * [http://forester.googlecode.com/files/wnt_gene_tree.xml gene tree]
-  * [http://forester.googlecode.com/files/species.xml species tree]
-  * [http://forester.googlecode.com/files/wnt_gsdi_log.txt log file (output)]
-</wiki:comment>
+  * [http://forester.googlecode.com/files/gene_trees_rio.nh gene trees file]
+  * [http://forester.googlecode.com/files/species_tree_rio.xml species tree file]
+  * [http://forester.googlecode.com/files/rio_outfile.txt output, for query "D_HUMAN"]
+
 
 == References ==
 
