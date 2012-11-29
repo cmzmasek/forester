@@ -986,67 +986,67 @@ public final class Test {
             if ( !t3.getNode( "root node" ).getNodeData().getSequence().getAccession().getSource().equals( "UniProtKB" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getDesc()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
                     .equals( "apoptosis" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getRef()
                     .equals( "GO:0006915" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getSource()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getSource()
                     .equals( "UniProtKB" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getEvidence()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getEvidence()
                     .equals( "experimental" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getType()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getType()
                     .equals( "function" ) ) {
                 return false;
             }
-            if ( ( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getConfidence()
+            if ( ( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getConfidence()
                     .getValue() != 1 ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getConfidence()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getConfidence()
                     .getType().equals( "ml" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getDesc()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
                     .equals( "apoptosis" ) ) {
                 return false;
             }
-            if ( ( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( ( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getAppliesTo() != AppliesTo.ANNOTATION ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getDataType().equals( "xsd:double" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getRef().equals( "AFFY:expression" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getUnit().equals( "AFFY:x" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getValue().equals( "0.2" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "MED:disease" ).getValue().equals( "lymphoma" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 0 ) ).getRef()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
                     .equals( "GO:0005829" ) ) {
                 return false;
             }
-            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
+            if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 0 ) ).getDesc()
                     .equals( "intracellular organelle" ) ) {
                 return false;
             }
@@ -1060,114 +1060,6 @@ public final class Test {
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getLocation().equals( "12p13-p12" ) ) ) {
                 return false;
             }
-            //if ( !( t3.getNode( "root node" ).getNodeData().getDistribution().getDesc().equals( "irgendwo" ) ) ) {
-            //     return false;
-            //}
-            //            if ( !( t3.getNode( "root node" ).getNodeData().getReference().getDoi().equals( "10.1074/jbc.M005889200" ) ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getType().equals( "host" ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getTaxonomyCode().equals( "ECDYS" ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getScientificName().equals( "ecdysozoa" ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getCommonName().equals( "molting animals" ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1" ) ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "root node" ).getNodeData().getTaxonomy().getIdentifier().getType().equals( "ncbi" ) ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getTotalLength() != 124 ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 ).getName()
-            //                    .equals( "B" ) ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 ).getFrom() != 21 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 ).getTo() != 44 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 ).getLength() != 24 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 )
-            //                    .getConfidence() != 2144 ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "node bc" ).getNodeData().getSequence().getDomainArchitecture().getDomain( 0 ).getId()
-            //                    .equals( "pfam" ) ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bb" ).getNodeData().getBinaryCharacters().getGainedCharacters().size() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bb" ).getNodeData().getBinaryCharacters().getPresentCharacters().size() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node bb" ).getNodeData().getBinaryCharacters().getLostCharacters().size() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "node bb" ).getNodeData().getBinaryCharacters().getType().equals( "domains" ) ) {
-            //                return false;
-            //            }
-            //            if ( ( ( BinaryCharacters ) t3.getNode( "node bb" ).getNodeData().getBinaryCharacters().copy() )
-            //                    .getLostCount() != BinaryCharacters.COUNT_DEFAULT ) {
-            //                ;
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getGainedCount() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getGainedCharacters().size() != 1 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getLostCount() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getLostCharacters().size() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getPresentCount() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getPresentCharacters().size() != 2 ) {
-            //                return false;
-            //            }
-            //            if ( !t3.getNode( "node b" ).getNodeData().getBinaryCharacters().getType().equals( "characters" ) ) {
-            //                return false;
-            //            }
-            //            final Phylogeny[] phylogenies_1 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t4.xml",
-            //                                                              xml_parser );
-            //            if ( xml_parser.getErrorCount() > 0 ) {
-            //                System.out.println( xml_parser.getErrorMessages().toString() );
-            //                return false;
-            //            }
-            //            if ( phylogenies_1.length != 2 ) {
-            //                return false;
-            //            }
-            //            final Phylogeny a = phylogenies_1[ 0 ];
-            //            if ( !a.getName().equals( "tree 4" ) ) {
-            //                return false;
-            //            }
-            //            if ( a.getNumberOfExternalNodes() != 3 ) {
-            //                return false;
-            //            }
-            //            if ( !a.getNode( "node b1" ).getNodeData().getSequence().getName().equals( "b1 gene" ) ) {
-            //                return false;
-            //            }
-            //            if ( !a.getNode( "node b1" ).getNodeData().getTaxonomy().getCommonName().equals( "b1 species" ) ) {
-            //                return false;
-            //            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -1273,67 +1165,67 @@ public final class Test {
                     .equals( "UniProtKB" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getDesc()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
                     .equals( "apoptosis" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getRef()
                     .equals( "GO:0006915" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getSource()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getSource()
                     .equals( "UniProtKB" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getEvidence()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getEvidence()
                     .equals( "experimental" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getType()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getType()
                     .equals( "function" ) ) {
                 return false;
             }
-            if ( ( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getConfidence()
+            if ( ( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getConfidence()
                     .getValue() != 1 ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getConfidence()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getConfidence()
                     .getType().equals( "ml" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getDesc()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
                     .equals( "apoptosis" ) ) {
                 return false;
             }
-            if ( ( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( ( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getAppliesTo() != AppliesTo.ANNOTATION ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getDataType().equals( "xsd:double" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getRef().equals( "AFFY:expression" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getUnit().equals( "AFFY:x" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "AFFY:expression" ).getValue().equals( "0.2" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getProperties()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getProperties()
                     .getProperty( "MED:disease" ).getValue().equals( "lymphoma" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 0 ) ).getRef()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 1 ) ).getRef()
                     .equals( "GO:0005829" ) ) {
                 return false;
             }
-            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 2 ) ).getDesc()
+            if ( !( t3_rt.getNode( "root node" ).getNodeData().getSequence().getAnnotation( 0 ) ).getDesc()
                     .equals( "intracellular organelle" ) ) {
                 return false;
             }
@@ -6958,7 +6850,7 @@ public final class Test {
                 final GSDI sdi = new GSDI( gt, s1, true, true, true );
             }
             final IntMatrix m = RIO.calculateOrthologTable( g1 );
-            System.out.println( m.toString() );
+            // System.out.println( m.toString() );
         }
         catch ( final Exception e ) {
             e.printStackTrace();

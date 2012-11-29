@@ -52,14 +52,13 @@ public class AnnotationParser implements PhylogenyDataPhyloXmlParser {
 
     @Override
     public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
-        String ref;
+        final Annotation annotation;
         if ( element.isHasAttribute( PhyloXmlMapping.ANNOTATION_REF_ATTR ) ) {
-            ref = element.getAttribute( PhyloXmlMapping.ANNOTATION_REF_ATTR );
+            annotation = new Annotation( element.getAttribute( PhyloXmlMapping.ANNOTATION_REF_ATTR ) );
         }
         else {
-            ref = "_:_";
+            annotation = new Annotation();
         }
-        final Annotation annotation = new Annotation( ref );
         if ( element.isHasAttribute( PhyloXmlMapping.ANNOTATION_TYPE_ATTR ) ) {
             annotation.setType( element.getAttribute( PhyloXmlMapping.ANNOTATION_TYPE_ATTR ) );
         }
