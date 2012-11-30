@@ -47,8 +47,8 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String PRG_NAME              = "rio";
-    final static private String PRG_VERSION           = "3.00 beta 1";
-    final static private String PRG_DATE              = "2012.11.27";
+    final static private String PRG_VERSION           = "3.00 beta 2";
+    final static private String PRG_DATE              = "2012.11.30";
     final static private String E_MAIL                = "czmasek@burnham.org";
     final static private String WWW                   = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1         = "help";
@@ -103,7 +103,7 @@ public class rio {
         }
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, species_tree_file );
-        if ( outfile.exists() ) {
+        if ( ( outfile != null ) && outfile.exists() ) {
             ForesterUtil.fatalError( PRG_NAME, "[" + outfile + "] already exists" );
         }
         String query = null;
@@ -123,16 +123,20 @@ public class rio {
         }
         double cutoff_for_orthologs = 50;
         double cutoff_for_ultra_paralogs = 50;
-        int sort = 2;
+        int sort = 1;
         try {
             if ( cla.isOptionSet( CUTOFF_ORTHO_OPTION ) ) {
                 cutoff_for_orthologs = cla.getOptionValueAsDouble( CUTOFF_ORTHO_OPTION );
+                if ( query == null ) {
+                    ForesterUtil.fatalError( PRG_NAME, "missing query name, type \"rio -h\" for help" );
+                }
+                if ( outfile == null ) {
+                    ForesterUtil.fatalError( PRG_NAME, "missing outfile, type \"rio -h\" for help" );
+                }
             }
             if ( cla.isOptionSet( CUTOFF_ULTRA_P_OPTION ) ) {
                 cutoff_for_ultra_paralogs = cla.getOptionValueAsDouble( CUTOFF_ULTRA_P_OPTION );
-                if ( !output_ultraparalogs ) {
-                    printHelp();
-                }
+                output_ultraparalogs = true;
             }
             if ( cla.isOptionSet( SORT_OPTION ) ) {
                 sort = cla.getOptionValueAsInt( SORT_OPTION );
@@ -142,13 +146,13 @@ public class rio {
             ForesterUtil.fatalError( PRG_NAME, "error in command line: " + e.getLocalizedMessage() );
         }
         if ( ( cutoff_for_orthologs < 0 ) || ( cutoff_for_ultra_paralogs < 0 ) || ( sort < 0 ) || ( sort > 2 ) ) {
-            printHelp();
+            ForesterUtil.fatalError( PRG_NAME, "numberical option out of range, type \"rio -h\" for help" );
         }
-        if ( ( ( query == null ) && ( outfile != null ) ) || ( ( query != null ) && ( outfile == null ) ) ) {
-            printHelp();
+        if ( ( ( query == null ) && ( ( outfile != null ) || output_ultraparalogs ) ) ) {
+            ForesterUtil.fatalError( PRG_NAME, "missing query name, type \"rio -h\" for help" );
         }
-        if ( output_ultraparalogs && ( outfile == null ) ) {
-            printHelp();
+        if ( ( output_ultraparalogs && ( outfile == null ) ) || ( ( query != null ) && ( outfile == null ) ) ) {
+            ForesterUtil.fatalError( PRG_NAME, "missing outfile, type \"rio -h\" for help" );
         }
         long time = 0;
         System.out.println( "Gene trees                : " + gene_trees_file );
@@ -177,12 +181,10 @@ public class rio {
             System.exit( -1 );
         }
         if ( !species_tree.isRooted() ) {
-            ForesterUtil.printErrorMessage( PRG_NAME, "species tree is not rooted" );
-            System.exit( -1 );
+            ForesterUtil.fatalError( PRG_NAME, "species tree is not rooted" );
         }
         if ( !species_tree.isCompletelyBinary() ) {
-            ForesterUtil.printErrorMessage( PRG_NAME, "species tree is not completely binary" );
-            System.exit( -1 );
+            ForesterUtil.fatalError( PRG_NAME, "species tree is not completely binary" );
         }
         try {
             RIO rio;
@@ -209,6 +211,9 @@ public class rio {
             if ( table_outfile != null ) {
                 tableOutput( table_outfile, rio );
             }
+        }
+        catch ( final IllegalArgumentException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
         }
         catch ( final Exception e ) {
             ForesterUtil.printErrorMessage( PRG_NAME, e.getLocalizedMessage() );
@@ -267,12 +272,18 @@ public class rio {
         System.out.println();
         System.out.println( " Options" );
         System.out.println( "  -" + CUTOFF_ORTHO_OPTION + " : cutoff for ortholog output (default: 50)" );
-        System.out.println( "  -" + TABLE_OUTPUT_OPTION + "  : file-name for output table" );
-        System.out.println( "  -" + QUERY_OPTION + "  : name for query (sequence/node)" );
-        System.out.println( "  -" + SORT_OPTION + "  : sort (default: 2)" );
+        System.out.println( "  -" + TABLE_OUTPUT_OPTION
+                + "  : file-name for output table of all vs. all ortholgy support" );
+        System.out.println( "  -" + QUERY_OPTION
+                + "  : name for query (sequence/node), if this is used, [outfile] is required as well" );
+        System.out.println( "  -" + SORT_OPTION + "  : sort (default: 1)" );
         System.out.println( "  -" + OUTPUT_ULTRA_P_OPTION
                 + "  : to output ultra-paralogs (species specific expansions/paralogs)" );
         System.out.println( "  -" + CUTOFF_ULTRA_P_OPTION + " : cutoff for ultra-paralog output (default: 50)" );
+        System.out.println();
+        System.out.println( " Note" );
+        System.out.println( "  Either output of all vs. all ortholgy support with -t=<output table> and/or output for" );
+        System.out.println( "  one query sequence with -q=<query name> and a [outfile] are required." );
         System.out.println();
         System.out.println( " Sort" );
         System.out.println( RIO.getOrderHelp().toString() );
@@ -286,6 +297,8 @@ public class rio {
         System.out.println( " Examples" );
         System.out.println( "  \"rio gene_trees.nh species.xml outfile -q=BCL2_HUMAN -t=outtable -u -cu=60 -co=60\"" );
         System.out.println( "  \"rio gene_trees.nh species.xml -t=outtable\"" );
+        System.out.println();
+        System.out.println( " More information: http://code.google.com/p/forester/wiki/RIO" );
         System.out.println();
         System.exit( -1 );
     }

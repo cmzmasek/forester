@@ -771,7 +771,7 @@ public final class ForesterUtil {
     }
 
     final public static void printErrorMessage( final String prg_name, final String message ) {
-        System.out.println( "[" + prg_name + "] > error: " + message );
+        System.err.println( "[" + prg_name + "] > error: " + message );
     }
 
     final public static void printProgramInformation( final String prg_name, final String prg_version, final String date ) {

@@ -2243,7 +2243,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         Color c = getTreeColorSet().getAnnotationColor();
         if ( getControlPanel().isColorAccordingToAnnotation() && ( getControlPanel().getAnnotationColors() != null ) ) {
             final StringBuilder sb = new StringBuilder();
-            for( Annotation a : ann ) {
+            for( final Annotation a : ann ) {
                 sb.append( !ForesterUtil.isEmpty( a.getRef() ) ? a.getRef() : a.getDesc() );
             }
             final String ann_str = sb.toString();
@@ -4038,7 +4038,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private String createAnnotationString( final SortedSet<Annotation> ann ) {
         final StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for( Annotation a : ann ) {
+        for( final Annotation a : ann ) {
             if ( !first ) {
                 sb.append( "|" );
             }

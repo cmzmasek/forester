@@ -335,6 +335,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     .get( lineage.size() - 1 ) );
             if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
                 for( final UniProtTaxonomy up_taxonomy : up_taxonomies ) {
+                    System.out.println( "up_taxonomy=" + up_taxonomy.getScientificName() );
                     boolean match = true;
                     I: for( int i = 0; i < lineage.size(); ++i ) {
                         if ( !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) ) ) {

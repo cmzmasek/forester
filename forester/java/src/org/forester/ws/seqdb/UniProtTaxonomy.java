@@ -118,7 +118,7 @@ public final class UniProtTaxonomy {
         }
         _lineage.add( _scientific_name );
         if ( _lineage.isEmpty() ) {
-            throw new IllegalArgumentException( "lineage in a UniProt Taxonomy can not be empty\n: " + line );
+            throw new IllegalArgumentException( "lineage in a UniProt taxonomy can not be empty\n: " + line );
         }
     }
 
