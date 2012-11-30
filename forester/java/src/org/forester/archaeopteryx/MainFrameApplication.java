@@ -942,10 +942,6 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText( "To extract taxonomic codes (mnemonics) from nodes names in the form of 'xyz_ECOLI'" );
         _tools_menu.addSeparator();
         _tools_menu
-                .add( _infer_common_sn_names_item = new JMenuItem( "Infer Common Parts of Internal Scientific Names" ) );
-        customizeJMenuItem( _infer_common_sn_names_item );
-        _tools_menu.addSeparator();
-        _tools_menu
                 .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
         _obtain_detailed_taxonomic_information_jmi

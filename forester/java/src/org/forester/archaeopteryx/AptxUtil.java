@@ -791,24 +791,6 @@ public final class AptxUtil {
         return AVAILABLE_FONT_FAMILIES_SORTED;
     }
 
-    final static void inferCommonPartOfScientificNames( final Phylogeny tree ) {
-        boolean inferred = false;
-        for( final PhylogenyNodeIterator it = tree.iteratorPostorder(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.getNodeData().isHasTaxonomy() && !n.isExternal() ) {
-                final String sn = PhylogenyMethods.inferCommonPartOfScientificNameOfDescendants( n );
-                if ( !ForesterUtil.isEmpty( sn ) ) {
-                    n.getNodeData().setTaxonomy( new Taxonomy() );
-                    n.getNodeData().getTaxonomy().setScientificName( sn );
-                    inferred = true;
-                }
-            }
-        }
-        if ( inferred ) {
-            tree.setRerootable( false );
-        }
-    }
-
     final static boolean isHasAssignedEvent( final PhylogenyNode node ) {
         if ( !node.getNodeData().isHasEvent() ) {
             return false;

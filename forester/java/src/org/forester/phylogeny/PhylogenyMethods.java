@@ -1157,42 +1157,6 @@ public class PhylogenyMethods {
         return nodes;
     }
 
-    public static String inferCommonPartOfScientificNameOfDescendants( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = node.getDescendants();
-        String sn = null;
-        for( final PhylogenyNode n : descs ) {
-            if ( !n.getNodeData().isHasTaxonomy()
-                    || ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                return null;
-            }
-            else if ( sn == null ) {
-                sn = n.getNodeData().getTaxonomy().getScientificName().trim();
-            }
-            else {
-                String sn_current = n.getNodeData().getTaxonomy().getScientificName().trim();
-                if ( !sn.equals( sn_current ) ) {
-                    boolean overlap = false;
-                    while ( ( sn.indexOf( ' ' ) >= 0 ) || ( sn_current.indexOf( ' ' ) >= 0 ) ) {
-                        if ( ForesterUtil.countChars( sn, ' ' ) > ForesterUtil.countChars( sn_current, ' ' ) ) {
-                            sn = sn.substring( 0, sn.lastIndexOf( ' ' ) ).trim();
-                        }
-                        else {
-                            sn_current = sn_current.substring( 0, sn_current.lastIndexOf( ' ' ) ).trim();
-                        }
-                        if ( sn.equals( sn_current ) ) {
-                            overlap = true;
-                            break;
-                        }
-                    }
-                    if ( !overlap ) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return sn;
-    }
-
     public static boolean isHasExternalDescendant( final PhylogenyNode node ) {
         for( int i = 0; i < node.getNumberOfDescendants(); ++i ) {
             if ( node.getChildNode( i ).isExternal() ) {

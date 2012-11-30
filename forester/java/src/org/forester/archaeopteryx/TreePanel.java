@@ -76,6 +76,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -965,16 +966,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( _domain_structure_e_value_thr_exp < 3 ) {
             _domain_structure_e_value_thr_exp += 1;
         }
-    }
-
-    final void inferCommonPartOfScientificNames() {
-        if ( ( _phylogeny == null ) || ( _phylogeny.getNumberOfExternalNodes() < 2 ) ) {
-            return;
-        }
-        setWaitCursor();
-        AptxUtil.inferCommonPartOfScientificNames( _phylogeny );
-        setArrowCursor();
-        repaint();
     }
 
     final void initNodeData() {
@@ -2248,10 +2239,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private Color calculateColorForAnnotation( final Annotation ann ) {
+    final private Color calculateColorForAnnotation( final SortedSet<Annotation> ann ) {
         Color c = getTreeColorSet().getAnnotationColor();
         if ( getControlPanel().isColorAccordingToAnnotation() && ( getControlPanel().getAnnotationColors() != null ) ) {
-            final String ann_str = !ForesterUtil.isEmpty( ann.getRef() ) ? ann.getRef() : ann.getDesc();
+            final StringBuilder sb = new StringBuilder();
+            for( Annotation a : ann ) {
+                sb.append( !ForesterUtil.isEmpty( a.getRef() ) ? a.getRef() : a.getDesc() );
+            }
+            final String ann_str = sb.toString();
             if ( !ForesterUtil.isEmpty( ann_str ) ) {
                 c = getControlPanel().getAnnotationColors().get( ann_str );
                 if ( c == null ) {
@@ -3854,7 +3849,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getControlPanel().isColorAccordingToAnnotation()
                 && ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAnnotations() != null ) && ( !node
                         .getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
-            g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotation( 0 ) ) );
+            g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotations() ) );
         }
         else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
@@ -3991,14 +3986,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( _sb.length() > 0 ) {
                 x += getTreeFontSet()._fm_large.stringWidth( _sb.toString() ) + 5;
             }
-            final Annotation ann = node.getNodeData().getSequence().getAnnotation( 0 );
+            final SortedSet<Annotation> ann = node.getNodeData().getSequence().getAnnotations();
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 g.setColor( Color.BLACK );
             }
             else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
-            final String ann_str = ann.asSimpleText().toString();
+            final String ann_str = createAnnotationString( ann );
             TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
             _sb.setLength( 0 );
@@ -4040,6 +4035,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    private String createAnnotationString( final SortedSet<Annotation> ann ) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for( Annotation a : ann ) {
+            if ( !first ) {
+                sb.append( "|" );
+            }
+            else {
+                first = false;
+            }
+            sb.append( a.asSimpleText() );
+        }
+        final String ann_str = sb.toString();
+        return ann_str;
+    }
+
     final private void paintNodeDataUnrootedCirc( final Graphics2D g,
                                                   final PhylogenyNode node,
                                                   final boolean to_pdf,
@@ -4058,6 +4069,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
+        }
+        else if ( getControlPanel().isColorAccordingToAnnotation()
+                && ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAnnotations() != null ) && ( !node
+                        .getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
+            g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotations() ) );
         }
         else {
             g.setColor( getTreeColorSet().getSequenceColor() );

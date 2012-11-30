@@ -257,9 +257,6 @@ public final class MainFrameApplet extends MainFrame {
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
         customizeJMenuItem( _midpoint_root_item );
         _tools_menu.addSeparator();
-        _tools_menu
-                .add( _infer_common_sn_names_item = new JMenuItem( "Infer Common Parts of Internal Scientific Names" ) );
-        customizeJMenuItem( _infer_common_sn_names_item );
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
         _jmenubar.add( _tools_menu );

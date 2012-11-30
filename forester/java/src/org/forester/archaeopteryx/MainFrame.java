@@ -135,7 +135,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _taxcolor_item;
     JMenuItem                   _confcolor_item;
     JMenuItem                   _color_rank_jmi;
-    JMenuItem                   _infer_common_sn_names_item;
     JMenuItem                   _collapse_species_specific_subtrees;
     JMenuItem                   _collapse_below_threshold;                                                                                                                                                                                    //TODO implememt me
     JMenuItem                   _obtain_detailed_taxonomic_information_jmi;
@@ -262,14 +261,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _color_rank_jmi ) {
             colorRank();
-        }
-        else if ( o == _infer_common_sn_names_item ) {
-            if ( isSubtreeDisplayed() ) {
-                return;
-            }
-            if ( getCurrentTreePanel() != null ) {
-                getCurrentTreePanel().inferCommonPartOfScientificNames();
-            }
         }
         else if ( o == _collapse_species_specific_subtrees ) {
             if ( isSubtreeDisplayed() ) {
@@ -1210,34 +1201,42 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final JTextField xField = new JTextField( 10 );
-                final JTextField yField = new JTextField( 20 );
-                xField.setText( ForesterUtil.isEmpty( getPreviousNodeAnnotationReference() ) ? ""
+                final JTextField ref_field = new JTextField( 10 );
+                final JTextField desc_filed = new JTextField( 20 );
+                ref_field.setText( ForesterUtil.isEmpty( getPreviousNodeAnnotationReference() ) ? ""
                         : getPreviousNodeAnnotationReference() );
-                final JPanel myPanel = new JPanel();
-                myPanel.add( new JLabel( "Reference " ) );
-                myPanel.add( xField );
-                myPanel.add( Box.createHorizontalStrut( 15 ) );
-                myPanel.add( new JLabel( "Description " ) );
-                myPanel.add( yField );
+                final JPanel my_panel = new JPanel();
+                my_panel.add( new JLabel( "Reference " ) );
+                my_panel.add( ref_field );
+                my_panel.add( Box.createHorizontalStrut( 15 ) );
+                my_panel.add( new JLabel( "Description " ) );
+                my_panel.add( desc_filed );
                 final int result = JOptionPane.showConfirmDialog( null,
-                                                                  myPanel,
+                                                                  my_panel,
                                                                   "Enter the sequence annotation(s) for the "
                                                                           + nodes.size() + " selected nodes",
                                                                   JOptionPane.OK_CANCEL_OPTION );
                 if ( result == JOptionPane.OK_OPTION ) {
-                    String ref = xField.getText();
-                    String desc = yField.getText();
-                    if ( ref != null ) {
+                    String ref = ref_field.getText();
+                    String desc = desc_filed.getText();
+                    if ( !ForesterUtil.isEmpty( ref ) ) {
                         ref = ref.trim();
                         ref = ref.replaceAll( "\\s+", " " );
+                        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ref.length() - 2 )
+                                || ( ref.length() < 3 ) ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Reference needs to be in the form of \"GO:1234567\"",
+                                                           "Illegal Format for Annotation Reference",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                    }
+                    if ( ref != null ) {
+                        setPreviousNodeAnnotationReference( ref );
                     }
                     if ( desc != null ) {
                         desc = desc.trim();
                         desc = desc.replaceAll( "\\s+", " " );
-                    }
-                    if ( ref != null ) {
-                        setPreviousNodeAnnotationReference( ref );
                     }
                     if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
                         for( final Integer id : nodes ) {
@@ -1251,6 +1250,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                             n.getNodeData().getSequence().addAnnotation( ann );
                         }
                     }
+                    getMainPanel().getControlPanel().showAnnotations();
                 }
             }
         }

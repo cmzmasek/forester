@@ -136,11 +136,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _confcolor_item ) {
             getMainPanel().getCurrentTreePanel().confColor();
         }
-        else if ( o == _infer_common_sn_names_item ) {
-            if ( getCurrentTreePanel() != null ) {
-                getCurrentTreePanel().inferCommonPartOfScientificNames();
-            }
-        }
         else if ( o == _collapse_species_specific_subtrees ) {
             if ( getCurrentTreePanel() != null ) {
                 getCurrentTreePanel().collapseSpeciesSpecificSubtrees();

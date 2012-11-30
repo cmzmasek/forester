@@ -432,6 +432,13 @@ final class ControlPanel extends JPanel implements ActionListener {
         _return_to_super_tree.setEnabled( true );
     }
 
+    void showAnnotations() {
+        _show_annotation.setSelected( true );
+        _color_according_to_annotation.setSelected( true );
+        _color_acc_species.setSelected( false );
+        _mainpanel.getCurrentTreePanel().repaint();
+    }
+
     /**
      * Add zoom and quick edit buttons. (Last modified 8/9/04)
      */

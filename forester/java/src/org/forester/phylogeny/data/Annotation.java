@@ -49,7 +49,7 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         if ( ForesterUtil.isEmpty( ref ) ) {
             throw new IllegalArgumentException( "annotation reference is empty or null" );
         }
-        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.length() < 3 ) ) {
+        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ref.length() - 2 ) || ( ref.length() < 3 ) ) {
             throw new IllegalArgumentException( "illegal format for annotation reference: [" + ref + "]" );
         }
         _ref = ref;
