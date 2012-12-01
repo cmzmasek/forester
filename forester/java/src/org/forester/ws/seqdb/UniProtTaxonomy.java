@@ -45,8 +45,9 @@ public final class UniProtTaxonomy {
     public final static String          CELLULAR_ORGANISMS       = "cellular organisms";
     public final static String          VIRUSES                  = "Viruses";
     public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] {
-            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota", "Neoptera",
-            "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae", "Drosophila" },
+            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Ecdysozoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota",
+            "Neoptera", "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae",
+            "Drosophila"                                                               },
                                                                                         "",
                                                                                         "fruit flies",
                                                                                         "Drosophila",
@@ -72,8 +73,6 @@ public final class UniProtTaxonomy {
                                                                                         "species",
                                                                                         "283909" );
 
-    // public final static UniProtTaxonomy NUCLEARIIDAE_AND_FONTICULA = new UniProtTaxonomy( new String[] {
-    //         CELLULAR_ORGANISMS, EUKARYOTA, "Nucleariidae and Fonticula group" }, "", "", "", "", "", "1001604" );
     public UniProtTaxonomy( final String line ) {
         final String[] items = line.split( "\t" );
         if ( items.length < 5 ) {

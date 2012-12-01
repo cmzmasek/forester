@@ -121,20 +121,16 @@ public final class SequenceDbWsTools {
                                                                          final int max_taxonomies_return )
             throws IOException {
         // Hack!  Craniata? .. 
-        // if ( sn.equals( "Drosophila" ) ) {
-        //     return uniProtTaxonomyToList( UniProtTaxonomy.DROSOPHILA_GENUS );
-        // }
-        /* else*/if ( sn.equals( "Xenopus" ) ) {
+        if ( sn.equals( "Drosophila" ) ) {
+            return uniProtTaxonomyToList( UniProtTaxonomy.DROSOPHILA_GENUS );
+        }
+        else if ( sn.equals( "Xenopus" ) ) {
             return uniProtTaxonomyToList( UniProtTaxonomy.XENOPUS_GENUS );
         }
         // else if ( sn.equals( "Nucleariidae and Fonticula group" ) ) {
         //     return hack( UniProtTaxonomy.NUCLEARIIDAE_AND_FONTICULA );
         // }
         final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
-        System.out.println( "SN=" + sn );
-        for( final String string : result ) {
-            System.out.println( "|" + string );
-        }
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
         }
