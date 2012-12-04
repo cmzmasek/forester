@@ -225,14 +225,13 @@ public final class ParserUtils {
      * @return
      */
     public static String extractTaxonomyCodeFromNodeName( final String name,
-                                                          final PhylogenyMethods.TAXONOMY_EXTRACTION taxonomy_extraction ) {
+                                                          final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
                 && ( name.length() < 31 )
                 //  && ( name.lastIndexOf( "_" ) == name.indexOf( "_" ) )
                 && ( name.indexOf( "|" ) < 0 )
                 && ( name.indexOf( "." ) < 0 )
-                && ( ( taxonomy_extraction != PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name
-                        .indexOf( "/" ) >= 0 ) )
+                && ( ( taxonomy_extraction != NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name.indexOf( "/" ) >= 0 ) )
                 && ( ( ( name.indexOf( "/" ) ) < 0 ) || ( name.indexOf( "/" ) > name.indexOf( "_" ) ) ) ) {
             final String[] s = name.split( "[_/]" );
             if ( s.length > 1 ) {

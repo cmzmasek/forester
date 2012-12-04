@@ -41,7 +41,6 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -73,7 +72,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                                   final boolean is_rooted ) throws IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final NHXParser pars = new NHXParser();
-        pars.setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
+        pars.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
         pars.setReplaceUnderscores( isReplaceUnderscores() );
         pars.setIgnoreQuotes( isIgnoreQuotes() );
         if ( rooted_info_present ) {

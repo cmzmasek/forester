@@ -103,27 +103,25 @@ public class UrlTreeReader implements Runnable {
                         break;
                     case NH:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( true );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case NH_EXTRACT_TAXONOMY:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case PFAM:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case NHX:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;

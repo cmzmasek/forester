@@ -1354,7 +1354,7 @@ public final class MainFrameApplication extends MainFrame {
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
                         final String code = ParserUtils
-                                .extractTaxonomyCodeFromNodeName( name, PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+                                .extractTaxonomyCodeFromNodeName( name, NHXParser.TAXONOMY_EXTRACTION.YES );
                         if ( !ForesterUtil.isEmpty( code ) ) {
                             PhylogenyMethods.setTaxonomyCode( n, code );
                         }
@@ -2253,9 +2253,9 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
         nhx.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
-        PhylogenyMethods.TAXONOMY_EXTRACTION te = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
+        NHXParser.TAXONOMY_EXTRACTION te = NHXParser.TAXONOMY_EXTRACTION.NO;
         if ( getOptions().isExtractPfamTaxonomyCodesInNhParsing() ) {
-            te = PhylogenyMethods.TAXONOMY_EXTRACTION.YES;
+            te = NHXParser.TAXONOMY_EXTRACTION.YES;
         }
         nhx.setTaxonomyExtraction( te );
     }

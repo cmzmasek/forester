@@ -64,7 +64,6 @@ import org.forester.pccx.TestPccx;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyBranch;
 import org.forester.phylogeny.PhylogenyMethods;
-import org.forester.phylogeny.PhylogenyMethods.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BinaryCharacters;
@@ -857,11 +856,11 @@ public final class Test {
             }
             final PhylogenyNode n1 = new PhylogenyNode();
             final PhylogenyNode n2 = PhylogenyNode
-                    .createInstanceFromNhxString( "", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             final PhylogenyNode n3 = PhylogenyNode
-                    .createInstanceFromNhxString( "n3", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n3", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             final PhylogenyNode n4 = PhylogenyNode
-                    .createInstanceFromNhxString( "n4:0.01", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n4:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( n1.isHasAssignedEvent() ) {
                 return false;
             }
@@ -4442,7 +4441,7 @@ public final class Test {
                 return false;
             }
             final NHXParser nhxp = new NHXParser();
-            nhxp.setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.NO );
+            nhxp.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
             nhxp.setReplaceUnderscores( true );
             final Phylogeny uc0 = factory.create( "(A__A_,_B_B)", nhxp )[ 0 ];
             if ( !uc0.getRoot().getChildNode( 0 ).getName().equals( "A A " ) ) {
@@ -4819,8 +4818,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n8 = PhylogenyNode
-                    .createInstanceFromNhxString( "n8_ECOLI/12:0.01",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n8_ECOLI/12:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n8.getName().equals( "n8_ECOLI/12" ) ) {
                 return false;
             }
@@ -4828,8 +4826,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n9 = PhylogenyNode
-                    .createInstanceFromNhxString( "n9_ECOLI/12=12:0.01",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n9_ECOLI/12=12:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n9.getName().equals( "n9_ECOLI/12=12" ) ) {
                 return false;
             }
@@ -4837,20 +4834,20 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n10 = PhylogenyNode
-                    .createInstanceFromNhxString( "n10.ECOLI", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n10.ECOLI", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n10.getName().equals( "n10.ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n20 = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_ECOLI/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n20_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n20.getName().equals( "n20_ECOLI/1-2" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( n20 ).equals( "ECOLI" ) ) {
                 return false;
             }
-            final PhylogenyNode n20x = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_ECOL1/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode n20x = PhylogenyNode.createInstanceFromNhxString( "n20_ECOL1/1-2",
+                                                                                  NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !n20x.getName().equals( "n20_ECOL1/1-2" ) ) {
                 return false;
             }
@@ -4858,7 +4855,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n20xx = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_eCOL1/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n20_eCOL1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n20xx.getName().equals( "n20_eCOL1/1-2" ) ) {
                 return false;
             }
@@ -4866,7 +4863,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n20xxx = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_ecoli/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n20_ecoli/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n20xxx.getName().equals( "n20_ecoli/1-2" ) ) {
                 return false;
             }
@@ -4874,15 +4871,15 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n20xxxx = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_Ecoli/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n20_Ecoli/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n20xxxx.getName().equals( "n20_Ecoli/1-2" ) ) {
                 return false;
             }
             if ( PhylogenyMethods.getSpecies( n20xxxx ).length() > 0 ) {
                 return false;
             }
-            final PhylogenyNode n21 = PhylogenyNode
-                    .createInstanceFromNhxString( "n21_PIG", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode n21 = PhylogenyNode.createInstanceFromNhxString( "n21_PIG",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !n21.getName().equals( "n21_PIG" ) ) {
                 return false;
             }
@@ -4890,7 +4887,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n21x = PhylogenyNode
-                    .createInstanceFromNhxString( "n21_PIG", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n21_PIG", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n21x.getName().equals( "n21_PIG" ) ) {
                 return false;
             }
@@ -4898,7 +4895,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n22 = PhylogenyNode
-                    .createInstanceFromNhxString( "n22/PIG", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n22/PIG", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n22.getName().equals( "n22/PIG" ) ) {
                 return false;
             }
@@ -4906,7 +4903,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n23 = PhylogenyNode
-                    .createInstanceFromNhxString( "n23/PIG_1", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n23/PIG_1", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n23.getName().equals( "n23/PIG_1" ) ) {
                 return false;
             }
@@ -4914,7 +4911,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode a = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_ECOLI/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n10_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !a.getName().equals( "n10_ECOLI/1-2" ) ) {
                 return false;
             }
@@ -4922,8 +4919,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode b = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_ECOLI1/1-2",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n10_ECOLI1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
                 return false;
             }
@@ -4932,7 +4928,7 @@ public final class Test {
             }
             final PhylogenyNode c = PhylogenyNode
                     .createInstanceFromNhxString( "n10_RATAF12/1000-2000",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
                 return false;
             }
@@ -4941,7 +4937,7 @@ public final class Test {
             }
             final PhylogenyNode c1 = PhylogenyNode
                     .createInstanceFromNhxString( "n10_BOVIN_1/1000-2000",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
                 return false;
             }
@@ -4950,7 +4946,7 @@ public final class Test {
             }
             final PhylogenyNode c2 = PhylogenyNode
                     .createInstanceFromNhxString( "n10_Bovin_1/1000-2000",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !c2.getName().equals( "n10_Bovin_1/1000-2000" ) ) {
                 return false;
             }
@@ -4958,7 +4954,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode d = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1/1-2", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n10_RAT1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !d.getName().equals( "n10_RAT1/1-2" ) ) {
                 return false;
             }
@@ -4966,23 +4962,23 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode e = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "n10_RAT1", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !e.getName().equals( "n10_RAT1" ) ) {
                 return false;
             }
             if ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( e ) ) ) {
                 return false;
             }
-            final PhylogenyNode e2 = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode e2 = PhylogenyNode.createInstanceFromNhxString( "n10_RAT1",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !e2.getName().equals( "n10_RAT1" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( e2 ).equals( "RAT" ) ) {
                 return false;
             }
-            final PhylogenyNode e3 = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT~", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode e3 = PhylogenyNode.createInstanceFromNhxString( "n10_RAT~",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !e3.getName().equals( "n10_RAT~" ) ) {
                 return false;
             }
@@ -4991,7 +4987,7 @@ public final class Test {
             }
             final PhylogenyNode n11 = PhylogenyNode
                     .createInstanceFromNhxString( "n111111_ECOLI/jdj:0.4",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n11.getName().equals( "n111111_ECOLI/jdj" ) ) {
                 return false;
             }
@@ -5003,7 +4999,7 @@ public final class Test {
             }
             final PhylogenyNode n12 = PhylogenyNode
                     .createInstanceFromNhxString( "n111111-ECOLI---/jdj:0.4",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n12.getName().equals( "n111111-ECOLI---/jdj" ) ) {
                 return false;
             }
@@ -5013,16 +5009,16 @@ public final class Test {
             if ( PhylogenyMethods.getSpecies( n12 ).length() > 0 ) {
                 return false;
             }
-            final PhylogenyNode m = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_MOUSEa", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode m = PhylogenyNode.createInstanceFromNhxString( "n10_MOUSEa",
+                                                                               NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !m.getName().equals( "n10_MOUSEa" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( m ).equals( "MOUSE" ) ) {
                 return false;
             }
-            final PhylogenyNode o = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_MOUSE_", PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            final PhylogenyNode o = PhylogenyNode.createInstanceFromNhxString( "n10_MOUSE_",
+                                                                               NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !o.getName().equals( "n10_MOUSE_" ) ) {
                 return false;
             }
@@ -5108,8 +5104,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n13 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12345/1-2",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "blah_12345/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n13.getName().equals( "blah_12345/1-2" ) ) {
                 return false;
             }
@@ -5117,8 +5112,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12X45/1-2",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "blah_12X45/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n14.getName().equals( "blah_12X45/1-2" ) ) {
                 return false;
             }
@@ -5127,7 +5121,7 @@ public final class Test {
             }
             final PhylogenyNode n15 = PhylogenyNode
                     .createInstanceFromNhxString( "something_wicked[123]",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n15.getName().equals( "something_wicked" ) ) {
                 return false;
             }
@@ -5138,8 +5132,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n16 = PhylogenyNode
-                    .createInstanceFromNhxString( "something_wicked2[9]",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "something_wicked2[9]", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n16.getName().equals( "something_wicked2" ) ) {
                 return false;
             }
@@ -5150,8 +5143,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n17 = PhylogenyNode
-                    .createInstanceFromNhxString( "something_wicked3[a]",
-                                                  PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( "something_wicked3[a]", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n17.getName().equals( "something_wicked3" ) ) {
                 return false;
             }
@@ -5159,7 +5151,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n18 = PhylogenyNode
-                    .createInstanceFromNhxString( ":0.5[91]", PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                    .createInstanceFromNhxString( ":0.5[91]", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !isEqual( n18.getDistanceToParent(), 0.5 ) ) {
                 return false;
             }
@@ -6842,7 +6834,7 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny s1 = factory.create( Test.PATH_TO_TEST_DATA + "rio_species.xml", new PhyloXmlParser() )[ 0 ];
             final NHXParser p = new NHXParser();
-            p.setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+            p.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
             final Phylogeny g1[] = factory.create( new File( Test.PATH_TO_TEST_DATA
                     + "rio_Bcl-2_e1_20_mafft_05_40_fme.mlt" ), p );
             for( final Phylogeny gt : g1 ) {

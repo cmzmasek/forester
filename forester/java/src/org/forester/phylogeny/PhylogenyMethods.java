@@ -1692,10 +1692,6 @@ public class PhylogenyMethods {
         TAXONOMY_ID;
     }
 
-    public static enum TAXONOMY_EXTRACTION {
-        NO, YES, PFAM_STYLE_ONLY;
-    }
-
     public static enum DESCENDANT_SORT_PRIORITY {
         TAXONOMY, SEQUENCE, NODE_NAME;
     }

@@ -94,9 +94,9 @@ public final class Archaeopteryx {
                         final NHXParser nhx = ( NHXParser ) p;
                         nhx.setReplaceUnderscores( conf.isReplaceUnderscoresInNhParsing() );
                         nhx.setIgnoreQuotes( false );
-                        PhylogenyMethods.TAXONOMY_EXTRACTION te = PhylogenyMethods.TAXONOMY_EXTRACTION.NO;
+                        NHXParser.TAXONOMY_EXTRACTION te = NHXParser.TAXONOMY_EXTRACTION.NO;
                         if ( conf.isExtractPfamTaxonomyCodesInNhParsing() ) {
-                            te = PhylogenyMethods.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
+                            te = NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
                         }
                         nhx.setTaxonomyExtraction( te );
                     }

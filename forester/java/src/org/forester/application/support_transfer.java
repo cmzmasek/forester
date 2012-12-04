@@ -95,7 +95,7 @@ public final class support_transfer {
             final PhylogenyParser pp_bl = ParserUtils.createParserDependingOnFileType( infile_bl, true );
             final PhylogenyParser pp_s = ParserUtils.createParserDependingOnFileType( infile_support_vals, true );
             if ( pp_bl instanceof NHXParser ) {
-                ( ( NHXParser ) pp_bl ).setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+                ( ( NHXParser ) pp_bl ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
             }
             phylogeny_w_bl = factory.create( infile_bl, pp_bl )[ index_of_tree_w_bl ];
             phylogeny_w_support_vals = factory.create( infile_support_vals, pp_s )[ 0 ];

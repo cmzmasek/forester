@@ -382,7 +382,7 @@ public final class RIO {
             final NHXParser nhx = ( NHXParser ) p;
             nhx.setReplaceUnderscores( false );
             nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( PhylogenyMethods.TAXONOMY_EXTRACTION.YES );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         // Removes from species_tree all species not found in gene_tree.
