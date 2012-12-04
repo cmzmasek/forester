@@ -27,7 +27,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Font;
 
-import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualization;

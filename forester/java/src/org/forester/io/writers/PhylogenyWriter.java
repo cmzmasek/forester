@@ -41,7 +41,7 @@ import org.forester.io.parsers.nexus.NexusConstants;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PostOrderStackObject;

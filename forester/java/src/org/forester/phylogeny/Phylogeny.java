@@ -39,7 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.Vector;
 
 import org.forester.io.writers.PhylogenyWriter;
-import org.forester.phylogeny.PhylogenyNodeI.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BranchData;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Identifier;

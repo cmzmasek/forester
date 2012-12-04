@@ -47,8 +47,11 @@ import org.forester.util.ForesterUtil;
  * to unexpected behavior.
  *
  */
-public final class PhylogenyNode implements PhylogenyNodeI, Comparable<PhylogenyNode> {
+public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
+    public enum NH_CONVERSION_SUPPORT_VALUE_STYLE {
+        NONE, IN_SQUARE_BRACKETS, AS_INTERNAL_NODE_NAMES;
+    }
     private static int               _node_count      = 0;
     private byte                     _indicator;
     private int                      _id;
@@ -88,9 +91,8 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * @param n
      *            the PhylogenyNode to add
      */
-    @Override
-    final public void addAsChild( final PhylogenyNodeI node ) {
-        final PhylogenyNode n = ( PhylogenyNode ) node;
+    final public void addAsChild( final PhylogenyNode node ) {
+        final PhylogenyNode n = node;
         addChildNode( n );
         n.setParent( this );
     }
@@ -281,7 +283,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * @throws IllegalArgumentException
      *             if n is out of bounds
      */
-    @Override
     final public PhylogenyNode getChildNode( final int i ) {
         if ( isExternal() ) {
             throw new UnsupportedOperationException( "attempt to get the child node of an external node." );
@@ -356,7 +357,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * Returns the length of the branch leading to the _parent of this
      * PhylogenyNode (double).
      */
-    @Override
     final public double getDistanceToParent() {
         return _distance_parent;
     }
@@ -487,12 +487,10 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
     /**
      * Returns the ID (int) of this PhylogenyNode.
      */
-    @Override
     final public int getId() {
         return _id;
     }
 
-    @Override
     final public String getName() {
         return getNodeData().getNodeName();
     }
@@ -860,7 +858,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
      * Sets the length of the branch leading to the _parent of this
      * PhylogenyNode to double d.
      */
-    @Override
     final public void setDistanceToParent( final double d ) {
         _distance_parent = d;
     }
@@ -897,7 +894,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
     /**
      * Sets the name of this node.
      */
-    @Override
     final public void setName( final String node_name ) {
         getNodeData().setNodeName( node_name );
     }
@@ -917,7 +913,6 @@ public final class PhylogenyNode implements PhylogenyNodeI, Comparable<Phylogeny
     /**
      * Sets the _parent PhylogenyNode of this PhylogenyNode to n.
      */
-    @Override
     final public void setParent( final PhylogenyNode n ) {
         _parent = n;
     }
