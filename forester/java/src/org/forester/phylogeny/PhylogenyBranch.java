@@ -32,7 +32,7 @@ import org.forester.phylogeny.data.PhylogenyData;
 /*
  * @author Christian M. Zmasek
  */
-public class PhylogenyBranch implements Edge {
+public class PhylogenyBranch {
 
     private final PhylogenyNode _node_1;
     private final PhylogenyNode _node_2;
@@ -89,17 +89,14 @@ public class PhylogenyBranch implements Edge {
         }
     }
 
-    @Override
     public PhylogenyData getData() {
         return _data;
     }
 
-    @Override
     public PhylogenyNode getFirstNode() {
         return _node_1;
     }
 
-    @Override
     public PhylogenyNode getSecondNode() {
         return _node_2;
     }
