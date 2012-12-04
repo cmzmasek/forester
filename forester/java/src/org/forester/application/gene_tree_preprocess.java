@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.forester.archaeopteryx.tools.SequenceDataRetriver;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
@@ -42,17 +41,19 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
+import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public class gene_tree_preprocess {
 
-    final static private String HELP_OPTION_1 = "help";
-    final static private String HELP_OPTION_2 = "h";
-    final static private String PRG_NAME      = "gene_tree_preprocess";
-    final static private String PRG_DESC      = "gene tree preprocessing for SDI analysis";
-    final static private String PRG_VERSION   = "1.01";
-    final static private String PRG_DATE      = "2012.06.07";
-    final static private String E_MAIL        = "phylosoft@gmail.com";
-    final static private String WWW           = "www.phylosoft.org/forester";
+    final static private String HELP_OPTION_1           = "help";
+    final static private String HELP_OPTION_2           = "h";
+    final static private String PRG_NAME                = "gene_tree_preprocess";
+    final static private String PRG_DESC                = "gene tree preprocessing for SDI analysis";
+    final static private String PRG_VERSION             = "1.01";
+    final static private String PRG_DATE                = "2012.06.07";
+    final static private String E_MAIL                  = "phylosoft@gmail.com";
+    final static private String WWW                     = "www.phylosoft.org/forester";
+    private final static int    DEFAULT_LINES_TO_RETURN = 50;
 
     public static void main( final String[] args ) {
         try {
@@ -82,7 +83,10 @@ public class gene_tree_preprocess {
                 ForesterUtil.fatalError( PRG_NAME, "phylogeny has " + phy.getNumberOfExternalNodes()
                         + " external node(s), aborting" );
             }
-            final SortedSet<String> not_found = SequenceDataRetriver.obtainSeqInformation( phy, true, false );
+            final SortedSet<String> not_found = SequenceDbWsTools.obtainSeqInformation( phy,
+                                                                                        true,
+                                                                                        false,
+                                                                                        DEFAULT_LINES_TO_RETURN );
             for( final String remove_me : not_found ) {
                 phy.deleteSubtree( phy.getNode( remove_me ), true );
             }
@@ -144,7 +148,7 @@ public class gene_tree_preprocess {
         }
     }
 
-    public static void checkForOutputFileWriteability( final File outfile ) {
+    private static void checkForOutputFileWriteability( final File outfile ) {
         final String error = ForesterUtil.isWritableFile( outfile );
         if ( !ForesterUtil.isEmpty( error ) ) {
             ForesterUtil.fatalError( PRG_NAME, error );

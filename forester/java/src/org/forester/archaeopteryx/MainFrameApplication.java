@@ -555,8 +555,8 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 obtainDetailedTaxonomicInformationDelete();
             }
-            else if ( o == _obtain_uniprot_seq_information_jmi ) {
-                obtainUniProtSequenceInformation();
+            else if ( o == _obtain_seq_information_jmi ) {
+                obtainSequenceInformation();
             }
             else if ( o == _read_values_jmi ) {
                 if ( isSubtreeDisplayed() ) {
@@ -951,9 +951,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
-        _tools_menu.add( _obtain_uniprot_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
-        customizeJMenuItem( _obtain_uniprot_seq_information_jmi );
-        _obtain_uniprot_seq_information_jmi.setToolTipText( "To add additional sequence information" );
+        _tools_menu.add( _obtain_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
+        customizeJMenuItem( _obtain_seq_information_jmi );
+        _obtain_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu.addSeparator();
         if ( !Constants.__RELEASE ) {
             _tools_menu.add( _function_analysis = new JMenuItem( "Add UniProtKB Annotations" ) );
@@ -1511,7 +1511,7 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void obtainUniProtSequenceInformation() {
+    private void obtainSequenceInformation() {
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {

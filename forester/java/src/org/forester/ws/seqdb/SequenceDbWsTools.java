@@ -34,54 +34,38 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceIdParser;
 
 public final class SequenceDbWsTools {
 
-    private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true; //TODO turn off for final realease!
-
-    public enum Db {
-        UNKNOWN, UNIPROT;
-    }
-    public final static String   BASE_UNIPROT_URL   = "http://www.uniprot.org/";
-    public final static String   BASE_EMBL_DB_URL   = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
-    public final static String   EMBL_DBS_EMBL      = "embl";
-    public final static String   EMBL_DBS_REFSEQ_P  = "refseqp";
-    public final static String   EMBL_DBS_REFSEQ_N  = "refseqn";
-    private final static String  URL_ENC            = "UTF-8";
+    private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true;                                                                                  //TODO turn off for final realease!
+    public final static String   BASE_UNIPROT_URL          = "http://www.uniprot.org/";
+    public final static String   BASE_EMBL_DB_URL          = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
+    public final static String   EMBL_DBS_EMBL             = "embl";
+    public final static String   EMBL_DBS_REFSEQ_P         = "refseqp";
+    public final static String   EMBL_DBS_REFSEQ_N         = "refseqn";
+    private final static String  URL_ENC                   = "UTF-8";
     // uniprot/expasy accession number format (6 chars):
     // letter digit letter-or-digit letter-or-digit letter-or-digit digit
     // ?: => no back-reference
     // \A => begin of String
     // \Z => end of String
-    private final static Pattern UNIPROT_AC_PATTERN = Pattern
-                                                            .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d[A-Z0-9]{3}\\d)(?:[^a-zA-Z0-9]|\\Z)" );
-    private final static boolean DEBUG              = false;
-
-    private static String encode( final String str ) throws UnsupportedEncodingException {
-        return URLEncoder.encode( str.trim(), URL_ENC );
-    }
-
-    /**
-     * Returns null if no match.
-     * 
-     * @param query
-     * @param db 
-     * @return
-     */
-    static public String parseUniProtAccessor( final String query ) {
-        final Matcher m = UNIPROT_AC_PATTERN.matcher( query );
-        if ( m.lookingAt() ) {
-            return m.group( 1 );
-        }
-        else {
-            return null;
-        }
-    }
+    private final static Pattern UNIPROT_AC_PATTERN        = Pattern
+                                                                   .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d[A-Z0-9]{3}\\d)(?:[^a-zA-Z0-9]|\\Z)" );
+    private final static boolean DEBUG                     = false;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
             throws IOException {
@@ -174,6 +158,266 @@ public final class SequenceDbWsTools {
             return parseUniProtTaxonomy( result );
         }
         return null;
+    }
+
+    public static SequenceDatabaseEntry obtainEmblEntry( final Identifier id, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryEmblDb( id, max_lines_to_return );
+        return EbiDbEntry.createInstanceFromPlainText( lines );
+    }
+
+    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Identifier id, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryEmblDb( id, max_lines_to_return );
+        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
+    }
+
+    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
+                                                          final boolean ext_nodes_only,
+                                                          final boolean allow_to_set_taxonomic_data,
+                                                          final int lines_to_return ) throws IOException {
+        final SortedSet<String> not_found = new TreeSet<String>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( ext_nodes_only && node.isInternal() ) {
+                continue;
+            }
+            String query = null;
+            Identifier id = null;
+            Db db = Db.NONE;
+            if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "uniprot" ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                db = Db.UNIPROT;
+            }
+            else if ( node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "embl" ) || node
+                            .getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ebi" ) ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                db = Db.EMBL;
+            }
+            else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+                if ( ( query = parseUniProtAccessor( node.getName() ) ) != null ) {
+                    db = Db.UNIPROT;
+                }
+                else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
+                    if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                        db = Db.NCBI;
+                    }
+                    else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                        db = Db.REFSEQ;
+                    }
+                }
+            }
+            if ( db == Db.NONE ) {
+                not_found.add( node.getName() );
+            }
+            SequenceDatabaseEntry db_entry = null;
+            if ( !ForesterUtil.isEmpty( query ) ) {
+                if ( db == Db.UNIPROT ) {
+                    if ( DEBUG ) {
+                        System.out.println( "uniprot: " + query );
+                    }
+                    db_entry = obtainUniProtEntry( query, lines_to_return );
+                }
+                if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
+                    if ( DEBUG ) {
+                        System.out.println( "embl: " + query );
+                    }
+                    db_entry = obtainEmblEntry( new Identifier( query ), lines_to_return );
+                    if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
+                        db = Db.EMBL;
+                    }
+                }
+            }
+            else if ( ( db == Db.REFSEQ ) && ( id != null ) ) {
+                db_entry = obtainRefSeqEntryFromEmbl( id, lines_to_return );
+            }
+            else if ( ( db == Db.NCBI ) && ( id != null ) ) {
+                db_entry = obtainEmblEntry( id, lines_to_return );
+                if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
+                    final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
+                            : new Sequence();
+                    if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
+                        String type = null;
+                        if ( db == Db.EMBL ) {
+                            type = "embl";
+                        }
+                        else if ( db == Db.UNIPROT ) {
+                            type = "uniprot";
+                        }
+                        else if ( db == Db.NCBI ) {
+                            type = "ncbi";
+                        }
+                        else if ( db == Db.REFSEQ ) {
+                            type = "refseq";
+                        }
+                        seq.setAccession( new Accession( db_entry.getAccession(), type ) );
+                    }
+                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
+                        seq.setName( db_entry.getSequenceName() );
+                    }
+                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
+                        seq.setSymbol( db_entry.getSequenceSymbol() );
+                    }
+                    final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
+                            : new Taxonomy();
+                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
+                        tax.setScientificName( db_entry.getTaxonomyScientificName() );
+                    }
+                    if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                        tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
+                    }
+                    node.getNodeData().setTaxonomy( tax );
+                    node.getNodeData().setSequence( seq );
+                }
+                else if ( db != Db.NONE ) {
+                    not_found.add( node.getName() );
+                }
+                try {
+                    Thread.sleep( 10 );// Sleep for 10 ms
+                }
+                catch ( final InterruptedException ie ) {
+                }
+            }
+        }
+        return not_found;
+    }
+
+    public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
+        return UniProtEntry.createInstanceFromPlainText( lines );
+    }
+
+    /**
+     * Returns null if no match.
+     * 
+     * @param query
+     * @param db 
+     * @return
+     */
+    static public String parseUniProtAccessor( final String query ) {
+        final Matcher m = UNIPROT_AC_PATTERN.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
+            throws IOException {
+        if ( ForesterUtil.isEmpty( query ) ) {
+            throw new IllegalArgumentException( "illegal attempt to use empty query " );
+        }
+        if ( max_lines_to_return < 1 ) {
+            max_lines_to_return = 1;
+        }
+        final URL url = new URL( base_url + query );
+        if ( DEBUG ) {
+            System.out.println( "url: " + url.toString() );
+        }
+        final URLConnection urlc = url.openConnection();
+        final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
+        String line;
+        final List<String> result = new ArrayList<String>();
+        while ( ( line = in.readLine() ) != null ) {
+            if ( DEBUG ) {
+                System.out.println( line );
+            }
+            result.add( line );
+            if ( result.size() > max_lines_to_return ) {
+                break;
+            }
+        }
+        in.close();
+        try {
+            // To prevent accessing online dbs in too quick succession. 
+            Thread.sleep( 20 );
+        }
+        catch ( final InterruptedException e ) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static List<String> queryEmblDb( final Identifier id, final int max_lines_to_return ) throws IOException {
+        final StringBuilder url_sb = new StringBuilder();
+        url_sb.append( BASE_EMBL_DB_URL );
+        if ( ForesterUtil.isEmpty( id.getProvider() ) || id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+            url_sb.append( SequenceDbWsTools.EMBL_DBS_EMBL );
+            url_sb.append( '/' );
+        }
+        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
+                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
+                url_sb.append( '/' );
+            }
+            else {
+                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
+                url_sb.append( '/' );
+            }
+        }
+        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
+    }
+
+    public static List<String> queryUniprot( final String query, final int max_lines_to_return ) throws IOException {
+        return queryDb( query, max_lines_to_return, BASE_UNIPROT_URL );
+    }
+
+    private static String encode( final String str ) throws UnsupportedEncodingException {
+        return URLEncoder.encode( str.trim(), URL_ENC );
+    }
+
+    private static List<String> getTaxonomyStringFromCommonName( final String cn, final int max_lines_to_return )
+            throws IOException {
+        return queryUniprot( "taxonomy/?query=common%3a%22" + encode( cn ) + "%22&format=tab", max_lines_to_return );
+    }
+
+    private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
+            throws IOException {
+        return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
+    }
+
+    private static List<String> getTaxonomyStringFromScientificName( final String sn, final int max_lines_to_return )
+            throws IOException {
+        return queryUniprot( "taxonomy/?query=scientific%3a%22" + encode( sn ) + "%22&format=tab", max_lines_to_return );
+    }
+
+    private static List<String> getTaxonomyStringFromTaxonomyCode( final String code, final int max_lines_to_return )
+            throws IOException {
+        return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
+    }
+
+    private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {
+        final List<UniProtTaxonomy> taxonomies = new ArrayList<UniProtTaxonomy>();
+        for( final String line : result ) {
+            if ( ForesterUtil.isEmpty( line ) ) {
+                // Ignore empty lines.
+            }
+            else if ( line.startsWith( "Taxon" ) ) {
+                final String[] items = line.split( "\t" );
+                if ( !( items[ 1 ].equalsIgnoreCase( "Mnemonic" ) && items[ 2 ].equalsIgnoreCase( "Scientific name" )
+                        && items[ 3 ].equalsIgnoreCase( "Common name" ) && items[ 4 ].equalsIgnoreCase( "Synonym" )
+                        && items[ 5 ].equalsIgnoreCase( "Other Names" ) && items[ 6 ].equalsIgnoreCase( "Reviewed" )
+                        && items[ 7 ].equalsIgnoreCase( "Rank" ) && items[ 8 ].equalsIgnoreCase( "Lineage" ) ) ) {
+                    throw new IOException( "Unreconized UniProt Taxonomy format: " + line );
+                }
+            }
+            else {
+                if ( line.split( "\t" ).length > 4 ) {
+                    taxonomies.add( new UniProtTaxonomy( line ) );
+                }
+            }
+        }
+        return taxonomies;
     }
 
     private static List<UniProtTaxonomy> resolveFakeTaxonomyCodes( final int max_taxonomies_return, final String code )
@@ -276,131 +520,13 @@ public final class SequenceDbWsTools {
         }
     }
 
-    private static List<String> getTaxonomyStringFromCommonName( final String cn, final int max_lines_to_return )
-            throws IOException {
-        return queryUniprot( "taxonomy/?query=common%3a%22" + encode( cn ) + "%22&format=tab", max_lines_to_return );
-    }
-
-    private static List<String> getTaxonomyStringFromId( final String id, final int max_lines_to_return )
-            throws IOException {
-        return queryUniprot( "taxonomy/?query=id%3a%22" + encode( id ) + "%22&format=tab", max_lines_to_return );
-    }
-
-    private static List<String> getTaxonomyStringFromScientificName( final String sn, final int max_lines_to_return )
-            throws IOException {
-        return queryUniprot( "taxonomy/?query=scientific%3a%22" + encode( sn ) + "%22&format=tab", max_lines_to_return );
-    }
-
-    private static List<String> getTaxonomyStringFromTaxonomyCode( final String code, final int max_lines_to_return )
-            throws IOException {
-        return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
-    }
-
     private static List<UniProtTaxonomy> uniProtTaxonomyToList( final UniProtTaxonomy tax ) {
         final List<UniProtTaxonomy> l = new ArrayList<UniProtTaxonomy>();
         l.add( tax );
         return l;
     }
 
-    private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {
-        final List<UniProtTaxonomy> taxonomies = new ArrayList<UniProtTaxonomy>();
-        for( final String line : result ) {
-            if ( ForesterUtil.isEmpty( line ) ) {
-                // Ignore empty lines.
-            }
-            else if ( line.startsWith( "Taxon" ) ) {
-                final String[] items = line.split( "\t" );
-                if ( !( items[ 1 ].equalsIgnoreCase( "Mnemonic" ) && items[ 2 ].equalsIgnoreCase( "Scientific name" )
-                        && items[ 3 ].equalsIgnoreCase( "Common name" ) && items[ 4 ].equalsIgnoreCase( "Synonym" )
-                        && items[ 5 ].equalsIgnoreCase( "Other Names" ) && items[ 6 ].equalsIgnoreCase( "Reviewed" )
-                        && items[ 7 ].equalsIgnoreCase( "Rank" ) && items[ 8 ].equalsIgnoreCase( "Lineage" ) ) ) {
-                    throw new IOException( "Unreconized UniProt Taxonomy format: " + line );
-                }
-            }
-            else {
-                if ( line.split( "\t" ).length > 4 ) {
-                    taxonomies.add( new UniProtTaxonomy( line ) );
-                }
-            }
-        }
-        return taxonomies;
-    }
-
-    public static List<String> queryEmblDb( final Identifier id, final int max_lines_to_return ) throws IOException {
-        final StringBuilder url_sb = new StringBuilder();
-        url_sb.append( BASE_EMBL_DB_URL );
-        if ( ForesterUtil.isEmpty( id.getProvider() ) || id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
-            url_sb.append( SequenceDbWsTools.EMBL_DBS_EMBL );
-            url_sb.append( '/' );
-        }
-        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
-            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
-                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
-                url_sb.append( '/' );
-            }
-            else {
-                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
-                url_sb.append( '/' );
-            }
-        }
-        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
-    }
-
-    public static List<String> queryUniprot( final String query, final int max_lines_to_return ) throws IOException {
-        return queryDb( query, max_lines_to_return, BASE_UNIPROT_URL );
-    }
-
-    public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
-            throws IOException {
-        if ( ForesterUtil.isEmpty( query ) ) {
-            throw new IllegalArgumentException( "illegal attempt to use empty query " );
-        }
-        if ( max_lines_to_return < 1 ) {
-            max_lines_to_return = 1;
-        }
-        final URL url = new URL( base_url + query );
-        if ( DEBUG ) {
-            System.out.println( "url: " + url.toString() );
-        }
-        final URLConnection urlc = url.openConnection();
-        final BufferedReader in = new BufferedReader( new InputStreamReader( urlc.getInputStream() ) );
-        String line;
-        final List<String> result = new ArrayList<String>();
-        while ( ( line = in.readLine() ) != null ) {
-            if ( DEBUG ) {
-                System.out.println( line );
-            }
-            result.add( line );
-            if ( result.size() > max_lines_to_return ) {
-                break;
-            }
-        }
-        in.close();
-        try {
-            // To prevent accessing online dbs in too quick succession. 
-            Thread.sleep( 20 );
-        }
-        catch ( final InterruptedException e ) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
-            throws IOException {
-        final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
-        return UniProtEntry.createInstanceFromPlainText( lines );
-    }
-
-    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Identifier id, final int max_lines_to_return )
-            throws IOException {
-        final List<String> lines = queryEmblDb( id, max_lines_to_return );
-        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
-    }
-
-    public static SequenceDatabaseEntry obtainEmblEntry( final Identifier id, final int max_lines_to_return )
-            throws IOException {
-        final List<String> lines = queryEmblDb( id, max_lines_to_return );
-        return EbiDbEntry.createInstanceFromPlainText( lines );
+    public enum Db {
+        UNIPROT, EMBL, NCBI, NONE, REFSEQ;
     }
 }

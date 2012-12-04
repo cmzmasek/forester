@@ -28,35 +28,21 @@ package org.forester.archaeopteryx.tools;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
 
 import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.data.Identifier;
-import org.forester.phylogeny.data.Sequence;
-import org.forester.phylogeny.data.Taxonomy;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.util.ForesterUtil;
-import org.forester.util.SequenceIdParser;
-import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
 
-    public final static int            DEFAULT_LINES_TO_RETURN = 50;
+    private final static int           DEFAULT_LINES_TO_RETURN = 50;
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    private final static boolean       DEBUG                   = false;
-
-    private enum Db {
-        UNIPROT, EMBL, NCBI, NONE, REFSEQ;
-    }
+    public final static boolean        DEBUG                   = false;
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
@@ -64,17 +50,21 @@ public final class SequenceDataRetriver extends RunnableProcess {
         _treepanel = treepanel;
     }
 
+    @Override
+    public void run() {
+        execute();
+    }
+
     private void execute() {
         start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
         try {
-            not_found = obtainSeqInformation( _phy, false, true );
+            not_found = SequenceDbWsTools.obtainSeqInformation( _phy, false, true, DEFAULT_LINES_TO_RETURN );
         }
         catch ( final UnknownHostException e ) {
-            final String what = "_"; //TODO FIXME 
             JOptionPane.showMessageDialog( _mf,
-                                           "Could not connect to \"" + what + "\"",
-                                           "Network error during taxonomic information gathering",
+                                           e.getLocalizedMessage(),
+                                           "Network error during sequence data gathering",
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
@@ -82,7 +72,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
             e.printStackTrace();
             JOptionPane.showMessageDialog( _mf,
                                            e.toString(),
-                                           "Failed to obtain taxonomic information",
+                                           "Failed to obtain sequence data",
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
@@ -140,125 +130,5 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 // Not important if this fails, do nothing.
             }
         }
-    }
-
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
-                                                          final boolean ext_nodes_only,
-                                                          final boolean allow_to_set_taxonomic_data )
-            throws IOException {
-        final SortedSet<String> not_found = new TreeSet<String>();
-        for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( ext_nodes_only && node.isInternal() ) {
-                continue;
-            }
-            final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence() : new Sequence();
-            final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy();
-            String query = null;
-            Identifier id = null;
-            Db db = Db.NONE;
-            if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                    && node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "uniprot" ) ) {
-                query = node.getNodeData().getSequence().getAccession().getValue();
-                db = Db.UNIPROT;
-            }
-            else if ( node.getNodeData().isHasSequence()
-                    && ( node.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "embl" ) || node
-                            .getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ebi" ) ) ) {
-                query = node.getNodeData().getSequence().getAccession().getValue();
-                db = Db.EMBL;
-            }
-            else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                if ( ( query = SequenceDbWsTools.parseUniProtAccessor( node.getName() ) ) != null ) {
-                    db = Db.UNIPROT;
-                }
-                else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
-                    if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
-                        db = Db.NCBI;
-                    }
-                    else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
-                        db = Db.REFSEQ;
-                    }
-                }
-            }
-            if ( db == Db.NONE ) {
-                not_found.add( node.getName() );
-            }
-            SequenceDatabaseEntry db_entry = null;
-            if ( !ForesterUtil.isEmpty( query ) ) {
-                if ( db == Db.UNIPROT ) {
-                    if ( DEBUG ) {
-                        System.out.println( "uniprot: " + query );
-                    }
-                    db_entry = SequenceDbWsTools.obtainUniProtEntry( query, DEFAULT_LINES_TO_RETURN );
-                }
-                if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
-                    if ( DEBUG ) {
-                        System.out.println( "embl: " + query );
-                    }
-                    db_entry = SequenceDbWsTools.obtainEmblEntry( new Identifier( query ), DEFAULT_LINES_TO_RETURN );
-                    if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
-                        db = Db.EMBL;
-                    }
-                }
-            }
-            else if ( ( db == Db.REFSEQ ) && ( id != null ) ) {
-                db_entry = SequenceDbWsTools.obtainRefSeqEntryFromEmbl( id, DEFAULT_LINES_TO_RETURN );
-            }
-            else if ( ( db == Db.NCBI ) && ( id != null ) ) {
-                db_entry = SequenceDbWsTools.obtainEmblEntry( id, DEFAULT_LINES_TO_RETURN );
-            }
-            if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
-                if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
-                    String type = null;
-                    if ( db == Db.EMBL ) {
-                        type = "embl";
-                    }
-                    else if ( db == Db.UNIPROT ) {
-                        type = "uniprot";
-                    }
-                    else if ( db == Db.NCBI ) {
-                        type = "ncbi";
-                    }
-                    else if ( db == Db.REFSEQ ) {
-                        type = "refseq";
-                    }
-                    seq.setAccession( new Accession( db_entry.getAccession(), type ) );
-                }
-                if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
-                    seq.setName( db_entry.getSequenceName() );
-                }
-                if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
-                    seq.setSymbol( db_entry.getSequenceSymbol() );
-                }
-                if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
-                    tax.setScientificName( db_entry.getTaxonomyScientificName() );
-                }
-                if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
-                    tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
-                }
-                node.getNodeData().setTaxonomy( tax );
-                node.getNodeData().setSequence( seq );
-            }
-            else if ( db != Db.NONE ) {
-                not_found.add( node.getName() );
-            }
-            try {
-                Thread.sleep( 10 );// Sleep for 10 ms
-            }
-            catch ( final InterruptedException ie ) {
-            }
-        }
-        return not_found;
-    }
-
-    @Override
-    public void run() {
-        execute();
     }
 }
