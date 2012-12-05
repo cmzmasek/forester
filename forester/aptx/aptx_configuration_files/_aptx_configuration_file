@@ -94,12 +94,29 @@ native_ui: ?
 #     Example: 'background_gradient: yes'
 #  To allow/not allow editing (cut, copy, and paste): allow_editing
 #     Example: 'allow_editing: yes'
+#
+#  NH/NHX/Nexus file parsing
+#  -------------------------
 #  To replace underscores with spaces during NH/NHX/Nexus file parsing (application only):
 #     'replace_underscores_in_nh_parsing'
 #  To extract taxonomy codes from Pfam-style sequence labels (e.g. 'QW231_HUMAN/129-694')
-#     during NH/NHX/Nexus file parsing (application only): 'extract_pfam_tax_codes_in_nh_parsing'
+#     during NH/NHX/Nexus file parsing (application only): 'taxonomy_extraction_in_nh_parsing'
 #  Internal node labels are confidence values during NH/NHX/Nexus file parsing (application only):
 #     'internal_labels_are_confidence_values'
+
+
+
+#  phyloXML parsing
+#  ----------------
+#  To ensure compatibility with all current and future 
+#  phyloXML applications and to detect malformatted and
+#  possibly erroneous data, it is strongly recommended
+#  to enable validation of all phyloXML files
+#  against the XSD Schema (see: http://www.phyloxml.org/),
+#  with:
+#  'validate_against_phyloxml_xsd_schema: true'
+
+validate_against_phyloxml_xsd_schema: true
 
 
 
@@ -134,24 +151,14 @@ allow_editing:                             yes
 #  NH/NHX/Nexus file parsing (application only):
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
-extract_taxonomy_codes_in_nh_parsing:      yes
+taxonomy_extraction_in_nh_parsing:         pfam
 ext_descendents_data_to_return_on:         window
 ext_descendents_data_to_return:            user_selected
 #label_for_get_ext_descendents_data:        Get_Node_Data         
 
 
 
-#  phyloXML parsing
-#  ----------------
-#  To ensure compatibility with all current and future 
-#  phyloXML applications and to detect malformatted and
-#  possibly erroneous data, it is strongly recommended
-#  to enable validation of all phyloXML files
-#  against the XSD Schema (see: http://www.phyloxml.org/),
-#  with:
-#  'validate_against_phyloxml_xsd_schema: true'
 
-validate_against_phyloxml_xsd_schema: true
 
 
 
