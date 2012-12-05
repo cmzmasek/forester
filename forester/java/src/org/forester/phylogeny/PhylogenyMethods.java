@@ -159,6 +159,12 @@ public class PhylogenyMethods {
      * @return LCA of node1 and node2
      */
     public final static PhylogenyNode calculateLCA( PhylogenyNode node1, PhylogenyNode node2 ) {
+        if ( node1 == null ) {
+            throw new IllegalArgumentException( "first argument (node) is null" );
+        }
+        if ( node2 == null ) {
+            throw new IllegalArgumentException( "second argument (node) is null" );
+        }
         if ( node1 == node2 ) {
             return node1;
         }
@@ -211,6 +217,12 @@ public class PhylogenyMethods {
      * @return LCA of node1 and node2
      */
     public final static PhylogenyNode calculateLCAonTreeWithIdsInPreOrder( PhylogenyNode node1, PhylogenyNode node2 ) {
+        if ( node1 == null ) {
+            throw new IllegalArgumentException( "first argument (node) is null" );
+        }
+        if ( node2 == null ) {
+            throw new IllegalArgumentException( "second argument (node) is null" );
+        }
         while ( node1 != node2 ) {
             if ( node1.getId() > node2.getId() ) {
                 node1 = node1.getParent();

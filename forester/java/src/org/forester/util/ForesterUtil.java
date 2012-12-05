@@ -955,7 +955,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error (Should not have occured! Please contact program author(s).)" );
+                + "] > Unexpected error. Should not have occured! Please contact program author(s)." );
         e.printStackTrace( System.err );
         System.err.println();
         System.exit( -1 );
@@ -964,7 +964,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error. Should not have occured! Please contact program author(s)." );
+                + "] > Unexpected error. Should not have occured! Please contact program author(s)." );
         System.err.println( message );
         System.err.println();
         System.exit( -1 );
@@ -973,7 +973,7 @@ public final class ForesterUtil {
     final public static void unexpectedFatalError( final String prg_name, final String message, final Exception e ) {
         System.err.println();
         System.err.println( "[" + prg_name
-                + "] > unexpected error. Should not have occured! Please contact program author(s)." );
+                + "] > Unexpected error. Should not have occured! Please contact program author(s)." );
         System.err.println( message );
         e.printStackTrace( System.err );
         System.err.println();

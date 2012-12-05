@@ -40,6 +40,8 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.RIO;
+import org.forester.sdi.RioException;
+import org.forester.sdi.SDIException;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
@@ -47,8 +49,8 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String PRG_NAME              = "rio";
-    final static private String PRG_VERSION           = "3.00 beta 2";
-    final static private String PRG_DATE              = "2012.11.30";
+    final static private String PRG_VERSION           = "3.00 beta 3";
+    final static private String PRG_DATE              = "2012.12.05";
     final static private String E_MAIL                = "czmasek@burnham.org";
     final static private String WWW                   = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1         = "help";
@@ -187,7 +189,7 @@ public class rio {
             ForesterUtil.fatalError( PRG_NAME, "species tree is not completely binary" );
         }
         try {
-            RIO rio;
+            final RIO rio;
             if ( ForesterUtil.isEmpty( query ) ) {
                 rio = new RIO( gene_trees_file, species_tree );
             }
@@ -212,13 +214,17 @@ public class rio {
                 tableOutput( table_outfile, rio );
             }
         }
-        catch ( final IllegalArgumentException e ) {
+        catch ( final RioException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+        }
+        catch ( final SDIException e ) {
+            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+        }
+        catch ( final IOException e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.printErrorMessage( PRG_NAME, e.getLocalizedMessage() );
-            e.printStackTrace();
-            System.exit( -1 );
+            ForesterUtil.unexpectedFatalError( PRG_NAME, e );
         }
         if ( outfile != null ) {
             ForesterUtil.programMessage( PRG_NAME, "wrote results to \"" + outfile + "\"" );
@@ -229,7 +235,7 @@ public class rio {
         System.exit( 0 );
     }
 
-    private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException {
+    private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RioException {
         final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees() );
         writeTable( table_outfile, rio, m );
     }
@@ -238,7 +244,6 @@ public class rio {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.###" );
         df.setDecimalSeparatorAlwaysShown( false );
-        w.print( "\t" );
         for( int i = 0; i < m.size(); ++i ) {
             w.print( "\t" );
             w.print( m.getLabel( i ) );
@@ -246,7 +251,6 @@ public class rio {
         w.println();
         for( int x = 0; x < m.size(); ++x ) {
             w.print( m.getLabel( x ) );
-            w.print( "\t" );
             for( int y = 0; y < m.size(); ++y ) {
                 w.print( "\t" );
                 if ( x == y ) {

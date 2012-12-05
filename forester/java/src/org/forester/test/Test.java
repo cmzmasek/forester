@@ -3334,6 +3334,50 @@ public final class Test {
     private static boolean testGetLCA2() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny p_a = factory.create( "(a)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p_a );
+            final PhylogenyNode p_a_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_a.getNode( "a" ),
+                                                                                              p_a.getNode( "a" ) );
+            if ( !p_a_1.getName().equals( "a" ) ) {
+                return false;
+            }
+            final Phylogeny p_b = factory.create( "((a)b)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.preOrderReId( p_b );
+            final PhylogenyNode p_b_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_b.getNode( "b" ),
+                                                                                              p_b.getNode( "a" ) );
+            if ( !p_b_1.getName().equals( "b" ) ) {
+                return false;
+            }
+            final PhylogenyNode p_b_2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_b.getNode( "a" ),
+                                                                                              p_b.getNode( "b" ) );
+            if ( !p_b_2.getName().equals( "b" ) ) {
+                return false;
+            }
+            final Phylogeny p_c = factory.create( "(((a)b)c)", new NHXParser() )[ 0 ];
+            System.out.println( p_c.toNewHampshireX() );
+            PhylogenyMethods.preOrderReId( p_c );
+            final PhylogenyNode p_c_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_c.getNode( "b" ),
+                                                                                              p_c.getNode( "a" ) );
+            if ( !p_c_1.getName().equals( "b" ) ) {
+                return false;
+            }
+            final PhylogenyNode p_c_2 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_c.getNode( "a" ),
+                                                                                              p_c.getNode( "c" ) );
+            if ( !p_c_2.getName().equals( "c" ) ) {
+                System.out.println( p_c_2.getName() );
+                System.exit( -1 );
+                return false;
+            }
+            final PhylogenyNode p_c_3 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_c.getNode( "a" ),
+                                                                                              p_c.getNode( "b" ) );
+            if ( !p_c_3.getName().equals( "b" ) ) {
+                return false;
+            }
+            final PhylogenyNode p_c_4 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_c.getNode( "c" ),
+                                                                                              p_c.getNode( "a" ) );
+            if ( !p_c_4.getName().equals( "c" ) ) {
+                return false;
+            }
             final Phylogeny p1 = factory.create( "((((((A,B)ab,C)abc,D)abcd,E)abcde,F)abcdef,(G,H)gh)abcdefgh",
                                                  new NHXParser() )[ 0 ];
             PhylogenyMethods.preOrderReId( p1 );
