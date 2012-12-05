@@ -1222,7 +1222,7 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "yes" ) ) {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
             }
-            else if ( s.equalsIgnoreCase( "pfam_only" ) ) {
+            else if ( s.equalsIgnoreCase( "pfam" ) ) {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             }
             else {
