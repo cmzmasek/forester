@@ -111,8 +111,9 @@ public class ArchaeopteryxA extends JApplet {
             _mainframe_applet = new MainFrameApplet( this, configuration );
             URL url = null;
             url = new URL( getUrlString() );
-            final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( url,
-                                                                      configuration.isValidatePhyloXmlAgainstSchema() );
+            final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( url, configuration
+                    .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
+                    .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction() );
             AptxUtil.addPhylogeniesToTabs( phys,
                                            new File( url.getFile() ).getName(),
                                            getUrlString(),

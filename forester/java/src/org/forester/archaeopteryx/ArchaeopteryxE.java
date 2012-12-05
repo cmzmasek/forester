@@ -787,7 +787,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         // Load the tree from URL
         if ( phys_url != null ) {
             try {
-                phys = AptxUtil.readPhylogeniesFromUrl( phys_url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
+                phys = AptxUtil.readPhylogeniesFromUrl( phys_url,
+                                                        getConfiguration().isValidatePhyloXmlAgainstSchema(),
+                                                        getConfiguration().isReplaceUnderscoresInNhParsing(),
+                                                        getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
+                                                        getConfiguration().getTaxonomyExtraction() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( NAME, e.toString() );

@@ -64,6 +64,9 @@ import javax.swing.text.MaskFormatter;
 
 import org.forester.analysis.TaxonomyDataManager;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
+import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -901,17 +904,41 @@ public final class AptxUtil {
         System.out.println( "[" + applet_name + "] > " + message );
     }
 
-    final static Phylogeny[] readPhylogeniesFromUrl( final URL url, final boolean phyloxml_validate_against_xsd )
+    final static Phylogeny[] readPhylogeniesFromUrl( final URL url,
+                                                     final boolean phyloxml_validate_against_xsd,
+                                                     final boolean replace_underscores,
+                                                     final boolean internal_numbers_are_confidences,
+                                                     final TAXONOMY_EXTRACTION taxonomy_extraction )
             throws FileNotFoundException, IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        PhylogenyParser parser = null;
+        final PhylogenyParser parser;
+        boolean nhx_or_nexus = false;
         if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
             parser = new TolParser();
         }
         else {
             parser = ParserUtils.createParserDependingOnUrlContents( url, phyloxml_validate_against_xsd );
+            if ( parser instanceof NHXParser ) {
+                nhx_or_nexus = true;
+                final NHXParser nhx = ( NHXParser ) parser;
+                nhx.setReplaceUnderscores( replace_underscores );
+                nhx.setIgnoreQuotes( false );
+                nhx.setTaxonomyExtraction( taxonomy_extraction );
+            }
+            else if ( parser instanceof NexusPhylogeniesParser ) {
+                nhx_or_nexus = true;
+                final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) parser;
+                nex.setReplaceUnderscores( replace_underscores );
+                nex.setIgnoreQuotes( false );
+            }
         }
-        return factory.create( url.openStream(), parser );
+        final Phylogeny[] phys = factory.create( url.openStream(), parser );
+        if ( nhx_or_nexus && internal_numbers_are_confidences ) {
+            for( final Phylogeny phy : phys ) {
+                PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+            }
+        }
+        return phys;
     }
 
     final static void removeBranchColors( final Phylogeny phy ) {

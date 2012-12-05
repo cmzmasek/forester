@@ -47,6 +47,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualization;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
@@ -86,7 +87,7 @@ public final class Configuration {
     private short                           _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
     private boolean                         _editable                                              = true;
     private boolean                         _nh_parsing_replace_underscores                        = false;
-    private boolean                         _nh_parsing_extract_pfam_taxonomy_codes                = false;
+    private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
     private boolean                         _internal_number_are_confidence_for_nh_parsing         = false;
     private boolean                         _display_sequence_relations                            = false;
     private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
@@ -629,8 +630,8 @@ public final class Configuration {
         return _editable;
     }
 
-    boolean isExtractPfamTaxonomyCodesInNhParsing() {
-        return _nh_parsing_extract_pfam_taxonomy_codes;
+    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
     }
 
     boolean isHasWebLink( final String source ) {
@@ -924,8 +925,8 @@ public final class Configuration {
         _editable = editable;
     }
 
-    public void setExtractPfamTaxonomyCodesInNhParsing( final boolean nh_parsing_extract_pfam_taxonomy_codes ) {
-        _nh_parsing_extract_pfam_taxonomy_codes = nh_parsing_extract_pfam_taxonomy_codes;
+    final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        _taxonomy_extraction = taxonomy_extraction;
     }
 
     private void setGraphicsExportX( final int graphics_export_x ) {
@@ -1204,7 +1205,7 @@ public final class Configuration {
         }
         else if ( key.equals( "replace_underscores_in_nh_parsing" ) ) {
             final boolean r = parseBoolean( ( String ) st.nextElement() );
-            if ( r && isExtractPfamTaxonomyCodesInNhParsing() ) {
+            if ( r && ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) {
                 ForesterUtil
                         .printWarningMessage( Constants.PRG_NAME,
                                               "attempt to extract taxonomies and replace underscores at the same time" );
@@ -1213,15 +1214,25 @@ public final class Configuration {
                 setReplaceUnderscoresInNhParsing( r );
             }
         }
-        else if ( key.equals( "extract_taxonomy_codes_in_nh_parsing" ) ) {
-            final boolean e = parseBoolean( ( String ) st.nextElement() );
-            if ( e && isReplaceUnderscoresInNhParsing() ) {
+        else if ( key.equals( "taxonomy_extraction_in_nh_parsing" ) ) {
+            final String s = ( String ) st.nextElement();
+            if ( s.equalsIgnoreCase( "no" ) ) {
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
+            }
+            else if ( s.equalsIgnoreCase( "yes" ) ) {
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+            }
+            else if ( s.equalsIgnoreCase( "pfam_only" ) ) {
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+            }
+            else {
+                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
+                                                  "unknown value for \"taxonomy_extraction_in_nh_parsing\": " + s );
+            }
+            if ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) && isReplaceUnderscoresInNhParsing() ) {
                 ForesterUtil
                         .printWarningMessage( Constants.PRG_NAME,
                                               "attempt to extract taxonomies and replace underscores at the same time" );
-            }
-            else {
-                setExtractPfamTaxonomyCodesInNhParsing( e );
             }
         }
         else if ( key.equals( "internal_labels_are_confidence_values" ) ) {

@@ -52,8 +52,10 @@ import org.forester.io.parsers.nexus.NexusBinaryStatesMatrixParser;
 import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
@@ -180,7 +182,6 @@ public final class Test {
         }
         else {
             System.out.println( "failed." );
-            System.exit( -1 ); //TODO FIXME remove me!! ~
             failed++;
         }
         System.out.print( "Hmmscan output parser: " );
@@ -194,6 +195,15 @@ public final class Test {
         }
         System.out.print( "Basic node methods: " );
         if ( Test.testBasicNodeMethods() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Taxonomy extraction: " );
+        if ( Test.testExtractTaxonomyCodeFromNodeName() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -755,15 +765,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        //        System.out.print( "WABI TxSearch: " );
-        //        if ( Test.testWabiTxSearch() ) {
-        //            System.out.println( "OK." );
-        //            succeeded++;
-        //        }
-        //        else {
-        //            System.out
-        //                    .println( "failed [will not count towards failed tests since it might be due to absence internet connection]" );
-        //        }
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
@@ -780,73 +781,76 @@ public final class Test {
         else {
             System.out.println( "Not OK." );
         }
-        // System.out.println();
-        // Development.setTime( true );
-        //try {
-        //  final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        //  final String clc = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
-        //          + "examples" + ForesterUtil.getFileSeparator() + "CLC.nhx";
-        // final String multi = Test.PATH_TO_EXAMPLE_FILES +
-        // "multifurcations_ex_1.nhx";
-        // final String domains = Test.PATH_TO_EXAMPLE_FILES + "domains1.nhx";
-        // final Phylogeny t1 = factory.create( new File( domains ), new
-        // NHXParser() )[ 0 ];
-        //  final Phylogeny t2 = factory.create( new File( clc ), new NHXParser() )[ 0 ];
-        // }
-        // catch ( final Exception e ) {
-        //     e.printStackTrace();
-        // }
-        // t1.getRoot().preorderPrint();
-        // final PhylogenyFactory factory = ParserBasedPhylogenyFactory
-        // .getInstance();
-        // try {
-        //            
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\AtNBSpos.nhx" ) );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\AtNBSpos.nhx" ),
-        // new NHXParser() );
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\AtNBSpos.nhx" ) );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\AtNBSpos.nhx" ),
-        // new NHXParser() );
-        //            
-        //
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\big_tree.nhx" ) );
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\big_tree.nhx" ) );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\big_tree.nhx" ),
-        // new NHXParser() );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\big_tree.nhx" ),
-        // new NHXParser() );
-        //
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\big_tree.nhx" ) );
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\big_tree.nhx" ) );
-        //
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\big_tree.nhx" ),
-        // new NHXParser() );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\big_tree.nhx" ),
-        // new NHXParser() );
-        //
-        // Helper.readNHtree( new File( PATH_TO_EXAMPLE_FILES
-        // + "\\AtNBSpos.nhx" ) );
-        // factory.create(
-        // new File( PATH_TO_EXAMPLE_FILES + "\\AtNBSpos.nhx" ),
-        // new NHXParser() );
-        //
-        // }
-        // catch ( IOException e ) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
+    }
+
+    private static boolean testExtractTaxonomyCodeFromNodeName() {
+        try {
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "MOUSE", TAXONOMY_EXTRACTION.YES ).equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "RAT", TAXONOMY_EXTRACTION.YES ).equals( "RAT" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "RAT1", TAXONOMY_EXTRACTION.YES ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE_function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE|function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSEfunction = 23445", TAXONOMY_EXTRACTION.YES ) != null ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSEFunction = 23445", TAXONOMY_EXTRACTION.YES ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "RAT" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT_function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "RAT" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT|function = 23445", TAXONOMY_EXTRACTION.YES )
+                    .equals( "RAT" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RATfunction = 23445", TAXONOMY_EXTRACTION.YES ) != null ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RATFunction = 23445", TAXONOMY_EXTRACTION.YES ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT/1-3", TAXONOMY_EXTRACTION.YES ).equals( "RAT" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_PIG/1-3", TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY )
+                    .equals( "PIG" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE/1-3", TAXONOMY_EXTRACTION.YES )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE/1-3", TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
     }
 
     private static boolean testBasicNodeMethods() {
@@ -4822,7 +4826,7 @@ public final class Test {
             if ( !n8.getName().equals( "n8_ECOLI/12" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( n8 ).equals( "ECOLI" ) ) {
+            if ( PhylogenyMethods.getSpecies( n8 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n9 = PhylogenyNode
@@ -4830,7 +4834,7 @@ public final class Test {
             if ( !n9.getName().equals( "n9_ECOLI/12=12" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( n9 ).equals( "ECOLI" ) ) {
+            if ( PhylogenyMethods.getSpecies( n9 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n10 = PhylogenyNode
@@ -4923,7 +4927,7 @@ public final class Test {
             if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( b ).equals( "ECOLI" ) ) {
+            if ( PhylogenyMethods.getSpecies( b ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode c = PhylogenyNode
@@ -4932,7 +4936,7 @@ public final class Test {
             if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( c ).equals( "RATAF" ) ) {
+            if ( PhylogenyMethods.getSpecies( c ).equals( "RATAF" ) ) {
                 return false;
             }
             final PhylogenyNode c1 = PhylogenyNode
@@ -4941,7 +4945,7 @@ public final class Test {
             if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
+            if ( PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
                 return false;
             }
             final PhylogenyNode c2 = PhylogenyNode
@@ -4958,7 +4962,7 @@ public final class Test {
             if ( !d.getName().equals( "n10_RAT1/1-2" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( d ).equals( "RAT" ) ) {
+            if ( PhylogenyMethods.getSpecies( d ).equals( "RAT" ) ) {
                 return false;
             }
             final PhylogenyNode e = PhylogenyNode
@@ -4994,7 +4998,7 @@ public final class Test {
             if ( n11.getDistanceToParent() != 0.4 ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( n11 ).equals( "ECOLI" ) ) {
+            if ( PhylogenyMethods.getSpecies( n11 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n12 = PhylogenyNode
@@ -5014,7 +5018,7 @@ public final class Test {
             if ( !m.getName().equals( "n10_MOUSEa" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( m ).equals( "MOUSE" ) ) {
+            if ( PhylogenyMethods.getSpecies( m ).equals( "MOUSE" ) ) {
                 return false;
             }
             final PhylogenyNode o = PhylogenyNode.createInstanceFromNhxString( "n10_MOUSE_",

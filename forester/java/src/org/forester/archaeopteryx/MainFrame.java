@@ -58,6 +58,7 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
@@ -185,7 +186,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _choose_pdf_width_mi;
     // _  parsing
     JCheckBoxMenuItem           _internal_number_are_confidence_for_nh_parsing_cbmi;
-    JCheckBoxMenuItem           _extract_pfam_style_tax_codes_cbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_no_rbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_yes_rbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_pfam_rbmi;
     JCheckBoxMenuItem           _replace_underscores_cbmi;
     JCheckBoxMenuItem           _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem           _use_internal_names_for_conf_in_nh_export_cbmi;
@@ -1096,8 +1099,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
                 && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
-        options.setExtractPfamTaxonomyCodesInNhParsing( ( _extract_pfam_style_tax_codes_cbmi != null )
-                && _extract_pfam_style_tax_codes_cbmi.isSelected() );
+        if ( ( _extract_taxonomy_yes_rbmi != null ) && _extract_taxonomy_yes_rbmi.isSelected() ) {
+            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.YES );
+        }
+        else if ( ( _extract_taxonomy_pfam_rbmi != null ) && _extract_taxonomy_pfam_rbmi.isSelected() ) {
+            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+        }
+        else if ( ( _extract_taxonomy_no_rbmi != null ) && _extract_taxonomy_no_rbmi.isSelected() ) {
+            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.NO );
+        }
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
                 && _replace_underscores_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )

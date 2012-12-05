@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
@@ -50,8 +51,9 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final private static Pattern TAXOMONY_CODE_PATTERN_1 = Pattern.compile( "[A-Z0-9]{5}" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_2 = Pattern.compile( "([A-Z0-9]{5})[^A-Z].*" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_2  = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA)[^A-Za-z].*" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_PF = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA)/\\d+-\\d+" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
@@ -209,57 +211,37 @@ public final class ParserUtils {
         return reader;
     }
 
-    /**
-     * Extracts a code if and only if:
-     * one and only one _, 
-     * shorter than 25, 
-     * no |, 
-     * no ., 
-     * if / present it has to be after the _, 
-     * if PFAM_STYLE_ONLY: / must be present,
-     * tax code can only contain uppercase letters and numbers,
-     * and must contain at least one uppercase letter.
-     * Return null if no code extractable.
-     * 
-     * @param name
-     * @return
-     */
-    public static String extractTaxonomyCodeFromNodeName( final String name,
-                                                          final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction ) {
+    public final static String extractTaxonomyCodeFromNodeName( final String name,
+                                                                final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
-                && ( name.length() < 31 )
-                //  && ( name.lastIndexOf( "_" ) == name.indexOf( "_" ) )
-                && ( name.indexOf( "|" ) < 0 )
-                && ( name.indexOf( "." ) < 0 )
-                && ( ( taxonomy_extraction != NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name.indexOf( "/" ) >= 0 ) )
-                && ( ( ( name.indexOf( "/" ) ) < 0 ) || ( name.indexOf( "/" ) > name.indexOf( "_" ) ) ) ) {
-            final String[] s = name.split( "[_/]" );
+                && ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name.indexOf( "/" ) > 4 ) ) ) {
+            final String[] s = name.split( "[_\\s]" );
             if ( s.length > 1 ) {
                 final String str = s[ 1 ];
-                //   if (  str.length() < 6  ) {
-                if ( ( str.length() < 5 )
-                        && ( str.startsWith( "RAT" ) || str.startsWith( "PIG" ) || str.startsWith( "CAP" ) ) ) {
-                    return str.substring( 0, 3 );
+                if ( !ForesterUtil.isEmpty( str ) ) {
+                    if ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) {
+                        final Matcher m = TAXOMONY_CODE_PATTERN_PF.matcher( str );
+                        if ( m.matches() ) {
+                            return m.group( 1 );
+                        }
+                    }
+                    else {
+                        final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( str );
+                        if ( m1.matches() ) {
+                            return m1.group();
+                        }
+                        final Matcher m2 = TAXOMONY_CODE_PATTERN_2.matcher( str );
+                        if ( m2.matches() ) {
+                            return m2.group( 1 );
+                        }
+                    }
                 }
-                final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( str );
-                if ( m1.matches() ) {
-                    return m1.group();
-                }
-                final Matcher m2 = TAXOMONY_CODE_PATTERN_2.matcher( str );
-                if ( m2.matches() ) {
-                    return m2.group( 1 );
-                }
-                // return null;
-                //                final Matcher uc_letters_and_numbers = NHXParser.UC_LETTERS_NUMBERS_PATTERN.matcher( str );
-                //                if ( !uc_letters_and_numbers.matches() ) {
-                //                    return null;
-                //                }
-                //                final Matcher numbers_only = NHXParser.NUMBERS_ONLY_PATTERN.matcher( str );
-                //                if ( numbers_only.matches() ) {
-                //                    return null;
-                //                }
-                //                return str;
-                //  }
+            }
+        }
+        else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.YES ) {
+            final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( name );
+            if ( m1.matches() ) {
+                return name;
             }
         }
         return null;

@@ -27,6 +27,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Font;
 
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
@@ -67,7 +68,7 @@ final public class Options {
     private short                             _number_of_digits_after_comma_for_confidence_values;
     private short                             _number_of_digits_after_comma_for_branch_length_values;
     private boolean                           _nh_parsing_replace_underscores;
-    private boolean                           _nh_parsing_extract_pfam_taxonomy_codes;
+    private TAXONOMY_EXTRACTION               _taxonomy_extraction;
     private boolean                           _editable;
     private boolean                           _background_color_gradient;
     private boolean                           _show_domain_labels;
@@ -185,7 +186,7 @@ final public class Options {
         _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
         _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
         _nh_parsing_replace_underscores = false;
-        _nh_parsing_extract_pfam_taxonomy_codes = false;
+        _taxonomy_extraction = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
         _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
         setAbbreviateScientificTaxonNames( false );
@@ -239,8 +240,8 @@ final public class Options {
         return _editable;
     }
 
-    final boolean isExtractPfamTaxonomyCodesInNhParsing() {
-        return _nh_parsing_extract_pfam_taxonomy_codes;
+    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
     }
 
     final boolean isGraphicsExportUsingActualSize() {
@@ -343,8 +344,8 @@ final public class Options {
         _editable = editable;
     }
 
-    final void setExtractPfamTaxonomyCodesInNhParsing( final boolean nh_parsing_extract_pfam_taxonomy_codes ) {
-        _nh_parsing_extract_pfam_taxonomy_codes = nh_parsing_extract_pfam_taxonomy_codes;
+    final void setTaxonomyExtractio( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        _taxonomy_extraction = taxonomy_extraction;
     }
 
     final void setGraphicsExportUsingActualSize( final boolean graphics_export_using_actual_size ) {
@@ -481,7 +482,7 @@ final public class Options {
                 instance.setNumberOfDigitsAfterCommaForConfidenceValues( configuration
                         .getNumberOfDigitsAfterCommaForConfidenceValues() );
             }
-            instance.setExtractPfamTaxonomyCodesInNhParsing( configuration.isExtractPfamTaxonomyCodesInNhParsing() );
+            instance.setTaxonomyExtractio( configuration.getTaxonomyExtraction() );
             instance.setReplaceUnderscoresInNhParsing( configuration.isReplaceUnderscoresInNhParsing() );
             instance.setInternalNumberAreConfidenceForNhParsing( configuration
                     .isInternalNumberAreConfidenceForNhParsing() );

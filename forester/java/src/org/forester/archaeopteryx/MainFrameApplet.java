@@ -84,7 +84,11 @@ public final class MainFrameApplet extends MainFrame {
         // Load the tree from URL
         if ( url != null ) {
             try {
-                phys = AptxUtil.readPhylogeniesFromUrl( url, getConfiguration().isValidatePhyloXmlAgainstSchema() );
+                phys = AptxUtil.readPhylogeniesFromUrl( url,
+                                                        configuration.isValidatePhyloXmlAgainstSchema(),
+                                                        configuration.isReplaceUnderscoresInNhParsing(),
+                                                        configuration.isInternalNumberAreConfidenceForNhParsing(),
+                                                        configuration.getTaxonomyExtraction() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );

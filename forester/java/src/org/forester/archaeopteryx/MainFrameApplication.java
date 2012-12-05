@@ -79,6 +79,7 @@ import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
@@ -218,6 +219,7 @@ public final class MainFrameApplication extends MainFrame {
     private Phylogeny                        _species_tree;
     private File                             _current_dir;
     private ButtonGroup                      _radio_group_1;
+    private ButtonGroup                      _radio_group_2;
     // Others:
     double                                   _min_not_collapse                     = Constants.MIN_NOT_COLLAPSE_DEFAULT;
     // Phylogeny Inference menu
@@ -616,8 +618,8 @@ public final class MainFrameApplication extends MainFrame {
                 updateOptions( getOptions() );
             }
             else if ( o == _replace_underscores_cbmi ) {
-                if ( ( _extract_pfam_style_tax_codes_cbmi != null ) && _replace_underscores_cbmi.isSelected() ) {
-                    _extract_pfam_style_tax_codes_cbmi.setSelected( false );
+                if ( ( _extract_taxonomy_no_rbmi != null ) && !_extract_taxonomy_no_rbmi.isSelected() ) {
+                    _extract_taxonomy_no_rbmi.setSelected( true );
                 }
                 updateOptions( getOptions() );
             }
@@ -627,8 +629,8 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 collapseBelowThreshold();
             }
-            else if ( o == _extract_pfam_style_tax_codes_cbmi ) {
-                if ( ( _replace_underscores_cbmi != null ) && _extract_pfam_style_tax_codes_cbmi.isSelected() ) {
+            else if ( ( o == _extract_taxonomy_pfam_rbmi ) || ( o == _extract_taxonomy_yes_rbmi ) ) {
+                if ( _replace_underscores_cbmi != null ) {
                     _replace_underscores_cbmi.setSelected( false );
                 }
                 updateOptions( getOptions() );
@@ -843,8 +845,21 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu
                 .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
+        //
+        _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
         _options_jmenu
-                .add( _extract_pfam_style_tax_codes_cbmi = new JCheckBoxMenuItem( "Extract Taxonomy Codes from Pfam-style Labels" ) );
+                .add( _extract_taxonomy_pfam_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes from Pfam-style Node Names" ) );
+        _extract_taxonomy_pfam_rbmi
+                .setToolTipText( "To extract 5-letter taxonomy codes from node names in the form of \"BCL2_MOUSE/134-298\"" );
+        _options_jmenu
+                .add( _extract_taxonomy_yes_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes from Node Names" ) );
+        _extract_taxonomy_yes_rbmi
+                .setToolTipText( "To extract 5-letter taxonomy codes from node names in the form of \"BCL2_MOUSE\" or \"BCL2_MOUSE B-cell lymphoma 2...\"" );
+        _radio_group_2 = new ButtonGroup();
+        _radio_group_2.add( _extract_taxonomy_no_rbmi );
+        _radio_group_2.add( _extract_taxonomy_pfam_rbmi );
+        _radio_group_2.add( _extract_taxonomy_yes_rbmi );
+        // 
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Output:" ), getConfiguration() ) );
         _options_jmenu
                 .add( _use_brackets_for_conf_in_nh_export_cbmi = new JCheckBoxMenuItem( USE_BRACKETS_FOR_CONF_IN_NH_LABEL ) );
@@ -884,8 +899,12 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _print_black_and_white_cbmi, getOptions().isPrintBlackAndWhite() );
         customizeCheckBoxMenuItem( _internal_number_are_confidence_for_nh_parsing_cbmi, getOptions()
                 .isInternalNumberAreConfidenceForNhParsing() );
-        customizeCheckBoxMenuItem( _extract_pfam_style_tax_codes_cbmi, getOptions()
-                .isExtractPfamTaxonomyCodesInNhParsing() );
+        customizeRadioButtonMenuItem( _extract_taxonomy_no_rbmi,
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.NO );
+        customizeRadioButtonMenuItem( _extract_taxonomy_yes_rbmi,
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.YES );
+        customizeRadioButtonMenuItem( _extract_taxonomy_pfam_rbmi,
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
         customizeCheckBoxMenuItem( _replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
@@ -2253,11 +2272,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
         nhx.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
-        NHXParser.TAXONOMY_EXTRACTION te = NHXParser.TAXONOMY_EXTRACTION.NO;
-        if ( getOptions().isExtractPfamTaxonomyCodesInNhParsing() ) {
-            te = NHXParser.TAXONOMY_EXTRACTION.YES;
-        }
-        nhx.setTaxonomyExtraction( te );
+        nhx.setTaxonomyExtraction( getOptions().getTaxonomyExtraction() );
     }
 
     private void writeAllToFile() {
