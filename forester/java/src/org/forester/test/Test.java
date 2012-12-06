@@ -3354,7 +3354,6 @@ public final class Test {
                 return false;
             }
             final Phylogeny p_c = factory.create( "(((a)b)c)", new NHXParser() )[ 0 ];
-            System.out.println( p_c.toNewHampshireX() );
             PhylogenyMethods.preOrderReId( p_c );
             final PhylogenyNode p_c_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_c.getNode( "b" ),
                                                                                               p_c.getNode( "a" ) );

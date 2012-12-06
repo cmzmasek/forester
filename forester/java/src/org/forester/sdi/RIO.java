@@ -538,9 +538,11 @@ public final class RIO {
                 if ( nx == null ) {
                     throw new RioException( "node \"" + mx + "\" not present in gene tree #" + counter );
                 }
+                String my;
+                PhylogenyNode ny;
                 for( int y = 0; y < m.size(); ++y ) {
-                    final String my = m.getLabel( y );
-                    final PhylogenyNode ny = map.get( my );
+                    my = m.getLabel( y );
+                    ny = map.get( my );
                     if ( ny == null ) {
                         throw new RioException( "node \"" + my + "\" not present in gene tree #" + counter );
                     }
