@@ -65,10 +65,10 @@ public final class RIO {
      * Default constructor.
      * @throws SDIException 
      * @throws IOException 
-     * @throws RioException 
+     * @throws RIOException 
      */
     public RIO( final File gene_trees_file, final Phylogeny species_tree, final String query ) throws IOException,
-            SDIException, RioException {
+            SDIException, RIOException {
         if ( ForesterUtil.isEmpty( query ) ) {
             throw new IllegalArgumentException( "query is empty" );
         }
@@ -77,7 +77,7 @@ public final class RIO {
     }
 
     public RIO( final File gene_trees_file, final Phylogeny species_tree ) throws IOException, SDIException,
-            RioException {
+            RIOException {
         init();
         inferOrthologs( gene_trees_file, species_tree, null );
     }
@@ -374,12 +374,12 @@ public final class RIO {
      *            the sequence name of the squence whose orthologs are to be
      *            inferred
      * @throws SDIException 
-     * @throws RioException 
+     * @throws RIOException 
      * @throws IOException 
      * @throws FileNotFoundException 
      */
     private final void inferOrthologs( final File gene_trees_file, final Phylogeny species_tree, final String query )
-            throws SDIException, RioException, FileNotFoundException, IOException {
+            throws SDIException, RIOException, FileNotFoundException, IOException {
         // Read in first tree to get its sequence names
         // and strip species_tree.
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -394,16 +394,16 @@ public final class RIO {
         // Removes from species_tree all species not found in gene_tree.
         PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
         if ( species_tree.isEmpty() ) {
-            throw new RioException( "failed to establish species based mapping between gene and species trees" );
+            throw new RIOException( "failed to establish species based mapping between gene and species trees" );
         }
         if ( !ForesterUtil.isEmpty( query ) ) {
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_trees[ 0 ] );
             if ( gene_trees[ 0 ].isEmpty() ) {
-                throw new RioException( "failed to establish species based mapping between gene and species trees" );
+                throw new RIOException( "failed to establish species based mapping between gene and species trees" );
             }
             _seq_names = getAllExternalSequenceNames( gene_trees[ 0 ] );
             if ( ( _seq_names == null ) || ( _seq_names.size() < 1 ) ) {
-                throw new RioException( "could not get sequence names" );
+                throw new RIOException( "could not get sequence names" );
             }
             _o_maps = new HashMap<String, HashMap<String, Integer>>();
             _so_maps = new HashMap<String, HashMap<String, Integer>>();
@@ -418,7 +418,7 @@ public final class RIO {
             // Removes from gene_tree all species not found in species_tree.
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gt );
             if ( gt.isEmpty() ) {
-                throw new RioException( "failed to establish species based mapping between gene and species trees" );
+                throw new RIOException( "failed to establish species based mapping between gene and species trees" );
             }
             _analyzed_gene_trees[ c++ ] = inferOrthologsHelper( gt, species_tree, query );
         }
@@ -429,7 +429,7 @@ public final class RIO {
     // the external node with seqname query.
     private final Phylogeny inferOrthologsHelper( final Phylogeny gene_tree,
                                                   final Phylogeny species_tree,
-                                                  final String query ) throws SDIException, RioException {
+                                                  final String query ) throws SDIException, RIOException {
         final SDIR sdiunrooted = new SDIR();
         final Phylogeny assigned_tree = sdiunrooted.infer( gene_tree,
                                                            species_tree,
@@ -442,10 +442,10 @@ public final class RIO {
         if ( !ForesterUtil.isEmpty( query ) ) {
             final List<PhylogenyNode> nodes = getNodesViaSequenceName( assigned_tree, query );
             if ( nodes.size() > 1 ) {
-                throw new RioException( "node named [" + query + "] not unique" );
+                throw new RIOException( "node named [" + query + "] not unique" );
             }
             else if ( nodes.isEmpty() ) {
-                throw new RioException( "no node containing a sequence named [" + query + "] found" );
+                throw new RIOException( "no node containing a sequence named [" + query + "] found" );
             }
             final PhylogenyNode query_node = nodes.get( 0 );
             updateCounts( _o_maps, query, PhylogenyMethods.getOrthologousNodes( assigned_tree, query_node ) );
@@ -502,7 +502,7 @@ public final class RIO {
         }
     }
 
-    public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees ) throws RioException {
+    public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees ) throws RIOException {
         final List<String> labels = new ArrayList<String>();
         final Set<String> labels_set = new HashSet<String>();
         String label;
@@ -536,7 +536,7 @@ public final class RIO {
                 final String mx = m.getLabel( x );
                 final PhylogenyNode nx = map.get( mx );
                 if ( nx == null ) {
-                    throw new RioException( "node \"" + mx + "\" not present in gene tree #" + counter );
+                    throw new RIOException( "node \"" + mx + "\" not present in gene tree #" + counter );
                 }
                 String my;
                 PhylogenyNode ny;
@@ -544,7 +544,7 @@ public final class RIO {
                     my = m.getLabel( y );
                     ny = map.get( my );
                     if ( ny == null ) {
-                        throw new RioException( "node \"" + my + "\" not present in gene tree #" + counter );
+                        throw new RIOException( "node \"" + my + "\" not present in gene tree #" + counter );
                     }
                     if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, ny ).isDuplication() ) {
                         m.inreaseByOne( x, y );
@@ -649,7 +649,7 @@ public final class RIO {
         return s;
     }
 
-    private final static List<String> getAllExternalSequenceNames( final Phylogeny phy ) throws RioException {
+    private final static List<String> getAllExternalSequenceNames( final Phylogeny phy ) throws RIOException {
         final List<String> names = new ArrayList<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
@@ -660,7 +660,7 @@ public final class RIO {
                 names.add( n.getName() );
             }
             else {
-                throw new RioException( "node has no (sequence) name: " + n );
+                throw new RIOException( "node has no (sequence) name: " + n );
             }
         }
         return names;

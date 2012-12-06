@@ -40,7 +40,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.RIO;
-import org.forester.sdi.RioException;
+import org.forester.sdi.RIOException;
 import org.forester.sdi.SDIException;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
@@ -214,7 +214,7 @@ public class rio {
                 tableOutput( table_outfile, rio );
             }
         }
-        catch ( final RioException e ) {
+        catch ( final RIOException e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
         }
         catch ( final SDIException e ) {
@@ -235,7 +235,7 @@ public class rio {
         System.exit( 0 );
     }
 
-    private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RioException {
+    private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RIOException {
         final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees() );
         writeTable( table_outfile, rio, m );
     }

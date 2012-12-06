@@ -1,18 +1,18 @@
 
 package org.forester.sdi;
 
-public class RioException extends Exception {
+public class RIOException extends Exception {
 
     /**
      * 
      */
     private static final long serialVersionUID = 4691098852783522097L;
 
-    public RioException() {
+    public RIOException() {
         super();
     }
 
-    public RioException( final String message ) {
+    public RIOException( final String message ) {
         super( message );
     }
 }

@@ -64,7 +64,7 @@ public final class HmmscanPerDomainTableParser {
     private static final ReturnType       RETURN_TYPE_DEFAULT         = ReturnType.UNORDERED_PROTEIN_DOMAIN_COLLECTION_PER_PROTEIN;
     private static final boolean          IGNORE_DUFS_DEFAULT         = false;
     private static final int              MAX_ALLOWED_OVERLAP_DEFAULT = -1;
-    private static final boolean          IGNORE_REPLACED_RRMS        = true;
+    private static final boolean          IGNORE_REPLACED_RRMS        = false;
     private final Set<DomainId>           _filter;
     private final FilterType              _filter_type;
     private final File                    _input_file;
