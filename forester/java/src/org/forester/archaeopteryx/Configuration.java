@@ -164,7 +164,7 @@ public final class Configuration {
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Annotation", "nodisplay", "no" }, { "Confidence Values", "display", "?" }, { "Event", "display", "?" },
-            { "Taxonomy Colorize", "display", "no" }, { "Colorize Branches", "display", "no" },
+            { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
             { "Use Branch-Widths", "display", "no" }, { "Show Custom Nodes", "display", "yes" },
             { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
             { "Binary Char Counts", "nodisplay", "no" }, { "Prot/Gene Name", "display", "yes" },

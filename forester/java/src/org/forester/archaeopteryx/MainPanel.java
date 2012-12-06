@@ -149,6 +149,25 @@ public class MainPanel extends JPanel implements ComponentListener {
         treepanel.setControlPanel( getControlPanel() );
         _treepanels.add( treepanel );
         final JScrollPane treegraphic_scroll_pane = new JScrollPane( treepanel );
+        treegraphic_scroll_pane.getHorizontalScrollBar().addAdjustmentListener( new AdjustmentListener() {
+
+            @Override
+            public void adjustmentValueChanged( final AdjustmentEvent e ) {
+                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
+                    treepanel.repaint();
+                }
+            }
+        } );
+        treegraphic_scroll_pane.getVerticalScrollBar().addAdjustmentListener( new AdjustmentListener() {
+
+            @Override
+            public void adjustmentValueChanged( final AdjustmentEvent e ) {
+                if ( treepanel.isOvOn() || getOptions().isShowScale() ) {
+                    treepanel.repaint();
+                    //System.out.println( e.getValue() );
+                }
+            }
+        } );
         treegraphic_scroll_pane.getHorizontalScrollBar().setUnitIncrement( 20 );
         treegraphic_scroll_pane.getHorizontalScrollBar().setBlockIncrement( 50 );
         treegraphic_scroll_pane.getVerticalScrollBar().setUnitIncrement( 20 );
