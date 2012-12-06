@@ -317,70 +317,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         repaint();
     }
 
-    void help( final Map<String, WebLink> weblinks ) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( "Display options\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
-        sb.append( "Clickable tree nodes\n" );
-        sb.append( "--------------------\n" );
-        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
-        sb.append( "or by right clicking:\n" );
-        sb.append( "o  Display Node Data -- display information for a node\n" );
-        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
-        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
-        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
-        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
-        sb.append( "o  Colorize Subtree -- color a subtree\n" );
-        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
-        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
-        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
-        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
-        sb.append( "Zooming\n" );
-        sb.append( "---------\n" );
-        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
-        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
-        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
-        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
-        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
-        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
-        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
-        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
-        sb.append( "Quick tree manipulation:\n" );
-        sb.append( "------------------------\n" );
-        sb.append( "Order Subtrees -- order the tree by branch length\n" );
-        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
-        sb.append( "Memory problems (Java heap space error)\n" );
-        sb.append( "---------------------------------------\n" );
-        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
-        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
-        sb.append( "the '-Xmx' Java command line option. For example:\n" );
-        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
-        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
-            sb.append( "Active web links\n" );
-            sb.append( "--------------------\n" );
-            for( final String key : weblinks.keySet() ) {
-                sb.append( " " + weblinks.get( key ).toString() + "\n" );
-            }
-        }
-        sb.append( "\n" );
-        sb.append( "phyloXML\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
-        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
-        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
-        sb.append( "\n" );
-        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
-        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
-        TextFrame.instantiate( sb.toString(), "Help", _textframes );
-    }
-
-    void setCurrentExternalNodesDataBuffer( final String s ) {
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            _ext_node_data_buffer = s.trim();
-        }
-        else {
-            _ext_node_data_buffer = "";
+    @Override
+    public void destroy() {
+        AptxUtil.printAppletMessage( NAME, "going to be destroyed " );
+        removeAllTextFrames();
+        if ( getMainPanel() != null ) {
+            getMainPanel().terminate();
         }
     }
 
@@ -456,6 +398,146 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         final byte[] bytes = baos.toByteArray();
         final String dataImg = Base64.encodeBase64String( bytes );
         return dataImg;
+    }
+
+    public Options getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void init() {
+        final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
+        AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
+        final Configuration configuration = new Configuration( config_filename, true, true, true );
+        setConfiguration( configuration );
+        setOptions( Options.createInstance( configuration ) );
+        setupUI();
+        URL phys_url = null;
+        Phylogeny[] phys = null;
+        final String phys_url_string = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+        AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + phys_url_string );
+        // Get URL to tree file
+        if ( phys_url_string != null ) {
+            try {
+                phys_url = new URL( phys_url_string );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.printErrorMessage( NAME, "error: " + e );
+                e.printStackTrace();
+                JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + phys_url_string
+                        + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
+            }
+        }
+        // Load the tree from URL
+        if ( phys_url != null ) {
+            try {
+                phys = AptxUtil.readPhylogeniesFromUrl( phys_url,
+                                                        getConfiguration().isValidatePhyloXmlAgainstSchema(),
+                                                        getConfiguration().isReplaceUnderscoresInNhParsing(),
+                                                        getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
+                                                        getConfiguration().getTaxonomyExtraction() );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.printErrorMessage( NAME, e.toString() );
+                e.printStackTrace();
+                JOptionPane.showMessageDialog( this,
+                                               NAME + ": Failed to read phylogenies: " + "\nException: " + e,
+                                               "Failed to read phylogenies",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+        }
+        if ( ( phys == null ) || ( phys.length < 1 ) ) {
+            ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + phys_url + "] are null or empty" );
+            JOptionPane.showMessageDialog( this,
+                                           NAME + ": phylogenies from [" + phys_url + "] are null or empty",
+                                           "Failed to read phylogenies",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        else {
+            AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
+        }
+        setVisible( false );
+        setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
+        _jmenubar = new JMenuBar();
+        if ( !getConfiguration().isHideControlPanelAndMenubar() ) {
+            if ( !getConfiguration().isUseNativeUI() ) {
+                _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+            }
+            buildToolsMenu();
+            buildViewMenu();
+            buildFontSizeMenu();
+            buildOptionsMenu();
+            buildTypeMenu();
+            buildHelpMenu();
+            setJMenuBar( _jmenubar );
+        }
+        final Container contentpane = getContentPane();
+        contentpane.setLayout( new BorderLayout() );
+        contentpane.add( getMainPanel(), BorderLayout.CENTER );
+        addComponentListener( new ComponentAdapter() {
+
+            @Override
+            public void componentResized( final ComponentEvent e ) {
+                if ( getMainPanel().getCurrentTreePanel() != null ) {
+                    getMainPanel().getCurrentTreePanel().setParametersForPainting( getMainPanel().getCurrentTreePanel()
+                                                                                           .getWidth(),
+                                                                                   getMainPanel().getCurrentTreePanel()
+                                                                                           .getHeight(),
+                                                                                   false );
+                }
+            }
+        } );
+        if ( getConfiguration().isUseTabbedDisplay() ) {
+            AptxUtil.printAppletMessage( NAME, "using tabbed display" );
+            AptxUtil.addPhylogeniesToTabs( phys,
+                                           new File( phys_url.getFile() ).getName(),
+                                           phys_url.toString(),
+                                           getConfiguration(),
+                                           getMainPanel() );
+        }
+        else {
+            AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
+            AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
+        }
+        validate();
+        setName( NAME );
+        getMainPanel().getControlPanel().showWholeAll();
+        getMainPanel().getControlPanel().showWhole();
+        System.gc();
+        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
+        /* GUILHEM_BEG */
+        getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
+        for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
+                .getRelevantSequenceRelationTypes() ) {
+            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().addItem( type );
+        }
+        final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
+        if ( default_relation != null ) {
+            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().setSelectedItem( default_relation );
+        }
+        final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
+        if ( default_sequence != null ) {
+            getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
+            /* GUILHEM_END */
+        }
+        setVisible( true );
+    }
+
+    public void showTextFrame( final String s, final String title ) {
+        checkTextFrames();
+        _textframes.addLast( TextFrame.instantiate( s, title, _textframes ) );
+    }
+
+    @Override
+    public void start() {
+        if ( getMainPanel() != null ) {
+            getMainPanel().validate();
+        }
+        requestFocus();
+        requestFocusInWindow();
+        requestFocus();
+        AptxUtil.printAppletMessage( NAME, "started" );
     }
 
     void buildFontSizeMenu() {
@@ -656,40 +738,18 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _jmenubar.add( _view_jmenu );
     }
 
-    private void chooseFont() {
-        final FontChooser fc = new FontChooser();
-        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
-        fc.showDialog( this, "Select the Base Font" );
-        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
-    }
-
-    private void chooseMinimalConfidence() {
-        final String s = ( String ) JOptionPane
-                .showInputDialog( this,
-                                  "Please the minimum for confidence values to be displayed.\n" + "[current value: "
-                                          + getOptions().getMinConfidenceValue() + "]\n",
-                                  "Minimal Confidence Value",
-                                  JOptionPane.QUESTION_MESSAGE,
-                                  null,
-                                  null,
-                                  getOptions().getMinConfidenceValue() );
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            boolean success = true;
-            double m = 0.0;
-            final String m_str = s.trim();
-            if ( !ForesterUtil.isEmpty( m_str ) ) {
-                try {
-                    m = Double.parseDouble( m_str );
+    void checkTextFrames() {
+        if ( _textframes.size() > 5 ) {
+            try {
+                if ( _textframes.getFirst() != null ) {
+                    _textframes.getFirst().removeMe();
                 }
-                catch ( final Exception ex ) {
-                    success = false;
+                else {
+                    _textframes.removeFirst();
                 }
             }
-            else {
-                success = false;
-            }
-            if ( success && ( m >= 0.0 ) ) {
-                getOptions().setMinConfidenceValue( m );
+            catch ( final NoSuchElementException e ) {
+                // Ignore.
             }
         }
     }
@@ -715,24 +775,13 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         jmi.addActionListener( this );
     }
 
-    private void customizeRadioButtonMenuItem( final JRadioButtonMenuItem item, final boolean is_selected ) {
-        if ( item != null ) {
-            item.setFont( MainFrame.menu_font );
-            if ( !getConfiguration().isUseNativeUI() ) {
-                item.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
-                item.setForeground( getConfiguration().getGuiMenuTextColor() );
+    void displayBasicInformation() {
+        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
+            String title = "Basic Information";
+            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
+                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
             }
-            item.setSelected( is_selected );
-            item.addActionListener( this );
-        }
-    }
-
-    @Override
-    public void destroy() {
-        AptxUtil.printAppletMessage( NAME, "going to be destroyed " );
-        removeAllTextFrames();
-        if ( getMainPanel() != null ) {
-            getMainPanel().terminate();
+            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ), title );
         }
     }
 
@@ -748,136 +797,66 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return _label_direction_cbmi;
     }
 
-    private MainPanel getMainPanel() {
-        return _main_panel;
-    }
-
-    public Options getOptions() {
-        return _options;
-    }
-
     Options getOtions() {
         return _options;
     }
 
-    @Override
-    public void init() {
-        final String config_filename = getParameter( Constants.APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL );
-        AptxUtil.printAppletMessage( NAME, "URL for configuration file is: " + config_filename );
-        final Configuration configuration = new Configuration( config_filename, true, true, true );
-        setConfiguration( configuration );
-        setOptions( Options.createInstance( configuration ) );
-        setupUI();
-        URL phys_url = null;
-        Phylogeny[] phys = null;
-        final String phys_url_string = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
-        AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + phys_url_string );
-        // Get URL to tree file
-        if ( phys_url_string != null ) {
-            try {
-                phys_url = new URL( phys_url_string );
+    void help( final Map<String, WebLink> weblinks ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "Display options\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
+        sb.append( "Clickable tree nodes\n" );
+        sb.append( "--------------------\n" );
+        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
+        sb.append( "or by right clicking:\n" );
+        sb.append( "o  Display Node Data -- display information for a node\n" );
+        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
+        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
+        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
+        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
+        sb.append( "o  Colorize Subtree -- color a subtree\n" );
+        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
+        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
+        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
+        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
+        sb.append( "Zooming\n" );
+        sb.append( "---------\n" );
+        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
+        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
+        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
+        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
+        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
+        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
+        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
+        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
+        sb.append( "Quick tree manipulation:\n" );
+        sb.append( "------------------------\n" );
+        sb.append( "Order Subtrees -- order the tree by branch length\n" );
+        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
+        sb.append( "Memory problems (Java heap space error)\n" );
+        sb.append( "---------------------------------------\n" );
+        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
+        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
+        sb.append( "the '-Xmx' Java command line option. For example:\n" );
+        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
+        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
+            sb.append( "Active web links\n" );
+            sb.append( "--------------------\n" );
+            for( final String key : weblinks.keySet() ) {
+                sb.append( " " + weblinks.get( key ).toString() + "\n" );
             }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( NAME, "error: " + e );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + phys_url_string
-                        + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
-            }
         }
-        // Load the tree from URL
-        if ( phys_url != null ) {
-            try {
-                phys = AptxUtil.readPhylogeniesFromUrl( phys_url,
-                                                        getConfiguration().isValidatePhyloXmlAgainstSchema(),
-                                                        getConfiguration().isReplaceUnderscoresInNhParsing(),
-                                                        getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
-                                                        getConfiguration().getTaxonomyExtraction() );
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( NAME, e.toString() );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this,
-                                               NAME + ": Failed to read phylogenies: " + "\nException: " + e,
-                                               "Failed to read phylogenies",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-        }
-        if ( ( phys == null ) || ( phys.length < 1 ) ) {
-            ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + phys_url + "] are null or empty" );
-            JOptionPane.showMessageDialog( this,
-                                           NAME + ": phylogenies from [" + phys_url + "] are null or empty",
-                                           "Failed to read phylogenies",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        else {
-            AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
-        }
-        setVisible( false );
-        setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
-        _jmenubar = new JMenuBar();
-        if ( !getConfiguration().isHideControlPanelAndMenubar() ) {
-            if ( !getConfiguration().isUseNativeUI() ) {
-                _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
-            }
-            buildToolsMenu();
-            buildViewMenu();
-            buildFontSizeMenu();
-            buildOptionsMenu();
-            buildTypeMenu();
-            buildHelpMenu();
-            setJMenuBar( _jmenubar );
-        }
-        final Container contentpane = getContentPane();
-        contentpane.setLayout( new BorderLayout() );
-        contentpane.add( getMainPanel(), BorderLayout.CENTER );
-        addComponentListener( new ComponentAdapter() {
-
-            @Override
-            public void componentResized( final ComponentEvent e ) {
-                if ( getMainPanel().getCurrentTreePanel() != null ) {
-                    getMainPanel().getCurrentTreePanel().setParametersForPainting( getMainPanel().getCurrentTreePanel()
-                                                                                           .getWidth(),
-                                                                                   getMainPanel().getCurrentTreePanel()
-                                                                                           .getHeight(),
-                                                                                   false );
-                }
-            }
-        } );
-        if ( getConfiguration().isUseTabbedDisplay() ) {
-            AptxUtil.printAppletMessage( NAME, "using tabbed display" );
-            AptxUtil.addPhylogeniesToTabs( phys,
-                                           new File( phys_url.getFile() ).getName(),
-                                           phys_url.toString(),
-                                           getConfiguration(),
-                                           getMainPanel() );
-        }
-        else {
-            AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
-            AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
-        }
-        validate();
-        setName( NAME );
-        getMainPanel().getControlPanel().showWholeAll();
-        getMainPanel().getControlPanel().showWhole();
-        System.gc();
-        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
-        /* GUILHEM_BEG */
-        getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
-        for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
-                .getRelevantSequenceRelationTypes() ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().addItem( type );
-        }
-        final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
-        if ( default_relation != null ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().setSelectedItem( default_relation );
-        }
-        final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
-        if ( default_sequence != null ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
-            /* GUILHEM_END */
-        }
-        setVisible( true );
+        sb.append( "\n" );
+        sb.append( "phyloXML\n" );
+        sb.append( "-------------------\n" );
+        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
+        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
+        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
+        sb.append( "\n" );
+        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
+        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
+        TextFrame.instantiate( sb.toString(), "Help", _textframes );
     }
 
     void initializeTypeMenu( final Options options ) {
@@ -915,22 +894,26 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
     }
 
-    private boolean isScreenAntialias() {
-        return true;
-    }
-
-    private void removeBranchColors() {
-        if ( getMainPanel().getCurrentPhylogeny() != null ) {
-            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+    void removeAllTextFrames() {
+        for( final TextFrame tf : _textframes ) {
+            if ( tf != null ) {
+                tf.close();
+            }
         }
+        _textframes.clear();
     }
 
     void setConfiguration( final Configuration configuration ) {
         _configuration = configuration;
     }
 
-    private void setMainPanel( final MainPanelApplets main_panel ) {
-        _main_panel = main_panel;
+    void setCurrentExternalNodesDataBuffer( final String s ) {
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            _ext_node_data_buffer = s.trim();
+        }
+        else {
+            _ext_node_data_buffer = "";
+        }
     }
 
     void setOptions( final Options options ) {
@@ -999,43 +982,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( _circular_type_cbmi != null ) {
             _circular_type_cbmi.setSelected( false );
         }
-    }
-
-    private void setupUI() {
-        try {
-            if ( getConfiguration().isUseNativeUI() ) {
-                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-            }
-            else {
-                UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
-            }
-        }
-        catch ( final UnsupportedLookAndFeelException e ) {
-            AptxUtil.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
-        }
-        catch ( final ClassNotFoundException e ) {
-            AptxUtil.dieWithSystemError( "ClassNotFoundException: " + e.toString() );
-        }
-        catch ( final InstantiationException e ) {
-            AptxUtil.dieWithSystemError( "InstantiationException: " + e.toString() );
-        }
-        catch ( final IllegalAccessException e ) {
-            AptxUtil.dieWithSystemError( "IllegalAccessException: " + e.toString() );
-        }
-        catch ( final Exception e ) {
-            AptxUtil.dieWithSystemError( e.toString() );
-        }
-    }
-
-    @Override
-    public void start() {
-        if ( getMainPanel() != null ) {
-            getMainPanel().validate();
-        }
-        requestFocus();
-        requestFocusInWindow();
-        requestFocus();
-        AptxUtil.printAppletMessage( NAME, "started" );
     }
 
     void switchColors() {
@@ -1144,16 +1090,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         ( ( JCheckBoxMenuItem ) o ).setSelected( true );
     }
 
-    void displayBasicInformation() {
-        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            String title = "Basic Information";
-            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
-            }
-            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ), title );
-        }
-    }
-
     void viewAsNexus() {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "Nexus";
@@ -1198,34 +1134,98 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
     }
 
-    public void showTextFrame( final String s, final String title ) {
-        checkTextFrames();
-        _textframes.addLast( TextFrame.instantiate( s, title, _textframes ) );
+    private void chooseFont() {
+        final FontChooser fc = new FontChooser();
+        fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
+        fc.showDialog( this, "Select the Base Font" );
+        getMainPanel().getTreeFontSet().setBaseFont( fc.getFont() );
     }
 
-    void checkTextFrames() {
-        if ( _textframes.size() > 5 ) {
-            try {
-                if ( _textframes.getFirst() != null ) {
-                    _textframes.getFirst().removeMe();
+    private void chooseMinimalConfidence() {
+        final String s = ( String ) JOptionPane
+                .showInputDialog( this,
+                                  "Please the minimum for confidence values to be displayed.\n" + "[current value: "
+                                          + getOptions().getMinConfidenceValue() + "]\n",
+                                  "Minimal Confidence Value",
+                                  JOptionPane.QUESTION_MESSAGE,
+                                  null,
+                                  null,
+                                  getOptions().getMinConfidenceValue() );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            boolean success = true;
+            double m = 0.0;
+            final String m_str = s.trim();
+            if ( !ForesterUtil.isEmpty( m_str ) ) {
+                try {
+                    m = Double.parseDouble( m_str );
                 }
-                else {
-                    _textframes.removeFirst();
+                catch ( final Exception ex ) {
+                    success = false;
                 }
             }
-            catch ( final NoSuchElementException e ) {
-                // Ignore.
+            else {
+                success = false;
+            }
+            if ( success && ( m >= 0.0 ) ) {
+                getOptions().setMinConfidenceValue( m );
             }
         }
     }
 
-    void removeAllTextFrames() {
-        for( final TextFrame tf : _textframes ) {
-            if ( tf != null ) {
-                tf.close();
+    private void customizeRadioButtonMenuItem( final JRadioButtonMenuItem item, final boolean is_selected ) {
+        if ( item != null ) {
+            item.setFont( MainFrame.menu_font );
+            if ( !getConfiguration().isUseNativeUI() ) {
+                item.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+                item.setForeground( getConfiguration().getGuiMenuTextColor() );
+            }
+            item.setSelected( is_selected );
+            item.addActionListener( this );
+        }
+    }
+
+    private MainPanel getMainPanel() {
+        return _main_panel;
+    }
+
+    private boolean isScreenAntialias() {
+        return true;
+    }
+
+    private void removeBranchColors() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+        }
+    }
+
+    private void setMainPanel( final MainPanelApplets main_panel ) {
+        _main_panel = main_panel;
+    }
+
+    private void setupUI() {
+        try {
+            if ( getConfiguration().isUseNativeUI() ) {
+                UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+            }
+            else {
+                UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
             }
         }
-        _textframes.clear();
+        catch ( final UnsupportedLookAndFeelException e ) {
+            AptxUtil.dieWithSystemError( "UnsupportedLookAndFeelException: " + e.toString() );
+        }
+        catch ( final ClassNotFoundException e ) {
+            AptxUtil.dieWithSystemError( "ClassNotFoundException: " + e.toString() );
+        }
+        catch ( final InstantiationException e ) {
+            AptxUtil.dieWithSystemError( "InstantiationException: " + e.toString() );
+        }
+        catch ( final IllegalAccessException e ) {
+            AptxUtil.dieWithSystemError( "IllegalAccessException: " + e.toString() );
+        }
+        catch ( final Exception e ) {
+            AptxUtil.dieWithSystemError( e.toString() );
+        }
     }
 
     static void setupScreenTextAntialias( final List<TreePanel> treepanels, final boolean antialias ) {
