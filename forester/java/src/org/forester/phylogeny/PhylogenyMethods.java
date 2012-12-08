@@ -1613,9 +1613,10 @@ public class PhylogenyMethods {
      *            a reference Phylogeny
      * @param to_be_stripped
      *            Phylogeny to be stripped
-     * @return number of external nodes removed from to_be_stripped
+     * @return nodes removed from to_be_stripped
      */
-    public static int taxonomyBasedDeletionOfExternalNodes( final Phylogeny reference, final Phylogeny to_be_stripped ) {
+    public static List<PhylogenyNode> taxonomyBasedDeletionOfExternalNodes( final Phylogeny reference,
+                                                                            final Phylogeny to_be_stripped ) {
         final Set<String> ref_ext_taxo = new HashSet<String>();
         for( final PhylogenyNodeIterator it = reference.iteratorExternalForward(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -1646,7 +1647,7 @@ public class PhylogenyMethods {
         }
         to_be_stripped.clearHashIdToNodeMap();
         to_be_stripped.externalNodesHaveChanged();
-        return nodes_to_delete.size();
+        return nodes_to_delete;
     }
 
     /**

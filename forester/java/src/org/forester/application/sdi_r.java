@@ -134,7 +134,7 @@ public class sdi_r {
         int gene_tree_counter = 0;
         final List<Phylogeny> all_result_trees = new ArrayList<Phylogeny>();
         for( final Phylogeny gene_tree : gene_trees ) {
-            r = PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_tree );
+            r = PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gene_tree ).size();
             ForesterUtil.programMessage( PRG_NAME, "Removed " + r + " external nodes from gene tree" );
             final SDIR sdiunrooted = new SDIR();
             final long start_time = new Date().getTime();

@@ -58,6 +58,7 @@ public final class RIO {
     private HashMap<String, HashMap<String, Integer>> _so_maps;
     private HashMap<String, HashMap<String, Integer>> _up_maps;
     private List<String>                              _seq_names;
+    private List<PhylogenyNode>                       _removed_gene_tree_nodes;
     private int                                       _samples;
     private int                                       _ext_nodes;
 
@@ -392,7 +393,8 @@ public final class RIO {
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         // Removes from species_tree all species not found in gene_tree.
-        PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
+        List<PhylogenyNode> _removed_gene_tree_nodes = PhylogenyMethods
+                .taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
         if ( species_tree.isEmpty() ) {
             throw new RIOException( "failed to establish species based mapping between gene and species trees" );
         }
@@ -414,22 +416,29 @@ public final class RIO {
         }
         _analyzed_gene_trees = new Phylogeny[ gene_trees.length ];
         int c = 0;
+        int gene_tree_ext_nodes = 0;
         for( final Phylogeny gt : gene_trees ) {
             // Removes from gene_tree all species not found in species_tree.
             PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gt );
             if ( gt.isEmpty() ) {
                 throw new RIOException( "failed to establish species based mapping between gene and species trees" );
             }
-            _analyzed_gene_trees[ c++ ] = inferOrthologsHelper( gt, species_tree, query );
+            if ( c == 0 ) {
+                gene_tree_ext_nodes = gt.getNumberOfExternalNodes();
+            }
+            else if ( gene_tree_ext_nodes != gt.getNumberOfExternalNodes() ) {
+                throw new RIOException( "(cleaned up) gene tree #" + ( c + 1 )
+                        + " has a different number of external nodes (" + gt.getNumberOfExternalNodes()
+                        + ") than those gene trees preceding it (" + gene_tree_ext_nodes + ")" );
+            }
+            _analyzed_gene_trees[ c++ ] = performOrthologInference( gt, species_tree, query );
         }
         setNumberOfSamples( gene_trees.length );
     }
 
-    // Helper method which performs the actual ortholog inference for
-    // the external node with seqname query.
-    private final Phylogeny inferOrthologsHelper( final Phylogeny gene_tree,
-                                                  final Phylogeny species_tree,
-                                                  final String query ) throws SDIException, RIOException {
+    private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
+                                                      final Phylogeny species_tree,
+                                                      final String query ) throws SDIException, RIOException {
         final SDIR sdiunrooted = new SDIR();
         final Phylogeny assigned_tree = sdiunrooted.infer( gene_tree,
                                                            species_tree,
@@ -678,6 +687,10 @@ public final class RIO {
             }
         }
         return nodes;
+    }
+
+    public final List<PhylogenyNode> getRemovedGeneTreeNodes() {
+        return _removed_gene_tree_nodes;
     }
 
     private final class ResultLine implements Comparable<ResultLine> {
