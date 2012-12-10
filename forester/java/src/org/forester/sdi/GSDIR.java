@@ -54,7 +54,6 @@ public class GSDIR extends GSDI {
             _duplications_sum = 0;
             _speciation_or_duplication_events_sum = 0;
             _speciations_sum = 0;
-          
             _gene_tree.reRoot( root.getId() ); //TODO reRoot( root )
             PhylogenyMethods.preOrderReId( getSpeciesTree() );
             //TEST, remove later
@@ -65,22 +64,18 @@ public class GSDIR extends GSDI {
                 }
             }
             geneTreePostOrderTraversal();
-           
-            if (  _duplications_sum < _min_duplications_sum ) {
+            if ( _duplications_sum < _min_duplications_sum ) {
                 _min_duplications_sum = _duplications_sum;
                 _min_duplications_sum_gene_trees.clear();
                 _min_duplications_sum_gene_trees.add( getGeneTree().copy() );
             }
-            else if (  _duplications_sum == _min_duplications_sum ) {
+            else if ( _duplications_sum == _min_duplications_sum ) {
                 _min_duplications_sum_gene_trees.add( getGeneTree().copy() );
             }
             System.out.println( getDuplicationsSum() );
-            _duplications_sum_stats.addValue(  _duplications_sum );
+            _duplications_sum_stats.addValue( _duplications_sum );
         }
     }
-
-   
-   
 
     public int getMinDuplicationsSum() {
         return _min_duplications_sum;

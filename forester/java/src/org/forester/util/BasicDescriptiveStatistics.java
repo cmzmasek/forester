@@ -146,7 +146,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return _sum;
     }
 
-  
     @Override
     public String getSummaryAsString() {
         validate();
@@ -155,7 +154,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return "" + mean + ( ( char ) 177 ) + sd + " [" + getMin() + "..." + getMax() + "]";
     }
 
-   
     @Override
     public double getValue( final int index ) {
         validate();

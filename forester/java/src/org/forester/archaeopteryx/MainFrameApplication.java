@@ -663,7 +663,6 @@ public final class MainFrameApplication extends MainFrame {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
         _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
         _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (re-rooting)" ) );
-        
         _analysis_menu.addSeparator();
         _analysis_menu.add( _root_min_dups_item = new JMenuItem( "Root by Minimizing Duplications | Height (SDI)" ) );
         _analysis_menu.add( _root_min_cost_l_item = new JMenuItem( "Root by Minimizing Cost L | Height (SDI)" ) );
@@ -1242,7 +1241,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDI", JOptionPane.ERROR_MESSAGE );
-            return; 
+            return;
         }
         gene_tree.setRerootable( false );
         _mainpanel.getCurrentTreePanel().setTree( gene_tree );
@@ -1267,13 +1266,12 @@ public final class MainFrameApplication extends MainFrame {
         if ( !isOKforSDI( false, true ) ) {
             return;
         }
-      
         final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDIR gsdir = null;
         try {
-            gsdir = new GSDIR( gene_tree, _species_tree.copy(),  true, 1 );
+            gsdir = new GSDIR( gene_tree, _species_tree.copy(), true, 1 );
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDIR", JOptionPane.ERROR_MESSAGE );
@@ -1283,13 +1281,9 @@ public final class MainFrameApplication extends MainFrame {
         result_gene_tree.setRerootable( false );
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants( true );
-        
-        
-        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree" , null );
-        
+        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
         //_mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        
-       // _mainpanel.getCurrentTreePanel().setEdited( true );
+        // _mainpanel.getCurrentTreePanel().setEdited( true );
         getControlPanel().setShowEvents( true );
         showWhole();
         final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
@@ -1302,7 +1296,7 @@ public final class MainFrameApplication extends MainFrame {
                 + "Potential duplications: " + gsdir.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
                 + gsdir.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
     }
-    
+
     void executeFunctionAnalysis() {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             return;

@@ -69,8 +69,8 @@ public class GSDI extends SDI {
     private final boolean             _most_parsimonious_duplication_model;
     private final boolean             _strip_gene_tree;
     private final boolean             _strip_species_tree;
-    protected int                       _speciation_or_duplication_events_sum;
-    protected int                       _speciations_sum;
+    protected int                     _speciation_or_duplication_events_sum;
+    protected int                     _speciations_sum;
     private final List<PhylogenyNode> _stripped_gene_tree_nodes;
     private final List<PhylogenyNode> _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
@@ -102,13 +102,13 @@ public class GSDI extends SDI {
             throws SDIException {
         this( gene_tree, species_tree, most_parsimonious_duplication_model, false, false );
     }
-    
+
     public GSDI( final Phylogeny gene_tree,
                  final Phylogeny species_tree,
                  final boolean most_parsimonious_duplication_model,
                  final boolean strip_gene_tree,
                  final boolean strip_species_tree,
-                 int x ) throws SDIException {
+                 final int x ) throws SDIException {
         super( gene_tree, species_tree );
         _speciation_or_duplication_events_sum = 0;
         _speciations_sum = 0;
@@ -120,7 +120,6 @@ public class GSDI extends SDI {
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
         _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
-       
     }
 
     // s is the node on the species tree g maps to.

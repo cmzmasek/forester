@@ -395,7 +395,7 @@ public final class RIO {
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         // Removes from species_tree all species not found in gene_tree.
-        List<PhylogenyNode> _removed_gene_tree_nodes = PhylogenyMethods
+        final List<PhylogenyNode> _removed_gene_tree_nodes = PhylogenyMethods
                 .taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
         if ( species_tree.isEmpty() ) {
             throw new RIOException( "failed to establish species based mapping between gene and species trees" );

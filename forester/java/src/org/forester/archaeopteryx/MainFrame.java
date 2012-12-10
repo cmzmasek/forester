@@ -231,6 +231,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     InferenceManager            _inference_manager;
     final ProcessPool           _process_pool;
     private String              _previous_node_annotation_ref;
+    private String              _ext_node_data_buffer                   = "";
 
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
@@ -487,6 +488,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     public Configuration getConfiguration() {
         return _configuration;
+    }
+
+    /**
+     * This method returns the current external node data which
+     * has been selected by the user by clicking the "Return ..."
+     * menu item. This method is expected to be called from Javascript or
+     * something like it.
+     * 
+     * @return current external node data as String
+     */
+    public String getCurrentExternalNodesDataBuffer() {
+        return _ext_node_data_buffer;
     }
 
     public InferenceManager getInferenceManager() {
@@ -944,6 +957,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _configuration = configuration;
     }
 
+    void setCurrentExternalNodesDataBuffer( final String s ) {
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            _ext_node_data_buffer = s.trim();
+        }
+        else {
+            _ext_node_data_buffer = "";
+        }
+    }
+
     void setInferenceManager( final InferenceManager i ) {
         _inference_manager = i;
     }
@@ -1266,14 +1288,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    private String getPreviousNodeAnnotationReference() {
-        return _previous_node_annotation_ref;
-    }
-
-    private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
-        _previous_node_annotation_ref = previous_node_annotation_ref;
-    }
-
     private void chooseFont() {
         final FontChooser fc = new FontChooser();
         fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
@@ -1338,10 +1352,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         repaint();
     }
 
+    private String getPreviousNodeAnnotationReference() {
+        return _previous_node_annotation_ref;
+    }
+
     private void removeBranchColors() {
         if ( getMainPanel().getCurrentPhylogeny() != null ) {
             AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
         }
+    }
+
+    private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
+        _previous_node_annotation_ref = previous_node_annotation_ref;
     }
 
     /**

@@ -2339,6 +2339,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    private String createAnnotationString( final SortedSet<Annotation> ann ) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for( final Annotation a : ann ) {
+            if ( !first ) {
+                sb.append( "|" );
+            }
+            else {
+                first = false;
+            }
+            sb.append( a.asSimpleText() );
+        }
+        final String ann_str = sb.toString();
+        return ann_str;
+    }
+
     final private String createASimpleTextRepresentationOfANode( final PhylogenyNode node ) {
         final String tax = PhylogenyMethods.getSpecies( node );
         String label = node.getName();
@@ -4035,22 +4051,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private String createAnnotationString( final SortedSet<Annotation> ann ) {
-        final StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for( final Annotation a : ann ) {
-            if ( !first ) {
-                sb.append( "|" );
-            }
-            else {
-                first = false;
-            }
-            sb.append( a.asSimpleText() );
-        }
-        final String ann_str = sb.toString();
-        return ann_str;
-    }
-
     final private void paintNodeDataUnrootedCirc( final Graphics2D g,
                                                   final PhylogenyNode node,
                                                   final boolean to_pdf,
@@ -4991,10 +4991,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + getOptions().getExtDescNodeDataToReturn() );
             }
         } // for loop
-        if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
+        if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
+                || ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY ) ) {
+            final StringBuilder sb = new StringBuilder();
             for( final String d : data ) {
                 if ( !ForesterUtil.isEmpty( d ) ) {
-                    System.out.println( d );
+                    if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
+                        System.out.println( d );
+                    }
+                    sb.append( d );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            if ( sb.length() < 1 ) {
+                if ( getMainPanel().getMainFrame() == null ) {
+                    // Must be "E" applet version.
+                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
+                            .setCurrentExternalNodesDataBuffer( "" );
+                }
+                else {
+                    getMainPanel().getMainFrame().setCurrentExternalNodesDataBuffer( "" );
+                }
+            }
+            else {
+                final String s = sb.toString().trim();
+                if ( getMainPanel().getMainFrame() == null ) {
+                    // Must be "E" applet version.
+                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
+                            .setCurrentExternalNodesDataBuffer( s );
+                }
+                else {
+                    getMainPanel().getMainFrame().setCurrentExternalNodesDataBuffer( s );
                 }
             }
         }
@@ -5003,28 +5030,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             for( final String d : data ) {
                 if ( !ForesterUtil.isEmpty( d ) ) {
                     sb.append( d );
-                    sb.append( "\n" );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
                 }
             }
             if ( sb.length() < 1 ) {
                 AptxUtil.showInformationMessage( this,
                                                  "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
                                                  "Descendants of selected node do not contain selected data" );
+                if ( getMainPanel().getMainFrame() == null ) {
+                    // Must be "E" applet version.
+                    ( ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet() )
+                            .setCurrentExternalNodesDataBuffer( "" );
+                }
+                else {
+                    getMainPanel().getMainFrame().setCurrentExternalNodesDataBuffer( "" );
+                }
             }
             else {
                 final String title = "External Descendants "
                         + ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.UNKNOWN ? "Data"
                                 : obtainTitleForExtDescNodeData() ) + " (" + data.size() + "/"
                         + node.getNumberOfExternalNodes() + ") For Node " + node;
+                final String s = sb.toString().trim();
                 if ( getMainPanel().getMainFrame() == null ) {
                     // Must be "E" applet version.
                     final ArchaeopteryxE ae = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
-                    final String s = sb.toString().trim();
                     ae.showTextFrame( s, title );
                     ae.setCurrentExternalNodesDataBuffer( s );
                 }
                 else {
-                    getMainPanel().getMainFrame().showTextFrame( sb.toString(), title );
+                    getMainPanel().getMainFrame().showTextFrame( s, title );
+                    getMainPanel().getMainFrame().setCurrentExternalNodesDataBuffer( s );
                 }
             }
         }

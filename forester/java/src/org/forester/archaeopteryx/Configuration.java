@@ -57,7 +57,7 @@ import org.forester.util.ForesterUtil;
 public final class Configuration {
 
     public enum EXT_NODE_DATA_RETURN_ON {
-        CONSOLE, WINODW;
+        CONSOLE, WINODW, BUFFER_ONLY;
     }
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static final String             WEB_LINK_KEY                                           = "web_link";
@@ -1355,6 +1355,9 @@ public final class Configuration {
             }
             else if ( s.equals( "window" ) ) {
                 setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.WINODW );
+            }
+            else if ( s.equals( "buffer_only" ) ) {
+                setExtNodeDataReturnOn( EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY );
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + s
