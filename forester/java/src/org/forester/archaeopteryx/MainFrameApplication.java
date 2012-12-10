@@ -99,6 +99,7 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
+import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIR;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -204,6 +205,7 @@ public final class MainFrameApplication extends MainFrame {
     private JMenu                            _analysis_menu;
     private JMenuItem                        _load_species_tree_item;
     private JMenuItem                        _gsdi_item;
+    private JMenuItem                        _gsdir_item;
     private JMenuItem                        _root_min_dups_item;
     private JMenuItem                        _root_min_cost_l_item;
     private JMenuItem                        _lineage_inference;
@@ -581,6 +583,12 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 executeGSDI();
             }
+            else if ( o == _gsdir_item ) {
+                if ( isSubtreeDisplayed() ) {
+                    return;
+                }
+                executeGSDIR();
+            }
             else if ( o == _root_min_dups_item ) {
                 if ( isSubtreeDisplayed() ) {
                     return;
@@ -654,12 +662,15 @@ public final class MainFrameApplication extends MainFrame {
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
         _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
+        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (re-rooting)" ) );
+        
         _analysis_menu.addSeparator();
         _analysis_menu.add( _root_min_dups_item = new JMenuItem( "Root by Minimizing Duplications | Height (SDI)" ) );
         _analysis_menu.add( _root_min_cost_l_item = new JMenuItem( "Root by Minimizing Cost L | Height (SDI)" ) );
         _analysis_menu.addSeparator();
         _analysis_menu.add( _load_species_tree_item = new JMenuItem( "Load Species Tree..." ) );
         customizeJMenuItem( _gsdi_item );
+        customizeJMenuItem( _gsdir_item );
         customizeJMenuItem( _root_min_dups_item );
         customizeJMenuItem( _root_min_cost_l_item );
         customizeJMenuItem( _load_species_tree_item );
@@ -1231,6 +1242,7 @@ public final class MainFrameApplication extends MainFrame {
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDI", JOptionPane.ERROR_MESSAGE );
+            return; 
         }
         gene_tree.setRerootable( false );
         _mainpanel.getCurrentTreePanel().setTree( gene_tree );
@@ -1251,6 +1263,46 @@ public final class MainFrameApplication extends MainFrame {
                 + gsdi.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
     }
 
+    void executeGSDIR() {
+        if ( !isOKforSDI( false, true ) ) {
+            return;
+        }
+      
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDIR gsdir = null;
+        try {
+            gsdir = new GSDIR( gene_tree, _species_tree.copy(),  true, 1 );
+        }
+        catch ( final Exception e ) {
+            JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDIR", JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 0 );
+        result_gene_tree.setRerootable( false );
+        result_gene_tree.clearHashIdToNodeMap();
+        result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        
+        
+        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree" , null );
+        
+        //_mainpanel.getCurrentTreePanel().setTree( gene_tree );
+        
+       // _mainpanel.getCurrentTreePanel().setEdited( true );
+        getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( gsdir.getSpeciesTree(), getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        JOptionPane.showMessageDialog( this, "Duplications: " + gsdir.getDuplicationsSum() + "\n"
+                + "Potential duplications: " + gsdir.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
+                + gsdir.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
+    }
+    
     void executeFunctionAnalysis() {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             return;

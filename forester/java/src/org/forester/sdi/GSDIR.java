@@ -35,43 +35,52 @@ import org.forester.util.BasicDescriptiveStatistics;
 
 public class GSDIR extends GSDI {
 
-    private int                   _min_duplications_sum;
-    private final BasicDescriptiveStatistics                  _duplications_sum_stats;
-    private final List<Phylogeny> _min_duplications_sum_gene_trees;
+    private int                              _min_duplications_sum;
+    private final BasicDescriptiveStatistics _duplications_sum_stats;
+    private final List<Phylogeny>            _min_duplications_sum_gene_trees;
 
     public GSDIR( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean strip_gene_tree, final int x )
             throws SDIException {
         super( gene_tree, species_tree, true, strip_gene_tree, true, 1 );
         _min_duplications_sum = Integer.MAX_VALUE;
         _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
-        _duplications_sum_stats = new  BasicDescriptiveStatistics();
+        _duplications_sum_stats = new BasicDescriptiveStatistics();
         linkNodesOfG();
         final List<PhylogenyNode> gene_tree_nodes_post_order = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             gene_tree_nodes_post_order.add( it.next() );
         }
         for( final PhylogenyNode root : gene_tree_nodes_post_order ) {
-            _gene_tree.reRoot( root );
+            _duplications_sum = 0;
+            _speciation_or_duplication_events_sum = 0;
+            _speciations_sum = 0;
+          
+            _gene_tree.reRoot( root.getId() ); //TODO reRoot( root )
             PhylogenyMethods.preOrderReId( getSpeciesTree() );
             //TEST, remove later
-            for( final PhylogenyNodeIterator it = getGeneTree().iteratorPostorder(); it.hasNext(); ) {
+            for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
                 final PhylogenyNode g = it.next();
                 if ( g.isInternal() ) {
                     g.setLink( null );
                 }
             }
             geneTreePostOrderTraversal();
-            _duplications_sum_stats.addValue( getMinDuplicationsSum() );
-            if ( getDuplicationsSum() < getMinDuplicationsSum() ) {
-                _min_duplications_sum = getDuplicationsSum();
+           
+            if (  _duplications_sum < _min_duplications_sum ) {
+                _min_duplications_sum = _duplications_sum;
                 _min_duplications_sum_gene_trees.clear();
                 _min_duplications_sum_gene_trees.add( getGeneTree().copy() );
             }
-            else if ( getDuplicationsSum() == getMinDuplicationsSum() ) {
+            else if (  _duplications_sum == _min_duplications_sum ) {
                 _min_duplications_sum_gene_trees.add( getGeneTree().copy() );
             }
+            System.out.println( getDuplicationsSum() );
+            _duplications_sum_stats.addValue(  _duplications_sum );
         }
     }
+
+   
+   
 
     public int getMinDuplicationsSum() {
         return _min_duplications_sum;

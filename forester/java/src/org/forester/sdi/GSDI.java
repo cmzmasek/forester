@@ -69,8 +69,8 @@ public class GSDI extends SDI {
     private final boolean             _most_parsimonious_duplication_model;
     private final boolean             _strip_gene_tree;
     private final boolean             _strip_species_tree;
-    private int                       _speciation_or_duplication_events_sum;
-    private int                       _speciations_sum;
+    protected int                       _speciation_or_duplication_events_sum;
+    protected int                       _speciations_sum;
     private final List<PhylogenyNode> _stripped_gene_tree_nodes;
     private final List<PhylogenyNode> _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>  _mapped_species_tree_nodes;
