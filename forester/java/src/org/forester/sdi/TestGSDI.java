@@ -97,7 +97,7 @@ public final class TestGSDI {
 
     private static boolean testGSDI_general() {
         try {
-            final PhylogenyMethods pm = PhylogenyMethods.getInstance();
+           
             final String s2_ = "((" + "([&&NHX:S=a1],[&&NHX:S=a2],[&&NHX:S=a3],[&&NHX:S=a4]),"
                     + "([&&NHX:S=b1],[&&NHX:S=b2],[&&NHX:S=b3],[&&NHX:S=b4]),"
                     + "([&&NHX:S=c1],[&&NHX:S=c2],[&&NHX:S=c3],[&&NHX:S=c4]),"
@@ -1423,6 +1423,64 @@ public final class TestGSDI {
         }
         return true;
     }
+    
+    private static boolean testGSDIR_general() {
+        try {
+           
+            final String s2_ = "((" + "([&&NHX:S=a1],[&&NHX:S=a2],[&&NHX:S=a3],[&&NHX:S=a4]),"
+                    + "([&&NHX:S=b1],[&&NHX:S=b2],[&&NHX:S=b3],[&&NHX:S=b4]),"
+                    + "([&&NHX:S=c1],[&&NHX:S=c2],[&&NHX:S=c3],[&&NHX:S=c4]),"
+                    + "([&&NHX:S=d1],[&&NHX:S=d2],[&&NHX:S=d3],[&&NHX:S=d4])),("
+                    + "([&&NHX:S=e1],[&&NHX:S=e2],[&&NHX:S=e3],[&&NHX:S=e4]),"
+                    + "([&&NHX:S=f1],[&&NHX:S=f2],[&&NHX:S=f3],[&&NHX:S=f4]),"
+                    + "([&&NHX:S=g1],[&&NHX:S=g2],[&&NHX:S=g3],[&&NHX:S=g4]),"
+                    + "([&&NHX:S=h1],[&&NHX:S=h2],[&&NHX:S=h3],[&&NHX:S=h4])),("
+                    + "([&&NHX:S=i1],[&&NHX:S=i2],[&&NHX:S=i3],[&&NHX:S=i4]),"
+                    + "([&&NHX:S=j1],[&&NHX:S=j2],[&&NHX:S=j3],[&&NHX:S=j4]),"
+                    + "([&&NHX:S=k1],[&&NHX:S=k2],[&&NHX:S=k3],[&&NHX:S=k4]),"
+                    + "([&&NHX:S=l1],[&&NHX:S=l2],[&&NHX:S=l3],[&&NHX:S=l4])),("
+                    + "([&&NHX:S=m1],[&&NHX:S=m2],[&&NHX:S=m3],[&&NHX:S=m4]),"
+                    + "([&&NHX:S=n1],[&&NHX:S=n2],[&&NHX:S=n3],[&&NHX:S=n4]),"
+                    + "([&&NHX:S=o1],[&&NHX:S=o2],[&&NHX:S=o3],[&&NHX:S=o4]),"
+                    + "([&&NHX:S=p1],[&&NHX:S=p2],[&&NHX:S=p3],[&&NHX:S=p4])"
+                    + "),[&&NHX:S=x],[&&NHX:S=y],[&&NHX:S=z])";
+            final Phylogeny s2 = ParserBasedPhylogenyFactory.getInstance().create( s2_, new NHXParser() )[ 0 ];
+            s2.setRooted( true );
+            final String s1_ = "((([&&NHX:S=A2],[&&NHX:S=A1]),[&&NHX:S=B],[&&NHX:S=C]),[&&NHX:S=D])";
+            final Phylogeny s1 = ParserBasedPhylogenyFactory.getInstance().create( s1_, new NHXParser() )[ 0 ];
+            s1.setRooted( true );
+            final Phylogeny g1 = TestGSDI
+                    .createPhylogeny( "((((B[&&NHX:S=B],A1[&&NHX:S=A1]),C[&&NHX:S=C]),A2[&&NHX:S=A2]),D[&&NHX:S=D])" );
+            final GSDIR sdi1 = new GSDIR( g1, s1, false, 1 );
+            // Archaeopteryx.createApplication( g1 );
+            // Archaeopteryx.createApplication( s1 );
+            if ( sdi1.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "B" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
+                    .isSpeciation() ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "C" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
+                    .isSpeciationOrDuplication() ) {
+                return false;
+            }
+            if ( !( PhylogenyMethods.calculateLCA( g1.getNode( "A2" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
+                    .isDuplication() ) ) {
+                return false;
+            }
+            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "D" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
+                    .isSpeciation() ) {
+                return false;
+            }
+            
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
 
     public static void main( final String[] args ) {
         if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {
@@ -1431,8 +1489,11 @@ public final class TestGSDI {
         if ( !TestGSDI.testGSDI_general() ) {
             System.out.println( "general failed" );
         }
+        if ( !TestGSDI.testGSDIR_general() ) {
+            System.out.println( "general re-rooting failed" );
+        }
         else {
-            System.out.println( "general OK" );
+            System.out.println( "OK" );
         }
         //        boolean success = test();
         //        if ( success ) {

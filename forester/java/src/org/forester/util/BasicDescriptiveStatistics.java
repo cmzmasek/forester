@@ -146,9 +146,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return _sum;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getSummaryAsString()
-     */
+  
     @Override
     public String getSummaryAsString() {
         validate();
@@ -157,9 +155,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return "" + mean + ( ( char ) 177 ) + sd + " [" + getMin() + "..." + getMax() + "]";
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getValue(int)
-     */
+   
     @Override
     public double getValue( final int index ) {
         validate();

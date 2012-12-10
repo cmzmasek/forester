@@ -64,7 +64,7 @@ import org.forester.util.ForesterUtil;
  * 
  * @author Christian M. Zmasek
  */
-public final class GSDI extends SDI {
+public class GSDI extends SDI {
 
     private final boolean             _most_parsimonious_duplication_model;
     private final boolean             _strip_gene_tree;
@@ -101,6 +101,26 @@ public final class GSDI extends SDI {
     GSDI( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean most_parsimonious_duplication_model )
             throws SDIException {
         this( gene_tree, species_tree, most_parsimonious_duplication_model, false, false );
+    }
+    
+    public GSDI( final Phylogeny gene_tree,
+                 final Phylogeny species_tree,
+                 final boolean most_parsimonious_duplication_model,
+                 final boolean strip_gene_tree,
+                 final boolean strip_species_tree,
+                 int x ) throws SDIException {
+        super( gene_tree, species_tree );
+        _speciation_or_duplication_events_sum = 0;
+        _speciations_sum = 0;
+        _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
+        _duplications_sum = 0;
+        _strip_gene_tree = strip_gene_tree;
+        _strip_species_tree = strip_species_tree;
+        _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
+        _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
+        _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
+        _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
+       
     }
 
     // s is the node on the species tree g maps to.
