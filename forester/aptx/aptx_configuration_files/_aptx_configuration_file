@@ -79,9 +79,14 @@ native_ui: ?
 #                      taxonomy_scientific_name
 #                      taxonomy_code
 #                      user_selected
-#  To determine where to return data by clicking on "Return ...": 'ext_descendents_data_to_return_on'
-#     Possible values: window
-#                      console
+#
+#  To determine where to return data selected by user clicking on "Return ...": 'ext_descendents_data_to_return_on'
+#     Contents of buffer can be obtained with method 'getCurrentExternalNodesDataBuffer()' of
+#     classes org.forester.archaeopteryx.MainFrame and org.forester.archaeopteryx.ArchaeopteryxE
+#     Possible values: window (for output to window and buffer)
+#                      console (for output to console and buffer)
+#                      buffer_only (for output to buffer only)
+#
 #  To override label for menu item to return data of external nodes (default ""Return ..."): 'label_for_get_ext_descendents_data'
 #     Example: 'label_for_get_ext_descendents_data: Get_Node_Data'
 # 
