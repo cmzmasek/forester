@@ -1,5 +1,5 @@
 
-package org.forester.sdi;
+package org.forester.rio;
 
 public class RIOException extends Exception {
 

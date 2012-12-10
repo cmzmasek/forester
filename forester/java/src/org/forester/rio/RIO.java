@@ -25,7 +25,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: www.phylosoft.org/forester
 
-package org.forester.sdi;
+package org.forester.rio;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,6 +47,8 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.sdi.SDIException;
+import org.forester.sdi.SDIR;
 import org.forester.util.ForesterUtil;
 
 public final class RIO {
