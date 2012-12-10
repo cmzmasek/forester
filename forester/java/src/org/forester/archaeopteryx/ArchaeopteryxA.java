@@ -60,16 +60,24 @@ public class ArchaeopteryxA extends JApplet {
         }
     }
 
-    private MainFrameApplet getMainFrameApplet() {
-        return _mainframe_applet;
+    /**
+     * This method returns the current external node data which
+     * has been selected by the user by clicking the "Return ..."
+     * menu item. This method is expected to be called from Javascript or
+     * something like it.
+     * 
+     * @return current external node data as String
+     */
+    public String getCurrentExternalNodesDataBuffer() {
+        return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
     }
 
-    private String getMessage1() {
-        return _message_1;
+    public int getCurrentExternalNodesDataBufferCounter() {
+        return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
     }
 
-    private String getMessage2() {
-        return _message_2;
+    public int getCurrentExternalNodesDataBufferLength() {
+        return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
     }
 
     public String getUrlString() {
@@ -170,6 +178,27 @@ public class ArchaeopteryxA extends JApplet {
         g.drawString( getMessage1(), 10, 40 );
     }
 
+    @Override
+    public void start() {
+        getMainFrameApplet().getMainPanel().validate();
+        getMainFrameApplet().requestFocus();
+        getMainFrameApplet().requestFocusInWindow();
+        getMainFrameApplet().requestFocus();
+        AptxUtil.printAppletMessage( NAME, "started" );
+    }
+
+    private MainFrameApplet getMainFrameApplet() {
+        return _mainframe_applet;
+    }
+
+    private String getMessage1() {
+        return _message_1;
+    }
+
+    private String getMessage2() {
+        return _message_2;
+    }
+
     private void setMessage1( final String message_1 ) {
         _message_1 = message_1;
     }
@@ -180,14 +209,5 @@ public class ArchaeopteryxA extends JApplet {
 
     private void setUrlString( final String url_string ) {
         _url_string = url_string;
-    }
-
-    @Override
-    public void start() {
-        getMainFrameApplet().getMainPanel().validate();
-        getMainFrameApplet().requestFocus();
-        getMainFrameApplet().requestFocusInWindow();
-        getMainFrameApplet().requestFocus();
-        AptxUtil.printAppletMessage( NAME, "started" );
     }
 }

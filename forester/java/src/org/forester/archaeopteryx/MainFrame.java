@@ -231,8 +231,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     InferenceManager            _inference_manager;
     final ProcessPool           _process_pool;
     private String              _previous_node_annotation_ref;
-    private String              _ext_node_data_buffer                   = "";
-    private int                 _ext_node_data_buffer_change_counter    = 0;
 
     MainFrame() {
         _process_pool = ProcessPool.createInstance();
@@ -500,11 +498,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      * @return current external node data as String
      */
     public String getCurrentExternalNodesDataBuffer() {
-        return _ext_node_data_buffer;
+        return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
     }
 
     public int getExtNodeDataBufferChangeCounter() {
-        return _ext_node_data_buffer_change_counter;
+        return getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
     }
 
     public InferenceManager getInferenceManager() {
@@ -521,10 +519,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     public ProcessPool getProcessPool() {
         return _process_pool;
-    }
-
-    public void increaseExtNodeDataBufferChangeCounter() {
-        _ext_node_data_buffer_change_counter++;
     }
 
     public void showTextFrame( final String s, final String title ) {
@@ -964,16 +958,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void setConfiguration( final Configuration configuration ) {
         _configuration = configuration;
-    }
-
-    void setCurrentExternalNodesDataBuffer( final String s ) {
-        increaseExtNodeDataBufferChangeCounter();
-        if ( !ForesterUtil.isEmpty( s ) ) {
-            _ext_node_data_buffer = s.trim();
-        }
-        else {
-            _ext_node_data_buffer = "";
-        }
     }
 
     void setInferenceManager( final InferenceManager i ) {
