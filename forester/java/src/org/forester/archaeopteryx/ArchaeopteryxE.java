@@ -53,8 +53,8 @@ import org.forester.util.ForesterUtil;
 // </applet>
 public class ArchaeopteryxE extends JApplet implements ActionListener {
 
-    private final static String         NAME                  = "ArchaeopteryxE";
-    private static final long           serialVersionUID      = -1220055577935759443L;
+    private final static String         NAME                                 = "ArchaeopteryxE";
+    private static final long           serialVersionUID                     = -1220055577935759443L;
     private Configuration               _configuration;
     private MainPanelApplets            _main_panel;
     private JMenuBar                    _jmenubar;
@@ -121,8 +121,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _choose_node_size_mi;
     private JCheckBoxMenuItem           _taxonomy_colorize_node_shapes_cbmi;
     private JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
-    private final LinkedList<TextFrame> _textframes           = new LinkedList<TextFrame>();
-    private String                      _ext_node_data_buffer = "";
+    private final LinkedList<TextFrame> _textframes                          = new LinkedList<TextFrame>();
+    private String                      _ext_node_data_buffer                = "";
+    private int                         _ext_node_data_buffer_change_counter = 0;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -400,8 +401,16 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return dataImg;
     }
 
+    public int getExtNodeDataBufferChangeCounter() {
+        return _ext_node_data_buffer_change_counter;
+    }
+
     public Options getOptions() {
         return _options;
+    }
+
+    public void increaseExtNodeDataBufferChangeCounter() {
+        _ext_node_data_buffer_change_counter++;
     }
 
     @Override
@@ -908,6 +917,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     void setCurrentExternalNodesDataBuffer( final String s ) {
+        increaseExtNodeDataBufferChangeCounter();
         if ( !ForesterUtil.isEmpty( s ) ) {
             _ext_node_data_buffer = s.trim();
         }
