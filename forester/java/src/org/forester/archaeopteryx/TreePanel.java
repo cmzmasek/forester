@@ -152,8 +152,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static int                WIGGLE                                             = 2;
     private final static int                LIMIT_FOR_HQ_RENDERING                             = 1000;
     private final static int                CONFIDENCE_LEFT_MARGIN                             = 4;
-    // TODO "rendering_hints" was static before. Need to make sure everything is OK with it not
-    // being static anymore (02/20/2009).
     private final RenderingHints            _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                                                                      RenderingHints.VALUE_RENDER_DEFAULT );
     private File                            _treefile                                          = null;
@@ -237,6 +235,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private PhylogenyNode[]                 _nodes_in_preorder                                 = null;
     private StringBuilder                   _current_external_nodes_data_buffer                = new StringBuilder();
     private int                             _current_external_nodes_data_buffer_change_counter = 0;
+    private Set<Integer>                    _current_external_nodes                            = null;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -1253,6 +1252,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void mouseMoved( final MouseEvent e ) {
         requestFocusInWindow();
+        if ( _current_external_nodes != null ) {
+            _current_external_nodes = null;
+            repaint();
+        }
         if ( getControlPanel().isNodeDescPopup() ) {
             if ( _node_desc_popup != null ) {
                 _node_desc_popup.hide();
@@ -1284,8 +1287,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final PhylogenyNode node = findNode( e.getX(), e.getY() );
             if ( ( node != null ) && ( node.isRoot() || !node.getParent().isCollapse() ) ) {
-                // cursor is over a tree node
-                if ( ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE )
+                if ( ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.GET_EXT_DESC_DATA ) ) {
+                    for( final PhylogenyNode n : node.getAllExternalDescendants() ) {
+                        addToCurrentExternalNodes( n.getId() );
+                    }
+                    setCursor( HAND_CURSOR );
+                    repaint();
+                }
+                else if ( ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.CUT_SUBTREE )
                         || ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.COPY_SUBTREE )
                         || ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.PASTE_SUBTREE )
                         || ( getControlPanel().getActionWhenNodeClicked() == NodeClickAction.DELETE_NODE_OR_SUBTREE )
@@ -1342,9 +1351,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   root_x + ( Math.cos( angle ) * parent_radius ),
                   root_y + ( Math.sin( angle ) * parent_radius ),
                   g );
-        paintNodeBox( c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file, isInFoundNodes( c ) );
+        paintNodeBox( c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file, isInFoundNodes( c )
+                || isInCurrentExternalNodes( c ) );
         if ( c.isExternal() ) {
-            final boolean is_in_found_nodes = isInFoundNodes( c );
+            final boolean is_in_found_nodes = isInFoundNodes( c ) || isInCurrentExternalNodes( c );
             if ( ( _dynamic_hiding_factor > 1 ) && !is_in_found_nodes
                     && ( ( _urt_nodeid_index_map.get( c.getId() ) % _dynamic_hiding_factor ) != 1 ) ) {
                 return;
@@ -1371,7 +1381,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   root_x + ( Math.cos( angle ) * parent_radius ),
                   root_y + ( Math.sin( angle ) * parent_radius ),
                   g );
-        if ( isInFoundNodes( c ) ) {
+        if ( isInFoundNodes( c ) || isInCurrentExternalNodes( c ) ) {
             g.setColor( getTreeColorSet().getFoundColor() );
             drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
         }
@@ -1754,7 +1764,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     void setCurrentExternalNodesDataBuffer( final StringBuilder sb ) {
         increaseCurrentExternalNodesDataBufferChangeCounter();
         _current_external_nodes_data_buffer = sb;
-        System.out.println( sb.toString() ); //TODO ~~~~~~~~~~~~~~ REMOVEME
     }
 
     final void setFoundNodes( final Set<Integer> found_nodes ) {
@@ -2142,6 +2151,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         resetNodeIdToDistToLeafMap();
         setEdited( true );
         repaint();
+    }
+
+    final private void addToCurrentExternalNodes( final int i ) {
+        if ( _current_external_nodes == null ) {
+            _current_external_nodes = new HashSet<Integer>();
+        }
+        _current_external_nodes.add( i );
     }
 
     final private void assignGraphicsForBranchWithColorForParentBranch( final PhylogenyNode node,
@@ -2648,6 +2664,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getMainPanel().getCopiedAndPastedNodes();
     }
 
+    final private Set<Integer> getCurrentExternalNodes() {
+        return _current_external_nodes;
+    }
+
     final private Phylogeny getCutOrCopiedTree() {
         return getMainPanel().getCutOrCopiedTree();
     }
@@ -2791,9 +2811,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private void increaseCurrentExternalNodesDataBufferChangeCounter() {
+    final private void increaseCurrentExternalNodesDataBufferChangeCounter() {
         _current_external_nodes_data_buffer_change_counter++;
-        System.out.println( _current_external_nodes_data_buffer_change_counter ); //TODO ~~~~~~~~~~~~~~ REMOVEME
     }
 
     final private void increaseOvSize() {
@@ -2873,6 +2892,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             return false;
         }
+    }
+
+    final private boolean isInCurrentExternalNodes( final PhylogenyNode node ) {
+        return ( ( getCurrentExternalNodes() != null ) && getCurrentExternalNodes().contains( node.getId() ) );
     }
 
     final private boolean isInFoundNodes( final PhylogenyNode node ) {
@@ -3488,7 +3511,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( node.isExternal() ) {
-            paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
+            paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node )
+                    || isInCurrentExternalNodes( node ) );
         }
     }
 
@@ -4222,7 +4246,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             return;
         }
-        if ( isInFoundNodes( node ) ) {
+        if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
             g.setColor( getTreeColorSet().getFoundColor() );
             drawRectFilled( node.getXSecondary() - 1, node.getYSecondary() - 1, 3, 3, g );
         }
@@ -4269,7 +4293,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                              final boolean dynamically_hide,
                                              final int dynamic_hiding_factor,
                                              final boolean to_graphics_file ) {
-        final boolean is_in_found_nodes = isInFoundNodes( node );
+        final boolean is_in_found_nodes = isInFoundNodes( node ) || isInCurrentExternalNodes( node );
         if ( node.isCollapse() ) {
             if ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) {
                 paintCollapsedNode( g, node, to_graphics_file, to_pdf, is_in_found_nodes );
@@ -4351,7 +4375,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 child_node.setYcoord( y2 );
                 y2 += _y_distance * child_node.getNumberOfExternalNodes();
             }
-            paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file, isInFoundNodes( node ) );
+            paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file, isInFoundNodes( node )
+                    || isInCurrentExternalNodes( node ) );
         }
         if ( dynamically_hide
                 && !is_in_found_nodes
@@ -4489,16 +4514,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintPhylogenyLite( final Graphics2D g ) {
-        //System.out.println( getVisibleRect().x + " " + getVisibleRect().y );
         _phylogeny
                 .getRoot()
                 .setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition() + ( MOVE / ( getVisibleRect().width / getOvRectangle()
                         .getWidth() ) ) ) );
         _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
-        //final PhylogenyNodeIterator it;
-        //for( it = _phylogeny.iteratorPreorder(); it.hasNext(); ) {
-        //    paintNodeLite( g, it.next() );
-        //}
         for( final PhylogenyNode element : _nodes_in_preorder ) {
             paintNodeLite( g, element );
         }
@@ -4684,7 +4704,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                        to_graphics_file,
                                        radial_labels,
                                        ( high_angle + low_angle ) / 2,
-                                       isInFoundNodes( n ) );
+                                       isInFoundNodes( n ) || isInCurrentExternalNodes( n ) );
             return;
         }
         final float num_enclosed = n.getNumberOfExternalNodes();
@@ -4732,7 +4752,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch( desc, false, g, to_pdf, to_graphics_file );
             drawLine( x, y, new_x, new_y, g );
-            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file, isInFoundNodes( desc ) );
+            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file, isInFoundNodes( desc )
+                    || isInCurrentExternalNodes( desc ) );
         }
         if ( n.isRoot() ) {
             paintNodeBox( n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file, isInFoundNodes( n ) );
@@ -4778,7 +4799,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final float new_y = ( float ) ( y + ( Math.sin( mid_angle ) * length ) );
             desc.setXSecondary( new_x );
             desc.setYSecondary( new_y );
-            if ( isInFoundNodes( desc ) ) {
+            if ( isInFoundNodes( desc ) || isInCurrentExternalNodes( desc ) ) {
                 g.setColor( getTreeColorSet().getFoundColor() );
                 drawRectFilled( desc.getXSecondary() - 1, desc.getYSecondary() - 1, 3, 3, g );
                 g.setColor( getTreeColorSet().getOvColor() );
