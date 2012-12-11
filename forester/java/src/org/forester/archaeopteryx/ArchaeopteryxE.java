@@ -339,7 +339,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
     }
 
-    public int getCurrentExternalNodesDataBufferCounter() {
+    public int getCurrentExternalNodesDataBufferChangeCounter() {
         return getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
     }
 

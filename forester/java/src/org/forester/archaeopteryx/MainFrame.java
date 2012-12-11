@@ -501,8 +501,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
     }
 
-    public int getExtNodeDataBufferChangeCounter() {
+    public int getCurrentExternalNodesDataBufferChangeCounter() {
         return getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
+    }
+
+    public int getCurrentExternalNodesDataBufferLength() {
+        return getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
     }
 
     public InferenceManager getInferenceManager() {

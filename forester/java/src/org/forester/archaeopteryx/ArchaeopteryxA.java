@@ -72,7 +72,7 @@ public class ArchaeopteryxA extends JApplet {
         return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString();
     }
 
-    public int getCurrentExternalNodesDataBufferCounter() {
+    public int getCurrentExternalNodesDataBufferChangeCounter() {
         return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferChangeCounter();
     }
 
