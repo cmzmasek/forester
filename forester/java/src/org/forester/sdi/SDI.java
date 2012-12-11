@@ -39,6 +39,9 @@ import org.forester.util.ForesterUtil;
 
 public abstract class SDI {
 
+    public enum ALGORITHM {
+        GSDIR, GSDI, SDI, SDIR
+    }
     final Phylogeny _gene_tree;
     final Phylogeny _species_tree;
     int             _duplications_sum; // Sum of duplications.
@@ -75,9 +78,6 @@ public abstract class SDI {
     public SDI( final Phylogeny gene_tree, final Phylogeny species_tree ) {
         if ( species_tree.isEmpty() || gene_tree.isEmpty() ) {
             throw new IllegalArgumentException( "attempt to infer duplications using empty tree(s)" );
-        }
-        if ( !gene_tree.isRooted() ) {
-            throw new IllegalArgumentException( "attempt to infer duplications on unrooted gene tree" );
         }
         if ( !species_tree.isRooted() ) {
             throw new IllegalArgumentException( "attempt to infer duplications on unrooted species tree" );

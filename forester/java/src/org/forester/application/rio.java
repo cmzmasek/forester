@@ -41,6 +41,8 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.rio.RIO;
 import org.forester.rio.RIOException;
+import org.forester.sdi.SDI;
+import org.forester.sdi.SDI.ALGORITHM;
 import org.forester.sdi.SDIException;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
@@ -48,19 +50,20 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME              = "rio";
-    final static private String PRG_VERSION           = "3.00 beta 3";
-    final static private String PRG_DATE              = "2012.12.05";
-    final static private String E_MAIL                = "czmasek@burnham.org";
-    final static private String WWW                   = "www.phylosoft.org/forester/";
-    final static private String HELP_OPTION_1         = "help";
-    final static private String HELP_OPTION_2         = "h";
-    final static private String QUERY_OPTION          = "q";
-    final static private String SORT_OPTION           = "s";
-    final static private String OUTPUT_ULTRA_P_OPTION = "u";
-    final static private String CUTOFF_ULTRA_P_OPTION = "cu";
-    final static private String CUTOFF_ORTHO_OPTION   = "co";
-    final static private String TABLE_OUTPUT_OPTION   = "t";
+    final static private String PRG_NAME                          = "rio";
+    final static private String PRG_VERSION                       = "3.00 beta 4";
+    final static private String PRG_DATE                          = "2012.12.10";
+    final static private String E_MAIL                            = "czmasek@burnham.org";
+    final static private String WWW                               = "www.phylosoft.org/forester/";
+    final static private String HELP_OPTION_1                     = "help";
+    final static private String HELP_OPTION_2                     = "h";
+    final static private String QUERY_OPTION                      = "q";
+    final static private String SORT_OPTION                       = "s";
+    final static private String ALLOW_NON_BIN_SPECIES_TREE_OPTION = "g";
+    final static private String OUTPUT_ULTRA_P_OPTION             = "u";
+    final static private String CUTOFF_ULTRA_P_OPTION             = "cu";
+    final static private String CUTOFF_ORTHO_OPTION               = "co";
+    final static private String TABLE_OUTPUT_OPTION               = "t";
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -93,6 +96,7 @@ public class rio {
         allowed_options.add( CUTOFF_ORTHO_OPTION );
         allowed_options.add( TABLE_OUTPUT_OPTION );
         allowed_options.add( OUTPUT_ULTRA_P_OPTION );
+        allowed_options.add( ALLOW_NON_BIN_SPECIES_TREE_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -122,6 +126,10 @@ public class rio {
         boolean output_ultraparalogs = false;
         if ( cla.isOptionSet( OUTPUT_ULTRA_P_OPTION ) ) {
             output_ultraparalogs = true;
+        }
+        boolean gsdir = false;
+        if ( cla.isOptionSet( ALLOW_NON_BIN_SPECIES_TREE_OPTION ) ) {
+            gsdir = true;
         }
         double cutoff_for_orthologs = 50;
         double cutoff_for_ultra_paralogs = 50;
@@ -159,6 +167,12 @@ public class rio {
         long time = 0;
         System.out.println( "Gene trees                : " + gene_trees_file );
         System.out.println( "Species tree              : " + species_tree_file );
+        if ( gsdir ) {
+            System.out.println( "Non binary species tree   : allowed (GSDIR algorithm)" );
+        }
+        else {
+            System.out.println( "Non binary species tree   : disallowed (SDIR algorithm)" );
+        }
         if ( query != null ) {
             System.out.println( "Query                     : " + query );
             System.out.println( "Outfile                   : " + outfile );
@@ -185,16 +199,20 @@ public class rio {
         if ( !species_tree.isRooted() ) {
             ForesterUtil.fatalError( PRG_NAME, "species tree is not rooted" );
         }
-        if ( !species_tree.isCompletelyBinary() ) {
-            ForesterUtil.fatalError( PRG_NAME, "species tree is not completely binary" );
+        final SDI.ALGORITHM algorithm;
+        if ( gsdir ) {
+            algorithm = ALGORITHM.GSDIR;
+        }
+        else {
+            algorithm = ALGORITHM.SDIR;
         }
         try {
             final RIO rio;
             if ( ForesterUtil.isEmpty( query ) ) {
-                rio = new RIO( gene_trees_file, species_tree );
+                rio = new RIO( gene_trees_file, species_tree, algorithm );
             }
             else {
-                rio = new RIO( gene_trees_file, species_tree, query );
+                rio = new RIO( gene_trees_file, species_tree, query, algorithm );
             }
             if ( outfile != null ) {
                 final StringBuilder output = new StringBuilder();
@@ -236,7 +254,7 @@ public class rio {
     }
 
     private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RIOException {
-        final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees() );
+        final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
         writeTable( table_outfile, rio, m );
     }
 
@@ -275,6 +293,7 @@ public class rio {
         System.out.println( PRG_NAME + " [options] <gene trees file> <species tree file> [outfile]" );
         System.out.println();
         System.out.println( " Options" );
+        System.out.println( "  -" + ALLOW_NON_BIN_SPECIES_TREE_OPTION + "  : to allow non-binary species tree" );
         System.out.println( "  -" + CUTOFF_ORTHO_OPTION + " : cutoff for ortholog output (default: 50)" );
         System.out.println( "  -" + TABLE_OUTPUT_OPTION
                 + "  : file-name for output table of all vs. all ortholgy support" );

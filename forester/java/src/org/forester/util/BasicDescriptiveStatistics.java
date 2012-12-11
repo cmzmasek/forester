@@ -50,9 +50,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         setDescription( desc );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#addValue(double)
-     */
     @Override
     public void addValue( final double d ) {
         _recalc_sigma = true;
@@ -66,18 +63,12 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#arithmeticMean()
-     */
     @Override
     public double arithmeticMean() {
         validate();
         return getSum() / getN();
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#asSummary()
-     */
     @Override
     public String asSummary() {
         if ( getN() > 1 ) {
@@ -89,18 +80,17 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#coefficientOfVariation()
-     */
     @Override
     public double coefficientOfVariation() {
         validate();
         return ( sampleStandardDeviation() / arithmeticMean() );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getDataAsDoubleArray()
-     */
+    @Override
+    public List<Double> getData() {
+        return _data;
+    }
+
     @Override
     public double[] getDataAsDoubleArray() {
         validate();
@@ -111,35 +101,28 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return data_array;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getMax()
-     */
+    @Override
+    public String getDescription() {
+        return _desc;
+    }
+
     @Override
     public double getMax() {
         validate();
         return _max;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getMin()
-     */
     @Override
     public double getMin() {
         validate();
         return _min;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getN()
-     */
     @Override
     public int getN() {
         return _data.size();
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#getSum()
-     */
     @Override
     public double getSum() {
         validate();
@@ -151,7 +134,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         validate();
         final double mean = arithmeticMean();
         final double sd = sampleStandardDeviation();
-        return "" + mean + ( ( char ) 177 ) + sd + " [" + getMin() + "..." + getMax() + "]";
+        return "" + mean + ( ( char ) 177 ) + sd + " [" + getN() + "] [" + getMin() + "-" + getMax() + "]";
     }
 
     @Override
@@ -160,19 +143,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return ( ( ( _data.get( index ) ) ).doubleValue() );
     }
 
-    private void init() {
-        _data = new ArrayList<Double>();
-        _sum = 0.0;
-        _min = Double.MAX_VALUE;
-        _max = -Double.MAX_VALUE;
-        _sigma = 0.0;
-        _recalc_sigma = true;
-        _desc = "";
-    }
-
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#median()
-     */
     @Override
     public double median() {
         validate();
@@ -195,18 +165,12 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return median;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#midrange()
-     */
     @Override
     public double midrange() {
         validate();
         return ( _min + _max ) / 2.0;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#pearsonianSkewness()
-     */
     @Override
     public double pearsonianSkewness() {
         validate();
@@ -216,26 +180,17 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return ( ( 3 * ( mean - median ) ) / sd );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#sampleStandardDeviation()
-     */
     @Override
     public double sampleStandardDeviation() {
         return Math.sqrt( sampleVariance() );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#sampleStandardUnit(double)
-     */
     @Override
     public double sampleStandardUnit( final double value ) {
         validate();
         return BasicDescriptiveStatistics.sampleStandardUnit( value, arithmeticMean(), sampleStandardDeviation() );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#sampleVariance()
-     */
     @Override
     public double sampleVariance() {
         validate();
@@ -245,18 +200,17 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return ( sumDeviations() / ( getN() - 1 ) );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#standardErrorOfMean()
-     */
+    @Override
+    public void setDescription( final String desc ) {
+        _desc = desc;
+    }
+
     @Override
     public double standardErrorOfMean() {
         validate();
         return ( sampleStandardDeviation() / Math.sqrt( getN() ) );
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#sumDeviations()
-     */
     @Override
     public double sumDeviations() {
         validate();
@@ -271,9 +225,6 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
         return _sigma;
     }
 
-    /* (non-Javadoc)
-     * @see org.forester.util.DescriptiveStatisticsI#toString()
-     */
     @Override
     public String toString() {
         if ( getN() < 1 ) {
@@ -306,6 +257,16 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
             sb.append( "pearsonian skewness     : " + pearsonianSkewness() );
         }
         return sb.toString();
+    }
+
+    private void init() {
+        _data = new ArrayList<Double>();
+        _sum = 0.0;
+        _min = Double.MAX_VALUE;
+        _max = -Double.MAX_VALUE;
+        _sigma = 0.0;
+        _recalc_sigma = true;
+        _desc = "";
     }
 
     private void validate() throws ArithmeticException {
@@ -356,20 +317,5 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
      */
     public static double sampleStandardUnit( final double value, final double mean, final double sd ) {
         return ( value - mean ) / sd;
-    }
-
-    @Override
-    public List<Double> getData() {
-        return _data;
-    }
-
-    @Override
-    public void setDescription( final String desc ) {
-        _desc = desc;
-    }
-
-    @Override
-    public String getDescription() {
-        return _desc;
     }
 }

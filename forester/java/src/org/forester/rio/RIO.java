@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +48,8 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.sdi.GSDIR;
+import org.forester.sdi.SDI;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
 import org.forester.util.ForesterUtil;
@@ -70,19 +73,21 @@ public final class RIO {
      * @throws IOException 
      * @throws RIOException 
      */
-    public RIO( final File gene_trees_file, final Phylogeny species_tree, final String query ) throws IOException,
-            SDIException, RIOException {
+    public RIO( final File gene_trees_file,
+                final Phylogeny species_tree,
+                final String query,
+                final SDI.ALGORITHM algorithm ) throws IOException, SDIException, RIOException {
         if ( ForesterUtil.isEmpty( query ) ) {
             throw new IllegalArgumentException( "query is empty" );
         }
         init();
-        inferOrthologs( gene_trees_file, species_tree, query );
+        inferOrthologs( gene_trees_file, species_tree, query, algorithm );
     }
 
-    public RIO( final File gene_trees_file, final Phylogeny species_tree ) throws IOException, SDIException,
-            RIOException {
+    public RIO( final File gene_trees_file, final Phylogeny species_tree, final SDI.ALGORITHM algorithm )
+            throws IOException, SDIException, RIOException {
         init();
-        inferOrthologs( gene_trees_file, species_tree, null );
+        inferOrthologs( gene_trees_file, species_tree, null, algorithm );
     }
 
     public final Phylogeny[] getAnalyzedGeneTrees() {
@@ -381,8 +386,11 @@ public final class RIO {
      * @throws IOException 
      * @throws FileNotFoundException 
      */
-    private final void inferOrthologs( final File gene_trees_file, final Phylogeny species_tree, final String query )
-            throws SDIException, RIOException, FileNotFoundException, IOException {
+    private final void inferOrthologs( final File gene_trees_file,
+                                       final Phylogeny species_tree,
+                                       final String query,
+                                       final SDI.ALGORITHM algorithm ) throws SDIException, RIOException,
+            FileNotFoundException, IOException {
         // Read in first tree to get its sequence names
         // and strip species_tree.
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -433,22 +441,37 @@ public final class RIO {
                         + " has a different number of external nodes (" + gt.getNumberOfExternalNodes()
                         + ") than those gene trees preceding it (" + gene_tree_ext_nodes + ")" );
             }
-            _analyzed_gene_trees[ c++ ] = performOrthologInference( gt, species_tree, query );
+            _analyzed_gene_trees[ c++ ] = performOrthologInference( gt, species_tree, query, algorithm );
         }
         setNumberOfSamples( gene_trees.length );
     }
 
     private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
                                                       final Phylogeny species_tree,
-                                                      final String query ) throws SDIException, RIOException {
-        final SDIR sdiunrooted = new SDIR();
-        final Phylogeny assigned_tree = sdiunrooted.infer( gene_tree,
-                                                           species_tree,
-                                                           false,
-                                                           RIO.ROOT_BY_MINIMIZING_SUM_OF_DUPS,
-                                                           RIO.ROOT_BY_MINIMIZING_TREE_HEIGHT,
-                                                           true,
-                                                           1 )[ 0 ];
+                                                      final String query,
+                                                      final SDI.ALGORITHM algorithm ) throws SDIException, RIOException {
+        final Phylogeny assigned_tree;
+        switch ( algorithm ) {
+            case SDIR: {
+                final SDIR sdir = new SDIR();
+                assigned_tree = sdir.infer( gene_tree,
+                                            species_tree,
+                                            false,
+                                            RIO.ROOT_BY_MINIMIZING_SUM_OF_DUPS,
+                                            RIO.ROOT_BY_MINIMIZING_TREE_HEIGHT,
+                                            true,
+                                            1 )[ 0 ];
+                break;
+            }
+            case GSDIR: {
+                final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, 1 );
+                assigned_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 1 );
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException( "illegal algorithm: " + algorithm );
+            }
+        }
         setExtNodesOfAnalyzedGeneTrees( assigned_tree.getNumberOfExternalNodes() );
         if ( !ForesterUtil.isEmpty( query ) ) {
             final List<PhylogenyNode> nodes = getNodesViaSequenceName( assigned_tree, query );
@@ -513,7 +536,8 @@ public final class RIO {
         }
     }
 
-    public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees ) throws RIOException {
+    public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees, final boolean sort )
+            throws RIOException {
         final List<String> labels = new ArrayList<String>();
         final Set<String> labels_set = new HashSet<String>();
         String label;
@@ -536,6 +560,9 @@ public final class RIO {
             }
             labels_set.add( label );
             labels.add( label );
+        }
+        if ( sort ) {
+            Collections.sort( labels );
         }
         final IntMatrix m = new IntMatrix( labels );
         int counter = 0;

@@ -6888,7 +6888,7 @@ public final class Test {
                 gt.setRooted( true );
                 final GSDI sdi = new GSDI( gt, s1, true, true, true );
             }
-            final IntMatrix m = RIO.calculateOrthologTable( g1 );
+            final IntMatrix m = RIO.calculateOrthologTable( g1, true );
             // System.out.println( m.toString() );
         }
         catch ( final Exception e ) {

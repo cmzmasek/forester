@@ -266,20 +266,17 @@ public class SDIR {
             final PhylogenyNode n = iter.next();
             if ( n.isRoot() ) {
                 if ( ( n.getNumberOfDescendants() != 2 ) && ( n.getNumberOfDescendants() != 3 ) ) {
-                    throw new IllegalArgumentException( "attempt to run SDI on gene tree with "
-                            + n.getNumberOfDescendants() + " child nodes at its root" );
+                    throw new SDIException( "gene tree has " + n.getNumberOfDescendants() + " descendents at its root" );
                 }
             }
             else if ( !n.isExternal() && ( n.getNumberOfDescendants() != 2 ) ) {
-                throw new IllegalArgumentException( "attempt to run SDI on gene tree which is not completely binary [found node with "
-                        + n.getNumberOfDescendants() + " child nodes]" );
+                throw new SDIException( "gene tree is not completely binary" );
             }
         }
         for( final PhylogenyNodeIterator iter = species_tree.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
             if ( !n.isExternal() && ( n.getNumberOfDescendants() != 2 ) ) {
-                throw new IllegalArgumentException( "attempt to run SDI with a species tree which is not completely binary (after stripping) [found node with "
-                        + n.getNumberOfDescendants() + " child nodes]" );
+                throw new SDIException( "species tree (after stripping) is not completely binary" );
             }
         }
         g.reRoot( g.getFirstExternalNode() );
