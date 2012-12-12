@@ -9,7 +9,7 @@ RIO (Resampled Inference of Orthologs) is a method for automated phylogenomics b
 
 == Usage == 
 {{{
-java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]
+java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene trees> <species tree> <outfile> [logfile]
 }}}
 
 === Options ===
