@@ -40,13 +40,12 @@ public class GSDIR extends GSDI {
     private final BasicDescriptiveStatistics _duplications_sum_stats;
     private final List<Phylogeny>            _min_duplications_sum_gene_trees;
 
-    public GSDIR( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean strip_gene_tree, final int x )
-            throws SDIException {
-        super( gene_tree.copy(), species_tree, true, strip_gene_tree, true, 1 );
-        _min_duplications_sum = Integer.MAX_VALUE;
-        _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
-        _duplications_sum_stats = new BasicDescriptiveStatistics();
-        linkNodesOfG();
+    public GSDIR( final Phylogeny gene_tree,
+                  final Phylogeny species_tree,
+                  final boolean strip_gene_tree,
+                  final boolean strip_species_tree ) throws SDIException {
+        super( gene_tree.copy(), species_tree, strip_gene_tree );
+        linkNodesOfG( null, strip_gene_tree, strip_species_tree );
         final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<PhylogenyBranch>();
         for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
@@ -54,9 +53,11 @@ public class GSDIR extends GSDI {
                 gene_tree_branches_post_order.add( new PhylogenyBranch( n, n.getParent() ) );
             }
         }
+        _min_duplications_sum = Integer.MAX_VALUE;
+        _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
+        _duplications_sum_stats = new BasicDescriptiveStatistics();
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
             _duplications_sum = 0;
-            _speciation_or_duplication_events_sum = 0;
             _speciations_sum = 0;
             _gene_tree.reRoot( branch );
             PhylogenyMethods.preOrderReId( getSpeciesTree() );

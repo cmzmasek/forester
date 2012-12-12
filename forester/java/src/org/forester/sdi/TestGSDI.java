@@ -81,7 +81,7 @@ public final class TestGSDI {
             final Phylogeny gene_2_1 = factory.create( gene_2_1_str, new NHXParser() )[ 0 ];
             multi_species_2.setRooted( true );
             gene_2_1.setRooted( true );
-            final GSDI sdi = new GSDI( gene_2_1, multi_species_2, false );
+            final GSDI sdi = new GSDI( gene_2_1, multi_species_2, false, false, false );
             if ( sdi.getSpeciationOrDuplicationEventsSum() != 0 ) {
                 return false;
             }
@@ -122,7 +122,7 @@ public final class TestGSDI {
             s1.setRooted( true );
             final Phylogeny g1 = TestGSDI
                     .createPhylogeny( "((((B[&&NHX:S=B],A1[&&NHX:S=A1]),C[&&NHX:S=C]),A2[&&NHX:S=A2]),D[&&NHX:S=D])" );
-            final GSDI sdi1 = new GSDI( g1, s1, false );
+            final GSDI sdi1 = new GSDI( g1, s1, false, false, false );
             // Archaeopteryx.createApplication( g1 );
             // Archaeopteryx.createApplication( s1 );
             if ( sdi1.getDuplicationsSum() != 1 ) {
@@ -146,7 +146,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2 = TestGSDI
                     .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),B[&&NHX:S=B]),C[&&NHX:S=C]),D[&&NHX:S=D])" );
-            final GSDI sdi2 = new GSDI( g2, s1, false );
+            final GSDI sdi2 = new GSDI( g2, s1, false, false, false );
             if ( sdi2.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -168,7 +168,7 @@ public final class TestGSDI {
             }
             final Phylogeny g3 = TestGSDI
                     .createPhylogeny( "((((A2[&&NHX:S=A2],A1[&&NHX:S=A1]),C[&&NHX:S=C]),B[&&NHX:S=B]),D[&&NHX:S=D])" );
-            final GSDI sdi3 = new GSDI( g3, s1, false );
+            final GSDI sdi3 = new GSDI( g3, s1, false, false, false );
             if ( sdi3.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -190,7 +190,7 @@ public final class TestGSDI {
             }
             final Phylogeny g4 = TestGSDI
                     .createPhylogeny( "(((B[&&NHX:S=B],C1[&&NHX:S=C]),C2[&&NHX:S=C]),D[&&NHX:S=D])" );
-            final GSDI sdi4 = new GSDI( g4, s1, false );
+            final GSDI sdi4 = new GSDI( g4, s1, false, false, false );
             if ( sdi4.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -208,7 +208,7 @@ public final class TestGSDI {
             }
             final Phylogeny g5 = TestGSDI
                     .createPhylogeny( "(((D1[&&NHX:S=D],A1[&&NHX:S=A1]),B[&&NHX:S=B]),((D2[&&NHX:S=D],D3[&&NHX:S=D]),C[&&NHX:S=C]))" );
-            final GSDI sdi5 = new GSDI( g5, s1, false );
+            final GSDI sdi5 = new GSDI( g5, s1, false, false, false );
             if ( sdi5.getDuplicationsSum() != 3 ) {
                 return false;
             }
@@ -240,7 +240,7 @@ public final class TestGSDI {
             final Phylogeny gene7_2 = TestGSDI
                     .createPhylogeny( "(((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),x[&&NHX:S=x]),m1[&&NHX:S=m1]),i1[&&NHX:S=i1]),j2[&&NHX:S=j2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
             gene7_2.setRooted( true );
-            final GSDI sdi7_2 = new GSDI( gene7_2, species7, false );
+            final GSDI sdi7_2 = new GSDI( gene7_2, species7, false, false, false );
             if ( sdi7_2.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -272,7 +272,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_0 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],m3[&&NHX:S=m3])" );
-            final GSDI sdi2_0 = new GSDI( g2_0, s2, false );
+            final GSDI sdi2_0 = new GSDI( g2_0, s2, false, false, false );
             if ( sdi2_0.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -287,7 +287,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_1 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],h2[&&NHX:S=h2])" );
-            final GSDI sdi2_1 = new GSDI( g2_1, s2, false );
+            final GSDI sdi2_1 = new GSDI( g2_1, s2, false, false, false );
             if ( sdi2_1.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -302,7 +302,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_2 = TestGSDI.createPhylogeny( "(e2[&&NHX:S=e2],p4[&&NHX:S=p4])" );
-            final GSDI sdi2_2 = new GSDI( g2_2, s2, false );
+            final GSDI sdi2_2 = new GSDI( g2_2, s2, false, false, false );
             if ( sdi2_2.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -317,7 +317,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_3 = TestGSDI.createPhylogeny( "(e2a[&&NHX:S=e2],e2b[&&NHX:S=e2])" );
-            final GSDI sdi2_3 = new GSDI( g2_3, s2, false );
+            final GSDI sdi2_3 = new GSDI( g2_3, s2, false, false, false );
             if ( sdi2_3.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -332,7 +332,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_4 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),i3[&&NHX:S=i3])" );
-            final GSDI sdi2_4 = new GSDI( g2_4, s2, false );
+            final GSDI sdi2_4 = new GSDI( g2_4, s2, false, false, false );
             if ( sdi2_4.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -351,7 +351,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_5 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],j4[&&NHX:S=j4]),f3[&&NHX:S=f3])" );
-            final GSDI sdi2_5 = new GSDI( g2_5, s2, false );
+            final GSDI sdi2_5 = new GSDI( g2_5, s2, false, false, false );
             if ( sdi2_5.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -370,7 +370,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_6 = TestGSDI.createPhylogeny( "((j3[&&NHX:S=j3],i4[&&NHX:S=i4]),f3[&&NHX:S=f3])" );
-            final GSDI sdi2_6 = new GSDI( g2_6, s2, false );
+            final GSDI sdi2_6 = new GSDI( g2_6, s2, false, false, false );
             if ( sdi2_6.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -389,7 +389,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_7 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k1[&&NHX:S=k1]),i1[&&NHX:S=i1])" );
-            final GSDI sdi2_7 = new GSDI( g2_7, s2, false );
+            final GSDI sdi2_7 = new GSDI( g2_7, s2, false, false, false );
             if ( sdi2_7.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -408,7 +408,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_8 = TestGSDI.createPhylogeny( "(j1[&&NHX:S=j1],(k1[&&NHX:S=k1],i1[&&NHX:S=i1]))" );
-            final GSDI sdi2_8 = new GSDI( g2_8, s2, false );
+            final GSDI sdi2_8 = new GSDI( g2_8, s2, false, false, false );
             if ( sdi2_8.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -427,7 +427,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_9 = TestGSDI.createPhylogeny( "((j1[&&NHX:S=j1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
-            final GSDI sdi2_9 = new GSDI( g2_9, s2, false );
+            final GSDI sdi2_9 = new GSDI( g2_9, s2, false, false, false );
             if ( sdi2_9.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -444,7 +444,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_10 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),f2[&&NHX:S=f2])" );
-            final GSDI sdi2_10 = new GSDI( g2_10, s2, false );
+            final GSDI sdi2_10 = new GSDI( g2_10, s2, false, false, false );
             if ( sdi2_10.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -461,7 +461,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_11 = TestGSDI.createPhylogeny( "((m1[&&NHX:S=m1],k4[&&NHX:S=k4]),x[&&NHX:S=x])" );
-            final GSDI sdi2_11 = new GSDI( g2_11, s2, false );
+            final GSDI sdi2_11 = new GSDI( g2_11, s2, false, false, false );
             if ( sdi2_11.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -478,7 +478,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_12 = TestGSDI.createPhylogeny( "(m1[&&NHX:S=m1],(k4[&&NHX:S=k4],x[&&NHX:S=x]))" );
-            final GSDI sdi2_12 = new GSDI( g2_12, s2, false );
+            final GSDI sdi2_12 = new GSDI( g2_12, s2, false, false, false );
             if ( sdi2_12.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -495,7 +495,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_13 = TestGSDI.createPhylogeny( "(x[&&NHX:S=x],(y[&&NHX:S=y],z[&&NHX:S=z]))" );
-            final GSDI sdi2_13 = new GSDI( g2_13, s2, false );
+            final GSDI sdi2_13 = new GSDI( g2_13, s2, false, false, false );
             if ( sdi2_13.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -512,7 +512,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_14 = TestGSDI.createPhylogeny( "(a1_1[&&NHX:S=a1],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
-            final GSDI sdi2_14 = new GSDI( g2_14, s2, false );
+            final GSDI sdi2_14 = new GSDI( g2_14, s2, false, false, false );
             if ( sdi2_14.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -529,7 +529,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_15 = TestGSDI.createPhylogeny( "(a2[&&NHX:S=a2],(b1[&&NHX:S=b1],a1[&&NHX:S=a1]))" );
-            final GSDI sdi2_15 = new GSDI( g2_15, s2, false );
+            final GSDI sdi2_15 = new GSDI( g2_15, s2, false, false, false );
             if ( sdi2_15.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -546,7 +546,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_16 = TestGSDI.createPhylogeny( "(n2[&&NHX:S=n2],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
-            final GSDI sdi2_16 = new GSDI( g2_16, s2, false );
+            final GSDI sdi2_16 = new GSDI( g2_16, s2, false, false, false );
             if ( sdi2_16.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -563,7 +563,7 @@ public final class TestGSDI {
                 return false;
             }
             final Phylogeny g2_17 = TestGSDI.createPhylogeny( "(p4[&&NHX:S=p4],(j3[&&NHX:S=j3],n1[&&NHX:S=n1]))" );
-            final GSDI sdi2_17 = new GSDI( g2_17, s2, false );
+            final GSDI sdi2_17 = new GSDI( g2_17, s2, false, false, false );
             if ( sdi2_17.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -581,7 +581,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_18 = TestGSDI
                     .createPhylogeny( "((n11[&&NHX:S=n1],n12[&&NHX:S=n1]),(n13[&&NHX:S=n1],n14[&&NHX:S=n1]))" );
-            final GSDI sdi2_18 = new GSDI( g2_18, s2, false );
+            final GSDI sdi2_18 = new GSDI( g2_18, s2, false, false, false );
             if ( sdi2_18.getDuplicationsSum() != 3 ) {
                 return false;
             }
@@ -602,7 +602,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_19 = TestGSDI
                     .createPhylogeny( "((n11[&&NHX:S=n1],n21[&&NHX:S=n2]),(n12[&&NHX:S=n1],n22[&&NHX:S=n2]))" );
-            final GSDI sdi2_19 = new GSDI( g2_19, s2, false );
+            final GSDI sdi2_19 = new GSDI( g2_19, s2, false, false, false );
             if ( sdi2_19.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -623,7 +623,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_20 = TestGSDI
                     .createPhylogeny( "((n11[&&NHX:S=n1],n2[&&NHX:S=n2]),(n12[&&NHX:S=n1],n3[&&NHX:S=n3]))" );
-            final GSDI sdi2_20 = new GSDI( g2_20, s2, false );
+            final GSDI sdi2_20 = new GSDI( g2_20, s2, false, false, false );
             if ( sdi2_20.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -644,7 +644,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_21 = TestGSDI
                     .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],a1[&&NHX:S=a1]))" );
-            final GSDI sdi2_21 = new GSDI( g2_21, s2, false );
+            final GSDI sdi2_21 = new GSDI( g2_21, s2, false, false, false );
             if ( sdi2_21.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -665,7 +665,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_22 = TestGSDI
                     .createPhylogeny( "((n1[&&NHX:S=n1],n2[&&NHX:S=n2]),(n3[&&NHX:S=n3],n4[&&NHX:S=n4]))" );
-            final GSDI sdi2_22 = new GSDI( g2_22, s2, false );
+            final GSDI sdi2_22 = new GSDI( g2_22, s2, false, false, false );
             //Archaeopteryx.createApplication( g2_22 );
             //Archaeopteryx.createApplication( s2 );
             if ( sdi2_22.getDuplicationsSum() != 0 ) {
@@ -688,7 +688,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_23 = TestGSDI
                     .createPhylogeny( "((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),(c1[&&NHX:S=c1],d1[&&NHX:S=d1]))" );
-            final GSDI sdi2_23 = new GSDI( g2_23, s2, false );
+            final GSDI sdi2_23 = new GSDI( g2_23, s2, false, false, false );
             if ( sdi2_23.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -709,7 +709,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_24 = TestGSDI
                     .createPhylogeny( "((a1[&&NHX:S=a1],e1[&&NHX:S=e1]),(i1[&&NHX:S=i1],m1[&&NHX:S=m1]))" );
-            final GSDI sdi2_24 = new GSDI( g2_24, s2, false );
+            final GSDI sdi2_24 = new GSDI( g2_24, s2, false, false, false );
             if ( sdi2_24.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -730,7 +730,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_25 = TestGSDI
                     .createPhylogeny( "((a1[&&NHX:S=a1],a4[&&NHX:S=a4]),(b1[&&NHX:S=b1],c1[&&NHX:S=c1]))" );
-            final GSDI sdi2_25 = new GSDI( g2_25, s2, false );
+            final GSDI sdi2_25 = new GSDI( g2_25, s2, false, false, false );
             if ( sdi2_25.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -751,7 +751,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_26 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],a4[&&NHX:S=a4]),b1[&&NHX:S=b1]),e1[&&NHX:S=e1])" );
-            final GSDI sdi2_26 = new GSDI( g2_26, s2, false );
+            final GSDI sdi2_26 = new GSDI( g2_26, s2, false, false, false );
             if ( sdi2_26.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -772,7 +772,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_27 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],a4[&&NHX:S=a4]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1])" );
-            final GSDI sdi2_27 = new GSDI( g2_27, s2, false );
+            final GSDI sdi2_27 = new GSDI( g2_27, s2, false, false, false );
             if ( sdi2_27.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -793,7 +793,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_28 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),e1[&&NHX:S=e1])" );
-            final GSDI sdi2_28 = new GSDI( g2_28, s2, false );
+            final GSDI sdi2_28 = new GSDI( g2_28, s2, false, false, false );
             if ( sdi2_28.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -814,7 +814,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_29 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1])" );
-            final GSDI sdi2_29 = new GSDI( g2_29, s2, false );
+            final GSDI sdi2_29 = new GSDI( g2_29, s2, false, false, false );
             if ( sdi2_29.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -835,7 +835,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_30 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),a2[&&NHX:S=a2])" );
-            final GSDI sdi2_30 = new GSDI( g2_30, s2, false );
+            final GSDI sdi2_30 = new GSDI( g2_30, s2, false, false, false );
             if ( sdi2_30.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -856,7 +856,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_31 = TestGSDI
                     .createPhylogeny( "(((a1[&&NHX:S=a1],b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),c2[&&NHX:S=c2])" );
-            final GSDI sdi2_31 = new GSDI( g2_31, s2, false );
+            final GSDI sdi2_31 = new GSDI( g2_31, s2, false, false, false );
             if ( sdi2_31.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -877,7 +877,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_32 = TestGSDI
                     .createPhylogeny( "((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1]),x[&&NHX:S=x]),p1[&&NHX:S=p1]),i1[&&NHX:S=i1]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
-            final GSDI sdi2_32 = new GSDI( g2_32, s2, false );
+            final GSDI sdi2_32 = new GSDI( g2_32, s2, false, false, false );
             if ( sdi2_32.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -919,7 +919,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_33 = TestGSDI
                     .createPhylogeny( "(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),c1[&&NHX:S=c1]),d1[&&NHX:S=d1]),x[&&NHX:S=x]),p1[&&NHX:S=p1]),i1[&&NHX:S=i1]),k2[&&NHX:S=k2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
-            final GSDI sdi2_33 = new GSDI( g2_33, s2, false );
+            final GSDI sdi2_33 = new GSDI( g2_33, s2, false, false, false );
             if ( sdi2_33.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -964,7 +964,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_33_d = TestGSDI
                     .createPhylogeny( "((((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?],(((((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2])[&&NHX:D=N],b1[&&NHX:S=b1])[&&NHX:D=N],c1[&&NHX:S=c1])[&&NHX:D=?],d1[&&NHX:S=d1])[&&NHX:D=?],x[&&NHX:S=x])[&&NHX:D=N],p1[&&NHX:S=p1])[&&NHX:D=?],i1[&&NHX:S=i1])[&&NHX:D=?],k2[&&NHX:S=k2])[&&NHX:D=Y],e1[&&NHX:S=e1])[&&NHX:D=Y],y[&&NHX:S=y])[&&NHX:D=Y],z[&&NHX:S=z])[&&NHX:D=?])" );
-            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false );
+            final GSDI sdi2_33_d = new GSDI( g2_33_d, s2, false, false, false );
             if ( sdi2_33_d.getDuplicationsSum() != 3 ) {
                 return false;
             }
@@ -976,7 +976,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_34 = TestGSDI
                     .createPhylogeny( "(((n1_0[&&NHX:S=n1],n2_0[&&NHX:S=n2]),(n1_1[&&NHX:S=n1],n3_0[&&NHX:S=n3])),n4_0[&&NHX:S=n4])" );
-            final GSDI sdi2_34 = new GSDI( g2_34, s2, false );
+            final GSDI sdi2_34 = new GSDI( g2_34, s2, false, false, false );
             if ( sdi2_34.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -1000,7 +1000,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_35 = TestGSDI
                     .createPhylogeny( "((((n1_0[&&NHX:S=n1],n2_0[&&NHX:S=n2]),(n1_1[&&NHX:S=n1],n3_0[&&NHX:S=n3])),n4_0[&&NHX:S=n4]),a1_0[&&NHX:S=a1])" );
-            final GSDI sdi2_35 = new GSDI( g2_35, s2, false );
+            final GSDI sdi2_35 = new GSDI( g2_35, s2, false, false, false );
             if ( sdi2_35.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -1027,7 +1027,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_36 = TestGSDI
                     .createPhylogeny( "(((a1_0[&&NHX:S=a1],b1_0[&&NHX:S=b1]),(a1_1[&&NHX:S=a1],c1_0[&&NHX:S=c1])),d1_0[&&NHX:S=d1])" );
-            final GSDI sdi2_36 = new GSDI( g2_36, s2, false );
+            final GSDI sdi2_36 = new GSDI( g2_36, s2, false, false, false );
             if ( sdi2_36.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -1051,7 +1051,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_37 = TestGSDI
                     .createPhylogeny( "(((a1_0[&&NHX:S=a1],b1_0[&&NHX:S=b1]),(a2_0[&&NHX:S=a2],c1_0[&&NHX:S=c1])),d1_0[&&NHX:S=d1])" );
-            final GSDI sdi2_37 = new GSDI( g2_37, s2, false );
+            final GSDI sdi2_37 = new GSDI( g2_37, s2, false, false, false );
             if ( sdi2_37.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -1075,7 +1075,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_38 = TestGSDI
                     .createPhylogeny( "(((([&&NHX:S=n1],[&&NHX:S=n1]),([&&NHX:S=n1],[&&NHX:S=n1])),[&&NHX:S=n1]),[&&NHX:S=n1])" );
-            final GSDI sdi2_38 = new GSDI( g2_38, s2, false );
+            final GSDI sdi2_38 = new GSDI( g2_38, s2, false, false, false );
             if ( sdi2_38.getDuplicationsSum() != 5 ) {
                 return false;
             }
@@ -1087,7 +1087,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_100 = TestGSDI
                     .createPhylogeny( "(((e1[&&NHX:S=e1],f2[&&NHX:S=f2]),(d3[&&NHX:S=d3],g4[&&NHX:S=g4])),(((a1[&&NHX:S=a1],h2[&&NHX:S=h2]),c3[&&NHX:S=c3]),(i4[&&NHX:S=i4],b1[&&NHX:S=b1])))" );
-            final GSDI sdi2_100 = new GSDI( g2_100, s2, false );
+            final GSDI sdi2_100 = new GSDI( g2_100, s2, false, false, false );
             if ( sdi2_100.getDuplicationsSum() != 4 ) {
                 return false;
             }
@@ -1123,7 +1123,7 @@ public final class TestGSDI {
             }
             final Phylogeny g2_101 = TestGSDI
                     .createPhylogeny( "(((e1[&&NHX:S=e1],f2[&&NHX:S=f2]),(d3[&&NHX:S=d3],g4[&&NHX:S=g4])),(((a1[&&NHX:S=a1],b2[&&NHX:S=b2]),c3[&&NHX:S=c3]),(i4[&&NHX:S=i4],j1[&&NHX:S=j1])))" );
-            final GSDI sdi2_101 = new GSDI( g2_101, s2, false );
+            final GSDI sdi2_101 = new GSDI( g2_101, s2, false, false, false );
             if ( sdi2_101.getDuplicationsSum() != 2 ) {
                 return false;
             }
@@ -1172,7 +1172,7 @@ public final class TestGSDI {
                             + "48[&&NHX:S=48]),49[&&NHX:S=49]),50[&&NHX:S=50]),51[&&NHX:S=51]),52[&&NHX:S=52]),53[&&NHX:S=53]),"
                             + "54[&&NHX:S=54]),55[&&NHX:S=55]),56[&&NHX:S=56]),57[&&NHX:S=57]),58[&&NHX:S=58]),59[&&NHX:S=59]),"
                             + "60[&&NHX:S=60]),61[&&NHX:S=61]),62[&&NHX:S=62]),63[&&NHX:S=63]),64[&&NHX:S=64]),65[&&NHX:S=65])" );
-            final GSDI sdi7_4_1 = new GSDI( g_7_4_1, s_7_4, false );
+            final GSDI sdi7_4_1 = new GSDI( g_7_4_1, s_7_4, false, false, false );
             if ( sdi7_4_1.getDuplicationsSum() != 54 ) {
                 return false;
             }
@@ -1229,7 +1229,7 @@ public final class TestGSDI {
                             + "54[&&NHX:S=54]),55[&&NHX:S=55]),56[&&NHX:S=56]),57[&&NHX:S=57]),58[&&NHX:S=58]),59[&&NHX:S=59]),"
                             + "60[&&NHX:S=60]),61[&&NHX:S=61]),62[&&NHX:S=62]),63[&&NHX:S=63]),64[&&NHX:S=64]),65[&&NHX:S=65]),"
                             + "66[&&NHX:S=66]),257[&&NHX:S=257]),258[&&NHX:S=258]),513[&&NHX:S=513]),514[&&NHX:S=514]),769[&&NHX:S=769]),770[&&NHX:S=770])" );
-            final GSDI sdi7_4_2 = new GSDI( g_7_4_2, s_7_4, false );
+            final GSDI sdi7_4_2 = new GSDI( g_7_4_2, s_7_4, false, false, false );
             if ( sdi7_4_2.getDuplicationsSum() != 58 ) {
                 return false;
             }
@@ -1242,7 +1242,7 @@ public final class TestGSDI {
             final String g2_0_ = "(([&&NHX:S=a1],[&&NHX:S=a2]),([&&NHX:S=o2],[&&NHX:S=o4]))";
             final Phylogeny g2_0p = TestGSDI.createPhylogeny( g2_0_ );
             g2_0.setRooted( true );
-            final GSDI sdi2_0p = new GSDI( g2_0p, s2, false );
+            final GSDI sdi2_0p = new GSDI( g2_0p, s2, false, false, false );
             if ( sdi2_0p.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -1432,7 +1432,7 @@ public final class TestGSDI {
             //  Archaeopteryx.createApplication( s1.copy() );
             final Phylogeny g1 = TestGSDI
                     .createPhylogeny( "(HUMAN[&&NHX:S=HUMAN],(RAT[&&NHX:S=RAT],(CAEEL[&&NHX:T=:S=CAEEL],YEAST[&&NHX:S=YEAST])))" );
-            final GSDIR sdi1 = new GSDIR( g1.copy(), s1.copy(), false, 1 );
+            final GSDIR sdi1 = new GSDIR( g1.copy(), s1.copy(), false, false );
             if ( sdi1.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -1441,7 +1441,7 @@ public final class TestGSDI {
             //
             final Phylogeny g2 = TestGSDI
                     .createPhylogeny( "(((HUMAN[&&NHX:S=HUMAN],RAT[&&NHX:S=RAT]),CAEEL[&&NHX:T=:S=CAEEL]),YEAST[&&NHX:S=YEAST])" );
-            final GSDIR sdi2 = new GSDIR( g2.copy(), s1.copy(), false, 1 );
+            final GSDIR sdi2 = new GSDIR( g2.copy(), s1.copy(), false, false );
             if ( sdi2.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -1451,7 +1451,7 @@ public final class TestGSDI {
             final Phylogeny g3 = TestGSDI
                     .createPhylogeny( "(RAT[&&NHX:S=RAT],HUMAN[&&NHX:S=HUMAN],(YEAST[&&NHX:S=YEAST],CAEEL[&&NHX:T=:S=CAEEL]))" );
             //   Archaeopteryx.createApplication( g3 );
-            final GSDIR sdi3 = new GSDIR( g3.copy(), s1.copy(), false, 1 );
+            final GSDIR sdi3 = new GSDIR( g3.copy(), s1.copy(), false, false );
             if ( sdi3.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -1461,7 +1461,7 @@ public final class TestGSDI {
             final Phylogeny g4 = TestGSDI
                     .createPhylogeny( "(((((MOUSE[&&NHX:S=MOUSE],[&&NHX:S=RAT]),[&&NHX:S=HUMAN]),([&&NHX:S=ARATH],[&&NHX:S=YEAST])),[&&NHX:S=CAEEL]),[&&NHX:S=CAEBR])" );
             Archaeopteryx.createApplication( g4 );
-            final GSDIR sdi4 = new GSDIR( g4.copy(), s1.copy(), false, 1 );
+            final GSDIR sdi4 = new GSDIR( g4.copy(), s1.copy(), false, false );
             if ( sdi4.getMinDuplicationsSum() != 0 ) {
                 return false;
             }

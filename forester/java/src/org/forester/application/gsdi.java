@@ -305,7 +305,7 @@ public final class gsdi {
                                     true );
                 }
                 else if ( base_algorithm == ALGORITHM.GSDIR ) {
-                    sdi = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, 1 );
+                    sdi = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true );
                 }
             }
             else {

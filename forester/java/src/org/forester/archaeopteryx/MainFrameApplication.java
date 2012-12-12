@@ -1271,7 +1271,7 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDIR gsdir = null;
         try {
-            gsdir = new GSDIR( gene_tree, _species_tree.copy(), true, 1 );
+            gsdir = new GSDIR( gene_tree, _species_tree.copy(), true, true );
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDIR", JOptionPane.ERROR_MESSAGE );

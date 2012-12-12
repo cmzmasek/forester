@@ -1642,8 +1642,8 @@ public class PhylogenyMethods {
                 nodes_to_delete.add( n );
             }
         }
-        for( final PhylogenyNode phylogenyNode : nodes_to_delete ) {
-            to_be_stripped.deleteSubtree( phylogenyNode, true );
+        for( final PhylogenyNode n : nodes_to_delete ) {
+            to_be_stripped.deleteSubtree( n, true );
         }
         to_be_stripped.clearHashIdToNodeMap();
         to_be_stripped.externalNodesHaveChanged();

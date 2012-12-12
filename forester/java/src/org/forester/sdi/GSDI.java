@@ -67,8 +67,6 @@ import org.forester.util.ForesterUtil;
 public class GSDI extends SDI {
 
     private final boolean             _most_parsimonious_duplication_model;
-    private final boolean             _strip_gene_tree;
-    private final boolean             _strip_species_tree;
     protected int                     _speciation_or_duplication_events_sum;
     protected int                     _speciations_sum;
     private final List<PhylogenyNode> _stripped_gene_tree_nodes;
@@ -87,35 +85,23 @@ public class GSDI extends SDI {
         _speciations_sum = 0;
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
         _duplications_sum = 0;
-        _strip_gene_tree = strip_gene_tree;
-        _strip_species_tree = strip_species_tree;
         _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
         _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
-        linkNodesOfG();
+        linkNodesOfG( null, strip_gene_tree, strip_species_tree );
         PhylogenyMethods.preOrderReId( getSpeciesTree() );
         geneTreePostOrderTraversal();
     }
 
-    GSDI( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean most_parsimonious_duplication_model )
+    // Used by GSDIR
+    protected GSDI( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean strip_gene_tree )
             throws SDIException {
-        this( gene_tree, species_tree, most_parsimonious_duplication_model, false, false );
-    }
-
-    public GSDI( final Phylogeny gene_tree,
-                 final Phylogeny species_tree,
-                 final boolean most_parsimonious_duplication_model,
-                 final boolean strip_gene_tree,
-                 final boolean strip_species_tree,
-                 final int x ) throws SDIException {
         super( gene_tree, species_tree );
-        _speciation_or_duplication_events_sum = 0;
+        _speciation_or_duplication_events_sum = -1;
         _speciations_sum = 0;
-        _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
+        _most_parsimonious_duplication_model = true;
         _duplications_sum = 0;
-        _strip_gene_tree = strip_gene_tree;
-        _strip_species_tree = strip_species_tree;
         _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
         _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
         _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
@@ -240,14 +226,21 @@ public class GSDI extends SDI {
     /**
      * This allows for linking of internal nodes of the species tree (as opposed
      * to just external nodes, as in the method it overrides.
+     * If TaxonomyComparisonBase is null, it will try to determine it.
      * @throws SDIException 
      * 
      */
-    @Override
-    final void linkNodesOfG() throws SDIException {
+    final void linkNodesOfG( final TaxonomyComparisonBase tax_comp_base,
+                             final boolean strip_gene_tree,
+                             final boolean strip_species_tree ) throws SDIException {
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
-        _tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
+        if ( tax_comp_base == null ) {
+            _tax_comp_base = determineTaxonomyComparisonBase( _gene_tree );
+        }
+        else {
+            _tax_comp_base = tax_comp_base;
+        }
         // Stringyfied taxonomy is the key, node is the value.
         for( final PhylogenyNodeIterator iter = _species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
@@ -266,7 +259,7 @@ public class GSDI extends SDI {
         for( final PhylogenyNodeIterator iter = _gene_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode g = iter.next();
             if ( !g.getNodeData().isHasTaxonomy() ) {
-                if ( _strip_gene_tree ) {
+                if ( strip_gene_tree ) {
                     _stripped_gene_tree_nodes.add( g );
                 }
                 else {
@@ -276,7 +269,7 @@ public class GSDI extends SDI {
             else {
                 final String tax_str = taxonomyToString( g, _tax_comp_base );
                 if ( ForesterUtil.isEmpty( tax_str ) ) {
-                    if ( _strip_gene_tree ) {
+                    if ( strip_gene_tree ) {
                         _stripped_gene_tree_nodes.add( g );
                     }
                     else {
@@ -290,7 +283,7 @@ public class GSDI extends SDI {
                         s = tryMapByRemovingOverlySpecificData( species_to_node_map, tax_str );
                     }
                     if ( s == null ) {
-                        if ( _strip_gene_tree ) {
+                        if ( strip_gene_tree ) {
                             _stripped_gene_tree_nodes.add( g );
                         }
                         else {
@@ -305,13 +298,13 @@ public class GSDI extends SDI {
                 }
             }
         } // for loop
-        if ( _strip_gene_tree ) {
+        if ( strip_gene_tree ) {
             stripGeneTree();
             if ( getGeneTree().isEmpty() || ( getGeneTree().getNumberOfExternalNodes() < 2 ) ) {
                 throw new SDIException( "species could not be mapped between gene tree and species tree" );
             }
         }
-        if ( _strip_species_tree ) {
+        if ( strip_species_tree ) {
             stripSpeciesTree( species_tree_ext_nodes );
         }
     }
