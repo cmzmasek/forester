@@ -6,54 +6,35 @@
 
 RIO (Resampled Inference of Orthologs) is a method for automated phylogenomics based on explicit phylogenetic inference. RIO analyses are performed over resampled phylogenetic trees to estimate the reliability of orthology assignments.
 
+
 == Usage == 
 {{{
-java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene trees file> <species tree file> [outfile]
+java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]
 }}}
+
 === Options ===
 
-  * -co: cutoff for ortholog output (default: 50) 
+  * -b : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed) 
+
   
-  * -t : file-name for output table of all vs. all ortholgy support
-  
-  * -q : name for query (sequence/node), if this is used, `[`outfile`]` is required as well
-
-  * -s : sort (default: 2)
-
-  * -u : to output ultra-paralogs (species specific expansions/paralogs)
-
-  * -cu: cutoff for ultra-paralog output (default: 50)
-
-==== Note ====
-
-Either output of all vs. all ortholgy support with -t=`<`output table`>` and/or output for one query sequence with -q=`<`query name`>` and a  `[`outfile`]` are required.
-
-==== Sort ====
-
-  * 0: orthologies
-  * 1: orthologies > super orthologies
-  * 2: super orthologies > orthologies
-
 ==== Gene trees ====
 The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN") ([http://forester.googlecode.com/files/gene_trees_rio.nh example]).
+All gene trees must be completely binary.
+
 
 ==== Species tree ====
-Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species_tree_rio.xml example]).
+Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species_tree_rio.xml example]). 
+The species tree is allowed to have nodes with more than two descendents (polytomies) as long as GSDIR (GSDI re-rooting) algorithm is used. 
 
 
-=== Examples ===
-`rio gene_trees_rio.nh species_tree_rio.xml outfile -q=D_HUMAN -t=outtable -u -cu=10 -co=10`
-
-`rio gene_trees.nh species.xml outfile -q=BCL2_HUMAN -t=outtable -u -cu=60 -co=60`
-
-`rio gene_trees.nh species.xml -t=outtable`
+=== Example ===
+`rio gene_trees.nh species.xml outtable.tsv log.txt`
 
 
 === Example files ===
   * [http://forester.googlecode.com/files/gene_trees_rio.nh gene trees file]
   * [http://forester.googlecode.com/files/species_tree_rio.xml species tree file]
-  * [http://forester.googlecode.com/files/rio_outfile.txt output] (for query "D_HUMAN")
-
+  
 
 == References ==
 
