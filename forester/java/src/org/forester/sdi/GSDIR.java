@@ -79,7 +79,7 @@ public class GSDIR extends GSDI {
             }
             _duplications_sum_stats.addValue( _duplications_sum );
         }
-        System.out.println( _duplications_sum_stats.getSummaryAsString() );
+        //System.out.println( _duplications_sum_stats.getSummaryAsString() );
     }
 
     public int getMinDuplicationsSum() {

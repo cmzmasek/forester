@@ -51,9 +51,10 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final private static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_2  = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA)[^A-Za-z].*" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_PF = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA)/\\d+-\\d+" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA|CAP" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_2  = Pattern
+                                                                  .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)[^A-Za-z].*" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_PF = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )

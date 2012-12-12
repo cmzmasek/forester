@@ -51,6 +51,7 @@ import org.forester.sdi.SDI.ALGORITHM;
 import org.forester.sdi.SDI.TaxonomyComparisonBase;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
+import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public final class RIO {
@@ -62,11 +63,25 @@ public final class RIO {
     private int                    _samples;
     private int                    _ext_nodes;
     private TaxonomyComparisonBase _gsdir_tax_comp_base;
+    private StringBuilder          _log;
+    private boolean                _produce_log;
 
-    public RIO( final File gene_trees_file, final Phylogeny species_tree, final ALGORITHM algorithm )
-            throws IOException, SDIException, RIOException {
-        init();
+    public RIO( final File gene_trees_file,
+                final Phylogeny species_tree,
+                final ALGORITHM algorithm,
+                final boolean produce_log ) throws IOException, SDIException, RIOException {
+        init( produce_log );
         inferOrthologs( gene_trees_file, species_tree, algorithm );
+    }
+
+    private final void init( final boolean produce_log ) {
+        _produce_log = produce_log;
+        _samples = -1;
+        _ext_nodes = -1;
+        _log = null;
+        _gsdir_tax_comp_base = null;
+        _analyzed_gene_trees = null;
+        _removed_gene_tree_nodes = null;
     }
 
     public final Phylogeny[] getAnalyzedGeneTrees() {
@@ -106,15 +121,32 @@ public final class RIO {
             nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        // Removes from species_tree all species not found in gene_tree.
-        final List<PhylogenyNode> _removed_species_tree_ext_nodes = PhylogenyMethods
-                .taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
-        if ( species_tree.isEmpty() ) {
-            throw new RIOException( "failed to establish species based mapping between gene and species trees" );
+        if ( algorithm == ALGORITHM.SDIR ) {
+            // Removes from species_tree all species not found in gene_tree.
+            PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gene_trees[ 0 ], species_tree );
+            if ( species_tree.isEmpty() ) {
+                throw new RIOException( "failed to establish species based mapping between gene and species trees" );
+            }
+        }
+        if ( _produce_log ) {
+            _log = new StringBuilder();
         }
         _analyzed_gene_trees = new Phylogeny[ gene_trees.length ];
         int i = 0;
         int gene_tree_ext_nodes = 0;
+        if ( _produce_log ) {
+            _log.append( "#" );
+            _log.append( "\t" );
+            _log.append( "with minimal number of duplications" );
+            _log.append( "/" );
+            _log.append( "root placements" );
+            _log.append( "\t[" );
+            _log.append( "min" );
+            _log.append( "-" );
+            _log.append( "max" );
+            _log.append( "]" );
+            _log.append( ForesterUtil.LINE_SEPARATOR );
+        }
         for( final Phylogeny gt : gene_trees ) {
             if ( algorithm == ALGORITHM.SDIR ) {
                 // Removes from gene_tree all species not found in species_tree.
@@ -137,11 +169,6 @@ public final class RIO {
         setNumberOfSamples( gene_trees.length );
     }
 
-    private final void init() {
-        _samples = 1;
-        _ext_nodes = 0;
-    }
-
     private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
                                                       final Phylogeny species_tree,
                                                       final ALGORITHM algorithm,
@@ -160,8 +187,29 @@ public final class RIO {
                 break;
             }
             case GSDIR: {
+                //  System.out.println( "gene/species tree size before: " + gene_tree.getNumberOfExternalNodes() + "/"
+                //         + species_tree.getNumberOfExternalNodes() );
                 final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, i == 0 );
+                // System.out.println( "gene/species tree size before: " + gene_tree.getNumberOfExternalNodes() + "/"
+                //         + species_tree.getNumberOfExternalNodes() );
                 assigned_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 0 );
+                if ( i == 0 ) {
+                    _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
+                }
+                if ( _produce_log ) {
+                    final BasicDescriptiveStatistics stats = gsdir.getDuplicationsSumStats();
+                    _log.append( i );
+                    _log.append( "\t" );
+                    _log.append( gsdir.getMinDuplicationsSumGeneTrees().size() );
+                    _log.append( "/" );
+                    _log.append( stats.getN() );
+                    _log.append( "\t[" );
+                    _log.append( ( int ) stats.getMin() );
+                    _log.append( "-" );
+                    _log.append( ( int ) stats.getMax() );
+                    _log.append( "]" );
+                    _log.append( ForesterUtil.LINE_SEPARATOR );
+                }
                 _gsdir_tax_comp_base = gsdir.getTaxCompBase();
                 break;
             }
@@ -177,10 +225,7 @@ public final class RIO {
         _ext_nodes = i;
     }
 
-    private final void setNumberOfSamples( int i ) {
-        if ( i < 1 ) {
-            i = 1;
-        }
+    private final void setNumberOfSamples( final int i ) {
         _samples = i;
     }
 
@@ -239,5 +284,13 @@ public final class RIO {
             }
         }
         return m;
+    }
+
+    public final TaxonomyComparisonBase getGSDIRtaxCompBase() {
+        return _gsdir_tax_comp_base;
+    }
+
+    public final StringBuilder getLog() {
+        return _log;
     }
 }

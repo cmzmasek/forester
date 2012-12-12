@@ -31,10 +31,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.rio.RIO;
@@ -48,8 +52,8 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String PRG_NAME      = "rio";
-    final static private String PRG_VERSION   = "3.00 beta 4";
-    final static private String PRG_DATE      = "2012.12.10";
+    final static private String PRG_VERSION   = "4.000 beta 1";
+    final static private String PRG_DATE      = "2012.12.11";
     final static private String E_MAIL        = "czmasek@burnham.org";
     final static private String WWW           = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1 = "help";
@@ -74,7 +78,7 @@ public class rio {
         if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
             printHelp();
         }
-        if ( ( args.length < 2 ) || ( args.length > 10 ) ) {
+        if ( ( args.length < 3 ) || ( args.length > 5 ) ) {
             System.out.println();
             System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
             System.out.println();
@@ -104,18 +108,23 @@ public class rio {
         boolean sdir = false;
         if ( cla.isOptionSet( USE_SDIR ) ) {
             sdir = true;
+            if ( logfile != null ) {
+                ForesterUtil.fatalError( PRG_NAME, "logfile output only for GSDIR algorithm" );
+            }
         }
         long time = 0;
         System.out.println( "Gene trees                : " + gene_trees_file );
         System.out.println( "Species tree              : " + species_tree_file );
         System.out.println( "All vs all orthology table: " + othology_outtable );
         if ( !sdir ) {
+            if ( logfile != null ) {
+                System.out.println( "Logfile                   : " + logfile );
+            }
             System.out.println( "Non binary species tree   : allowed (GSDIR algorithm)" );
         }
         else {
             System.out.println( "Non binary species tree   : disallowed (SDIR algorithm)" );
         }
-        System.out.println();
         time = System.currentTimeMillis();
         Phylogeny species_tree = null;
         try {
@@ -137,8 +146,14 @@ public class rio {
             algorithm = ALGORITHM.GSDIR;
         }
         try {
-            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm );
+            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, logfile != null );
+            if ( algorithm == ALGORITHM.GSDIR ) {
+                System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
+            }
             tableOutput( othology_outtable, rio );
+            if ( ( algorithm == ALGORITHM.GSDIR ) && ( logfile != null ) ) {
+                writeLogFile( logfile, rio );
+            }
         }
         catch ( final RIOException e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -152,13 +167,41 @@ public class rio {
         catch ( final Exception e ) {
             ForesterUtil.unexpectedFatalError( PRG_NAME, e );
         }
-        if ( othology_outtable != null ) {
-            ForesterUtil.programMessage( PRG_NAME, "wrote results to \"" + othology_outtable + "\"" );
-        }
         time = System.currentTimeMillis() - time;
         ForesterUtil.programMessage( PRG_NAME, "time: " + time + "ms" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.exit( 0 );
+    }
+
+    private static void writeLogFile( final File logfile, final RIO rio ) throws IOException {
+        final EasyWriter out = ForesterUtil.createEasyWriter( logfile );
+        out.println( "Species stripped from gene trees:" );
+        final SortedSet<String> rn = new TreeSet<String>();
+        for( final PhylogenyNode n : rio.getRemovedGeneTreeNodes() ) {
+            final Taxonomy t = n.getNodeData().getTaxonomy();
+            switch ( rio.getGSDIRtaxCompBase() ) {
+                case CODE: {
+                    rn.add( t.getTaxonomyCode() );
+                    break;
+                }
+                case ID: {
+                    rn.add( t.getIdentifier().toString() );
+                    break;
+                }
+                case SCIENTIFIC_NAME: {
+                    rn.add( t.getScientificName() );
+                    break;
+                }
+            }
+        }
+        for( final String s : rn ) {
+            out.println( s );
+        }
+        out.println();
+        out.println( "Some information about duplication numbers in gene trees:" );
+        out.println( rio.getLog().toString() );
+        out.close();
+        ForesterUtil.programMessage( PRG_NAME, "wrote log to \"" + logfile + "\"" );
     }
 
     private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RIOException {
@@ -204,7 +247,7 @@ public class rio {
         System.out.println();
         System.out.println( " Options" );
         System.out.println( "  -" + USE_SDIR
-                + "  : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
+                + " : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
         System.out.println();
         System.out.println( " Formats" );
         System.out.println( "  The species tree is expected to be in phyloXML format." );
