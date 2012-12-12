@@ -19,7 +19,7 @@ java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene tre
   
 ==== Gene trees ====
 The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN") ([http://forester.googlecode.com/files/gene_trees_rio.nh example]).
-All gene trees must be completely binary.
+All gene trees must be *completely binary*.
 
 
 ==== Species tree ====
