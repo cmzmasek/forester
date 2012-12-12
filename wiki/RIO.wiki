@@ -24,7 +24,7 @@ All gene trees must be completely binary.
 
 ==== Species tree ====
 Must be in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format ([http://forester.googlecode.com/files/species_tree_rio.xml example]). 
-The species tree is allowed to have nodes with more than two descendents (polytomies) as long as GSDIR (GSDI re-rooting) algorithm is used. 
+The species tree is allowed to have nodes with more than two descendents (polytomies) as long as GSDIR ([GSDI GSDI] re-rooting) algorithm is used. 
 
 
 === Example ===
