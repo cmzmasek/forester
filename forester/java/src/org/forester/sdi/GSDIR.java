@@ -49,7 +49,7 @@ public class GSDIR extends GSDI {
         final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<PhylogenyBranch>();
         for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if ( !n.isRoot() ) {
+            if ( !n.isRoot() && !( n.getParent().isRoot() && n.isFirstChildNode() ) ) {
                 gene_tree_branches_post_order.add( new PhylogenyBranch( n, n.getParent() ) );
             }
         }
@@ -62,12 +62,12 @@ public class GSDIR extends GSDI {
             _gene_tree.reRoot( branch );
             PhylogenyMethods.preOrderReId( getSpeciesTree() );
             //TEST, remove later
-            for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
-                final PhylogenyNode g = it.next();
-                if ( g.isInternal() ) {
-                    g.setLink( null );
-                }
-            }
+            //            for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
+            //                final PhylogenyNode g = it.next();
+            //                if ( g.isInternal() ) {
+            //                    g.setLink( null );
+            //                }
+            //            }
             geneTreePostOrderTraversal();
             if ( _duplications_sum < _min_duplications_sum ) {
                 _min_duplications_sum = _duplications_sum;
@@ -79,7 +79,6 @@ public class GSDIR extends GSDI {
             }
             _duplications_sum_stats.addValue( _duplications_sum );
         }
-        //System.out.println( _duplications_sum_stats.getSummaryAsString() );
     }
 
     public int getMinDuplicationsSum() {

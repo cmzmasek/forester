@@ -27,7 +27,6 @@ package org.forester.sdi;
 
 import java.io.IOException;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.development.DevelopmentTools;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -59,6 +58,9 @@ public final class TestGSDI {
             return false;
         }
         if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {
+            return false;
+        }
+        if ( !TestGSDI.testGSDIR_general() ) {
             return false;
         }
         return true;
@@ -1429,60 +1431,30 @@ public final class TestGSDI {
             final String s1str = "(((([&&NHX:S=HUMAN],([&&NHX:S=MOUSE],[&&NHX:S=RAT])),([&&NHX:S=CAEEL],[&&NHX:S=CAEBR])),[&&NHX:S=YEAST]),[&&NHX:S=ARATH])";
             final Phylogeny s1 = ParserBasedPhylogenyFactory.getInstance().create( s1str, new NHXParser() )[ 0 ];
             s1.setRooted( true );
-            //  Archaeopteryx.createApplication( s1.copy() );
             final Phylogeny g1 = TestGSDI
                     .createPhylogeny( "(HUMAN[&&NHX:S=HUMAN],(RAT[&&NHX:S=RAT],(CAEEL[&&NHX:T=:S=CAEEL],YEAST[&&NHX:S=YEAST])))" );
             final GSDIR sdi1 = new GSDIR( g1.copy(), s1.copy(), false, false );
             if ( sdi1.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
-            System.out.println( sdi1.getDuplicationsSumStats().getSummaryAsString() );
-            // Archaeopteryx.createApplication( sdi1.getMinDuplicationsSumGeneTrees().get( 0 ) );
-            //
             final Phylogeny g2 = TestGSDI
                     .createPhylogeny( "(((HUMAN[&&NHX:S=HUMAN],RAT[&&NHX:S=RAT]),CAEEL[&&NHX:T=:S=CAEEL]),YEAST[&&NHX:S=YEAST])" );
             final GSDIR sdi2 = new GSDIR( g2.copy(), s1.copy(), false, false );
             if ( sdi2.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
-            System.out.println( sdi2.getDuplicationsSumStats().getSummaryAsString() );
-            // Archaeopteryx.createApplication( sdi2.getMinDuplicationsSumGeneTrees().get( 0 ) );
-            //
             final Phylogeny g3 = TestGSDI
                     .createPhylogeny( "(RAT[&&NHX:S=RAT],HUMAN[&&NHX:S=HUMAN],(YEAST[&&NHX:S=YEAST],CAEEL[&&NHX:T=:S=CAEEL]))" );
-            //   Archaeopteryx.createApplication( g3 );
             final GSDIR sdi3 = new GSDIR( g3.copy(), s1.copy(), false, false );
             if ( sdi3.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
-            System.out.println( sdi3.getDuplicationsSumStats().getSummaryAsString() );
-            //   Archaeopteryx.createApplication( sdi3.getMinDuplicationsSumGeneTrees().get( 0 ) );
-            //
             final Phylogeny g4 = TestGSDI
                     .createPhylogeny( "(((((MOUSE[&&NHX:S=MOUSE],[&&NHX:S=RAT]),[&&NHX:S=HUMAN]),([&&NHX:S=ARATH],[&&NHX:S=YEAST])),[&&NHX:S=CAEEL]),[&&NHX:S=CAEBR])" );
-            Archaeopteryx.createApplication( g4 );
             final GSDIR sdi4 = new GSDIR( g4.copy(), s1.copy(), false, false );
             if ( sdi4.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
-            System.out.println( sdi4.getDuplicationsSumStats().getSummaryAsString() );
-            Archaeopteryx.createApplication( sdi4.getMinDuplicationsSumGeneTrees().get( 0 ) );
-            //            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "B" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
-            //                    .isSpeciation() ) {
-            //                return false;
-            //            }
-            //            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "C" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
-            //                    .isSpeciationOrDuplication() ) {
-            //                return false;
-            //            }
-            //            if ( !( PhylogenyMethods.calculateLCA( g1.getNode( "A2" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
-            //                    .isDuplication() ) ) {
-            //                return false;
-            //            }
-            //            if ( !PhylogenyMethods.calculateLCA( g1.getNode( "D" ), g1.getNode( "A1" ) ).getNodeData().getEvent()
-            //                    .isSpeciation() ) {
-            //                return false;
-            //            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

@@ -96,6 +96,9 @@ public class rio {
         final File logfile;
         if ( cla.getNumberOfNames() > 3 ) {
             logfile = cla.getFile( 3 );
+            if ( logfile.exists() ) {
+                ForesterUtil.fatalError( PRG_NAME, "\"" + logfile + "\" already exists" );
+            }
         }
         else {
             logfile = null;
@@ -146,9 +149,9 @@ public class rio {
             algorithm = ALGORITHM.GSDIR;
         }
         try {
-            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, logfile != null );
+            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, logfile != null, true );
             if ( algorithm == ALGORITHM.GSDIR ) {
-                System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
+                ForesterUtil.programMessage( PRG_NAME, "taxonomy linking based on: " + rio.getGSDIRtaxCompBase() );
             }
             tableOutput( othology_outtable, rio );
             if ( ( algorithm == ALGORITHM.GSDIR ) && ( logfile != null ) ) {
@@ -223,13 +226,13 @@ public class rio {
             for( int y = 0; y < m.size(); ++y ) {
                 w.print( "\t" );
                 if ( x == y ) {
-                    if ( m.get( x, y ) != rio.getNumberOfSamples() ) {
+                    if ( m.get( x, y ) != rio.getAnalyzedGeneTrees().length ) {
                         ForesterUtil.unexpectedFatalError( PRG_NAME, "diagonal value is off" );
                     }
                     w.print( "-" );
                 }
                 else {
-                    w.print( df.format( ( ( double ) m.get( x, y ) ) / rio.getNumberOfSamples() ) );
+                    w.print( df.format( ( ( double ) m.get( x, y ) ) / rio.getAnalyzedGeneTrees().length ) );
                 }
             }
             w.println();

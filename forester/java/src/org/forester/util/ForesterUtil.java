@@ -95,53 +95,10 @@ public final class ForesterUtil {
     private ForesterUtil() {
     }
 
-    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasTaxonomy() ) {
-            node.getNodeData().setTaxonomy( new Taxonomy() );
-        }
-    }
-
-    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasSequence() ) {
-            node.getNodeData().setSequence( new Sequence() );
-        }
-    }
-
-    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDistribution() ) {
-            node.getNodeData().setDistribution( new Distribution( "" ) );
-        }
-    }
-
-    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
-        if ( !node.getNodeData().isHasDate() ) {
-            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
-        }
-    }
-
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {
         if ( sb.length() > 0 ) {
             sb.append( separator );
         }
-    }
-
-    public static boolean isWindowns() {
-        return ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) > -1;
-    }
-
-    final public static String getForesterLibraryInformation() {
-        return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE + ")";
-    }
-
-    public static boolean seqIsLikelyToBeAa( final String s ) {
-        final String seq = s.toLowerCase();
-        if ( ( seq.indexOf( 'r' ) > -1 ) || ( seq.indexOf( 'd' ) > -1 ) || ( seq.indexOf( 'e' ) > -1 )
-                || ( seq.indexOf( 'q' ) > -1 ) || ( seq.indexOf( 'h' ) > -1 ) || ( seq.indexOf( 'k' ) > -1 )
-                || ( seq.indexOf( 'w' ) > -1 ) || ( seq.indexOf( 's' ) > -1 ) || ( seq.indexOf( 'm' ) > -1 )
-                || ( seq.indexOf( 'p' ) > -1 ) || ( seq.indexOf( 'v' ) > -1 ) ) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -234,39 +191,6 @@ public final class ForesterUtil {
         }
     }
 
-    /**
-     * Helper method for calcColor methods.
-     * 
-     * @param smallercolor_component_x
-     *            color component the smaller color
-     * @param largercolor_component_x
-     *            color component the larger color
-     * @param x
-     *            factor
-     * @return an int representing a color component
-     */
-    final private static int calculateColorComponent( final double smallercolor_component_x,
-                                                      final double largercolor_component_x,
-                                                      final double x ) {
-        return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
-    }
-
-    /**
-     * Helper method for calcColor methods.
-     * 
-     * 
-     * @param value
-     *            the value
-     * @param larger
-     *            the largest value
-     * @param smaller
-     *            the smallest value
-     * @return a normalized value between larger and smaller
-     */
-    final private static double calculateColorFactor( final double value, final double larger, final double smaller ) {
-        return ( 255.0 * ( value - smaller ) ) / ( larger - smaller );
-    }
-
     final public static String collapseWhiteSpace( final String s ) {
         return s.replaceAll( "[\\s]+", " " );
     }
@@ -337,6 +261,10 @@ public final class ForesterUtil {
         return new BufferedWriter( new FileWriter( file ) );
     }
 
+    final public static BufferedWriter createBufferedWriter( final String name ) throws IOException {
+        return new BufferedWriter( new FileWriter( createFileForWriting( name ) ) );
+    }
+
     final public static EasyWriter createEasyWriter( final File file ) throws IOException {
         return new EasyWriter( createBufferedWriter( file ) );
     }
@@ -345,16 +273,36 @@ public final class ForesterUtil {
         return createEasyWriter( createFileForWriting( name ) );
     }
 
-    final public static BufferedWriter createBufferedWriter( final String name ) throws IOException {
-        return new BufferedWriter( new FileWriter( createFileForWriting( name ) ) );
-    }
-
     final public static File createFileForWriting( final String name ) throws IOException {
         final File file = new File( name );
         if ( file.exists() ) {
             throw new IOException( "[" + name + "] already exists" );
         }
         return file;
+    }
+
+    final public static void ensurePresenceOfDate( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDate() ) {
+            node.getNodeData().setDate( new org.forester.phylogeny.data.Date() );
+        }
+    }
+
+    final public static void ensurePresenceOfDistribution( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasDistribution() ) {
+            node.getNodeData().setDistribution( new Distribution( "" ) );
+        }
+    }
+
+    public static void ensurePresenceOfSequence( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasSequence() ) {
+            node.getNodeData().setSequence( new Sequence() );
+        }
+    }
+
+    public static void ensurePresenceOfTaxonomy( final PhylogenyNode node ) {
+        if ( !node.getNodeData().isHasTaxonomy() ) {
+            node.getNodeData().setTaxonomy( new Taxonomy() );
+        }
     }
 
     public static void fatalError( final String prg_name, final String message ) {
@@ -471,6 +419,10 @@ public final class ForesterUtil {
         return line;
     }
 
+    final public static String getForesterLibraryInformation() {
+        return "forester " + ForesterConstants.FORESTER_VERSION + " (" + ForesterConstants.FORESTER_DATE + ")";
+    }
+
     final public static String getLineSeparator() {
         return ForesterUtil.LINE_SEPARATOR;
     }
@@ -585,6 +537,10 @@ public final class ForesterUtil {
 
     final public static String isReadableFile( final String s ) {
         return isReadableFile( new File( s ) );
+    }
+
+    public static boolean isWindowns() {
+        return ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) > -1;
     }
 
     final public static String isWritableFile( final File f ) {
@@ -785,6 +741,14 @@ public final class ForesterUtil {
     }
 
     final public static void printProgramInformation( final String prg_name,
+                                                      final String prg_version,
+                                                      final String date,
+                                                      final String email,
+                                                      final String www ) {
+        printProgramInformation( prg_name, null, prg_version, date, email, www, null );
+    }
+
+    final public static void printProgramInformation( final String prg_name,
                                                       final String desc,
                                                       final String prg_version,
                                                       final String date,
@@ -813,14 +777,6 @@ public final class ForesterUtil {
             System.out.println( "[running on Java " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         }
         System.out.println();
-    }
-
-    final public static void printProgramInformation( final String prg_name,
-                                                      final String prg_version,
-                                                      final String date,
-                                                      final String email,
-                                                      final String www ) {
-        printProgramInformation( prg_name, null, prg_version, date, email, www, null );
     }
 
     final public static void printWarningMessage( final String prg_name, final String message ) {
@@ -900,9 +856,15 @@ public final class ForesterUtil {
         }
     }
 
-    final private static String[] splitString( final String str ) {
-        final String regex = "[\\s;,]+";
-        return str.split( regex );
+    public static boolean seqIsLikelyToBeAa( final String s ) {
+        final String seq = s.toLowerCase();
+        if ( ( seq.indexOf( 'r' ) > -1 ) || ( seq.indexOf( 'd' ) > -1 ) || ( seq.indexOf( 'e' ) > -1 )
+                || ( seq.indexOf( 'q' ) > -1 ) || ( seq.indexOf( 'h' ) > -1 ) || ( seq.indexOf( 'k' ) > -1 )
+                || ( seq.indexOf( 'w' ) > -1 ) || ( seq.indexOf( 's' ) > -1 ) || ( seq.indexOf( 'm' ) > -1 )
+                || ( seq.indexOf( 'p' ) > -1 ) || ( seq.indexOf( 'v' ) > -1 ) ) {
+            return true;
+        }
+        return false;
     }
 
     final public static String stringArrayToString( final String[] a ) {
@@ -980,6 +942,19 @@ public final class ForesterUtil {
         System.exit( -1 );
     }
 
+    public final static void updateProgress( final double progress_percentage ) {
+        final int width = 50;
+        System.out.print( "\r[" );
+        int i = 0;
+        for( ; i <= ( int ) ( progress_percentage * width ); i++ ) {
+            System.out.print( "." );
+        }
+        for( ; i < width; i++ ) {
+            System.out.print( " " );
+        }
+        System.out.print( "]" );
+    }
+
     public final static String wordWrap( final String str, final int width ) {
         final StringBuilder sb = new StringBuilder( str );
         int start = 0;
@@ -1007,5 +982,43 @@ public final class ForesterUtil {
             i++;
         }
         return sb.toString();
+    }
+
+    /**
+     * Helper method for calcColor methods.
+     * 
+     * @param smallercolor_component_x
+     *            color component the smaller color
+     * @param largercolor_component_x
+     *            color component the larger color
+     * @param x
+     *            factor
+     * @return an int representing a color component
+     */
+    final private static int calculateColorComponent( final double smallercolor_component_x,
+                                                      final double largercolor_component_x,
+                                                      final double x ) {
+        return ( int ) ( smallercolor_component_x + ( ( x * ( largercolor_component_x - smallercolor_component_x ) ) / 255.0 ) );
+    }
+
+    /**
+     * Helper method for calcColor methods.
+     * 
+     * 
+     * @param value
+     *            the value
+     * @param larger
+     *            the largest value
+     * @param smaller
+     *            the smallest value
+     * @return a normalized value between larger and smaller
+     */
+    final private static double calculateColorFactor( final double value, final double larger, final double smaller ) {
+        return ( 255.0 * ( value - smaller ) ) / ( larger - smaller );
+    }
+
+    final private static String[] splitString( final String str ) {
+        final String regex = "[\\s;,]+";
+        return str.split( regex );
     }
 }

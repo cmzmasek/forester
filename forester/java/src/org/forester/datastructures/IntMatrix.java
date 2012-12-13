@@ -28,16 +28,26 @@ public final class IntMatrix {
         return _data[ x ][ y ];
     }
 
-    final public void set( final int x, final int y, final int value ) {
-        _data[ x ][ y ] = value;
+    final public String getLabel( final int x ) {
+        return _labels[ x ];
+    }
+
+    final public String getRowAsString( final int x, final char separator ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( getLabel( x ) );
+        for( int y = 0; y < size(); ++y ) {
+            sb.append( separator );
+            sb.append( get( x, y ) );
+        }
+        return sb.toString();
     }
 
     final public void inreaseByOne( final int x, final int y ) {
         _data[ x ][ y ]++;
     }
 
-    final public String getLabel( final int x ) {
-        return _labels[ x ];
+    final public void set( final int x, final int y, final int value ) {
+        _data[ x ][ y ] = value;
     }
 
     final public void setLabel( final int x, final String label ) {

@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
-import org.forester.datastructures.IntMatrix;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -87,8 +86,7 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.Protein;
-import org.forester.rio.RIO;
-import org.forester.sdi.GSDI;
+import org.forester.rio.TestRIO;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
 import org.forester.sdi.SDIse;
@@ -508,6 +506,33 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Descriptive statistics: " );
+        if ( Test.testDescriptiveStatistics() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Data objects and methods: " );
+        if ( Test.testDataObjects() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Properties map: " );
+        if ( Test.testPropertiesMap() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "SDIse: " );
         if ( Test.testSDIse() ) {
             System.out.println( "OK." );
@@ -535,35 +560,8 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Ortholog table: " );
-        if ( Test.testOrthologTable() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "Descriptive statistics: " );
-        if ( Test.testDescriptiveStatistics() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "Data objects and methods: " );
-        if ( Test.testDataObjects() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "Properties map: " );
-        if ( Test.testPropertiesMap() ) {
+        System.out.print( "RIO: " );
+        if ( TestRIO.test() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -6871,28 +6869,6 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testOrthologTable() {
-        try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny s1 = factory.create( Test.PATH_TO_TEST_DATA + "rio_species.xml", new PhyloXmlParser() )[ 0 ];
-            final NHXParser p = new NHXParser();
-            p.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
-            final Phylogeny g1[] = factory.create( new File( Test.PATH_TO_TEST_DATA
-                    + "rio_Bcl-2_e1_20_mafft_05_40_fme.mlt" ), p );
-            for( final Phylogeny gt : g1 ) {
-                gt.setRooted( true );
-                final GSDI sdi = new GSDI( gt, s1, true, true, true );
-            }
-            final IntMatrix m = RIO.calculateOrthologTable( g1, true );
-            // System.out.println( m.toString() );
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
             return false;
         }
         return true;
