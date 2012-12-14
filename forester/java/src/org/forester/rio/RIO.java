@@ -202,12 +202,8 @@ public final class RIO {
                 break;
             }
             case GSDIR: {
-                //  System.out.println( "gene/species tree size before: " + gene_tree.getNumberOfExternalNodes() + "/"
-                //         + species_tree.getNumberOfExternalNodes() );
                 final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, i == 0 );
-                // System.out.println( "gene/species tree size before: " + gene_tree.getNumberOfExternalNodes() + "/"
-                //         + species_tree.getNumberOfExternalNodes() );
-                assigned_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 0 );
+                final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
                 if ( i == 0 ) {
                     _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
                     for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
@@ -217,8 +213,10 @@ public final class RIO {
                         }
                     }
                 }
+                final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
+                assigned_tree = assigned_trees.get( shortests.get( 0 ) );
                 if ( _produce_log ) {
-                    writeStatsToLog( i, gsdir );
+                    writeStatsToLog( i, gsdir, shortests );
                 }
                 _gsdir_tax_comp_base = gsdir.getTaxCompBase();
                 break;
@@ -248,11 +246,13 @@ public final class RIO {
         _log.append( "min" );
         _log.append( "-" );
         _log.append( "max" );
-        _log.append( "]" );
+        _log.append( "]\t<" );
+        _log.append( "shortest" );
+        _log.append( ">" );
         _log.append( ForesterUtil.LINE_SEPARATOR );
     }
 
-    private final void writeStatsToLog( final int i, final GSDIR gsdir ) {
+    private final void writeStatsToLog( final int i, final GSDIR gsdir, final List<Integer> shortests ) {
         final BasicDescriptiveStatistics stats = gsdir.getDuplicationsSumStats();
         _log.append( i );
         _log.append( "\t" );
@@ -263,7 +263,9 @@ public final class RIO {
         _log.append( ( int ) stats.getMin() );
         _log.append( "-" );
         _log.append( ( int ) stats.getMax() );
-        _log.append( "]" );
+        _log.append( "]\t<" );
+        _log.append( shortests.size() );
+        _log.append( ">" );
         _log.append( ForesterUtil.LINE_SEPARATOR );
     }
 

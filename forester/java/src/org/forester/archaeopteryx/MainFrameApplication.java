@@ -1294,13 +1294,13 @@ public final class MainFrameApplication extends MainFrame {
             AptxUtil.unexpectedException( e );
             return;
         }
-        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 0 );
+        final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
+        final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
+        final Phylogeny result_gene_tree = assigned_trees.get( shortests.get( 0 ) );
         result_gene_tree.setRerootable( false );
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants( true );
         _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
-        //_mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        // _mainpanel.getCurrentTreePanel().setEdited( true );
         getControlPanel().setShowEvents( true );
         showWhole();
         final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
@@ -1310,10 +1310,11 @@ public final class MainFrameApplication extends MainFrame {
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
         JOptionPane.showMessageDialog( this,
-                                       "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
+                                       "Duplications (min): " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
                                                + gsdir.getSpeciationsSum() + "\n"
                                                + "Number of root positions minimizing duplications sum: "
-                                               + gsdir.getMinDuplicationsSumGeneTrees().size(),
+                                               + gsdir.getMinDuplicationsSumGeneTrees().size() + "\n"
+                                               + "Number of shortest trees: " + shortests.size(),
                                        "GSDIR successfully completed",
                                        JOptionPane.INFORMATION_MESSAGE );
     }

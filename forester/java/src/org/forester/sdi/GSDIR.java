@@ -143,4 +143,34 @@ public class GSDIR implements GSDII {
     public TaxonomyComparisonBase getTaxCompBase() {
         return _tax_comp_base;
     }
+
+    public final static List<Integer> getIndexesOfShortestTree( final List<Phylogeny> assigned_trees ) {
+        final List<Integer> shortests = new ArrayList<Integer>();
+        boolean depth = true;
+        double x = Double.MAX_VALUE;
+        for( int i = 0; i < assigned_trees.size(); ++i ) {
+            final Phylogeny phy = assigned_trees.get( i );
+            if ( i == 0 ) {
+                if ( PhylogenyMethods.calculateMaxDistanceToRoot( phy ) > 0 ) {
+                    depth = false;
+                }
+            }
+            final double d;
+            if ( depth ) {
+                d = PhylogenyMethods.calculateMaxDepth( phy );
+            }
+            else {
+                d = PhylogenyMethods.calculateMaxDistanceToRoot( phy );
+            }
+            if ( d < x ) {
+                x = d;
+                shortests.clear();
+                shortests.add( i );
+            }
+            else if ( d == x ) {
+                shortests.add( i );
+            }
+        }
+        return shortests;
+    }
 }
