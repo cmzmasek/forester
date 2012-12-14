@@ -100,6 +100,7 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
+import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -1236,12 +1237,19 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDI gsdi = null;
-        Phylogeny species_tree = _species_tree.copy();
+        final Phylogeny species_tree = _species_tree.copy();
         try {
             gsdi = new GSDI( gene_tree, species_tree, false, true, true );
         }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
         catch ( final Exception e ) {
-            JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDI", JOptionPane.ERROR_MESSAGE );
+            AptxUtil.unexpectedException( e );
             return;
         }
         gene_tree.setRerootable( false );
@@ -1271,12 +1279,19 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDIR gsdir = null;
-        Phylogeny species_tree = _species_tree.copy();
+        final Phylogeny species_tree = _species_tree.copy();
         try {
             gsdir = new GSDIR( gene_tree, species_tree, true, true );
         }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDIR",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
         catch ( final Exception e ) {
-            JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDIR", JOptionPane.ERROR_MESSAGE );
+            AptxUtil.unexpectedException( e );
             return;
         }
         final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTrees().get( 0 );

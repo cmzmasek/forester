@@ -30,9 +30,6 @@ import java.util.NoSuchElementException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 
-/*
- * @author Christian Zmasek
- */
 public class ExternalForwardIterator implements PhylogenyNodeIterator {
 
     private PhylogenyNode       _current_node;

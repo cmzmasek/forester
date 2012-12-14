@@ -55,7 +55,8 @@ public class SDIutil {
         }
     }
 
-    public final static TaxonomyComparisonBase determineTaxonomyComparisonBase( final Phylogeny gene_tree ) {
+    public final static TaxonomyComparisonBase determineTaxonomyComparisonBase( final Phylogeny gene_tree )
+            throws SDIException {
         int with_id_count = 0;
         int with_code_count = 0;
         int with_sn_count = 0;
@@ -82,10 +83,10 @@ public class SDIutil {
             }
         }
         if ( max == 0 ) {
-            throw new IllegalArgumentException( "gene tree has no taxonomic data" );
+            throw new SDIException( "gene tree has no taxonomic data" );
         }
         else if ( max == 1 ) {
-            throw new IllegalArgumentException( "gene tree has only one node with taxonomic data" );
+            throw new SDIException( "gene tree has only one node with taxonomic data" );
         }
         else if ( max == with_id_count ) {
             return TaxonomyComparisonBase.ID;

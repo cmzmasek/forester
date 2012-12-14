@@ -107,7 +107,6 @@ public final class gsdi {
                 System.exit( -1 );
             }
             final List<String> allowed_options = new ArrayList<String>();
-         
             allowed_options.add( gsdi.GSDIR_OPTION );
             allowed_options.add( gsdi.GUESS_FORMAT_OF_SPECIES_TREE );
             allowed_options.add( gsdi.MOST_PARSIMONIOUS_OPTION );
@@ -130,7 +129,6 @@ public final class gsdi {
         if ( cla.isOptionSet( gsdi.GSDIR_OPTION ) ) {
             base_algorithm = ALGORITHM.GSDIR;
         }
-      
         if ( cla.isOptionSet( gsdi.MOST_PARSIMONIOUS_OPTION ) ) {
             if ( base_algorithm == ALGORITHM.SDI ) {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "Cannot use most parsimonious duplication mode with SDI" );
@@ -239,6 +237,9 @@ public final class gsdi {
                 }
             }
         }
+        catch ( final SDIException e ) {
+            fatalError( "user error", e.getMessage(), log_writer );
+        }
         catch ( final IOException e ) {
             fatalError( "ERROR",
                         "Failed to read species tree from [" + species_tree_file + "]: " + e.getMessage(),
@@ -295,10 +296,10 @@ public final class gsdi {
             log_writer.flush();
             if ( base_algorithm == ALGORITHM.GSDI ) {
                 gsdii = new GSDI( gene_tree,
-                                species_tree,
-                                most_parsimonous_duplication_model,
-                                allow_stripping_of_gene_tree,
-                                true );
+                                  species_tree,
+                                  most_parsimonous_duplication_model,
+                                  allow_stripping_of_gene_tree,
+                                  true );
             }
             else if ( base_algorithm == ALGORITHM.GSDIR ) {
                 gsdii = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true );
@@ -322,7 +323,7 @@ public final class gsdi {
         log_writer.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
         if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
             final GSDIR gsdir = ( GSDIR ) gsdii;
-           System.out.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
+            System.out.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
             log_writer.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
         }
         try {
@@ -393,7 +394,6 @@ public final class gsdi {
                 System.out.println( "Number of potential duplications         : " + u );
                 log_writer.println( "Number of potential duplications         : " + u );
             }
-           
         }
         log_writer.println();
         printMappedNodesToLog( log_writer, gsdii );

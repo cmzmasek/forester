@@ -39,29 +39,25 @@ import org.forester.util.BasicDescriptiveStatistics;
 
 public class GSDIR implements GSDII {
 
-    private final int                        _min_duplications_sum;
+    private final int _min_duplications_sum;
     private final int _speciations_sum;
 
-    
     @Override
     public int getSpeciationsSum() {
         return _speciations_sum;
     }
-
     private final BasicDescriptiveStatistics _duplications_sum_stats;
     private final List<Phylogeny>            _min_duplications_sum_gene_trees;
-  
     private final List<PhylogenyNode>        _stripped_gene_tree_nodes;
     private final List<PhylogenyNode>        _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>         _mapped_species_tree_nodes;
     private final TaxonomyComparisonBase     _tax_comp_base;
     private final SortedSet<String>          _scientific_names_mapped_to_reduced_specificity;
-   
+
     public GSDIR( final Phylogeny gene_tree,
                   final Phylogeny species_tree,
                   final boolean strip_gene_tree,
                   final boolean strip_species_tree ) throws SDIException {
-      
         final NodesLinkingResult nodes_linking_result = GSDI.linkNodesOfG( gene_tree,
                                                                            species_tree,
                                                                            null,
@@ -76,7 +72,7 @@ public class GSDIR implements GSDII {
         final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<PhylogenyBranch>();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if ( !n.isRoot() && !( n.getParent().isRoot() && n.isFirstChildNode() ) ) {
+            if ( !n.isRoot() /*&& !( n.getParent().isRoot() && n.isFirstChildNode() )*/) {
                 gene_tree_branches_post_order.add( new PhylogenyBranch( n, n.getParent() ) );
             }
         }
@@ -85,7 +81,6 @@ public class GSDIR implements GSDII {
         _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
         _duplications_sum_stats = new BasicDescriptiveStatistics();
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
-           
             gene_tree.reRoot( branch );
             PhylogenyMethods.preOrderReId( species_tree );
             //TEST, remove later
@@ -98,19 +93,18 @@ public class GSDIR implements GSDII {
             final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree, true );
             if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
                 min_duplications_sum = gsdi_result.getDuplicationsSum();
-                speciations_sum =  gsdi_result.getSpeciationsSum();
+                speciations_sum = gsdi_result.getSpeciationsSum();
                 _min_duplications_sum_gene_trees.clear();
                 _min_duplications_sum_gene_trees.add( gene_tree.copy() );
                 //_speciations_sum
             }
-            else if ( gsdi_result.getDuplicationsSum()== min_duplications_sum ) {
+            else if ( gsdi_result.getDuplicationsSum() == min_duplications_sum ) {
                 _min_duplications_sum_gene_trees.add( gene_tree.copy() );
             }
             _duplications_sum_stats.addValue( gsdi_result.getDuplicationsSum() );
-           
         }
-        _min_duplications_sum = min_duplications_sum; 
-        _speciations_sum =  speciations_sum;
+        _min_duplications_sum = min_duplications_sum;
+        _speciations_sum = speciations_sum;
     }
 
     public int getMinDuplicationsSum() {

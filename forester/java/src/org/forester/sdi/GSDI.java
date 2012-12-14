@@ -41,7 +41,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.ForesterUtil;
 
-public final class GSDI implements GSDII  {
+public final class GSDI implements GSDII {
 
     private final boolean                _most_parsimonious_duplication_model;
     private final int                    _speciation_or_duplication_events_sum;
@@ -82,10 +82,12 @@ public final class GSDI implements GSDII  {
         return _duplications_sum;
     }
 
+    @Override
     public Set<PhylogenyNode> getMappedExternalSpeciesTreeNodes() {
         return _mapped_species_tree_nodes;
     }
 
+    @Override
     public final SortedSet<String> getReMappedScientificNamesFromGeneTree() {
         return _scientific_names_mapped_to_reduced_specificity;
     }
@@ -94,18 +96,22 @@ public final class GSDI implements GSDII  {
         return _speciation_or_duplication_events_sum;
     }
 
+    @Override
     public final int getSpeciationsSum() {
         return _speciations_sum;
     }
 
+    @Override
     public List<PhylogenyNode> getStrippedExternalGeneTreeNodes() {
         return _stripped_gene_tree_nodes;
     }
 
+    @Override
     public List<PhylogenyNode> getStrippedSpeciesTreeNodes() {
         return _stripped_species_tree_nodes;
     }
 
+    @Override
     public TaxonomyComparisonBase getTaxCompBase() {
         return _tax_comp_base;
     }
@@ -189,7 +195,8 @@ public final class GSDI implements GSDII  {
                 final String tax_str = SDIutil.taxonomyToString( s, res.getTaxCompBase() );
                 if ( !ForesterUtil.isEmpty( tax_str ) ) {
                     if ( species_to_node_map.containsKey( tax_str ) ) {
-                        throw new SDIException( "taxonomy \"" + s + "\" is not unique in species tree" );
+                        throw new SDIException( "taxonomy \"" + tax_str + "\" is not unique in species tree (using "
+                                + res.getTaxCompBase() + " for linking to gene tree)" );
                     }
                     species_to_node_map.put( tax_str, s );
                 }

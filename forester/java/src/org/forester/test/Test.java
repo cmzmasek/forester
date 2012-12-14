@@ -89,7 +89,6 @@ import org.forester.protein.Protein;
 import org.forester.rio.TestRIO;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
-import org.forester.sdi.SDI;
 import org.forester.sdi.TestGSDI;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
@@ -2883,6 +2882,29 @@ public final class Test {
             final Phylogeny t5 = factory.create( "(((A,B),(C,D)),((E,F),(G,H)))", new NHXParser() )[ 0 ];
             for( final PhylogenyNodeIterator iter = t5.iteratorExternalForward(); iter.hasNext(); ) {
                 final PhylogenyNode node = iter.next();
+            }
+            final Phylogeny t6 = factory.create( "((((((A))),(((B))),((C)),((((D)))),E)),((F)))", new NHXParser() )[ 0 ];
+            final PhylogenyNodeIterator iter = t6.iteratorExternalForward();
+            if ( !iter.next().getName().equals( "A" ) ) {
+                return false;
+            }
+            if ( !iter.next().getName().equals( "B" ) ) {
+                return false;
+            }
+            if ( !iter.next().getName().equals( "C" ) ) {
+                return false;
+            }
+            if ( !iter.next().getName().equals( "D" ) ) {
+                return false;
+            }
+            if ( !iter.next().getName().equals( "E" ) ) {
+                return false;
+            }
+            if ( !iter.next().getName().equals( "F" ) ) {
+                return false;
+            }
+            if ( iter.hasNext() ) {
+                return false;
             }
         }
         catch ( final Exception e ) {
