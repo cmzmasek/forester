@@ -222,7 +222,7 @@ public class SDIR {
                               final boolean return_trees,
                               int max_trees_to_return ) throws SDIException {
         init();
-        SDIse sdise = null;
+        SDI sdise = null;
         final ArrayList<Phylogeny> trees = new ArrayList<Phylogeny>();
         Phylogeny[] tree_array = null;
         List<PhylogenyBranch> branches = null;
@@ -282,7 +282,7 @@ public class SDIR {
         g.reRoot( g.getFirstExternalNode() );
         branches = SDIR.getBranchesInPreorder( g );
         if ( minimize_mapping_cost || minimize_sum_of_dup ) {
-            sdise = new SDIse( g, species_tree );
+            sdise = new SDI( g, species_tree );
             duplications = sdise.getDuplicationsSum();
         }
         final Set<PhylogenyBranch> used_root_placements = new HashSet<PhylogenyBranch>();
@@ -418,7 +418,7 @@ public class SDIR {
                     height = height__diff[ 0 ];
                     diff = height__diff[ 1 ];
                     if ( Math.abs( diff ) < SDIR.ZERO_DIFF ) {
-                        sdise = new SDIse( g, species_tree );
+                        sdise = new SDI( g, species_tree );
                         min_duplications = sdise.getDuplicationsSum();
                         min_height = height;
                         min_diff = Math.abs( diff );

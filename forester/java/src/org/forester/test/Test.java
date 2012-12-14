@@ -89,7 +89,7 @@ import org.forester.protein.Protein;
 import org.forester.rio.TestRIO;
 import org.forester.sdi.SDI;
 import org.forester.sdi.SDIR;
-import org.forester.sdi.SDIse;
+import org.forester.sdi.SDI;
 import org.forester.sdi.TestGSDI;
 import org.forester.sequence.BasicSequence;
 import org.forester.sequence.Sequence;
@@ -6255,7 +6255,7 @@ public final class Test {
             final Phylogeny gene1 = factory.create( "(A1[&&NHX:S=yeast],A2[&&NHX:S=yeast])", new NHXParser() )[ 0 ];
             gene1.setRooted( true );
             species1.setRooted( true );
-            final SDI sdi = new SDIse( gene1, species1 );
+            final SDI sdi = new SDI( gene1, species1 );
             if ( !gene1.getRoot().isDuplication() ) {
                 return false;
             }
@@ -6267,7 +6267,7 @@ public final class Test {
                              new NHXParser() )[ 0 ];
             species2.setRooted( true );
             gene2.setRooted( true );
-            final SDI sdi2 = new SDIse( gene2, species2 );
+            final SDI sdi2 = new SDI( gene2, species2 );
             if ( sdi2.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -6297,7 +6297,7 @@ public final class Test {
                              new NHXParser() )[ 0 ];
             species3.setRooted( true );
             gene3.setRooted( true );
-            final SDI sdi3 = new SDIse( gene3, species3 );
+            final SDI sdi3 = new SDI( gene3, species3 );
             if ( sdi3.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -6315,7 +6315,7 @@ public final class Test {
                              new NHXParser() )[ 0 ];
             species4.setRooted( true );
             gene4.setRooted( true );
-            final SDI sdi4 = new SDIse( gene4, species4 );
+            final SDI sdi4 = new SDI( gene4, species4 );
             if ( sdi4.getDuplicationsSum() != 1 ) {
                 return false;
             }
@@ -6342,7 +6342,7 @@ public final class Test {
                              new NHXParser() )[ 0 ];
             species5.setRooted( true );
             gene5.setRooted( true );
-            final SDI sdi5 = new SDIse( gene5, species5 );
+            final SDI sdi5 = new SDI( gene5, species5 );
             if ( sdi5.getDuplicationsSum() != 2 ) {
                 return false;
             }
@@ -6375,7 +6375,7 @@ public final class Test {
                              new NHXParser() )[ 0 ];
             species6.setRooted( true );
             gene6.setRooted( true );
-            final SDI sdi6 = new SDIse( gene6, species6 );
+            final SDI sdi6 = new SDI( gene6, species6 );
             if ( sdi6.getDuplicationsSum() != 3 ) {
                 return false;
             }
@@ -6422,7 +6422,7 @@ public final class Test {
             final Phylogeny gene7_1 = Test
                     .createPhylogeny( "((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),x[&&NHX:S=x]),m1[&&NHX:S=m1]),i1[&&NHX:S=i1]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
             gene7_1.setRooted( true );
-            final SDI sdi7 = new SDIse( gene7_1, species7 );
+            final SDI sdi7 = new SDI( gene7_1, species7 );
             if ( sdi7.getDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -6453,7 +6453,7 @@ public final class Test {
             final Phylogeny gene7_2 = Test
                     .createPhylogeny( "(((((((((a1[&&NHX:S=a1],a2[&&NHX:S=a2]),b1[&&NHX:S=b1]),x[&&NHX:S=x]),m1[&&NHX:S=m1]),i1[&&NHX:S=i1]),j2[&&NHX:S=j2]),e1[&&NHX:S=e1]),y[&&NHX:S=y]),z[&&NHX:S=z])" );
             gene7_2.setRooted( true );
-            final SDI sdi7_2 = new SDIse( gene7_2, species7 );
+            final SDI sdi7_2 = new SDI( gene7_2, species7 );
             if ( sdi7_2.getDuplicationsSum() != 1 ) {
                 return false;
             }

@@ -50,10 +50,10 @@ import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDI;
-import org.forester.sdi.SDI.ALGORITHM;
-import org.forester.sdi.SDI.TaxonomyComparisonBase;
 import org.forester.sdi.SDIException;
-import org.forester.sdi.SDIse;
+import org.forester.sdi.SDIutil;
+import org.forester.sdi.SDIutil.ALGORITHM;
+import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterConstants;
@@ -200,7 +200,7 @@ public final class gsdi {
                     ( ( NHXParser ) p ).setReplaceUnderscores( true );
                 }
                 species_tree = factory.create( species_tree_file, p )[ 0 ];
-                final TaxonomyComparisonBase comp_base = GSDI.determineTaxonomyComparisonBase( gene_tree );
+                final TaxonomyComparisonBase comp_base = SDIutil.determineTaxonomyComparisonBase( gene_tree );
                 switch ( comp_base ) {
                     case SCIENTIFIC_NAME:
                         try {
@@ -280,7 +280,7 @@ public final class gsdi {
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
         System.out.println( "Species tree name                        : "
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
-        SDI sdi = null;
+        Object sdi = null;
         final long start_time = new Date().getTime();
         try {
             if ( ( base_algorithm == ALGORITHM.GSDI ) || ( base_algorithm == ALGORITHM.GSDIR ) ) {
@@ -313,7 +313,7 @@ public final class gsdi {
                 System.out.println( "Algorithm       : SDI" );
                 log_writer.println( "Algorithm       : SDI" );
                 log_writer.flush();
-                sdi = new SDIse( gene_tree, species_tree );
+                sdi = new SDI( gene_tree, species_tree );
             }
         }
         catch ( final SDIException e ) {
@@ -363,6 +363,7 @@ public final class gsdi {
         System.out.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         log_writer.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         if ( base_algorithm == ALGORITHM.SDI ) {
+            sdi = sdi;
             sdi.computeMappingCostL();
             System.out.println( "Mapping cost                             : " + sdi.computeMappingCostL() );
             log_writer.println( "Mapping cost                             : " + sdi.computeMappingCostL() );

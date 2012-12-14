@@ -47,10 +47,10 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDIR;
-import org.forester.sdi.SDI.ALGORITHM;
-import org.forester.sdi.SDI.TaxonomyComparisonBase;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
+import org.forester.sdi.SDIutil.ALGORITHM;
+import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 

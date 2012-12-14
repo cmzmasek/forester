@@ -1292,9 +1292,13 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this, "Duplications: " + gsdir.getDuplicationsSum() + "\n"
-                + "Potential duplications: " + gsdir.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
-                + gsdir.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
+        JOptionPane.showMessageDialog( this,
+                                       "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
+                                               + gsdir.getSpeciationsSum() + "\n"
+                                               + "Number of root positions minimizing duplications sum: "
+                                               + gsdir.getMinDuplicationsSumGeneTrees().size(),
+                                       "GSDIR successfully completed",
+                                       JOptionPane.INFORMATION_MESSAGE );
     }
 
     void executeFunctionAnalysis() {

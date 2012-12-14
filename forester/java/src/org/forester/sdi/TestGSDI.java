@@ -35,7 +35,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
-import org.forester.sdi.SDI.TaxonomyComparisonBase;
+import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.ForesterUtil;
 
 public final class TestGSDI {
