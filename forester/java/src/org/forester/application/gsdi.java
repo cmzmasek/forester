@@ -48,8 +48,8 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.sdi.GSDI;
+import org.forester.sdi.GSDII;
 import org.forester.sdi.GSDIR;
-import org.forester.sdi.SDI;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIutil;
 import org.forester.sdi.SDIutil.ALGORITHM;
@@ -63,7 +63,6 @@ public final class gsdi {
 
     final static public boolean REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE = true;
     final static private String ALLOW_STRIPPING_OF_GENE_TREE_OPTION    = "g";
-    final static private String SDISE_OPTION                           = "b";
     final static private String GSDIR_OPTION                           = "r";
     final static private String MOST_PARSIMONIOUS_OPTION               = "m";
     final static private String GUESS_FORMAT_OF_SPECIES_TREE           = "q";
@@ -108,7 +107,7 @@ public final class gsdi {
                 System.exit( -1 );
             }
             final List<String> allowed_options = new ArrayList<String>();
-            allowed_options.add( gsdi.SDISE_OPTION );
+         
             allowed_options.add( gsdi.GSDIR_OPTION );
             allowed_options.add( gsdi.GUESS_FORMAT_OF_SPECIES_TREE );
             allowed_options.add( gsdi.MOST_PARSIMONIOUS_OPTION );
@@ -131,9 +130,7 @@ public final class gsdi {
         if ( cla.isOptionSet( gsdi.GSDIR_OPTION ) ) {
             base_algorithm = ALGORITHM.GSDIR;
         }
-        else if ( cla.isOptionSet( gsdi.SDISE_OPTION ) ) {
-            base_algorithm = ALGORITHM.SDI;
-        }
+      
         if ( cla.isOptionSet( gsdi.MOST_PARSIMONIOUS_OPTION ) ) {
             if ( base_algorithm == ALGORITHM.SDI ) {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "Cannot use most parsimonious duplication mode with SDI" );
@@ -280,40 +277,31 @@ public final class gsdi {
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
         System.out.println( "Species tree name                        : "
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
-        Object sdi = null;
+        GSDII gsdii = null;
         final long start_time = new Date().getTime();
         try {
-            if ( ( base_algorithm == ALGORITHM.GSDI ) || ( base_algorithm == ALGORITHM.GSDIR ) ) {
-                if ( base_algorithm == ALGORITHM.GSDI ) {
-                    System.out.println( "Algorithm       : GSDI" );
-                    log_writer.println( "Algorithm       : GSDI" );
-                }
-                else if ( base_algorithm == ALGORITHM.GSDIR ) {
-                    System.out.println( "Algorithm       : GSDIR" );
-                    log_writer.println( "Algorithm       : GSDIR" );
-                }
-                System.out.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
-                System.out.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
-                log_writer.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
-                log_writer.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
-                log_writer.flush();
-                if ( base_algorithm == ALGORITHM.GSDI ) {
-                    sdi = new GSDI( gene_tree,
-                                    species_tree,
-                                    most_parsimonous_duplication_model,
-                                    allow_stripping_of_gene_tree,
-                                    true );
-                }
-                else if ( base_algorithm == ALGORITHM.GSDIR ) {
-                    sdi = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true );
-                }
+            if ( base_algorithm == ALGORITHM.GSDI ) {
+                System.out.println( "Algorithm       : GSDI" );
+                log_writer.println( "Algorithm       : GSDI" );
             }
-            else {
-                System.out.println();
-                System.out.println( "Algorithm       : SDI" );
-                log_writer.println( "Algorithm       : SDI" );
-                log_writer.flush();
-                sdi = new SDI( gene_tree, species_tree );
+            else if ( base_algorithm == ALGORITHM.GSDIR ) {
+                System.out.println( "Algorithm       : GSDIR" );
+                log_writer.println( "Algorithm       : GSDIR" );
+            }
+            System.out.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            System.out.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
+            log_writer.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
+            log_writer.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
+            log_writer.flush();
+            if ( base_algorithm == ALGORITHM.GSDI ) {
+                gsdii = new GSDI( gene_tree,
+                                species_tree,
+                                most_parsimonous_duplication_model,
+                                allow_stripping_of_gene_tree,
+                                true );
+            }
+            else if ( base_algorithm == ALGORITHM.GSDIR ) {
+                gsdii = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true );
             }
         }
         catch ( final SDIException e ) {
@@ -330,25 +318,18 @@ public final class gsdi {
                 + "ms" );
         log_writer.println( "Running time (excluding I/O)             : " + ( new Date().getTime() - start_time )
                 + "ms" );
-        if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
-            final GSDI gsdi = ( GSDI ) sdi;
-            System.out.println( "Mapping based on                         : " + gsdi.getTaxCompBase() );
-            log_writer.println( "Mapping based on                         : " + gsdi.getTaxCompBase() );
-        }
+        System.out.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
+        log_writer.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
         if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
-            final GSDIR gsdir = ( GSDIR ) sdi;
-            System.out.println( "Mapping based on                         : " + gsdir.getTaxCompBase() );
-            log_writer.println( "Mapping based on                         : " + gsdir.getTaxCompBase() );
-            System.out.println( "Minimal duplications sum                 : " + gsdir.getMinDuplicationsSum() );
-            log_writer.println( "Minimal duplications sum                 : " + gsdir.getMinDuplicationsSum() );
-            System.out.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
+            final GSDIR gsdir = ( GSDIR ) gsdii;
+           System.out.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
             log_writer.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
         }
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             if ( base_algorithm == ALGORITHM.GSDIR ) {
                 writer.toPhyloXML( out_file,
-                                   ( ( GSDIR ) sdi ).getMinDuplicationsSumGeneTrees(),
+                                   ( ( GSDIR ) gsdii ).getMinDuplicationsSumGeneTrees(),
                                    0,
                                    ForesterUtil.LINE_SEPARATOR );
             }
@@ -362,74 +343,62 @@ public final class gsdi {
         }
         System.out.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
         log_writer.println( "Wrote resulting gene tree to             : " + out_file.getCanonicalPath() );
-        if ( base_algorithm == ALGORITHM.SDI ) {
-            sdi = sdi;
-            sdi.computeMappingCostL();
-            System.out.println( "Mapping cost                             : " + sdi.computeMappingCostL() );
-            log_writer.println( "Mapping cost                             : " + sdi.computeMappingCostL() );
+        final File species_tree_used_file = new File( ForesterUtil.removeSuffix( out_file.toString() )
+                + SUFFIX_FOR_SPECIES_TREE_USED );
+        try {
+            final PhylogenyWriter writer = new PhylogenyWriter();
+            writer.toPhyloXML( species_tree_used_file, species_tree, 0 );
         }
-        else if ( ( base_algorithm == ALGORITHM.GSDI ) || ( base_algorithm == ALGORITHM.GSDIR ) ) {
-            final GSDI gsdi = ( GSDI ) sdi;
-            final File species_tree_used_file = new File( ForesterUtil.removeSuffix( out_file.toString() )
-                    + SUFFIX_FOR_SPECIES_TREE_USED );
-            try {
-                final PhylogenyWriter writer = new PhylogenyWriter();
-                writer.toPhyloXML( species_tree_used_file, gsdi.getSpeciesTree(), 0 );
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + species_tree_used_file.getCanonicalPath()
-                        + "]: " + e.getMessage() );
-            }
-            System.out.println( "Wrote (stripped) species tree to         : "
-                    + species_tree_used_file.getCanonicalPath() );
-            log_writer.println( "Wrote (stripped) species tree to         : "
-                    + species_tree_used_file.getCanonicalPath() );
-            if ( ( gsdi.getReMappedScientificNamesFromGeneTree() != null )
-                    && !gsdi.getReMappedScientificNamesFromGeneTree().isEmpty() ) {
-                System.out.println( "Number of gene tree species remapped     : "
-                        + gsdi.getReMappedScientificNamesFromGeneTree().size() );
-                log_writer.println( "Number of gene tree species remapped     : "
-                        + gsdi.getReMappedScientificNamesFromGeneTree().size() );
-                writeToRemappedFile( out_file, gsdi.getReMappedScientificNamesFromGeneTree(), log_writer );
-            }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( PRG_NAME, "Failed to write to [" + species_tree_used_file.getCanonicalPath()
+                    + "]: " + e.getMessage() );
+        }
+        System.out.println( "Wrote (stripped) species tree to         : " + species_tree_used_file.getCanonicalPath() );
+        log_writer.println( "Wrote (stripped) species tree to         : " + species_tree_used_file.getCanonicalPath() );
+        if ( ( gsdii.getReMappedScientificNamesFromGeneTree() != null )
+                && !gsdii.getReMappedScientificNamesFromGeneTree().isEmpty() ) {
+            System.out.println( "Number of gene tree species remapped     : "
+                    + gsdii.getReMappedScientificNamesFromGeneTree().size() );
+            log_writer.println( "Number of gene tree species remapped     : "
+                    + gsdii.getReMappedScientificNamesFromGeneTree().size() );
+            writeToRemappedFile( out_file, gsdii.getReMappedScientificNamesFromGeneTree(), log_writer );
         }
         System.out.println( "Number of external nodes in gene tree    : " + gene_tree.getNumberOfExternalNodes() );
         log_writer.println( "Number of external nodes in gene tree    : " + gene_tree.getNumberOfExternalNodes() );
-        System.out.println( "Number of external nodes in species tree : "
-                + sdi.getSpeciesTree().getNumberOfExternalNodes() );
-        log_writer.println( "Number of external nodes in species tree : "
-                + sdi.getSpeciesTree().getNumberOfExternalNodes() );
-        if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
-            final GSDI gsdi = ( GSDI ) sdi;
-            final int poly = PhylogenyMethods.countNumberOfPolytomies( gsdi.getSpeciesTree() );
-            System.out.println( "Number of polytomies in species tree     : " + poly );
-            log_writer.println( "Number of polytomies in species tree     : " + poly );
-            System.out.println( "External nodes stripped from gene tree   : "
-                    + gsdi.getStrippedExternalGeneTreeNodes().size() );
-            log_writer.println( "External nodes stripped from gene tree   : "
-                    + gsdi.getStrippedExternalGeneTreeNodes().size() );
-            System.out.println( "External nodes stripped from species tree: "
-                    + gsdi.getStrippedSpeciesTreeNodes().size() );
-            log_writer.println( "External nodes stripped from species tree: "
-                    + gsdi.getStrippedSpeciesTreeNodes().size() );
-        }
+        System.out.println( "Number of external nodes in species tree : " + species_tree.getNumberOfExternalNodes() );
+        log_writer.println( "Number of external nodes in species tree : " + species_tree.getNumberOfExternalNodes() );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
+        System.out.println( "Number of polytomies in species tree     : " + poly );
+        log_writer.println( "Number of polytomies in species tree     : " + poly );
+        System.out.println( "External nodes stripped from gene tree   : "
+                + gsdii.getStrippedExternalGeneTreeNodes().size() );
+        log_writer.println( "External nodes stripped from gene tree   : "
+                + gsdii.getStrippedExternalGeneTreeNodes().size() );
+        System.out.println( "External nodes stripped from species tree: " + gsdii.getStrippedSpeciesTreeNodes().size() );
+        log_writer.println( "External nodes stripped from species tree: " + gsdii.getStrippedSpeciesTreeNodes().size() );
         System.out.println();
-        System.out.println( "Number of duplications                   : " + sdi.getDuplicationsSum() );
-        log_writer.println( "Number of duplications                   : " + sdi.getDuplicationsSum() );
-        if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
-            final GSDI gsdi = ( GSDI ) sdi;
+        System.out.println( "Number of speciations                    : " + gsdii.getSpeciationsSum() );
+        log_writer.println( "Number of speciations                    : " + gsdii.getSpeciationsSum() );
+        if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
+            final GSDIR gsdir = ( GSDIR ) gsdii;
+            System.out.println( "Minimal number of duplications           : " + gsdir.getMinDuplicationsSum() );
+            log_writer.println( "Minimal number of duplications           : " + gsdir.getMinDuplicationsSum() );
+        }
+        else if ( ( base_algorithm == ALGORITHM.GSDI ) ) {
+            final GSDI gsdi = ( GSDI ) gsdii;
+            System.out.println( "Number of duplications                   : " + gsdi.getDuplicationsSum() );
+            log_writer.println( "Number of duplications                   : " + gsdi.getDuplicationsSum() );
             if ( !most_parsimonous_duplication_model ) {
                 final int u = gsdi.getSpeciationOrDuplicationEventsSum();
                 System.out.println( "Number of potential duplications         : " + u );
                 log_writer.println( "Number of potential duplications         : " + u );
             }
-            System.out.println( "Number of speciations                    : " + gsdi.getSpeciationsSum() );
-            log_writer.println( "Number of speciations                    : " + gsdi.getSpeciationsSum() );
-            log_writer.println();
-            printMappedNodesToLog( log_writer, gsdi );
-            log_writer.println();
-            printStrippedGeneTreeNodesToLog( log_writer, gsdi );
+           
         }
+        log_writer.println();
+        printMappedNodesToLog( log_writer, gsdii );
+        log_writer.println();
+        printStrippedGeneTreeNodesToLog( log_writer, gsdii );
         System.out.println();
         System.out.println( "Wrote log to                             : " + log_file.getCanonicalPath() );
         System.out.println();
@@ -449,7 +418,7 @@ public final class gsdi {
         log_writer.println( "Wrote remapped gene tree species to      : " + file.getCanonicalPath() );
     }
 
-    private static void printMappedNodesToLog( final EasyWriter log_writer, final GSDI gsdi ) throws IOException {
+    private static void printMappedNodesToLog( final EasyWriter log_writer, final GSDII gsdi ) throws IOException {
         final SortedSet<String> ss = new TreeSet<String>();
         for( final PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
             ss.add( n.toString() );
@@ -474,7 +443,7 @@ public final class gsdi {
         ForesterUtil.fatalError( gsdi.PRG_NAME, msg );
     }
 
-    private static void printStrippedGeneTreeNodesToLog( final EasyWriter log_writer, final GSDI gsdi )
+    private static void printStrippedGeneTreeNodesToLog( final EasyWriter log_writer, final GSDII gsdi )
             throws IOException {
         final SortedMap<String, Integer> sm = new TreeMap<String, Integer>();
         for( final PhylogenyNode n : gsdi.getStrippedExternalGeneTreeNodes() ) {
@@ -511,8 +480,6 @@ public final class gsdi {
         System.out.println( "     as potential duplications due to polytomies in the species tree" );
         System.out.println( " -" + gsdi.GUESS_FORMAT_OF_SPECIES_TREE
                 + ": to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)" );
-        System.out.println( " -" + gsdi.SDISE_OPTION
-                + ": to use SDIse algorithm instead of GSDI algorithm (for binary species trees)" );
         System.out.println( " -" + gsdi.GSDIR_OPTION
                 + ": to use GSDIR algorithm instead of GSDI algorithm (re-rooting)" );
         System.out.println();

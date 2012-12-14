@@ -41,7 +41,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.ForesterUtil;
 
-public final class GSDI {
+public final class GSDI implements GSDII  {
 
     private final boolean                _most_parsimonious_duplication_model;
     private final int                    _speciation_or_duplication_events_sum;
@@ -71,8 +71,8 @@ public final class GSDI {
                 .getScientificNamesMappedToReducedSpecificity();
         _tax_comp_base = nodes_linking_result.getTaxCompBase();
         PhylogenyMethods.preOrderReId( species_tree );
-        final GSDIsummaryResult gsdi_summary_result = new GSDIsummaryResult();
-        geneTreePostOrderTraversal( gene_tree, _most_parsimonious_duplication_model, gsdi_summary_result );
+        final GSDIsummaryResult gsdi_summary_result = geneTreePostOrderTraversal( gene_tree,
+                                                                                  _most_parsimonious_duplication_model );
         _speciation_or_duplication_events_sum = gsdi_summary_result.getSpeciationOrDuplicationEventsSum();
         _speciations_sum = gsdi_summary_result.getSpeciationsSum();
         _duplications_sum = gsdi_summary_result.getDuplicationsSum();
@@ -134,11 +134,12 @@ public final class GSDI {
      * Preconditions: Mapping M for external nodes must have been calculated and
      * the species tree must be labeled in preorder.
      * <p>
+     * @return 
      * 
      */
-    final static void geneTreePostOrderTraversal( final Phylogeny gene_tree,
-                                                  final boolean most_parsimonious_duplication_model,
-                                                  final GSDIsummaryResult res ) {
+    final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,
+                                                               final boolean most_parsimonious_duplication_model ) {
+        final GSDIsummaryResult res = new GSDIsummaryResult();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode g = it.next();
             if ( g.isInternal() ) {
@@ -156,6 +157,7 @@ public final class GSDI {
                 determineEvent( s1, g, most_parsimonious_duplication_model, res );
             }
         }
+        return res;
     }
 
     /**
@@ -245,7 +247,7 @@ public final class GSDI {
             }
         }
         if ( strip_species_tree ) {
-            stripSpeciesTree( species_tree, species_tree_ext_nodes, res.getMappedSpeciesTreeNodes() );
+            stripSpeciesTree( species_tree, species_tree_ext_nodes, res );
         }
         return res;
     }
@@ -256,20 +258,6 @@ public final class GSDI {
         scientific_names_mapped_to_reduced_specificity.add( s1 + " -> " + s2 );
     }
 
-    // Used by GSDIR
-    //    protected GSDI( final Phylogeny gene_tree, final Phylogeny species_tree, final boolean strip_gene_tree )
-    //            throws SDIException {
-    //        super( gene_tree, species_tree );
-    //        _speciation_or_duplication_events_sum = -1;
-    //        _speciations_sum = 0;
-    //        _most_parsimonious_duplication_model = true;
-    //        _duplications_sum = 0;
-    //        _stripped_gene_tree_nodes = new ArrayList<PhylogenyNode>();
-    //        _stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
-    //        _mapped_species_tree_nodes = new HashSet<PhylogenyNode>();
-    //        _scientific_names_mapped_to_reduced_specificity = new TreeSet<String>();
-    //    }
-    // s is the node on the species tree g maps to.
     private final static void determineEvent( final PhylogenyNode s,
                                               final PhylogenyNode g,
                                               final boolean most_parsimonious_duplication_model,
@@ -337,19 +325,17 @@ public final class GSDI {
         }
     }
 
-    private final static List<PhylogenyNode> stripSpeciesTree( final Phylogeny species_tree,
-                                                               final List<PhylogenyNode> species_tree_ext_nodes,
-                                                               final Set<PhylogenyNode> keep ) {
-        final List<PhylogenyNode> stripped_species_tree_nodes = new ArrayList<PhylogenyNode>();
+    private final static void stripSpeciesTree( final Phylogeny species_tree,
+                                                final List<PhylogenyNode> species_tree_ext_nodes,
+                                                final NodesLinkingResult res ) {
         for( final PhylogenyNode s : species_tree_ext_nodes ) {
-            if ( !keep.contains( s ) ) {
+            if ( !res.getMappedSpeciesTreeNodes().contains( s ) ) {
                 species_tree.deleteSubtree( s, true );
-                stripped_species_tree_nodes.add( s );
+                res.getStrippedSpeciesTreeNodes().add( s );
             }
         }
         species_tree.clearHashIdToNodeMap();
         species_tree.externalNodesHaveChanged();
-        return stripped_species_tree_nodes;
     }
 
     private final static void stripTree( final Phylogeny phy, final List<PhylogenyNode> strip_nodes ) {

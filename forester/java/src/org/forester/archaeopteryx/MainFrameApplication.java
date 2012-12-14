@@ -1236,8 +1236,9 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDI gsdi = null;
+        Phylogeny species_tree = _species_tree.copy();
         try {
-            gsdi = new GSDI( gene_tree, _species_tree.copy(), false, true, true );
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDI", JOptionPane.ERROR_MESSAGE );
@@ -1252,7 +1253,7 @@ public final class MainFrameApplication extends MainFrame {
         getControlPanel().setShowEvents( true );
         showWhole();
         final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( gsdi.getSpeciesTree(), getConfiguration(), "species tree", null );
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
         showWhole();
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
@@ -1270,8 +1271,9 @@ public final class MainFrameApplication extends MainFrame {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDIR gsdir = null;
+        Phylogeny species_tree = _species_tree.copy();
         try {
-            gsdir = new GSDIR( gene_tree, _species_tree.copy(), true, true );
+            gsdir = new GSDIR( gene_tree, species_tree, true, true );
         }
         catch ( final Exception e ) {
             JOptionPane.showMessageDialog( this, e.toString(), "Error during GSDIR", JOptionPane.ERROR_MESSAGE );
@@ -1287,7 +1289,7 @@ public final class MainFrameApplication extends MainFrame {
         getControlPanel().setShowEvents( true );
         showWhole();
         final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( gsdir.getSpeciesTree(), getConfiguration(), "species tree", null );
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
         showWhole();
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();

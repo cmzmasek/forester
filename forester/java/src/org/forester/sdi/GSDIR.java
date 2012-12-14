@@ -37,25 +37,31 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.BasicDescriptiveStatistics;
 
-public class GSDIR {
+public class GSDIR implements GSDII {
 
-    private int                              _min_duplications_sum;
+    private final int                        _min_duplications_sum;
+    private final int _speciations_sum;
+
+    
+    @Override
+    public int getSpeciationsSum() {
+        return _speciations_sum;
+    }
+
     private final BasicDescriptiveStatistics _duplications_sum_stats;
     private final List<Phylogeny>            _min_duplications_sum_gene_trees;
-    protected int                            _speciations_sum;
-    protected int                            _duplications_sum;
+  
     private final List<PhylogenyNode>        _stripped_gene_tree_nodes;
     private final List<PhylogenyNode>        _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>         _mapped_species_tree_nodes;
     private final TaxonomyComparisonBase     _tax_comp_base;
     private final SortedSet<String>          _scientific_names_mapped_to_reduced_specificity;
-
+   
     public GSDIR( final Phylogeny gene_tree,
                   final Phylogeny species_tree,
                   final boolean strip_gene_tree,
                   final boolean strip_species_tree ) throws SDIException {
-        _speciations_sum = 0;
-        _duplications_sum = 0;
+      
         final NodesLinkingResult nodes_linking_result = GSDI.linkNodesOfG( gene_tree,
                                                                            species_tree,
                                                                            null,
@@ -74,12 +80,12 @@ public class GSDIR {
                 gene_tree_branches_post_order.add( new PhylogenyBranch( n, n.getParent() ) );
             }
         }
-        _min_duplications_sum = Integer.MAX_VALUE;
+        int min_duplications_sum = Integer.MAX_VALUE;
+        int speciations_sum = 0;
         _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
         _duplications_sum_stats = new BasicDescriptiveStatistics();
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
-            _duplications_sum = 0;
-            _speciations_sum = 0;
+           
             gene_tree.reRoot( branch );
             PhylogenyMethods.preOrderReId( species_tree );
             //TEST, remove later
@@ -89,19 +95,22 @@ public class GSDIR {
             //                    g.setLink( null );
             //                }
             //            }
-            final GSDIsummaryResult gsdi_summary_result = new GSDIsummaryResult();
-            GSDI.geneTreePostOrderTraversal( gene_tree, true, gsdi_summary_result );
-            if ( _duplications_sum < _min_duplications_sum ) {
-                _min_duplications_sum = _duplications_sum;
+            final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree, true );
+            if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
+                min_duplications_sum = gsdi_result.getDuplicationsSum();
+                speciations_sum =  gsdi_result.getSpeciationsSum();
                 _min_duplications_sum_gene_trees.clear();
                 _min_duplications_sum_gene_trees.add( gene_tree.copy() );
                 //_speciations_sum
             }
-            else if ( _duplications_sum == _min_duplications_sum ) {
+            else if ( gsdi_result.getDuplicationsSum()== min_duplications_sum ) {
                 _min_duplications_sum_gene_trees.add( gene_tree.copy() );
             }
-            _duplications_sum_stats.addValue( _duplications_sum );
+            _duplications_sum_stats.addValue( gsdi_result.getDuplicationsSum() );
+           
         }
+        _min_duplications_sum = min_duplications_sum; 
+        _speciations_sum =  speciations_sum;
     }
 
     public int getMinDuplicationsSum() {
@@ -116,22 +125,27 @@ public class GSDIR {
         return _duplications_sum_stats;
     }
 
+    @Override
     public Set<PhylogenyNode> getMappedExternalSpeciesTreeNodes() {
         return _mapped_species_tree_nodes;
     }
 
+    @Override
     public final SortedSet<String> getReMappedScientificNamesFromGeneTree() {
         return _scientific_names_mapped_to_reduced_specificity;
     }
 
+    @Override
     public List<PhylogenyNode> getStrippedExternalGeneTreeNodes() {
         return _stripped_gene_tree_nodes;
     }
 
+    @Override
     public List<PhylogenyNode> getStrippedSpeciesTreeNodes() {
         return _stripped_species_tree_nodes;
     }
 
+    @Override
     public TaxonomyComparisonBase getTaxCompBase() {
         return _tax_comp_base;
     }
