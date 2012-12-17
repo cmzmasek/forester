@@ -43,8 +43,10 @@ import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.rio.RIO;
 import org.forester.rio.RIOException;
+import org.forester.rio.RIO.REROOTING;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIutil.ALGORITHM;
+import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterUtil;
@@ -103,6 +105,7 @@ public class rio {
         else {
             logfile = null;
         }
+        String outgroup = "";
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, species_tree_file );
         if ( othology_outtable.exists() ) {
@@ -149,7 +152,7 @@ public class rio {
             algorithm = ALGORITHM.GSDIR;
         }
         try {
-            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, logfile != null, true );
+            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, REROOTING.BY_ALGORITHM, outgroup ,  logfile != null, true );
             if ( algorithm == ALGORITHM.GSDIR ) {
                 ForesterUtil.programMessage( PRG_NAME, "taxonomy linking based on: " + rio.getGSDIRtaxCompBase() );
             }
@@ -157,6 +160,11 @@ public class rio {
             if ( ( algorithm == ALGORITHM.GSDIR ) && ( logfile != null ) ) {
                 writeLogFile( logfile, rio );
             }
+            final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
+            ForesterUtil.programMessage( PRG_NAME, "Mean: " + stats.arithmeticMean() + "("  + stats.sampleStandardDeviation() + ")" );
+            ForesterUtil.programMessage( PRG_NAME, "Min: " + (int) stats.getMin() );
+            ForesterUtil.programMessage( PRG_NAME, "Max: " + (int) stats.getMax() );
+            
         }
         catch ( final RIOException e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -170,6 +178,7 @@ public class rio {
         catch ( final Exception e ) {
             ForesterUtil.unexpectedFatalError( PRG_NAME, e );
         }
+      
         time = System.currentTimeMillis() - time;
         ForesterUtil.programMessage( PRG_NAME, "time: " + time + "ms" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );

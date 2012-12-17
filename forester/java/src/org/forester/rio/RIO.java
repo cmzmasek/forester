@@ -46,6 +46,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
@@ -56,32 +57,41 @@ import org.forester.util.ForesterUtil;
 
 public final class RIO {
 
-    private final static boolean   ROOT_BY_MINIMIZING_SUM_OF_DUPS = true;
-    private final static boolean   ROOT_BY_MINIMIZING_TREE_HEIGHT = true;
-    private Phylogeny[]            _analyzed_gene_trees;
-    private List<PhylogenyNode>    _removed_gene_tree_nodes;
-    private int                    _ext_nodes;
-    private TaxonomyComparisonBase _gsdir_tax_comp_base;
-    private StringBuilder          _log;
-    private boolean                _produce_log;
-    private boolean                _verbose;
+    public enum REROOTING {
+        NONE, BY_ALGORITHM, MIDPOINT, OUTGROUP;
+    }
+    private Phylogeny[]                _analyzed_gene_trees;
+    private List<PhylogenyNode>        _removed_gene_tree_nodes;
+    private int                        _ext_nodes;
+    private TaxonomyComparisonBase     _gsdir_tax_comp_base;
+    private StringBuilder              _log;
+    private BasicDescriptiveStatistics _duplications_stats;
+    private boolean                    _produce_log;
+    private boolean                    _verbose;
+    private REROOTING                  _rerooting;
 
     public RIO( final File gene_trees_file,
                 final Phylogeny species_tree,
                 final ALGORITHM algorithm,
+                final REROOTING rerooting,
+                final String outgroup,
                 final boolean produce_log,
                 final boolean verbose ) throws IOException, SDIException, RIOException {
-        init( produce_log, verbose );
-        inferOrthologs( gene_trees_file, species_tree, algorithm );
+        checkReRooting( rerooting, outgroup );
+        init( produce_log, verbose, rerooting );
+        inferOrthologs( gene_trees_file, species_tree, algorithm, outgroup );
     }
 
     public RIO( final Phylogeny[] gene_trees,
                 final Phylogeny species_tree,
                 final ALGORITHM algorithm,
+                final REROOTING rerooting,
+                final String outgroup,
                 final boolean produce_log,
                 final boolean verbose ) throws IOException, SDIException, RIOException {
-        init( produce_log, verbose );
-        inferOrthologs( gene_trees, species_tree, algorithm );
+        checkReRooting( rerooting, outgroup );
+        init( produce_log, verbose, rerooting );
+        inferOrthologs( gene_trees, species_tree, algorithm, outgroup );
     }
 
     public final Phylogeny[] getAnalyzedGeneTrees() {
@@ -112,7 +122,8 @@ public final class RIO {
 
     private final void inferOrthologs( final File gene_trees_file,
                                        final Phylogeny species_tree,
-                                       final ALGORITHM algorithm ) throws SDIException, RIOException,
+                                       final ALGORITHM algorithm,
+                                       final String outgroup ) throws SDIException, RIOException,
             FileNotFoundException, IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
@@ -123,12 +134,13 @@ public final class RIO {
             nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        inferOrthologs( gene_trees, species_tree, algorithm );
+        inferOrthologs( gene_trees, species_tree, algorithm, outgroup );
     }
 
     private final void inferOrthologs( final Phylogeny[] gene_trees,
                                        final Phylogeny species_tree,
-                                       final ALGORITHM algorithm ) throws SDIException, RIOException,
+                                       final ALGORITHM algorithm,
+                                       final String outgroup ) throws SDIException, RIOException,
             FileNotFoundException, IOException {
         if ( algorithm == ALGORITHM.SDIR ) {
             // Removes from species_tree all species not found in gene_tree.
@@ -139,7 +151,9 @@ public final class RIO {
         }
         if ( _produce_log ) {
             _log = new StringBuilder();
-            writeLogSubHeader();
+            if ( _rerooting == REROOTING.BY_ALGORITHM ) {
+                writeLogSubHeader();
+            }
         }
         _analyzed_gene_trees = new Phylogeny[ gene_trees.length ];
         int gene_tree_ext_nodes = 0;
@@ -166,7 +180,7 @@ public final class RIO {
                     throw new RIOException( "failed to establish species based mapping between gene and species trees" );
                 }
             }
-            _analyzed_gene_trees[ i ] = performOrthologInference( gt, species_tree, algorithm, i );
+            _analyzed_gene_trees[ i ] = performOrthologInference( gt, species_tree, algorithm, outgroup, i );
         }
         if ( _verbose ) {
             System.out.println();
@@ -174,51 +188,31 @@ public final class RIO {
         }
     }
 
-    private final void init( final boolean produce_log, final boolean verbose ) {
+    private final void init( final boolean produce_log, final boolean verbose, final REROOTING rerooting ) {
         _produce_log = produce_log;
         _verbose = verbose;
+        _rerooting = rerooting;
         _ext_nodes = -1;
         _log = null;
         _gsdir_tax_comp_base = null;
         _analyzed_gene_trees = null;
         _removed_gene_tree_nodes = null;
+        _duplications_stats = new BasicDescriptiveStatistics();
     }
 
     private final Phylogeny performOrthologInference( final Phylogeny gene_tree,
                                                       final Phylogeny species_tree,
                                                       final ALGORITHM algorithm,
+                                                      final String outgroup,
                                                       final int i ) throws SDIException, RIOException {
         final Phylogeny assigned_tree;
         switch ( algorithm ) {
             case SDIR: {
-                final SDIR sdir = new SDIR();
-                assigned_tree = sdir.infer( gene_tree,
-                                            species_tree,
-                                            false,
-                                            RIO.ROOT_BY_MINIMIZING_SUM_OF_DUPS,
-                                            RIO.ROOT_BY_MINIMIZING_TREE_HEIGHT,
-                                            true,
-                                            1 )[ 0 ];
+                assigned_tree = performOrthologInferenceBySDI( gene_tree, species_tree );
                 break;
             }
             case GSDIR: {
-                final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, i == 0 );
-                final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
-                if ( i == 0 ) {
-                    _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
-                    for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
-                        if ( !r.getNodeData().isHasTaxonomy() ) {
-                            throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #1: "
-                                    + r.toString() );
-                        }
-                    }
-                }
-                final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
-                assigned_tree = assigned_trees.get( shortests.get( 0 ) );
-                if ( _produce_log ) {
-                    writeStatsToLog( i, gsdir, shortests );
-                }
-                _gsdir_tax_comp_base = gsdir.getTaxCompBase();
+                assigned_tree = performOrthologInferenceByGSDI( gene_tree, species_tree, outgroup, i );
                 break;
             }
             default: {
@@ -234,6 +228,70 @@ public final class RIO {
                     + ") than the preceding gene trees (" + _ext_nodes + ")" );
         }
         return assigned_tree;
+    }
+
+    private final Phylogeny performOrthologInferenceByGSDI( final Phylogeny gene_tree,
+                                                            final Phylogeny species_tree,
+                                                            final String outgroup,
+                                                            final int i ) throws SDIException, RIOException {
+        final Phylogeny assigned_tree;
+        if ( _rerooting == REROOTING.BY_ALGORITHM ) {
+            final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, i == 0 );
+            final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
+            if ( i == 0 ) {
+                _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
+                for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
+                    if ( !r.getNodeData().isHasTaxonomy() ) {
+                        throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #1: "
+                                + r.toString() );
+                    }
+                }
+            }
+            final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
+            assigned_tree = assigned_trees.get( shortests.get( 0 ) );
+            if ( _produce_log ) {
+                writeStatsToLog( i, gsdir, shortests );
+            }
+            if ( i == 0 ) {
+                _gsdir_tax_comp_base = gsdir.getTaxCompBase();
+            }
+            _duplications_stats.addValue( gsdir.getMinDuplicationsSum() );
+        }
+        else {
+            if ( _rerooting == REROOTING.MIDPOINT ) {
+                PhylogenyMethods.midpointRoot( gene_tree );
+            }
+            else if ( _rerooting == REROOTING.OUTGROUP ) {
+                PhylogenyNode n;
+                try {
+                    n = gene_tree.getNode( outgroup );
+                }
+                catch ( IllegalArgumentException e ) {
+                    throw new RIOException( "failed to perform re-rooting by outgroup: " + e.getLocalizedMessage() );
+                }
+                gene_tree.reRoot( n );
+            }
+            final GSDI gsdi = new GSDI( gene_tree, species_tree, true, true, true );
+            _removed_gene_tree_nodes = gsdi.getStrippedExternalGeneTreeNodes();
+            for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
+                if ( !r.getNodeData().isHasTaxonomy() ) {
+                    throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #1: "
+                            + r.toString() );
+                }
+            }
+            assigned_tree = gene_tree;
+            if ( i == 0 ) {
+                _gsdir_tax_comp_base = gsdi.getTaxCompBase();
+            }
+            _duplications_stats.addValue( gsdi.getDuplicationsSum() );
+        }
+        return assigned_tree;
+    }
+
+    private final Phylogeny performOrthologInferenceBySDI( final Phylogeny gene_tree, final Phylogeny species_tree )
+            throws SDIException {
+        final SDIR sdir = new SDIR();
+        return sdir.infer( gene_tree, species_tree, false, true, true, true, 1 )[ 0 ];
     }
 
     private void writeLogSubHeader() {
@@ -324,5 +382,15 @@ public final class RIO {
             }
         }
         return m;
+    }
+
+    private final static void checkReRooting( final REROOTING rerooting, final String outgroup ) {
+        if ( !ForesterUtil.isEmpty( outgroup ) && rerooting != REROOTING.OUTGROUP ) {
+            throw new IllegalArgumentException( "can only use outgroup when re-rooting in this manner" );
+        }
+    }
+
+    public BasicDescriptiveStatistics getDuplicationsStatistics() {
+        return _duplications_stats;
     }
 }
