@@ -144,6 +144,10 @@ public class Phylogeny {
         }
     }
 
+    public void clearHashIdToNodeMap() {
+        setIdToNodeMap( null );
+    }
+
     /**
      * Returns a deep copy of this Phylogeny.
      * <p>
@@ -152,35 +156,6 @@ public class Phylogeny {
      */
     public Phylogeny copy() {
         return copy( _root );
-    }
-
-    /**
-     * Returns a shallow copy of this Phylogeny.
-     * <p>
-     * (The resulting Phylogeny has its references in the external nodes
-     * corrected, if they are lacking/obsolete in this.)
-     */
-    public Phylogeny copyShallow() {
-        return copyShallow( _root );
-    }
-
-    public Phylogeny copyShallow( final PhylogenyNode source ) {
-        final Phylogeny tree = new Phylogeny();
-        if ( isEmpty() ) {
-            tree.init();
-            return tree;
-        }
-        tree._rooted = _rooted;
-        tree._name = _name;
-        tree._description = _description;
-        tree._type = _type;
-        tree._rerootable = _rerootable;
-        tree._distance_unit = _distance_unit;
-        tree._confidence = _confidence;
-        tree._identifier = _identifier;
-        tree.setAllowMultipleParents( isAllowMultipleParents() );
-        tree._root = PhylogenyMethods.copySubTreeShallow( source );
-        return tree;
     }
 
     /**
@@ -209,6 +184,35 @@ public class Phylogeny {
         }
         tree.setAllowMultipleParents( isAllowMultipleParents() );
         tree._root = PhylogenyMethods.copySubTree( source );
+        return tree;
+    }
+
+    /**
+     * Returns a shallow copy of this Phylogeny.
+     * <p>
+     * (The resulting Phylogeny has its references in the external nodes
+     * corrected, if they are lacking/obsolete in this.)
+     */
+    public Phylogeny copyShallow() {
+        return copyShallow( _root );
+    }
+
+    public Phylogeny copyShallow( final PhylogenyNode source ) {
+        final Phylogeny tree = new Phylogeny();
+        if ( isEmpty() ) {
+            tree.init();
+            return tree;
+        }
+        tree._rooted = _rooted;
+        tree._name = _name;
+        tree._description = _description;
+        tree._type = _type;
+        tree._rerootable = _rerootable;
+        tree._distance_unit = _distance_unit;
+        tree._confidence = _confidence;
+        tree._identifier = _identifier;
+        tree.setAllowMultipleParents( isAllowMultipleParents() );
+        tree._root = PhylogenyMethods.copySubTreeShallow( source );
         return tree;
     }
 
@@ -375,10 +379,6 @@ public class Phylogeny {
         return _identifier;
     }
 
-    private HashMap<Integer, PhylogenyNode> getIdToNodeMap() {
-        return _id_to_node_map;
-    }
-
     /**
      * Returns the name of this Phylogeny.
      */
@@ -423,23 +423,18 @@ public class Phylogeny {
     }
 
     /**
-     * Return Node by TaxonomyId Olivier CHABROL :
-     * olivier.chabrol@univ-provence.fr
+     * This is time-inefficient since it runs a iterator each time it is called.
      * 
-     * @param taxonomyID
-     *            search taxonomy identifier
-     * @param nodes
-     *            sublist node to search
-     * @return List node with the same taxonomy identifier
      */
-    private List<PhylogenyNode> getNodeByTaxonomyID( final String taxonomyID, final List<PhylogenyNode> nodes ) {
-        final List<PhylogenyNode> retour = new ArrayList<PhylogenyNode>();
-        for( final PhylogenyNode node : nodes ) {
-            if ( taxonomyID.equals( PhylogenyMethods.getTaxonomyIdentifier( node ) ) ) {
-                retour.add( node );
-            }
+    public int getNodeCount() {
+        if ( isEmpty() ) {
+            return 0;
         }
-        return retour;
+        int c = 0;
+        for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); it.next() ) {
+            ++c;
+        }
+        return c;
     }
 
     /**
@@ -547,21 +542,6 @@ public class Phylogeny {
         return nodes.get( 0 );
     }
 
-    /**
-     * This is time-inefficient since it runs a iterator each time it is called.
-     * 
-     */
-    public int getNodeCount() {
-        if ( isEmpty() ) {
-            return 0;
-        }
-        int c = 0;
-        for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); it.next() ) {
-            ++c;
-        }
-        return c;
-    }
-
     public int getNumberOfBranches() {
         if ( isEmpty() ) {
             return 0;
@@ -655,71 +635,8 @@ public class Phylogeny {
         return _sequenceRelationQueries;
     }
 
-    /**
-     * List all species contains in all leaf under a node Olivier CHABROL :
-     * olivier.chabrol@univ-provence.fr
-     * 
-     * @param node
-     *            PhylogenyNode whose sub node species are returned
-     * @return species contains in all leaf under the param node
-     */
-    private List<String> getSubNodeTaxonomy( final PhylogenyNode node ) {
-        final List<String> taxonomyList = new ArrayList<String>();
-        final List<PhylogenyNode> childs = node.getAllExternalDescendants();
-        String speciesId = null;
-        for( final PhylogenyNode phylogenyNode : childs ) {
-            // taxId = new Long(phylogenyNode.getTaxonomyID());
-            speciesId = PhylogenyMethods.getTaxonomyIdentifier( phylogenyNode );
-            if ( !taxonomyList.contains( speciesId ) ) {
-                taxonomyList.add( speciesId );
-            }
-        }
-        return taxonomyList;
-    }
-
-    /**
-     * Create a map [<PhylogenyNode, List<String>], the list contains the
-     * species contains in all leaf under phylogeny node Olivier CHABROL :
-     * olivier.chabrol@univ-provence.fr
-     * 
-     * @param node
-     *            the tree root node
-     * @param map
-     *            map to fill
-     */
-    private void getTaxonomyMap( final PhylogenyNode node, final Map<PhylogenyNode, List<String>> map ) {
-        // node is leaf
-        if ( node.isExternal() ) {
-            return;
-        }
-        map.put( node, getSubNodeTaxonomy( node ) );
-        getTaxonomyMap( node.getChildNode1(), map );
-        getTaxonomyMap( node.getChildNode2(), map );
-    }
-
     public String getType() {
         return _type;
-    }
-
-    /**
-     * Hashes the ID number of each PhylogenyNode of this Phylogeny to its
-     * corresponding PhylogenyNode, in order to make method getNode( id ) run in
-     * constant time. Important: The user is responsible for calling this method
-     * (again) after this Phylogeny has been changed/created/renumbered.
-     */
-    private void reHashIdToNodeMap() {
-        if ( isEmpty() ) {
-            return;
-        }
-        setIdToNodeMap( new HashMap<Integer, PhylogenyNode>() );
-        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            getIdToNodeMap().put( node.getId(), node );
-        }
-    }
-
-    public void clearHashIdToNodeMap() {
-        setIdToNodeMap( null );
     }
 
     /**
@@ -739,10 +656,6 @@ public class Phylogeny {
         setAllowMultipleParents( Phylogeny.ALLOW_MULTIPLE_PARENTS_DEFAULT );
     }
 
-    private boolean isAllowMultipleParents() {
-        return _allow_multiple_parents;
-    }
-
     /**
      * Returns whether this is a completely binary tree (i.e. all internal nodes
      * are bifurcations).
@@ -755,31 +668,6 @@ public class Phylogeny {
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( node.isInternal() && ( node.getNumberOfDescendants() != 2 ) ) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Util method to check if all element of a list is contains in the
-     * rangeList. Olivier CHABROL : olivier.chabrol@univ-provence.fr
-     * 
-     * @param list
-     *            list to be check
-     * @param rangeList
-     *            the range list to compare
-     * @return <code>true</code> if all param list element are contains in param
-     *         rangeList, <code>false</code> otherwise.
-     */
-    private boolean isContains( final List<String> list, final List<String> rangeList ) {
-        if ( list.size() > rangeList.size() ) {
-            return false;
-        }
-        String l = null;
-        for( final Iterator<String> iterator = list.iterator(); iterator.hasNext(); ) {
-            l = iterator.next();
-            if ( !rangeList.contains( l ) ) {
                 return false;
             }
         }
@@ -1120,10 +1008,6 @@ public class Phylogeny {
         }
     }
 
-    private void setAllowMultipleParents( final boolean allow_multiple_parents ) {
-        _allow_multiple_parents = allow_multiple_parents;
-    }
-
     public void setConfidence( final Confidence confidence ) {
         _confidence = confidence;
     }
@@ -1214,6 +1098,10 @@ public class Phylogeny {
         }
     }
 
+    public String toNexus() {
+        return toNexus( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
+    }
+
     public String toNexus( final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
         try {
             return new PhylogenyWriter().toNexus( this, svs ).toString();
@@ -1221,10 +1109,6 @@ public class Phylogeny {
         catch ( final IOException e ) {
             throw new Error( "this should not have happend: " + e.getMessage() );
         }
-    }
-
-    public String toNexus() {
-        return toNexus( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
     }
 
     public String toPhyloXML( final int phyloxml_level ) {
@@ -1267,4 +1151,120 @@ public class Phylogeny {
         setRooted( false );
         return;
     } // unRoot()
+
+    private HashMap<Integer, PhylogenyNode> getIdToNodeMap() {
+        return _id_to_node_map;
+    }
+
+    /**
+     * Return Node by TaxonomyId Olivier CHABROL :
+     * olivier.chabrol@univ-provence.fr
+     * 
+     * @param taxonomyID
+     *            search taxonomy identifier
+     * @param nodes
+     *            sublist node to search
+     * @return List node with the same taxonomy identifier
+     */
+    private List<PhylogenyNode> getNodeByTaxonomyID( final String taxonomyID, final List<PhylogenyNode> nodes ) {
+        final List<PhylogenyNode> retour = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNode node : nodes ) {
+            if ( taxonomyID.equals( PhylogenyMethods.getTaxonomyIdentifier( node ) ) ) {
+                retour.add( node );
+            }
+        }
+        return retour;
+    }
+
+    /**
+     * List all species contains in all leaf under a node Olivier CHABROL :
+     * olivier.chabrol@univ-provence.fr
+     * 
+     * @param node
+     *            PhylogenyNode whose sub node species are returned
+     * @return species contains in all leaf under the param node
+     */
+    private List<String> getSubNodeTaxonomy( final PhylogenyNode node ) {
+        final List<String> taxonomyList = new ArrayList<String>();
+        final List<PhylogenyNode> childs = node.getAllExternalDescendants();
+        String speciesId = null;
+        for( final PhylogenyNode phylogenyNode : childs ) {
+            // taxId = new Long(phylogenyNode.getTaxonomyID());
+            speciesId = PhylogenyMethods.getTaxonomyIdentifier( phylogenyNode );
+            if ( !taxonomyList.contains( speciesId ) ) {
+                taxonomyList.add( speciesId );
+            }
+        }
+        return taxonomyList;
+    }
+
+    /**
+     * Create a map [<PhylogenyNode, List<String>], the list contains the
+     * species contains in all leaf under phylogeny node Olivier CHABROL :
+     * olivier.chabrol@univ-provence.fr
+     * 
+     * @param node
+     *            the tree root node
+     * @param map
+     *            map to fill
+     */
+    private void getTaxonomyMap( final PhylogenyNode node, final Map<PhylogenyNode, List<String>> map ) {
+        // node is leaf
+        if ( node.isExternal() ) {
+            return;
+        }
+        map.put( node, getSubNodeTaxonomy( node ) );
+        getTaxonomyMap( node.getChildNode1(), map );
+        getTaxonomyMap( node.getChildNode2(), map );
+    }
+
+    private boolean isAllowMultipleParents() {
+        return _allow_multiple_parents;
+    }
+
+    /**
+     * Util method to check if all element of a list is contains in the
+     * rangeList. Olivier CHABROL : olivier.chabrol@univ-provence.fr
+     * 
+     * @param list
+     *            list to be check
+     * @param rangeList
+     *            the range list to compare
+     * @return <code>true</code> if all param list element are contains in param
+     *         rangeList, <code>false</code> otherwise.
+     */
+    private boolean isContains( final List<String> list, final List<String> rangeList ) {
+        if ( list.size() > rangeList.size() ) {
+            return false;
+        }
+        String l = null;
+        for( final Iterator<String> iterator = list.iterator(); iterator.hasNext(); ) {
+            l = iterator.next();
+            if ( !rangeList.contains( l ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Hashes the ID number of each PhylogenyNode of this Phylogeny to its
+     * corresponding PhylogenyNode, in order to make method getNode( id ) run in
+     * constant time. Important: The user is responsible for calling this method
+     * (again) after this Phylogeny has been changed/created/renumbered.
+     */
+    private void reHashIdToNodeMap() {
+        if ( isEmpty() ) {
+            return;
+        }
+        setIdToNodeMap( new HashMap<Integer, PhylogenyNode>() );
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            getIdToNodeMap().put( node.getId(), node );
+        }
+    }
+
+    private void setAllowMultipleParents( final boolean allow_multiple_parents ) {
+        _allow_multiple_parents = allow_multiple_parents;
+    }
 }

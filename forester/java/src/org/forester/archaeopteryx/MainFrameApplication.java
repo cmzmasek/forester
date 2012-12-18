@@ -110,72 +110,6 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 import org.forester.util.WindowsUtils;
 
-class DefaultFilter extends FileFilter {
-
-    @Override
-    public boolean accept( final File f ) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
-                || file_name.endsWith( ".nwk" ) || file_name.endsWith( ".phb" ) || file_name.endsWith( ".ph" )
-                || file_name.endsWith( ".tr" ) || file_name.endsWith( ".dnd" ) || file_name.endsWith( ".tree" )
-                || file_name.endsWith( ".nhx" ) || file_name.endsWith( ".xml" ) || file_name.endsWith( ".phyloxml" )
-                || file_name.endsWith( "phylo.xml" ) || file_name.endsWith( ".pxml" ) || file_name.endsWith( ".nexus" )
-                || file_name.endsWith( ".nx" ) || file_name.endsWith( ".nex" ) || file_name.endsWith( ".tre" )
-                || file_name.endsWith( ".zip" ) || file_name.endsWith( ".tol" ) || file_name.endsWith( ".tolxml" )
-                || file_name.endsWith( ".con" ) || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "All supported files (*.xml, *.phyloxml, *phylo.xml, *.nhx, *.nh, *.newick, *.nex, *.nexus, *.phy, *.tre, *.tree, *.tol, ...)";
-    }
-}
-
-class GraphicsFileFilter extends FileFilter {
-
-    @Override
-    public boolean accept( final File f ) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith( ".jpg" ) || file_name.endsWith( ".jpeg" ) || file_name.endsWith( ".png" )
-                || file_name.endsWith( ".gif" ) || file_name.endsWith( ".bmp" ) || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Image files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)";
-    }
-}
-
-class MsaFileFilter extends FileFilter {
-
-    @Override
-    public boolean accept( final File f ) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith( ".msa" ) || file_name.endsWith( ".aln" ) || file_name.endsWith( ".fasta" )
-                || file_name.endsWith( ".fas" ) || file_name.endsWith( ".fa" ) || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Multiple sequence alignment files (*.msa, *.aln, *.fasta, *.fa, *.fas)";
-    }
-}
-
-class SequencesFileFilter extends FileFilter {
-
-    @Override
-    public boolean accept( final File f ) {
-        final String file_name = f.getName().trim().toLowerCase();
-        return file_name.endsWith( ".fasta" ) || file_name.endsWith( ".fa" ) || file_name.endsWith( ".fas" )
-                || file_name.endsWith( ".seqs" ) || f.isDirectory();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Sequences files (*.fasta, *.fa, *.fas, *.seqs )";
-    }
-}
-
 public final class MainFrameApplication extends MainFrame {
 
     static final String                      INFER_ANCESTOR_TAXONOMIES             = "Infer Ancestor Taxonomies";
@@ -237,6 +171,51 @@ public final class MainFrameApplication extends MainFrame {
     private File                             _seqs_file                            = null;
     // expression values menu:
     JMenuItem                                _read_values_jmi;
+
+    private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
+        _configuration = config;
+        if ( _configuration == null ) {
+            throw new IllegalArgumentException( "configuration is null" );
+        }
+        setVisible( false );
+        setOptions( Options.createInstance( _configuration ) );
+        _mainpanel = new MainPanel( _configuration, this );
+        _open_filechooser = null;
+        _open_filechooser_for_species_tree = null;
+        _save_filechooser = null;
+        _writetopdf_filechooser = null;
+        _writetographics_filechooser = null;
+        _msa_filechooser = null;
+        _seqs_filechooser = null;
+        _values_filechooser = null;
+        _jmenubar = new JMenuBar();
+        buildFileMenu();
+        buildTypeMenu();
+        _contentpane = getContentPane();
+        _contentpane.setLayout( new BorderLayout() );
+        _contentpane.add( _mainpanel, BorderLayout.CENTER );
+        // App is this big
+        setSize( MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE );
+        // The window listener
+        setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+        addWindowListener( new WindowAdapter() {
+
+            @Override
+            public void windowClosing( final WindowEvent e ) {
+                exit();
+            }
+        } );
+        //   setVisible( true );
+        if ( ( phys != null ) && ( phys.length > 0 ) ) {
+            AptxUtil.addPhylogeniesToTabs( phys, "", null, _configuration, _mainpanel );
+            validate();
+            getMainPanel().getControlPanel().showWholeAll();
+            getMainPanel().getControlPanel().showWhole();
+        }
+        //activateSaveAllIfNeeded();
+        // ...and its children
+        _contentpane.repaint();
+    }
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config, final String title ) {
         this( phys, config, title, null );
@@ -438,51 +417,6 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
-    private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
-        _configuration = config;
-        if ( _configuration == null ) {
-            throw new IllegalArgumentException( "configuration is null" );
-        }
-        setVisible( false );
-        setOptions( Options.createInstance( _configuration ) );
-        _mainpanel = new MainPanel( _configuration, this );
-        _open_filechooser = null;
-        _open_filechooser_for_species_tree = null;
-        _save_filechooser = null;
-        _writetopdf_filechooser = null;
-        _writetographics_filechooser = null;
-        _msa_filechooser = null;
-        _seqs_filechooser = null;
-        _values_filechooser = null;
-        _jmenubar = new JMenuBar();
-        buildFileMenu();
-        buildTypeMenu();
-        _contentpane = getContentPane();
-        _contentpane.setLayout( new BorderLayout() );
-        _contentpane.add( _mainpanel, BorderLayout.CENTER );
-        // App is this big
-        setSize( MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE );
-        // The window listener
-        setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
-        addWindowListener( new WindowAdapter() {
-
-            @Override
-            public void windowClosing( final WindowEvent e ) {
-                exit();
-            }
-        } );
-        //   setVisible( true );
-        if ( ( phys != null ) && ( phys.length > 0 ) ) {
-            AptxUtil.addPhylogeniesToTabs( phys, "", null, _configuration, _mainpanel );
-            validate();
-            getMainPanel().getControlPanel().showWholeAll();
-            getMainPanel().getControlPanel().showWhole();
-        }
-        //activateSaveAllIfNeeded();
-        // ...and its children
-        _contentpane.repaint();
-    }
-
     private MainFrameApplication( final Phylogeny[] phys, final String config_file, final String title ) {
         // Reads the config file (false, false => not url, not applet):
         this( phys, new Configuration( config_file, false, false, true ), title );
@@ -660,6 +594,246 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
+    public void end() {
+        _mainpanel.terminate();
+        _contentpane.removeAll();
+        setVisible( false );
+        dispose();
+    }
+
+    @Override
+    public MainPanel getMainPanel() {
+        return _mainpanel;
+    }
+
+    public Msa getMsa() {
+        return _msa;
+    }
+
+    public File getMsaFile() {
+        return _msa_file;
+    }
+
+    public List<Sequence> getSeqs() {
+        return _seqs;
+    }
+
+    public File getSeqsFile() {
+        return _seqs_file;
+    }
+
+    public void readMsaFromFile() {
+        // Set an initial directory if none set yet
+        final File my_dir = getCurrentDir();
+        _msa_filechooser.setMultiSelectionEnabled( false );
+        // Open file-open dialog and set current directory
+        if ( my_dir != null ) {
+            _msa_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _msa_filechooser.showOpenDialog( _contentpane );
+        // All done: get the msa
+        final File file = _msa_filechooser.getSelectedFile();
+        setCurrentDir( _msa_filechooser.getCurrentDirectory() );
+        if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            setMsaFile( null );
+            setMsa( null );
+            Msa msa = null;
+            try {
+                final InputStream is = new FileInputStream( file );
+                if ( FastaParser.isLikelyFasta( file ) ) {
+                    msa = FastaParser.parseMsa( is );
+                }
+                else {
+                    msa = GeneralMsaParser.parse( is );
+                }
+            }
+            catch ( final MsaFormatException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Multiple sequence alignment format error",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final IOException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Failed to read multiple sequence alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final IllegalArgumentException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Unexpected error during reading of multiple sequence alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final Exception e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                e.printStackTrace();
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Unexpected error during reading of multiple sequence alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( ( msa == null ) || ( msa.getNumberOfSequences() < 1 ) ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence alignment is empty",
+                                               "Illegal Multiple Sequence Alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( msa.getNumberOfSequences() < 4 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence alignment needs to contain at least 3 sequences",
+                                               "Illegal multiple sequence alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( msa.getLength() < 2 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence alignment needs to contain at least 2 residues",
+                                               "Illegal multiple sequence alignment",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            System.gc();
+            setMsaFile( _msa_filechooser.getSelectedFile() );
+            setMsa( msa );
+        }
+    }
+
+    public void readSeqsFromFile() {
+        // Set an initial directory if none set yet
+        final File my_dir = getCurrentDir();
+        _seqs_filechooser.setMultiSelectionEnabled( false );
+        // Open file-open dialog and set current directory
+        if ( my_dir != null ) {
+            _seqs_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _seqs_filechooser.showOpenDialog( _contentpane );
+        // All done: get the seqs
+        final File file = _seqs_filechooser.getSelectedFile();
+        setCurrentDir( _seqs_filechooser.getCurrentDirectory() );
+        if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            setSeqsFile( null );
+            setSeqs( null );
+            List<Sequence> seqs = null;
+            try {
+                if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
+                    seqs = FastaParser.parse( new FileInputStream( file ) );
+                    for( final Sequence seq : seqs ) {
+                        System.out.println( SequenceWriter.toFasta( seq, 60 ) );
+                    }
+                }
+                else {
+                    //TODO error
+                }
+            }
+            catch ( final MsaFormatException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Multiple sequence file format error",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final IOException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Failed to read multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final IllegalArgumentException e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Unexpected error during reading of multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final Exception e ) {
+                try {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                catch ( final Exception ex ) {
+                    // Do nothing.
+                }
+                e.printStackTrace();
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Unexpected error during reading of multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( ( seqs == null ) || ( seqs.size() < 1 ) ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence file is empty",
+                                               "Illegal multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( seqs.size() < 4 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence file needs to contain at least 3 sequences",
+                                               "Illegal multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            //  if ( msa.getLength() < 2 ) {
+            //       JOptionPane.showMessageDialog( this,
+            //                                      "Multiple sequence alignment needs to contain at least 2 residues",
+            //                                      "Illegal multiple sequence file",
+            //                                      JOptionPane.ERROR_MESSAGE );
+            //       return;
+            //   }
+            System.gc();
+            setSeqsFile( _seqs_filechooser.getSelectedFile() );
+            setSeqs( seqs );
+        }
+    }
+
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
         _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
@@ -679,27 +853,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _lineage_inference );
         _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
         _jmenubar.add( _analysis_menu );
-    }
-
-    void buildPhylogeneticInferenceMenu() {
-        final InferenceManager im = getInferenceManager();
-        _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
-        _inference_menu.add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
-        customizeJMenuItem( _inference_from_msa_item );
-        _inference_from_msa_item.setToolTipText( "Basic phylogenetic inference from MSA" );
-        if ( im.canDoMsa() ) {
-            _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
-            customizeJMenuItem( _inference_from_seqs_item );
-            _inference_from_seqs_item
-                    .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
-        }
-        else {
-            _inference_menu
-                    .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
-            customizeJMenuItem( _inference_from_seqs_item );
-            _inference_from_seqs_item.setEnabled( false );
-        }
-        _jmenubar.add( _inference_menu );
     }
 
     @Override
@@ -931,6 +1084,27 @@ public final class MainFrameApplication extends MainFrame {
         _jmenubar.add( _options_jmenu );
     }
 
+    void buildPhylogeneticInferenceMenu() {
+        final InferenceManager im = getInferenceManager();
+        _inference_menu = MainFrame.createMenu( "Inference", getConfiguration() );
+        _inference_menu.add( _inference_from_msa_item = new JMenuItem( "From Multiple Sequence Alignment..." ) );
+        customizeJMenuItem( _inference_from_msa_item );
+        _inference_from_msa_item.setToolTipText( "Basic phylogenetic inference from MSA" );
+        if ( im.canDoMsa() ) {
+            _inference_menu.add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences..." ) );
+            customizeJMenuItem( _inference_from_seqs_item );
+            _inference_from_seqs_item
+                    .setToolTipText( "Basic phylogenetic inference including multiple sequence alignment" );
+        }
+        else {
+            _inference_menu
+                    .add( _inference_from_seqs_item = new JMenuItem( "From Unaligned Sequences (no program found)" ) );
+            customizeJMenuItem( _inference_from_seqs_item );
+            _inference_from_seqs_item.setEnabled( false );
+        }
+        _jmenubar.add( _inference_menu );
+    }
+
     void buildToolsMenu() {
         _tools_menu = createMenu( "Tools", getConfiguration() );
         _tools_menu.add( _confcolor_item = new JMenuItem( "Colorize Branches Depending on Confidence" ) );
@@ -996,6 +1170,461 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _read_values_jmi );
         _read_values_jmi.setToolTipText( "To add vector (e.g. gene expression) values (beta)" );
         _jmenubar.add( _tools_menu );
+    }
+
+    @Override
+    void close() {
+        if ( isUnsavedDataPresent() ) {
+            final int r = JOptionPane.showConfirmDialog( this,
+                                                         "Exit despite potentially unsaved changes?",
+                                                         "Exit?",
+                                                         JOptionPane.YES_NO_OPTION );
+            if ( r != JOptionPane.YES_OPTION ) {
+                return;
+            }
+        }
+        exit();
+    }
+
+    void executeFunctionAnalysis() {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
+            return;
+        }
+        final GoAnnotation a = new GoAnnotation( this,
+                                                 _mainpanel.getCurrentTreePanel(),
+                                                 _mainpanel.getCurrentPhylogeny() );
+        new Thread( a ).start();
+    }
+
+    void executeGSDI() {
+        if ( !isOKforSDI( false, true ) ) {
+            return;
+        }
+        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not rooted.",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDI gsdi = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        gene_tree.setRerootable( false );
+        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
+        _mainpanel.getCurrentPhylogeny().clearHashIdToNodeMap();
+        _mainpanel.getCurrentPhylogeny().recalculateNumberOfExternalDescendants( true );
+        _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        JOptionPane.showMessageDialog( this, "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                + "Potential duplications: " + gsdi.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
+                + gsdi.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
+    }
+
+    void executeGSDIR() {
+        if ( !isOKforSDI( false, true ) ) {
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDIR gsdir = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdir = new GSDIR( gene_tree, species_tree, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDIR",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
+        final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
+        final Phylogeny result_gene_tree = assigned_trees.get( shortests.get( 0 ) );
+        result_gene_tree.setRerootable( false );
+        result_gene_tree.clearHashIdToNodeMap();
+        result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
+        getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        JOptionPane.showMessageDialog( this,
+                                       "Duplications (min): " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
+                                               + gsdir.getSpeciationsSum() + "\n"
+                                               + "Number of root positions minimizing duplications sum: "
+                                               + gsdir.getMinDuplicationsSumGeneTrees().size() + "\n"
+                                               + "Number of shortest trees: " + shortests.size(),
+                                       "GSDIR successfully completed",
+                                       JOptionPane.INFORMATION_MESSAGE );
+    }
+
+    void executeLineageInference() {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
+            return;
+        }
+        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Phylogeny is not rooted.",
+                                           "Cannot infer ancestral taxonomies",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer( this,
+                                                                                  _mainpanel.getCurrentTreePanel(),
+                                                                                  _mainpanel.getCurrentPhylogeny()
+                                                                                          .copy() );
+        new Thread( inferrer ).start();
+    }
+
+    void executeSDIR( final boolean minimize_cost ) {
+        if ( !isOKforSDI( true, true ) ) {
+            return;
+        }
+        Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        final SDIR sdiunrooted = new SDIR();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        try {
+            gene_tree = sdiunrooted.infer( gene_tree, _species_tree, minimize_cost, // minimize cost
+                                           !minimize_cost, // minimize sum of dups
+                                           true, // minimize height
+                                           true, // return tree(s)
+                                           1 )[ 0 ]; // # of trees to return
+        }
+        catch ( final Exception e ) {
+            JOptionPane.showMessageDialog( this, e.toString(), "Error during SDIR", JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final int duplications = sdiunrooted.getMinimalDuplications();
+        gene_tree.setRerootable( false );
+        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
+        getControlPanel().setShowEvents( true );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        JOptionPane.showMessageDialog( this,
+                                       "Number of duplications: " + duplications,
+                                       "SDIR successfully completed",
+                                       JOptionPane.INFORMATION_MESSAGE );
+    }
+
+    void exit() {
+        removeAllTextFrames();
+        _mainpanel.terminate();
+        _contentpane.removeAll();
+        setVisible( false );
+        dispose();
+        System.exit( 0 );
+    }
+
+    boolean isOKforSDI( final boolean species_tree_has_to_binary, final boolean gene_tree_has_to_binary ) {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            return false;
+        }
+        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "No species tree loaded",
+                                           "Cannot execute SDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Species tree is not completely binary",
+                                           "Cannot execute SDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute SDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    @Override
+    void readPhylogeniesFromURL() {
+        URL url = null;
+        Phylogeny[] phys = null;
+        final String message = "Please enter a complete URL, for example \"http://www.phyloxml.org/examples/apaf.xml\"";
+        final String url_string = JOptionPane.showInputDialog( this,
+                                                               message,
+                                                               "Use URL/webservice to obtain a phylogeny",
+                                                               JOptionPane.QUESTION_MESSAGE );
+        boolean nhx_or_nexus = false;
+        if ( ( url_string != null ) && ( url_string.length() > 0 ) ) {
+            try {
+                url = new URL( url_string );
+                PhylogenyParser parser = null;
+                if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
+                    parser = new TolParser();
+                }
+                else {
+                    parser = ParserUtils.createParserDependingOnUrlContents( url, getConfiguration()
+                            .isValidatePhyloXmlAgainstSchema() );
+                }
+                if ( parser instanceof NexusPhylogeniesParser ) {
+                    nhx_or_nexus = true;
+                }
+                else if ( parser instanceof NHXParser ) {
+                    nhx_or_nexus = true;
+                }
+                if ( _mainpanel.getCurrentTreePanel() != null ) {
+                    _mainpanel.getCurrentTreePanel().setWaitCursor();
+                }
+                else {
+                    _mainpanel.setWaitCursor();
+                }
+                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+                phys = factory.create( url.openStream(), parser );
+            }
+            catch ( final MalformedURLException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Malformed URL: " + url + "\n" + e.getLocalizedMessage(),
+                                               "Malformed URL",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Could not read from " + url + "\n"
+                                                       + ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
+                                               "Failed to read URL",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            catch ( final Exception e ) {
+                JOptionPane.showMessageDialog( this,
+                                               ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
+                                               "Unexpected Exception",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            finally {
+                if ( _mainpanel.getCurrentTreePanel() != null ) {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                else {
+                    _mainpanel.setArrowCursor();
+                }
+            }
+            if ( ( phys != null ) && ( phys.length > 0 ) ) {
+                if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
+                    for( final Phylogeny phy : phys ) {
+                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                    }
+                }
+                AptxUtil.addPhylogeniesToTabs( phys,
+                                               new File( url.getFile() ).getName(),
+                                               new File( url.getFile() ).toString(),
+                                               getConfiguration(),
+                                               getMainPanel() );
+                _mainpanel.getControlPanel().showWhole();
+            }
+        }
+        activateSaveAllIfNeeded();
+        System.gc();
+    }
+
+    void setMsa( final Msa msa ) {
+        _msa = msa;
+    }
+
+    void setMsaFile( final File msa_file ) {
+        _msa_file = msa_file;
+    }
+
+    void setSeqs( final List<Sequence> seqs ) {
+        _seqs = seqs;
+    }
+
+    void setSeqsFile( final File seqs_file ) {
+        _seqs_file = seqs_file;
+    }
+
+    void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
+        _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
+                                                                   _mainpanel.getCurrentTreePanel().getHeight(),
+                                                                   true );
+        String file_written_to = "";
+        boolean error = false;
+        try {
+            file_written_to = AptxUtil.writePhylogenyToGraphicsFile( file_name,
+                                                                     _mainpanel.getCurrentTreePanel().getWidth(),
+                                                                     _mainpanel.getCurrentTreePanel().getHeight(),
+                                                                     _mainpanel.getCurrentTreePanel(),
+                                                                     _mainpanel.getControlPanel(),
+                                                                     type,
+                                                                     getOptions() );
+        }
+        catch ( final IOException e ) {
+            error = true;
+            JOptionPane.showMessageDialog( this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
+        }
+        if ( !error ) {
+            if ( ( file_written_to != null ) && ( file_written_to.length() > 0 ) ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Wrote image to: " + file_written_to,
+                                               "Graphics Export",
+                                               JOptionPane.INFORMATION_MESSAGE );
+            }
+            else {
+                JOptionPane.showMessageDialog( this,
+                                               "There was an unknown problem when attempting to write to an image file: \""
+                                                       + file_name + "\"",
+                                               "Error",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+        }
+        _contentpane.repaint();
+    }
+
+    private void addExpressionValuesFromFile() {
+        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Need to load evolutionary tree first",
+                                           "Can Not Read Expression Values",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _values_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _values_filechooser.showOpenDialog( _contentpane );
+        final File file = _values_filechooser.getSelectedFile();
+        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            BasicTable<String> t = null;
+            try {
+                t = BasicTableParser.parse( file, "\t" );
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, "," );
+                }
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, " " );
+                }
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               e.getMessage(),
+                                               "Could Not Read Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfColumns() < 2 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
+                                               "Problem with Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfRows() < 1 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains zero rows",
+                                               "Problem with Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( t.getNumberOfRows() != phy.getNumberOfExternalNodes() ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
+                                                       + phy.getNumberOfExternalNodes() + " external nodes",
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+            int not_found = 0;
+            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+                final PhylogenyNode node = iter.next();
+                final String node_name = node.getName();
+                if ( !ForesterUtil.isEmpty( node_name ) ) {
+                    int row = -1;
+                    try {
+                        row = t.findRow( node_name );
+                    }
+                    catch ( final IllegalArgumentException e ) {
+                        JOptionPane
+                                .showMessageDialog( this,
+                                                    e.getMessage(),
+                                                    "Error Mapping Node Identifiers to Expression Value Identifiers",
+                                                    JOptionPane.ERROR_MESSAGE );
+                        return;
+                    }
+                    if ( row < 0 ) {
+                        if ( node.isExternal() ) {
+                            not_found++;
+                        }
+                        continue;
+                    }
+                    final List<Double> l = new ArrayList<Double>();
+                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
+                        double d = -100;
+                        try {
+                            d = Double.parseDouble( t.getValueAsString( col, row ) );
+                        }
+                        catch ( final NumberFormatException e ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Could not parse \"" + t.getValueAsString( col, row )
+                                                                   + "\" into a decimal value",
+                                                           "Issue with Expression Value Table",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        stats.addValue( d );
+                        l.add( d );
+                    }
+                    if ( !l.isEmpty() ) {
+                        if ( node.getNodeData().getProperties() != null ) {
+                            node.getNodeData().getProperties()
+                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
+                        }
+                        node.getNodeData().setVector( l );
+                    }
+                }
+            }
+            if ( not_found > 0 ) {
+                JOptionPane.showMessageDialog( this, "Could not fine expression values for " + not_found
+                        + " external node(s)", "Warning", JOptionPane.WARNING_MESSAGE );
+            }
+            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
+        }
     }
 
     private void choosePdfWidth() {
@@ -1074,20 +1703,6 @@ public final class MainFrameApplication extends MainFrame {
                 getOptions().setPrintSizeY( y );
             }
         }
-    }
-
-    @Override
-    void close() {
-        if ( isUnsavedDataPresent() ) {
-            final int r = JOptionPane.showConfirmDialog( this,
-                                                         "Exit despite potentially unsaved changes?",
-                                                         "Exit?",
-                                                         JOptionPane.YES_NO_OPTION );
-            if ( r != JOptionPane.YES_OPTION ) {
-                return;
-            }
-        }
-        exit();
     }
 
     private void closeCurrentPane() {
@@ -1222,131 +1837,6 @@ public final class MainFrameApplication extends MainFrame {
         return xml_parser;
     }
 
-    void executeGSDI() {
-        if ( !isOKforSDI( false, true ) ) {
-            return;
-        }
-        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not rooted.",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        GSDI gsdi = null;
-        final Phylogeny species_tree = _species_tree.copy();
-        try {
-            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
-        }
-        catch ( final SDIException e ) {
-            JOptionPane.showMessageDialog( this,
-                                           e.getLocalizedMessage(),
-                                           "Error during GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final Exception e ) {
-            AptxUtil.unexpectedException( e );
-            return;
-        }
-        gene_tree.setRerootable( false );
-        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        _mainpanel.getCurrentPhylogeny().clearHashIdToNodeMap();
-        _mainpanel.getCurrentPhylogeny().recalculateNumberOfExternalDescendants( true );
-        _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
-        showWhole();
-        _mainpanel.getTabbedPane().setSelectedIndex( selected );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this, "Duplications: " + gsdi.getDuplicationsSum() + "\n"
-                + "Potential duplications: " + gsdi.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
-                + gsdi.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
-    }
-
-    void executeGSDIR() {
-        if ( !isOKforSDI( false, true ) ) {
-            return;
-        }
-        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        GSDIR gsdir = null;
-        final Phylogeny species_tree = _species_tree.copy();
-        try {
-            gsdir = new GSDIR( gene_tree, species_tree, true, true );
-        }
-        catch ( final SDIException e ) {
-            JOptionPane.showMessageDialog( this,
-                                           e.getLocalizedMessage(),
-                                           "Error during GSDIR",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final Exception e ) {
-            AptxUtil.unexpectedException( e );
-            return;
-        }
-        final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
-        final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
-        final Phylogeny result_gene_tree = assigned_trees.get( shortests.get( 0 ) );
-        result_gene_tree.setRerootable( false );
-        result_gene_tree.clearHashIdToNodeMap();
-        result_gene_tree.recalculateNumberOfExternalDescendants( true );
-        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
-        showWhole();
-        _mainpanel.getTabbedPane().setSelectedIndex( selected );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Duplications (min): " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
-                                               + gsdir.getSpeciationsSum() + "\n"
-                                               + "Number of root positions minimizing duplications sum: "
-                                               + gsdir.getMinDuplicationsSumGeneTrees().size() + "\n"
-                                               + "Number of shortest trees: " + shortests.size(),
-                                       "GSDIR successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
-    }
-
-    void executeFunctionAnalysis() {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
-            return;
-        }
-        final GoAnnotation a = new GoAnnotation( this,
-                                                 _mainpanel.getCurrentTreePanel(),
-                                                 _mainpanel.getCurrentPhylogeny() );
-        new Thread( a ).start();
-    }
-
-    void executeLineageInference() {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
-            return;
-        }
-        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Phylogeny is not rooted.",
-                                           "Cannot infer ancestral taxonomies",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final AncestralTaxonomyInferrer inferrer = new AncestralTaxonomyInferrer( this,
-                                                                                  _mainpanel.getCurrentTreePanel(),
-                                                                                  _mainpanel.getCurrentPhylogeny()
-                                                                                          .copy() );
-        new Thread( inferrer ).start();
-    }
-
     private void executePhyleneticInference( final boolean from_unaligned_seqs ) {
         final PhyloInferenceDialog dialog = new PhyloInferenceDialog( this,
                                                                       getPhylogeneticInferenceOptions(),
@@ -1382,53 +1872,6 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
         }
-    }
-
-    void executeSDIR( final boolean minimize_cost ) {
-        if ( !isOKforSDI( true, true ) ) {
-            return;
-        }
-        Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        final SDIR sdiunrooted = new SDIR();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        try {
-            gene_tree = sdiunrooted.infer( gene_tree, _species_tree, minimize_cost, // minimize cost
-                                           !minimize_cost, // minimize sum of dups
-                                           true, // minimize height
-                                           true, // return tree(s)
-                                           1 )[ 0 ]; // # of trees to return
-        }
-        catch ( final Exception e ) {
-            JOptionPane.showMessageDialog( this, e.toString(), "Error during SDIR", JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final int duplications = sdiunrooted.getMinimalDuplications();
-        gene_tree.setRerootable( false );
-        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Number of duplications: " + duplications,
-                                       "SDIR successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
-    }
-
-    void exit() {
-        removeAllTextFrames();
-        _mainpanel.terminate();
-        _contentpane.removeAll();
-        setVisible( false );
-        dispose();
-        System.exit( 0 );
-    }
-
-    public void end() {
-        _mainpanel.terminate();
-        _contentpane.removeAll();
-        setVisible( false );
-        dispose();
     }
 
     private void extractTaxCodeFromNodeNames() throws PhyloXmlDataFormatException {
@@ -1477,43 +1920,15 @@ public final class MainFrameApplication extends MainFrame {
         return _current_dir;
     }
 
-    @Override
-    public MainPanel getMainPanel() {
-        return _mainpanel;
-    }
-
     private double getMinNotCollapseConfidenceValue() {
         return _min_not_collapse;
     }
 
-    boolean isOKforSDI( final boolean species_tree_has_to_binary, final boolean gene_tree_has_to_binary ) {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
-            return false;
+    private PhylogeneticInferenceOptions getPhylogeneticInferenceOptions() {
+        if ( _phylogenetic_inference_options == null ) {
+            _phylogenetic_inference_options = new PhylogeneticInferenceOptions();
         }
-        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "No species tree loaded",
-                                           "Cannot execute SDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Species tree is not completely binary",
-                                           "Cannot execute SDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not completely binary",
-                                           "Cannot execute SDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else {
-            return true;
-        }
+        return _phylogenetic_inference_options;
     }
 
     private boolean isUnsavedDataPresent() {
@@ -1690,118 +2105,6 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void addExpressionValuesFromFile() {
-        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Need to load evolutionary tree first",
-                                           "Can Not Read Expression Values",
-                                           JOptionPane.WARNING_MESSAGE );
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _values_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _values_filechooser.showOpenDialog( _contentpane );
-        final File file = _values_filechooser.getSelectedFile();
-        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            BasicTable<String> t = null;
-            try {
-                t = BasicTableParser.parse( file, "\t" );
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, "," );
-                }
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, " " );
-                }
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               e.getMessage(),
-                                               "Could Not Read Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfColumns() < 2 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
-                                               "Problem with Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfRows() < 1 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains zero rows",
-                                               "Problem with Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ( t.getNumberOfRows() != phy.getNumberOfExternalNodes() ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
-                                                       + phy.getNumberOfExternalNodes() + " external nodes",
-                                               "Warning",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-            int not_found = 0;
-            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                final String node_name = node.getName();
-                if ( !ForesterUtil.isEmpty( node_name ) ) {
-                    int row = -1;
-                    try {
-                        row = t.findRow( node_name );
-                    }
-                    catch ( final IllegalArgumentException e ) {
-                        JOptionPane
-                                .showMessageDialog( this,
-                                                    e.getMessage(),
-                                                    "Error Mapping Node Identifiers to Expression Value Identifiers",
-                                                    JOptionPane.ERROR_MESSAGE );
-                        return;
-                    }
-                    if ( row < 0 ) {
-                        if ( node.isExternal() ) {
-                            not_found++;
-                        }
-                        continue;
-                    }
-                    final List<Double> l = new ArrayList<Double>();
-                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble( t.getValueAsString( col, row ) );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + t.getValueAsString( col, row )
-                                                                   + "\" into a decimal value",
-                                                           "Issue with Expression Value Table",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        stats.addValue( d );
-                        l.add( d );
-                    }
-                    if ( !l.isEmpty() ) {
-                        if ( node.getNodeData().getProperties() != null ) {
-                            node.getNodeData().getProperties()
-                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
-                        }
-                        node.getNodeData().setVector( l );
-                    }
-                }
-            }
-            if ( not_found > 0 ) {
-                JOptionPane.showMessageDialog( this, "Could not fine expression values for " + not_found
-                        + " external node(s)", "Warning", JOptionPane.WARNING_MESSAGE );
-            }
-            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
-        }
-    }
-
     private void readPhylogeniesFromFile() {
         boolean exception = false;
         Phylogeny[] phys = null;
@@ -1939,299 +2242,6 @@ public final class MainFrameApplication extends MainFrame {
         System.gc();
     }
 
-    public void readSeqsFromFile() {
-        // Set an initial directory if none set yet
-        final File my_dir = getCurrentDir();
-        _seqs_filechooser.setMultiSelectionEnabled( false );
-        // Open file-open dialog and set current directory
-        if ( my_dir != null ) {
-            _seqs_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _seqs_filechooser.showOpenDialog( _contentpane );
-        // All done: get the seqs
-        final File file = _seqs_filechooser.getSelectedFile();
-        setCurrentDir( _seqs_filechooser.getCurrentDirectory() );
-        if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            setSeqsFile( null );
-            setSeqs( null );
-            List<Sequence> seqs = null;
-            try {
-                if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
-                    seqs = FastaParser.parse( new FileInputStream( file ) );
-                    for( final Sequence seq : seqs ) {
-                        System.out.println( SequenceWriter.toFasta( seq, 60 ) );
-                    }
-                }
-                else {
-                    //TODO error
-                }
-            }
-            catch ( final MsaFormatException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Multiple sequence file format error",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final IOException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Failed to read multiple sequence file",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final IllegalArgumentException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Unexpected error during reading of multiple sequence file",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final Exception e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Unexpected error during reading of multiple sequence file",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( ( seqs == null ) || ( seqs.size() < 1 ) ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Multiple sequence file is empty",
-                                               "Illegal multiple sequence file",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( seqs.size() < 4 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Multiple sequence file needs to contain at least 3 sequences",
-                                               "Illegal multiple sequence file",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            //  if ( msa.getLength() < 2 ) {
-            //       JOptionPane.showMessageDialog( this,
-            //                                      "Multiple sequence alignment needs to contain at least 2 residues",
-            //                                      "Illegal multiple sequence file",
-            //                                      JOptionPane.ERROR_MESSAGE );
-            //       return;
-            //   }
-            System.gc();
-            setSeqsFile( _seqs_filechooser.getSelectedFile() );
-            setSeqs( seqs );
-        }
-    }
-
-    public void readMsaFromFile() {
-        // Set an initial directory if none set yet
-        final File my_dir = getCurrentDir();
-        _msa_filechooser.setMultiSelectionEnabled( false );
-        // Open file-open dialog and set current directory
-        if ( my_dir != null ) {
-            _msa_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _msa_filechooser.showOpenDialog( _contentpane );
-        // All done: get the msa
-        final File file = _msa_filechooser.getSelectedFile();
-        setCurrentDir( _msa_filechooser.getCurrentDirectory() );
-        if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            setMsaFile( null );
-            setMsa( null );
-            Msa msa = null;
-            try {
-                final InputStream is = new FileInputStream( file );
-                if ( FastaParser.isLikelyFasta( file ) ) {
-                    msa = FastaParser.parseMsa( is );
-                }
-                else {
-                    msa = GeneralMsaParser.parse( is );
-                }
-            }
-            catch ( final MsaFormatException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Multiple sequence alignment format error",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final IOException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Failed to read multiple sequence alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final IllegalArgumentException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Unexpected error during reading of multiple sequence alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            catch ( final Exception e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this,
-                                               e.getLocalizedMessage(),
-                                               "Unexpected error during reading of multiple sequence alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( ( msa == null ) || ( msa.getNumberOfSequences() < 1 ) ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Multiple sequence alignment is empty",
-                                               "Illegal Multiple Sequence Alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( msa.getNumberOfSequences() < 4 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Multiple sequence alignment needs to contain at least 3 sequences",
-                                               "Illegal multiple sequence alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( msa.getLength() < 2 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Multiple sequence alignment needs to contain at least 2 residues",
-                                               "Illegal multiple sequence alignment",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            System.gc();
-            setMsaFile( _msa_filechooser.getSelectedFile() );
-            setMsa( msa );
-        }
-    }
-
-    @Override
-    void readPhylogeniesFromURL() {
-        URL url = null;
-        Phylogeny[] phys = null;
-        final String message = "Please enter a complete URL, for example \"http://www.phyloxml.org/examples/apaf.xml\"";
-        final String url_string = JOptionPane.showInputDialog( this,
-                                                               message,
-                                                               "Use URL/webservice to obtain a phylogeny",
-                                                               JOptionPane.QUESTION_MESSAGE );
-        boolean nhx_or_nexus = false;
-        if ( ( url_string != null ) && ( url_string.length() > 0 ) ) {
-            try {
-                url = new URL( url_string );
-                PhylogenyParser parser = null;
-                if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
-                    parser = new TolParser();
-                }
-                else {
-                    parser = ParserUtils.createParserDependingOnUrlContents( url, getConfiguration()
-                            .isValidatePhyloXmlAgainstSchema() );
-                }
-                if ( parser instanceof NexusPhylogeniesParser ) {
-                    nhx_or_nexus = true;
-                }
-                else if ( parser instanceof NHXParser ) {
-                    nhx_or_nexus = true;
-                }
-                if ( _mainpanel.getCurrentTreePanel() != null ) {
-                    _mainpanel.getCurrentTreePanel().setWaitCursor();
-                }
-                else {
-                    _mainpanel.setWaitCursor();
-                }
-                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                phys = factory.create( url.openStream(), parser );
-            }
-            catch ( final MalformedURLException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Malformed URL: " + url + "\n" + e.getLocalizedMessage(),
-                                               "Malformed URL",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Could not read from " + url + "\n"
-                                                       + ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
-                                               "Failed to read URL",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-            catch ( final Exception e ) {
-                JOptionPane.showMessageDialog( this,
-                                               ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
-                                               "Unexpected Exception",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-            finally {
-                if ( _mainpanel.getCurrentTreePanel() != null ) {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                else {
-                    _mainpanel.setArrowCursor();
-                }
-            }
-            if ( ( phys != null ) && ( phys.length > 0 ) ) {
-                if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
-                    for( final Phylogeny phy : phys ) {
-                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
-                    }
-                }
-                AptxUtil.addPhylogeniesToTabs( phys,
-                                               new File( url.getFile() ).getName(),
-                                               new File( url.getFile() ).toString(),
-                                               getConfiguration(),
-                                               getMainPanel() );
-                _mainpanel.getControlPanel().showWhole();
-            }
-        }
-        activateSaveAllIfNeeded();
-        System.gc();
-    }
-
     private void readSpeciesTreeFromFile() {
         Phylogeny t = null;
         boolean exception = false;
@@ -2332,6 +2342,10 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setMinNotCollapseConfidenceValue( final double min_not_collapse ) {
         _min_not_collapse = min_not_collapse;
+    }
+
+    private void setPhylogeneticInferenceOptions( final PhylogeneticInferenceOptions phylogenetic_inference_options ) {
+        _phylogenetic_inference_options = phylogenetic_inference_options;
     }
 
     private void setSpecialOptionsForNexParser( final NexusPhylogeniesParser nex ) {
@@ -2442,43 +2456,6 @@ public final class MainFrameApplication extends MainFrame {
             exceptionOccuredDuringSaveAs( e );
         }
         return exception;
-    }
-
-    void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
-        _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                   _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                   true );
-        String file_written_to = "";
-        boolean error = false;
-        try {
-            file_written_to = AptxUtil.writePhylogenyToGraphicsFile( file_name,
-                                                                     _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                     _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                     _mainpanel.getCurrentTreePanel(),
-                                                                     _mainpanel.getControlPanel(),
-                                                                     type,
-                                                                     getOptions() );
-        }
-        catch ( final IOException e ) {
-            error = true;
-            JOptionPane.showMessageDialog( this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE );
-        }
-        if ( !error ) {
-            if ( ( file_written_to != null ) && ( file_written_to.length() > 0 ) ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Wrote image to: " + file_written_to,
-                                               "Graphics Export",
-                                               JOptionPane.INFORMATION_MESSAGE );
-            }
-            else {
-                JOptionPane.showMessageDialog( this,
-                                               "There was an unknown problem when attempting to write to an image file: \""
-                                                       + file_name + "\"",
-                                               "Error",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
-        }
-        _contentpane.repaint();
     }
 
     private void writeToFile( final Phylogeny t ) {
@@ -2665,16 +2642,8 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    static MainFrame createInstance( final Phylogeny[] phys, final Configuration config, final String title ) {
-        return new MainFrameApplication( phys, config, title );
-    }
-
     public static MainFrameApplication createInstance( final Phylogeny[] phys, final Configuration config ) {
         return new MainFrameApplication( phys, config );
-    }
-
-    static MainFrame createInstance( final Phylogeny[] phys, final String config_file_name, final String title ) {
-        return new MainFrameApplication( phys, config_file_name, title );
     }
 
     public static MainFrame createInstance( final Phylogeny[] phys,
@@ -2682,6 +2651,14 @@ public final class MainFrameApplication extends MainFrame {
                                             final String title,
                                             final File current_dir ) {
         return new MainFrameApplication( phys, config, title, current_dir );
+    }
+
+    static MainFrame createInstance( final Phylogeny[] phys, final Configuration config, final String title ) {
+        return new MainFrameApplication( phys, config, title );
+    }
+
+    static MainFrame createInstance( final Phylogeny[] phys, final String config_file_name, final String title ) {
+        return new MainFrameApplication( phys, config_file_name, title );
     }
 
     static void setTextForGraphicsSizeChooserMenuItem( final JMenuItem mi, final Options o ) {
@@ -2704,50 +2681,58 @@ public final class MainFrameApplication extends MainFrame {
                                         JOptionPane.WARNING_MESSAGE );
         }
     }
-
-    private void setPhylogeneticInferenceOptions( final PhylogeneticInferenceOptions phylogenetic_inference_options ) {
-        _phylogenetic_inference_options = phylogenetic_inference_options;
-    }
-
-    private PhylogeneticInferenceOptions getPhylogeneticInferenceOptions() {
-        if ( _phylogenetic_inference_options == null ) {
-            _phylogenetic_inference_options = new PhylogeneticInferenceOptions();
-        }
-        return _phylogenetic_inference_options;
-    }
-
-    public Msa getMsa() {
-        return _msa;
-    }
-
-    void setMsa( final Msa msa ) {
-        _msa = msa;
-    }
-
-    void setMsaFile( final File msa_file ) {
-        _msa_file = msa_file;
-    }
-
-    public File getMsaFile() {
-        return _msa_file;
-    }
-
-    public List<Sequence> getSeqs() {
-        return _seqs;
-    }
-
-    void setSeqs( final List<Sequence> seqs ) {
-        _seqs = seqs;
-    }
-
-    void setSeqsFile( final File seqs_file ) {
-        _seqs_file = seqs_file;
-    }
-
-    public File getSeqsFile() {
-        return _seqs_file;
-    }
 } // MainFrameApplication.
+
+class DefaultFilter extends FileFilter {
+
+    @Override
+    public boolean accept( final File f ) {
+        final String file_name = f.getName().trim().toLowerCase();
+        return file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
+                || file_name.endsWith( ".nwk" ) || file_name.endsWith( ".phb" ) || file_name.endsWith( ".ph" )
+                || file_name.endsWith( ".tr" ) || file_name.endsWith( ".dnd" ) || file_name.endsWith( ".tree" )
+                || file_name.endsWith( ".nhx" ) || file_name.endsWith( ".xml" ) || file_name.endsWith( ".phyloxml" )
+                || file_name.endsWith( "phylo.xml" ) || file_name.endsWith( ".pxml" ) || file_name.endsWith( ".nexus" )
+                || file_name.endsWith( ".nx" ) || file_name.endsWith( ".nex" ) || file_name.endsWith( ".tre" )
+                || file_name.endsWith( ".zip" ) || file_name.endsWith( ".tol" ) || file_name.endsWith( ".tolxml" )
+                || file_name.endsWith( ".con" ) || f.isDirectory();
+    }
+
+    @Override
+    public String getDescription() {
+        return "All supported files (*.xml, *.phyloxml, *phylo.xml, *.nhx, *.nh, *.newick, *.nex, *.nexus, *.phy, *.tre, *.tree, *.tol, ...)";
+    }
+}
+
+class GraphicsFileFilter extends FileFilter {
+
+    @Override
+    public boolean accept( final File f ) {
+        final String file_name = f.getName().trim().toLowerCase();
+        return file_name.endsWith( ".jpg" ) || file_name.endsWith( ".jpeg" ) || file_name.endsWith( ".png" )
+                || file_name.endsWith( ".gif" ) || file_name.endsWith( ".bmp" ) || f.isDirectory();
+    }
+
+    @Override
+    public String getDescription() {
+        return "Image files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)";
+    }
+}
+
+class MsaFileFilter extends FileFilter {
+
+    @Override
+    public boolean accept( final File f ) {
+        final String file_name = f.getName().trim().toLowerCase();
+        return file_name.endsWith( ".msa" ) || file_name.endsWith( ".aln" ) || file_name.endsWith( ".fasta" )
+                || file_name.endsWith( ".fas" ) || file_name.endsWith( ".fa" ) || f.isDirectory();
+    }
+
+    @Override
+    public String getDescription() {
+        return "Multiple sequence alignment files (*.msa, *.aln, *.fasta, *.fa, *.fas)";
+    }
+}
 
 class NexusFilter extends FileFilter {
 
@@ -2807,6 +2792,21 @@ class PdfFilter extends FileFilter {
         return "PDF files (*.pdf)";
     }
 } // PdfFilter
+
+class SequencesFileFilter extends FileFilter {
+
+    @Override
+    public boolean accept( final File f ) {
+        final String file_name = f.getName().trim().toLowerCase();
+        return file_name.endsWith( ".fasta" ) || file_name.endsWith( ".fa" ) || file_name.endsWith( ".fas" )
+                || file_name.endsWith( ".seqs" ) || f.isDirectory();
+    }
+
+    @Override
+    public String getDescription() {
+        return "Sequences files (*.fasta, *.fa, *.fas, *.seqs )";
+    }
+}
 
 class TolFilter extends FileFilter {
 

@@ -31,19 +31,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.rio.RIO;
-import org.forester.rio.RIOException;
 import org.forester.rio.RIO.REROOTING;
+import org.forester.rio.RIOException;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIutil.ALGORITHM;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -54,8 +51,8 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String PRG_NAME      = "rio";
-    final static private String PRG_VERSION   = "4.000 beta 2";
-    final static private String PRG_DATE      = "2012.12.14";
+    final static private String PRG_VERSION   = "4.000 beta 3";
+    final static private String PRG_DATE      = "2012.12.17";
     final static private String E_MAIL        = "czmasek@burnham.org";
     final static private String WWW           = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1 = "help";
@@ -80,7 +77,7 @@ public class rio {
         if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
             printHelp();
         }
-        if ( ( args.length < 3 ) || ( args.length > 5 ) ) {
+        if ( ( args.length < 3 ) || ( args.length > 8 ) ) {
             System.out.println();
             System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
             System.out.println();
@@ -94,7 +91,7 @@ public class rio {
         }
         final File gene_trees_file = cla.getFile( 0 );
         final File species_tree_file = cla.getFile( 1 );
-        final File othology_outtable = cla.getFile( 2 );
+        final File orthology_outtable = cla.getFile( 2 );
         final File logfile;
         if ( cla.getNumberOfNames() > 3 ) {
             logfile = cla.getFile( 3 );
@@ -105,11 +102,11 @@ public class rio {
         else {
             logfile = null;
         }
-        String outgroup = "";
+        final String outgroup = "";
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, species_tree_file );
-        if ( othology_outtable.exists() ) {
-            ForesterUtil.fatalError( PRG_NAME, "\"" + othology_outtable + "\" already exists" );
+        if ( orthology_outtable.exists() ) {
+            ForesterUtil.fatalError( PRG_NAME, "\"" + orthology_outtable + "\" already exists" );
         }
         boolean sdir = false;
         if ( cla.isOptionSet( USE_SDIR ) ) {
@@ -121,7 +118,7 @@ public class rio {
         long time = 0;
         System.out.println( "Gene trees                : " + gene_trees_file );
         System.out.println( "Species tree              : " + species_tree_file );
-        System.out.println( "All vs all orthology table: " + othology_outtable );
+        System.out.println( "All vs all orthology table: " + orthology_outtable );
         if ( !sdir ) {
             if ( logfile != null ) {
                 System.out.println( "Logfile                   : " + logfile );
@@ -144,6 +141,15 @@ public class rio {
         if ( !species_tree.isRooted() ) {
             ForesterUtil.fatalError( PRG_NAME, "species tree is not rooted" );
         }
+        final int o = PhylogenyMethods.countNumberOfOneDescendantNodes( species_tree );
+        if ( o > 0 ) {
+            ForesterUtil.printWarningMessage( PRG_NAME, "species tree has " + o
+                    + " internal nodes with only one descendent! Going to strip them." );
+            PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
+            if ( PhylogenyMethods.countNumberOfOneDescendantNodes( species_tree ) > 0 ) {
+                ForesterUtil.unexpectedFatalError( PRG_NAME, "stripping of one-desc nodes failed" );
+            }
+        }
         final ALGORITHM algorithm;
         if ( sdir ) {
             algorithm = ALGORITHM.SDIR;
@@ -152,19 +158,38 @@ public class rio {
             algorithm = ALGORITHM.GSDIR;
         }
         try {
-            final RIO rio = new RIO( gene_trees_file, species_tree, algorithm, REROOTING.BY_ALGORITHM, outgroup ,  logfile != null, true );
+            final RIO rio = RIO.executeAnalysis( gene_trees_file,
+                                                 species_tree,
+                                                 algorithm,
+                                                 REROOTING.BY_ALGORITHM,
+                                                 outgroup,
+                                                 logfile != null,
+                                                 true );
             if ( algorithm == ALGORITHM.GSDIR ) {
                 ForesterUtil.programMessage( PRG_NAME, "taxonomy linking based on: " + rio.getGSDIRtaxCompBase() );
             }
-            tableOutput( othology_outtable, rio );
-            if ( ( algorithm == ALGORITHM.GSDIR ) && ( logfile != null ) ) {
-                writeLogFile( logfile, rio );
+            tableOutput( orthology_outtable, rio );
+            if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
+                writeLogFile( logfile,
+                              rio,
+                              species_tree_file,
+                              gene_trees_file,
+                              orthology_outtable,
+                              PRG_NAME,
+                              PRG_VERSION,
+                              PRG_DATE,
+                              ForesterUtil.getForesterLibraryInformation() );
             }
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
-            ForesterUtil.programMessage( PRG_NAME, "Mean: " + stats.arithmeticMean() + "("  + stats.sampleStandardDeviation() + ")" );
-            ForesterUtil.programMessage( PRG_NAME, "Min: " + (int) stats.getMin() );
-            ForesterUtil.programMessage( PRG_NAME, "Max: " + (int) stats.getMax() );
-            
+            final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
+            ForesterUtil.programMessage( PRG_NAME,
+                                         "Mean number of duplications  : " + df.format( stats.arithmeticMean() )
+                                                 + " (sd: " + df.format( stats.sampleStandardDeviation() ) + ")" );
+            if ( stats.getN() > 3 ) {
+                ForesterUtil.programMessage( PRG_NAME, "Median number of duplications: " + df.format( stats.median() ) );
+            }
+            ForesterUtil.programMessage( PRG_NAME, "Minimum duplications         : " + ( int ) stats.getMin() );
+            ForesterUtil.programMessage( PRG_NAME, "Maximum duplications         : " + ( int ) stats.getMax() );
         }
         catch ( final RIOException e ) {
             ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -178,47 +203,65 @@ public class rio {
         catch ( final Exception e ) {
             ForesterUtil.unexpectedFatalError( PRG_NAME, e );
         }
-      
         time = System.currentTimeMillis() - time;
         ForesterUtil.programMessage( PRG_NAME, "time: " + time + "ms" );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.exit( 0 );
     }
 
-    private static void writeLogFile( final File logfile, final RIO rio ) throws IOException {
-        final EasyWriter out = ForesterUtil.createEasyWriter( logfile );
-        out.println( "Species stripped from gene trees:" );
-        final SortedSet<String> rn = new TreeSet<String>();
-        for( final PhylogenyNode n : rio.getRemovedGeneTreeNodes() ) {
-            final Taxonomy t = n.getNodeData().getTaxonomy();
-            switch ( rio.getGSDIRtaxCompBase() ) {
-                case CODE: {
-                    rn.add( t.getTaxonomyCode() );
-                    break;
-                }
-                case ID: {
-                    rn.add( t.getIdentifier().toString() );
-                    break;
-                }
-                case SCIENTIFIC_NAME: {
-                    rn.add( t.getScientificName() );
-                    break;
-                }
-            }
-        }
-        for( final String s : rn ) {
-            out.println( s );
-        }
-        out.println();
-        out.println( "Some information about duplication numbers in gene trees:" );
-        out.println( rio.getLog().toString() );
-        out.close();
-        ForesterUtil.programMessage( PRG_NAME, "wrote log to \"" + logfile + "\"" );
+    private final static void printHelp() {
+        System.out.println( "Usage" );
+        System.out.println();
+        System.out
+                .println( PRG_NAME
+                        + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
+        System.out.println();
+        System.out.println( " Options" );
+        System.out.println( "  -" + USE_SDIR
+                + " : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
+        System.out.println();
+        System.out.println( " Formats" );
+        System.out.println( "  The species tree is expected to be in phyloXML format." );
+        System.out
+                .println( "  The gene trees ideally are in phyloXML as well, but can also be in New Hamphshire (Newick)" );
+        System.out.println( "  or Nexus format as long as species information can be extracted from the gene names" );
+        System.out.println( "  (e.g. \"HUMAN\" from \"BCL2_HUMAN\")." );
+        System.out.println();
+        System.out.println( " Examples" );
+        System.out.println( "  \"rio gene_trees.nh species.xml outtable.tsv log.txt\"" );
+        System.out.println();
+        System.out.println( " More information: http://code.google.com/p/forester/wiki/RIO" );
+        System.out.println();
+        System.exit( -1 );
     }
 
     private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RIOException {
         final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
         writeTable( table_outfile, rio, m );
+    }
+
+    private static void writeLogFile( final File logfile,
+                                      final RIO rio,
+                                      final File species_tree_file,
+                                      final File gene_trees_file,
+                                      final File outtable,
+                                      final String prg_name,
+                                      final String prg_v,
+                                      final String prg_date,
+                                      final String f ) throws IOException {
+        final EasyWriter out = ForesterUtil.createEasyWriter( logfile );
+        out.println( prg_name );
+        out.println( "version : " + prg_v );
+        out.println( "date    : " + prg_date );
+        out.println( "based on: " + f );
+        out.println( "----------------------------------" );
+        out.println( "Gene trees                                      : " + gene_trees_file );
+        out.println( "Species tree                                    : " + species_tree_file );
+        out.println( "All vs all orthology table                      : " + outtable );
+        out.flush();
+        out.println( rio.getLog().toString() );
+        out.close();
+        ForesterUtil.programMessage( PRG_NAME, "wrote log to \"" + logfile + "\"" );
     }
 
     private static void writeTable( final File table_outfile, final RIO rio, final IntMatrix m ) throws IOException {
@@ -248,31 +291,5 @@ public class rio {
         }
         w.close();
         ForesterUtil.programMessage( PRG_NAME, "wrote table to \"" + table_outfile + "\"" );
-    }
-
-    private final static void printHelp() {
-        System.out.println( "Usage" );
-        System.out.println();
-        System.out
-                .println( PRG_NAME
-                        + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
-        System.out.println();
-        System.out.println( " Options" );
-        System.out.println( "  -" + USE_SDIR
-                + " : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
-        System.out.println();
-        System.out.println( " Formats" );
-        System.out.println( "  The species tree is expected to be in phyloXML format." );
-        System.out
-                .println( "  The gene trees ideally are in phyloXML as well, but can also be in New Hamphshire (Newick)" );
-        System.out.println( "  or Nexus format as long as species information can be extracted from the gene names" );
-        System.out.println( "  (e.g. \"HUMAN\" from \"BCL2_HUMAN\")." );
-        System.out.println();
-        System.out.println( " Examples" );
-        System.out.println( "  \"rio gene_trees.nh species.xml outtable.tsv log.txt\"" );
-        System.out.println();
-        System.out.println( " More information: http://code.google.com/p/forester/wiki/RIO" );
-        System.out.println();
-        System.exit( -1 );
     }
 }

@@ -308,6 +308,17 @@ public class PhylogenyMethods {
         return stats;
     }
 
+    public static int countNumberOfOneDescendantNodes( final Phylogeny phy ) {
+        int count = 0;
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() && ( n.getNumberOfDescendants() == 1 ) ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static int countNumberOfPolytomies( final Phylogeny phy ) {
         int count = 0;
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
@@ -396,6 +407,21 @@ public class PhylogenyMethods {
             }
         }
         return deleted;
+    }
+
+    final public static void deleteInternalNodesWithOnlyOneDescendent( final Phylogeny phy ) {
+        final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( !n.isExternal() && ( n.getNumberOfDescendants() == 1 ) ) {
+                to_delete.add( n );
+            }
+        }
+        for( final PhylogenyNode d : to_delete ) {
+            PhylogenyMethods.removeNode( d, phy );
+        }
+        phy.clearHashIdToNodeMap();
+        phy.externalNodesHaveChanged();
     }
 
     final public static void deleteNonOrthologousExternalNodes( final Phylogeny phy, final PhylogenyNode n ) {

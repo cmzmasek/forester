@@ -41,7 +41,13 @@ public final class TestRIO {
             species_tree_1.setRooted( true );
             PhylogenyMethods.transferNodeNameToField( species_tree_1, PhylogenyNodeField.TAXONOMY_CODE, true );
             //Archaeopteryx.createApplication( species_trees_1 );
-            RIO rio = new RIO( gene_trees_1, species_tree_1, ALGORITHM.GSDIR, REROOTING.BY_ALGORITHM, "", true, false );
+            RIO rio = RIO.executeAnalysis( gene_trees_1,
+                                           species_tree_1,
+                                           ALGORITHM.GSDIR,
+                                           REROOTING.BY_ALGORITHM,
+                                           "",
+                                           true,
+                                           false );
             if ( rio.getAnalyzedGeneTrees().length != 5 ) {
                 return false;
             }
@@ -80,7 +86,7 @@ public final class TestRIO {
             final Phylogeny species_tree_2 = factory.create( species_trees_2_str, new NHXParser() )[ 0 ];
             species_tree_2.setRooted( true );
             PhylogenyMethods.transferNodeNameToField( species_tree_2, PhylogenyNodeField.TAXONOMY_CODE, true );
-            rio = new RIO( gene_trees_2, species_tree_2, ALGORITHM.GSDIR, REROOTING.BY_ALGORITHM, null, true, false );
+            rio = RIO.executeAnalysis( gene_trees_2, species_tree_2 );
             m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             // System.out.println( m.toString() );
             if ( !m.getRowAsString( 0, ',' ).equals( "ARATH,5,5,5,5,5,5" ) ) {

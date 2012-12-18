@@ -39,13 +39,8 @@ import org.forester.util.BasicDescriptiveStatistics;
 
 public class GSDIR implements GSDII {
 
-    private final int _min_duplications_sum;
-    private final int _speciations_sum;
-
-    @Override
-    public int getSpeciationsSum() {
-        return _speciations_sum;
-    }
+    private final int                        _min_duplications_sum;
+    private final int                        _speciations_sum;
     private final BasicDescriptiveStatistics _duplications_sum_stats;
     private final List<Phylogeny>            _min_duplications_sum_gene_trees;
     private final List<PhylogenyNode>        _stripped_gene_tree_nodes;
@@ -107,14 +102,6 @@ public class GSDIR implements GSDII {
         _speciations_sum = speciations_sum;
     }
 
-    public int getMinDuplicationsSum() {
-        return _min_duplications_sum;
-    }
-
-    public List<Phylogeny> getMinDuplicationsSumGeneTrees() {
-        return _min_duplications_sum_gene_trees;
-    }
-
     public BasicDescriptiveStatistics getDuplicationsSumStats() {
         return _duplications_sum_stats;
     }
@@ -124,9 +111,22 @@ public class GSDIR implements GSDII {
         return _mapped_species_tree_nodes;
     }
 
+    public int getMinDuplicationsSum() {
+        return _min_duplications_sum;
+    }
+
+    public List<Phylogeny> getMinDuplicationsSumGeneTrees() {
+        return _min_duplications_sum_gene_trees;
+    }
+
     @Override
     public final SortedSet<String> getReMappedScientificNamesFromGeneTree() {
         return _scientific_names_mapped_to_reduced_specificity;
+    }
+
+    @Override
+    public int getSpeciationsSum() {
+        return _speciations_sum;
     }
 
     @Override
