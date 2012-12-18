@@ -57,6 +57,10 @@ public class rio {
     final static private String WWW           = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1 = "help";
     final static private String HELP_OPTION_2 = "h";
+    final static private String GT_FIRST      = "f";
+    final static private String GT_LAST       = "l";
+    final static private String REROOTING_OPT = "r";
+    final static private String OUTGROUP      = "o";
     final static private String USE_SDIR      = "b";
 
     public static void main( final String[] args ) {
@@ -84,6 +88,10 @@ public class rio {
             printHelp();
         }
         final List<String> allowed_options = new ArrayList<String>();
+        allowed_options.add( GT_FIRST );
+        allowed_options.add( GT_LAST );
+        allowed_options.add( REROOTING_OPT );
+        allowed_options.add( OUTGROUP );
         allowed_options.add( USE_SDIR );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
@@ -102,7 +110,57 @@ public class rio {
         else {
             logfile = null;
         }
-        final String outgroup = "";
+        String outgroup = null;
+        if ( cla.isOptionSet( OUTGROUP ) ) {
+            if ( !cla.isOptionHasAValue( OUTGROUP ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no value for -" + OUTGROUP );
+            }
+            outgroup = cla.getOptionValueAsCleanString( OUTGROUP );
+        }
+        REROOTING rerooting = REROOTING.BY_ALGORITHM;
+        if ( cla.isOptionSet( REROOTING_OPT ) ) {
+            if ( !cla.isOptionHasAValue( REROOTING_OPT ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no value for -" + REROOTING_OPT );
+            }
+            final String rerooting_str = cla.getOptionValueAsCleanString( REROOTING_OPT ).toLowerCase();
+            if ( rerooting_str.equals( "none" ) ) {
+                rerooting = REROOTING.NONE;
+            }
+            else if ( rerooting_str.equals( "midpoint" ) ) {
+                rerooting = REROOTING.MIDPOINT;
+            }
+            else if ( rerooting_str.equals( "outgroup" ) ) {
+                rerooting = REROOTING.OUTGROUP;
+            }
+            else {
+                ForesterUtil.fatalError( PRG_NAME, "legal values for  -" + REROOTING_OPT
+                        + " are: none, midpoint, or outgroup (minizming duplications is default)" );
+            }
+        }
+        int gt_first = -1;
+        int gt_last = -1;
+        if ( cla.isOptionSet( GT_FIRST ) ) {
+            if ( !cla.isOptionHasAValue( GT_FIRST ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no value for -" + GT_FIRST );
+            }
+            try {
+                gt_first = cla.getOptionValueAsInt( GT_FIRST );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME, "could not parse integer for -" + GT_FIRST );
+            }
+        }
+        if ( cla.isOptionSet( GT_LAST ) ) {
+            if ( !cla.isOptionHasAValue( GT_LAST ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no value for -" + GT_LAST );
+            }
+            try {
+                gt_last = cla.getOptionValueAsInt( GT_LAST );
+            }
+            catch ( IOException e ) {
+                ForesterUtil.fatalError( PRG_NAME, "could not parse integer for -" + GT_LAST );
+            }
+        }
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, species_tree_file );
         if ( orthology_outtable.exists() ) {
@@ -110,6 +168,9 @@ public class rio {
         }
         boolean sdir = false;
         if ( cla.isOptionSet( USE_SDIR ) ) {
+            if ( cla.isOptionHasAValue( USE_SDIR ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no value allowed for -" + USE_SDIR );
+            }
             sdir = true;
             if ( logfile != null ) {
                 ForesterUtil.fatalError( PRG_NAME, "logfile output only for GSDIR algorithm" );
@@ -161,7 +222,7 @@ public class rio {
             final RIO rio = RIO.executeAnalysis( gene_trees_file,
                                                  species_tree,
                                                  algorithm,
-                                                 REROOTING.BY_ALGORITHM,
+                                                 rerooting,
                                                  outgroup,
                                                  logfile != null,
                                                  true );
@@ -217,8 +278,12 @@ public class rio {
                         + " [options] <gene trees infile> <species tree infile> <all vs all orthology table outfile> [logfile]" );
         System.out.println();
         System.out.println( " Options" );
+        System.out.println( "  -" + GT_FIRST + "=<first>   : to" );
+        System.out.println( "  -" + GT_LAST + "=<last>    : to" );
+        System.out.println( "  -" + REROOTING_OPT + "           : to" );
+        System.out.println( "  -" + OUTGROUP + "=<outgroup>: tp" );
         System.out.println( "  -" + USE_SDIR
-                + " : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
+                + "           : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed)" );
         System.out.println();
         System.out.println( " Formats" );
         System.out.println( "  The species tree is expected to be in phyloXML format." );
