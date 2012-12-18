@@ -485,6 +485,27 @@ public final class RIO {
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, -1, -1, produce_log, verbose );
     }
+    
+    public final static RIO executeAnalysis( final File gene_trees_file,
+                                             final Phylogeny species_tree,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final int first,
+                                             final int last,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
+        if ( p instanceof NHXParser ) {
+            final NHXParser nhx = ( NHXParser ) p;
+            nhx.setReplaceUnderscores( false );
+            nhx.setIgnoreQuotes( true );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+        }
+        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
+        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+    }
 
     public final static RIO executeAnalysis( final Phylogeny[] gene_trees, final Phylogeny species_tree )
             throws IOException, SDIException, RIOException {
@@ -499,6 +520,18 @@ public final class RIO {
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, -1, -1, produce_log, verbose );
+    }
+    
+    public final static RIO executeAnalysis( final Phylogeny[] gene_trees,
+                                             final Phylogeny species_tree,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final int first,
+                                             final int last,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
     }
 
     public enum REROOTING {
