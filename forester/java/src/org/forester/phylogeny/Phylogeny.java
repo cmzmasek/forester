@@ -414,10 +414,10 @@ public class Phylogeny {
         }
         final List<PhylogenyNode> nodes = getNodes( name );
         if ( ( nodes == null ) || ( nodes.size() < 1 ) ) {
-            throw new IllegalArgumentException( "node named [" + name + "] not found" );
+            throw new IllegalArgumentException( "node named \"" + name + "\" not found" );
         }
         if ( nodes.size() > 1 ) {
-            throw new IllegalArgumentException( "node named [" + name + "] not unique" );
+            throw new IllegalArgumentException( "node named \"" + name + "\" not unique" );
         }
         return nodes.get( 0 );
     }

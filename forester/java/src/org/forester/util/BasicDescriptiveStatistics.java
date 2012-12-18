@@ -195,7 +195,7 @@ public class BasicDescriptiveStatistics implements DescriptiveStatistics {
     public double sampleVariance() {
         validate();
         if ( getN() < 2 ) {
-            throw new ArithmeticException( "attempt to calculate sample variance for less then two values" );
+            return 0;
         }
         return ( sumDeviations() / ( getN() - 1 ) );
     }

@@ -60,6 +60,7 @@ import org.forester.util.ForesterUtil;
 
 public final class RIO {
 
+    public static final int                  DEFAULT_RANGE = -1;
     private Phylogeny[]                      _analyzed_gene_trees;
     private List<PhylogenyNode>              _removed_gene_tree_nodes;
     private int                              _ext_nodes;
@@ -75,17 +76,17 @@ public final class RIO {
                  final ALGORITHM algorithm,
                  final REROOTING rerooting,
                  final String outgroup,
-                 final int first,
-                 final int last,
+                 int first,
+                 int last,
                  final boolean produce_log,
                  final boolean verbose ) throws IOException, SDIException, RIOException {
-        if ( !ForesterUtil.isEmpty( outgroup ) && ( rerooting != REROOTING.OUTGROUP ) ) {
-            throw new IllegalArgumentException( "can only use outgroup when re-rooting by outgroup" );
+        if ( ( last == DEFAULT_RANGE ) && ( first >= 0 ) ) {
+            last = gene_trees.length - 1;
         }
-        if ( !( ( last == -1 ) && ( first == -1 ) )
-                && ( ( last < first ) || ( last >= gene_trees.length ) || ( first >= gene_trees.length ) || ( last < 0 ) || ( first < 0 ) ) ) {
-            throw new IllegalArgumentException( "gene tree range is out of range: " + first + "-" + last );
+        else if ( ( first == DEFAULT_RANGE ) && ( last >= 0 ) ) {
+            first = 0;
         }
+        checkPreconditions( gene_trees, rerooting, outgroup, first, last );
         _produce_log = produce_log;
         _verbose = verbose;
         _rerooting = rerooting;
@@ -142,14 +143,8 @@ public final class RIO {
                 throw new RIOException( "failed to establish species based mapping between gene and species trees" );
             }
         }
-        if ( log() ) {
-            preLog( gene_trees, species_tree, algorithm, outgroup );
-        }
         final Phylogeny[] my_gene_trees;
         if ( ( first >= 0 ) && ( last >= first ) && ( last < gene_trees.length ) ) {
-            if ( log() ) {
-                log( "Gene tree range: " + first + "-" + last );
-            }
             my_gene_trees = new Phylogeny[ 1 + last - first ];
             int c = 0;
             for( int i = first; i <= last; ++i ) {
@@ -159,14 +154,17 @@ public final class RIO {
         else {
             my_gene_trees = gene_trees;
         }
-        if ( _verbose && ( my_gene_trees.length > 10 ) ) {
+        if ( log() ) {
+            preLog( gene_trees, species_tree, algorithm, outgroup, first, last );
+        }
+        if ( _verbose && ( my_gene_trees.length >= 4 ) ) {
             System.out.println();
         }
         _analyzed_gene_trees = new Phylogeny[ my_gene_trees.length ];
         int gene_tree_ext_nodes = 0;
         for( int i = 0; i < my_gene_trees.length; ++i ) {
             final Phylogeny gt = my_gene_trees[ i ];
-            if ( _verbose && ( my_gene_trees.length > 10 ) ) {
+            if ( _verbose && ( my_gene_trees.length > 4 ) ) {
                 ForesterUtil.updateProgress( ( ( double ) i ) / my_gene_trees.length );
             }
             if ( i == 0 ) {
@@ -189,7 +187,7 @@ public final class RIO {
         if ( log() ) {
             postLog( species_tree );
         }
-        if ( _verbose && ( my_gene_trees.length > 10 ) ) {
+        if ( _verbose && ( my_gene_trees.length > 4 ) ) {
             System.out.println();
             System.out.println();
         }
@@ -292,13 +290,7 @@ public final class RIO {
                 PhylogenyMethods.midpointRoot( gene_tree );
             }
             else if ( _rerooting == REROOTING.OUTGROUP ) {
-                PhylogenyNode n;
-                try {
-                    n = gene_tree.getNode( outgroup );
-                }
-                catch ( final IllegalArgumentException e ) {
-                    throw new RIOException( "failed to perform re-rooting by outgroup: " + e.getLocalizedMessage() );
-                }
+                final PhylogenyNode n = gene_tree.getNode( outgroup );
                 gene_tree.reRoot( n );
             }
             final GSDI gsdi = new GSDI( gene_tree, species_tree, true, true, true );
@@ -347,7 +339,9 @@ public final class RIO {
     private final void preLog( final Phylogeny[] gene_trees,
                                final Phylogeny species_tree,
                                final ALGORITHM algorithm,
-                               final String outgroup ) {
+                               final String outgroup,
+                               final int first,
+                               final int last ) {
         log( "Number of gene tree (total)                     : " + gene_trees.length );
         log( "Algorithm                                       : " + algorithm );
         log( "Species tree external nodes (prior to stripping): " + species_tree.getNumberOfExternalNodes() );
@@ -373,6 +367,9 @@ public final class RIO {
             }
         }
         log( "Re-rooting                                      : " + rs );
+        if ( ( first >= 0 ) || ( last >= 0 ) ) {
+            log( "Gene trees analyzed range                       : " + first + "-" + last );
+        }
         if ( _rerooting == REROOTING.BY_ALGORITHM ) {
             writeLogSubHeader();
         }
@@ -483,9 +480,17 @@ public final class RIO {
             nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, -1, -1, produce_log, verbose );
+        return new RIO( gene_trees,
+                        species_tree,
+                        algorithm,
+                        rerooting,
+                        outgroup,
+                        DEFAULT_RANGE,
+                        DEFAULT_RANGE,
+                        produce_log,
+                        verbose );
     }
-    
+
     public final static RIO executeAnalysis( final File gene_trees_file,
                                              final Phylogeny species_tree,
                                              final ALGORITHM algorithm,
@@ -509,7 +514,15 @@ public final class RIO {
 
     public final static RIO executeAnalysis( final Phylogeny[] gene_trees, final Phylogeny species_tree )
             throws IOException, SDIException, RIOException {
-        return new RIO( gene_trees, species_tree, ALGORITHM.GSDIR, REROOTING.BY_ALGORITHM, null, -1, -1, false, false );
+        return new RIO( gene_trees,
+                        species_tree,
+                        ALGORITHM.GSDIR,
+                        REROOTING.BY_ALGORITHM,
+                        null,
+                        DEFAULT_RANGE,
+                        DEFAULT_RANGE,
+                        false,
+                        false );
     }
 
     public final static RIO executeAnalysis( final Phylogeny[] gene_trees,
@@ -519,9 +532,17 @@ public final class RIO {
                                              final String outgroup,
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
-        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, -1, -1, produce_log, verbose );
+        return new RIO( gene_trees,
+                        species_tree,
+                        algorithm,
+                        rerooting,
+                        outgroup,
+                        DEFAULT_RANGE,
+                        DEFAULT_RANGE,
+                        produce_log,
+                        verbose );
     }
-    
+
     public final static RIO executeAnalysis( final Phylogeny[] gene_trees,
                                              final Phylogeny species_tree,
                                              final ALGORITHM algorithm,
@@ -532,6 +553,36 @@ public final class RIO {
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+    }
+
+    private final static void checkPreconditions( final Phylogeny[] gene_trees,
+                                                  final REROOTING rerooting,
+                                                  final String outgroup,
+                                                  final int first,
+                                                  final int last ) throws RIOException {
+        if ( !( ( last == DEFAULT_RANGE ) && ( first == DEFAULT_RANGE ) )
+                && ( ( last < first ) || ( last >= gene_trees.length ) || ( last < 0 ) || ( first < 0 ) ) ) {
+            throw new RIOException( "attempt to set range (0-based) of gene to analyze to: from " + first + " to "
+                    + last + " (out of " + gene_trees.length + ")" );
+        }
+        if ( ( rerooting == REROOTING.OUTGROUP ) && ForesterUtil.isEmpty( outgroup ) ) {
+            throw new RIOException( "outgroup not set for midpoint rooting" );
+        }
+        if ( ( rerooting != REROOTING.OUTGROUP ) && !ForesterUtil.isEmpty( outgroup ) ) {
+            throw new RIOException( "outgroup only used for midpoint rooting" );
+        }
+        if ( ( rerooting == REROOTING.MIDPOINT )
+                && ( PhylogenyMethods.calculateMaxDistanceToRoot( gene_trees[ 0 ] ) <= 0 ) ) {
+            throw new RIOException( "attempt to use midpoint rooting on gene trees which seem to have no (positive) branch lengths (cladograms)" );
+        }
+        if ( rerooting == REROOTING.OUTGROUP ) {
+            try {
+                gene_trees[ 0 ].getNode( outgroup );
+            }
+            catch ( final IllegalArgumentException e ) {
+                throw new RIOException( "cannot perform re-rooting by outgroup: " + e.getLocalizedMessage() );
+            }
+        }
     }
 
     public enum REROOTING {
