@@ -36,11 +36,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.forester.io.parsers.PhylogenyParser;
-import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -53,7 +51,6 @@ import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIutil;
 import org.forester.sdi.SDIutil.ALGORITHM;
-import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.EasyWriter;
 import org.forester.util.ForesterConstants;
@@ -180,68 +177,27 @@ public final class gsdi {
             gene_tree = factory.create( gene_tree_file, new PhyloXmlParser() )[ 0 ];
         }
         catch ( final IOException e ) {
-            fatalError( "ERROR",
-                        "Failed to read gene tree from [" + gene_tree_file + "]: " + e.getMessage(),
+            fatalError( "error",
+                        "failed to read gene tree from [" + gene_tree_file + "]: " + e.getMessage(),
                         log_writer );
         }
         try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( species_tree_file, true );
-            if ( p instanceof PhyloXmlParser ) {
-                species_tree = factory.create( species_tree_file, p )[ 0 ];
-            }
-            else {
-                if ( REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE && ( p instanceof NHXParser ) ) {
-                    ( ( NHXParser ) p ).setReplaceUnderscores( true );
-                }
-                species_tree = factory.create( species_tree_file, p )[ 0 ];
-                final TaxonomyComparisonBase comp_base = SDIutil.determineTaxonomyComparisonBase( gene_tree );
-                switch ( comp_base ) {
-                    case SCIENTIFIC_NAME:
-                        try {
-                            PhylogenyMethods
-                                    .transferNodeNameToField( species_tree,
-                                                              PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                              true );
-                        }
-                        catch ( final PhyloXmlDataFormatException e ) {
-                            fatalError( "USER ERROR", "Failed to transfer general node name to scientific name, in ["
-                                    + species_tree_file + "]: " + e.getMessage(), log_writer );
-                        }
-                        break;
-                    case CODE:
-                        try {
-                            PhylogenyMethods
-                                    .transferNodeNameToField( species_tree,
-                                                              PhylogenyMethods.PhylogenyNodeField.TAXONOMY_CODE,
-                                                              true );
-                        }
-                        catch ( final PhyloXmlDataFormatException e ) {
-                            fatalError( "USER ERROR", "Failed to transfer general node name to taxonomy code, in ["
-                                    + species_tree_file + "]: " + e.getMessage(), log_writer );
-                        }
-                        break;
-                    case ID:
-                        try {
-                            PhylogenyMethods.transferNodeNameToField( species_tree,
-                                                                      PhylogenyMethods.PhylogenyNodeField.TAXONOMY_ID,
-                                                                      true );
-                        }
-                        catch ( final PhyloXmlDataFormatException e ) {
-                            fatalError( "USER ERROR", "Failed to transfer general node name to taxonomy id, in ["
-                                    + species_tree_file + "]: " + e.getMessage(), log_writer );
-                        }
-                        break;
-                    default:
-                        fatalError( "UNEXPECTED ERROR", "unable to determine comparison base", log_writer );
-                }
-            }
+            species_tree = SDIutil.parseSpeciesTree( gene_tree,
+                                                     species_tree_file,
+                                                     REPLACE_UNDERSCORES_IN_NH_SPECIES_TREE,
+                                                     true,
+                                                     TAXONOMY_EXTRACTION.NO );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            fatalError( "user error",
+                        "failed to transfer general node name, in [" + species_tree_file + "]: " + e.getMessage(),
+                        log_writer );
         }
         catch ( final SDIException e ) {
             fatalError( "user error", e.getMessage(), log_writer );
         }
         catch ( final IOException e ) {
-            fatalError( "ERROR",
+            fatalError( "error",
                         "Failed to read species tree from [" + species_tree_file + "]: " + e.getMessage(),
                         log_writer );
         }
@@ -405,30 +361,6 @@ public final class gsdi {
         log_writer.close();
     }
 
-    private static void writeToRemappedFile( final File out_file,
-                                             final SortedSet<String> remapped,
-                                             final EasyWriter log_writer ) throws IOException {
-        final File file = new File( ForesterUtil.removeSuffix( out_file.toString() ) + REMAPPED_SUFFIX );
-        final EasyWriter remapped_writer = ForesterUtil.createEasyWriter( file );
-        for( final String s : remapped ) {
-            remapped_writer.println( s );
-        }
-        remapped_writer.close();
-        System.out.println( "Wrote remapped gene tree species to      : " + file.getCanonicalPath() );
-        log_writer.println( "Wrote remapped gene tree species to      : " + file.getCanonicalPath() );
-    }
-
-    private static void printMappedNodesToLog( final EasyWriter log_writer, final GSDII gsdi ) throws IOException {
-        final SortedSet<String> ss = new TreeSet<String>();
-        for( final PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
-            ss.add( n.toString() );
-        }
-        log_writer.println( "The following " + ss.size() + " species were used: " );
-        for( final String s : ss ) {
-            log_writer.println( "  " + s );
-        }
-    }
-
     private static void fatalError( final String type, final String msg, final EasyWriter log_writer ) {
         try {
             log_writer.flush();
@@ -441,30 +373,6 @@ public final class gsdi {
             e.printStackTrace();
         }
         ForesterUtil.fatalError( gsdi.PRG_NAME, msg );
-    }
-
-    private static void printStrippedGeneTreeNodesToLog( final EasyWriter log_writer, final GSDII gsdi )
-            throws IOException {
-        final SortedMap<String, Integer> sm = new TreeMap<String, Integer>();
-        for( final PhylogenyNode n : gsdi.getStrippedExternalGeneTreeNodes() ) {
-            final String s = n.toString();
-            if ( sm.containsKey( s ) ) {
-                sm.put( s, sm.get( s ) + 1 );
-            }
-            else {
-                sm.put( s, 1 );
-            }
-        }
-        log_writer.println( "The following " + sm.size() + " nodes were stripped from the gene tree: " );
-        for( final String s : sm.keySet() ) {
-            final int count = sm.get( s );
-            if ( count == 1 ) {
-                log_writer.println( "  " + s );
-            }
-            else {
-                log_writer.println( "  " + s + " [" + count + "]" );
-            }
-        }
     }
 
     private static void print_help() {
@@ -492,5 +400,53 @@ public final class gsdi {
         System.out.println( "Example: gsdi -" + ALLOW_STRIPPING_OF_GENE_TREE_OPTION
                 + " gene_tree.xml tree_of_life.xml out.xml" );
         System.out.println();
+    }
+
+    private static void printMappedNodesToLog( final EasyWriter log_writer, final GSDII gsdi ) throws IOException {
+        final SortedSet<String> ss = new TreeSet<String>();
+        for( final PhylogenyNode n : gsdi.getMappedExternalSpeciesTreeNodes() ) {
+            ss.add( n.toString() );
+        }
+        log_writer.println( "The following " + ss.size() + " species were used: " );
+        for( final String s : ss ) {
+            log_writer.println( "  " + s );
+        }
+    }
+
+    private static void printStrippedGeneTreeNodesToLog( final EasyWriter log_writer, final GSDII gsdi )
+            throws IOException {
+        final SortedMap<String, Integer> sm = new TreeMap<String, Integer>();
+        for( final PhylogenyNode n : gsdi.getStrippedExternalGeneTreeNodes() ) {
+            final String s = n.toString();
+            if ( sm.containsKey( s ) ) {
+                sm.put( s, sm.get( s ) + 1 );
+            }
+            else {
+                sm.put( s, 1 );
+            }
+        }
+        log_writer.println( "The following " + sm.size() + " nodes were stripped from the gene tree: " );
+        for( final String s : sm.keySet() ) {
+            final int count = sm.get( s );
+            if ( count == 1 ) {
+                log_writer.println( "  " + s );
+            }
+            else {
+                log_writer.println( "  " + s + " [" + count + "]" );
+            }
+        }
+    }
+
+    private static void writeToRemappedFile( final File out_file,
+                                             final SortedSet<String> remapped,
+                                             final EasyWriter log_writer ) throws IOException {
+        final File file = new File( ForesterUtil.removeSuffix( out_file.toString() ) + REMAPPED_SUFFIX );
+        final EasyWriter remapped_writer = ForesterUtil.createEasyWriter( file );
+        for( final String s : remapped ) {
+            remapped_writer.println( s );
+        }
+        remapped_writer.close();
+        System.out.println( "Wrote remapped gene tree species to      : " + file.getCanonicalPath() );
+        log_writer.println( "Wrote remapped gene tree species to      : " + file.getCanonicalPath() );
     }
 }

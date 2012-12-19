@@ -10,11 +10,11 @@ import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 
 public interface GSDII {
 
-    public abstract int getSpeciationsSum();
-
     public abstract Set<PhylogenyNode> getMappedExternalSpeciesTreeNodes();
 
     public abstract SortedSet<String> getReMappedScientificNamesFromGeneTree();
+
+    public abstract int getSpeciationsSum();
 
     public abstract List<PhylogenyNode> getStrippedExternalGeneTreeNodes();
 

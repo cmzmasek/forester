@@ -43,14 +43,26 @@ public final class TestGSDI {
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
                                                           + "test_data" + ForesterUtil.getFileSeparator();
 
-    private final static Phylogeny createPhylogeny( final String nhx ) throws IOException {
-        final Phylogeny p = ParserBasedPhylogenyFactory.getInstance().create( nhx, new NHXParser() )[ 0 ];
-        p.setRooted( true );
-        return p;
-    }
-
-    private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
-        return PhylogenyMethods.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
+    public static void main( final String[] args ) {
+        if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {
+            System.out.println( "binary failed" );
+        }
+        if ( !TestGSDI.testGSDI_general() ) {
+            System.out.println( "general failed" );
+        }
+        if ( !TestGSDI.testGSDIR_general() ) {
+            System.out.println( "general re-rooting failed" );
+        }
+        else {
+            System.out.println( "OK" );
+        }
+        //        boolean success = test();
+        //        if ( success ) {
+        //            System.out.println( "OK" );
+        //        }
+        //        else {
+        //            System.out.println( "failed" );
+        //        }
     }
 
     public static boolean test() {
@@ -64,6 +76,16 @@ public final class TestGSDI {
             return false;
         }
         return true;
+    }
+
+    private final static Phylogeny createPhylogeny( final String nhx ) throws IOException {
+        final Phylogeny p = ParserBasedPhylogenyFactory.getInstance().create( nhx, new NHXParser() )[ 0 ];
+        p.setRooted( true );
+        return p;
+    }
+
+    private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
+        return PhylogenyMethods.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
     }
 
     private static boolean testGSDI_against_binary_gene_tree() {
@@ -1461,27 +1483,5 @@ public final class TestGSDI {
             return false;
         }
         return true;
-    }
-
-    public static void main( final String[] args ) {
-        if ( !TestGSDI.testGSDI_against_binary_gene_tree() ) {
-            System.out.println( "binary failed" );
-        }
-        if ( !TestGSDI.testGSDI_general() ) {
-            System.out.println( "general failed" );
-        }
-        if ( !TestGSDI.testGSDIR_general() ) {
-            System.out.println( "general re-rooting failed" );
-        }
-        else {
-            System.out.println( "OK" );
-        }
-        //        boolean success = test();
-        //        if ( success ) {
-        //            System.out.println( "OK" );
-        //        }
-        //        else {
-        //            System.out.println( "failed" );
-        //        }
     }
 }

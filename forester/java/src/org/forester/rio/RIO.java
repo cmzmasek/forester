@@ -42,6 +42,7 @@ import java.util.TreeSet;
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -53,6 +54,7 @@ import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
 import org.forester.sdi.SDIR;
+import org.forester.sdi.SDIutil;
 import org.forester.sdi.SDIutil.ALGORITHM;
 import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -86,7 +88,8 @@ public final class RIO {
         else if ( ( first == DEFAULT_RANGE ) && ( last >= 0 ) ) {
             first = 0;
         }
-        checkPreconditions( gene_trees, rerooting, outgroup, first, last );
+        removeSingleDescendentsNodes( species_tree, verbose );
+        checkPreconditions( gene_trees, species_tree, rerooting, outgroup, first, last );
         _produce_log = produce_log;
         _verbose = verbose;
         _rerooting = rerooting;
@@ -465,6 +468,35 @@ public final class RIO {
     }
 
     public final static RIO executeAnalysis( final File gene_trees_file,
+                                             final File species_tree_file,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final int first,
+                                             final int last,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
+        if ( p instanceof NHXParser ) {
+            final NHXParser nhx = ( NHXParser ) p;
+            nhx.setReplaceUnderscores( false );
+            nhx.setIgnoreQuotes( true );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+        }
+        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
+        if ( gene_trees.length < 1 ) {
+            throw new RIOException( "\"" + gene_trees_file + "\" is devoid of appropriate gene trees" );
+        }
+        final Phylogeny species_tree = SDIutil.parseSpeciesTree( gene_trees[ 0 ],
+                                                                 species_tree_file,
+                                                                 false,
+                                                                 true,
+                                                                 TAXONOMY_EXTRACTION.NO );
+        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+    }
+
+    public final static RIO executeAnalysis( final File gene_trees_file,
                                              final Phylogeny species_tree,
                                              final ALGORITHM algorithm,
                                              final REROOTING rerooting,
@@ -509,6 +541,9 @@ public final class RIO {
             nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
         }
         final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
+        if ( gene_trees.length < 1 ) {
+            throw new RIOException( "\"" + gene_trees_file + "\" is devoid of appropriate gene trees" );
+        }
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
     }
 
@@ -556,10 +591,14 @@ public final class RIO {
     }
 
     private final static void checkPreconditions( final Phylogeny[] gene_trees,
+                                                  final Phylogeny species_tree,
                                                   final REROOTING rerooting,
                                                   final String outgroup,
                                                   final int first,
                                                   final int last ) throws RIOException {
+        if ( !species_tree.isRooted() ) {
+            throw new RIOException( "species tree is not rooted" );
+        }
         if ( !( ( last == DEFAULT_RANGE ) && ( first == DEFAULT_RANGE ) )
                 && ( ( last < first ) || ( last >= gene_trees.length ) || ( last < 0 ) || ( first < 0 ) ) ) {
             throw new RIOException( "attempt to set range (0-based) of gene to analyze to: from " + first + " to "
@@ -582,6 +621,17 @@ public final class RIO {
             catch ( final IllegalArgumentException e ) {
                 throw new RIOException( "cannot perform re-rooting by outgroup: " + e.getLocalizedMessage() );
             }
+        }
+    }
+
+    private final static void removeSingleDescendentsNodes( final Phylogeny species_tree, final boolean verbose ) {
+        final int o = PhylogenyMethods.countNumberOfOneDescendantNodes( species_tree );
+        if ( o > 0 ) {
+            if ( verbose ) {
+                System.out.println( "warning: species tree has " + o
+                        + " internal nodes with only one descendent which are therefore going to be removed" );
+            }
+            PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
         }
     }
 

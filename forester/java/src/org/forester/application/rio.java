@@ -33,11 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.datastructures.IntMatrix;
-import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyMethods;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.rio.RIO;
 import org.forester.rio.RIO.REROOTING;
 import org.forester.rio.RIOException;
@@ -76,14 +71,14 @@ public class rio {
             cla = new CommandLineArguments( args );
         }
         catch ( final Exception e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+            ForesterUtil.fatalError( e.getMessage() );
         }
         if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
             printHelp();
         }
-        if ( ( args.length < 3 ) || ( args.length > 8 ) ) {
+        if ( ( args.length < 3 ) || ( args.length > 9 ) ) {
             System.out.println();
-            System.out.println( "[" + PRG_NAME + "] incorrect number of arguments" );
+            System.out.println( "error: incorrect number of arguments" );
             System.out.println();
             printHelp();
         }
@@ -95,7 +90,7 @@ public class rio {
         allowed_options.add( USE_SDIR );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
-            ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
+            ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
         }
         final File gene_trees_file = cla.getFile( 0 );
         final File species_tree_file = cla.getFile( 1 );
@@ -104,7 +99,7 @@ public class rio {
         if ( cla.getNumberOfNames() > 3 ) {
             logfile = cla.getFile( 3 );
             if ( logfile.exists() ) {
-                ForesterUtil.fatalError( PRG_NAME, "\"" + logfile + "\" already exists" );
+                ForesterUtil.fatalError( "\"" + logfile + "\" already exists" );
             }
         }
         else {
@@ -113,30 +108,30 @@ public class rio {
         boolean sdir = false;
         if ( cla.isOptionSet( USE_SDIR ) ) {
             if ( cla.isOptionHasAValue( USE_SDIR ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no value allowed for -" + USE_SDIR );
+                ForesterUtil.fatalError( "no value allowed for -" + USE_SDIR );
             }
             sdir = true;
             if ( logfile != null ) {
-                ForesterUtil.fatalError( PRG_NAME, "no logfile output for SDIR algorithm" );
+                ForesterUtil.fatalError( "no logfile output for SDIR algorithm" );
             }
         }
         String outgroup = null;
         if ( cla.isOptionSet( OUTGROUP ) ) {
             if ( !cla.isOptionHasAValue( OUTGROUP ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no value for -" + OUTGROUP );
+                ForesterUtil.fatalError( "no value for -" + OUTGROUP );
             }
             if ( sdir ) {
-                ForesterUtil.fatalError( PRG_NAME, "no outgroup option for SDIR algorithm" );
+                ForesterUtil.fatalError( "no outgroup option for SDIR algorithm" );
             }
             outgroup = cla.getOptionValueAsCleanString( OUTGROUP );
         }
         REROOTING rerooting = REROOTING.BY_ALGORITHM;
         if ( cla.isOptionSet( REROOTING_OPT ) ) {
             if ( !cla.isOptionHasAValue( REROOTING_OPT ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no value for -" + REROOTING_OPT );
+                ForesterUtil.fatalError( "no value for -" + REROOTING_OPT );
             }
             if ( sdir ) {
-                ForesterUtil.fatalError( PRG_NAME, "no re-rooting option for SDIR algorithm" );
+                ForesterUtil.fatalError( "no re-rooting option for SDIR algorithm" );
             }
             final String rerooting_str = cla.getOptionValueAsCleanString( REROOTING_OPT ).toLowerCase();
             if ( rerooting_str.equals( "none" ) ) {
@@ -150,60 +145,59 @@ public class rio {
             }
             else {
                 ForesterUtil
-                        .fatalError( PRG_NAME,
-                                     "values for re-rooting are: 'none', 'midpoint', or 'outgroup' (minizming duplications is default)" );
+                        .fatalError( "values for re-rooting are: 'none', 'midpoint', or 'outgroup' (minizming duplications is default)" );
             }
         }
         if ( ForesterUtil.isEmpty( outgroup ) && ( rerooting == REROOTING.OUTGROUP ) ) {
-            ForesterUtil.fatalError( PRG_NAME, "selected re-rooting by outgroup, but outgroup not set" );
+            ForesterUtil.fatalError( "selected re-rooting by outgroup, but outgroup not set" );
         }
         if ( !ForesterUtil.isEmpty( outgroup ) && ( rerooting != REROOTING.OUTGROUP ) ) {
-            ForesterUtil.fatalError( PRG_NAME, "outgroup set, but selected re-rooting by other approach" );
+            ForesterUtil.fatalError( "outgroup set, but selected re-rooting by other approach" );
         }
         int gt_first = RIO.DEFAULT_RANGE;
         int gt_last = RIO.DEFAULT_RANGE;
         if ( cla.isOptionSet( GT_FIRST ) ) {
             if ( !cla.isOptionHasAValue( GT_FIRST ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no value for -" + GT_FIRST );
+                ForesterUtil.fatalError( "no value for -" + GT_FIRST );
             }
             if ( sdir ) {
-                ForesterUtil.fatalError( PRG_NAME, "no gene tree range option for SDIR algorithm" );
+                ForesterUtil.fatalError( "no gene tree range option for SDIR algorithm" );
             }
             try {
                 gt_first = cla.getOptionValueAsInt( GT_FIRST );
             }
             catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, "could not parse integer for -" + GT_FIRST + " option" );
+                ForesterUtil.fatalError( "could not parse integer for -" + GT_FIRST + " option" );
             }
             if ( gt_first < 0 ) {
-                ForesterUtil.fatalError( PRG_NAME, "attempt to set index of first tree to analyze to: " + gt_first );
+                ForesterUtil.fatalError( "attempt to set index of first tree to analyze to: " + gt_first );
             }
         }
         if ( cla.isOptionSet( GT_LAST ) ) {
             if ( !cla.isOptionHasAValue( GT_LAST ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no value for -" + GT_LAST );
+                ForesterUtil.fatalError( "no value for -" + GT_LAST );
             }
             if ( sdir ) {
-                ForesterUtil.fatalError( PRG_NAME, "no gene tree range option for SDIR algorithm" );
+                ForesterUtil.fatalError( "no gene tree range option for SDIR algorithm" );
             }
             try {
                 gt_last = cla.getOptionValueAsInt( GT_LAST );
             }
             catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, "could not parse integer for -" + GT_LAST + " option" );
+                ForesterUtil.fatalError( "could not parse integer for -" + GT_LAST + " option" );
             }
             if ( gt_last < 0 ) {
-                ForesterUtil.fatalError( PRG_NAME, "attempt to set index of last tree to analyze to: " + gt_last );
+                ForesterUtil.fatalError( "attempt to set index of last tree to analyze to: " + gt_last );
             }
         }
         if ( ( ( gt_last != RIO.DEFAULT_RANGE ) && ( gt_first != RIO.DEFAULT_RANGE ) ) && ( ( gt_last < gt_first ) ) ) {
-            ForesterUtil.fatalError( PRG_NAME, "attempt to set range (0-based) of gene to analyze to: from " + gt_first
-                    + " to " + gt_last );
+            ForesterUtil.fatalError( "attempt to set range (0-based) of gene to analyze to: from " + gt_first + " to "
+                    + gt_last );
         }
-        ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, gene_trees_file );
-        ForesterUtil.fatalErrorIfFileNotReadable( PRG_NAME, species_tree_file );
+        ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
+        ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( orthology_outtable.exists() ) {
-            ForesterUtil.fatalError( PRG_NAME, "\"" + orthology_outtable + "\" already exists" );
+            ForesterUtil.fatalError( "\"" + orthology_outtable + "\" already exists" );
         }
         long time = 0;
         System.out.println( "Gene trees                : " + gene_trees_file );
@@ -245,27 +239,15 @@ public class rio {
             System.out.println( "Non binary species tree   : disallowed" );
         }
         time = System.currentTimeMillis();
-        Phylogeny species_tree = null;
-        try {
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            System.exit( -1 );
-        }
-        if ( !species_tree.isRooted() ) {
-            ForesterUtil.fatalError( PRG_NAME, "species tree is not rooted" );
-        }
-        final int o = PhylogenyMethods.countNumberOfOneDescendantNodes( species_tree );
-        if ( o > 0 ) {
-            ForesterUtil.printWarningMessage( PRG_NAME, "species tree has " + o
-                    + " internal nodes with only one descendent! Going to strip them." );
-            PhylogenyMethods.deleteInternalNodesWithOnlyOneDescendent( species_tree );
-            if ( PhylogenyMethods.countNumberOfOneDescendantNodes( species_tree ) > 0 ) {
-                ForesterUtil.unexpectedFatalError( PRG_NAME, "stripping of one-desc nodes failed" );
-            }
-        }
+        //        Phylogeny species_tree = null;
+        //        try {
+        //            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        //            species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
+        //        }
+        //        catch ( final Exception e ) {
+        //            e.printStackTrace();
+        //            System.exit( -1 );
+        //        }
         final ALGORITHM algorithm;
         if ( sdir ) {
             algorithm = ALGORITHM.SDIR;
@@ -275,7 +257,7 @@ public class rio {
         }
         try {
             final RIO rio = RIO.executeAnalysis( gene_trees_file,
-                                                 species_tree,
+                                                 species_tree_file,
                                                  algorithm,
                                                  rerooting,
                                                  outgroup,
@@ -284,7 +266,7 @@ public class rio {
                                                  logfile != null,
                                                  true );
             if ( algorithm == ALGORITHM.GSDIR ) {
-                ForesterUtil.programMessage( PRG_NAME, "taxonomy linking based on: " + rio.getGSDIRtaxCompBase() );
+                System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
             }
             tableOutput( orthology_outtable, rio );
             if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
@@ -300,30 +282,29 @@ public class rio {
             }
             final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
-            ForesterUtil.programMessage( PRG_NAME,
-                                         "Mean number of duplications  : " + df.format( stats.arithmeticMean() )
-                                                 + " (sd: " + df.format( stats.sampleStandardDeviation() ) + ")" );
+            System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "
+                    + df.format( stats.sampleStandardDeviation() ) + ")" );
             if ( stats.getN() > 3 ) {
-                ForesterUtil.programMessage( PRG_NAME, "Median number of duplications: " + df.format( stats.median() ) );
+                System.out.println( "Median number of duplications: " + df.format( stats.median() ) );
             }
-            ForesterUtil.programMessage( PRG_NAME, "Minimum duplications         : " + ( int ) stats.getMin() );
-            ForesterUtil.programMessage( PRG_NAME, "Maximum duplications         : " + ( int ) stats.getMax() );
+            System.out.println( "Minimum duplications         : " + ( int ) stats.getMin() );
+            System.out.println( "Maximum duplications         : " + ( int ) stats.getMax() );
         }
         catch ( final RIOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
         catch ( final SDIException e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
         catch ( final IOException e ) {
-            ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
+            ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
         catch ( final Exception e ) {
-            ForesterUtil.unexpectedFatalError( PRG_NAME, e );
+            ForesterUtil.unexpectedFatalError( e );
         }
         time = System.currentTimeMillis() - time;
-        ForesterUtil.programMessage( PRG_NAME, "time: " + time + "ms" );
-        ForesterUtil.programMessage( PRG_NAME, "OK" );
+        System.out.println( "Time: " + time + "ms" );
+        System.out.println( "OK" );
         System.exit( 0 );
     }
 
@@ -387,7 +368,7 @@ public class rio {
         out.flush();
         out.println( rio.getLog().toString() );
         out.close();
-        ForesterUtil.programMessage( PRG_NAME, "wrote log to \"" + logfile + "\"" );
+        System.out.println( "Wrote log to \"" + logfile + "\"" );
     }
 
     private static void writeTable( final File table_outfile, final RIO rio, final IntMatrix m ) throws IOException {
@@ -405,7 +386,7 @@ public class rio {
                 w.print( "\t" );
                 if ( x == y ) {
                     if ( m.get( x, y ) != rio.getAnalyzedGeneTrees().length ) {
-                        ForesterUtil.unexpectedFatalError( PRG_NAME, "diagonal value is off" );
+                        ForesterUtil.unexpectedFatalError( "diagonal value is off" );
                     }
                     w.print( "-" );
                 }
@@ -416,6 +397,6 @@ public class rio {
             w.println();
         }
         w.close();
-        ForesterUtil.programMessage( PRG_NAME, "wrote table to \"" + table_outfile + "\"" );
+        System.out.println( "Wrote table to \"" + table_outfile + "\"" );
     }
 }

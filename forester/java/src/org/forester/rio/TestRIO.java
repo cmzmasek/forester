@@ -18,6 +18,15 @@ public final class TestRIO {
     private final static String PATH_TO_TEST_DATA = System.getProperty( "user.dir" ) + ForesterUtil.getFileSeparator()
                                                           + "test_data" + ForesterUtil.getFileSeparator();
 
+    public static void main( final String[] args ) {
+        if ( !testRIO_GSDIR() ) {
+            System.out.println( "testRIO GSDIR failed" );
+        }
+        else {
+            System.out.println( "OK" );
+        }
+    }
+
     public static boolean test() {
         if ( !testRIO_GSDIR() ) {
             return false;
@@ -113,14 +122,5 @@ public final class TestRIO {
             return false;
         }
         return true;
-    }
-
-    public static void main( final String[] args ) {
-        if ( !testRIO_GSDIR() ) {
-            System.out.println( "testRIO GSDIR failed" );
-        }
-        else {
-            System.out.println( "OK" );
-        }
     }
 }

@@ -27,6 +27,14 @@ final class NodesLinkingResult {
         _tax_comp_base = null;
     }
 
+    final Set<PhylogenyNode> getMappedSpeciesTreeNodes() {
+        return _mapped_species_tree_nodes;
+    }
+
+    final SortedSet<String> getScientificNamesMappedToReducedSpecificity() {
+        return _scientific_names_mapped_to_reduced_specificity;
+    }
+
     final List<PhylogenyNode> getStrippedGeneTreeNodes() {
         return _stripped_gene_tree_nodes;
     }
@@ -35,19 +43,11 @@ final class NodesLinkingResult {
         return _stripped_species_tree_nodes;
     }
 
-    final Set<PhylogenyNode> getMappedSpeciesTreeNodes() {
-        return _mapped_species_tree_nodes;
-    }
-
     final TaxonomyComparisonBase getTaxCompBase() {
         return _tax_comp_base;
     }
 
     final void setTaxCompBase( final TaxonomyComparisonBase tax_comp_base ) {
         _tax_comp_base = tax_comp_base;
-    }
-
-    final SortedSet<String> getScientificNamesMappedToReducedSpecificity() {
-        return _scientific_names_mapped_to_reduced_specificity;
     }
 }

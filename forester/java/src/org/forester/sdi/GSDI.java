@@ -59,6 +59,9 @@ public final class GSDI implements GSDII {
                  final boolean strip_gene_tree,
                  final boolean strip_species_tree ) throws SDIException {
         _most_parsimonious_duplication_model = most_parsimonious_duplication_model;
+        if ( gene_tree.getRoot().getNumberOfDescendants() == 3 ) {
+            gene_tree.reRoot( gene_tree.getRoot().getChildNode( 2 ) );
+        }
         final NodesLinkingResult nodes_linking_result = linkNodesOfG( gene_tree,
                                                                       species_tree,
                                                                       null,
@@ -141,14 +144,20 @@ public final class GSDI implements GSDII {
      * the species tree must be labeled in preorder.
      * <p>
      * @return 
+     * @throws SDIException 
      * 
      */
     final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,
-                                                               final boolean most_parsimonious_duplication_model ) {
+                                                               final boolean most_parsimonious_duplication_model )
+            throws SDIException {
         final GSDIsummaryResult res = new GSDIsummaryResult();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode g = it.next();
             if ( g.isInternal() ) {
+                if ( g.getNumberOfDescendants() != 2 ) {
+                    throw new SDIException( "gene tree contains internal node with " + g.getNumberOfDescendants()
+                            + " descendents" );
+                }
                 PhylogenyNode s1 = g.getChildNode1().getLink();
                 PhylogenyNode s2 = g.getChildNode2().getLink();
                 while ( s1 != s2 ) {
