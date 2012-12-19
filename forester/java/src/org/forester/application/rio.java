@@ -47,7 +47,7 @@ public class rio {
 
     final static private String PRG_NAME      = "rio";
     final static private String PRG_VERSION   = "4.000 beta 3";
-    final static private String PRG_DATE      = "2012.12.18";
+    final static private String PRG_DATE      = "2012.12.19";
     final static private String E_MAIL        = "czmasek@burnham.org";
     final static private String WWW           = "www.phylosoft.org/forester/";
     final static private String HELP_OPTION_1 = "help";

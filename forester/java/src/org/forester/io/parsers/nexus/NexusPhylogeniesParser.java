@@ -38,6 +38,7 @@ import org.forester.archaeopteryx.Constants;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
@@ -65,79 +66,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
     private Map<String, String>  _translate_map;
     private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
     private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
-
-    private void createPhylogeny( final String name,
-                                  final StringBuffer nhx,
-                                  final boolean rooted_info_present,
-                                  final boolean is_rooted ) throws IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final NHXParser pars = new NHXParser();
-        pars.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
-        pars.setReplaceUnderscores( isReplaceUnderscores() );
-        pars.setIgnoreQuotes( isIgnoreQuotes() );
-        if ( rooted_info_present ) {
-            pars.setGuessRootedness( false );
-        }
-        final Phylogeny p = factory.create( nhx, pars )[ 0 ];
-        p.setName( name );
-        if ( rooted_info_present ) {
-            p.setRooted( is_rooted );
-        }
-        if ( ( getTaxlabels().size() > 0 ) || ( getTranslateMap().size() > 0 ) ) {
-            final PhylogenyNodeIterator it = p.iteratorExternalForward();
-            while ( it.hasNext() ) {
-                final PhylogenyNode node = it.next();
-                if ( ( getTranslateMap().size() > 0 ) && getTranslateMap().containsKey( node.getName() ) ) {
-                    node.setName( getTranslateMap().get( node.getName() ).replaceAll( "['\"]+", "" ) );
-                }
-                else if ( getTaxlabels().size() > 0 ) {
-                    int i = -1;
-                    try {
-                        i = Integer.parseInt( node.getName() );
-                    }
-                    catch ( final NumberFormatException e ) {
-                        // Ignore.
-                    }
-                    if ( i > 0 ) {
-                        node.setName( getTaxlabels().get( i - 1 ).replaceAll( "['\"]+", "" ) );
-                    }
-                }
-            }
-        }
-        getPhylogenies().add( p );
-    }
-
-    private Object getNexusSource() {
-        return _nexus_source;
-    }
-
-    private List<Phylogeny> getPhylogenies() {
-        return _phylogenies;
-    }
-
-    private Phylogeny[] getPhylogeniesAsArray() {
-        final Phylogeny[] p = new Phylogeny[ getPhylogenies().size() ];
-        for( int i = 0; i < getPhylogenies().size(); ++i ) {
-            p[ i ] = getPhylogenies().get( i );
-        }
-        return p;
-    }
-
-    private List<String> getTaxlabels() {
-        return _taxlabels;
-    }
-
-    private Map<String, String> getTranslateMap() {
-        return _translate_map;
-    }
-
-    private boolean isIgnoreQuotes() {
-        return _ignore_quotes_in_nh_data;
-    }
-
-    private boolean isReplaceUnderscores() {
-        return _replace_underscores;
-    }
+    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = NHXParser.TAXONOMY_EXTRACTION_DEFAULT;
 
     @Override
     public Phylogeny[] parse() throws IOException, NHXFormatException {
@@ -150,7 +79,6 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         boolean in_trees_block = false;
         boolean in_taxalabels = false;
         boolean in_translate = false;
-        final boolean in_comment = false;
         boolean in_tree = false;
         boolean rooted_info_present = false;
         boolean is_rooted = false;
@@ -270,18 +198,8 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         return getPhylogeniesAsArray();
     }
 
-    private void reset() {
-        setPhylogenies( new ArrayList<Phylogeny>() );
-        setTaxlabels( new ArrayList<String>() );
-        setTranslateMap( new HashMap<String, String>() );
-    }
-
     public void setIgnoreQuotes( final boolean ignore_quotes_in_nh_data ) {
         _ignore_quotes_in_nh_data = ignore_quotes_in_nh_data;
-    }
-
-    private void setPhylogenies( final ArrayList<Phylogeny> phylogenies ) {
-        _phylogenies = phylogenies;
     }
 
     public void setReplaceUnderscores( final boolean replace_underscores ) {
@@ -294,6 +212,97 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
         }
         _nexus_source = nexus_source;
+    }
+
+    public void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        _taxonomy_extraction = taxonomy_extraction;
+    }
+
+    private void createPhylogeny( final String name,
+                                  final StringBuffer nhx,
+                                  final boolean rooted_info_present,
+                                  final boolean is_rooted ) throws IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final NHXParser pars = new NHXParser();
+        pars.setTaxonomyExtraction( getTaxonomyExtraction() );
+        pars.setReplaceUnderscores( isReplaceUnderscores() );
+        pars.setIgnoreQuotes( isIgnoreQuotes() );
+        if ( rooted_info_present ) {
+            pars.setGuessRootedness( false );
+        }
+        final Phylogeny p = factory.create( nhx, pars )[ 0 ];
+        p.setName( name );
+        if ( rooted_info_present ) {
+            p.setRooted( is_rooted );
+        }
+        if ( ( getTaxlabels().size() > 0 ) || ( getTranslateMap().size() > 0 ) ) {
+            final PhylogenyNodeIterator it = p.iteratorExternalForward();
+            while ( it.hasNext() ) {
+                final PhylogenyNode node = it.next();
+                if ( ( getTranslateMap().size() > 0 ) && getTranslateMap().containsKey( node.getName() ) ) {
+                    node.setName( getTranslateMap().get( node.getName() ).replaceAll( "['\"]+", "" ) );
+                }
+                else if ( getTaxlabels().size() > 0 ) {
+                    int i = -1;
+                    try {
+                        i = Integer.parseInt( node.getName() );
+                    }
+                    catch ( final NumberFormatException e ) {
+                        // Ignore.
+                    }
+                    if ( i > 0 ) {
+                        node.setName( getTaxlabels().get( i - 1 ).replaceAll( "['\"]+", "" ) );
+                    }
+                }
+            }
+        }
+        getPhylogenies().add( p );
+    }
+
+    private Object getNexusSource() {
+        return _nexus_source;
+    }
+
+    private List<Phylogeny> getPhylogenies() {
+        return _phylogenies;
+    }
+
+    private Phylogeny[] getPhylogeniesAsArray() {
+        final Phylogeny[] p = new Phylogeny[ getPhylogenies().size() ];
+        for( int i = 0; i < getPhylogenies().size(); ++i ) {
+            p[ i ] = getPhylogenies().get( i );
+        }
+        return p;
+    }
+
+    private List<String> getTaxlabels() {
+        return _taxlabels;
+    }
+
+    private TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
+    }
+
+    private Map<String, String> getTranslateMap() {
+        return _translate_map;
+    }
+
+    private boolean isIgnoreQuotes() {
+        return _ignore_quotes_in_nh_data;
+    }
+
+    private boolean isReplaceUnderscores() {
+        return _replace_underscores;
+    }
+
+    private void reset() {
+        setPhylogenies( new ArrayList<Phylogeny>() );
+        setTaxlabels( new ArrayList<String>() );
+        setTranslateMap( new HashMap<String, String>() );
+    }
+
+    private void setPhylogenies( final ArrayList<Phylogeny> phylogenies ) {
+        _phylogenies = phylogenies;
     }
 
     private void setTaxlabels( final List<String> taxlabels ) {

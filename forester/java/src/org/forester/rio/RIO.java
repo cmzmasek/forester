@@ -41,6 +41,7 @@ import java.util.TreeSet;
 
 import org.forester.datastructures.IntMatrix;
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.util.ParserUtils;
@@ -476,15 +477,7 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
-        if ( p instanceof NHXParser ) {
-            final NHXParser nhx = ( NHXParser ) p;
-            nhx.setReplaceUnderscores( false );
-            nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
-        }
-        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
+        final Phylogeny[] gene_trees = parseGeneTrees( gene_trees_file );
         if ( gene_trees.length < 1 ) {
             throw new RIOException( "\"" + gene_trees_file + "\" is devoid of appropriate gene trees" );
         }
@@ -503,16 +496,7 @@ public final class RIO {
                                              final String outgroup,
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
-        if ( p instanceof NHXParser ) {
-            final NHXParser nhx = ( NHXParser ) p;
-            nhx.setReplaceUnderscores( false );
-            nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
-        }
-        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        return new RIO( gene_trees,
+        return new RIO( parseGeneTrees( gene_trees_file ),
                         species_tree,
                         algorithm,
                         rerooting,
@@ -532,19 +516,15 @@ public final class RIO {
                                              final int last,
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
-        if ( p instanceof NHXParser ) {
-            final NHXParser nhx = ( NHXParser ) p;
-            nhx.setReplaceUnderscores( false );
-            nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
-        }
-        final Phylogeny[] gene_trees = factory.create( gene_trees_file, p );
-        if ( gene_trees.length < 1 ) {
-            throw new RIOException( "\"" + gene_trees_file + "\" is devoid of appropriate gene trees" );
-        }
-        return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+        return new RIO( parseGeneTrees( gene_trees_file ),
+                        species_tree,
+                        algorithm,
+                        rerooting,
+                        outgroup,
+                        first,
+                        last,
+                        produce_log,
+                        verbose );
     }
 
     public final static RIO executeAnalysis( final Phylogeny[] gene_trees, final Phylogeny species_tree )
@@ -622,6 +602,25 @@ public final class RIO {
                 throw new RIOException( "cannot perform re-rooting by outgroup: " + e.getLocalizedMessage() );
             }
         }
+    }
+
+    private final static Phylogeny[] parseGeneTrees( final File gene_trees_file ) throws FileNotFoundException,
+            IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
+        if ( p instanceof NHXParser ) {
+            final NHXParser nhx = ( NHXParser ) p;
+            nhx.setReplaceUnderscores( false );
+            nhx.setIgnoreQuotes( true );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+        }
+        else if ( p instanceof NexusPhylogeniesParser ) {
+            final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
+            nex.setReplaceUnderscores( false );
+            nex.setIgnoreQuotes( true );
+            nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+        }
+        return factory.create( gene_trees_file, p );
     }
 
     private final static void removeSingleDescendentsNodes( final Phylogeny species_tree, final boolean verbose ) {

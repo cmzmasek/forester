@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -70,7 +72,7 @@ public class SDIutil {
                                                     final File species_tree_file,
                                                     final boolean replace_undescores_in_nhx_trees,
                                                     final boolean ignore_quotes_in_nhx_trees,
-                                                    final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction_in_nhx_trees )
+                                                    final TAXONOMY_EXTRACTION taxonomy_extraction_in_nhx_trees )
             throws FileNotFoundException, PhyloXmlDataFormatException, IOException, SDIException {
         Phylogeny species_tree;
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -84,6 +86,12 @@ public class SDIutil {
                 nhx.setReplaceUnderscores( replace_undescores_in_nhx_trees );
                 nhx.setIgnoreQuotes( ignore_quotes_in_nhx_trees );
                 nhx.setTaxonomyExtraction( taxonomy_extraction_in_nhx_trees );
+            }
+            else if ( p instanceof NexusPhylogeniesParser ) {
+                final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
+                nex.setReplaceUnderscores( replace_undescores_in_nhx_trees );
+                nex.setIgnoreQuotes( ignore_quotes_in_nhx_trees );
+                nex.setTaxonomyExtraction( taxonomy_extraction_in_nhx_trees );
             }
             species_tree = factory.create( species_tree_file, p )[ 0 ];
             species_tree.setRooted( true );
