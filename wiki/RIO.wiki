@@ -31,7 +31,7 @@ The species tree is allowed to have nodes with more than two descendants (polyto
 
 
 ==== Note ====
-Since the Java memory default allocation too small for even moderately large data-sets, it is necessary to increase it with the `-Xmx2048m` command line option.
+Since the Java memory default allocation is too small for even moderately large data-sets, it is necessary to increase it with the `-Xmx2048m` command line option.
 
 
 === Examples ===
