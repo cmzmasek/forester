@@ -299,7 +299,13 @@ public class rio {
         catch ( final IOException e ) {
             ForesterUtil.fatalError( e.getLocalizedMessage() );
         }
+        catch ( final OutOfMemoryError e ) {
+            ForesterUtil.outOfMemoryError( e );
+        }
         catch ( final Exception e ) {
+            ForesterUtil.unexpectedFatalError( e );
+        }
+        catch ( final Error e ) {
             ForesterUtil.unexpectedFatalError( e );
         }
         time = System.currentTimeMillis() - time;

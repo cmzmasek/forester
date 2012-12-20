@@ -933,6 +933,14 @@ public final class ForesterUtil {
 
     final public static void unexpectedFatalError( final Exception e ) {
         System.err.println();
+        System.err.println( "unexpected exception: should not have occured! Please contact program author(s)." );
+        e.printStackTrace( System.err );
+        System.err.println();
+        System.exit( -1 );
+    }
+    
+    final public static void unexpectedFatalError( final Error e ) {
+        System.err.println();
         System.err.println( "unexpected error: should not have occured! Please contact program author(s)." );
         e.printStackTrace( System.err );
         System.err.println();
@@ -979,7 +987,7 @@ public final class ForesterUtil {
         final int width = 50;
         System.out.print( "\r[" );
         int i = 0;
-        for( ; i <= ( int ) ( progress_percentage * width ); i++ ) {
+        for( ; i <= ForesterUtil.roundToInt( progress_percentage * width ); i++ ) {
             System.out.print( "." );
         }
         for( ; i < width; i++ ) {
@@ -1053,5 +1061,14 @@ public final class ForesterUtil {
     final private static String[] splitString( final String str ) {
         final String regex = "[\\s;,]+";
         return str.split( regex );
+    }
+
+    public final static void outOfMemoryError( final OutOfMemoryError e ) {
+        System.err.println();
+        System.err.println( "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option" );
+        System.err.println();
+        e.printStackTrace( System.err );
+        System.err.println();
+        System.exit( -1 );
     }
 }

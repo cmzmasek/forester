@@ -268,9 +268,7 @@ public final class MainFrameApplication extends MainFrame {
         catch ( final IllegalAccessException e ) {
             AptxUtil.dieWithSystemError( "illegal access exception: " + e.toString() );
         }
-        catch ( final Exception e ) {
-            AptxUtil.dieWithSystemError( e.toString() );
-        }
+      
         if ( ( current_dir != null ) && current_dir.canRead() && current_dir.isDirectory() ) {
             setCurrentDir( current_dir );
         }

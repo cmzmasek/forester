@@ -128,11 +128,14 @@ public final class Archaeopteryx {
         try {
             MainFrameApplication.createInstance( phylogenies, conf, title, current_dir );
         }
-        catch ( final Exception ex ) {
-            AptxUtil.unexpectedException( ex );
+        catch ( final OutOfMemoryError e ) {
+            AptxUtil.outOfMemoryError( e );
         }
-        catch ( final Error err ) {
-            AptxUtil.unexpectedError( err );
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+        }
+        catch ( final Error e ) {
+            AptxUtil.unexpectedError( e );
         }
     }
 }

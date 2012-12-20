@@ -267,6 +267,9 @@ public final class gsdi {
         catch ( final IOException e ) {
             fatalError( "error", e.toString(), log_writer );
         }
+        catch ( final OutOfMemoryError e ) {
+            ForesterUtil.outOfMemoryError( e );
+        }
         catch ( final Exception e ) {
             e.printStackTrace();
             fatalError( "unexpected error", e.toString(), log_writer );
