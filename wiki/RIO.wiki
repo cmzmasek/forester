@@ -35,6 +35,8 @@ The species tree is allowed to have nodes with more than two descendants (polyto
 
 `rio gene_trees.nh species.xml outtable.tsv log.txt -r=outgroup -o=XVL1_ECOLI`
 
+`rio gene_trees.nh species.xml outtable.tsv log.txt -f=0 -l=49`
+
 === Example files ===
   * [http://forester.googlecode.com/files/gene_trees_rio.nh gene trees file]
   * [http://forester.googlecode.com/files/species_tree_rio.xml species tree file]
