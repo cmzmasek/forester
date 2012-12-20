@@ -30,7 +30,7 @@ The species tree ideally is in [http://www.biomedcentral.com/1471-2105/10/356/ p
 The species tree is allowed to have nodes with more than two descendants (polytomies), as long as the (slower) GSDIR ([GSDI GSDI] re-rooting) algorithm is used. 
 
 
-=== Example ===
+=== Examples ===
 `rio gene_trees.nh species.xml outtable.tsv log.txt`
 
 `rio gene_trees.nh species.xml outtable.tsv log.txt -r=outgroup -o=XVL1_ECOLI`
