@@ -328,11 +328,13 @@ public class rio {
         System.out.println( "                   disallowed, as are most options)" );
         System.out.println();
         System.out.println( " Formats" );
-        System.out.println( "  The species tree is expected to be in phyloXML format." );
         System.out
-                .println( "  The gene trees ideally are in phyloXML as well, but can also be in New Hamphshire (Newick)" );
-        System.out.println( "  or Nexus format as long as species information can be extracted from the gene names" );
-        System.out.println( "  (e.g. \"HUMAN\" from \"BCL2_HUMAN\")." );
+                .println( "  The gene trees, as well as the species tree, ideally are in phyloXML (www.phyloxml.org) format," );
+        System.out
+                .println( "  but can also be in New Hamphshire (Newick) or Nexus format as long as species information can be" );
+        System.out
+                .println( "  extracted from the gene names (e.g. \"HUMAN\" from \"BCL2_HUMAN\") and matched to a single species" );
+        System.out.println( "  in the species tree." );
         System.out.println();
         System.out.println( " Examples" );
         System.out.println( "  \"rio gene_trees.nh species.xml outtable.tsv log.txt\"" );

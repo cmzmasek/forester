@@ -2350,6 +2350,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private void setSpecialOptionsForNexParser( final NexusPhylogeniesParser nex ) {
         nex.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
+        nex.setTaxonomyExtraction( getOptions().getTaxonomyExtraction() );
     }
 
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
