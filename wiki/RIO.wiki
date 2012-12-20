@@ -17,7 +17,7 @@ java -Xmx2048m -cp forester.jar org.forester.application.rio [options] <gene tre
   * `-l=<last>` : last gene tree to analyze (0-based index) (default: analyze all gene trees)
   * `-r=<re-rooting>` : re-rooting method for gene trees, possible values or 'none', 'midpoint', or 'outgroup' (default: by minizming duplications)
   * `-o=<outgroup>` : for rooting by outgroup, name of outgroup (external gene tree node)
-  * `-b` : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed) 
+  * `-b` : to use SDIR instead of GSDIR (faster, but non-binary species trees are disallowed, as are all options) 
 
   
 ==== Gene trees ====
