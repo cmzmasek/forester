@@ -137,7 +137,6 @@ public final class Test {
     }
 
     private final static Event getEvent( final Phylogeny p, final String n1, final String n2 ) {
-        final PhylogenyMethods pm = PhylogenyMethods.getInstance();
         return PhylogenyMethods.calculateLCA( p.getNode( n1 ), p.getNode( n2 ) ).getNodeData().getEvent();
     }
 
@@ -3005,133 +3004,132 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p1 = factory.create( "(((A:1,B:2,X:100)ab:3,C:4)abc:5,(D:7,(E:9,F:10)ef:8)def:6)r",
                                                  new NHXParser() )[ 0 ];
-            final PhylogenyMethods pm = PhylogenyMethods.getInstance();
-            if ( pm.calculateDistance( p1.getNode( "C" ), p1.getNode( "C" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "C" ), p1.getNode( "C" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "def" ), p1.getNode( "def" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "def" ), p1.getNode( "def" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "ef" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "ef" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "r" ), p1.getNode( "r" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "r" ), p1.getNode( "r" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "A" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "A" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "B" ) ) != 3 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "B" ) ) != 3 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "B" ), p1.getNode( "A" ) ) != 3 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "B" ), p1.getNode( "A" ) ) != 3 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "C" ) ) != 8 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "C" ) ) != 8 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "C" ), p1.getNode( "A" ) ) != 8 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "C" ), p1.getNode( "A" ) ) != 8 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "D" ) ) != 22 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "D" ) ) != 22 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "E" ) ) != 32 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "E" ) ) != 32 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "E" ), p1.getNode( "A" ) ) != 32 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "E" ), p1.getNode( "A" ) ) != 32 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "F" ) ) != 33 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "F" ) ) != 33 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "F" ), p1.getNode( "A" ) ) != 33 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "F" ), p1.getNode( "A" ) ) != 33 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "ab" ) ) != 1 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "ab" ) ) != 1 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ab" ), p1.getNode( "A" ) ) != 1 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ab" ), p1.getNode( "A" ) ) != 1 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "abc" ) ) != 4 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "abc" ) ) != 4 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "abc" ), p1.getNode( "A" ) ) != 4 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "abc" ), p1.getNode( "A" ) ) != 4 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "r" ) ) != 9 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "r" ) ) != 9 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "r" ), p1.getNode( "A" ) ) != 9 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "r" ), p1.getNode( "A" ) ) != 9 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "def" ) ) != 15 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "def" ) ) != 15 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "def" ), p1.getNode( "A" ) ) != 15 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "def" ), p1.getNode( "A" ) ) != 15 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "A" ), p1.getNode( "ef" ) ) != 23 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "A" ), p1.getNode( "ef" ) ) != 23 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "A" ) ) != 23 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "A" ) ) != 23 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "def" ) ) != 8 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "def" ) ) != 8 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "def" ), p1.getNode( "ef" ) ) != 8 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "def" ), p1.getNode( "ef" ) ) != 8 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "r" ) ) != 14 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "r" ) ) != 14 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "abc" ) ) != 19 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "abc" ) ) != 19 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ef" ), p1.getNode( "ab" ) ) != 22 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ef" ), p1.getNode( "ab" ) ) != 22 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "ab" ), p1.getNode( "ef" ) ) != 22 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "ab" ), p1.getNode( "ef" ) ) != 22 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p1.getNode( "def" ), p1.getNode( "abc" ) ) != 11 ) {
+            if ( PhylogenyMethods.calculateDistance( p1.getNode( "def" ), p1.getNode( "abc" ) ) != 11 ) {
                 return false;
             }
             final Phylogeny p2 = factory.create( "((A:4,B:5,C:6)abc:1,(D:7,E:8,F:9)def:2,(G:10,H:11,I:12)ghi:3)r",
                                                  new NHXParser() )[ 0 ];
-            if ( pm.calculateDistance( p2.getNode( "A" ), p2.getNode( "B" ) ) != 9 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "A" ), p2.getNode( "B" ) ) != 9 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "A" ), p2.getNode( "C" ) ) != 10 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "A" ), p2.getNode( "C" ) ) != 10 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "A" ), p2.getNode( "D" ) ) != 14 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "A" ), p2.getNode( "D" ) ) != 14 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "A" ), p2.getNode( "ghi" ) ) != 8 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "A" ), p2.getNode( "ghi" ) ) != 8 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "A" ), p2.getNode( "I" ) ) != 20 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "A" ), p2.getNode( "I" ) ) != 20 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "G" ), p2.getNode( "ghi" ) ) != 10 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "G" ), p2.getNode( "ghi" ) ) != 10 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "r" ), p2.getNode( "r" ) ) != 0 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "r" ), p2.getNode( "r" ) ) != 0 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "r" ), p2.getNode( "G" ) ) != 13 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "r" ), p2.getNode( "G" ) ) != 13 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "G" ), p2.getNode( "r" ) ) != 13 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "G" ), p2.getNode( "r" ) ) != 13 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "G" ), p2.getNode( "H" ) ) != 21 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "G" ), p2.getNode( "H" ) ) != 21 ) {
                 return false;
             }
-            if ( pm.calculateDistance( p2.getNode( "G" ), p2.getNode( "I" ) ) != 22 ) {
+            if ( PhylogenyMethods.calculateDistance( p2.getNode( "G" ), p2.getNode( "I" ) ) != 22 ) {
                 return false;
             }
         }
@@ -3963,6 +3961,18 @@ public final class Test {
     private static boolean testMidpointrooting() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny t0 = factory.create( "(A:1,B:4,C:2,D:2,E:6,F:1,G:1,H:1)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.midpointRoot( t0 );
+            if ( !isEqual( t0.getNode( "E" ).getDistanceToParent(), 5 ) ) {
+                return false;
+            }
+            if ( !isEqual( t0.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( !isEqual( PhylogenyMethods.calculateLCA( t0.getNode( "F" ), t0.getNode( "G" ) ).getDistanceToParent(),
+                           1 ) ) {
+                return false;
+            }
             final Phylogeny t1 = factory.create( "((A:1,B:2)AB:1[&&NHX:B=55],(C:3,D:4)CD:3[&&NHX:B=10])ABCD:0.5",
                                                  new NHXParser() )[ 0 ];
             if ( !t1.isRooted() ) {
@@ -4002,6 +4012,7 @@ public final class Test {
                 return false;
             }
             if ( !isEqual( t1.getNode( "CD" ).getDistanceToParent(), 1 ) ) {
+                System.exit( -1 );
                 return false;
             }
             if ( !isEqual( t1.getNode( "AB" ).getDistanceToParent(), 3 ) ) {
