@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
@@ -48,25 +47,22 @@ import org.forester.util.ForesterUtil;
 public final class PhylogenyDecorator {
 
     // From evoruby/lib/evo/apps/tseq_taxonomy_processor.rb:
-    final private static String  TP_TAXONOMY_CODE                   = "TAXONOMY_CODE";
-    final private static String  TP_TAXONOMY_ID                     = "TAXONOMY_ID";
-    final private static String  TP_TAXONOMY_ID_PROVIDER            = "TAXONOMY_ID_PROVIDER";
-    final private static String  TP_TAXONOMY_SN                     = "TAXONOMY_SN";
-    final private static String  TP_TAXONOMY_CN                     = "TAXONOMY_CN";
-    final private static String  TP_TAXONOMY_SYN                    = "TAXONOMY_SYN";
-    final private static String  TP_SEQ_SYMBOL                      = "SEQ_SYMBOL";
-    final private static String  TP_SEQ_ACCESSION                   = "SEQ_ACCESSION";
-    final private static String  TP_SEQ_ACCESSION_SOURCE            = "SEQ_ACCESSION_SOURCE";
-    final private static String  TP_SEQ_ANNOTATION_DESC             = "SEQ_ANNOTATION_DESC";
-    final private static String  TP_SEQ_ANNOTATION_REF              = "SEQ_ANNOTATION_REF";
-    final private static String  TP_SEQ_MOL_SEQ                     = "SEQ_MOL_SEQ";
-    final private static String  TP_SEQ_NAME                        = "SEQ_NAME";
-    final private static String  TP_NODE_NAME                       = "NODE_NAME";
-    final private static Pattern NODENAME_SEQNUMBER_TAXDOMAINNUMBER = Pattern
-                                                                            .compile( "^([a-fA-Z0-9]{1,5})_([A-Z0-9]{2,4}[A-Z])(\\d{1,4})$" );
-    public final static boolean  SANITIZE                           = false;
-    public final static boolean  VERBOSE                            = true;
-    private static final boolean CUT                                = true;
+    final private static String TP_TAXONOMY_CODE        = "TAXONOMY_CODE";
+    final private static String TP_TAXONOMY_ID          = "TAXONOMY_ID";
+    final private static String TP_TAXONOMY_ID_PROVIDER = "TAXONOMY_ID_PROVIDER";
+    final private static String TP_TAXONOMY_SN          = "TAXONOMY_SN";
+    final private static String TP_TAXONOMY_CN          = "TAXONOMY_CN";
+    final private static String TP_TAXONOMY_SYN         = "TAXONOMY_SYN";
+    final private static String TP_SEQ_SYMBOL           = "SEQ_SYMBOL";
+    final private static String TP_SEQ_ACCESSION        = "SEQ_ACCESSION";
+    final private static String TP_SEQ_ACCESSION_SOURCE = "SEQ_ACCESSION_SOURCE";
+    final private static String TP_SEQ_ANNOTATION_DESC  = "SEQ_ANNOTATION_DESC";
+    final private static String TP_SEQ_ANNOTATION_REF   = "SEQ_ANNOTATION_REF";
+    final private static String TP_SEQ_MOL_SEQ          = "SEQ_MOL_SEQ";
+    final private static String TP_SEQ_NAME             = "SEQ_NAME";
+    final private static String TP_NODE_NAME            = "NODE_NAME";
+    public final static boolean SANITIZE                = false;
+    public final static boolean VERBOSE                 = true;
 
     private PhylogenyDecorator() {
         // Not needed.
@@ -162,21 +158,6 @@ public final class PhylogenyDecorator {
         }
     }
 
-    /**
-     * 
-     * 
-     * 
-     * 
-     * 
-     * @param phylogeny
-     * @param map
-     *            maps names (in phylogeny) to new values
-     * @param field
-     * @param picky
-     * @throws IllegalArgumentException
-     * @throws NHXFormatException
-     * @throws PhyloXmlDataFormatException 
-     */
     public static void decorate( final Phylogeny phylogeny,
                                  final Map<String, String> map,
                                  final FIELD field,
@@ -244,24 +225,6 @@ public final class PhylogenyDecorator {
                 if ( intermediate_map != null ) {
                     name = PhylogenyDecorator.extractIntermediate( intermediate_map, name );
                 }
-                // int space_index = name.indexOf( " " );
-                //                if ( CUT && space_index > 0 ) {
-                //                    int y = name.lastIndexOf( "|" );
-                //                    name = name.substring( y + 1, space_index );
-                //                }
-                //                String new_value = null;
-                //                for( String key : map.keySet() ) {
-                //                    if ( key.indexOf( name ) >= 0 ) {
-                //                        if ( new_value == null ) {
-                //                            new_value = map.get( key );
-                //                        }
-                //                        else {
-                //                            System.out.println( name + " is not unique" );
-                //                            System.exit( -1 );
-                //                        }
-                //                    }
-                //                }
-                // if ( new_value != null ) {
                 if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) ) {
                     String new_value = map.get( name );
                     int x = 0;
@@ -433,6 +396,30 @@ public final class PhylogenyDecorator {
         }
     }
 
+    public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )
+            throws IOException {
+        final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+        BasicTable<String> mapping_table = null;
+        mapping_table = BasicTableParser.parse( mapping_table_file, "\t", false, false );
+        for( int row = 0; row < mapping_table.getNumberOfRows(); ++row ) {
+            final Map<String, String> row_map = new HashMap<String, String>();
+            String name = null;
+            for( int col = 0; col < mapping_table.getNumberOfColumns(); ++col ) {
+                final String table_cell = mapping_table.getValue( col, row );
+                if ( col == 0 ) {
+                    name = table_cell;
+                }
+                else if ( table_cell != null ) {
+                    final String key = table_cell.substring( 0, table_cell.indexOf( ':' ) );
+                    final String val = table_cell.substring( table_cell.indexOf( ':' ) + 1, table_cell.length() );
+                    row_map.put( key, val );
+                }
+            }
+            map.put( name, row_map );
+        }
+        return map;
+    }
+
     private static String deleteAtFirstSpace( final String name ) {
         final int first_space = name.indexOf( " " );
         if ( first_space > 1 ) {
@@ -480,30 +467,6 @@ public final class PhylogenyDecorator {
             System.out.println( new_name + "  " );
         }
         return new_name;
-    }
-
-    public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )
-            throws IOException {
-        final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
-        BasicTable<String> mapping_table = null;
-        mapping_table = BasicTableParser.parse( mapping_table_file, "\t", false, false );
-        for( int row = 0; row < mapping_table.getNumberOfRows(); ++row ) {
-            final Map<String, String> row_map = new HashMap<String, String>();
-            String name = null;
-            for( int col = 0; col < mapping_table.getNumberOfColumns(); ++col ) {
-                final String table_cell = mapping_table.getValue( col, row );
-                if ( col == 0 ) {
-                    name = table_cell;
-                }
-                else if ( table_cell != null ) {
-                    final String key = table_cell.substring( 0, table_cell.indexOf( ':' ) );
-                    final String val = table_cell.substring( table_cell.indexOf( ':' ) + 1, table_cell.length() );
-                    row_map.put( key, val );
-                }
-            }
-            map.put( name, row_map );
-        }
-        return map;
     }
 
     private static String processNameIntelligently( final String name ) {

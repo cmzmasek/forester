@@ -71,54 +71,8 @@ public final class decorator {
     final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
     final static private String MAPPING_FILE_SEPARATOR_DEFAULT          = ": ";
     final static private String PRG_NAME                                = "decorator";
-    final static private String PRG_VERSION                             = "1.11";
-    final static private String PRG_DATE                                = "2012.09.15";
-
-    private static void argumentsError() {
-        System.out.println();
-        System.out.println( decorator.PRG_NAME + " -" + ADVANCED_TABLE_OPTION + " | -f=<c> <phylogenies infile> "
-                + "[mapping table file] <phylogenies outfile>" );
-        System.out.println();
-        System.out.println( "options:" );
-        System.out.println();
-        System.out.println( " -" + ADVANCED_TABLE_OPTION + " : table instead of one to one map (-f=<c>)" );
-        System.out.println( " -r=<n> : allow to remove up to n characters from the end of the names" );
-        System.out.println( "          in phylogenies infile if not found (in map) otherwise" );
-        System.out.println( " -p     : picky, fails if node name not found in mapping table" );
-        System.out.println( " -" + TREE_NAME_OPTION + "=<s>: name for the phylogeny" );
-        System.out.println( " -" + TREE_ID_OPTION + "=<s>: identifier for the phylogeny (in the form provider:value)" );
-        System.out.println( " -" + TREE_DESC_OPTION + "=<s>: description for phylogenies" );
-        System.out.println();
-        System.out.println();
-        System.out.println( "advanced options, only available if -" + ADVANCED_TABLE_OPTION + " is not used:" );
-        System.out.println();
-        System.out.println( " -f=<c> : field to be replaced: " + NODE_NAME_FIELD + " : node name" );
-        System.out.println( "                                " + SEQUENCE_ANNOTATION_DESC
-                + " : sequence annotation description" );
-        System.out.println( "                                " + DS_FILED + " : domain structure" );
-        System.out.println( "                                " + TAXONOMY_CODE_FIELD + " : taxonomy code" );
-        System.out.println( "                                " + TAXONOMY_SCIENTIFIC_NAME_FIELD
-                + ": taxonomy scientific name" );
-        System.out.println( "                                " + SEQUENCE_NAME_FIELD + " : sequence name" );
-        System.out.println( " -k=<n> : key column in mapping table (0 based)," );
-        System.out.println( "          names of the node to be decorated - default is 0" );
-        System.out.println( " -v=<n> : value column in mapping table (0 based)," );
-        System.out.println( "          data which with to decorate - default is 1" );
-        System.out.println( " -" + EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION
-                + "    : to extract bracketed scientific names, e.g. [Nematostella vectensis]" );
-        System.out.println( " -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION
-                + "    : to extract bracketed taxonomic codes, e.g. [NEMVE]" );
-        System.out.println( " -s=<c> : column separator in mapping file, default is \""
-                + decorator.MAPPING_FILE_SEPARATOR_DEFAULT + "\"" );
-        System.out.println( " -x     : process name \"intelligently\" (only for -f=n)" );
-        System.out.println( " -" + decorator.PROCESS_SIMILAR_TO_OPTION
-                + "    : process name \"intelligently\" and process information after \"similar to\" (only for -f=n)" );
-        System.out.println( " -c     : cut name after first space (only for -f=n)" );
-        System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION
-                + "     : trim node name to be replaced after tilde" );
-        System.out.println();
-        System.exit( -1 );
-    }
+    final static private String PRG_VERSION                             = "1.12";
+    final static private String PRG_DATE                                = "2012.12.21";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( decorator.PRG_NAME, decorator.PRG_VERSION, decorator.PRG_DATE );
@@ -153,6 +107,7 @@ public final class decorator {
         allowed_options.add( decorator.VALUE_COLUMN );
         allowed_options.add( decorator.MAPPING_FILE_SEPARATOR_OPTION );
         allowed_options.add( decorator.EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION );
+        allowed_options.add( decorator.EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION );
         allowed_options.add( decorator.TREE_NAME_OPTION );
         allowed_options.add( decorator.TREE_ID_OPTION );
         allowed_options.add( decorator.TREE_DESC_OPTION );
@@ -401,5 +356,51 @@ public final class decorator {
         System.out.println();
         ForesterUtil.programMessage( PRG_NAME, "wrote: " + phylogenies_outfile );
         ForesterUtil.programMessage( PRG_NAME, "OK." );
+    }
+
+    private static void argumentsError() {
+        System.out.println();
+        System.out.println( decorator.PRG_NAME + " -" + ADVANCED_TABLE_OPTION + " | -f=<c> <phylogenies infile> "
+                + "[mapping table file] <phylogenies outfile>" );
+        System.out.println();
+        System.out.println( "options:" );
+        System.out.println();
+        System.out.println( " -" + ADVANCED_TABLE_OPTION + " : table instead of one to one map (-f=<c>)" );
+        System.out.println( " -r=<n> : allow to remove up to n characters from the end of the names" );
+        System.out.println( "          in phylogenies infile if not found (in map) otherwise" );
+        System.out.println( " -p     : picky, fails if node name not found in mapping table" );
+        System.out.println( " -" + TREE_NAME_OPTION + "=<s>: name for the phylogeny" );
+        System.out.println( " -" + TREE_ID_OPTION + "=<s>: identifier for the phylogeny (in the form provider:value)" );
+        System.out.println( " -" + TREE_DESC_OPTION + "=<s>: description for phylogenies" );
+        System.out.println();
+        System.out.println();
+        System.out.println( "advanced options, only available if -" + ADVANCED_TABLE_OPTION + " is not used:" );
+        System.out.println();
+        System.out.println( " -f=<c> : field to be replaced: " + NODE_NAME_FIELD + " : node name" );
+        System.out.println( "                                " + SEQUENCE_ANNOTATION_DESC
+                + " : sequence annotation description" );
+        System.out.println( "                                " + DS_FILED + " : domain structure" );
+        System.out.println( "                                " + TAXONOMY_CODE_FIELD + " : taxonomy code" );
+        System.out.println( "                                " + TAXONOMY_SCIENTIFIC_NAME_FIELD
+                + ": taxonomy scientific name" );
+        System.out.println( "                                " + SEQUENCE_NAME_FIELD + " : sequence name" );
+        System.out.println( " -k=<n> : key column in mapping table (0 based)," );
+        System.out.println( "          names of the node to be decorated - default is 0" );
+        System.out.println( " -v=<n> : value column in mapping table (0 based)," );
+        System.out.println( "          data which with to decorate - default is 1" );
+        System.out.println( " -" + EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION
+                + "    : to extract bracketed scientific names, e.g. [Nematostella vectensis]" );
+        System.out.println( " -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION
+                + "    : to extract bracketed taxonomic codes, e.g. [NEMVE]" );
+        System.out.println( " -s=<c> : column separator in mapping file, default is \""
+                + decorator.MAPPING_FILE_SEPARATOR_DEFAULT + "\"" );
+        System.out.println( " -x     : process name \"intelligently\" (only for -f=n)" );
+        System.out.println( " -" + decorator.PROCESS_SIMILAR_TO_OPTION
+                + "    : process name \"intelligently\" and process information after \"similar to\" (only for -f=n)" );
+        System.out.println( " -c     : cut name after first space (only for -f=n)" );
+        System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION
+                + "     : trim node name to be replaced after tilde" );
+        System.out.println();
+        System.exit( -1 );
     }
 }
