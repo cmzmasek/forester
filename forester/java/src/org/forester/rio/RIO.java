@@ -67,6 +67,7 @@ public final class RIO {
     private Phylogeny[]                      _analyzed_gene_trees;
     private List<PhylogenyNode>              _removed_gene_tree_nodes;
     private int                              _ext_nodes;
+    private int                              _int_nodes;
     private TaxonomyComparisonBase           _gsdir_tax_comp_base;
     private final StringBuilder              _log;
     private final BasicDescriptiveStatistics _duplications_stats;
@@ -95,6 +96,7 @@ public final class RIO {
         _verbose = verbose;
         _rerooting = rerooting;
         _ext_nodes = -1;
+        _int_nodes = -1;
         _log = new StringBuilder();
         _gsdir_tax_comp_base = null;
         _analyzed_gene_trees = null;
@@ -119,6 +121,16 @@ public final class RIO {
      */
     public final int getExtNodesOfAnalyzedGeneTrees() {
         return _ext_nodes;
+    }
+
+    /**
+     * Returns the numbers of number of int nodes in gene trees analyzed (after
+     * stripping).
+     * 
+     * @return number of int nodes in gene trees analyzed (after stripping)
+     */
+    public final int getIntNodesOfAnalyzedGeneTrees() {
+        return _int_nodes;
     }
 
     public final TaxonomyComparisonBase getGSDIRtaxCompBase() {
@@ -253,6 +265,7 @@ public final class RIO {
         }
         if ( i == 0 ) {
             _ext_nodes = assigned_tree.getNumberOfExternalNodes();
+            _int_nodes = assigned_tree.getNumberOfInternalNodes();
         }
         else if ( _ext_nodes != assigned_tree.getNumberOfExternalNodes() ) {
             throw new RIOException( "after stripping gene tree #" + ( i + 1 )
@@ -332,12 +345,19 @@ public final class RIO {
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
         log( "Gene trees analyzed                             : " + _duplications_stats.getN() );
         log( "Mean number of duplications                     : " + df.format( _duplications_stats.arithmeticMean() )
-                + " (sd: " + df.format( _duplications_stats.sampleStandardDeviation() ) + ")" );
+                + " (sd: " + df.format( _duplications_stats.sampleStandardDeviation() ) + ")" + " ("
+                + df.format( 100.0 * _duplications_stats.arithmeticMean() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
         if ( _duplications_stats.getN() > 3 ) {
-            log( "Median number of duplications                   : " + df.format( _duplications_stats.median() ) );
+            log( "Median number of duplications                   : " + df.format( _duplications_stats.median() )
+                    + " (" + df.format( 100.0 * _duplications_stats.median() / getIntNodesOfAnalyzedGeneTrees() )
+                    + "%)" );
         }
-        log( "Minimum duplications                            : " + ( int ) _duplications_stats.getMin() );
-        log( "Maximum duplications                            : " + ( int ) _duplications_stats.getMax() );
+        log( "Minimum duplications                            : " + ( int ) _duplications_stats.getMin() + " ("
+                + df.format( 100.0 * _duplications_stats.getMin() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+        log( "Maximum duplications                            : " + ( int ) _duplications_stats.getMax() + " ("
+                + df.format( 100.0 * _duplications_stats.getMax() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+        log( "Gene tree internal nodes                        : " + getIntNodesOfAnalyzedGeneTrees() );
+        log( "Gene tree external nodes                        : " + getExtNodesOfAnalyzedGeneTrees() );
     }
 
     private final void preLog( final Phylogeny[] gene_trees,
@@ -346,7 +366,7 @@ public final class RIO {
                                final String outgroup,
                                final int first,
                                final int last ) {
-        log( "Number of gene tree (total)                     : " + gene_trees.length );
+        log( "Number of gene trees (total)                    : " + gene_trees.length );
         log( "Algorithm                                       : " + algorithm );
         log( "Species tree external nodes (prior to stripping): " + species_tree.getNumberOfExternalNodes() );
         log( "Species tree polytomies (prior to stripping)    : "

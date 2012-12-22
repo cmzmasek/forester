@@ -949,7 +949,7 @@ public final class AptxUtil {
 
     final static void unexpectedError( final Error e ) {
         System.err.println();
-        e.printStackTrace(  System.err );
+        e.printStackTrace( System.err );
         System.err.println();
         final StringBuffer sb = new StringBuffer();
         for( final StackTraceElement s : e.getStackTrace() ) {
@@ -958,39 +958,41 @@ public final class AptxUtil {
         JOptionPane
                 .showMessageDialog( null,
                                     "An unexpected (possibly severe) error has occured - terminating. \nPlease contact: "
-                                            + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n" + sb,
+                                            + Constants.AUTHOR_EMAIL + " \nError: " + e.getLocalizedMessage() + "\n"
+                                            + sb,
                                     "Unexpected Severe Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
                                     JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
-    
+
     final static void outOfMemoryError( final OutOfMemoryError e ) {
         System.err.println();
         System.err.println( "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option" );
         System.err.println();
         e.printStackTrace();
         System.err.println();
-        
-        JOptionPane
-                .showMessageDialog( null,
-                                    "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
-                                            + "\n\nError: " + e.getLocalizedMessage(),
-                                    "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
-                                    JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( null,
+                                       "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
+                                               + "\n\nError: " + e.getLocalizedMessage(),
+                                       "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 
     final static void unexpectedException( final Exception e ) {
         System.err.println();
-        e.printStackTrace(  System.err );
+        e.printStackTrace( System.err );
         System.err.println();
         final StringBuffer sb = new StringBuffer();
         for( final StackTraceElement s : e.getStackTrace() ) {
             sb.append( s + "\n" );
         }
-        JOptionPane.showMessageDialog( null, "An unexpected exception has occured. \nPlease contact: "
-                + Constants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage() + "\n" + sb, "Unexpected Exception ["
-                + Constants.PRG_NAME + Constants.VERSION + "]", JOptionPane.ERROR_MESSAGE );
+        JOptionPane.showMessageDialog( null,
+                                       "An unexpected exception has occured. \nPlease contact: "
+                                               + Constants.AUTHOR_EMAIL + " \nException: " + e.getLocalizedMessage()
+                                               + "\n" + sb,
+                                       "Unexpected Exception [" + Constants.PRG_NAME + Constants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
     }
 
     final static String writePhylogenyToGraphicsByteArrayOutputStream( final ByteArrayOutputStream baos,

@@ -43,6 +43,7 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -252,6 +253,16 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                     }
                     if ( i > 0 ) {
                         node.setName( getTaxlabels().get( i - 1 ).replaceAll( "['\"]+", "" ) );
+                    }
+                }
+                if ( !isReplaceUnderscores() && ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) ) {
+                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
+                                                                                    getTaxonomyExtraction() );
+                    if ( !ForesterUtil.isEmpty( tax ) ) {
+                        if ( !node.getNodeData().isHasTaxonomy() ) {
+                            node.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
                     }
                 }
             }

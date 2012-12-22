@@ -556,6 +556,22 @@ public class Phylogeny {
         return c;
     }
 
+    public int getNumberOfInternalNodes() {
+        if ( isEmpty() ) {
+            return 0;
+        }
+        int c = 0;
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            if ( iter.next().isInternal() ) {
+                ++c;
+            }
+        }
+        if ( !isRooted() ) {
+            --c;
+        }
+        return c;
+    }
+
     /**
      * Returns the sum of external Nodes of this Phylogeny (int).
      */

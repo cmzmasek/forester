@@ -938,7 +938,7 @@ public final class ForesterUtil {
         System.err.println();
         System.exit( -1 );
     }
-    
+
     final public static void unexpectedFatalError( final Error e ) {
         System.err.println();
         System.err.println( "unexpected error: should not have occured! Please contact program author(s)." );
