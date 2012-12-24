@@ -408,7 +408,7 @@ public class PhylogenyMethods {
         final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
-            if ( !n.isExternal() && ( n.getNumberOfDescendants() == 1 ) ) {
+            if ( ( !n.isExternal() ) && ( !n.isRoot() ) && ( n.getNumberOfDescendants() == 1 ) ) {
                 to_delete.add( n );
             }
         }
@@ -913,10 +913,21 @@ public class PhylogenyMethods {
     }
 
     public static void removeNode( final PhylogenyNode remove_me, final Phylogeny phylogeny ) {
-        if ( remove_me.isRoot() ) {
-            throw new IllegalArgumentException( "ill advised attempt to remove root node" );
+        if ( remove_me.isRoot() && remove_me.getNumberOfDescendants() != 1 ) {
+            throw new IllegalArgumentException( "attempt to remove a root node with more than one descendants" );
         }
-        if ( remove_me.isExternal() ) {
+        
+        if ( remove_me.isRoot() && remove_me.getNumberOfDescendants() == 1 ) {
+            final PhylogenyNode desc = remove_me.getDescendants().get( 0 );
+           
+            desc.setDistanceToParent( addPhylogenyDistances( remove_me.getDistanceToParent(),
+                                                             desc.getDistanceToParent() ) );
+            desc.setParent( null );
+            phylogeny.setRoot( desc );
+            phylogeny.clearHashIdToNodeMap();
+        }
+        
+        else if ( remove_me.isExternal() ) {
             phylogeny.deleteSubtree( remove_me, false );
             phylogeny.clearHashIdToNodeMap();
             phylogeny.externalNodesHaveChanged();
