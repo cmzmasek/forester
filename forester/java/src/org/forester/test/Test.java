@@ -459,6 +459,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Node removal: " );
+        if ( Test.testNodeRemoval() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Support count: " );
         if ( Test.testSupportCount() ) {
             System.out.println( "OK." );
@@ -3958,6 +3967,37 @@ public final class Test {
         return true;
     }
 
+    
+    private static boolean testNodeRemoval() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny t0 = factory.create( "((a)b)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.removeNode( t0.getNode( "b" ), t0 );
+            
+            if ( !t0.toNewHampshire().equals( "(a);" ) ) {
+                return false;
+            }
+            final Phylogeny t1 = factory.create( "((a:2)b:4)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.removeNode( t1.getNode( "b" ), t1 );
+            
+            if ( !t1.toNewHampshire().equals( "(a:6.0);" ) ) {
+                return false;
+            }
+            final Phylogeny t2 = factory.create( "((a,b),c)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.removeNode( t2.getNode( "b" ), t2 );
+            
+            if ( !t2.toNewHampshire().equals( "((a),c);" ) ) {
+                return false;
+            }
+            
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+    
     private static boolean testMidpointrooting() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();

@@ -913,20 +913,19 @@ public class PhylogenyMethods {
     }
 
     public static void removeNode( final PhylogenyNode remove_me, final Phylogeny phylogeny ) {
-        if ( remove_me.isRoot() && remove_me.getNumberOfDescendants() != 1 ) {
-            throw new IllegalArgumentException( "attempt to remove a root node with more than one descendants" );
+        if ( remove_me.isRoot() ) {
+            if ( remove_me.getNumberOfDescendants() == 1 ) {
+                final PhylogenyNode desc = remove_me.getDescendants().get( 0 );
+                desc.setDistanceToParent( addPhylogenyDistances( remove_me.getDistanceToParent(),
+                                                                 desc.getDistanceToParent() ) );
+                desc.setParent( null );
+                phylogeny.setRoot( desc );
+                phylogeny.clearHashIdToNodeMap();
+            }
+            else {
+                throw new IllegalArgumentException( "attempt to remove a root node with more than one descendants" );
+            }
         }
-        
-        if ( remove_me.isRoot() && remove_me.getNumberOfDescendants() == 1 ) {
-            final PhylogenyNode desc = remove_me.getDescendants().get( 0 );
-           
-            desc.setDistanceToParent( addPhylogenyDistances( remove_me.getDistanceToParent(),
-                                                             desc.getDistanceToParent() ) );
-            desc.setParent( null );
-            phylogeny.setRoot( desc );
-            phylogeny.clearHashIdToNodeMap();
-        }
-        
         else if ( remove_me.isExternal() ) {
             phylogeny.deleteSubtree( remove_me, false );
             phylogeny.clearHashIdToNodeMap();
