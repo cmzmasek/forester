@@ -5226,7 +5226,13 @@ public final class Test {
             if ( !n13.getName().equals( "blah_12345/1-2" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( n13 ).equals( "12345" ) ) {
+            if ( PhylogenyMethods.getSpecies( n13 ).equals( "12345" ) ) {
+                return false;
+            }
+            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" )  ) {
+                return false;
+            }
+            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode
@@ -5279,6 +5285,39 @@ public final class Test {
             if ( !isEqual( n18.getBranchData().getConfidence( 0 ).getValue(), 91 ) ) {
                 return false;
             }
+            
+            
+            //
+            final PhylogenyNode n19 = PhylogenyNode
+                    .createInstanceFromNhxString( "blah_1-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
+           
+          
+            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1" )  ) {
+                return false;
+            }
+            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+                return false;
+            }
+            final PhylogenyNode n30 = PhylogenyNode
+                    .createInstanceFromNhxString( "blah_1234567-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
+           
+          
+            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1234567" )  ) {
+                return false;
+            }
+            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+                return false;
+            }
+            final PhylogenyNode n31 = PhylogenyNode
+                    .createInstanceFromNhxString( "blah_12345678-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
+           
+          
+            if ( n31.getNodeData().isHasTaxonomy()  ) {
+                return false;
+            }
+           // if ( !n31.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+           //     return false;
+           // }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

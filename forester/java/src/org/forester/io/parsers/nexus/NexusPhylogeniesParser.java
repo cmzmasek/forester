@@ -256,14 +256,17 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                     }
                 }
                 if ( !isReplaceUnderscores() && ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) ) {
-                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
-                                                                                    getTaxonomyExtraction() );
-                    if ( !ForesterUtil.isEmpty( tax ) ) {
-                        if ( !node.getNodeData().isHasTaxonomy() ) {
-                            node.getNodeData().setTaxonomy( new Taxonomy() );
-                        }
-                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
-                    }
+                  
+                    ParserUtils.extractTaxonomyDataFromNodeName( node,  getTaxonomyExtraction() );
+                    
+//                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
+//                                                                                    getTaxonomyExtraction() );
+//                    if ( !ForesterUtil.isEmpty( tax ) ) {
+//                        if ( !node.getNodeData().isHasTaxonomy() ) {
+//                            node.getNodeData().setTaxonomy( new Taxonomy() );
+//                        }
+//                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
+//                    }
                 }
             }
         }

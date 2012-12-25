@@ -649,14 +649,7 @@ public final class NHXParser implements PhylogenyParser {
                 if ( !s.startsWith( ":" ) ) {
                     node_to_annotate.setName( t.nextToken() );
                     if ( !replace_underscores && ( !is_nhx && ( taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
-                        final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node_to_annotate.getName(),
-                                                                                        taxonomy_extraction );
-                        if ( !ForesterUtil.isEmpty( tax ) ) {
-                            if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
-                                node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
-                            }
-                            node_to_annotate.getNodeData().getTaxonomy().setTaxonomyCode( tax );
-                        }
+                        ParserUtils.extractTaxonomyDataFromNodeName( node_to_annotate, taxonomy_extraction );
                     }
                 }
                 while ( t.hasMoreTokens() ) {

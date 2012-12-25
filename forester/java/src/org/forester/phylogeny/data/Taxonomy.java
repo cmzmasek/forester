@@ -34,10 +34,13 @@ import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonomy> {
 
+    
+    
     private String       _scientific_name;
     private String       _common_name;
     private List<String> _synonyms;
@@ -326,9 +329,17 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     }
 
     public void setTaxonomyCode( final String taxonomy_code ) throws PhyloXmlDataFormatException {
-        if ( !ForesterUtil.isEmpty( taxonomy_code )
-                && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
-            throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
+        if ( ForesterConstants.TAXONOMY_CODE_STRICT ) {
+            if ( !ForesterUtil.isEmpty( taxonomy_code )
+                    && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN_STRICT.matcher( taxonomy_code ).matches() ) {
+                throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
+            }
+        }
+        else {
+            if ( !ForesterUtil.isEmpty( taxonomy_code )
+                    && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN_LAX.matcher( taxonomy_code ).matches() ) {
+                throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
+            }
         }
         _taxonomy_code = taxonomy_code;
     }

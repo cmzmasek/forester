@@ -42,20 +42,31 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final private static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA|CAP" );
+    final public static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA|CAP" );
     final private static Pattern TAXOMONY_CODE_PATTERN_2  = Pattern
                                                                   .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)[^A-Za-z].*" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PF = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
 
+    
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_1  = Pattern.compile( "\\d{1,7}" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_2  = Pattern
+                                                                  .compile( "(\\d{1,7})[^A-Za-z].*" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PF = Pattern.compile( "(\\d{1,7})/\\d+-\\d+" );
+
+    
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
             throws FileNotFoundException, IOException {
@@ -247,6 +258,42 @@ public final class ParserUtils {
         }
         return null;
     }
+    
+    public final static String extractUniprotTaxonomyIdFromNodeName( final String name,
+                                                                final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        if ( ( name.indexOf( "_" ) > 0 )
+                && ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name.indexOf( "/" ) > 4 ) ) ) {
+            final String[] s = name.split( "[_\\s]" );
+            if ( s.length > 1 ) {
+                final String str = s[ 1 ];
+                if ( !ForesterUtil.isEmpty( str ) ) {
+                    if ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) {
+                        final Matcher m = TAXOMONY_UNIPROT_ID_PATTERN_PF.matcher( str );
+                        if ( m.matches() ) {
+                            return m.group( 1 );
+                        }
+                    }
+                    else {
+                        final Matcher m1 = TAXOMONY_UNIPROT_ID_PATTERN_1.matcher( str );
+                        if ( m1.matches() ) {
+                            return m1.group();
+                        }
+                        final Matcher m2 = TAXOMONY_UNIPROT_ID_PATTERN_2.matcher( str );
+                        if ( m2.matches() ) {
+                            return m2.group( 1 );
+                        }
+                    }
+                }
+            }
+        }
+        else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.YES ) {
+            final Matcher m1 = TAXOMONY_UNIPROT_ID_PATTERN_1.matcher( name );
+            if ( m1.matches() ) {
+                return name;
+            }
+        }
+        return null;
+    }
 
     public final static Phylogeny[] readPhylogenies( final File file ) throws FileNotFoundException, IOException {
         return PhylogenyMethods.readPhylogenies( ParserUtils.createParserDependingOnFileType( file, true ), file );
@@ -254,5 +301,26 @@ public final class ParserUtils {
 
     public final static Phylogeny[] readPhylogenies( final String file_name ) throws FileNotFoundException, IOException {
         return readPhylogenies( new File( file_name ) );
+    }
+
+    public final static void extractTaxonomyDataFromNodeName( final PhylogenyNode node,
+                                                              final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
+            throws PhyloXmlDataFormatException {
+        final String id = extractUniprotTaxonomyIdFromNodeName( node.getName(), taxonomy_extraction );
+        if ( !ForesterUtil.isEmpty( id ) ) {
+            if ( !node.getNodeData().isHasTaxonomy() ) {
+                node.getNodeData().setTaxonomy( new Taxonomy() );
+            }
+            node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
+        }
+        else {
+            final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
+            if ( !ForesterUtil.isEmpty( code ) ) {
+                if ( !node.getNodeData().isHasTaxonomy() ) {
+                    node.getNodeData().setTaxonomy( new Taxonomy() );
+                }
+                node.getNodeData().getTaxonomy().setTaxonomyCode( code );
+            }
+        }
     }
 }

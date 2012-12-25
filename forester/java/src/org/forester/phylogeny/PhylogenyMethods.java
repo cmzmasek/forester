@@ -408,7 +408,7 @@ public class PhylogenyMethods {
         final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
-            if ( ( !n.isExternal() ) && ( !n.isRoot() ) && ( n.getNumberOfDescendants() == 1 ) ) {
+            if ( ( !n.isExternal() )  && ( n.getNumberOfDescendants() == 1 ) ) {
                 to_delete.add( n );
             }
         }

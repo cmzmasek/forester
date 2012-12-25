@@ -1880,11 +1880,14 @@ public final class MainFrameApplication extends MainFrame {
                     final PhylogenyNode n = it.next();
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
-                        final String code = ParserUtils
-                                .extractTaxonomyCodeFromNodeName( name, NHXParser.TAXONOMY_EXTRACTION.YES );
-                        if ( !ForesterUtil.isEmpty( code ) ) {
-                            PhylogenyMethods.setTaxonomyCode( n, code );
-                        }
+                        
+                        ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.YES );
+                        
+                       // final String code = ParserUtils
+                       //         .extractTaxonomyCodeFromNodeName( name, NHXParser.TAXONOMY_EXTRACTION.YES );
+                       // if ( !ForesterUtil.isEmpty( code ) ) {
+                       //     PhylogenyMethods.setTaxonomyCode( n, code );
+                       // }
                     }
                 }
             }
