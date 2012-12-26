@@ -161,7 +161,7 @@ public final class RIO {
         }
         final Phylogeny[] my_gene_trees;
         if ( ( first >= 0 ) && ( last >= first ) && ( last < gene_trees.length ) ) {
-            my_gene_trees = new Phylogeny[ 1 + last - first ];
+            my_gene_trees = new Phylogeny[ ( 1 + last ) - first ];
             int c = 0;
             for( int i = first; i <= last; ++i ) {
                 my_gene_trees[ c++ ] = gene_trees[ i ];
@@ -346,16 +346,17 @@ public final class RIO {
         log( "Gene trees analyzed                             : " + _duplications_stats.getN() );
         log( "Mean number of duplications                     : " + df.format( _duplications_stats.arithmeticMean() )
                 + " (sd: " + df.format( _duplications_stats.sampleStandardDeviation() ) + ")" + " ("
-                + df.format( 100.0 * _duplications_stats.arithmeticMean() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                + df.format( ( 100.0 * _duplications_stats.arithmeticMean() ) / getIntNodesOfAnalyzedGeneTrees() )
+                + "%)" );
         if ( _duplications_stats.getN() > 3 ) {
             log( "Median number of duplications                   : " + df.format( _duplications_stats.median() )
-                    + " (" + df.format( 100.0 * _duplications_stats.median() / getIntNodesOfAnalyzedGeneTrees() )
+                    + " (" + df.format( ( 100.0 * _duplications_stats.median() ) / getIntNodesOfAnalyzedGeneTrees() )
                     + "%)" );
         }
         log( "Minimum duplications                            : " + ( int ) _duplications_stats.getMin() + " ("
-                + df.format( 100.0 * _duplications_stats.getMin() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                + df.format( ( 100.0 * _duplications_stats.getMin() ) / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
         log( "Maximum duplications                            : " + ( int ) _duplications_stats.getMax() + " ("
-                + df.format( 100.0 * _duplications_stats.getMax() / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                + df.format( ( 100.0 * _duplications_stats.getMax() ) / getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
         log( "Gene tree internal nodes                        : " + getIntNodesOfAnalyzedGeneTrees() );
         log( "Gene tree external nodes                        : " + getExtNodesOfAnalyzedGeneTrees() );
     }

@@ -38,8 +38,7 @@ public final class PhyloXmlUtil {
     public static final String       OTHER                                      = "other";
     public static final String       UNKNOWN                                    = "unknown";
     public final static Pattern      SEQUENCE_SYMBOL_PATTERN                    = Pattern.compile( "\\S{1,20}" );
-    public final static Pattern      TAXOMONY_CODE_PATTERN_STRICT               = ParserUtils.TAXOMONY_CODE_PATTERN_1;
-    public final static Pattern      TAXOMONY_CODE_PATTERN_LAX                  = Pattern.compile( "[A-Z0-9]{3,6}" );
+    public final static Pattern      TAXOMONY_CODE_PATTERN               = ParserUtils.TAXOMONY_CODE_PATTERN_1;
     public final static Pattern      LIT_REF_DOI_PATTERN                        = Pattern
                                                                                         .compile( "[a-zA-Z0-9_\\.]+\\S+" );
     public final static Set<String>  SEQUENCE_TYPES                             = new HashSet<String>();

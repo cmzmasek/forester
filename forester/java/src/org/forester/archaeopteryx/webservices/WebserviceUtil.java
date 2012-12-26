@@ -170,7 +170,7 @@ public final class WebserviceUtil {
             final PhylogenyNode n = it.next();
             if ( n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
                 final String name = n.getNodeData().getTaxonomy().getScientificName();
-                if ( !ForesterUtil.isEmpty( name ) && PhyloXmlUtil.TAXOMONY_CODE_PATTERN_STRICT.matcher( name ).matches() ) {
+                if ( !ForesterUtil.isEmpty( name ) && PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( name ).matches() ) {
                     n.getNodeData().getTaxonomy().setScientificName( "" );
                     n.getNodeData().getTaxonomy().setTaxonomyCode( name );
                 }

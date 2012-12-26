@@ -408,7 +408,7 @@ public class PhylogenyMethods {
         final ArrayList<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode n = iter.next();
-            if ( ( !n.isExternal() )  && ( n.getNumberOfDescendants() == 1 ) ) {
+            if ( ( !n.isExternal() ) && ( n.getNumberOfDescendants() == 1 ) ) {
                 to_delete.add( n );
             }
         }
@@ -1394,12 +1394,15 @@ public class PhylogenyMethods {
             if ( !n.getNodeData().isHasTaxonomy() ) {
                 throw new IllegalArgumentException( "no taxonomic data in node: " + n );
             }
-            //  ref_ext_taxo.add( getSpecies( n ) );
             if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                 ref_ext_taxo.add( n.getNodeData().getTaxonomy().getScientificName() );
             }
             if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
                 ref_ext_taxo.add( n.getNodeData().getTaxonomy().getTaxonomyCode() );
+            }
+            if ( ( n.getNodeData().getTaxonomy().getIdentifier() != null )
+                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) {
+                ref_ext_taxo.add( n.getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() );
             }
         }
         final ArrayList<PhylogenyNode> nodes_to_delete = new ArrayList<PhylogenyNode>();
@@ -1409,7 +1412,9 @@ public class PhylogenyMethods {
                 nodes_to_delete.add( n );
             }
             else if ( !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getScientificName() ) )
-                    && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                    && !( ref_ext_taxo.contains( n.getNodeData().getTaxonomy().getTaxonomyCode() ) )
+                    && !( ( n.getNodeData().getTaxonomy().getIdentifier() != null ) && ref_ext_taxo.contains( n
+                            .getNodeData().getTaxonomy().getIdentifier().getValuePlusProvider() ) ) ) {
                 nodes_to_delete.add( n );
             }
         }
