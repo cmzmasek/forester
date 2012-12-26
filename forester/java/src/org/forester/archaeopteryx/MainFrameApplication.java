@@ -507,7 +507,7 @@ public final class MainFrameApplication extends MainFrame {
                 moveNodeNamesToSeqNames();
             }
             else if ( o == _extract_tax_code_from_node_names_jmi ) {
-                extractTaxCodeFromNodeNames();
+                extractTaxDataFromNodeNames();
             }
             else if ( o == _gsdi_item ) {
                 if ( isSubtreeDisplayed() ) {
@@ -1137,10 +1137,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _move_node_names_to_seq_names_jmi );
         _move_node_names_to_seq_names_jmi.setToolTipText( "To interpret node names as sequence (protein, gene) names" );
         _tools_menu
-                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Codes from Node Names" ) );
+                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Codes or Ids from Node Names" ) );
         customizeJMenuItem( _extract_tax_code_from_node_names_jmi );
         _extract_tax_code_from_node_names_jmi
-                .setToolTipText( "To extract taxonomic codes (mnemonics) from nodes names in the form of 'xyz_ECOLI'" );
+                .setToolTipText( "To extract taxonomic codes (mnemonics) from nodes names in the form of 'xyz_ECOLI', or Uniprot identifiers from nodes names in the form of 'xyz_1234567'" );
         _tools_menu.addSeparator();
         _tools_menu
                 .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
@@ -1871,24 +1871,58 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    private void extractTaxCodeFromNodeNames() throws PhyloXmlDataFormatException {
+    private void extractTaxDataFromNodeNames() throws PhyloXmlDataFormatException {
+        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb_failed = new StringBuilder();
+        int counter = 0;
+        int counter_failed = 0;
         if ( getCurrentTreePanel() != null ) {
             final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final PhylogenyNodeIterator it = phy.iteratorPostorder();
+                final PhylogenyNodeIterator it = phy.iteratorExternalForward();
                 while ( it.hasNext() ) {
                     final PhylogenyNode n = it.next();
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
-                        
-                        ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.YES );
-                        
-                       // final String code = ParserUtils
-                       //         .extractTaxonomyCodeFromNodeName( name, NHXParser.TAXONOMY_EXTRACTION.YES );
-                       // if ( !ForesterUtil.isEmpty( code ) ) {
-                       //     PhylogenyMethods.setTaxonomyCode( n, code );
-                       // }
+                        final String nt = ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.YES );
+                        if ( !ForesterUtil.isEmpty( nt ) ) {
+                            if ( counter < 15 ) {
+                                sb.append( name + ": " + nt + "\n" );
+                            }
+                            else if ( counter == 15 ) {
+                                sb.append( "...\n" );
+                            }
+                            counter++;
+                        }
+                        else {
+                            if ( counter_failed < 15 ) {
+                                sb_failed.append( name + "\n" );
+                            }
+                            else if (  counter_failed == 15 ) {
+                                sb_failed.append( "...\n" );
+                            }
+                            counter_failed++;
+                        }
                     }
+                }
+                if ( counter > 0 ) {
+                    String failed = "";
+                    if ( counter_failed > 0 ) {
+                        failed = "\nDid not extract taxonomic data for "  + counter_failed + " (named) external nodes:\n" + sb_failed;
+                        
+                    }
+                    JOptionPane.showMessageDialog( this,
+                                                   "Successfully extracted taxonomic data from " + counter
+                                                           + " external nodes:\n" + sb.toString() + failed,
+                                                   "Taxonomic Data Extraction Successfully Completed",
+                                                   JOptionPane.INFORMATION_MESSAGE );
+                }
+                else {
+                    JOptionPane
+                            .showMessageDialog( this,
+                                                "Could not extract any taxonomic data, maybe node names are empty\nor not in the form \"XYZ_CAEEL\", \"XYZ_CAEEL/12-394\", or \"XYZ_1234567\"?",
+                                                "No Taxonomic Data Extracted",
+                                                JOptionPane.WARNING_MESSAGE );
                 }
             }
         }

@@ -198,8 +198,17 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Taxonomy extraction: " );
+        System.out.print( "Taxonomy code extraction: " );
         if ( Test.testExtractTaxonomyCodeFromNodeName() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Taxonomy extraction (general): " );
+        if ( Test.testTaxonomyExtraction() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -225,6 +234,7 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+       
         System.out.print( "Conversion to NHX (node level): " );
         if ( Test.testNHXconversion() ) {
             System.out.println( "OK." );
@@ -3967,29 +3977,24 @@ public final class Test {
         return true;
     }
 
-    
     private static boolean testNodeRemoval() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny t0 = factory.create( "((a)b)", new NHXParser() )[ 0 ];
             PhylogenyMethods.removeNode( t0.getNode( "b" ), t0 );
-            
             if ( !t0.toNewHampshire().equals( "(a);" ) ) {
                 return false;
             }
             final Phylogeny t1 = factory.create( "((a:2)b:4)", new NHXParser() )[ 0 ];
             PhylogenyMethods.removeNode( t1.getNode( "b" ), t1 );
-            
             if ( !t1.toNewHampshire().equals( "(a:6.0);" ) ) {
                 return false;
             }
             final Phylogeny t2 = factory.create( "((a,b),c)", new NHXParser() )[ 0 ];
             PhylogenyMethods.removeNode( t2.getNode( "b" ), t2 );
-            
             if ( !t2.toNewHampshire().equals( "((a),c);" ) ) {
                 return false;
             }
-            
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -3997,7 +4002,7 @@ public final class Test {
         }
         return true;
     }
-    
+
     private static boolean testMidpointrooting() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -4882,6 +4887,81 @@ public final class Test {
         return true;
     }
 
+    private static boolean testTaxonomyExtraction() {
+        try {
+            final PhylogenyNode n0 = PhylogenyNode.createInstanceFromNhxString( "sd_12345678",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n0.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
+            final PhylogenyNode n1 = PhylogenyNode.createInstanceFromNhxString( "sd_12345x",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n1.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n1.toString() );
+                return false;
+            }
+            final PhylogenyNode n2 = PhylogenyNode.createInstanceFromNhxString( "12345",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n2.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
+                System.out.println( n2.toString() );
+                return false;
+            }
+            final PhylogenyNode n3 = PhylogenyNode.createInstanceFromNhxString( "blag_12345",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n3.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
+                System.out.println( n3.toString() );
+                return false;
+            }
+            final PhylogenyNode n4 = PhylogenyNode.createInstanceFromNhxString( "blag-12345",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n4.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n4.toString() );
+                return false;
+            }
+            final PhylogenyNode n5 = PhylogenyNode.createInstanceFromNhxString( "12345-blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n5.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n5.toString() );
+                return false;
+            }
+            final PhylogenyNode n6 = PhylogenyNode.createInstanceFromNhxString( "blag-12345-blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n6.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n6.toString() );
+                return false;
+            }
+            final PhylogenyNode n7 = PhylogenyNode.createInstanceFromNhxString( "blag-12345_blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n7.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n7.toString() );
+                return false;
+            }
+            final PhylogenyNode n8 = PhylogenyNode.createInstanceFromNhxString( "blag_12345-blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n8.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
+                System.out.println( n8.toString() );
+                return false;
+            }
+            final PhylogenyNode n9 = PhylogenyNode.createInstanceFromNhxString( "blag_12345_blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n9.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
+                System.out.println( n9.toString() );
+                return false;
+            }
+            final PhylogenyNode n10 = PhylogenyNode.createInstanceFromNhxString( "blag_12X45-blag",
+                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n10.getNodeData().getTaxonomy().getTaxonomyCode().equals( "12X45" ) ) {
+                System.out.println( n10.toString() );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testNHXNodeParsing() {
         try {
             final PhylogenyNode n1 = new PhylogenyNode();
@@ -5092,7 +5172,7 @@ public final class Test {
             if ( !e2.getName().equals( "n10_RAT1" ) ) {
                 return false;
             }
-            if ( !PhylogenyMethods.getSpecies( e2 ).equals( "RAT" ) ) {
+            if ( PhylogenyMethods.getSpecies( e2 ).equals( "RAT" ) ) {
                 return false;
             }
             final PhylogenyNode e3 = PhylogenyNode.createInstanceFromNhxString( "n10_RAT~",
@@ -5229,10 +5309,10 @@ public final class Test {
             if ( PhylogenyMethods.getSpecies( n13 ).equals( "12345" ) ) {
                 return false;
             }
-            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" )  ) {
+            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
                 return false;
             }
-            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+            if ( !n13.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" ) ) {
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode
@@ -5285,39 +5365,32 @@ public final class Test {
             if ( !isEqual( n18.getBranchData().getConfidence( 0 ).getValue(), 91 ) ) {
                 return false;
             }
-            
-            
-            //
-            final PhylogenyNode n19 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_1-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
-           
-          
-            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1" )  ) {
+            final PhylogenyNode n19 = PhylogenyNode.createInstanceFromNhxString( "blah_1-roejojoej",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1" ) ) {
                 return false;
             }
-            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+            if ( !n19.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" ) ) {
                 return false;
             }
-            final PhylogenyNode n30 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_1234567-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
-           
-          
-            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1234567" )  ) {
+            final PhylogenyNode n30 = PhylogenyNode.createInstanceFromNhxString( "blah_1234567-roejojoej",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1234567" ) ) {
                 return false;
             }
-            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
+            if ( !n30.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" ) ) {
                 return false;
             }
-            final PhylogenyNode n31 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12345678-roejojoej", NHXParser.TAXONOMY_EXTRACTION.YES );
-           
-          
-            if ( n31.getNodeData().isHasTaxonomy()  ) {
+            final PhylogenyNode n31 = PhylogenyNode.createInstanceFromNhxString( "blah_12345678-roejojoej",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n31.getNodeData().isHasTaxonomy() ) {
                 return false;
             }
-           // if ( !n31.getNodeData().getTaxonomy().getIdentifier().getProvider().equals( "uniprot" )  ) {
-           //     return false;
-           // }
+            final PhylogenyNode n32 = PhylogenyNode.createInstanceFromNhxString( "sd_12345678",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n32.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

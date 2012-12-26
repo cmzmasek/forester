@@ -55,18 +55,15 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final public static Pattern TAXOMONY_CODE_PATTERN_1  = Pattern.compile( "[A-Z0-9]{5}|RAT|PIG|PEA|CAP" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_2  = Pattern
-                                                                  .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)[^A-Za-z].*" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_PF = Pattern.compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
-
-    
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_1  = Pattern.compile( "\\d{1,7}" );
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_2  = Pattern
-                                                                  .compile( "(\\d{1,7})[^A-Za-z].*" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_1        = Pattern.compile( "\\b[A-Z0-9]{5}|RAT|PIG|PEA|CAP\\b" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_2        = Pattern
+                                                                        .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)[^0-9A-Za-z].*" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_PF       = Pattern
+                                                                        .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_1  = Pattern.compile( "\\b\\d{1,7}\\b" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_2  = Pattern.compile( "(\\d{1,7})[^0-9A-Za-z].*" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PF = Pattern.compile( "(\\d{1,7})/\\d+-\\d+" );
 
-    
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
             throws FileNotFoundException, IOException {
@@ -258,9 +255,9 @@ public final class ParserUtils {
         }
         return null;
     }
-    
+
     public final static String extractUniprotTaxonomyIdFromNodeName( final String name,
-                                                                final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+                                                                     final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
                 && ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY ) || ( name.indexOf( "/" ) > 4 ) ) ) {
             final String[] s = name.split( "[_\\s]" );
@@ -303,15 +300,18 @@ public final class ParserUtils {
         return readPhylogenies( new File( file_name ) );
     }
 
-    public final static void extractTaxonomyDataFromNodeName( final PhylogenyNode node,
-                                                              final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
+    public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
+                                                                final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
             throws PhyloXmlDataFormatException {
         final String id = extractUniprotTaxonomyIdFromNodeName( node.getName(), taxonomy_extraction );
         if ( !ForesterUtil.isEmpty( id ) ) {
             if ( !node.getNodeData().isHasTaxonomy() ) {
                 node.getNodeData().setTaxonomy( new Taxonomy() );
             }
-            node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
+            if ( node.getNodeData().getTaxonomy().getIdentifier() == null || ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) {
+                node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
+                return id;
+            }
         }
         else {
             final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
@@ -319,8 +319,12 @@ public final class ParserUtils {
                 if ( !node.getNodeData().isHasTaxonomy() ) {
                     node.getNodeData().setTaxonomy( new Taxonomy() );
                 }
-                node.getNodeData().getTaxonomy().setTaxonomyCode( code );
+                if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                    node.getNodeData().getTaxonomy().setTaxonomyCode( code );
+                    return code;
+                }
             }
         }
+        return null;
     }
 }
