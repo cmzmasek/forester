@@ -1130,10 +1130,10 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText( "To collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
         _tools_menu.addSeparator();
         _tools_menu
-                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Codes or Ids from Node Names" ) );
+                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Data from Node Names" ) );
         customizeJMenuItem( _extract_tax_code_from_node_names_jmi );
         _extract_tax_code_from_node_names_jmi
-                .setToolTipText( "To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', or Uniprot/NCBI identifiers from nodes names in the form of 'xyz_6239'" );
+                .setToolTipText( "To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', Uniprot/NCBI identifiers form of 'xyz_6239', or scientific names form of 'xyz_Caenorhabditis_elegans'" );
         _tools_menu
                 .add( _move_node_names_to_tax_sn_jmi = new JMenuItem( "Transfer Node Names to Taxonomic Scientific Names" ) );
         customizeJMenuItem( _move_node_names_to_tax_sn_jmi );
@@ -1923,8 +1923,8 @@ public final class MainFrameApplication extends MainFrame {
                 else {
                     JOptionPane
                             .showMessageDialog( this,
-                                                "Could not extract any taxonomic data. Maybe node names are empty\n"
-                                                        + "or not in the forms \"XYZ_CAEEL\", \"XYZ_CAEEL/12-394\", or \"XYZ_6239\",\n"
+                                                "Could not extract any taxonomic data.\nMaybe node names are empty\n"
+                                                        + "or not in the forms \"XYZ_CAEEL\", \"XYZ_6239\", or \"XYZ_Caenorhabditis_elegans\"\n"
                                                         + "or nodes already have taxonomic data?\n",
                                                 "No Taxonomic Data Extracted",
                                                 JOptionPane.ERROR_MESSAGE );

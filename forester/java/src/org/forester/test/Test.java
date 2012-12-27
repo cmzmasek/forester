@@ -4953,6 +4953,48 @@ public final class Test {
                 System.out.println( n10.toString() );
                 return false;
             }
+            final PhylogenyNode n11 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n11.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
+                System.out.println( n11.toString() );
+                return false;
+            }
+            final PhylogenyNode n12 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus_musculus",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n12.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
+                System.out.println( n12.toString() );
+                return false;
+            }
+            final PhylogenyNode n13 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus1",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n13.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n13.toString() );
+                return false;
+            }
+            final PhylogenyNode n14 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus_11",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n14.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n14.toString() );
+                return false;
+            }
+            final PhylogenyNode n15 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus_v11",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( !n15.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus v11" ) ) {
+                System.out.println( n15.toString() );
+                return false;
+            }
+            final PhylogenyNode n16 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus_/11",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n16.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n16.toString() );
+                return false;
+            }
+            final PhylogenyNode n17 = PhylogenyNode.createInstanceFromNhxString( "blag_Mus_musculus_v",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
+            if ( n17.getNodeData().isHasTaxonomy() ) {
+                System.out.println( n17.toString() );
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

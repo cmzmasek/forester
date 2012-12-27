@@ -335,10 +335,10 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         for( final String pair : s.split( "," ) ) {
             final String[] kv = pair.trim().split( "\\s+" );
             if ( ( kv.length < 2 ) || ( kv.length > 3 ) ) {
-                throw new IOException( "ill formatted translate values: " + translate_sb );
+                throw new IOException( "ill-formatted translate values: " + translate_sb );
             }
             if ( ( kv.length == 3 ) && !kv[ 0 ].toLowerCase().trim().equals( translate ) ) {
-                throw new IOException( "ill formatted translate values: " + translate_sb );
+                throw new IOException( "ill-formatted translate values: " + translate_sb );
             }
             String key = "";
             String value = "";

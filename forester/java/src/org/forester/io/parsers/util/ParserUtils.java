@@ -55,6 +55,8 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
+    final public static Pattern  TAXOMONY_SN_PATTERN            = Pattern
+                                                                        .compile( "[^_]{2,}_([A-Z][a-z]+_[a-z]{2,}(_[A-Za-z]\\w+|))\\b" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_1        = Pattern.compile( "\\b[A-Z0-9]{5}|RAT|PIG|PEA|CAP\\b" );
     final private static Pattern TAXOMONY_CODE_PATTERN_2        = Pattern
                                                                         .compile( "([A-Z0-9]{5}|RAT|PIG|PEA|CAP)[^0-9A-Za-z].*" );
@@ -256,6 +258,14 @@ public final class ParserUtils {
         return null;
     }
 
+    public final static String extractScientificNameFromNodeName( final String name ) {
+        final Matcher m1 = TAXOMONY_SN_PATTERN.matcher( name );
+        if ( m1.matches() ) {
+            return m1.group( 1 ).replace( '_', ' ' );
+        }
+        return null;
+    }
+
     public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
                                                                 final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
             throws PhyloXmlDataFormatException {
@@ -279,6 +289,18 @@ public final class ParserUtils {
                 if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
                     node.getNodeData().getTaxonomy().setTaxonomyCode( code );
                     return code;
+                }
+            }
+            else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.YES ) {
+                final String sn = extractScientificNameFromNodeName( node.getName() );
+                if ( !ForesterUtil.isEmpty( sn ) ) {
+                    if ( !node.getNodeData().isHasTaxonomy() ) {
+                        node.getNodeData().setTaxonomy( new Taxonomy() );
+                    }
+                    if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        node.getNodeData().getTaxonomy().setScientificName( sn );
+                        return sn;
+                    }
                 }
             }
         }
