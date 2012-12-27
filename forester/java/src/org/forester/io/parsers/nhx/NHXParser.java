@@ -71,6 +71,7 @@ public final class NHXParser implements PhylogenyParser {
     final static private byte               STRING_BUFFER               = 1;
     final static private byte               CHAR_ARRAY                  = 2;
     final static private byte               BUFFERED_READER             = 3;
+    final static private byte               STRING_BUILDER              = 4;
     private boolean                         _guess_rootedness;
     private boolean                         _has_next;
     private boolean                         _ignore_quotes;
@@ -133,10 +134,34 @@ public final class NHXParser implements PhylogenyParser {
         setCurrentPhylogeny( null );
         setCurrentNode( null );
         int i = 0;
+        String my_source_str = null;
+        StringBuffer my_source_sbuff = null;
+        StringBuilder my_source_sbuil = null;
+        char[] my_source_charary = null;
+        BufferedReader my_source_br = null;
+        switch ( getInputType() ) {
+            case STRING:
+                my_source_str = ( String ) getNhxSource();
+                break;
+            case STRING_BUFFER:
+                my_source_sbuff = ( StringBuffer ) getNhxSource();
+                break;
+            case STRING_BUILDER:
+                my_source_sbuil = ( StringBuilder ) getNhxSource();
+                break;
+            case CHAR_ARRAY:
+                my_source_charary = ( char[] ) getNhxSource();
+                break;
+            case BUFFERED_READER:
+                my_source_br = ( BufferedReader ) getNhxSource();
+                break;
+            default:
+                throw new RuntimeException( "unknown input type" );
+        }
         while ( true ) {
             char c = '\b';
             if ( getInputType() == NHXParser.BUFFERED_READER ) {
-                final int ci = ( ( BufferedReader ) getNhxSource() ).read();
+                final int ci = my_source_br.read();
                 if ( ci >= 0 ) {
                     c = ( char ) ci;
                 }
@@ -151,13 +176,16 @@ public final class NHXParser implements PhylogenyParser {
                 else {
                     switch ( getInputType() ) {
                         case STRING:
-                            c = ( ( String ) getNhxSource() ).charAt( i );
+                            c = my_source_str.charAt( i );
                             break;
                         case STRING_BUFFER:
-                            c = ( ( StringBuffer ) getNhxSource() ).charAt( i );
+                            c = my_source_sbuff.charAt( i );
+                            break;
+                        case STRING_BUILDER:
+                            c = my_source_sbuil.charAt( i );
                             break;
                         case CHAR_ARRAY:
-                            c = ( ( char[] ) getNhxSource() )[ i ];
+                            c = my_source_charary[ i ];
                             break;
                     }
                 }
@@ -306,9 +334,19 @@ public final class NHXParser implements PhylogenyParser {
             setSourceLength( ( ( String ) nhx_source ).length() );
             setNhxSource( nhx_source );
         }
+        else if ( nhx_source instanceof StringBuilder ) {
+            setInputType( NHXParser.STRING_BUILDER );
+            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
         else if ( nhx_source instanceof StringBuffer ) {
             setInputType( NHXParser.STRING_BUFFER );
             setSourceLength( ( ( StringBuffer ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof StringBuilder ) {
+            setInputType( NHXParser.STRING_BUILDER );
+            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
             setNhxSource( nhx_source );
         }
         else if ( nhx_source instanceof char[] ) {

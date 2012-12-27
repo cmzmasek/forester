@@ -256,6 +256,35 @@ public final class ParserUtils {
         return null;
     }
 
+    public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
+                                                                final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
+            throws PhyloXmlDataFormatException {
+        final String id = extractUniprotTaxonomyIdFromNodeName( node.getName(), taxonomy_extraction );
+        if ( !ForesterUtil.isEmpty( id ) ) {
+            if ( !node.getNodeData().isHasTaxonomy() ) {
+                node.getNodeData().setTaxonomy( new Taxonomy() );
+            }
+            if ( ( node.getNodeData().getTaxonomy().getIdentifier() == null )
+                    || ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) {
+                node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
+                return id;
+            }
+        }
+        else {
+            final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
+            if ( !ForesterUtil.isEmpty( code ) ) {
+                if ( !node.getNodeData().isHasTaxonomy() ) {
+                    node.getNodeData().setTaxonomy( new Taxonomy() );
+                }
+                if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                    node.getNodeData().getTaxonomy().setTaxonomyCode( code );
+                    return code;
+                }
+            }
+        }
+        return null;
+    }
+
     public final static String extractUniprotTaxonomyIdFromNodeName( final String name,
                                                                      final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
@@ -298,33 +327,5 @@ public final class ParserUtils {
 
     public final static Phylogeny[] readPhylogenies( final String file_name ) throws FileNotFoundException, IOException {
         return readPhylogenies( new File( file_name ) );
-    }
-
-    public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
-                                                                final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws PhyloXmlDataFormatException {
-        final String id = extractUniprotTaxonomyIdFromNodeName( node.getName(), taxonomy_extraction );
-        if ( !ForesterUtil.isEmpty( id ) ) {
-            if ( !node.getNodeData().isHasTaxonomy() ) {
-                node.getNodeData().setTaxonomy( new Taxonomy() );
-            }
-            if ( node.getNodeData().getTaxonomy().getIdentifier() == null || ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) {
-                node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
-                return id;
-            }
-        }
-        else {
-            final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
-            if ( !ForesterUtil.isEmpty( code ) ) {
-                if ( !node.getNodeData().isHasTaxonomy() ) {
-                    node.getNodeData().setTaxonomy( new Taxonomy() );
-                }
-                if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                    node.getNodeData().getTaxonomy().setTaxonomyCode( code );
-                    return code;
-                }
-            }
-        }
-        return null;
     }
 }

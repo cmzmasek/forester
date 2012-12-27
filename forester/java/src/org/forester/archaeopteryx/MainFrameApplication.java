@@ -1130,17 +1130,17 @@ public final class MainFrameApplication extends MainFrame {
                 .setToolTipText( "To collapse branches with confidence values below a threshold into multifurcations (in the case of multiple confidences per branch: without at least one confidence value above a threshold)" );
         _tools_menu.addSeparator();
         _tools_menu
+                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Codes or Ids from Node Names" ) );
+        customizeJMenuItem( _extract_tax_code_from_node_names_jmi );
+        _extract_tax_code_from_node_names_jmi
+                .setToolTipText( "To extract SwissProt/Uniprot taxonomic codes (mnemonics) from nodes names in the form of 'xyz_CAEEL', or Uniprot/NCBI identifiers from nodes names in the form of 'xyz_6239'" );
+        _tools_menu
                 .add( _move_node_names_to_tax_sn_jmi = new JMenuItem( "Transfer Node Names to Taxonomic Scientific Names" ) );
         customizeJMenuItem( _move_node_names_to_tax_sn_jmi );
         _move_node_names_to_tax_sn_jmi.setToolTipText( "To interpret node names as taxonomic scientific names" );
         _tools_menu.add( _move_node_names_to_seq_names_jmi = new JMenuItem( "Transfer Node Names to Sequence Names" ) );
         customizeJMenuItem( _move_node_names_to_seq_names_jmi );
         _move_node_names_to_seq_names_jmi.setToolTipText( "To interpret node names as sequence (protein, gene) names" );
-        _tools_menu
-                .add( _extract_tax_code_from_node_names_jmi = new JMenuItem( "Extract Taxonomic Codes or Ids from Node Names" ) );
-        customizeJMenuItem( _extract_tax_code_from_node_names_jmi );
-        _extract_tax_code_from_node_names_jmi
-                .setToolTipText( "To extract taxonomic codes (mnemonics) from nodes names in the form of 'xyz_ECOLI', or Uniprot identifiers from nodes names in the form of 'xyz_1234567'" );
         _tools_menu.addSeparator();
         _tools_menu
                 .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
@@ -1898,7 +1898,7 @@ public final class MainFrameApplication extends MainFrame {
                             if ( counter_failed < 15 ) {
                                 sb_failed.append( name + "\n" );
                             }
-                            else if (  counter_failed == 15 ) {
+                            else if ( counter_failed == 15 ) {
                                 sb_failed.append( "...\n" );
                             }
                             counter_failed++;
@@ -1907,22 +1907,27 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 if ( counter > 0 ) {
                     String failed = "";
+                    String all = "all ";
                     if ( counter_failed > 0 ) {
-                        failed = "\nDid not extract taxonomic data for "  + counter_failed + " (named) external nodes:\n" + sb_failed;
-                        
+                        all = "";
+                        failed = "\nCould not extract taxonomic data for " + counter_failed
+                                + " named external nodes:\n" + sb_failed;
                     }
                     JOptionPane.showMessageDialog( this,
-                                                   "Successfully extracted taxonomic data from " + counter
-                                                           + " external nodes:\n" + sb.toString() + failed,
-                                                   "Taxonomic Data Extraction Successfully Completed",
-                                                   JOptionPane.INFORMATION_MESSAGE );
+                                                   "Extracted taxonomic data from " + all + counter
+                                                           + " named external nodes:\n" + sb.toString() + failed,
+                                                   "Taxonomic Data Extraction Completed",
+                                                   counter_failed > 0 ? JOptionPane.WARNING_MESSAGE
+                                                           : JOptionPane.INFORMATION_MESSAGE );
                 }
                 else {
                     JOptionPane
                             .showMessageDialog( this,
-                                                "Could not extract any taxonomic data, maybe node names are empty\nor not in the form \"XYZ_CAEEL\", \"XYZ_CAEEL/12-394\", or \"XYZ_1234567\"?",
+                                                "Could not extract any taxonomic data. Maybe node names are empty\n"
+                                                        + "or not in the forms \"XYZ_CAEEL\", \"XYZ_CAEEL/12-394\", or \"XYZ_6239\",\n"
+                                                        + "or nodes already have taxonomic data?\n",
                                                 "No Taxonomic Data Extracted",
-                                                JOptionPane.WARNING_MESSAGE );
+                                                JOptionPane.ERROR_MESSAGE );
                 }
             }
         }

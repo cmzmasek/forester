@@ -64,7 +64,6 @@ public final class GSDI implements GSDII {
         }
         final NodesLinkingResult nodes_linking_result = linkNodesOfG( gene_tree,
                                                                       species_tree,
-                                                                      null,
                                                                       strip_gene_tree,
                                                                       strip_species_tree );
         _stripped_gene_tree_nodes = nodes_linking_result.getStrippedGeneTreeNodes();
@@ -175,6 +174,17 @@ public final class GSDI implements GSDII {
         return res;
     }
 
+    final static NodesLinkingResult linkNodesOfG( final Phylogeny gene_tree,
+                                                  final Phylogeny species_tree,
+                                                  final boolean strip_gene_tree,
+                                                  final boolean strip_species_tree ) throws SDIException {
+        final TaxonomyComparisonBase tax_comp_base = SDIutil.determineTaxonomyComparisonBase( gene_tree );
+        if ( tax_comp_base == null ) {
+            throw new RuntimeException( "failed to establish taxonomy linking base (taxonomy linking base is null)" );
+        }
+        return linkNodesOfG( gene_tree, species_tree, tax_comp_base, strip_gene_tree, strip_species_tree );
+    }
+
     /**
      * This allows for linking of internal nodes of the species tree (as opposed
      * to just external nodes, as in the method it overrides.
@@ -187,15 +197,13 @@ public final class GSDI implements GSDII {
                                                   final TaxonomyComparisonBase tax_comp_base,
                                                   final boolean strip_gene_tree,
                                                   final boolean strip_species_tree ) throws SDIException {
+        if ( tax_comp_base == null ) {
+            throw new IllegalArgumentException( "taxonomy linking base is null" );
+        }
         final Map<String, PhylogenyNode> species_to_node_map = new HashMap<String, PhylogenyNode>();
         final List<PhylogenyNode> species_tree_ext_nodes = new ArrayList<PhylogenyNode>();
         final NodesLinkingResult res = new NodesLinkingResult();
-        if ( tax_comp_base == null ) {
-            res.setTaxCompBase( SDIutil.determineTaxonomyComparisonBase( gene_tree ) );
-        }
-        else {
-            res.setTaxCompBase( tax_comp_base );
-        }
+        res.setTaxCompBase( tax_comp_base );
         // Stringyfied taxonomy is the key, node is the value.
         for( final PhylogenyNodeIterator iter = species_tree.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode s = iter.next();
@@ -259,7 +267,8 @@ public final class GSDI implements GSDII {
         if ( strip_gene_tree ) {
             stripTree( gene_tree, res.getStrippedGeneTreeNodes() );
             if ( gene_tree.isEmpty() || ( gene_tree.getNumberOfExternalNodes() < 2 ) ) {
-                throw new SDIException( "species could not be mapped between gene tree and species tree" );
+                throw new SDIException( "species could not be mapped between gene tree and species tree (based on "
+                        + res.getTaxCompBase() + ")" );
             }
         }
         if ( strip_species_tree ) {

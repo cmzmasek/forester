@@ -234,7 +234,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-       
         System.out.print( "Conversion to NHX (node level): " );
         if ( Test.testNHXconversion() ) {
             System.out.println( "OK." );
@@ -4949,7 +4948,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n10 = PhylogenyNode.createInstanceFromNhxString( "blag_12X45-blag",
-                                                                                NHXParser.TAXONOMY_EXTRACTION.YES );
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.YES );
             if ( !n10.getNodeData().getTaxonomy().getTaxonomyCode().equals( "12X45" ) ) {
                 System.out.println( n10.toString() );
                 return false;

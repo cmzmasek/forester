@@ -55,7 +55,6 @@ public class GSDIR implements GSDII {
                   final boolean strip_species_tree ) throws SDIException {
         final NodesLinkingResult nodes_linking_result = GSDI.linkNodesOfG( gene_tree,
                                                                            species_tree,
-                                                                           null,
                                                                            strip_gene_tree,
                                                                            strip_species_tree );
         _stripped_gene_tree_nodes = nodes_linking_result.getStrippedGeneTreeNodes();

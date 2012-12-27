@@ -38,8 +38,7 @@ public final class ForesterConstants {
     public final static String  UTF8                        = "UTF-8";
     public final static String  PHYLO_XML_REFERENCE         = "Han MV and Zmasek CM (2009): \"phyloXML: XML for evolutionary biology and comparative genomics\", BMC Bioinformatics 10:356";
     public final static boolean RELEASE                     = false;
-    
-    
+
     public enum PhylogeneticTreeFormats {
         NH, NHX, NEXUS, PHYLOXML
     }

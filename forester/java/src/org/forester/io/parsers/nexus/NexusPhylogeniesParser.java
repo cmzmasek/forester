@@ -43,7 +43,6 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -75,8 +74,8 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         final BufferedReader reader = ParserUtils.createReader( getNexusSource() );
         String line;
         String name = "";
-        StringBuffer nhx = new StringBuffer();
-        final StringBuffer translate_sb = new StringBuffer();
+        StringBuilder nhx = new StringBuilder();
+        final StringBuilder translate_sb = new StringBuilder();
         boolean in_trees_block = false;
         boolean in_taxalabels = false;
         boolean in_translate = false;
@@ -114,7 +113,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                         in_translate = false;
                         if ( nhx.length() > 0 ) {
                             createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                            nhx = new StringBuffer();
+                            nhx = new StringBuilder();
                             name = "";
                             rooted_info_present = false;
                             is_rooted = false;
@@ -123,7 +122,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                     else if ( line_lc.startsWith( tree ) || ( line_lc.startsWith( utree ) ) ) {
                         if ( nhx.length() > 0 ) {
                             createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                            nhx = new StringBuffer();
+                            nhx = new StringBuilder();
                             name = "";
                             rooted_info_present = false;
                             is_rooted = false;
@@ -153,7 +152,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                         in_tree = false;
                         in_translate = false;
                         createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                        nhx = new StringBuffer();
+                        nhx = new StringBuilder();
                         name = "";
                         rooted_info_present = false;
                         is_rooted = false;
@@ -220,14 +219,21 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
     }
 
     private void createPhylogeny( final String name,
-                                  final StringBuffer nhx,
+                                  final StringBuilder nhx,
                                   final boolean rooted_info_present,
                                   final boolean is_rooted ) throws IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final NHXParser pars = new NHXParser();
-        pars.setTaxonomyExtraction( getTaxonomyExtraction() );
-        pars.setReplaceUnderscores( isReplaceUnderscores() );
-        pars.setIgnoreQuotes( isIgnoreQuotes() );
+        if ( ( getTaxlabels().size() < 1 ) && ( getTranslateMap().size() < 1 ) ) {
+            pars.setTaxonomyExtraction( getTaxonomyExtraction() );
+            pars.setReplaceUnderscores( isReplaceUnderscores() );
+            pars.setIgnoreQuotes( isIgnoreQuotes() );
+        }
+        else {
+            pars.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
+            pars.setReplaceUnderscores( false );
+            pars.setIgnoreQuotes( false );
+        }
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
@@ -256,17 +262,15 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                     }
                 }
                 if ( !isReplaceUnderscores() && ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) ) {
-                  
-                    ParserUtils.extractTaxonomyDataFromNodeName( node,  getTaxonomyExtraction() );
-                    
-//                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
-//                                                                                    getTaxonomyExtraction() );
-//                    if ( !ForesterUtil.isEmpty( tax ) ) {
-//                        if ( !node.getNodeData().isHasTaxonomy() ) {
-//                            node.getNodeData().setTaxonomy( new Taxonomy() );
-//                        }
-//                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
-//                    }
+                    ParserUtils.extractTaxonomyDataFromNodeName( node, getTaxonomyExtraction() );
+                    //                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
+                    //                                                                                    getTaxonomyExtraction() );
+                    //                    if ( !ForesterUtil.isEmpty( tax ) ) {
+                    //                        if ( !node.getNodeData().isHasTaxonomy() ) {
+                    //                            node.getNodeData().setTaxonomy( new Taxonomy() );
+                    //                        }
+                    //                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
+                    //                    }
                 }
             }
         }
@@ -323,7 +327,7 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         _taxlabels = taxlabels;
     }
 
-    private void setTranslateKeyValuePairs( final StringBuffer translate_sb ) throws IOException {
+    private void setTranslateKeyValuePairs( final StringBuilder translate_sb ) throws IOException {
         String s = translate_sb.toString().trim();
         if ( s.endsWith( ";" ) ) {
             s = s.substring( 0, s.length() - 1 ).trim();

@@ -157,8 +157,6 @@ public class Phylogeny {
     public Phylogeny copy() {
         return copy( _root );
     }
-    
-  
 
     /**
      * Returns a deep copy of this Phylogeny.
@@ -1075,7 +1073,7 @@ public class Phylogeny {
 
     public void setRoot( final PhylogenyNode n ) {
         _root = n;
-    } 
+    }
 
     /**
      * Sets whether this Phylogeny is rooted or not.

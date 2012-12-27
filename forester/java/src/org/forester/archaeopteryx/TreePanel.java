@@ -524,11 +524,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             initNodeData();
             if ( recalc_longest_ext_node_info ) {
                 calculateLongestExtNodeInfo();
-                while ( getLongestExtNodeInfo() > y / 2 && getTreeFontSet().getLargeFont().getSize() > 2 ) {
+                while ( ( getLongestExtNodeInfo() > y / 2 ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
                     getMainPanel().getTreeFontSet().decreaseFontSize();
                     calculateLongestExtNodeInfo();
                 }
-                
             }
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
@@ -2467,7 +2466,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             errorMessageNoCutCopyPasteInUnrootedDisplay();
             return;
         }
-        if ( node.isRoot() && node.getNumberOfDescendants() != 1 ) {
+        if ( node.isRoot() && ( node.getNumberOfDescendants() != 1 ) ) {
             JOptionPane.showMessageDialog( this,
                                            "Cannot delete entire tree",
                                            "Attempt to delete entire tree",
