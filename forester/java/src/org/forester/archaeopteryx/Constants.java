@@ -24,7 +24,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
 // Contact: phylosoft @ gmail . com
-// WWW: www.phylosoft.org/forester
+// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.archaeopteryx;
 
@@ -49,7 +49,7 @@ public final class Constants {
             "Arial", "Helvetica", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans" };
     final static boolean        VERBOSE_DEFAULT                                               = false;
     final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 200;
-    final static String         AUTHOR_EMAIL                                                  = "phylosoft@gmail.com";
+    final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";
     final static int            DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP                      = 0;
     final static float          BUTTON_ZOOM_IN_FACTOR                                         = 1.25f;
     final static float          BUTTON_ZOOM_OUT_FACTOR                                        = 1 / Constants.BUTTON_ZOOM_IN_FACTOR;
@@ -74,7 +74,7 @@ public final class Constants {
     static final int            A4_SIZE_X                                                     = 595;
     static final int            A4_SIZE_Y                                                     = 845;
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
-    final static String         APTX_WEB_SITE                                                 = "http://www.phylosoft.org/archaeopteryx/";
+    final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
     final static String         PHYLOXML_WEB_SITE                                             = ForesterConstants.PHYLO_XML_LOCATION;
     final static String         PHYLOXML_REFERENCE_URL                                        = "http://www.biomedcentral.com/1471-2105/10/356/";
     final static String         APTX_REFERENCE_URL                                            = "http://www.biomedcentral.com/bmcbioinformatics/";

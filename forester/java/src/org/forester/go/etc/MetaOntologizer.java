@@ -21,7 +21,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
 // Contact: phylosoft @ gmail . com
-// WWW: www.phylosoft.org
+// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.go.etc;
 

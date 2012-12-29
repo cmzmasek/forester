@@ -9,7 +9,7 @@
 // by: James Bardsley (torasin@torasin.com)
 //
 // Contact: phylosoft @ gmail . com
-// WWW: www.phylosoft.org/forester
+// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.archaeopteryx;
 
