@@ -889,7 +889,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
         sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
         sb.append( "\n" );
-        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
+        sb.append( "For more information: https://sites.google.com/site/cmzmasek/home/software/archaeopteryx\n" );
         sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
         TextFrame.instantiate( sb.toString(), "Help", _textframes );
     }
