@@ -152,6 +152,13 @@ taxonomy_extraction_in_nh_parsing:         pfam
 
 
 
+#  Initial Window Size for Application and ArchaeopteryA applet
+#  ------------------------------------------------------------
+window_initial_size_x: 640
+window_initial_size_y: 580
+
+
+
 #  phyloXML parsing
 #  ----------------
 #  To ensure compatibility with all current and future 

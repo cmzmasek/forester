@@ -165,6 +165,14 @@ replace_underscores_in_nh_parsing:         no
 taxonomy_extraction_in_nh_parsing:         pfam
 
 
+
+#  Initial Window Size for Application and ArchaeopteryA applet
+#  ------------------------------------------------------------
+window_initial_size_x: 800
+window_initial_size_y: 800
+
+
+
 #  Checkbox Display Selection
 #  --------------------------
 #  This is used to select which checkboxes to display
