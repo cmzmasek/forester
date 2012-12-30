@@ -218,6 +218,8 @@ public final class Configuration {
     private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.UNKNOWN;
     private String                          _label_for_get_ext_descendents_data                    = "";
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
+    private int                             _frame_x_size;
+    private int                             _frame_y_size;
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
@@ -1028,17 +1030,23 @@ public final class Configuration {
         else if ( key.equals( "font_size" ) ) {
             final String size_str = ( ( String ) st.nextElement() ).trim();
             final int i = parseInt( size_str );
-            setBaseFontSize( i );
+            if ( i > 0 ) {
+                setBaseFontSize( i );
+            }
         }
         else if ( key.equals( "graphics_export_x" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
             final int i = parseInt( str );
-            setGraphicsExportX( i );
+            if ( i > 0 ) {
+                setGraphicsExportX( i );
+            }
         }
         else if ( key.equals( "graphics_export_y" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
             final int i = parseInt( str );
-            setGraphicsExportY( i );
+            if ( i > 0 ) {
+                setGraphicsExportY( i );
+            }
         }
         else if ( key.equals( "pdf_export_line_width" ) ) {
             final String str = ( ( String ) st.nextElement() ).trim();
@@ -1049,6 +1057,20 @@ public final class Configuration {
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME,
                                                   "value for [pdf_export_line_width] cannot be zero or negative" );
+            }
+        }
+        else if ( key.equals( "window_initial_size_x" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            final int i = parseInt( str );
+            if ( i > 0 ) {
+                setFrameXSize( i );
+            }
+        }
+        else if ( key.equals( "window_initial_size_y" ) ) {
+            final String str = ( ( String ) st.nextElement() ).trim();
+            final int i = parseInt( str );
+            if ( i > 0 ) {
+                setFrameYSize( i );
             }
         }
         else if ( key.equals( "default_number_of_bootstrap_resamples" ) ) {
@@ -1675,5 +1697,21 @@ public final class Configuration {
 
     private void setExtNodeDataReturnOn( final EXT_NODE_DATA_RETURN_ON ext_node_data_return_on ) {
         _ext_node_data_return_on = ext_node_data_return_on;
+    }
+
+    public int getFrameXSize() {
+        return _frame_x_size;
+    }
+
+    public int getFrameYSize() {
+        return _frame_y_size;
+    }
+
+    public void setFrameXSize( final int frame_x_size ) {
+        _frame_x_size = frame_x_size;
+    }
+
+    public void setFrameYSize( final int frame_y_size ) {
+        _frame_y_size = frame_y_size;
     }
 }

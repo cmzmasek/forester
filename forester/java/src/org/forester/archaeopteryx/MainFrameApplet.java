@@ -53,7 +53,8 @@ import org.forester.util.ForesterUtil;
 public final class MainFrameApplet extends MainFrame {
 
     private static final long    serialVersionUID = 1941019292746717053L;
-    private final static int     FRAME_X_SIZE     = 640, FRAME_Y_SIZE = 580;
+    private final static int     DEFAULT_FRAME_X_SIZE     = 640;
+    private final static int     DEFAULT_FRAME_Y_SIZE = 580;
     private final ArchaeopteryxA _applet;
     private ButtonGroup          _radio_group_1;
 
@@ -122,7 +123,8 @@ public final class MainFrameApplet extends MainFrame {
         _contentpane = getContentPane();
         _contentpane.setLayout( new BorderLayout() );
         _contentpane.add( _mainpanel, BorderLayout.CENTER );
-        setSize( FRAME_X_SIZE, FRAME_Y_SIZE );
+        setSize( getConfiguration().getFrameXSize() > 40 ? getConfiguration().getFrameXSize() : DEFAULT_FRAME_X_SIZE,
+                 getConfiguration().getFrameYSize() > 40 ? getConfiguration().getFrameYSize() : DEFAULT_FRAME_Y_SIZE );
         addWindowListener( new WindowAdapter() {
 
             @Override
