@@ -350,9 +350,7 @@ public final class MainFrameApplication extends MainFrame {
         _contentpane.setLayout( new BorderLayout() );
         _contentpane.add( _mainpanel, BorderLayout.CENTER );
         // App is this big
-        setSize( getConfiguration().getFrameXSize() > 40 ? getConfiguration().getFrameXSize() : FRAME_X_SIZE,
-                 getConfiguration().getFrameYSize() > 40 ? getConfiguration().getFrameYSize() : FRAME_Y_SIZE );
-       
+        setSize( MainFrameApplication.FRAME_X_SIZE, MainFrameApplication.FRAME_Y_SIZE );
         //        addWindowFocusListener( new WindowAdapter() {
         //
         //            @Override
