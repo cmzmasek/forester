@@ -207,9 +207,9 @@ show_binary_characters:         display   no
 show_binary_character_counts:   display   no
 display_internal_data:          display   yes
 dynamically_hide_data:          display   yes
-show_relation_confidence:       display	  no
-show_properties:                display   no
-show_vector_data:               display   no
+show_relation_confidence:       nodisplay no
+show_properties:                nodisplay no
+show_vector_data:               nodisplay no
 
 
 
