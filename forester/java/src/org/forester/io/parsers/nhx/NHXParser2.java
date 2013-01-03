@@ -45,14 +45,11 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.phylogeny.data.PropertiesMap;
-import org.forester.phylogeny.data.Property;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -227,8 +224,7 @@ public final class NHXParser2 implements PhylogenyParser {
         } //  while ( true ) 
         System.out.println( "done with loop" );
         if ( getCladeLevel() != 0 ) {
-            //   setPhylogenies( null );
-            //   throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of open parens does not equal number of close parens" );
+            throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
         if ( getCurrentPhylogeny() != null ) {
             return finishPhylogeny2();
@@ -667,14 +663,6 @@ public final class NHXParser2 implements PhylogenyParser {
                         }
                         node_to_annotate.getNodeData().getTaxonomy().setScientificName( s.substring( 2 ) );
                     }
-                    else if ( s.startsWith( org.forester.io.parsers.nhx.NHXtags.ANNOTATION ) ) {
-                        if ( !node_to_annotate.getNodeData().isHasSequence() ) {
-                            node_to_annotate.getNodeData().setSequence( new Sequence() );
-                        }
-                        final Annotation annotation = new Annotation( "_:_" );
-                        annotation.setDesc( s.substring( 3 ) );
-                        node_to_annotate.getNodeData().getSequence().addAnnotation( annotation );
-                    }
                     else if ( s.startsWith( org.forester.io.parsers.nhx.NHXtags.IS_DUPLICATION ) ) {
                         if ( ( s.charAt( 2 ) == 'Y' ) || ( s.charAt( 2 ) == 'T' ) ) {
                             node_to_annotate.getNodeData().setEvent( Event.createSingleDuplicationEvent() );
@@ -706,12 +694,6 @@ public final class NHXParser2 implements PhylogenyParser {
                         if ( c != null ) {
                             PhylogenyMethods.setBranchColorValue( node_to_annotate, c );
                         }
-                    }
-                    else if ( s.startsWith( NHXtags.CUSTOM_DATA_ON_NODE ) ) {
-                        if ( !node_to_annotate.getNodeData().isHasProperties() ) {
-                            node_to_annotate.getNodeData().setProperties( new PropertiesMap() );
-                        }
-                        node_to_annotate.getNodeData().getProperties().addProperty( Property.createFromNhxString( s ) );
                     }
                     else if ( s.startsWith( NHXtags.DOMAIN_STRUCTURE ) ) {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {

@@ -5175,9 +5175,6 @@ public final class Test {
             if ( PhylogenyMethods.getBranchWidthValue( n5 ) != 2 ) {
                 return false;
             }
-            if ( n5.getNodeData().getProperties().getPropertyRefs().length != 2 ) {
-                return false;
-            }
             final PhylogenyNode n8 = PhylogenyNode
                     .createInstanceFromNhxString( "n8_ECOLI/12:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
             if ( !n8.getName().equals( "n8_ECOLI/12" ) ) {
@@ -5386,32 +5383,6 @@ public final class Test {
             if ( !PhylogenyMethods.getSpecies( o ).equals( "MOUSE" ) ) {
                 return false;
             }
-            final Property tvu1 = n5.getNodeData().getProperties().getProperty( "tag1" );
-            final Property tvu3 = n5.getNodeData().getProperties().getProperty( "tag3" );
-            if ( !tvu1.getRef().equals( "tag1" ) ) {
-                return false;
-            }
-            if ( !tvu1.getDataType().equals( "xsd:string" ) ) {
-                return false;
-            }
-            if ( !tvu1.getUnit().equals( "unit1" ) ) {
-                return false;
-            }
-            if ( !tvu1.getValue().equals( "value1" ) ) {
-                return false;
-            }
-            if ( !tvu3.getRef().equals( "tag3" ) ) {
-                return false;
-            }
-            if ( !tvu3.getDataType().equals( "xsd:string" ) ) {
-                return false;
-            }
-            if ( !tvu3.getUnit().equals( "unit3" ) ) {
-                return false;
-            }
-            if ( !tvu3.getValue().equals( "value3" ) ) {
-                return false;
-            }
             if ( n1.getName().compareTo( "" ) != 0 ) {
                 return false;
             }
@@ -5436,21 +5407,6 @@ public final class Test {
                 return false;
             }
             if ( !n00.getNodeData().getSequence().getAccession().getValue().equals( "accession123" ) ) {
-                return false;
-            }
-            if ( !n00.getNodeData().getProperties().getProperty( "url_tag" ).getRef().equals( "url_tag" ) ) {
-                return false;
-            }
-            if ( n00.getNodeData().getProperties().getProperty( "url_tag" ).getAppliesTo() != Property.AppliesTo.NODE ) {
-                return false;
-            }
-            if ( !n00.getNodeData().getProperties().getProperty( "url_tag" ).getDataType().equals( "xsd:anyURI" ) ) {
-                return false;
-            }
-            if ( !n00.getNodeData().getProperties().getProperty( "url_tag" ).getValue().equals( "www.yahoo.com" ) ) {
-                return false;
-            }
-            if ( !n00.getNodeData().getProperties().getProperty( "url_tag" ).getUnit().equals( "" ) ) {
                 return false;
             }
             final PhylogenyNode nx = PhylogenyNode.createInstanceFromNhxString( "n5:0.1[&&NHX:S=Ecoli:GN=gene_1]" );

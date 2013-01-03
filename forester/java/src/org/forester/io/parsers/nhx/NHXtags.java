@@ -27,16 +27,11 @@ package org.forester.io.parsers.nhx;
 
 public final class NHXtags {
 
-    public static final String CUSTOM_DATA_ON_NODE = "XN=";
     public static final String COLOR               = "C=";
     public static final String PARENT_BRANCH_WIDTH = "W=";
-    public static final String SUBTREE_NEIGHBORS   = "SNn=";
-    public static final String SUPER_ORTHOLOGOUS   = "SOn=";
-    public static final String ORTHOLOGOUS         = "On=";
     public static final String TAXONOMY_ID         = "T=";
     public static final String SUPPORT             = "B=";
     public static final String IS_DUPLICATION      = "D=";
-    public static final String ANNOTATION          = "AN=";
     public static final String SPECIES_NAME        = "S=";
     public static final String DOMAIN_STRUCTURE    = "DS=";
     public static final String GENE_NAME           = "GN=";
