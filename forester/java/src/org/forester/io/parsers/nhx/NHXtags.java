@@ -40,8 +40,6 @@ public final class NHXtags {
     public static final String SPECIES_NAME        = "S=";
     public static final String DOMAIN_STRUCTURE    = "DS=";
     public static final String GENE_NAME           = "GN=";
-    public static final String GENE_NAME_SYNONYM   = "G=";
     public static final String SEQUENCE_ACCESSION  = "AC=";
-    public static final String NODE_IDENTIFIER     = "ID=";
     public static final Object BRANCH_WIDTH        = "W=";
 }
