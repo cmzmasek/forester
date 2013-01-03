@@ -440,9 +440,6 @@ public class NodeData implements PhylogenyData {
     @Override
     public StringBuffer toNHX() {
         final StringBuffer sb = new StringBuffer();
-        if ( isHasNodeIdentifier() ) {
-            sb.append( getNodeIdentifier().toNHX() );
-        }
         if ( isHasTaxonomy() ) {
             sb.append( getTaxonomy().toNHX() );
         }

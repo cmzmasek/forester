@@ -52,6 +52,7 @@ import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.io.parsers.nhx.NHXParser2;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -270,6 +271,16 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "NHX parsing iterating: " );
+        if ( Test.testNHParsingIter() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.exit( 0 );
         System.out.print( "Nexus characters parsing: " );
         if ( Test.testNexusCharactersParsing() ) {
             System.out.println( "OK." );
@@ -4849,6 +4860,117 @@ public final class Test {
         return true;
     }
 
+    private static boolean testNHParsingIter() {
+        try {
+            String p0_str = "(A,B);";
+            NHXParser2 p = new NHXParser2();
+            p.setSource( p0_str );
+            Phylogeny p0 = p.getNext();
+            if ( !p0.toNewHampshire().equals( p0_str ) ) {
+                System.out.println( p0.toNewHampshire() );
+                return false;
+            }
+            //if ( p.getNext() != null ) {
+            //    return false;
+            //}
+            //
+            String p00_str = "(A,B)root;";
+            //p = new NHXParser2();
+            p.setSource( p00_str );
+            Phylogeny p00 = p.getNext();
+            if ( !p00.toNewHampshire().equals( p00_str ) ) {
+                System.out.println( p00.toNewHampshire() );
+                return false;
+            }
+            //
+            String p000_str = "A;";
+            p.setSource( p000_str );
+            Phylogeny p000 = p.getNext();
+            if ( !p000.toNewHampshire().equals( p000_str ) ) {
+                System.out.println( p000.toNewHampshire() );
+                return false;
+            }
+            //
+            String p0000_str = "A";
+            p.setSource( p0000_str );
+            Phylogeny p0000 = p.getNext();
+            if ( !p0000.toNewHampshire().equals( "A;" ) ) {
+                System.out.println( p0000.toNewHampshire() );
+                return false;
+            }
+            //
+            p.setSource( "(A)" );
+            Phylogeny p00000 = p.getNext();
+            if ( !p00000.toNewHampshire().equals( "(A);" ) ) {
+                System.out.println( p00000.toNewHampshire() );
+                return false;
+            }
+            //
+            //            p.setSource( " " );
+            //            Phylogeny p000000 = p.getNext();
+            //            if ( !p000000.toNewHampshire().equals( "(A);" ) ) {
+            //                System.out.println( p000000.toNewHampshire() );
+            //                return false;
+            //            }
+            //
+            String p1_str = "(A,B)(C,D)(E,F)(G,H)";
+            p.setSource( p1_str );
+            Phylogeny p1_0 = p.getNext();
+            if ( !p1_0.toNewHampshire().equals( "(A,B);" ) ) {
+                System.out.println( p1_0.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p1_1 = p.getNext();
+            if ( !p1_1.toNewHampshire().equals( "(C,D);" ) ) {
+                System.out.println( "(C,D) != " + p1_1.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p1_2 = p.getNext();
+            if ( !p1_2.toNewHampshire().equals( "(E,F);" ) ) {
+                System.out.println( "(E,F) != " + p1_2.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p1_3 = p.getNext();
+            if ( !p1_3.toNewHampshire().equals( "(G,H);" ) ) {
+                System.out.println( "(G,H) != " + p1_3.toNewHampshire() );
+                return false;
+            }
+            //
+            String p2_str = "((1,2,3),B);(C,D) (E,F)root;(G,H); ;(X)";
+            p.setSource( p2_str );
+            Phylogeny p2_0 = p.getNext();
+            if ( !p2_0.toNewHampshire().equals( "((1,2,3),B);" ) ) {
+                System.out.println( p2_0.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p2_1 = p.getNext();
+            if ( !p2_1.toNewHampshire().equals( "(C,D);" ) ) {
+                System.out.println( "(C,D) != " + p2_1.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p2_2 = p.getNext();
+            if ( !p2_2.toNewHampshire().equals( "(E,F)root;" ) ) {
+                System.out.println( "(E,F)root != " + p2_2.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p2_3 = p.getNext();
+            if ( !p2_3.toNewHampshire().equals( "(G,H);" ) ) {
+                System.out.println( "(G,H) != " + p2_3.toNewHampshire() );
+                return false;
+            }
+            Phylogeny p2_4 = p.getNext();
+            if ( !p2_4.toNewHampshire().equals( "(X);" ) ) {
+                System.out.println( "(X) != " + p2_4.toNewHampshire() );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testNHXconversion() {
         try {
             final PhylogenyNode n1 = new PhylogenyNode();
@@ -5310,9 +5432,6 @@ public final class Test {
             }
             final PhylogenyNode n00 = PhylogenyNode
                     .createInstanceFromNhxString( "n7:0.000001[&&NHX:GN=gene_name:AC=accession123:ID=node_identifier:S=Ecoli:D=N:Co=N:B=100:T=1:On=100:SOn=100:SNn=100:W=2:C=0.0.0:XN=U=url_tag=www.yahoo.com]" );
-            if ( !n00.getNodeData().getNodeIdentifier().getValue().equals( "node_identifier" ) ) {
-                return false;
-            }
             if ( !n00.getNodeData().getSequence().getName().equals( "gene_name" ) ) {
                 return false;
             }
@@ -5336,10 +5455,6 @@ public final class Test {
             }
             final PhylogenyNode nx = PhylogenyNode.createInstanceFromNhxString( "n5:0.1[&&NHX:S=Ecoli:GN=gene_1]" );
             if ( !nx.getNodeData().getSequence().getName().equals( "gene_1" ) ) {
-                return false;
-            }
-            final PhylogenyNode nx2 = PhylogenyNode.createInstanceFromNhxString( "n5:0.1[&&NHX:S=Ecoli:G=gene_2]" );
-            if ( !nx2.getNodeData().getSequence().getName().equals( "gene_2" ) ) {
                 return false;
             }
             final PhylogenyNode n13 = PhylogenyNode

@@ -28,7 +28,6 @@ package org.forester.phylogeny.data;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.util.ForesterUtil;
 
@@ -137,11 +136,7 @@ public final class Identifier implements PhylogenyData {
 
     @Override
     public StringBuffer toNHX() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append( ":" );
-        sb.append( NHXtags.NODE_IDENTIFIER );
-        sb.append( ForesterUtil.replaceIllegalNhxCharacters( getValue() ) );
-        return sb;
+        throw new UnsupportedOperationException();
     }
 
     @Override
