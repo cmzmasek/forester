@@ -381,7 +381,7 @@ module Evoruby
 
       if dc == 0
         # passed on protein E-value, failed in per domain E-values
-        #return
+        return
       end
 
       hmmscan_results_per_protein_filtered.sort! { |r1,r2| r1.env_from <=> r2.env_from }
@@ -404,6 +404,7 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
+      puts s
       #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
 
       #if e != nil
