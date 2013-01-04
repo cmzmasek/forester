@@ -106,7 +106,7 @@ module Evoruby
     end
 
     def get_full_name
-      DE   RecName: Full=Apoptosis regulator Bcl-2;
+     # DE   RecName: Full=Apoptosis regulator Bcl-2;
     end
 
 
