@@ -381,7 +381,7 @@ module Evoruby
 
       if dc == 0
         # passed on protein E-value, failed in per domain E-values
-        return
+        #return
       end
 
       hmmscan_results_per_protein_filtered.sort! { |r1,r2| r1.env_from <=> r2.env_from }
