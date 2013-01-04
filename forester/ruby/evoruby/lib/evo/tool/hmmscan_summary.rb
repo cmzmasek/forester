@@ -304,7 +304,8 @@ module Evoruby
                 fs_e_value_threshold,
                 hmm_for_protein_output,
                 i_e_value_threshold,
-                true )
+                false,
+                species )
             end
             hmmscan_results_per_protein.clear
           end
@@ -355,7 +356,8 @@ module Evoruby
         fs_e_value_threshold,
         hmm_for_protein_output,
         i_e_value_threshold,
-        uniprotkb )
+        uniprotkb,
+        species      )
 
       dc = 0
       # filter according to i-Evalue threshold
