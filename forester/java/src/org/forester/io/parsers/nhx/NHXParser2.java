@@ -32,6 +32,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,7 +71,6 @@ public final class NHXParser2 implements PhylogenyParser {
     final static private byte               BUFFERED_READER             = 3;
     final static private byte               STRING_BUILDER              = 4;
     private boolean                         _guess_rootedness;
-    private boolean                         _has_next;
     private boolean                         _ignore_quotes;
     private byte                            _input_type;
     private int                             _source_length;
@@ -97,12 +98,246 @@ public final class NHXParser2 implements PhylogenyParser {
     char[]                                  _my_source_charary          = null;
     BufferedReader                          _my_source_br               = null;
     int                                     _i;
+    private Phylogeny                       _next;
 
     public NHXParser2() {
         init();
     }
 
-    public Phylogeny getNext() throws IOException, NHXFormatException {
+    public TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
+    }
+
+    public boolean hasNext() {
+        return _next != null;
+    }
+
+    public Phylogeny next() throws NHXFormatException, IOException {
+        final Phylogeny phy = _next;
+        getNext();
+        return phy;
+    }
+
+    @Override
+    public Phylogeny[] parse() throws IOException {
+        reset();
+        List<Phylogeny> l = new ArrayList<Phylogeny>();
+        while ( hasNext() ) {
+            l.add( next() );
+        }
+        final Phylogeny[] p = new Phylogeny[ l.size() ];
+        for( int i = 0; i < l.size(); ++i ) {
+            p[ i ] = l.get( i );
+        }
+        return p;
+    }
+
+    public void reset() throws NHXFormatException, IOException {
+        _i = 0;
+        _in_comment = false;
+        _saw_colon = false;
+        _saw_open_bracket = false;
+        _in_open_bracket = false;
+        _in_double_quote = false;
+        _in_single_quote = false;
+        setCladeLevel( 0 );
+        newCurrentAnotation();
+        setCurrentPhylogeny( null );
+        setCurrentNode( null );
+        _my_source_str = null;
+        _my_source_sbuff = null;
+        _my_source_sbuil = null;
+        _my_source_charary = null;
+        _my_source_br = null;
+        switch ( getInputType() ) {
+            case STRING:
+                _my_source_str = ( String ) getNhxSource();
+                break;
+            case STRING_BUFFER:
+                _my_source_sbuff = ( StringBuffer ) getNhxSource();
+                break;
+            case STRING_BUILDER:
+                _my_source_sbuil = ( StringBuilder ) getNhxSource();
+                break;
+            case CHAR_ARRAY:
+                _my_source_charary = ( char[] ) getNhxSource();
+                break;
+            case BUFFERED_READER:
+                _my_source_br = ( BufferedReader ) getNhxSource();
+                break;
+            default:
+                throw new RuntimeException( "unknown input type" );
+        }
+        getNext();
+    }
+
+    public void setGuessRootedness( final boolean guess_rootedness ) {
+        _guess_rootedness = guess_rootedness;
+    }
+
+    public void setIgnoreQuotes( final boolean ignore_quotes ) {
+        _ignore_quotes = ignore_quotes;
+    }
+
+    public void setReplaceUnderscores( final boolean replace_underscores ) {
+        _replace_underscores = replace_underscores;
+    }
+
+    /**
+     * This sets the source to be parsed. The source can be: String,
+     * StringBuffer, char[], File, or InputStream. The source can contain more
+     * than one phylogenies in either New Hamphshire (NH) or New Hamphshire
+     * Extended (NHX) format. There is no need to separate phylogenies with any
+     * special character. White space is always ignored, as are semicolons
+     * inbetween phylogenies. Example of a source describing two phylogenies
+     * (source is a String, in this example): "(A,(B,(C,(D,E)de)cde)bcde)abcde
+     * ((((A,B)ab,C)abc,D)abcd,E)abcde". Everything between a '[' followed by any
+     * character other than '&' and ']' is considered a comment and ignored
+     * (example: "[this is a comment]"). NHX tags are surrounded by '[&&NHX' and
+     * ']' (example: "[&&NHX:S=Varanus_storri]"). A sequence like "[& some
+     * info]" is ignored, too (at the PhylogenyNode level, though).
+     * Exception: numbers only between [ and ] (e.g. [90]) are interpreted as support values.
+     * 
+     * @see #parse()
+     * @see org.forester.io.parsers.PhylogenyParser#setSource(java.lang.Object)
+     * @param nhx_source
+     *            the source to be parsed (String, StringBuffer, char[], File,
+     *            or InputStream)
+     * @throws IOException
+     * @throws PhylogenyParserException
+     */
+    @Override
+    public void setSource( final Object nhx_source ) throws PhylogenyParserException, IOException {
+        if ( nhx_source == null ) {
+            throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
+        }
+        else if ( nhx_source instanceof String ) {
+            setInputType( NHXParser2.STRING );
+            setSourceLength( ( ( String ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof StringBuilder ) {
+            setInputType( NHXParser2.STRING_BUILDER );
+            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof StringBuffer ) {
+            setInputType( NHXParser2.STRING_BUFFER );
+            setSourceLength( ( ( StringBuffer ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof StringBuilder ) {
+            setInputType( NHXParser2.STRING_BUILDER );
+            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof char[] ) {
+            setInputType( NHXParser2.CHAR_ARRAY );
+            setSourceLength( ( ( char[] ) nhx_source ).length );
+            setNhxSource( nhx_source );
+        }
+        else if ( nhx_source instanceof File ) {
+            setInputType( NHXParser2.BUFFERED_READER );
+            setSourceLength( 0 );
+            final File f = ( File ) nhx_source;
+            final String error = ForesterUtil.isReadableFile( f );
+            if ( !ForesterUtil.isEmpty( error ) ) {
+                throw new PhylogenyParserException( error );
+            }
+            setNhxSource( new BufferedReader( new FileReader( f ) ) );
+        }
+        else if ( nhx_source instanceof InputStream ) {
+            setInputType( NHXParser2.BUFFERED_READER );
+            setSourceLength( 0 );
+            final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
+            setNhxSource( new BufferedReader( isr ) );
+        }
+        else {
+            throw new IllegalArgumentException( getClass() + " can only parse objects of type String,"
+                    + " StringBuffer, StringBuilder, char[], File," + " or InputStream "
+                    + " [attempt to parse object of " + nhx_source.getClass() + "]." );
+        }
+        reset();
+    }
+
+    public void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        _taxonomy_extraction = taxonomy_extraction;
+    }
+
+    /**
+     * Decreases the clade level by one.
+     * 
+     * @throws PhylogenyParserException
+     *             if level goes below zero.
+     */
+    private void decreaseCladeLevel() throws PhylogenyParserException {
+        if ( getCladeLevel() < 0 ) {
+            throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of close parens is larger than number of open parens" );
+        }
+        --_clade_level;
+    }
+
+    private Phylogeny finishPhylogeny2() throws PhylogenyParserException, NHXFormatException,
+            PhyloXmlDataFormatException {
+        //setCladeLevel( 0 );
+        if ( getCurrentPhylogeny() != null ) {
+            System.out.println( "cp=" + getCurrentPhylogeny() );
+            if ( getCurrentAnotation() != null ) {
+                System.out.println( "ca=" + getCurrentAnotation().toString() );
+            }
+            else {
+                System.out.println( "ca=null" );
+            }
+            parseNHX( getCurrentAnotation() != null ? getCurrentAnotation().toString() : "", getCurrentPhylogeny()
+                    .getRoot(), getTaxonomyExtraction(), isReplaceUnderscores() );
+            if ( GUESS_IF_SUPPORT_VALUES ) {
+                if ( isBranchLengthsLikeBootstrapValues( getCurrentPhylogeny() ) ) {
+                    moveBranchLengthsToConfidenceValues( getCurrentPhylogeny() );
+                }
+            }
+            if ( isGuessRootedness() ) {
+                final PhylogenyNode root = getCurrentPhylogeny().getRoot();
+                if ( ( root.getDistanceToParent() >= 0.0 ) || !ForesterUtil.isEmpty( root.getName() )
+                        || !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( root ) ) || root.isHasAssignedEvent() ) {
+                    getCurrentPhylogeny().setRooted( true );
+                }
+            }
+            return getCurrentPhylogeny();
+        }
+        return null;
+    }
+
+    private Phylogeny finishSingleNodePhylogeny2() throws PhylogenyParserException, NHXFormatException,
+            PhyloXmlDataFormatException {
+        // setCladeLevel( 0 );
+        final PhylogenyNode new_node = new PhylogenyNode();
+        parseNHX( getCurrentAnotation().toString(), new_node, getTaxonomyExtraction(), isReplaceUnderscores() );
+        setCurrentPhylogeny( new Phylogeny() );
+        getCurrentPhylogeny().setRoot( new_node );
+        return getCurrentPhylogeny();
+    }
+
+    private int getCladeLevel() {
+        return _clade_level;
+    }
+
+    private StringBuilder getCurrentAnotation() {
+        return _current_anotation;
+    }
+
+    private PhylogenyNode getCurrentNode() {
+        return _current_node;
+    }
+
+    private Phylogeny getCurrentPhylogeny() {
+        return _current_phylogeny;
+    }
+
+    private byte getInputType() {
+        return _input_type;
+    }
+
+    private void getNext() throws IOException, NHXFormatException {
         while ( true ) {
             char c = '\b';
             if ( getInputType() == BUFFERED_READER ) {
@@ -205,10 +440,12 @@ public final class NHXParser2 implements PhylogenyParser {
                 _saw_open_bracket = false;
             }
             else if ( ( c == '(' ) && !_in_open_bracket ) {
-                Phylogeny phy = processOpenParen2();
+                final Phylogeny phy = processOpenParen2();
                 if ( phy != null ) {
                     ++_i;
-                    return phy;
+                    //  return phy;
+                    _next = phy;
+                    return;
                 }
             }
             else if ( ( c == ')' ) && !_in_open_bracket ) {
@@ -224,229 +461,24 @@ public final class NHXParser2 implements PhylogenyParser {
         } //  while ( true ) 
         System.out.println( "done with loop" );
         if ( getCladeLevel() != 0 ) {
-            throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of open parens does not equal number of close parens" );
+            throw new PhylogenyParserException( "error in NH (Newick) formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
         if ( getCurrentPhylogeny() != null ) {
-            return finishPhylogeny2();
+            System.out.println( "current=" + getCurrentPhylogeny() );
+            _next = finishPhylogeny2();
+            setCurrentPhylogeny( null );
+            //return finishPhylogeny2();
         }
-        else if ( getCurrentAnotation().length() > 0 ) {
+        else if ( ( getCurrentAnotation() != null ) && ( getCurrentAnotation().length() > 0 ) ) {
             System.out.println( "1node=" + getCurrentAnotation() );
-            return finishSingleNodePhylogeny2();
+            _next = finishSingleNodePhylogeny2();
+            setCurrentAnotation( null );
+            //return finishSingleNodePhylogeny2();
         }
         else {
-            return null;
+            _next = null;
+            //return null;
         }
-    } // parse()
-
-    public TAXONOMY_EXTRACTION getTaxonomyExtraction() {
-        return _taxonomy_extraction;
-    }
-
-    public boolean hasNext() {
-        return _has_next;
-    }
-
-    public void setGuessRootedness( final boolean guess_rootedness ) {
-        _guess_rootedness = guess_rootedness;
-    }
-
-    public void setIgnoreQuotes( final boolean ignore_quotes ) {
-        _ignore_quotes = ignore_quotes;
-    }
-
-    public void setReplaceUnderscores( final boolean replace_underscores ) {
-        _replace_underscores = replace_underscores;
-    }
-
-    /**
-     * This sets the source to be parsed. The source can be: String,
-     * StringBuffer, char[], File, or InputStream. The source can contain more
-     * than one phylogenies in either New Hamphshire (NH) or New Hamphshire
-     * Extended (NHX) format. There is no need to separate phylogenies with any
-     * special character. White space is always ignored, as are semicolons
-     * inbetween phylogenies. Example of a source describing two phylogenies
-     * (source is a String, in this example): "(A,(B,(C,(D,E)de)cde)bcde)abcde
-     * ((((A,B)ab,C)abc,D)abcd,E)abcde". Everything between a '[' followed by any
-     * character other than '&' and ']' is considered a comment and ignored
-     * (example: "[this is a comment]"). NHX tags are surrounded by '[&&NHX' and
-     * ']' (example: "[&&NHX:S=Varanus_storri]"). A sequence like "[& some
-     * info]" is ignored, too (at the PhylogenyNode level, though).
-     * Exception: numbers only between [ and ] (e.g. [90]) are interpreted as support values.
-     * 
-     * @see #parse()
-     * @see org.forester.io.parsers.PhylogenyParser#setSource(java.lang.Object)
-     * @param nhx_source
-     *            the source to be parsed (String, StringBuffer, char[], File,
-     *            or InputStream)
-     * @throws IOException
-     * @throws PhylogenyParserException
-     */
-    @Override
-    public void setSource( final Object nhx_source ) throws PhylogenyParserException, IOException {
-        if ( nhx_source == null ) {
-            throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
-        }
-        else if ( nhx_source instanceof String ) {
-            setInputType( NHXParser2.STRING );
-            setSourceLength( ( ( String ) nhx_source ).length() );
-            setNhxSource( nhx_source );
-        }
-        else if ( nhx_source instanceof StringBuilder ) {
-            setInputType( NHXParser2.STRING_BUILDER );
-            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
-            setNhxSource( nhx_source );
-        }
-        else if ( nhx_source instanceof StringBuffer ) {
-            setInputType( NHXParser2.STRING_BUFFER );
-            setSourceLength( ( ( StringBuffer ) nhx_source ).length() );
-            setNhxSource( nhx_source );
-        }
-        else if ( nhx_source instanceof StringBuilder ) {
-            setInputType( NHXParser2.STRING_BUILDER );
-            setSourceLength( ( ( StringBuilder ) nhx_source ).length() );
-            setNhxSource( nhx_source );
-        }
-        else if ( nhx_source instanceof char[] ) {
-            setInputType( NHXParser2.CHAR_ARRAY );
-            setSourceLength( ( ( char[] ) nhx_source ).length );
-            setNhxSource( nhx_source );
-        }
-        else if ( nhx_source instanceof File ) {
-            setInputType( NHXParser2.BUFFERED_READER );
-            setSourceLength( 0 );
-            final File f = ( File ) nhx_source;
-            final String error = ForesterUtil.isReadableFile( f );
-            if ( !ForesterUtil.isEmpty( error ) ) {
-                throw new PhylogenyParserException( error );
-            }
-            setNhxSource( new BufferedReader( new FileReader( f ) ) );
-        }
-        else if ( nhx_source instanceof InputStream ) {
-            setInputType( NHXParser2.BUFFERED_READER );
-            setSourceLength( 0 );
-            final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
-            setNhxSource( new BufferedReader( isr ) );
-        }
-        else {
-            throw new IllegalArgumentException( getClass() + " can only parse objects of type String,"
-                    + " StringBuffer, char[], File," + " or InputStream " + " [attempt to parse object of "
-                    + nhx_source.getClass() + "]." );
-        }
-        setHasNext( true );
-        reset();
-    }
-
-    public void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
-        _taxonomy_extraction = taxonomy_extraction;
-    }
-
-    public void reset() {
-        setHasNext( false );
-        _i = 0;
-        _in_comment = false;
-        _saw_colon = false;
-        _saw_open_bracket = false;
-        _in_open_bracket = false;
-        _in_double_quote = false;
-        _in_single_quote = false;
-        setCladeLevel( 0 );
-        newCurrentAnotation();
-        setCurrentPhylogeny( null );
-        setCurrentNode( null );
-        _my_source_str = null;
-        _my_source_sbuff = null;
-        _my_source_sbuil = null;
-        _my_source_charary = null;
-        _my_source_br = null;
-        switch ( getInputType() ) {
-            case STRING:
-                _my_source_str = ( String ) getNhxSource();
-                break;
-            case STRING_BUFFER:
-                _my_source_sbuff = ( StringBuffer ) getNhxSource();
-                break;
-            case STRING_BUILDER:
-                _my_source_sbuil = ( StringBuilder ) getNhxSource();
-                break;
-            case CHAR_ARRAY:
-                _my_source_charary = ( char[] ) getNhxSource();
-                break;
-            case BUFFERED_READER:
-                _my_source_br = ( BufferedReader ) getNhxSource();
-                break;
-            default:
-                throw new RuntimeException( "unknown input type" );
-        }
-    }
-
-    /**
-     * Decreases the clade level by one.
-     * 
-     * @throws PhylogenyParserException
-     *             if level goes below zero.
-     */
-    private void decreaseCladeLevel() throws PhylogenyParserException {
-        if ( getCladeLevel() < 0 ) {
-            throw new PhylogenyParserException( "error in NH (Newick)/NHX formatted data: most likely cause: number of close parens is larger than number of open parens" );
-        }
-        --_clade_level;
-    }
-
-    private Phylogeny finishPhylogeny2() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
-        //setCladeLevel( 0 );
-        if ( getCurrentPhylogeny() != null ) {
-            System.out.println( "cp=" + getCurrentPhylogeny() );
-            System.out.println( "ca=" + getCurrentAnotation().toString() );
-            parseNHX( getCurrentAnotation().toString(),
-                      getCurrentPhylogeny().getRoot(),
-                      getTaxonomyExtraction(),
-                      isReplaceUnderscores() );
-            if ( GUESS_IF_SUPPORT_VALUES ) {
-                if ( isBranchLengthsLikeBootstrapValues( getCurrentPhylogeny() ) ) {
-                    moveBranchLengthsToConfidenceValues( getCurrentPhylogeny() );
-                }
-            }
-            if ( isGuessRootedness() ) {
-                final PhylogenyNode root = getCurrentPhylogeny().getRoot();
-                if ( ( root.getDistanceToParent() >= 0.0 ) || !ForesterUtil.isEmpty( root.getName() )
-                        || !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( root ) ) || root.isHasAssignedEvent() ) {
-                    getCurrentPhylogeny().setRooted( true );
-                }
-            }
-            return getCurrentPhylogeny();
-        }
-        return null;
-    }
-
-    private Phylogeny finishSingleNodePhylogeny2() throws PhylogenyParserException, NHXFormatException,
-            PhyloXmlDataFormatException {
-        // setCladeLevel( 0 );
-        final PhylogenyNode new_node = new PhylogenyNode();
-        parseNHX( getCurrentAnotation().toString(), new_node, getTaxonomyExtraction(), isReplaceUnderscores() );
-        setCurrentPhylogeny( new Phylogeny() );
-        getCurrentPhylogeny().setRoot( new_node );
-        return getCurrentPhylogeny();
-    }
-
-    private int getCladeLevel() {
-        return _clade_level;
-    }
-
-    private StringBuilder getCurrentAnotation() {
-        return _current_anotation;
-    }
-
-    private PhylogenyNode getCurrentNode() {
-        return _current_node;
-    }
-
-    private Phylogeny getCurrentPhylogeny() {
-        return _current_phylogeny;
-    }
-
-    private byte getInputType() {
-        return _input_type;
     }
 
     private Object getNhxSource() {
@@ -466,7 +498,6 @@ public final class NHXParser2 implements PhylogenyParser {
         setReplaceUnderscores( REPLACE_UNDERSCORES_DEFAULT );
         setGuessRootedness( GUESS_ROOTEDNESS_DEFAULT );
         setIgnoreQuotes( IGNORE_QUOTES_DEFAULT );
-        setHasNext( false );
     }
 
     private boolean isGuessRootedness() {
@@ -585,10 +616,6 @@ public final class NHXParser2 implements PhylogenyParser {
 
     private void setCurrentPhylogeny( final Phylogeny current_phylogeny ) {
         _current_phylogeny = current_phylogeny;
-    }
-
-    private void setHasNext( final boolean has_next ) {
-        _has_next = has_next;
     }
 
     private void setInputType( final byte input_type ) {
@@ -822,11 +849,5 @@ public final class NHXParser2 implements PhylogenyParser {
         final int green = ForesterUtil.limitRangeForColor( Integer.parseInt( st.nextToken() ) );
         final int blu = ForesterUtil.limitRangeForColor( Integer.parseInt( st.nextToken() ) );
         return new Color( red, green, blu );
-    }
-
-    @Override
-    public Phylogeny[] parse() throws IOException {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

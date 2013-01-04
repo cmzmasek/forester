@@ -70,7 +70,6 @@ public final class NHXParser implements PhylogenyParser {
     final static private byte               BUFFERED_READER             = 3;
     final static private byte               STRING_BUILDER              = 4;
     private boolean                         _guess_rootedness;
-    private boolean                         _has_next;
     private boolean                         _ignore_quotes;
     private byte                            _input_type;
     private int                             _source_length;
@@ -96,10 +95,6 @@ public final class NHXParser implements PhylogenyParser {
         return _taxonomy_extraction;
     }
 
-    public boolean hasNext() {
-        return _has_next;
-    }
-
     /**
      * Parses the source set with setSource( final Object nhx_source ). Returns
      * the Phylogenies found in the source as Phylogeny[].
@@ -118,7 +113,6 @@ public final class NHXParser implements PhylogenyParser {
      */
     @Override
     public Phylogeny[] parse() throws IOException, NHXFormatException {
-        setHasNext( false );
         boolean in_comment = false;
         boolean saw_colon = false;
         boolean saw_open_bracket = false;
@@ -372,7 +366,6 @@ public final class NHXParser implements PhylogenyParser {
                     + " StringBuffer, char[], File," + " or InputStream " + " [attempt to parse object of "
                     + nhx_source.getClass() + "]." );
         }
-        setHasNext( true );
     }
 
     public void setTaxonomyExtraction( final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction ) {
@@ -490,7 +483,6 @@ public final class NHXParser implements PhylogenyParser {
         setReplaceUnderscores( REPLACE_UNDERSCORES_DEFAULT );
         setGuessRootedness( GUESS_ROOTEDNESS_DEFAULT );
         setIgnoreQuotes( IGNORE_QUOTES_DEFAULT );
-        setHasNext( false );
     }
 
     private boolean isGuessRootedness() {
@@ -613,10 +605,6 @@ public final class NHXParser implements PhylogenyParser {
 
     private void setCurrentPhylogeny( final Phylogeny current_phylogeny ) {
         _current_phylogeny = current_phylogeny;
-    }
-
-    private void setHasNext( final boolean has_next ) {
-        _has_next = has_next;
     }
 
     private void setInputType( final byte input_type ) {
