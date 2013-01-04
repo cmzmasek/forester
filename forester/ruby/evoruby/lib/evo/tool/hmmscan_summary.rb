@@ -29,6 +29,7 @@ module Evoruby
     WWW            = "www.phylosoft.org"
 
     DELIMITER_OPTION              = "d"
+    SPECIES_OPTION                = "s"
     I_E_VALUE_THRESHOLD_OPTION    = "ie"
     FS_E_VALUE_THRESHOLD_OPTION   = "pe"
     HMM_FOR_PROTEIN_OUTPUT        = "m"
@@ -84,6 +85,7 @@ module Evoruby
       allowed_opts.push( PARSE_OUT_DESCRIPITION_OPTION )
       allowed_opts.push( HMM_FOR_PROTEIN_OUTPUT )
       allowed_opts.push( UNIPROT )
+      allowed_opts.push( SPECIES_OPTION )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -116,6 +118,8 @@ module Evoruby
         end
       end
 
+      
+
       fs_e_value_threshold = -1.0
       if ( cla.is_option_set?( FS_E_VALUE_THRESHOLD_OPTION ) )
         begin
@@ -146,6 +150,15 @@ module Evoruby
         end
       end
 
+      species = "HUMAN"
+       if ( cla.is_option_set?( SPECIES_OPTION ) )
+        begin
+          species = cla.get_option_value( SPECIES_OPTION )
+        rescue ArgumentError => e
+          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
+        end
+      end
+
       ignore_dufs = false
       if ( cla.is_option_set?( IGNORE_DUF_OPTION ) )
         ignore_dufs = true
@@ -159,6 +172,7 @@ module Evoruby
       puts()
       puts( "hmmpfam outputfile  : " + inpath )
       puts( "outputfile          : " + outpath )
+      puts( "species             : " + species )
       if ( i_e_value_threshold >= 0.0 )
         puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
       else
@@ -201,7 +215,8 @@ module Evoruby
           parse_descriptions,
           fs_e_value_threshold,
           hmm_for_protein_output,
-          uniprot )
+          uniprot,
+          species )
       rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
@@ -230,7 +245,8 @@ module Evoruby
         get_descriptions,
         fs_e_value_threshold,
         hmm_for_protein_output,
-        uniprot )
+        uniprot,
+        species )
 
 
 
@@ -376,7 +392,7 @@ module Evoruby
 
       s = ""
       s << own.query + "\t"
-      s << "HUMAN" + "\t"
+      s << species + "\t"
       s << own.fs_e_value.to_s + "\t"
       s << own.qlen.to_s + "\t"
       s << dc.to_s + "\t"
