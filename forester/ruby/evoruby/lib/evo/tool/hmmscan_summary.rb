@@ -359,6 +359,8 @@ module Evoruby
         i_e_value_threshold,
         uniprotkb,
         species      )
+      
+      puts "+"
 
       dc = 0
       # filter according to i-Evalue threshold
