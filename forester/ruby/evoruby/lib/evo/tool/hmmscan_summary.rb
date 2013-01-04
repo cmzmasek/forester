@@ -405,7 +405,7 @@ module Evoruby
 
       if e != nil
         s << uniprot_annotation( e )
-        s << "\uniprot_annotationt"
+       # s << "\uniprot_annotationt"
       end
 
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
