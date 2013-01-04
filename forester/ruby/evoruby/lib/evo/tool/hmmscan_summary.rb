@@ -325,7 +325,8 @@ module Evoruby
           fs_e_value_threshold,
           hmm_for_protein_output,
           i_e_value_threshold,
-          true )
+          false,
+          species )
       end
 
       outfile.flush()
