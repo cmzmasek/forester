@@ -404,12 +404,12 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-      e = UniprotKB::get_entry_by_id( process_id( own.query ) )
+      #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
 
-      if e != nil
-        s << uniprot_annotation( e )
-       # s << "\uniprot_annotationt"
-      end
+      #if e != nil
+      #  s << uniprot_annotation( e )
+      # # s << "\uniprot_annotationt"
+      #end
 
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
