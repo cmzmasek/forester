@@ -6,7 +6,6 @@
 #
 # $Id: hmmscan_parser.rb,v 1.5 2010/12/13 19:00:11 cmzmasek Exp $
 #
-# last modified: 121003
 
 require 'set'
 
@@ -21,12 +20,12 @@ module Evoruby
   class HmmscanSummary
 
     PRG_NAME       = "hsp"
-    PRG_VERSION    = "2.000"
+    PRG_VERSION    = "2.001"
     PRG_DESC       = "hmmscan summary"
-    PRG_DATE       = "2012.10.23"
-    COPYRIGHT      = "2012 Christian M Zmasek"
-    CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
+    PRG_DATE       = "2013.10.23"
+    COPYRIGHT      = "2013 Christian M Zmasek"
+    CONTACT        = "phyloxml@gmail.com"
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     DELIMITER_OPTION              = "d"
     SPECIES_OPTION                = "s"
@@ -48,8 +47,6 @@ module Evoruby
     end
 
     def run
-
-
 
       Util.print_program_information( PRG_NAME,
         PRG_VERSION,
@@ -222,7 +219,6 @@ module Evoruby
       end
       domain_counts = get_domain_counts()
 
-
       puts
       puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
       puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
@@ -248,8 +244,6 @@ module Evoruby
         uniprot,
         species )
 
-
-
       Util.check_file_for_readability( inpath )
       Util.check_file_for_writability( outpath )
 
@@ -266,8 +260,6 @@ module Evoruby
       i_e_value = ""
 
       hmmscan_results_per_protein = []
-
-
 
       prev_query = ""
 
@@ -326,13 +318,12 @@ module Evoruby
           fs_e_value_threshold,
           hmm_for_protein_output,
           i_e_value_threshold,
-          false,
+          uniprot,
           species )
       end
 
       outfile.flush()
       outfile.close()
-
     end # def parse
 
     def process_id( id )
@@ -341,8 +332,6 @@ module Evoruby
       end
       id
     end
-
-
 
     def count_model( model )
       if ( @domain_counts.has_key?( model ) )
@@ -369,13 +358,12 @@ module Evoruby
       hmmscan_results_per_protein.each do | r |
 
 
-
         if r.model == hmm_for_protein_output
-          if i_e_value_threshold >= 0.0 && r.fs_e_value > fs_e_value_threshold
+          if i_e_value_threshold > 0.0 && r.fs_e_value > fs_e_value_threshold
             return
           end
         end
-        if i_e_value_threshold < 0 || r.i_e_value <= i_e_value_threshold
+        if i_e_value_threshold <= 0 || r.i_e_value <= i_e_value_threshold
           hmmscan_results_per_protein_filtered << r
           if r.model == hmm_for_protein_output
             dc += 1
@@ -409,12 +397,14 @@ module Evoruby
       end
       s << "\t"
 
-      #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
+      if !uniprotkb.empty?
+        #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
 
-      #if e != nil
-      #  s << uniprot_annotation( e )
-      # # s << "\uniprot_annotationt"
-      #end
+        #if e != nil
+        #  s << uniprot_annotation( e )
+        # # s << "\uniprot_annotationt"
+        #end
+      end
 
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
@@ -509,7 +499,6 @@ module Evoruby
     end
 
 
-
     def print_help()
       puts( "Usage:" )
       puts()
@@ -521,6 +510,7 @@ module Evoruby
       puts( "           -" + IGNORE_DUF_OPTION  + ": ignore DUFs" )
       puts( "           -" + FS_E_VALUE_THRESHOLD_OPTION  + ": E-value threshold for full protein sequences, only for protein summary" )
       puts( "           -" + HMM_FOR_PROTEIN_OUTPUT + ": HMM for protein summary" )
+      puts( "           -" + SPECIES_OPTION + ": species for protein summary" )
       puts()
     end
 
