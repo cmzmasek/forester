@@ -370,7 +370,8 @@ module Evoruby
 
       hmmscan_results_per_protein.each do | r |
         
-        puts r
+        puts r.model
+         puts r.fs_e_value
         
         if r.model == hmm_for_protein_output
           if r.fs_e_value > fs_e_value_threshold
