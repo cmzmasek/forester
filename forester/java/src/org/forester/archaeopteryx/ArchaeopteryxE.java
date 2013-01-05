@@ -72,7 +72,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenu                       _view_jmenu;
     private JMenuItem                   _view_as_XML_item;
     private JMenuItem                   _view_as_NH_item;
-    private JMenuItem                   _view_as_NHX_item;
     private JMenuItem                   _view_as_nexus_item;
     private JMenuItem                   _display_basic_information_item;
     private JMenu                       _type_menu;
@@ -92,7 +91,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _phyloxml_ref_item;
     private JMenuItem                   _aptx_ref_item;
     private JMenuItem                   _remove_branch_color_item;
-    private JMenuItem                   _infer_common_sn_names_item;
     private JCheckBoxMenuItem           _show_domain_labels;
     private JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
     private JCheckBoxMenuItem           _abbreviate_scientific_names;
@@ -153,9 +151,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();
-        }
-        else if ( o == _view_as_NHX_item ) {
-            viewAsNHX();
         }
         else if ( o == _view_as_XML_item ) {
             viewAsXML();
@@ -699,9 +694,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
         customizeJMenuItem( _midpoint_root_item );
         _tools_menu.addSeparator();
-        _tools_menu
-                .add( _infer_common_sn_names_item = new JMenuItem( "Infer Common Parts of Internal Scientific Names" ) );
-        customizeJMenuItem( _infer_common_sn_names_item );
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
         _jmenubar.add( _tools_menu );
@@ -737,11 +729,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
-        _view_jmenu.add( _view_as_NHX_item = new JMenuItem( "View as NHX" ) );
         _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
         customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
-        customizeJMenuItem( _view_as_NHX_item );
         customizeJMenuItem( _view_as_XML_item );
         customizeJMenuItem( _view_as_nexus_item );
         _jmenubar.add( _view_jmenu );
@@ -1115,16 +1105,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             showTextFrame( getMainPanel().getCurrentPhylogeny()
                                    .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
                            title );
-        }
-    }
-
-    void viewAsNHX() {
-        if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
-            String title = "NHX";
-            if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
-            }
-            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshireX(), title );
         }
     }
 
