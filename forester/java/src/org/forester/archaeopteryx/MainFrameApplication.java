@@ -302,7 +302,6 @@ public final class MainFrameApplication extends MainFrame {
         _save_filechooser.setCurrentDirectory( new File( "." ) );
         _save_filechooser.setMultiSelectionEnabled( false );
         _save_filechooser.setFileFilter( MainFrameApplication.xmlfilter );
-        _save_filechooser.addChoosableFileFilter( MainFrameApplication.nhxfilter );
         _save_filechooser.addChoosableFileFilter( MainFrameApplication.nhfilter );
         _save_filechooser.addChoosableFileFilter( MainFrameApplication.nexusfilter );
         _save_filechooser.addChoosableFileFilter( _save_filechooser.getAcceptAllFileFilter() );
@@ -2474,18 +2473,6 @@ public final class MainFrameApplication extends MainFrame {
         return exception;
     }
 
-    private boolean writeAsNHX( final Phylogeny t, boolean exception, final File file ) {
-        try {
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNewHampshireX( t, file );
-        }
-        catch ( final Exception e ) {
-            exception = true;
-            exceptionOccuredDuringSaveAs( e );
-        }
-        return exception;
-    }
-
     private boolean writeAsPhyloXml( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
@@ -2560,9 +2547,6 @@ public final class MainFrameApplication extends MainFrame {
             if ( _save_filechooser.getFileFilter() == MainFrameApplication.nhfilter ) {
                 exception = writeAsNewHampshire( t, exception, file );
             }
-            else if ( _save_filechooser.getFileFilter() == MainFrameApplication.nhxfilter ) {
-                exception = writeAsNHX( t, exception, file );
-            }
             else if ( _save_filechooser.getFileFilter() == MainFrameApplication.xmlfilter ) {
                 exception = writeAsPhyloXml( t, exception, file );
             }
@@ -2575,9 +2559,6 @@ public final class MainFrameApplication extends MainFrame {
                 if ( file_name.endsWith( ".nh" ) || file_name.endsWith( ".newick" ) || file_name.endsWith( ".phy" )
                         || file_name.endsWith( ".tree" ) ) {
                     exception = writeAsNewHampshire( t, exception, file );
-                }
-                else if ( file_name.endsWith( ".nhx" ) ) {
-                    exception = writeAsNHX( t, exception, file );
                 }
                 else if ( file_name.endsWith( ".nex" ) || file_name.endsWith( ".nexus" ) ) {
                     exception = writeAsNexus( t, exception, file );
