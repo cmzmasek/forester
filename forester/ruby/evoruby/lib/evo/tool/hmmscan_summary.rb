@@ -372,13 +372,14 @@ module Evoruby
         
         puts r.model
          puts r.fs_e_value
+          puts fs_e_value_threshold
         
         if r.model == hmm_for_protein_output
-          if r.fs_e_value > fs_e_value_threshold
+          if i_e_value_threshold >= 0.0 && r.fs_e_value > fs_e_value_threshold
             return
           end
         end
-        if r.i_e_value <= i_e_value_threshold
+        if i_e_value_threshold < 0 || r.i_e_value <= i_e_value_threshold
           hmmscan_results_per_protein_filtered << r
           if r.model == hmm_for_protein_output
             dc += 1
