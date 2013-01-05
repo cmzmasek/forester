@@ -163,17 +163,18 @@ public final class Configuration {
     String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-            { "Annotation", "nodisplay", "no" }, { "Confidence Values", "display", "?" }, { "Node Events", "display", "?" },
-            { "Taxonomy Colorize", "display", "yes" }, { "Colorize Branches", "display", "no" },
-            { "Use Branch-Widths", "display", "no" }, { "Show Custom Nodes", "display", "yes" },
-            { "Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
-            { "Binary Char Counts", "nodisplay", "no" }, { "Seq Name", "display", "yes" },
-            { "Seq Acc", "display", "no" }, { "Show Internal Data", "display", "yes" },
-            { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
-            { "Taxonomy Common", "display", "no" }, { "Annotation Colorize", "nodisplay", "no" },
-            { "Seq Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
-            { "Relation Confidence", "nodisplay", "no" }, { "Vector Data", "nodisplay", "no" },
-            { "Taxonomy Images", "display", "no" }, { "Properties", "nodisplay", "no" }             };
+            { "Annotation", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
+            { "Node Events", "display", "?" }, { "Taxonomy Colorize", "display", "yes" },
+            { "Colorize Branches", "display", "no" }, { "Use Branch-Widths", "display", "no" },
+            { "Show Custom Nodes", "display", "yes" }, { "Domains", "nodisplay", "no" },
+            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
+            { "Seq Name", "display", "yes" }, { "Seq Acc", "display", "no" },
+            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
+            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
+            { "Annotation Colorize", "nodisplay", "no" }, { "Seq Symbol", "display", "yes" },
+            { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
+            { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
+            { "Properties", "nodisplay", "no" }                                                   };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree", "display" },

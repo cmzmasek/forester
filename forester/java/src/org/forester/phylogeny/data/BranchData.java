@@ -128,14 +128,6 @@ public class BranchData implements PhylogenyData {
             sb.append( ":" );
             sb.append( getConfidence( 0 ).toNHX() );
         }
-        if ( isHasBranchWidth() && ( getBranchWidth().getValue() != BranchWidth.BRANCH_WIDTH_DEFAULT_VALUE ) ) {
-            sb.append( ":" );
-            sb.append( getBranchWidth().toNHX() );
-        }
-        if ( isHasBranchColor() && ( getBranchColor().getValue() != null ) ) {
-            sb.append( ":" );
-            sb.append( getBranchColor().toNHX() );
-        }
         return sb;
     }
 

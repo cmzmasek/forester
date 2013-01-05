@@ -449,9 +449,6 @@ public class NodeData implements PhylogenyData {
         if ( isHasEvent() ) {
             sb.append( getEvent().toNHX() );
         }
-        if ( isHasProperties() ) {
-            sb.append( getProperties().toNHX() );
-        }
         return sb;
     }
 

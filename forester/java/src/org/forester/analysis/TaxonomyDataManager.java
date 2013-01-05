@@ -337,7 +337,8 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 for( final UniProtTaxonomy up_taxonomy : up_taxonomies ) {
                     boolean match = true;
                     I: for( int i = 0; i < lineage.size(); ++i ) {
-                        if ( i == up_taxonomy.getLineage().size() || !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) ) ) {
+                        if ( ( i == up_taxonomy.getLineage().size() )
+                                || !lineage.get( i ).equalsIgnoreCase( up_taxonomy.getLineage().get( i ) ) ) {
                             match = false;
                             break I;
                         }

@@ -28,7 +28,6 @@ package org.forester.phylogeny.data;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.util.ForesterUtil;
 
@@ -71,10 +70,7 @@ public class BranchWidth implements PhylogenyData {
 
     @Override
     public StringBuffer toNHX() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append( NHXtags.PARENT_BRANCH_WIDTH );
-        sb.append( getValue() );
-        return sb;
+        throw new UnsupportedOperationException();
     }
 
     @Override

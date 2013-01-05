@@ -52,8 +52,8 @@ import org.forester.util.ForesterUtil;
 
 public final class MainFrameApplet extends MainFrame {
 
-    private static final long    serialVersionUID = 1941019292746717053L;
-    private final static int     DEFAULT_FRAME_X_SIZE     = 640;
+    private static final long    serialVersionUID     = 1941019292746717053L;
+    private final static int     DEFAULT_FRAME_X_SIZE = 640;
     private final static int     DEFAULT_FRAME_Y_SIZE = 580;
     private final ArchaeopteryxA _applet;
     private ButtonGroup          _radio_group_1;

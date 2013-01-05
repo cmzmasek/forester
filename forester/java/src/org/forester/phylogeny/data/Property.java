@@ -155,53 +155,7 @@ public class Property implements PhylogenyData {
 
     @Override
     public StringBuffer toNHX() {
-        final StringBuffer nhx = new StringBuffer();
-        nhx.append( ":X" );
-        switch ( getAppliesTo() ) {
-            case CLADE:
-                nhx.append( "C=" );
-                break;
-            case NODE:
-                nhx.append( "N=" );
-                break;
-            case PARENT_BRANCH:
-                nhx.append( "B=" );
-                break;
-            case PHYLOGENY:
-                nhx.append( "P=" );
-                break;
-            case ANNOTATION:
-                nhx.append( "S=" );
-                break;
-            default:
-                nhx.append( "O=" );
-                break;
-        }
-        if ( !getDataType().equals( "" ) ) {
-            if ( getDataType().equals( "xsd:string" ) ) {
-                nhx.append( "S=" );
-            }
-            else if ( getDataType().equals( "xsd:long" ) ) {
-                nhx.append( "L=" );
-            }
-            else if ( getDataType().equals( "xsd:decimal" ) ) {
-                nhx.append( "D=" );
-            }
-            else if ( getDataType().equals( "xsd:boolean" ) ) {
-                nhx.append( "B=" );
-            }
-            else if ( getDataType().equals( "xsd:anyUR" ) ) {
-                nhx.append( "U=" );
-            }
-        }
-        nhx.append( getRef() );
-        nhx.append( "=" );
-        nhx.append( getValue() );
-        if ( !getUnit().equals( "" ) ) {
-            nhx.append( "=" );
-            nhx.append( getUnit() );
-        }
-        return nhx;
+        throw new UnsupportedOperationException();
     }
 
     @Override

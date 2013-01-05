@@ -180,13 +180,7 @@ public class PropertiesMap implements PhylogenyData {
 
     @Override
     public StringBuffer toNHX() {
-        final StringBuffer sb = new StringBuffer();
-        if ( getProperties() != null ) {
-            for( final String ref : getProperties().keySet() ) {
-                sb.append( getProperties().get( ref ).toNHX() );
-            }
-        }
-        return sb;
+        throw new UnsupportedOperationException();
     }
 
     @Override

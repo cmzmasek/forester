@@ -29,7 +29,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.forester.io.parsers.nhx.NHXtags;
 import org.forester.io.parsers.phyloxml.PhyloXmlMapping;
 import org.forester.util.ForesterUtil;
 
@@ -81,14 +80,7 @@ public class BranchColor implements PhylogenyData {
 
     @Override
     public StringBuffer toNHX() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append( NHXtags.COLOR );
-        sb.append( getValue().getRed() );
-        sb.append( "." );
-        sb.append( getValue().getGreen() );
-        sb.append( "." );
-        sb.append( getValue().getBlue() );
-        return sb;
+        throw new UnsupportedOperationException();
     }
 
     @Override
