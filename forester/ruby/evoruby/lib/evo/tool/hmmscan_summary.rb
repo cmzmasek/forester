@@ -320,6 +320,8 @@ module Evoruby
           end
         end
       end
+      puts hmm_for_protein_output
+      puts hmmscan_results_per_protein
       if !hmm_for_protein_output.empty? && !hmmscan_results_per_protein.empty?
         process_hmmscan_results_per_protein( hmmscan_results_per_protein,
           fs_e_value_threshold,
