@@ -28,6 +28,7 @@ package org.forester.io.parsers.nhx;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,6 +100,7 @@ public final class NHXParser2 implements PhylogenyParser {
     BufferedReader                          _my_source_br               = null;
     int                                     _i;
     private Phylogeny                       _next;
+    private Object                          _source;
 
     public NHXParser2() {
         init();
@@ -122,8 +124,11 @@ public final class NHXParser2 implements PhylogenyParser {
     public Phylogeny[] parse() throws IOException {
         reset();
         List<Phylogeny> l = new ArrayList<Phylogeny>();
+        System.out.println( ">> _next=" + _next );
         while ( hasNext() ) {
-            l.add( next() );
+            Phylogeny n = next();
+            System.out.println( ">> going to add " + n );
+            l.add( n );
         }
         final Phylogeny[] p = new Phylogeny[ l.size() ];
         for( int i = 0; i < l.size(); ++i ) {
@@ -134,6 +139,7 @@ public final class NHXParser2 implements PhylogenyParser {
 
     public void reset() throws NHXFormatException, IOException {
         _i = 0;
+        _next = null;
         _in_comment = false;
         _saw_colon = false;
         _saw_open_bracket = false;
@@ -149,6 +155,7 @@ public final class NHXParser2 implements PhylogenyParser {
         _my_source_sbuil = null;
         _my_source_charary = null;
         _my_source_br = null;
+        determineSourceType( _source );
         switch ( getInputType() ) {
             case STRING:
                 _my_source_str = ( String ) getNhxSource();
@@ -163,6 +170,14 @@ public final class NHXParser2 implements PhylogenyParser {
                 _my_source_charary = ( char[] ) getNhxSource();
                 break;
             case BUFFERED_READER:
+                if ( _my_source_br != null ) {
+                    try {
+                        _my_source_br.close();
+                    }
+                    catch ( IOException e ) {
+                        //do nothing
+                    }
+                }
                 _my_source_br = ( BufferedReader ) getNhxSource();
                 break;
             default:
@@ -203,11 +218,17 @@ public final class NHXParser2 implements PhylogenyParser {
      * @param nhx_source
      *            the source to be parsed (String, StringBuffer, char[], File,
      *            or InputStream)
+     * @throws NHXFormatException 
      * @throws IOException
      * @throws PhylogenyParserException
      */
     @Override
-    public void setSource( final Object nhx_source ) throws PhylogenyParserException, IOException {
+    public void setSource( final Object nhx_source ) throws NHXFormatException, IOException {
+        _source = nhx_source;
+        reset();
+    }
+
+    private void determineSourceType( final Object nhx_source ) throws PhylogenyParserException, FileNotFoundException {
         if ( nhx_source == null ) {
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
         }
@@ -257,7 +278,6 @@ public final class NHXParser2 implements PhylogenyParser {
                     + " StringBuffer, StringBuilder, char[], File," + " or InputStream "
                     + " [attempt to parse object of " + nhx_source.getClass() + "]." );
         }
-        reset();
     }
 
     public void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
@@ -281,12 +301,12 @@ public final class NHXParser2 implements PhylogenyParser {
             PhyloXmlDataFormatException {
         //setCladeLevel( 0 );
         if ( getCurrentPhylogeny() != null ) {
-            System.out.println( "cp=" + getCurrentPhylogeny() );
+            System.out.println( "fp: cp=" + getCurrentPhylogeny() );
             if ( getCurrentAnotation() != null ) {
-                System.out.println( "ca=" + getCurrentAnotation().toString() );
+                System.out.println( "fp: ca=" + getCurrentAnotation().toString() );
             }
             else {
-                System.out.println( "ca=null" );
+                System.out.println( "fp: ca=null" );
             }
             parseNHX( getCurrentAnotation() != null ? getCurrentAnotation().toString() : "", getCurrentPhylogeny()
                     .getRoot(), getTaxonomyExtraction(), isReplaceUnderscores() );
@@ -460,13 +480,18 @@ public final class NHXParser2 implements PhylogenyParser {
             ++_i;
         } //  while ( true ) 
         System.out.println( "done with loop" );
+        if ( getCurrentPhylogeny() == null ) {
+            System.out.println( "... but is null" );
+        }
         if ( getCladeLevel() != 0 ) {
             throw new PhylogenyParserException( "error in NH (Newick) formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
         if ( getCurrentPhylogeny() != null ) {
-            System.out.println( "current=" + getCurrentPhylogeny() );
+            System.out.println( "... and current=" + getCurrentPhylogeny() );
             _next = finishPhylogeny2();
+            System.out.println( "... _next=" + _next );
             setCurrentPhylogeny( null );
+            setCurrentAnotation( null );
             //return finishPhylogeny2();
         }
         else if ( ( getCurrentAnotation() != null ) && ( getCurrentAnotation().length() > 0 ) ) {
@@ -581,6 +606,7 @@ public final class NHXParser2 implements PhylogenyParser {
             PhyloXmlDataFormatException {
         Phylogeny phy = null;
         final PhylogenyNode new_node = new PhylogenyNode();
+        System.out.println( "level=" + getCladeLevel() );
         if ( getCladeLevel() == 0 ) {
             if ( getCurrentPhylogeny() != null ) {
                 phy = finishPhylogeny2();
@@ -596,6 +622,12 @@ public final class NHXParser2 implements PhylogenyParser {
         }
         setCurrentNode( new_node );
         setSawClosingParen( false );
+        if ( phy != null ) {
+            System.out.println( "processOpenParen2 returns " + phy.toString() );
+        }
+        else {
+            System.out.println( "processOpenParen2 returns null" );
+        }
         return phy;
     }
 
