@@ -67,7 +67,7 @@ module Evoruby
       end
 
       if ( cla.is_option_set?( HELP_OPTION_1 ) ||
-            cla.is_option_set?( HELP_OPTION_2 ) )
+           cla.is_option_set?( HELP_OPTION_2 ) )
         print_help
         exit( 0 )
       end
@@ -118,7 +118,7 @@ module Evoruby
         end
       end
 
-      
+
 
       fs_e_value_threshold = -1.0
       if ( cla.is_option_set?( FS_E_VALUE_THRESHOLD_OPTION ) )
@@ -151,7 +151,7 @@ module Evoruby
       end
 
       species = "HUMAN"
-       if ( cla.is_option_set?( SPECIES_OPTION ) )
+      if ( cla.is_option_set?( SPECIES_OPTION ) )
         begin
           species = cla.get_option_value( SPECIES_OPTION )
         rescue ArgumentError => e
@@ -279,21 +279,21 @@ module Evoruby
         env_to    = r.env_to
 
         if ( ( i_e_value_threshold < 0.0 ) || ( i_e_value <= i_e_value_threshold ) ) &&
-            ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
+           ( !ignore_dufs || ( model !~ /^DUF\d+/ ) )
           count_model( model )
           outfile.print( query +
-              column_delimiter )
+             column_delimiter )
           if ( get_descriptions )
             outfile.print( desc +
-                column_delimiter )
+               column_delimiter )
           end
           outfile.print( model +
-              column_delimiter +
-              env_from.to_s +
-              column_delimiter +
-              env_to.to_s +
-              column_delimiter +
-              i_e_value.to_s )
+             column_delimiter +
+             env_from.to_s +
+             column_delimiter +
+             env_to.to_s +
+             column_delimiter +
+             i_e_value.to_s )
           outfile.print( Constants::LINE_DELIMITER )
         end
 
@@ -320,7 +320,7 @@ module Evoruby
           end
         end
       end
-    
+
       if !hmm_for_protein_output.empty? && !hmmscan_results_per_protein.empty?
         process_hmmscan_results_per_protein( hmmscan_results_per_protein,
           fs_e_value_threshold,
@@ -359,9 +359,7 @@ module Evoruby
         hmm_for_protein_output,
         i_e_value_threshold,
         uniprotkb,
-        species      )
-      
-    
+        species )
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -369,11 +367,9 @@ module Evoruby
       hmmscan_results_per_protein_filtered = []
 
       hmmscan_results_per_protein.each do | r |
-        
-        puts r.model
-         puts r.fs_e_value
-          puts fs_e_value_threshold
-        
+
+
+
         if r.model == hmm_for_protein_output
           if i_e_value_threshold >= 0.0 && r.fs_e_value > fs_e_value_threshold
             return
@@ -412,7 +408,7 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-      puts s
+
       #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
 
       #if e != nil
