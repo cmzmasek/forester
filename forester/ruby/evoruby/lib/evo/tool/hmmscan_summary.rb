@@ -320,8 +320,7 @@ module Evoruby
           end
         end
       end
-      puts hmm_for_protein_output
-      puts hmmscan_results_per_protein
+    
       if !hmm_for_protein_output.empty? && !hmmscan_results_per_protein.empty?
         process_hmmscan_results_per_protein( hmmscan_results_per_protein,
           fs_e_value_threshold,
@@ -362,7 +361,7 @@ module Evoruby
         uniprotkb,
         species      )
       
-      puts "+"
+    
 
       dc = 0
       # filter according to i-Evalue threshold
@@ -370,6 +369,9 @@ module Evoruby
       hmmscan_results_per_protein_filtered = []
 
       hmmscan_results_per_protein.each do | r |
+        
+        puts r
+        
         if r.model == hmm_for_protein_output
           if r.fs_e_value > fs_e_value_threshold
             return
