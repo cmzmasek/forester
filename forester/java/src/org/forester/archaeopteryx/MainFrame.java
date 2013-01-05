@@ -208,7 +208,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem           _circular_type_cbmi;
     // view as text menu:
     JMenuItem                   _view_as_NH_item;
-    JMenuItem                   _view_as_NHX_item;
     JMenuItem                   _view_as_XML_item;
     JMenuItem                   _view_as_nexus_item;
     JMenuItem                   _display_basic_information_item;
@@ -296,9 +295,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();
-        }
-        else if ( o == _view_as_NHX_item ) {
-            viewAsNHX();
         }
         else if ( o == _view_as_XML_item ) {
             viewAsXML();
@@ -630,11 +626,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
-        _view_jmenu.add( _view_as_NHX_item = new JMenuItem( "View as NHX" ) );
         _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
         customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
-        customizeJMenuItem( _view_as_NHX_item );
         customizeJMenuItem( _view_as_XML_item );
         customizeJMenuItem( _view_as_nexus_item );
         _jmenubar.add( _view_jmenu );
@@ -1195,16 +1189,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             showTextFrame( _mainpanel.getCurrentPhylogeny()
                                    .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
                            title );
-        }
-    }
-
-    void viewAsNHX() {
-        if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
-            String title = "NHX";
-            if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
-            }
-            showTextFrame( _mainpanel.getCurrentPhylogeny().toNewHampshireX(), title );
         }
     }
 
