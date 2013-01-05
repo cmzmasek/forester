@@ -296,7 +296,7 @@ module Evoruby
                 fs_e_value_threshold,
                 hmm_for_protein_output,
                 i_e_value_threshold,
-                false,
+                uniprot,
                 species )
             end
             hmmscan_results_per_protein.clear
