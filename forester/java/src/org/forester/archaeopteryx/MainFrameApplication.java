@@ -2797,7 +2797,7 @@ class NHXFilter extends FileFilter {
 
     @Override
     public String getDescription() {
-        return "NHX files (*.nhx)";
+        return "NHX files (*.nhx) [deprecated]";
     }
 }
 
