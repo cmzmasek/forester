@@ -359,7 +359,7 @@ module Evoruby
 
 
         if r.model == hmm_for_protein_output
-          if i_e_value_threshold > 0.0 && r.fs_e_value > fs_e_value_threshold
+          if fs_e_value_threshold > 0.0 && r.fs_e_value > fs_e_value_threshold
             return
           end
         end
