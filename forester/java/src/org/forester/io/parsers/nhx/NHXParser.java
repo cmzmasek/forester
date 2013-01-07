@@ -36,6 +36,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.util.ParserUtils;
@@ -54,7 +55,7 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-public final class NHXParser implements PhylogenyParser {
+public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParser {
 
     public static final TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT = TAXONOMY_EXTRACTION.NO;
     public final static Pattern             UC_LETTERS_NUMBERS_PATTERN  = Pattern.compile( "^[A-Z0-9]+$" );
@@ -106,10 +107,12 @@ public final class NHXParser implements PhylogenyParser {
         return _taxonomy_extraction;
     }
 
+    @Override
     public final boolean hasNext() {
         return _next != null;
     }
 
+    @Override
     public final Phylogeny next() throws NHXFormatException, IOException {
         final Phylogeny phy = _next;
         getNext();
@@ -130,6 +133,7 @@ public final class NHXParser implements PhylogenyParser {
         return p;
     }
 
+    @Override
     public final void reset() throws NHXFormatException, IOException {
         _i = 0;
         _next = null;

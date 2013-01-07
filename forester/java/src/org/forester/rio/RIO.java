@@ -40,6 +40,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.forester.datastructures.IntMatrix;
+import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -64,6 +65,7 @@ import org.forester.util.ForesterUtil;
 public final class RIO {
 
     public static final int                  DEFAULT_RANGE = -1;
+    private static IntMatrix                 _m;
     private Phylogeny[]                      _analyzed_gene_trees;
     private List<PhylogenyNode>              _removed_gene_tree_nodes;
     private int                              _ext_nodes;
@@ -103,6 +105,35 @@ public final class RIO {
         _removed_gene_tree_nodes = null;
         _duplications_stats = new BasicDescriptiveStatistics();
         inferOrthologs( gene_trees, species_tree, algorithm, outgroup, first, last );
+    }
+
+    private RIO( final IteratingPhylogenyParser p,
+                 final Phylogeny species_tree,
+                 final ALGORITHM algorithm,
+                 final REROOTING rerooting,
+                 final String outgroup,
+                 int first,
+                 final int last,
+                 final boolean produce_log,
+                 final boolean verbose ) throws IOException, SDIException, RIOException {
+        if ( ( first == DEFAULT_RANGE ) && ( last >= 0 ) ) {
+            first = 0;
+        }
+        removeSingleDescendentsNodes( species_tree, verbose );
+        p.reset();
+        checkPreconditions( p, species_tree, rerooting, outgroup, first, last );
+        _produce_log = produce_log;
+        _verbose = verbose;
+        _rerooting = rerooting;
+        _ext_nodes = -1;
+        _int_nodes = -1;
+        _log = new StringBuilder();
+        _gsdir_tax_comp_base = null;
+        _analyzed_gene_trees = null;
+        _removed_gene_tree_nodes = null;
+        _duplications_stats = new BasicDescriptiveStatistics();
+        p.reset();
+        inferOrthologs( p, species_tree, algorithm, outgroup, first, last );
     }
 
     public final Phylogeny[] getAnalyzedGeneTrees() {
@@ -171,7 +202,7 @@ public final class RIO {
             my_gene_trees = gene_trees;
         }
         if ( log() ) {
-            preLog( gene_trees, species_tree, algorithm, outgroup, first, last );
+            preLog( gene_trees.length, species_tree, algorithm, outgroup, first, last );
         }
         if ( _verbose && ( my_gene_trees.length >= 4 ) ) {
             System.out.println();
@@ -207,6 +238,87 @@ public final class RIO {
             System.out.println();
             System.out.println();
         }
+    }
+
+    private final void inferOrthologs( final IteratingPhylogenyParser parser,
+                                       final Phylogeny species_tree,
+                                       final ALGORITHM algorithm,
+                                       final String outgroup,
+                                       final int first,
+                                       final int last ) throws SDIException, RIOException, FileNotFoundException,
+            IOException {
+        if ( !parser.hasNext() ) {
+            throw new RIOException( "no gene trees to analyze" );
+        }
+        //        final Phylogeny g0 = parser.next();
+        //        if ( algorithm == ALGORITHM.SDIR ) {
+        //            // Removes from species_tree all species not found in gene_tree.
+        //            PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( g0, species_tree );
+        //            if ( species_tree.isEmpty() ) {
+        //                throw new RIOException( "failed to establish species based mapping between gene and species trees" );
+        //            }
+        //        }
+        //        final Phylogeny[] my_gene_trees;
+        //        if ( ( first >= 0 ) && ( last >= first ) && ( last < gene_trees.length ) ) {
+        //            my_gene_trees = new Phylogeny[ ( 1 + last ) - first ];
+        //            int c = 0;
+        //            for( int i = first; i <= last; ++i ) {
+        //                my_gene_trees[ c++ ] = gene_trees[ i ];
+        //            }
+        //        }
+        //        else {
+        //            my_gene_trees = gene_trees;
+        //        }
+        if ( log() ) {
+            preLog( -1, species_tree, algorithm, outgroup, first, last );
+        }
+        //  if ( _verbose && ( my_gene_trees.length >= 4 ) ) {
+        //      System.out.println();
+        //  }
+        //  _analyzed_gene_trees = new Phylogeny[ my_gene_trees.length ];
+        int gene_tree_ext_nodes = 0;
+        int i = 0;
+        while ( parser.hasNext() ) {
+            //for( int i = 0; i < my_gene_trees.length; ++i ) {
+            final Phylogeny gt = parser.next();
+            // final Phylogeny gt = my_gene_trees[ i ];
+            //if ( _verbose && ( my_gene_trees.length > 4 ) ) {
+            //    ForesterUtil.updateProgress( ( ( double ) i ) / my_gene_trees.length );
+            //}
+            if ( i == 0 ) {
+                if ( algorithm == ALGORITHM.SDIR ) {
+                    // Removes from species_tree all species not found in gene_tree.
+                    PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( gt, species_tree );
+                    if ( species_tree.isEmpty() ) {
+                        throw new RIOException( "failed to establish species based mapping between gene and species trees" );
+                    }
+                }
+                gene_tree_ext_nodes = gt.getNumberOfExternalNodes();
+            }
+            else if ( gene_tree_ext_nodes != gt.getNumberOfExternalNodes() ) {
+                throw new RIOException( "gene tree #" + ( i + 1 ) + " has a different number of external nodes ("
+                        + gt.getNumberOfExternalNodes() + ") than the preceding gene trees (" + gene_tree_ext_nodes
+                        + ")" );
+            }
+            if ( algorithm == ALGORITHM.SDIR ) {
+                // Removes from gene_tree all species not found in species_tree.
+                PhylogenyMethods.taxonomyBasedDeletionOfExternalNodes( species_tree, gt );
+                if ( gt.isEmpty() ) {
+                    throw new RIOException( "failed to establish species based mapping between gene and species trees" );
+                }
+            }
+            // _analyzed_gene_trees[ i ] = performOrthologInference( gt, species_tree, algorithm, outgroup, i );
+            final Phylogeny analyzed_gt = performOrthologInference( gt, species_tree, algorithm, outgroup, i );
+            RIO.calculateOrthologTable( analyzed_gt, true, i );
+            ++i;
+        }
+        if ( log() ) {
+            postLog( species_tree );
+        }
+        //  if ( _verbose && ( my_gene_trees.length > 4 ) ) {
+        //      System.out.println();
+        //      System.out.println();
+        //  }
     }
 
     private final boolean log() {
@@ -361,13 +473,15 @@ public final class RIO {
         log( "Gene tree external nodes                        : " + getExtNodesOfAnalyzedGeneTrees() );
     }
 
-    private final void preLog( final Phylogeny[] gene_trees,
+    private final void preLog( final int gene_trees,
                                final Phylogeny species_tree,
                                final ALGORITHM algorithm,
                                final String outgroup,
                                final int first,
                                final int last ) {
-        log( "Number of gene trees (total)                    : " + gene_trees.length );
+        if ( gene_trees > 0 ) {
+            log( "Number of gene trees (total)                    : " + gene_trees );
+        }
         log( "Algorithm                                       : " + algorithm );
         log( "Species tree external nodes (prior to stripping): " + species_tree.getNumberOfExternalNodes() );
         log( "Species tree polytomies (prior to stripping)    : "
@@ -432,28 +546,79 @@ public final class RIO {
         _log.append( ForesterUtil.LINE_SEPARATOR );
     }
 
+    public IntMatrix getOrthologTable() {
+        return _m;
+    }
+
+    private final static void calculateOrthologTable( final Phylogeny g, final boolean sort, final int counter )
+            throws RIOException {
+        final List<String> labels = new ArrayList<String>();
+        final Set<String> labels_set = new HashSet<String>();
+        if ( counter == 0 ) {
+            for( final PhylogenyNode n : g.getExternalNodes() ) {
+                final String label = obtainLabel( labels_set, n );
+                labels_set.add( label );
+                labels.add( label );
+            }
+            if ( sort ) {
+                Collections.sort( labels );
+            }
+            _m = new IntMatrix( labels );
+        }
+        updateCounts( _m, counter, g );
+    }
+
+    private final static String obtainLabel( final Set<String> labels_set, final PhylogenyNode n ) throws RIOException {
+        String label;
+        if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+            label = n.getNodeData().getSequence().getName();
+        }
+        else if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
+            label = n.getNodeData().getSequence().getSymbol();
+        }
+        else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+            label = n.getName();
+        }
+        else {
+            throw new RIOException( "node " + n + " has no appropriate label" );
+        }
+        if ( labels_set.contains( label ) ) {
+            throw new RIOException( "label " + label + " is not unique" );
+        }
+        return label;
+    }
+
+    private final static void updateCounts( final IntMatrix m, final int counter, final Phylogeny g )
+            throws RIOException {
+        PhylogenyMethods.preOrderReId( g );
+        final HashMap<String, PhylogenyNode> map = PhylogenyMethods.createNameToExtNodeMap( g );
+        for( int x = 0; x < m.size(); ++x ) {
+            final String mx = m.getLabel( x );
+            final PhylogenyNode nx = map.get( mx );
+            if ( nx == null ) {
+                throw new RIOException( "node \"" + mx + "\" not present in gene tree #" + counter );
+            }
+            String my;
+            PhylogenyNode ny;
+            for( int y = 0; y < m.size(); ++y ) {
+                my = m.getLabel( y );
+                ny = map.get( my );
+                if ( ny == null ) {
+                    throw new RIOException( "node \"" + my + "\" not present in gene tree #" + counter );
+                }
+                if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, ny ).isDuplication() ) {
+                    m.inreaseByOne( x, y );
+                }
+            }
+        }
+    }
+
     public final static IntMatrix calculateOrthologTable( final Phylogeny[] analyzed_gene_trees, final boolean sort )
             throws RIOException {
         final List<String> labels = new ArrayList<String>();
         final Set<String> labels_set = new HashSet<String>();
-        String label;
         for( final PhylogenyNode n : analyzed_gene_trees[ 0 ].getExternalNodes() ) {
-            if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
-                label = n.getNodeData().getSequence().getName();
-            }
-            else if ( n.getNodeData().isHasSequence()
-                    && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
-                label = n.getNodeData().getSequence().getSymbol();
-            }
-            else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
-                label = n.getName();
-            }
-            else {
-                throw new RIOException( "node " + n + " has no appropriate label" );
-            }
-            if ( labels_set.contains( label ) ) {
-                throw new RIOException( "label " + label + " is not unique" );
-            }
+            final String label = obtainLabel( labels_set, n );
             labels_set.add( label );
             labels.add( label );
         }
@@ -464,27 +629,7 @@ public final class RIO {
         int counter = 0;
         for( final Phylogeny gt : analyzed_gene_trees ) {
             counter++;
-            PhylogenyMethods.preOrderReId( gt );
-            final HashMap<String, PhylogenyNode> map = PhylogenyMethods.createNameToExtNodeMap( gt );
-            for( int x = 0; x < m.size(); ++x ) {
-                final String mx = m.getLabel( x );
-                final PhylogenyNode nx = map.get( mx );
-                if ( nx == null ) {
-                    throw new RIOException( "node \"" + mx + "\" not present in gene tree #" + counter );
-                }
-                String my;
-                PhylogenyNode ny;
-                for( int y = 0; y < m.size(); ++y ) {
-                    my = m.getLabel( y );
-                    ny = map.get( my );
-                    if ( ny == null ) {
-                        throw new RIOException( "node \"" + my + "\" not present in gene tree #" + counter );
-                    }
-                    if ( !PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( nx, ny ).isDuplication() ) {
-                        m.inreaseByOne( x, y );
-                    }
-                }
-            }
+            updateCounts( m, counter, gt );
         }
         return m;
     }
@@ -518,6 +663,24 @@ public final class RIO {
                                              final boolean produce_log,
                                              final boolean verbose ) throws IOException, SDIException, RIOException {
         return new RIO( parseGeneTrees( gene_trees_file ),
+                        species_tree,
+                        algorithm,
+                        rerooting,
+                        outgroup,
+                        DEFAULT_RANGE,
+                        DEFAULT_RANGE,
+                        produce_log,
+                        verbose );
+    }
+
+    public final static RIO executeAnalysis( final IteratingPhylogenyParser p,
+                                             final Phylogeny species_tree,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        return new RIO( p,
                         species_tree,
                         algorithm,
                         rerooting,
@@ -591,6 +754,18 @@ public final class RIO {
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
     }
 
+    public final static RIO executeAnalysis( final IteratingPhylogenyParser p,
+                                             final Phylogeny species_tree,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final int first,
+                                             final int last,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        return new RIO( p, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+    }
+
     private final static void checkPreconditions( final Phylogeny[] gene_trees,
                                                   final Phylogeny species_tree,
                                                   final REROOTING rerooting,
@@ -618,6 +793,43 @@ public final class RIO {
         if ( rerooting == REROOTING.OUTGROUP ) {
             try {
                 gene_trees[ 0 ].getNode( outgroup );
+            }
+            catch ( final IllegalArgumentException e ) {
+                throw new RIOException( "cannot perform re-rooting by outgroup: " + e.getLocalizedMessage() );
+            }
+        }
+    }
+
+    private final static void checkPreconditions( final IteratingPhylogenyParser p,
+                                                  final Phylogeny species_tree,
+                                                  final REROOTING rerooting,
+                                                  final String outgroup,
+                                                  final int first,
+                                                  final int last ) throws RIOException, IOException {
+        final Phylogeny g0 = p.next();
+        if ( ( g0 == null ) || g0.isEmpty() || ( g0.getNumberOfExternalNodes() < 2 ) ) {
+            throw new RIOException( "input file does not seem to contain any gene trees" );
+        }
+        if ( !species_tree.isRooted() ) {
+            throw new RIOException( "species tree is not rooted" );
+        }
+        if ( !( ( last == DEFAULT_RANGE ) && ( first == DEFAULT_RANGE ) )
+                && ( ( last < first ) || ( last < 0 ) || ( first < 0 ) ) ) {
+            throw new RIOException( "attempt to set range (0-based) of gene to analyze to: from " + first + " to "
+                    + last );
+        }
+        if ( ( rerooting == REROOTING.OUTGROUP ) && ForesterUtil.isEmpty( outgroup ) ) {
+            throw new RIOException( "outgroup not set for midpoint rooting" );
+        }
+        if ( ( rerooting != REROOTING.OUTGROUP ) && !ForesterUtil.isEmpty( outgroup ) ) {
+            throw new RIOException( "outgroup only used for midpoint rooting" );
+        }
+        if ( ( rerooting == REROOTING.MIDPOINT ) && ( PhylogenyMethods.calculateMaxDistanceToRoot( g0 ) <= 0 ) ) {
+            throw new RIOException( "attempt to use midpoint rooting on gene trees which seem to have no (positive) branch lengths (cladograms)" );
+        }
+        if ( rerooting == REROOTING.OUTGROUP ) {
+            try {
+                g0.getNode( outgroup );
             }
             catch ( final IllegalArgumentException e ) {
                 throw new RIOException( "cannot perform re-rooting by outgroup: " + e.getLocalizedMessage() );
