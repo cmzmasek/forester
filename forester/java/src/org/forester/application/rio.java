@@ -47,8 +47,8 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String  PRG_NAME      = "rio";
-    final static private String  PRG_VERSION   = "4.000 beta 4";
-    final static private String  PRG_DATE      = "2012.12.25";
+    final static private String  PRG_VERSION   = "4.000 beta 5";
+    final static private String  PRG_DATE      = "2013.01.08";
     final static private String  E_MAIL        = "czmasek@burnham.org";
     final static private String  WWW           = "www.phylosoft.org/forester/";
     final static private String  HELP_OPTION_1 = "help";
@@ -241,15 +241,6 @@ public class rio {
             System.out.println( "Non binary species tree   : disallowed" );
         }
         time = System.currentTimeMillis();
-        //        Phylogeny species_tree = null;
-        //        try {
-        //            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        //            species_tree = factory.create( species_tree_file, new PhyloXmlParser() )[ 0 ];
-        //        }
-        //        catch ( final Exception e ) {
-        //            e.printStackTrace();
-        //            System.exit( -1 );
-        //        }
         final ALGORITHM algorithm;
         if ( sdir ) {
             algorithm = ALGORITHM.SDIR;

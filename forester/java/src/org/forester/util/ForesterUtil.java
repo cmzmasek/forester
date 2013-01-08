@@ -996,6 +996,10 @@ public final class ForesterUtil {
         System.out.print( "]" );
     }
 
+    public final static void updateProgress( final int i, final DecimalFormat f ) {
+        System.out.print( "\r[" + f.format( i ) + "]" );
+    }
+
     public final static String wordWrap( final String str, final int width ) {
         final StringBuilder sb = new StringBuilder( str );
         int start = 0;
