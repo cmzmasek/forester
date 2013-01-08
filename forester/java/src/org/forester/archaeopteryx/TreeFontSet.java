@@ -87,7 +87,7 @@ public final class TreeFontSet {
     }
 
     Font getLargeFont() {
-        return getLargeFontSystem();
+        return _large_font;
     }
 
     private Font getLargeFontSystem() {

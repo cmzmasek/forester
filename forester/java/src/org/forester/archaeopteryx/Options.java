@@ -78,13 +78,38 @@ final public class Options {
     private NodeVisualization.NodeFill        _default_node_fill;
     private short                             _default_node_shape_size;
     private boolean                           _taxonomy_colorize_node_shapes;
-    private boolean                           _show_default_node_shapes;
+    private boolean                           _show_default_node_shapes_internal;
+    private boolean                           _show_default_node_shapes_external;
     private boolean                           _show_confidence_stddev;
     private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
     private NODE_DATA                         _ext_desc_data_to_return;
 
     private Options() {
         init();
+    }
+
+    public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
+        return _ext_desc_data_to_return;
+    }
+
+    public final boolean isShowDomainLabels() {
+        return _show_domain_labels;
+    }
+
+    public void setBackgroundColorGradient( final boolean background_color_gradient ) {
+        _background_color_gradient = background_color_gradient;
+    }
+
+    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
+        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
+    }
+
+    public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
+        _ext_desc_data_to_return = ext_desc_data_to_return;
+    }
+
+    public void setShowDomainLabels( final boolean show_domain_labels ) {
+        _show_domain_labels = show_domain_labels;
     }
 
     final Font getBaseFont() {
@@ -109,6 +134,10 @@ final public class Options {
 
     final double getMinConfidenceValue() {
         return _min_confidence_value;
+    }
+
+    NH_CONVERSION_SUPPORT_VALUE_STYLE getNhConversionSupportValueStyle() {
+        return _nh_conversion_support_value_style;
     }
 
     final NODE_LABEL_DIRECTION getNodeLabelDirection() {
@@ -147,69 +176,8 @@ final public class Options {
         return _scale_bar_length;
     }
 
-    final private void init() {
-        _default_node_shape = NodeShape.CIRCLE;
-        _default_node_fill = NodeFill.GRADIENT;
-        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _taxonomy_colorize_node_shapes = false;
-        _show_branch_length_values = false;
-        _internal_number_are_confidence_for_nh_parsing = false;
-        _show_scale = false;
-        _antialias_screen = true;
-        _antialias_print = true;
-        _graphics_export_visible_only = false;
-        _editable = true;
-        _background_color_gradient = false;
-        _show_default_node_shapes = false;
-        if ( AptxUtil.isUsOrCanada() ) {
-            _print_size_x = Constants.US_LETTER_SIZE_X;
-            _print_size_y = Constants.US_LETTER_SIZE_Y;
-        }
-        else {
-            _print_size_x = Constants.A4_SIZE_X;
-            _print_size_y = Constants.A4_SIZE_Y;
-        }
-        _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
-        _print_black_and_white = false;
-        _print_using_actual_size = false;
-        _graphics_export_using_actual_size = true;
-        _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-        _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
-        _match_whole_terms_only = false;
-        _search_case_sensitive = false;
-        _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
-        _show_overview = true;
-        _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
-        _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
-        _inverse_search_result = false;
-        _scale_bar_length = 0.0;
-        _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-        _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
-        _nh_parsing_replace_underscores = false;
-        _taxonomy_extraction = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
-        _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
-        _show_domain_labels = true;
-        setAbbreviateScientificTaxonNames( false );
-        _color_labels_same_as_parent_branch = false;
-        _show_confidence_stddev = true;
-        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
-        _ext_desc_data_to_return = NODE_DATA.UNKNOWN;
-    }
-
-    boolean isShowConfidenceStddev() {
-        return _show_confidence_stddev;
-    }
-
-    void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
-        _show_confidence_stddev = show_confidence_stddev;
-    }
-
-    NH_CONVERSION_SUPPORT_VALUE_STYLE getNhConversionSupportValueStyle() {
-        return _nh_conversion_support_value_style;
-    }
-
-    void setNhConversionSupportValueStyle( final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_value_style ) {
-        _nh_conversion_support_value_style = nh_conversion_support_value_style;
+    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
+        return _taxonomy_extraction;
     }
 
     final boolean isAbbreviateScientificTaxonNames() {
@@ -238,10 +206,6 @@ final public class Options {
 
     final boolean isEditable() {
         return _editable;
-    }
-
-    final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
-        return _taxonomy_extraction;
     }
 
     final boolean isGraphicsExportUsingActualSize() {
@@ -284,8 +248,16 @@ final public class Options {
         return _show_branch_length_values;
     }
 
-    public final boolean isShowDomainLabels() {
-        return _show_domain_labels;
+    boolean isShowConfidenceStddev() {
+        return _show_confidence_stddev;
+    }
+
+    boolean isShowDefaultNodeShapesExternal() {
+        return _show_default_node_shapes_external;
+    }
+
+    boolean isShowDefaultNodeShapesInternal() {
+        return _show_default_node_shapes_internal;
     }
 
     final boolean isShowOverview() {
@@ -312,20 +284,12 @@ final public class Options {
         _antialias_screen = antialias_screen;
     }
 
-    public void setBackgroundColorGradient( final boolean background_color_gradient ) {
-        _background_color_gradient = background_color_gradient;
-    }
-
     final void setBaseFont( final Font base_font ) {
         _base_font = base_font;
     }
 
     final void setCladogramType( final CLADOGRAM_TYPE cladogram_type ) {
         _cladogram_type = cladogram_type;
-    }
-
-    public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
-        _color_labels_same_as_parent_branch = color_labels_same_as_parent_branch;
     }
 
     final void setDefaultNodeFill( final NodeFill default_node_fill ) {
@@ -342,10 +306,6 @@ final public class Options {
 
     final void setEditable( final boolean editable ) {
         _editable = editable;
-    }
-
-    final void setTaxonomyExtractio( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
-        _taxonomy_extraction = taxonomy_extraction;
     }
 
     final void setGraphicsExportUsingActualSize( final boolean graphics_export_using_actual_size ) {
@@ -378,16 +338,12 @@ final public class Options {
         _min_confidence_value = min_confidence_value;
     }
 
+    void setNhConversionSupportValueStyle( final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_value_style ) {
+        _nh_conversion_support_value_style = nh_conversion_support_value_style;
+    }
+
     final void setNodeLabelDirection( final NODE_LABEL_DIRECTION node_label_direction ) {
         _node_label_direction = node_label_direction;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
-        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
-    }
-
-    final private void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
-        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     final void setOvPlacement( final OVERVIEW_PLACEMENT_TYPE ov_placement ) {
@@ -434,8 +390,16 @@ final public class Options {
         _show_branch_length_values = show_branch_length_values;
     }
 
-    public void setShowDomainLabels( final boolean show_domain_labels ) {
-        _show_domain_labels = show_domain_labels;
+    void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
+        _show_confidence_stddev = show_confidence_stddev;
+    }
+
+    void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
+        _show_default_node_shapes_external = show_default_node_shapes_external;
+    }
+
+    void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
+        _show_default_node_shapes_internal = show_default_node_shapes_internal;
     }
 
     final void setShowOverview( final boolean show_overview ) {
@@ -450,16 +414,66 @@ final public class Options {
         _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
-    final static Options createDefaultInstance() {
-        return new Options();
+    final void setTaxonomyExtractio( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+        _taxonomy_extraction = taxonomy_extraction;
     }
 
-    boolean isShowDefaultNodeShapes() {
-        return _show_default_node_shapes;
+    final private void init() {
+        _default_node_shape = NodeShape.CIRCLE;
+        _default_node_fill = NodeFill.GRADIENT;
+        _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+        _taxonomy_colorize_node_shapes = false;
+        _show_branch_length_values = false;
+        _internal_number_are_confidence_for_nh_parsing = false;
+        _show_scale = false;
+        _antialias_screen = true;
+        _antialias_print = true;
+        _graphics_export_visible_only = false;
+        _editable = true;
+        _background_color_gradient = false;
+        _show_default_node_shapes_internal = false;
+        _show_default_node_shapes_external = false;
+        if ( AptxUtil.isUsOrCanada() ) {
+            _print_size_x = Constants.US_LETTER_SIZE_X;
+            _print_size_y = Constants.US_LETTER_SIZE_Y;
+        }
+        else {
+            _print_size_x = Constants.A4_SIZE_X;
+            _print_size_y = Constants.A4_SIZE_Y;
+        }
+        _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
+        _print_black_and_white = false;
+        _print_using_actual_size = false;
+        _graphics_export_using_actual_size = true;
+        _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+        _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );
+        _match_whole_terms_only = false;
+        _search_case_sensitive = false;
+        _print_line_width = Constants.PDF_LINE_WIDTH_DEFAULT;
+        _show_overview = true;
+        _ov_placement = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
+        _node_label_direction = NODE_LABEL_DIRECTION.HORIZONTAL;
+        _inverse_search_result = false;
+        _scale_bar_length = 0.0;
+        _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+        _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+        _nh_parsing_replace_underscores = false;
+        _taxonomy_extraction = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
+        _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
+        _show_domain_labels = true;
+        setAbbreviateScientificTaxonNames( false );
+        _color_labels_same_as_parent_branch = false;
+        _show_confidence_stddev = true;
+        _nh_conversion_support_value_style = NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE;
+        _ext_desc_data_to_return = NODE_DATA.UNKNOWN;
     }
 
-    void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
-        _show_default_node_shapes = show_default_node_shapes;
+    final private void setNumberOfDigitsAfterCommaForBranchLength( final short number_of_digits_after_comma_for_branch_length_values ) {
+        _number_of_digits_after_comma_for_branch_length_values = number_of_digits_after_comma_for_branch_length_values;
+    }
+
+    final private void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
+        _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
     }
 
     public final static Options createInstance( final Configuration configuration ) {
@@ -519,12 +533,17 @@ final public class Options {
                 instance.setDefaultNodeShapeSize( configuration.getDefaultNodeShapeSize() );
             }
             instance.setTaxonomyColorizeNodeShapes( configuration.isTaxonomyColorizeNodeShapes() );
-            instance.setShowDefaultNodeShapes( configuration.isShowDefaultNodeShapes() );
+            instance.setShowDefaultNodeShapesInternal( configuration.isShowDefaultNodeShapesInternal() );
+            instance.setShowDefaultNodeShapesExternal( configuration.isShowDefaultNodeShapesExternal() );
             if ( configuration.getExtDescNodeDataToReturn() != null ) {
                 instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
             }
         }
         return instance;
+    }
+
+    final static Options createDefaultInstance() {
+        return new Options();
     }
 
     public static enum CLADOGRAM_TYPE {
@@ -533,6 +552,10 @@ final public class Options {
 
     public static enum NODE_LABEL_DIRECTION {
         HORIZONTAL, RADIAL;
+    }
+
+    public static enum PHYLOGENY_GRAPHICS_TYPE {
+        RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
     }
 
     static enum OVERVIEW_PLACEMENT_TYPE {
@@ -555,17 +578,5 @@ final public class Options {
         public String toTag() {
             return toString().replaceAll( " ", "_" );
         }
-    }
-
-    public static enum PHYLOGENY_GRAPHICS_TYPE {
-        RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
-    }
-
-    public NodeData.NODE_DATA getExtDescNodeDataToReturn() {
-        return _ext_desc_data_to_return;
-    }
-
-    public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
-        _ext_desc_data_to_return = ext_desc_data_to_return;
     }
 }

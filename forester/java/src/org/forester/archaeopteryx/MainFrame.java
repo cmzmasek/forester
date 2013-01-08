@@ -101,7 +101,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SCREEN_ANTIALIAS_LABEL                  = "Antialias";
     static final String         COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
     static final String         BG_GRAD_LABEL                           = "Background Color Gradient";
-    static final String         DISPLAY_NODE_BOXES_LABEL                = "Show Node Shapes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_EXT            = "Show External Node Shapes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_INT            = "Show Internal Node Shapes";
     static final String         SHOW_OVERVIEW_LABEL                     = "Show Overview";
     static final String         FONT_SIZE_MENU_LABEL                    = "Font Size";
     static final String         NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
@@ -170,7 +171,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
     JMenuItem                   _overview_placment_mi;
     JMenuItem                   _choose_minimal_confidence_mi;
-    JCheckBoxMenuItem           _show_default_node_shapes_cbmi;
+    JCheckBoxMenuItem           _show_default_node_shapes_internal_cbmi;
+    JCheckBoxMenuItem           _show_default_node_shapes_external_cbmi;
     JMenuItem                   _cycle_node_shape_mi;
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
@@ -366,7 +368,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _color_labels_same_as_parent_branch ) {
             updateOptions( getOptions() );
         }
-        else if ( o == _show_default_node_shapes_cbmi ) {
+        else if ( o == _show_default_node_shapes_internal_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_default_node_shapes_external_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
@@ -1061,8 +1066,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
                 && _color_labels_same_as_parent_branch.isSelected() );
-        options.setShowDefaultNodeShapes( ( _show_default_node_shapes_cbmi != null )
-                && _show_default_node_shapes_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesInternal( ( _show_default_node_shapes_internal_cbmi != null )
+                && _show_default_node_shapes_internal_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
+                && _show_default_node_shapes_external_cbmi.isSelected() );
         options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
                 && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {

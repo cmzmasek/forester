@@ -524,7 +524,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             initNodeData();
             if ( recalc_longest_ext_node_info ) {
                 calculateLongestExtNodeInfo();
-                while ( ( getLongestExtNodeInfo() > y / 2 ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
+                while ( ( getLongestExtNodeInfo() > ( x * 0.67 ) ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
                     getMainPanel().getTreeFontSet().decreaseFontSize();
                     calculateLongestExtNodeInfo();
                 }
@@ -1838,7 +1838,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( getMainPanel().getOptions().isAntialiasScreen() ) {
             if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
-                    && !getMainPanel().getOptions().isShowDefaultNodeShapes()
+                    && !getMainPanel().getOptions().isShowDefaultNodeShapesInternal()
+                    && !getMainPanel().getOptions().isShowDefaultNodeShapesExternal()
                     && ( ( getControlPanel() != null ) && !getControlPanel().isShowDomainArchitectures() ) ) {
                 _rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
             }
@@ -3811,7 +3812,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             final int box_size = getOptions().getDefaultNodeShapeSize();
             final int half_box_size = box_size / 2;
-            if ( getOptions().isShowDefaultNodeShapes() || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
+            if ( ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
+                    || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
+                    || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
                 if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
                     if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
                         drawOvalGradient( x - half_box_size,

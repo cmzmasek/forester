@@ -95,7 +95,8 @@ public final class Configuration {
     private boolean                         _show_domain_labels                                    = true;
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
-    private boolean                         _show_default_node_shapes                              = false;
+    private boolean                         _show_default_node_shapes_internal                     = false;
+    private boolean                         _show_default_node_shapes_external                     = false;
     private NodeShape                       _default_node_shape                                    = NodeShape.CIRCLE;
     private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
@@ -661,8 +662,12 @@ public final class Configuration {
         return _show_branch_length_values;
     }
 
-    public boolean isShowDefaultNodeShapes() {
-        return _show_default_node_shapes;
+    public boolean isShowDefaultNodeShapesExternal() {
+        return _show_default_node_shapes_external;
+    }
+
+    public boolean isShowDefaultNodeShapesInternal() {
+        return _show_default_node_shapes_internal;
     }
 
     public boolean isShowDomainLabels() {
@@ -1292,7 +1297,18 @@ public final class Configuration {
             _domain_structure_base_color = Color.decode( ( String ) st.nextElement() );
         }
         else if ( key.equals( "show_default_node_shapes" ) ) {
-            setShowDefaultNodeShapes( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
+            ForesterUtil
+                    .printWarningMessage( Constants.PRG_NAME,
+                                          "configuration key [show_default_node_shapes] is deprecated, use [show_default_node_shapes_internal] and [show_default_node_shapes_external] instead" );
+            final boolean b = parseBoolean( ( ( String ) st.nextElement() ).trim() );
+            setShowDefaultNodeShapesInternal( b );
+            setShowDefaultNodeShapesExternal( b );
+        }
+        else if ( key.equals( "show_default_node_shapes_internal" ) ) {
+            setShowDefaultNodeShapesInternal( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
+        }
+        else if ( key.equals( "show_default_node_shapes_external" ) ) {
+            setShowDefaultNodeShapesExternal( parseBoolean( ( ( String ) st.nextElement() ).trim() ) );
         }
         else if ( key.equals( "default_node_size" ) ) {
             final short i = parseShort( ( ( String ) st.nextElement() ).trim() );
@@ -1636,8 +1652,12 @@ public final class Configuration {
         _show_branch_length_values = show_branch_length_values;
     }
 
-    public void setShowDefaultNodeShapes( final boolean show_default_node_shapes ) {
-        _show_default_node_shapes = show_default_node_shapes;
+    public void setShowDefaultNodeShapesInternal( final boolean show_default_node_shapes_internal ) {
+        _show_default_node_shapes_internal = show_default_node_shapes_internal;
+    }
+
+    public void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
+        _show_default_node_shapes_external = show_default_node_shapes_external;
     }
 
     public void setShowDomainLabels( final boolean show_domain_labels ) {

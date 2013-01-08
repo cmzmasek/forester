@@ -113,7 +113,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _collapse_species_specific_subtrees;
     private JMenuItem                   _overview_placment_mi;
     private ButtonGroup                 _radio_group_1;
-    private JCheckBoxMenuItem           _show_default_node_shapes_cbmi;
+    private JCheckBoxMenuItem           _show_default_node_shapes_internal_cbmi;
+    private JCheckBoxMenuItem           _show_default_node_shapes_external_cbmi;
     private JMenuItem                   _cycle_node_shape_mi;
     private JMenuItem                   _cycle_node_fill_mi;
     private JMenuItem                   _choose_node_size_mi;
@@ -266,7 +267,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _color_labels_same_as_parent_branch ) {
             updateOptions( getOptions() );
         }
-        else if ( o == _show_default_node_shapes_cbmi ) {
+        else if ( o == _show_default_node_shapes_internal_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_default_node_shapes_external_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
@@ -620,7 +624,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
-                .add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL ) );
+                .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
+        _options_jmenu
+                .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
@@ -659,7 +665,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
         customizeCheckBoxMenuItem( _show_domain_labels, getOptions().isShowDomainLabels() );
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().isShowDefaultNodeShapes() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
+                .isShowDefaultNodeShapesExternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
+                .isShowDefaultNodeShapesInternal() );
         customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
@@ -1017,8 +1026,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )
                 && _color_labels_same_as_parent_branch.isSelected() );
-        options.setShowDefaultNodeShapes( ( _show_default_node_shapes_cbmi != null )
-                && _show_default_node_shapes_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesInternal( ( _show_default_node_shapes_internal_cbmi != null )
+                && _show_default_node_shapes_internal_cbmi.isSelected() );
+        options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
+                && _show_default_node_shapes_external_cbmi.isSelected() );
         options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
                 && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {

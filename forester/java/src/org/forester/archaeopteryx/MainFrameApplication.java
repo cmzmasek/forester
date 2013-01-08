@@ -962,7 +962,10 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
-        _options_jmenu.add( _show_default_node_shapes_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL ) );
+        _options_jmenu
+                .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
+        _options_jmenu
+                .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
@@ -1033,7 +1036,10 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _print_size_mi );
         customizeJMenuItem( _choose_pdf_width_mi );
         customizeJMenuItem( _overview_placment_mi );
-        customizeCheckBoxMenuItem( _show_default_node_shapes_cbmi, getOptions().isShowDefaultNodeShapes() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
+                .isShowDefaultNodeShapesExternal() );
+        customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
+                .isShowDefaultNodeShapesInternal() );
         customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
