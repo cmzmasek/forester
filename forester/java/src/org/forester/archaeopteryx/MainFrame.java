@@ -1360,7 +1360,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      */
     static void about() {
         final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
-        about.append( "Copyright (C) 2007-2012 Christian M. Zmasek\n" );
+        about.append( "Copyright (C) 2013 Christian M. Zmasek\n" );
         about.append( "All Rights Reserved\n" );
         about.append( "License: GNU Lesser General Public License (LGPL)\n" );
         about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
