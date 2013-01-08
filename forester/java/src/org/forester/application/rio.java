@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.datastructures.IntMatrix;
+import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.rio.RIO;
 import org.forester.rio.RIO.REROOTING;
 import org.forester.rio.RIOException;
@@ -45,18 +46,19 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME      = "rio";
-    final static private String PRG_VERSION   = "4.000 beta 4";
-    final static private String PRG_DATE      = "2012.12.25";
-    final static private String E_MAIL        = "czmasek@burnham.org";
-    final static private String WWW           = "www.phylosoft.org/forester/";
-    final static private String HELP_OPTION_1 = "help";
-    final static private String HELP_OPTION_2 = "h";
-    final static private String GT_FIRST      = "f";
-    final static private String GT_LAST       = "l";
-    final static private String REROOTING_OPT = "r";
-    final static private String OUTGROUP      = "o";
-    final static private String USE_SDIR      = "b";
+    final static private String  PRG_NAME      = "rio";
+    final static private String  PRG_VERSION   = "4.000 beta 4";
+    final static private String  PRG_DATE      = "2012.12.25";
+    final static private String  E_MAIL        = "czmasek@burnham.org";
+    final static private String  WWW           = "www.phylosoft.org/forester/";
+    final static private String  HELP_OPTION_1 = "help";
+    final static private String  HELP_OPTION_2 = "h";
+    final static private String  GT_FIRST      = "f";
+    final static private String  GT_LAST       = "l";
+    final static private String  REROOTING_OPT = "r";
+    final static private String  OUTGROUP      = "o";
+    final static private String  USE_SDIR      = "b";
+    private static final boolean ITERATING     = true;
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -256,19 +258,46 @@ public class rio {
             algorithm = ALGORITHM.GSDIR;
         }
         try {
-            final RIO rio = RIO.executeAnalysis( gene_trees_file,
-                                                 species_tree_file,
-                                                 algorithm,
-                                                 rerooting,
-                                                 outgroup,
-                                                 gt_first,
-                                                 gt_last,
-                                                 logfile != null,
-                                                 true );
+            final RIO rio;
+            if ( ITERATING ) {
+                final NHXParser p = new NHXParser();
+                p.setReplaceUnderscores( false );
+                p.setIgnoreQuotes( true );
+                p.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+                p.setSource( gene_trees_file );
+                rio = RIO.executeAnalysis( p,
+                                           species_tree_file,
+                                           algorithm,
+                                           rerooting,
+                                           outgroup,
+                                           gt_first,
+                                           gt_last,
+                                           logfile != null,
+                                           true );
+            }
+            else {
+                rio = RIO.executeAnalysis( gene_trees_file,
+                                           species_tree_file,
+                                           algorithm,
+                                           rerooting,
+                                           outgroup,
+                                           gt_first,
+                                           gt_last,
+                                           logfile != null,
+                                           true );
+            }
             if ( algorithm == ALGORITHM.GSDIR ) {
                 System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
             }
-            tableOutput( orthology_outtable, rio );
+            final IntMatrix m;
+            if ( ITERATING ) {
+                m = rio.getOrthologTable();
+            }
+            else {
+                m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            }
+            final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
+            writeTable( orthology_outtable, stats.getN(), m );
             if ( ( algorithm != ALGORITHM.SDIR ) && ( logfile != null ) ) {
                 writeLogFile( logfile,
                               rio,
@@ -280,7 +309,7 @@ public class rio {
                               PRG_DATE,
                               ForesterUtil.getForesterLibraryInformation() );
             }
-            final BasicDescriptiveStatistics stats = rio.getDuplicationsStatistics();
+            ;
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
             System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "
                     + df.format( stats.sampleStandardDeviation() ) + ") ("
@@ -356,11 +385,6 @@ public class rio {
         System.exit( -1 );
     }
 
-    private static void tableOutput( final File table_outfile, final RIO rio ) throws IOException, RIOException {
-        final IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
-        writeTable( table_outfile, rio, m );
-    }
-
     private static void writeLogFile( final File logfile,
                                       final RIO rio,
                                       final File species_tree_file,
@@ -385,7 +409,8 @@ public class rio {
         System.out.println( "Wrote log to \"" + logfile + "\"" );
     }
 
-    private static void writeTable( final File table_outfile, final RIO rio, final IntMatrix m ) throws IOException {
+    private static void writeTable( final File table_outfile, final int gene_trees_analyzed, final IntMatrix m )
+            throws IOException {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
         final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.###" );
         df.setDecimalSeparatorAlwaysShown( false );
@@ -399,13 +424,13 @@ public class rio {
             for( int y = 0; y < m.size(); ++y ) {
                 w.print( "\t" );
                 if ( x == y ) {
-                    if ( m.get( x, y ) != rio.getAnalyzedGeneTrees().length ) {
+                    if ( m.get( x, y ) != gene_trees_analyzed ) {
                         ForesterUtil.unexpectedFatalError( "diagonal value is off" );
                     }
                     w.print( "-" );
                 }
                 else {
-                    w.print( df.format( ( ( double ) m.get( x, y ) ) / rio.getAnalyzedGeneTrees().length ) );
+                    w.print( df.format( ( ( double ) m.get( x, y ) ) / gene_trees_analyzed ) );
                 }
             }
             w.println();

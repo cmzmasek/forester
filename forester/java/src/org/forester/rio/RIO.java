@@ -546,7 +546,7 @@ public final class RIO {
         _log.append( ForesterUtil.LINE_SEPARATOR );
     }
 
-    public IntMatrix getOrthologTable() {
+    public final IntMatrix getOrthologTable() {
         return _m;
     }
 
@@ -653,6 +653,28 @@ public final class RIO {
                                                                  true,
                                                                  TAXONOMY_EXTRACTION.NO );
         return new RIO( gene_trees, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
+    }
+
+    public final static RIO executeAnalysis( final IteratingPhylogenyParser p,
+                                             final File species_tree_file,
+                                             final ALGORITHM algorithm,
+                                             final REROOTING rerooting,
+                                             final String outgroup,
+                                             final int first,
+                                             final int last,
+                                             final boolean produce_log,
+                                             final boolean verbose ) throws IOException, SDIException, RIOException {
+        final Phylogeny g0 = p.next();
+        if ( ( g0 == null ) || g0.isEmpty() || ( g0.getNumberOfExternalNodes() < 2 ) ) {
+            throw new RIOException( "input file does not seem to contain any gene trees" );
+        }
+        final Phylogeny species_tree = SDIutil.parseSpeciesTree( g0,
+                                                                 species_tree_file,
+                                                                 false,
+                                                                 true,
+                                                                 TAXONOMY_EXTRACTION.NO );
+        p.reset();
+        return new RIO( p, species_tree, algorithm, rerooting, outgroup, first, last, produce_log, verbose );
     }
 
     public final static RIO executeAnalysis( final File gene_trees_file,

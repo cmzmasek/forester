@@ -292,6 +292,9 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final void getNext() throws IOException, NHXFormatException {
+        if ( _source == null ) {
+            throw new IOException( "source is not set" );
+        }
         while ( true ) {
             char c = '\b';
             if ( _input_type == BUFFERED_READER ) {
