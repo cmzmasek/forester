@@ -57,7 +57,8 @@ native_ui: ?
 #     Example: 'node_label_direction: horizontal'
 #     The two possible values are: horizontal
 #                                  radial
-#  Show default node shape: 'show_default_node_shapes': values: 'yes'/'no'
+#  Show default node shape for internal nodes: 'show_default_node_shapes_internal': values: 'yes'/'no'
+#  Show default node shape for external nodes: 'show_default_node_shapes_external': values: 'yes'/'no'
 #  Default node shape size: 'default_node_size'
 #     Example: 'default_node_size: 6'
 #  Default node shape type: 'default_node_shape'
@@ -123,7 +124,8 @@ show_branch_length_values:                 no
 cladogram_type:                            ext_node_sum_dep
 phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
-show_default_node_shapes:                  no
+show_default_node_shapes_internal:         no
+show_default_node_shapes_external:         no
 default_node_size:                         6
 default_node_shape:                        circle
 default_node_fill:                         gradient
@@ -149,13 +151,6 @@ ext_descendents_data_to_return:            user_selected
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 taxonomy_extraction_in_nh_parsing:         pfam    
-
-
-
-#  Initial Window Size for Application and ArchaeopteryA applet
-#  ------------------------------------------------------------
-window_initial_size_x: 640
-window_initial_size_y: 580
 
 
 
