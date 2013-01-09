@@ -388,7 +388,7 @@ public final class RIO {
         final Phylogeny assigned_tree;
         if ( _rerooting == REROOTING.BY_ALGORITHM ) {
             final GSDIR gsdir = new GSDIR( gene_tree, species_tree, true, i == 0 );
-            final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
+            assigned_tree = gsdir.getMinDuplicationsSumGeneTree();
             if ( i == 0 ) {
                 _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
                 for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
@@ -397,11 +397,6 @@ public final class RIO {
                                 + i + ": " + r.toString() );
                     }
                 }
-            }
-            final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
-            assigned_tree = assigned_trees.get( shortests.get( 0 ) );
-            if ( log() ) {
-                writeStatsToLog( i, gsdir, shortests );
             }
             if ( i == 0 ) {
                 _gsdir_tax_comp_base = gsdir.getTaxCompBase();
@@ -501,41 +496,6 @@ public final class RIO {
             }
         }
         log( "Re-rooting                                      : " + rs );
-        if ( _rerooting == REROOTING.BY_ALGORITHM ) {
-            writeLogSubHeader();
-        }
-    }
-
-    private final void writeLogSubHeader() {
-        _log.append( ForesterUtil.LINE_SEPARATOR );
-        _log.append( "Some information about duplication numbers in gene trees:" );
-        _log.append( ForesterUtil.LINE_SEPARATOR );
-        _log.append( "#" );
-        _log.append( "\t" );
-        _log.append( "re-rootings with minimal number of duplications" );
-        _log.append( "/" );
-        _log.append( "total root placements" );
-        _log.append( "\t" );
-        _log.append( "duplications range" );
-        _log.append( "\t" );
-        _log.append( "mininal duplication re-rootings with shortest tree heigth" );
-        _log.append( ForesterUtil.LINE_SEPARATOR );
-    }
-
-    private final void writeStatsToLog( final int i, final GSDIR gsdir, final List<Integer> shortests ) {
-        final BasicDescriptiveStatistics stats = gsdir.getDuplicationsSumStats();
-        _log.append( i );
-        _log.append( "\t" );
-        _log.append( gsdir.getMinDuplicationsSumGeneTrees().size() );
-        _log.append( "/" );
-        _log.append( stats.getN() );
-        _log.append( "\t" );
-        _log.append( ( int ) stats.getMin() );
-        _log.append( "-" );
-        _log.append( ( int ) stats.getMax() );
-        _log.append( "\t" );
-        _log.append( shortests.size() );
-        _log.append( ForesterUtil.LINE_SEPARATOR );
     }
 
     public final IntMatrix getOrthologTable() {

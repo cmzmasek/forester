@@ -288,10 +288,7 @@ public final class gsdi {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             if ( base_algorithm == ALGORITHM.GSDIR ) {
-                writer.toPhyloXML( out_file,
-                                   ( ( GSDIR ) gsdii ).getMinDuplicationsSumGeneTrees(),
-                                   0,
-                                   ForesterUtil.LINE_SEPARATOR );
+                writer.toPhyloXML( out_file, ( ( GSDIR ) gsdii ).getMinDuplicationsSumGeneTree(), 0 );
             }
             else {
                 writer.toPhyloXML( out_file, gene_tree, 0 );

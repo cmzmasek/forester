@@ -1270,9 +1270,7 @@ public final class MainFrameApplication extends MainFrame {
             AptxUtil.unexpectedException( e );
             return;
         }
-        final List<Phylogeny> assigned_trees = gsdir.getMinDuplicationsSumGeneTrees();
-        final List<Integer> shortests = GSDIR.getIndexesOfShortestTree( assigned_trees );
-        final Phylogeny result_gene_tree = assigned_trees.get( shortests.get( 0 ) );
+        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTree();
         result_gene_tree.setRerootable( false );
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants( true );
@@ -1287,10 +1285,7 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getCurrentTreePanel().setEdited( true );
         JOptionPane.showMessageDialog( this,
                                        "Duplications (min): " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
-                                               + gsdir.getSpeciationsSum() + "\n"
-                                               + "Number of root positions minimizing duplications sum: "
-                                               + gsdir.getMinDuplicationsSumGeneTrees().size() + "\n"
-                                               + "Number of shortest trees: " + shortests.size(),
+                                               + gsdir.getSpeciationsSum(),
                                        "GSDIR successfully completed",
                                        JOptionPane.INFORMATION_MESSAGE );
     }

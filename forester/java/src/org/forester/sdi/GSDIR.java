@@ -42,7 +42,7 @@ public class GSDIR implements GSDII {
     private final int                        _min_duplications_sum;
     private final int                        _speciations_sum;
     private final BasicDescriptiveStatistics _duplications_sum_stats;
-    private final List<Phylogeny>            _min_duplications_sum_gene_trees;
+    private Phylogeny                        _min_duplications_sum_gene_tree;
     private final List<PhylogenyNode>        _stripped_gene_tree_nodes;
     private final List<PhylogenyNode>        _stripped_species_tree_nodes;
     private final Set<PhylogenyNode>         _mapped_species_tree_nodes;
@@ -72,7 +72,6 @@ public class GSDIR implements GSDII {
         }
         int min_duplications_sum = Integer.MAX_VALUE;
         int speciations_sum = 0;
-        _min_duplications_sum_gene_trees = new ArrayList<Phylogeny>();
         _duplications_sum_stats = new BasicDescriptiveStatistics();
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
             gene_tree.reRoot( branch );
@@ -88,12 +87,16 @@ public class GSDIR implements GSDII {
             if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
                 min_duplications_sum = gsdi_result.getDuplicationsSum();
                 speciations_sum = gsdi_result.getSpeciationsSum();
-                _min_duplications_sum_gene_trees.clear();
-                _min_duplications_sum_gene_trees.add( gene_tree.copy() );
-                //_speciations_sum
+                _min_duplications_sum_gene_tree = gene_tree.copy();
             }
             else if ( gsdi_result.getDuplicationsSum() == min_duplications_sum ) {
-                _min_duplications_sum_gene_trees.add( gene_tree.copy() );
+                final List<Phylogeny> l = new ArrayList<Phylogeny>();
+                l.add( _min_duplications_sum_gene_tree );
+                l.add( gene_tree );
+                final int index = getIndexesOfShortestTree( l ).get( 0 );
+                if ( index == 1 ) {
+                    _min_duplications_sum_gene_tree = gene_tree.copy();
+                }
             }
             _duplications_sum_stats.addValue( gsdi_result.getDuplicationsSum() );
         }
@@ -114,8 +117,8 @@ public class GSDIR implements GSDII {
         return _min_duplications_sum;
     }
 
-    public List<Phylogeny> getMinDuplicationsSumGeneTrees() {
-        return _min_duplications_sum_gene_trees;
+    public Phylogeny getMinDuplicationsSumGeneTree() {
+        return _min_duplications_sum_gene_tree;
     }
 
     @Override

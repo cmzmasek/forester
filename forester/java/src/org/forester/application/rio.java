@@ -53,7 +53,7 @@ import org.forester.util.ForesterUtil;
 public class rio {
 
     final static private String PRG_NAME      = "rio";
-    final static private String PRG_VERSION   = "4.000 beta 6";
+    final static private String PRG_VERSION   = "4.000 beta 7";
     final static private String PRG_DATE      = "2013.01.08";
     final static private String E_MAIL        = "phyloxml@gmail.com";
     final static private String WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
