@@ -50,7 +50,6 @@ import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTO
 import org.forester.io.parsers.nexus.NexusBinaryStatesMatrixParser;
 import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
-import org.forester.io.parsers.nexus.NexusPhylogeniesParser2;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -172,16 +171,6 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
-        System.out.print( "Nexus tree parsing iterating: " );
-        if ( Test.testNexusTreeParsingIterating() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.exit( 0 );
         System.out.print( "Sequence id parsing: " );
         if ( testSequenceIdParsing() ) {
             System.out.println( "OK." );
@@ -292,6 +281,15 @@ public final class Test {
         }
         System.out.print( "Nexus characters parsing: " );
         if ( Test.testNexusCharactersParsing() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Nexus tree parsing iterating: " );
+        if ( Test.testNexusTreeParsingIterating() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -4421,7 +4419,7 @@ public final class Test {
 
     private static boolean testNexusTreeParsingIterating() {
         try {
-            final NexusPhylogeniesParser2 p = new NexusPhylogeniesParser2();
+            final NexusPhylogeniesParser p = new NexusPhylogeniesParser();
             p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_1.nex" );
             if ( !p.hasNext() ) {
                 return false;

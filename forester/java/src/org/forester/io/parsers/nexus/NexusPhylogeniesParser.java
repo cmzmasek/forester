@@ -26,6 +26,7 @@
 package org.forester.io.parsers.nexus;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.archaeopteryx.Constants;
+import org.forester.io.parsers.IteratingPhylogenyParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.nhx.NHXParser;
@@ -43,12 +45,10 @@ import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.parsers.util.PhylogenyParserException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
-import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
-public class NexusPhylogeniesParser implements PhylogenyParser {
+public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
     final private static String  begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
     final private static String  taxlabels                 = NexusConstants.TAXLABELS.toLowerCase();
@@ -61,173 +61,98 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                                                                               Pattern.CASE_INSENSITIVE );
     final private static Pattern ROOTEDNESS_PATTERN        = Pattern.compile( ".+=\\s*\\[&([R|U])\\].*" );
     private Object               _nexus_source;
-    private List<Phylogeny>      _phylogenies;
     private List<String>         _taxlabels;
     private Map<String, String>  _translate_map;
     private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
     private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
     private TAXONOMY_EXTRACTION  _taxonomy_extraction      = NHXParser.TAXONOMY_EXTRACTION_DEFAULT;
+    private Phylogeny            _next;
+    private BufferedReader       _br;
+    private boolean              _in_trees_block;
+    private StringBuilder        _nh;
+    private String               _name;
+    private StringBuilder        _translate_sb;
+    private boolean              _in_taxalabels;
+    private boolean              _in_translate;
+    private boolean              _is_rooted;
+    private boolean              _rooted_info_present;
+    private boolean              _in_tree;
 
     @Override
-    public Phylogeny[] parse() throws IOException, NHXFormatException {
-        reset();
-        final BufferedReader reader = ParserUtils.createReader( getNexusSource() );
-        String line;
-        String name = "";
-        StringBuilder nhx = new StringBuilder();
-        final StringBuilder translate_sb = new StringBuilder();
-        boolean in_trees_block = false;
-        boolean in_taxalabels = false;
-        boolean in_translate = false;
-        boolean in_tree = false;
-        boolean rooted_info_present = false;
-        boolean is_rooted = false;
-        while ( ( line = reader.readLine() ) != null ) {
-            line = line.trim();
-            if ( ( line.length() > 0 ) && !line.startsWith( "#" ) && !line.startsWith( ">" ) ) {
-                line = ForesterUtil.collapseWhiteSpace( line );
-                line = removeWhiteSpaceBeforeSemicolon( line );
-                final String line_lc = line.toLowerCase();
-                if ( line_lc.startsWith( begin_trees ) ) {
-                    in_trees_block = true;
-                    in_taxalabels = false;
-                    in_translate = false;
-                }
-                else if ( line_lc.startsWith( taxlabels ) ) {
-                    in_trees_block = false;
-                    in_taxalabels = true;
-                    in_translate = false;
-                }
-                else if ( line_lc.startsWith( translate ) ) {
-                    in_taxalabels = false;
-                    in_translate = true;
-                }
-                else if ( in_trees_block ) {
-                    //FIXME TODO need to work on this "title" and "link"
-                    if ( line_lc.startsWith( "title" ) || line_lc.startsWith( "link" ) ) {
-                        // Do nothing.
-                    }
-                    else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
-                        in_trees_block = false;
-                        in_tree = false;
-                        in_translate = false;
-                        if ( nhx.length() > 0 ) {
-                            createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                            nhx = new StringBuilder();
-                            name = "";
-                            rooted_info_present = false;
-                            is_rooted = false;
-                        }
-                    }
-                    else if ( line_lc.startsWith( tree ) || ( line_lc.startsWith( utree ) ) ) {
-                        if ( nhx.length() > 0 ) {
-                            createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                            nhx = new StringBuilder();
-                            name = "";
-                            rooted_info_present = false;
-                            is_rooted = false;
-                        }
-                        in_tree = true;
-                        nhx.append( line.substring( line.indexOf( '=' ) ) );
-                        final Matcher name_matcher = TREE_NAME_PATTERN.matcher( line );
-                        if ( name_matcher.matches() ) {
-                            name = name_matcher.group( 1 );
-                            name = name.replaceAll( "['\"]+", "" );
-                        }
-                        final Matcher rootedness_matcher = ROOTEDNESS_PATTERN.matcher( line );
-                        if ( rootedness_matcher.matches() ) {
-                            final String s = rootedness_matcher.group( 1 );
-                            line = line.replaceAll( "\\[\\&.\\]", "" );
-                            rooted_info_present = true;
-                            if ( s.toUpperCase().equals( "R" ) ) {
-                                is_rooted = true;
-                            }
-                        }
-                    }
-                    else if ( in_tree && !in_translate ) {
-                        nhx.append( line );
-                    }
-                    if ( !line_lc.startsWith( "title" ) && !line_lc.startsWith( "link" ) && !in_translate
-                            && !line_lc.startsWith( end ) && !line_lc.startsWith( endblock ) && line_lc.endsWith( ";" ) ) {
-                        in_tree = false;
-                        in_translate = false;
-                        createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-                        nhx = new StringBuilder();
-                        name = "";
-                        rooted_info_present = false;
-                        is_rooted = false;
-                    }
-                }
-                if ( in_taxalabels ) {
-                    if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
-                        in_taxalabels = false;
-                    }
-                    else {
-                        final String[] labels = line.split( "\\s+" );
-                        for( String label : labels ) {
-                            if ( !label.toLowerCase().equals( taxlabels ) ) {
-                                if ( label.endsWith( ";" ) ) {
-                                    in_taxalabels = false;
-                                    label = label.substring( 0, label.length() - 1 );
-                                }
-                                if ( label.length() > 0 ) {
-                                    getTaxlabels().add( label );
-                                }
-                            }
-                        }
-                    }
-                }
-                if ( in_translate ) {
-                    if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
-                        in_translate = false;
-                    }
-                    else {
-                        translate_sb.append( " " );
-                        translate_sb.append( line.trim() );
-                        if ( line.endsWith( ";" ) ) {
-                            in_translate = false;
-                            setTranslateKeyValuePairs( translate_sb );
-                        }
-                    }
-                }
-            }
-        }
-        if ( nhx.length() > 0 ) {
-            createPhylogeny( name, nhx, rooted_info_present, is_rooted );
-        }
-        return getPhylogeniesAsArray();
+    public final boolean hasNext() {
+        return _next != null;
     }
 
-    public void setIgnoreQuotes( final boolean ignore_quotes_in_nh_data ) {
+    @Override
+    public final Phylogeny next() throws NHXFormatException, IOException {
+        final Phylogeny phy = _next;
+        getNext();
+        return phy;
+    }
+
+    @Override
+    public final Phylogeny[] parse() throws IOException {
+        reset();
+        final List<Phylogeny> l = new ArrayList<Phylogeny>();
+        while ( hasNext() ) {
+            l.add( next() );
+        }
+        final Phylogeny[] p = new Phylogeny[ l.size() ];
+        for( int i = 0; i < l.size(); ++i ) {
+            p[ i ] = l.get( i );
+        }
+        return p;
+    }
+
+    @Override
+    public final void reset() throws FileNotFoundException, IOException {
+        _taxlabels = new ArrayList<String>();
+        _translate_map = new HashMap<String, String>();
+        _nh = new StringBuilder();
+        _name = "";
+        _translate_sb = new StringBuilder();
+        _next = null;
+        _in_trees_block = false;
+        _in_taxalabels = false;
+        _in_translate = false;
+        _in_tree = false;
+        _rooted_info_present = false;
+        _is_rooted = false;
+        _br = ParserUtils.createReader( _nexus_source );
+        getNext();
+    }
+
+    public final void setIgnoreQuotes( final boolean ignore_quotes_in_nh_data ) {
         _ignore_quotes_in_nh_data = ignore_quotes_in_nh_data;
     }
 
-    public void setReplaceUnderscores( final boolean replace_underscores ) {
+    public final void setReplaceUnderscores( final boolean replace_underscores ) {
         _replace_underscores = replace_underscores;
     }
 
     @Override
-    public void setSource( final Object nexus_source ) throws PhylogenyParserException, IOException {
+    public final void setSource( final Object nexus_source ) throws PhylogenyParserException, IOException {
         if ( nexus_source == null ) {
-            throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
+            throw new PhylogenyParserException( "attempt to parse null object" );
         }
         _nexus_source = nexus_source;
+        reset();
     }
 
-    public void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+    public final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
     }
 
-    private void createPhylogeny( final String name,
-                                  final StringBuilder nhx,
-                                  final boolean rooted_info_present,
-                                  final boolean is_rooted ) throws IOException {
-        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+    private final void createPhylogeny( final String name,
+                                        final StringBuilder nhx,
+                                        final boolean rooted_info_present,
+                                        final boolean is_rooted ) throws IOException {
+        _next = null;
         final NHXParser pars = new NHXParser();
-        if ( ( getTaxlabels().size() < 1 ) && ( getTranslateMap().size() < 1 ) ) {
-            pars.setTaxonomyExtraction( getTaxonomyExtraction() );
-            pars.setReplaceUnderscores( isReplaceUnderscores() );
-            pars.setIgnoreQuotes( isIgnoreQuotes() );
+        if ( ( _taxlabels.size() < 1 ) && ( _translate_map.size() < 1 ) ) {
+            pars.setTaxonomyExtraction( _taxonomy_extraction );
+            pars.setReplaceUnderscores( _replace_underscores );
+            pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
         }
         else {
             pars.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
@@ -237,19 +162,23 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
-        final Phylogeny p = factory.create( nhx, pars )[ 0 ];
+        pars.setSource( nhx );
+        final Phylogeny p = pars.next();
+        if ( p == null ) {
+            throw new PhylogenyParserException( "failed to create phylogeny" );
+        }
         p.setName( name );
         if ( rooted_info_present ) {
             p.setRooted( is_rooted );
         }
-        if ( ( getTaxlabels().size() > 0 ) || ( getTranslateMap().size() > 0 ) ) {
+        if ( ( _taxlabels.size() > 0 ) || ( _translate_map.size() > 0 ) ) {
             final PhylogenyNodeIterator it = p.iteratorExternalForward();
             while ( it.hasNext() ) {
                 final PhylogenyNode node = it.next();
-                if ( ( getTranslateMap().size() > 0 ) && getTranslateMap().containsKey( node.getName() ) ) {
-                    node.setName( getTranslateMap().get( node.getName() ).replaceAll( "['\"]+", "" ) );
+                if ( ( _translate_map.size() > 0 ) && _translate_map.containsKey( node.getName() ) ) {
+                    node.setName( _translate_map.get( node.getName() ).replaceAll( "['\"]+", "" ) );
                 }
-                else if ( getTaxlabels().size() > 0 ) {
+                else if ( _taxlabels.size() > 0 ) {
                     int i = -1;
                     try {
                         i = Integer.parseInt( node.getName() );
@@ -258,11 +187,11 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                         // Ignore.
                     }
                     if ( i > 0 ) {
-                        node.setName( getTaxlabels().get( i - 1 ).replaceAll( "['\"]+", "" ) );
+                        node.setName( _taxlabels.get( i - 1 ).replaceAll( "['\"]+", "" ) );
                     }
                 }
-                if ( !isReplaceUnderscores() && ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) ) ) {
-                    ParserUtils.extractTaxonomyDataFromNodeName( node, getTaxonomyExtraction() );
+                if ( !_replace_underscores && ( ( _taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
+                    ParserUtils.extractTaxonomyDataFromNodeName( node, _taxonomy_extraction );
                     //                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
                     //                                                                                    getTaxonomyExtraction() );
                     //                    if ( !ForesterUtil.isEmpty( tax ) ) {
@@ -274,60 +203,142 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
                 }
             }
         }
-        getPhylogenies().add( p );
+        _next = p;
     }
 
-    private Object getNexusSource() {
-        return _nexus_source;
-    }
-
-    private List<Phylogeny> getPhylogenies() {
-        return _phylogenies;
-    }
-
-    private Phylogeny[] getPhylogeniesAsArray() {
-        final Phylogeny[] p = new Phylogeny[ getPhylogenies().size() ];
-        for( int i = 0; i < getPhylogenies().size(); ++i ) {
-            p[ i ] = getPhylogenies().get( i );
+    private final void getNext() throws IOException, NHXFormatException {
+        _next = null;
+        String line;
+        while ( ( line = _br.readLine() ) != null ) {
+            line = line.trim();
+            if ( ( line.length() > 0 ) && !line.startsWith( "#" ) && !line.startsWith( ">" ) ) {
+                line = ForesterUtil.collapseWhiteSpace( line );
+                line = removeWhiteSpaceBeforeSemicolon( line );
+                final String line_lc = line.toLowerCase();
+                if ( line_lc.startsWith( begin_trees ) ) {
+                    _in_trees_block = true;
+                    _in_taxalabels = false;
+                    _in_translate = false;
+                }
+                else if ( line_lc.startsWith( taxlabels ) ) {
+                    _in_trees_block = false;
+                    _in_taxalabels = true;
+                    _in_translate = false;
+                }
+                else if ( line_lc.startsWith( translate ) ) {
+                    _in_taxalabels = false;
+                    _in_translate = true;
+                }
+                else if ( _in_trees_block ) {
+                    //FIXME TODO need to work on this "title" and "link"
+                    if ( line_lc.startsWith( "title" ) || line_lc.startsWith( "link" ) ) {
+                        // Do nothing.
+                    }
+                    else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
+                        _in_trees_block = false;
+                        _in_tree = false;
+                        _in_translate = false;
+                        if ( _nh.length() > 0 ) {
+                            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                            _nh = new StringBuilder();
+                            _name = "";
+                            _rooted_info_present = false;
+                            _is_rooted = false;
+                            if ( _next != null ) {
+                                return;
+                            }
+                        }
+                    }
+                    else if ( line_lc.startsWith( tree ) || ( line_lc.startsWith( utree ) ) ) {
+                        boolean might = false;
+                        if ( _nh.length() > 0 ) {
+                            might = true;
+                            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                            _nh = new StringBuilder();
+                            _name = "";
+                            _rooted_info_present = false;
+                            _is_rooted = false;
+                        }
+                        _in_tree = true;
+                        _nh.append( line.substring( line.indexOf( '=' ) ) );
+                        final Matcher name_matcher = TREE_NAME_PATTERN.matcher( line );
+                        if ( name_matcher.matches() ) {
+                            _name = name_matcher.group( 1 );
+                            _name = _name.replaceAll( "['\"]+", "" );
+                        }
+                        final Matcher rootedness_matcher = ROOTEDNESS_PATTERN.matcher( line );
+                        if ( rootedness_matcher.matches() ) {
+                            final String s = rootedness_matcher.group( 1 );
+                            line = line.replaceAll( "\\[\\&.\\]", "" );
+                            _rooted_info_present = true;
+                            if ( s.toUpperCase().equals( "R" ) ) {
+                                _is_rooted = true;
+                            }
+                        }
+                        if ( might && ( _next != null ) ) {
+                            return;
+                        }
+                    }
+                    else if ( _in_tree && !_in_translate ) {
+                        _nh.append( line );
+                    }
+                    if ( !line_lc.startsWith( "title" ) && !line_lc.startsWith( "link" ) && !_in_translate
+                            && !line_lc.startsWith( end ) && !line_lc.startsWith( endblock ) && line_lc.endsWith( ";" ) ) {
+                        _in_tree = false;
+                        _in_translate = false;
+                        createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                        _nh = new StringBuilder();
+                        _name = "";
+                        _rooted_info_present = false;
+                        _is_rooted = false;
+                        if ( _next != null ) {
+                            return;
+                        }
+                    }
+                }
+                if ( _in_taxalabels ) {
+                    if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
+                        _in_taxalabels = false;
+                    }
+                    else {
+                        final String[] labels = line.split( "\\s+" );
+                        for( String label : labels ) {
+                            if ( !label.toLowerCase().equals( taxlabels ) ) {
+                                if ( label.endsWith( ";" ) ) {
+                                    _in_taxalabels = false;
+                                    label = label.substring( 0, label.length() - 1 );
+                                }
+                                if ( label.length() > 0 ) {
+                                    _taxlabels.add( label );
+                                }
+                            }
+                        }
+                    }
+                }
+                if ( _in_translate ) {
+                    if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
+                        _in_translate = false;
+                    }
+                    else {
+                        _translate_sb.append( " " );
+                        _translate_sb.append( line.trim() );
+                        if ( line.endsWith( ";" ) ) {
+                            _in_translate = false;
+                            setTranslateKeyValuePairs( _translate_sb );
+                        }
+                    }
+                }
+            }
         }
-        return p;
+        if ( _nh.length() > 0 ) {
+            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+            if ( _next != null ) {
+                return;
+            }
+        }
     }
 
-    private List<String> getTaxlabels() {
-        return _taxlabels;
-    }
-
-    private TAXONOMY_EXTRACTION getTaxonomyExtraction() {
-        return _taxonomy_extraction;
-    }
-
-    private Map<String, String> getTranslateMap() {
-        return _translate_map;
-    }
-
-    private boolean isIgnoreQuotes() {
-        return _ignore_quotes_in_nh_data;
-    }
-
-    private boolean isReplaceUnderscores() {
-        return _replace_underscores;
-    }
-
-    private void reset() {
-        setPhylogenies( new ArrayList<Phylogeny>() );
-        setTaxlabels( new ArrayList<String>() );
-        setTranslateMap( new HashMap<String, String>() );
-    }
-
-    private void setPhylogenies( final ArrayList<Phylogeny> phylogenies ) {
-        _phylogenies = phylogenies;
-    }
-
-    private void setTaxlabels( final List<String> taxlabels ) {
-        _taxlabels = taxlabels;
-    }
-
-    private void setTranslateKeyValuePairs( final StringBuilder translate_sb ) throws IOException {
+    private final void setTranslateKeyValuePairs( final StringBuilder translate_sb ) throws IOException {
         String s = translate_sb.toString().trim();
         if ( s.endsWith( ";" ) ) {
             s = s.substring( 0, s.length() - 1 ).trim();
@@ -353,15 +364,11 @@ public class NexusPhylogeniesParser implements PhylogenyParser {
             if ( value.endsWith( ";" ) ) {
                 value = value.substring( 0, value.length() - 1 );
             }
-            getTranslateMap().put( key, value );
+            _translate_map.put( key, value );
         }
     }
 
-    private void setTranslateMap( final Map<String, String> translate_map ) {
-        _translate_map = translate_map;
-    }
-
-    private static String removeWhiteSpaceBeforeSemicolon( final String s ) {
+    private final static String removeWhiteSpaceBeforeSemicolon( final String s ) {
         return s.replaceAll( "\\s+;", ";" );
     }
 }
