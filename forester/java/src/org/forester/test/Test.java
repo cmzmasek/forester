@@ -50,6 +50,7 @@ import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTO
 import org.forester.io.parsers.nexus.NexusBinaryStatesMatrixParser;
 import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser2;
 import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -171,6 +172,16 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        System.out.print( "Nexus tree parsing iterating: " );
+        if ( Test.testNexusTreeParsingIterating() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.exit( 0 );
         System.out.print( "Sequence id parsing: " );
         if ( testSequenceIdParsing() ) {
             System.out.println( "OK." );
@@ -4398,6 +4409,570 @@ public final class Test {
                 return false;
             }
             if ( phylogenies[ 17 ].getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testNexusTreeParsingIterating() {
+        try {
+            final NexusPhylogeniesParser2 p = new NexusPhylogeniesParser2();
+            p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_1.nex" );
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            Phylogeny phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 25 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            //
+            p.reset();
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 25 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            ////
+            p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_2.nex" );
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "name" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            //
+            p.reset();
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "name" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            ////
+            p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_3.nex" );
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            //
+            p.reset();
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            ////
+            p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_4_1.nex" );
+            //            if ( phylogenies.length != 18 ) {
+            //                return false;
+            //            }
+            //0
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 0" ) ) {
+                return false;
+            }
+            //1
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 1" ) ) {
+                return false;
+            }
+            //2
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //3
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 4 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //4
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 5 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //5
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //6
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 2 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //7
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((a,b),c);" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //8
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((AA,BB),CC);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 8" ) ) {
+                return false;
+            }
+            //9
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((a,b),cc);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 9" ) ) {
+                return false;
+            }
+            //10
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((a,b),c);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 10" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //11
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((1,2),3);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 11" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //12
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((aa,bb),cc);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 12" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //13
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.toNewHampshire().equals( "((a,b),c);" ) ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 13" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //14
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy
+                    .toNewHampshire()
+                    .equals( "(1:0.212481,8:0.297838,(9:0.222729,((6:0.201563,7:0.194547):0.282035,(4:1.146091,(3:1.008881,(10:0.384105,(2:0.235682,5:0.353432):0.32368):0.103875):0.41354):0.254687):0.095341):0.079254):0.0;" ) ) {
+                System.out.println( phy.toNewHampshire() );
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 14" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //15
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy
+                    .toNewHampshire()
+                    .equals( "(1:0.212481,8:0.297838,(9:0.222729,((6:0.201563,7:0.194547):0.282035,(4:1.146091,(3:1.008881,(10:0.384105,(2:0.235682,5:0.353432):0.32368):0.103875):0.41354):0.254687):0.095341):0.079254):0.0;" ) ) {
+                System.out.println( phy.toNewHampshire() );
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 15" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //16
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy
+                    .toNewHampshire()
+                    .equals( "(1:0.212481,8:0.297838,(9:0.222729,((6:0.201563,7:0.194547):0.282035,(4:1.146091,(3:1.008881,(10:0.384105,(2:0.235682,5:0.353432):0.32368):0.103875):0.41354):0.254687):0.095341):0.079254):0.0;" ) ) {
+                System.out.println( phy.toNewHampshire() );
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 16" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //17
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy
+                    .toNewHampshire()
+                    .equals( "(1:0.212481,8:0.297838,(9:0.222729,((6:0.201563,7:0.194547):0.282035,(4:1.146091,(3:1.008881,(10:0.384105,(2:0.235682,5:0.353432):0.32368):0.103875):0.41354):0.254687):0.095341):0.079254):0.0;" ) ) {
+                System.out.println( phy.toNewHampshire() );
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 17" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //
+            if ( p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy != null ) {
+                return false;
+            }
+            p.reset();
+            //0
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 0" ) ) {
+                return false;
+            }
+            //1
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 10 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "tree 1" ) ) {
+                return false;
+            }
+            //2
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
+                return false;
+            }
+            //3
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 4 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //4
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 5 ) {
+                System.out.println( phy.getNumberOfExternalNodes() );
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( !phy.isRooted() ) {
+                return false;
+            }
+            //5
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            phy = p.next();
+            if ( phy == null ) {
+                return false;
+            }
+            if ( phy.getNumberOfExternalNodes() != 3 ) {
+                return false;
+            }
+            if ( !phy.getName().equals( "" ) ) {
+                return false;
+            }
+            if ( phy.isRooted() ) {
                 return false;
             }
         }

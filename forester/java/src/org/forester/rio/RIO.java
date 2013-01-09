@@ -224,7 +224,7 @@ public final class RIO {
             }
             else if ( gene_tree_ext_nodes != gt.getNumberOfExternalNodes() ) {
                 throw new RIOException( "gene tree #" + i + " has a different number of external nodes ("
-                        + gt.getNumberOfExternalNodes() + ") than the preceding gene trees (" + gene_tree_ext_nodes
+                        + gt.getNumberOfExternalNodes() + ") than the preceding gene tree(s) (" + gene_tree_ext_nodes
                         + ")" );
             }
             if ( algorithm == ALGORITHM.SDIR ) {
@@ -284,8 +284,8 @@ public final class RIO {
                 }
                 else if ( gene_tree_ext_nodes != gt.getNumberOfExternalNodes() ) {
                     throw new RIOException( "gene tree #" + i + " has a different number of external nodes ("
-                            + gt.getNumberOfExternalNodes() + ") than the preceding gene trees (" + gene_tree_ext_nodes
-                            + ")" );
+                            + gt.getNumberOfExternalNodes() + ") than the preceding gene tree(s) ("
+                            + gene_tree_ext_nodes + ")" );
                 }
                 if ( algorithm == ALGORITHM.SDIR ) {
                     // Removes from gene_tree all species not found in species_tree.
@@ -374,9 +374,9 @@ public final class RIO {
             _int_nodes = assigned_tree.getNumberOfInternalNodes();
         }
         else if ( _ext_nodes != assigned_tree.getNumberOfExternalNodes() ) {
-            throw new RIOException( "after stripping gene tree #" + ( i + 1 )
-                    + " has a different number of external nodes (" + assigned_tree.getNumberOfExternalNodes()
-                    + ") than the preceding gene trees (" + _ext_nodes + ")" );
+            throw new RIOException( "after stripping gene tree #" + i + " has a different number of external nodes ("
+                    + assigned_tree.getNumberOfExternalNodes() + ") than the preceding gene tree(s) (" + _ext_nodes
+                    + ")" );
         }
         return assigned_tree;
     }
@@ -393,8 +393,8 @@ public final class RIO {
                 _removed_gene_tree_nodes = gsdir.getStrippedExternalGeneTreeNodes();
                 for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
                     if ( !r.getNodeData().isHasTaxonomy() ) {
-                        throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #1: "
-                                + r.toString() );
+                        throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #"
+                                + i + ": " + r.toString() );
                     }
                 }
             }
@@ -420,8 +420,8 @@ public final class RIO {
             _removed_gene_tree_nodes = gsdi.getStrippedExternalGeneTreeNodes();
             for( final PhylogenyNode r : _removed_gene_tree_nodes ) {
                 if ( !r.getNodeData().isHasTaxonomy() ) {
-                    throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #1: "
-                            + r.toString() );
+                    throw new RIOException( "node with no (appropriate) taxonomic information found in gene tree #" + i
+                            + ": " + r.toString() );
                 }
             }
             assigned_tree = gene_tree;
