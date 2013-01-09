@@ -12,4 +12,6 @@ public interface IteratingPhylogenyParser {
     public Phylogeny next() throws IOException;
 
     public boolean hasNext();
+
+    public void setSource( final Object o ) throws IOException;
 }

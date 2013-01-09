@@ -33,7 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.datastructures.IntMatrix;
+import org.forester.io.parsers.IteratingPhylogenyParser;
+import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
 import org.forester.io.parsers.nhx.NHXParser;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.io.parsers.phyloxml.PhyloXmlParser;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.rio.RIO;
 import org.forester.rio.RIO.REROOTING;
 import org.forester.rio.RIOException;
@@ -46,19 +52,18 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String  PRG_NAME      = "rio";
-    final static private String  PRG_VERSION   = "4.000 beta 5";
-    final static private String  PRG_DATE      = "2013.01.08";
-    final static private String  E_MAIL        = "czmasek@burnham.org";
-    final static private String  WWW           = "www.phylosoft.org/forester/";
-    final static private String  HELP_OPTION_1 = "help";
-    final static private String  HELP_OPTION_2 = "h";
-    final static private String  GT_FIRST      = "f";
-    final static private String  GT_LAST       = "l";
-    final static private String  REROOTING_OPT = "r";
-    final static private String  OUTGROUP      = "o";
-    final static private String  USE_SDIR      = "b";
-    private static final boolean ITERATING     = true;
+    final static private String PRG_NAME      = "rio";
+    final static private String PRG_VERSION   = "4.000 beta 6";
+    final static private String PRG_DATE      = "2013.01.08";
+    final static private String E_MAIL        = "phyloxml@gmail.com";
+    final static private String WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1 = "help";
+    final static private String HELP_OPTION_2 = "h";
+    final static private String GT_FIRST      = "f";
+    final static private String GT_LAST       = "l";
+    final static private String REROOTING_OPT = "r";
+    final static private String OUTGROUP      = "o";
+    final static private String USE_SDIR      = "b";
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -250,13 +255,10 @@ public class rio {
         }
         try {
             final RIO rio;
-            if ( ITERATING ) {
-                final NHXParser p = new NHXParser();
-                p.setReplaceUnderscores( false );
-                p.setIgnoreQuotes( true );
-                p.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
-                p.setSource( gene_trees_file );
-                rio = RIO.executeAnalysis( p,
+            boolean iterating = false;
+            final PhylogenyParser p = ParserUtils.createParserDependingOnFileType( gene_trees_file, true );
+            if ( p instanceof PhyloXmlParser ) {
+                rio = RIO.executeAnalysis( gene_trees_file,
                                            species_tree_file,
                                            algorithm,
                                            rerooting,
@@ -267,7 +269,25 @@ public class rio {
                                            true );
             }
             else {
-                rio = RIO.executeAnalysis( gene_trees_file,
+                iterating = true;
+                if ( p instanceof NHXParser ) {
+                    final NHXParser nhx = ( NHXParser ) p;
+                    nhx.setReplaceUnderscores( false );
+                    nhx.setIgnoreQuotes( true );
+                    nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+                }
+                else if ( p instanceof NexusPhylogeniesParser ) {
+                    final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
+                    nex.setReplaceUnderscores( false );
+                    nex.setIgnoreQuotes( true );
+                    nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+                }
+                else {
+                    throw new RuntimeException( "unknown parser type: " + p );
+                }
+                final IteratingPhylogenyParser ip = ( IteratingPhylogenyParser ) p;
+                ip.setSource( gene_trees_file );
+                rio = RIO.executeAnalysis( ip,
                                            species_tree_file,
                                            algorithm,
                                            rerooting,
@@ -281,7 +301,7 @@ public class rio {
                 System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
             }
             final IntMatrix m;
-            if ( ITERATING ) {
+            if ( iterating ) {
                 m = rio.getOrthologTable();
             }
             else {
@@ -300,7 +320,6 @@ public class rio {
                               PRG_DATE,
                               ForesterUtil.getForesterLibraryInformation() );
             }
-            ;
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
             System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "
                     + df.format( stats.sampleStandardDeviation() ) + ") ("
