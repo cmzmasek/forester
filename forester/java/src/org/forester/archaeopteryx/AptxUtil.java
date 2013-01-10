@@ -300,7 +300,7 @@ public final class AptxUtil {
                                                                          final ControlPanel ac,
                                                                          final GraphicsExportType type,
                                                                          final Options options ) throws IOException {
-        tree_panel.setParametersForPainting( width, height, true );
+        tree_panel.calcParametersForPainting( width, height, true );
         tree_panel.resetPreferredSize();
         tree_panel.repaint();
         final RenderingHints rendering_hints = new RenderingHints( RenderingHints.KEY_RENDERING,
@@ -1006,7 +1006,7 @@ public final class AptxUtil {
             if ( options.isGraphicsExportVisibleOnly() ) {
                 throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
             }
-            tree_panel.setParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
+            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
             tree_panel.resetPreferredSize();
             tree_panel.repaint();
         }
@@ -1071,7 +1071,7 @@ public final class AptxUtil {
             if ( options.isGraphicsExportVisibleOnly() ) {
                 throw new IllegalArgumentException( "cannot export visible rectangle only without exporting in actual size" );
             }
-            tree_panel.setParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
+            tree_panel.calcParametersForPainting( options.getPrintSizeX(), options.getPrintSizeY(), true );
             tree_panel.resetPreferredSize();
             tree_panel.repaint();
         }

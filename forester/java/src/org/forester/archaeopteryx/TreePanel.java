@@ -307,65 +307,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         requestFocusInWindow();
     }
 
-    public void checkForVectorProperties( final Phylogeny phy ) {
-        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( node.getNodeData().getProperties() != null ) {
-                final PropertiesMap pm = node.getNodeData().getProperties();
-                final double[] vector = new double[ pm.getProperties().size() ];
-                int counter = 0;
-                for( final String ref : pm.getProperties().keySet() ) {
-                    if ( ref.startsWith( PhyloXmlUtil.VECTOR_PROPERTY_REF ) ) {
-                        final Property p = pm.getProperty( ref );
-                        final String value_str = p.getValue();
-                        final String index_str = ref
-                                .substring( PhyloXmlUtil.VECTOR_PROPERTY_REF.length(), ref.length() );
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble( value_str );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this, "Could not parse \"" + value_str
-                                    + "\" into a decimal value", "Problem with Vector Data", JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        int i = -1;
-                        try {
-                            i = Integer.parseInt( index_str );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + index_str
-                                                                   + "\" into index for vector data",
-                                                           "Problem with Vector Data",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        if ( i < 0 ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Attempt to use negative index for vector data",
-                                                           "Problem with Vector Data",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        vector[ i ] = d;
-                        ++counter;
-                        stats.addValue( d );
-                    }
-                }
-                final List<Double> vector_l = new ArrayList<Double>( counter );
-                for( int i = 0; i < counter; ++i ) {
-                    vector_l.add( vector[ i ] );
-                }
-                node.getNodeData().setVector( vector_l );
-            }
-        }
-        if ( stats.getN() > 0 ) {
-            _statistics_for_vector_data = stats;
-        }
-    }
-
     public synchronized Hashtable<String, BufferedImage> getImageMap() {
         return getMainPanel().getImageMap();
     }
@@ -499,11 +440,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    public final void setArrowCursor() {
-        setCursor( ARROW_CURSOR );
-        repaint();
-    }
-
     public final void setEdited( final boolean edited ) {
         _edited = edited;
     }
@@ -513,22 +449,62 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     /**
+     * Set a phylogeny tree.
+     * 
+     * @param t
+     *            an instance of a Phylogeny
+     */
+    public final void setTree( final Phylogeny t ) {
+        setNodeInPreorderToNull();
+        _phylogeny = t;
+    }
+
+    public final void setWaitCursor() {
+        setCursor( WAIT_CURSOR );
+        repaint();
+    }
+
+    @Override
+    public void update( final Graphics g ) {
+        paint( g );
+    }
+
+    final void calcMaxDepth() {
+        if ( _phylogeny != null ) {
+            _circ_max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
+        }
+    }
+
+    /**
      * Set parameters for printing the displayed tree
      * 
      * @param x
      * @param y
      */
-    public final void setParametersForPainting( final int x, final int y, final boolean recalc_longest_ext_node_info ) {
+    final void calcParametersForPainting( final int x, final int y, final boolean recalc_longest_ext_node_info ) {
         // updateStyle(); not needed?
         if ( ( _phylogeny != null ) && !_phylogeny.isEmpty() ) {
             initNodeData();
             if ( recalc_longest_ext_node_info ) {
                 calculateLongestExtNodeInfo();
-                while ( ( getLongestExtNodeInfo() > ( x * 0.67 ) ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
-                    getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize(), true );
-
-                    
-                    calculateLongestExtNodeInfo();
+                if ( getOptions().isAllowFontSizeChange() ) {
+                    if ( ( getLongestExtNodeInfo() > ( x * 0.6 ) )
+                            && ( getTreeFontSet().getLargeFont().getSize() > 2 + TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) {
+                        while ( ( getLongestExtNodeInfo() > ( x * 0.6 ) )
+                                && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
+                            getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize(),
+                                                                              true );
+                            calculateLongestExtNodeInfo();
+                        }
+                    }
+                    else {
+                        while ( ( getLongestExtNodeInfo() < ( x * 0.5 ) )
+                                && ( getTreeFontSet().getLargeFont().getSize() <= getTreeFontSet().getLargeFontMemory()
+                                        .getSize() - TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) {
+                            getMainPanel().getTreeFontSet().increaseFontSize();
+                            calculateLongestExtNodeInfo();
+                        }
+                    }
                 }
             }
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
@@ -577,52 +553,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _circ_max_depth = max_depth;
             setUpUrtFactor();
             //
-            if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
-                    && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
-                int dynamic_hiding_factor = calcDynamicHidingFactor();
-                if ( dynamic_hiding_factor > 1 ) {
-                    while ( dynamic_hiding_factor > 1
-                            && getTreeFontSet()._fm_large.getHeight() > TreeFontSet.SMALL_FONTS_BASE ) {
-                        getTreeFontSet().decreaseFontSize( 1, true );
-                        
-                        dynamic_hiding_factor = calcDynamicHidingFactor();
-                    }
-                }
-                else if ( getTreeFontSet().isDecreasedSizeBySystem() ) {
-                    while ( dynamic_hiding_factor < 1 && getTreeFontSet()._fm_large.getHeight() < 12 ) {
-                        getTreeFontSet().increaseFontSize();
-                        dynamic_hiding_factor = calcDynamicHidingFactor();
-                    }
+            if ( getOptions().isAllowFontSizeChange() ) {
+                if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
+                        && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
+                    //                int dynamic_hiding_factor = calcDynamicHidingFactor();
+                    //                if ( dynamic_hiding_factor > 1 ) {
+                    //                    while ( dynamic_hiding_factor > 1
+                    //                            && getTreeFontSet()._fm_large.getHeight() > TreeFontSet.SMALL_FONTS_BASE ) {
+                    //                        getTreeFontSet().decreaseFontSize( 1, true );
+                    //                        dynamic_hiding_factor = calcDynamicHidingFactor();
+                    //                    }
+                    //                }
+                    //                else if ( getTreeFontSet().isDecreasedSizeBySystem() ) {
+                    //                    while ( dynamic_hiding_factor < 1 && getTreeFontSet()._fm_large.getHeight() < 12 ) {
+                    //                        getTreeFontSet().increaseFontSize();
+                    //                        dynamic_hiding_factor = calcDynamicHidingFactor();
+                    //                    }
+                    //                }
                 }
             }
             //
-        }
-    }
-
-    /**
-     * Set a phylogeny tree.
-     * 
-     * @param t
-     *            an instance of a Phylogeny
-     */
-    public final void setTree( final Phylogeny t ) {
-        setNodeInPreorderToNull();
-        _phylogeny = t;
-    }
-
-    public final void setWaitCursor() {
-        setCursor( WAIT_CURSOR );
-        repaint();
-    }
-
-    @Override
-    public void update( final Graphics g ) {
-        paint( g );
-    }
-
-    final void calcMaxDepth() {
-        if ( _phylogeny != null ) {
-            _circ_max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
         }
     }
 
@@ -757,6 +707,65 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             getControlPanel().getSpeciesColors().put( species, c );
         }
         return c;
+    }
+
+    void checkForVectorProperties( final Phylogeny phy ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            if ( node.getNodeData().getProperties() != null ) {
+                final PropertiesMap pm = node.getNodeData().getProperties();
+                final double[] vector = new double[ pm.getProperties().size() ];
+                int counter = 0;
+                for( final String ref : pm.getProperties().keySet() ) {
+                    if ( ref.startsWith( PhyloXmlUtil.VECTOR_PROPERTY_REF ) ) {
+                        final Property p = pm.getProperty( ref );
+                        final String value_str = p.getValue();
+                        final String index_str = ref
+                                .substring( PhyloXmlUtil.VECTOR_PROPERTY_REF.length(), ref.length() );
+                        double d = -100;
+                        try {
+                            d = Double.parseDouble( value_str );
+                        }
+                        catch ( final NumberFormatException e ) {
+                            JOptionPane.showMessageDialog( this, "Could not parse \"" + value_str
+                                    + "\" into a decimal value", "Problem with Vector Data", JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        int i = -1;
+                        try {
+                            i = Integer.parseInt( index_str );
+                        }
+                        catch ( final NumberFormatException e ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Could not parse \"" + index_str
+                                                                   + "\" into index for vector data",
+                                                           "Problem with Vector Data",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        if ( i < 0 ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Attempt to use negative index for vector data",
+                                                           "Problem with Vector Data",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        vector[ i ] = d;
+                        ++counter;
+                        stats.addValue( d );
+                    }
+                }
+                final List<Double> vector_l = new ArrayList<Double>( counter );
+                for( int i = 0; i < counter; ++i ) {
+                    vector_l.add( vector[ i ] );
+                }
+                node.getNodeData().setVector( vector_l );
+            }
+        }
+        if ( stats.getN() > 0 ) {
+            _statistics_for_vector_data = stats;
+        }
     }
 
     void clearCurrentExternalNodesDataBuffer() {
@@ -1672,10 +1681,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private final int calcDynamicHidingFactor() {
-        return ( int ) ( 0.5 + ( getTreeFontSet()._fm_large.getHeight() / ( 1.5 * getYdistance() ) ) );
-    }
-
     final void recalculateMaxDistanceToRoot() {
         _max_distance_to_root = PhylogenyMethods.calculateMaxDistanceToRoot( getPhylogeny() );
     }
@@ -1788,6 +1793,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             getFoundNodes().add( node.getId() );
             getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
         }
+    }
+
+    final void setArrowCursor() {
+        setCursor( ARROW_CURSOR );
+        repaint();
     }
 
     final void setControlPanel( final ControlPanel atv_control ) {
@@ -2285,6 +2295,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
+    }
+
+    private final int calcDynamicHidingFactor() {
+        return ( int ) ( 0.5 + ( getTreeFontSet()._fm_large.getHeight() / ( 1.5 * getYdistance() ) ) );
     }
 
     /**
@@ -2985,8 +2999,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             else if ( ( e.getKeyCode() == KeyEvent.VK_SUBTRACT ) || ( e.getKeyCode() == KeyEvent.VK_MINUS ) ) {
                 getMainPanel().getTreeFontSet().decreaseFontSize( 1, false );
-
-                
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else if ( plusPressed( e.getKeyCode() ) ) {

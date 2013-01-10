@@ -390,11 +390,11 @@ public final class MainFrameApplication extends MainFrame {
             @Override
             public void componentResized( final ComponentEvent e ) {
                 if ( _mainpanel.getCurrentTreePanel() != null ) {
-                    _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel()
-                                                                                       .getWidth(),
-                                                                               _mainpanel.getCurrentTreePanel()
-                                                                                       .getHeight(),
-                                                                               false );
+                    _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
+                                                                                        .getWidth(),
+                                                                                _mainpanel.getCurrentTreePanel()
+                                                                                        .getHeight(),
+                                                                                getOptions().isAllowFontSizeChange() );
                 }
             }
         } );
@@ -1476,9 +1476,9 @@ public final class MainFrameApplication extends MainFrame {
     }
 
     void writePhylogenyToGraphicsFile( final String file_name, final GraphicsExportType type ) {
-        _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
-                                                                   _mainpanel.getCurrentTreePanel().getHeight(),
-                                                                   true );
+        _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel().getWidth(),
+                                                                    _mainpanel.getCurrentTreePanel().getHeight(),
+                                                                    true );
         String file_written_to = "";
         boolean error = false;
         try {
@@ -2070,9 +2070,9 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         if ( !getOptions().isPrintUsingActualSize() ) {
-            getCurrentTreePanel().setParametersForPainting( getOptions().getPrintSizeX() - 80,
-                                                            getOptions().getPrintSizeY() - 140,
-                                                            true );
+            getCurrentTreePanel().calcParametersForPainting( getOptions().getPrintSizeX() - 80,
+                                                             getOptions().getPrintSizeY() - 140,
+                                                             true );
             getCurrentTreePanel().resetPreferredSize();
             getCurrentTreePanel().repaint();
         }
@@ -2100,9 +2100,9 @@ public final class MainFrameApplication extends MainFrame {
 
     private void printPhylogenyToPdf( final String file_name ) {
         if ( !getOptions().isPrintUsingActualSize() ) {
-            getCurrentTreePanel().setParametersForPainting( getOptions().getPrintSizeX(),
-                                                            getOptions().getPrintSizeY(),
-                                                            true );
+            getCurrentTreePanel().calcParametersForPainting( getOptions().getPrintSizeX(),
+                                                             getOptions().getPrintSizeY(),
+                                                             true );
             getCurrentTreePanel().resetPreferredSize();
             getCurrentTreePanel().repaint();
         }

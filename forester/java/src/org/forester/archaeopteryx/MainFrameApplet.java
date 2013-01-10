@@ -137,11 +137,11 @@ public final class MainFrameApplet extends MainFrame {
             @Override
             public void componentResized( final ComponentEvent e ) {
                 if ( _mainpanel.getCurrentTreePanel() != null ) {
-                    _mainpanel.getCurrentTreePanel().setParametersForPainting( _mainpanel.getCurrentTreePanel()
-                                                                                       .getWidth(),
-                                                                               _mainpanel.getCurrentTreePanel()
-                                                                                       .getHeight(),
-                                                                               false );
+                    _mainpanel.getCurrentTreePanel().calcParametersForPainting( _mainpanel.getCurrentTreePanel()
+                                                                                        .getWidth(),
+                                                                                _mainpanel.getCurrentTreePanel()
+                                                                                        .getHeight(),
+                                                                                getOptions().isAllowFontSizeChange() );
                 }
             }
         } );

@@ -579,4 +579,8 @@ final public class Options {
             return toString().replaceAll( " ", "_" );
         }
     }
+
+    public boolean isAllowFontSizeChange() {
+        return true;
+    }
 }

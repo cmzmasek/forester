@@ -488,11 +488,14 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             @Override
             public void componentResized( final ComponentEvent e ) {
                 if ( getMainPanel().getCurrentTreePanel() != null ) {
-                    getMainPanel().getCurrentTreePanel().setParametersForPainting( getMainPanel().getCurrentTreePanel()
-                                                                                           .getWidth(),
-                                                                                   getMainPanel().getCurrentTreePanel()
-                                                                                           .getHeight(),
-                                                                                   false );
+                    getMainPanel().getCurrentTreePanel().calcParametersForPainting( getMainPanel()
+                                                                                            .getCurrentTreePanel()
+                                                                                            .getWidth(),
+                                                                                    getMainPanel()
+                                                                                            .getCurrentTreePanel()
+                                                                                            .getHeight(),
+                                                                                    getOptions()
+                                                                                            .isAllowFontSizeChange() );
                 }
             }
         } );
