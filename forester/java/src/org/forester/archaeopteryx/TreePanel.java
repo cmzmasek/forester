@@ -404,7 +404,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else {
-                getTreeFontSet().decreaseFontSize( 1 );
+                getTreeFontSet().decreaseFontSize( 1, false );
                 getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
         }
@@ -525,7 +525,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( recalc_longest_ext_node_info ) {
                 calculateLongestExtNodeInfo();
                 while ( ( getLongestExtNodeInfo() > ( x * 0.67 ) ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
-                    getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize() );
+                    getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize(), true );
+
+                    
                     calculateLongestExtNodeInfo();
                 }
             }
@@ -581,11 +583,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( dynamic_hiding_factor > 1 ) {
                     while ( dynamic_hiding_factor > 1
                             && getTreeFontSet()._fm_large.getHeight() > TreeFontSet.SMALL_FONTS_BASE ) {
-                        getTreeFontSet().decreaseFontSize( 1 );
+                        getTreeFontSet().decreaseFontSize( 1, true );
+                        
                         dynamic_hiding_factor = calcDynamicHidingFactor();
                     }
                 }
-                else {
+                else if ( getTreeFontSet().isDecreasedSizeBySystem() ) {
                     while ( dynamic_hiding_factor < 1 && getTreeFontSet()._fm_large.getHeight() < 12 ) {
                         getTreeFontSet().increaseFontSize();
                         dynamic_hiding_factor = calcDynamicHidingFactor();
@@ -2981,7 +2984,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else if ( ( e.getKeyCode() == KeyEvent.VK_SUBTRACT ) || ( e.getKeyCode() == KeyEvent.VK_MINUS ) ) {
-                getMainPanel().getTreeFontSet().decreaseFontSize( 1 );
+                getMainPanel().getTreeFontSet().decreaseFontSize( 1, false );
+
+                
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else if ( plusPressed( e.getKeyCode() ) ) {
