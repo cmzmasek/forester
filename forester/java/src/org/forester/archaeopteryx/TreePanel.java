@@ -404,7 +404,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else {
-                getTreeFontSet().decreaseFontSize();
+                getTreeFontSet().decreaseFontSize( 1 );
                 getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
         }
@@ -525,7 +525,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( recalc_longest_ext_node_info ) {
                 calculateLongestExtNodeInfo();
                 while ( ( getLongestExtNodeInfo() > ( x * 0.67 ) ) && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
-                    getMainPanel().getTreeFontSet().decreaseFontSize();
+                    getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize() );
                     calculateLongestExtNodeInfo();
                 }
             }
@@ -574,6 +574,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             _circ_max_depth = max_depth;
             setUpUrtFactor();
+            //
+            if ( ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.UNROOTED )
+                    && ( getPhylogenyGraphicsType() != PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) ) {
+                int dynamic_hiding_factor = calcDynamicHidingFactor();
+                if ( dynamic_hiding_factor > 1 ) {
+                    while ( dynamic_hiding_factor > 1
+                            && getTreeFontSet()._fm_large.getHeight() > TreeFontSet.SMALL_FONTS_BASE ) {
+                        getTreeFontSet().decreaseFontSize( 1 );
+                        dynamic_hiding_factor = calcDynamicHidingFactor();
+                    }
+                }
+                else {
+                    while ( dynamic_hiding_factor < 1 && getTreeFontSet()._fm_large.getHeight() < 12 ) {
+                        getTreeFontSet().increaseFontSize();
+                        dynamic_hiding_factor = calcDynamicHidingFactor();
+                    }
+                }
+            }
+            //
         }
     }
 
@@ -816,6 +835,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 msg += "colorized one subtree";
             }
+            setEdited( true );
             JOptionPane.showMessageDialog( this,
                                            msg,
                                            "Taxonomy Colorization Completed (" + rank + ")",
@@ -1114,6 +1134,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         PhylogenyMethods.midpointRoot( _phylogeny );
         resetNodeIdToDistToLeafMap();
         setArrowCursor();
+        setEdited( true );
         repaint();
     }
 
@@ -1512,7 +1533,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             // Position starting Y of tree
             _phylogeny.getRoot().setYcoord( ( getYdistance() * _phylogeny.getRoot().getNumberOfExternalNodes() )
                     + ( TreePanel.MOVE / 2.0f ) );
-            final int dynamic_hiding_factor = ( int ) ( getTreeFontSet()._fm_large.getHeight() / ( 1.5 * getYdistance() ) );
+            final int dynamic_hiding_factor = calcDynamicHidingFactor();
             if ( getControlPanel().isDynamicallyHideData() ) {
                 if ( dynamic_hiding_factor > 1 ) {
                     getControlPanel().setDynamicHidingIsOn( true );
@@ -1648,6 +1669,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    private final int calcDynamicHidingFactor() {
+        return ( int ) ( 0.5 + ( getTreeFontSet()._fm_large.getHeight() / ( 1.5 * getYdistance() ) ) );
+    }
+
     final void recalculateMaxDistanceToRoot() {
         _max_distance_to_root = PhylogenyMethods.calculateMaxDistanceToRoot( getPhylogeny() );
     }
@@ -1700,6 +1725,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setNodeInPreorderToNull();
         resetPreferredSize();
         getMainPanel().adjustJScrollPane();
+        setEdited( true );
         repaint();
         if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) {
             getControlPanel().showWhole();
@@ -1986,6 +2012,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( _control_panel.getColorBranchesCb() != null ) {
             _control_panel.getColorBranchesCb().setSelected( true );
         }
+        setEdited( true );
         setArrowCursor();
         repaint();
     }
@@ -2954,7 +2981,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else if ( ( e.getKeyCode() == KeyEvent.VK_SUBTRACT ) || ( e.getKeyCode() == KeyEvent.VK_MINUS ) ) {
-                getMainPanel().getTreeFontSet().decreaseFontSize();
+                getMainPanel().getTreeFontSet().decreaseFontSize( 1 );
                 getMainPanel().getControlPanel().displayedPhylogenyMightHaveChanged( true );
             }
             else if ( plusPressed( e.getKeyCode() ) ) {

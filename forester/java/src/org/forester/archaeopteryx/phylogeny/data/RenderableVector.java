@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.Configuration;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -54,26 +55,6 @@ public final class RenderableVector implements RenderablePhylogenyData {
     private double                  _mean;
     private static RenderableVector _instance               = null;
 
-    public static RenderableVector createInstance( final List<Double> values,
-                                                   final DescriptiveStatistics stats,
-                                                   final Configuration configuration ) {
-        if ( _instance == null ) {
-            _instance = new RenderableVector();
-        }
-        _instance.setRenderingHeight( DEFAULT_HEIGHT );
-        _instance._values = values;
-        _instance._configuration = configuration;
-        _instance._min = stats.getMin();
-        _instance._max = stats.getMax();
-        _instance._mean = stats.arithmeticMean();
-        return _instance;
-    }
-
-    @Override
-    public Object clone() {
-        throw new NoSuchMethodError();
-    }
-
     private RenderableVector() {
         _values = null;
         _configuration = null;
@@ -89,8 +70,33 @@ public final class RenderableVector implements RenderablePhylogenyData {
         return asSimpleText();
     }
 
+    @Override
+    public Object clone() {
+        throw new NoSuchMethodError();
+    }
+
+    @Override
+    public PhylogenyData copy() {
+        throw new NoSuchMethodError();
+    }
+
+    @Override
+    public Dimension getOriginalSize() {
+        return new Dimension( getTotalLength(), ( int ) getRenderingHeight() );
+    }
+
+    @Override
+    public Object getParameter() {
+        return null;
+    }
+
     public double getRenderingFactorWidth() {
         return _rendering_factor_width;
+    }
+
+    @Override
+    public Dimension getRenderingSize() {
+        return getOriginalSize();
     }
 
     public int getTotalLength() {
@@ -118,12 +124,18 @@ public final class RenderableVector implements RenderablePhylogenyData {
         }
     }
 
-    private Color calculateColor( final double v ) {
-        return ForesterUtil.calcColor( v, _min, _max, _mean, Color.MAGENTA, Color.GREEN, Color.WHITE );
+    @Override
+    public void setParameter( final double parameter ) {
+        throw new NoSuchMethodError();
     }
 
     public void setRenderingFactorWidth( final double rendering_factor_width ) {
         _rendering_factor_width = rendering_factor_width;
+    }
+
+    @Override
+    public void setRenderingHeight( final double height ) {
+        _height = height;
     }
 
     @Override
@@ -136,37 +148,34 @@ public final class RenderableVector implements RenderablePhylogenyData {
         throw new NoSuchMethodError();
     }
 
-    @Override
-    public PhylogenyData copy() {
-        throw new NoSuchMethodError();
-    }
-
-    @Override
-    public Dimension getOriginalSize() {
-        return new Dimension( getTotalLength(), ( int ) getRenderingHeight() );
-    }
-
-    @Override
-    public Object getParameter() {
-        return null;
-    }
-
-    @Override
-    public Dimension getRenderingSize() {
-        return getOriginalSize();
-    }
-
-    @Override
-    public void setParameter( final double parameter ) {
-        throw new NoSuchMethodError();
-    }
-
-    @Override
-    public void setRenderingHeight( final double height ) {
-        _height = height;
+    private Color calculateColor( final double v ) {
+        return ForesterUtil.calcColor( v, _min, _max, _mean, Color.MAGENTA, Color.GREEN, Color.WHITE );
     }
 
     private double getRenderingHeight() {
         return _height;
+    }
+
+    public static RenderableVector createInstance( final List<Double> values,
+                                                   final DescriptiveStatistics stats,
+                                                   final Configuration configuration ) {
+        if ( _instance == null ) {
+            _instance = new RenderableVector();
+        }
+        _instance.setRenderingHeight( DEFAULT_HEIGHT );
+        _instance._values = values;
+        _instance._configuration = configuration;
+        if ( stats.getN() > 0 ) {
+            _instance._min = stats.getMin();
+            _instance._max = stats.getMax();
+            _instance._mean = stats.arithmeticMean();
+        }
+        else {
+            _instance._min = 0;
+            _instance._max = 0;
+            _instance._mean = 0;
+            AptxUtil.printWarningMessage( "Archaeopteryx", "creating renderable vector with empty statistics" );
+        }
+        return _instance;
     }
 }

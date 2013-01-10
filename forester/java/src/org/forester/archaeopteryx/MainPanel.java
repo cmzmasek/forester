@@ -222,7 +222,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         // Do nothing.
     }
 
-    private Configuration getConfiguration() {
+    Configuration getConfiguration() {
         return _configuration;
     }
 
