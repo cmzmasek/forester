@@ -66,7 +66,7 @@ public class MainPanel extends JPanel implements ComponentListener {
     private TreeColorSet                     _colorset;
     private TreeFontSet                      _fontset;
     private Phylogeny                        _cut_or_copied_tree;
-    private Set<Integer>                     _copied_and_pasted_nodes;
+    private Set<Long>                        _copied_and_pasted_nodes;
     private Hashtable<String, BufferedImage> _image_map;
     private static Map<String, String>       _lineage_to_rank_map;
 
@@ -230,7 +230,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         return _control_panel;
     }
 
-    public Set<Integer> getCopiedAndPastedNodes() {
+    public Set<Long> getCopiedAndPastedNodes() {
         return _copied_and_pasted_nodes;
     }
 
@@ -388,7 +388,7 @@ public class MainPanel extends JPanel implements ComponentListener {
         repaint();
     }
 
-    public void setCopiedAndPastedNodes( final Set<Integer> node_ids ) {
+    public void setCopiedAndPastedNodes( final Set<Long> node_ids ) {
         _copied_and_pasted_nodes = node_ids;
     }
 

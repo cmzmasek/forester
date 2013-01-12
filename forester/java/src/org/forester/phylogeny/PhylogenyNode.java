@@ -52,9 +52,9 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     public enum NH_CONVERSION_SUPPORT_VALUE_STYLE {
         NONE, IN_SQUARE_BRACKETS, AS_INTERNAL_NODE_NAMES;
     }
-    private static int               _node_count      = 0;
+    private static long              NODE_COUNT       = 0;
     private byte                     _indicator;
-    private int                      _id;
+    private long                     _id;
     private int                      _sum_ext_nodes;
     private float                    _x;
     private float                    _y;
@@ -487,7 +487,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     /**
      * Returns the ID (int) of this PhylogenyNode.
      */
-    final public int getId() {
+    final public long getId() {
         return _id;
     }
 
@@ -903,7 +903,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * should not be set to values lower than getNodeCount() -- which this method
      * does not allow.
      */
-    synchronized final protected void setId( final int i ) {
+    synchronized final protected void setId( final long i ) {
         if ( i < getNodeCount() ) {
             throw new IllegalArgumentException( "attempt to set node id to a value less than total node count (thus violating the uniqueness of node ids)" );
         }
@@ -1119,30 +1119,30 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Decreases the total number of all Nodes created so far by one.
      */
     final static synchronized void decreaseNodeCount() {
-        --PhylogenyNode._node_count;
+        --NODE_COUNT;
     }
 
     /**
      * Returns the total number of all Nodes created so far.
      * 
-     * @return total number of Nodes (int)
+     * @return total number of Nodes (long)
      */
-    synchronized final public static int getNodeCount() {
-        return PhylogenyNode._node_count;
+    synchronized final public static long getNodeCount() {
+        return NODE_COUNT;
     }
 
     /**
      * Increases the total number of all Nodes created so far by one.
      */
     synchronized final private static void increaseNodeCount() {
-        ++PhylogenyNode._node_count;
+        ++NODE_COUNT;
     }
 
     /**
-     * Sets the total number of all Nodes created so far to i (int).
+     * Sets the total number of all Nodes created so far to i.
      */
-    synchronized final static void setNodeCount( final int i ) {
-        PhylogenyNode._node_count = i;
+    synchronized final static void setNodeCount( final long i ) {
+        PhylogenyNode.NODE_COUNT = i;
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException,

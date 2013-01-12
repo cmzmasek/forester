@@ -327,10 +327,14 @@ public class PhylogenyMethods {
 
     public static final HashMap<String, PhylogenyNode> createNameToExtNodeMap( final Phylogeny phy ) {
         final HashMap<String, PhylogenyNode> nodes = new HashMap<String, PhylogenyNode>();
-        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-            final PhylogenyNode n = iter.next();
+        List<PhylogenyNode> ext = phy.getExternalNodes();
+        for( PhylogenyNode n : ext ) {
             nodes.put( n.getName(), n );
         }
+        // for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+        //     final PhylogenyNode n = iter.next();
+        //     nodes.put( n.getName(), n );
+        // }
         return nodes;
     }
 
@@ -439,7 +443,7 @@ public class PhylogenyMethods {
 
     public static List<PhylogenyNode> getAllDescendants( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = new ArrayList<PhylogenyNode>();
-        final Set<Integer> encountered = new HashSet<Integer>();
+        final Set<Long> encountered = new HashSet<Long>();
         if ( !node.isExternal() ) {
             final List<PhylogenyNode> exts = node.getAllExternalDescendants();
             for( PhylogenyNode current : exts ) {
@@ -882,7 +886,7 @@ public class PhylogenyMethods {
             return;
         }
         phy.setIdToNodeMap( null );
-        int i = PhylogenyNode.getNodeCount();
+        long i = PhylogenyNode.getNodeCount();
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             it.next().setId( i++ );
         }

@@ -1615,7 +1615,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
         }
         if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
-            main_panel.getCurrentTreePanel().setFoundNodes( new HashSet<Integer>() );
+            main_panel.getCurrentTreePanel().setFoundNodes( new HashSet<Long>() );
             for( final PhylogenyNode node : nodes ) {
                 main_panel.getCurrentTreePanel().getFoundNodes().add( node.getId() );
             }

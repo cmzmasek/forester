@@ -494,8 +494,8 @@ public class SDIR {
             branches.add( new PhylogenyBranch( t.getRoot().getChildNode1(), t.getRoot().getChildNode2() ) );
             return branches;
         }
-        final Set<Integer> one = new HashSet<Integer>();
-        final Set<Integer> two = new HashSet<Integer>();
+        final Set<Long> one = new HashSet<Long>();
+        final Set<Long> two = new HashSet<Long>();
         PhylogenyNode node = t.getRoot();
         while ( !node.isRoot() || !two.contains( node.getId() ) ) {
             if ( !node.isExternal() && !two.contains( node.getId() ) ) {

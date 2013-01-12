@@ -68,7 +68,7 @@ public class Phylogeny {
     private Confidence                                          _confidence;
     private Identifier                                          _identifier;
     private boolean                                             _rerootable;
-    private HashMap<Integer, PhylogenyNode>                     _id_to_node_map;
+    private HashMap<Long, PhylogenyNode>                        _id_to_node_map;
     private List<PhylogenyNode>                                 _external_nodes_set;
     private Collection<Sequence>                                _sequenceRelationQueries;
     private Collection<SequenceRelation.SEQUENCE_RELATION_TYPE> _relevant_sequence_relation_types;
@@ -390,7 +390,7 @@ public class Phylogeny {
      * Finds the PhylogenyNode of this Phylogeny which has a matching ID number.
      * @return PhylogenyNode with matching ID, null if not found
      */
-    public PhylogenyNode getNode( final int id ) throws NoSuchElementException {
+    public PhylogenyNode getNode( final long id ) throws NoSuchElementException {
         if ( isEmpty() ) {
             throw new NoSuchElementException( "attempt to get node in an empty phylogeny" );
         }
@@ -741,7 +741,7 @@ public class Phylogeny {
             return;
         }
         _id_to_node_map = null;
-        int max = 0;
+        long max = 0;
         for( final PhylogenyNodeIterator it = iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode node = it.next();
             if ( node.isRoot() ) {
@@ -811,7 +811,7 @@ public class Phylogeny {
      * @param id
      *            ID (int) of PhylogenyNode of this Phylogeny
      */
-    public void reRoot( final int id ) {
+    public void reRoot( final long id ) {
         reRoot( getNode( id ) );
     }
 
@@ -1040,7 +1040,7 @@ public class Phylogeny {
         _identifier = identifier;
     }
 
-    public void setIdToNodeMap( final HashMap<Integer, PhylogenyNode> idhash ) {
+    public void setIdToNodeMap( final HashMap<Long, PhylogenyNode> idhash ) {
         _id_to_node_map = idhash;
     }
 
@@ -1168,7 +1168,7 @@ public class Phylogeny {
         return;
     } // unRoot()
 
-    private HashMap<Integer, PhylogenyNode> getIdToNodeMap() {
+    private HashMap<Long, PhylogenyNode> getIdToNodeMap() {
         return _id_to_node_map;
     }
 
@@ -1273,7 +1273,7 @@ public class Phylogeny {
         if ( isEmpty() ) {
             return;
         }
-        setIdToNodeMap( new HashMap<Integer, PhylogenyNode>() );
+        setIdToNodeMap( new HashMap<Long, PhylogenyNode>() );
         for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             getIdToNodeMap().put( node.getId(), node );

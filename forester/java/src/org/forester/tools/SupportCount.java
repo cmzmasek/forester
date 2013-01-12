@@ -64,7 +64,7 @@ public final class SupportCount {
             phylogeny.reRoot( phylogeny.getNode( child0_name ) );
             evaluator_phylogeny.reRoot( evaluator_phylogeny.getNode( child0_name ) );
         }
-        final Map<Integer, ArrayList<String>> phylogeny_external_names_per_node = SupportCount
+        final Map<Long, ArrayList<String>> phylogeny_external_names_per_node = SupportCount
                 .extractExternalNamesPerNode( phylogeny );
         return ( SupportCount.compare( phylogeny,
                                        evaluator_phylogeny,
@@ -97,7 +97,7 @@ public final class SupportCount {
      */
     private static double compare( final Phylogeny phylogeny,
                                    final Phylogeny evaluator_phylogeny,
-                                   final Map<Integer, ArrayList<String>> phylogeny_external_names_per_node,
+                                   final Map<Long, ArrayList<String>> phylogeny_external_names_per_node,
                                    final boolean update_support_in_phylogeny,
                                    final double similarity_threshold ) {
         int matching_branches = 0;
@@ -114,7 +114,7 @@ public final class SupportCount {
             for( final Object element : evaluator_phylogeny_it.next().getAllExternalDescendants() ) {
                 c1.add( ( ( PhylogenyNode ) element ).getName() );
             }
-            for( final Integer id : phylogeny_external_names_per_node.keySet() ) {
+            for( final Long id : phylogeny_external_names_per_node.keySet() ) {
                 final List<String> c2 = phylogeny_external_names_per_node.get( id );
                 if ( ( c2.size() == c1.size() ) && c2.containsAll( c1 ) ) {
                     if ( c2.size() > 1 ) {
@@ -181,7 +181,7 @@ public final class SupportCount {
         }
         final String child0_name = phylogeny.getFirstExternalNode().getName();
         phylogeny.reRoot( phylogeny.getNode( child0_name ) );
-        final Map<Integer, ArrayList<String>> phylogeny_external_names_per_node = SupportCount
+        final Map<Long, ArrayList<String>> phylogeny_external_names_per_node = SupportCount
                 .extractExternalNamesPerNode( phylogeny );
         if ( verbose ) {
             System.out.println();
@@ -239,14 +239,14 @@ public final class SupportCount {
         return evaluator_phylogenies_above_threshold;
     }
 
-    private static Map<Integer, ArrayList<String>> extractExternalNamesPerNode( final Phylogeny phylogeny )
+    private static Map<Long, ArrayList<String>> extractExternalNamesPerNode( final Phylogeny phylogeny )
             throws NoSuchElementException {
-        final HashMap<Integer, ArrayList<String>> phylogeny_external_names_per_node = new HashMap<Integer, ArrayList<String>>();
+        final HashMap<Long, ArrayList<String>> phylogeny_external_names_per_node = new HashMap<Long, ArrayList<String>>();
         for( final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             final List<PhylogenyNode> l = n.getAllExternalDescendants();
             final ArrayList<String> c = new ArrayList<String>();
-            phylogeny_external_names_per_node.put( new Integer( n.getId() ), c );
+            phylogeny_external_names_per_node.put( new Long( n.getId() ), c );
             for( final PhylogenyNode phylogenyNode : l ) {
                 c.add( phylogenyNode.getName() );
             }

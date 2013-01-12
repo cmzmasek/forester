@@ -129,113 +129,112 @@ import org.forester.util.SequenceIdParser;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
-    private static final float              PI                                                 = ( float ) ( Math.PI );
-    private static final double             TWO_PI                                             = 2 * Math.PI;
-    private static final float              ONEHALF_PI                                         = ( float ) ( 1.5 * Math.PI );
-    private static final float              HALF_PI                                            = ( float ) ( Math.PI / 2.0 );
-    private static final float              ANGLE_ROTATION_UNIT                                = ( float ) ( Math.PI / 32 );
-    private static final short              OV_BORDER                                          = 10;
-    final static Cursor                     CUT_CURSOR                                         = Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR );
-    final static Cursor                     MOVE_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.MOVE_CURSOR );
-    final static Cursor                     ARROW_CURSOR                                       = Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR );
-    final static Cursor                     HAND_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.HAND_CURSOR );
-    final static Cursor                     WAIT_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR );
-    private final static long               serialVersionUID                                   = -978349745916505029L;
-    private final static int                EURO_D                                             = 10;
-    private final static String             NODE_POPMENU_NODE_CLIENT_PROPERTY                  = "node";
-    private final static int                MIN_ROOT_LENGTH                                    = 3;
-    private final static int                MAX_SUBTREES                                       = 100;
-    private final static int                MAX_NODE_FRAMES                                    = 10;
-    private final static int                MOVE                                               = 20;
-    private final static NumberFormat       FORMATTER_CONFIDENCE;
-    private final static NumberFormat       FORMATTER_BRANCH_LENGTH;
-    private final static int                WIGGLE                                             = 2;
-    private final static int                LIMIT_FOR_HQ_RENDERING                             = 1000;
-    private final static int                CONFIDENCE_LEFT_MARGIN                             = 4;
-    private final RenderingHints            _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
-                                                                                                                     RenderingHints.VALUE_RENDER_DEFAULT );
-    private File                            _treefile                                          = null;
-    private Configuration                   _configuration                                     = null;
-    private final NodeFrame[]               _node_frames                                       = new NodeFrame[ TreePanel.MAX_NODE_FRAMES ];
-    private int                             _node_frame_index                                  = 0;
-    private Phylogeny                       _phylogeny                                         = null;
-    private final Phylogeny[]               _sub_phylogenies                                   = new Phylogeny[ TreePanel.MAX_SUBTREES ];
-    private final PhylogenyNode[]           _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
-    private int                             _subtree_index                                     = 0;
-    private MainPanel                       _main_panel                                        = null;
-    private Set<Integer>                    _found_nodes                                       = null;
-    private PhylogenyNode                   _highlight_node                                    = null;
-    private JPopupMenu                      _node_popup_menu                                   = null;
-    private JMenuItem                       _node_popup_menu_items[]                           = null;
-    private int                             _longest_ext_node_info                             = 0;
-    private float                           _x_correction_factor                               = 0.0f;
-    private float                           _ov_x_correction_factor                            = 0.0f;
-    private float                           _x_distance                                        = 0.0f;
-    private float                           _y_distance                                        = 0.0f;
-    private PHYLOGENY_GRAPHICS_TYPE         _graphics_type                                     = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private double                          _domain_structure_width                            = Constants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
-    private int                             _domain_structure_e_value_thr_exp                  = Constants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
-    private float                           _last_drag_point_x                                 = 0;
-    private float                           _last_drag_point_y                                 = 0;
-    private ControlPanel                    _control_panel                                     = null;
-    private int                             _external_node_index                               = 0;
-    private final Polygon                   _polygon                                           = new Polygon();
-    private final StringBuilder             _sb                                                = new StringBuilder();
-    private JColorChooser                   _color_chooser                                     = null;
-    private double                          _scale_distance                                    = 0.0;
-    private String                          _scale_label                                       = null;
-    private final CubicCurve2D              _cubic_curve                                       = new CubicCurve2D.Float();
-    private final QuadCurve2D               _quad_curve                                        = new QuadCurve2D.Float();
-    private final Line2D                    _line                                              = new Line2D.Float();
-    private final Ellipse2D                 _ellipse                                           = new Ellipse2D.Float();
-    private final Rectangle2D               _rectangle                                         = new Rectangle2D.Float();
-    private Options                         _options                                           = null;
-    private float                           _ov_max_width                                      = 0;
-    private float                           _ov_max_height                                     = 0;
-    private int                             _ov_x_position                                     = 0;
-    private int                             _ov_y_position                                     = 0;
-    private int                             _ov_y_start                                        = 0;
-    private float                           _ov_y_distance                                     = 0;
-    private float                           _ov_x_distance                                     = 0;
-    private boolean                         _ov_on                                             = false;
-    private double                          _urt_starting_angle                                = ( float ) ( Math.PI / 2 );
-    private float                           _urt_factor                                        = 1;
-    private float                           _urt_factor_ov                                     = 1;
-    private final boolean                   _phy_has_branch_lengths;
-    private final Rectangle2D               _ov_rectangle                                      = new Rectangle2D.Float();
-    private boolean                         _in_ov_rect                                        = false;
-    private boolean                         _in_ov                                             = false;
-    private final Rectangle                 _ov_virtual_rectangle                              = new Rectangle();
-    final private static double             _180_OVER_PI                                       = 180.0 / Math.PI;
-    private static final float              ROUNDED_D                                          = 8;
-    private int                             _circ_max_depth;
-    private PhylogenyNode                   _root;
-    final private Arc2D                     _arc                                               = new Arc2D.Double();
-    final private HashMap<Integer, Double>  _urt_nodeid_angle_map                              = new HashMap<Integer, Double>();
-    final private HashMap<Integer, Integer> _urt_nodeid_index_map                              = new HashMap<Integer, Integer>();
-    final private Set<Integer>              _collapsed_external_nodeid_set                     = new HashSet<Integer>();
-    HashMap<Integer, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Integer, Short>();
-    private AffineTransform                 _at;
-    private double                          _max_distance_to_root                              = -1;
-    private int                             _dynamic_hiding_factor                             = 0;
-    private boolean                         _edited                                            = false;
-    private Popup                           _node_desc_popup;
-    private JTextArea                       _rollover_popup;
-    private final StringBuffer              _popup_buffer                                      = new StringBuffer();
-    final private static Font               POPUP_FONT                                         = new Font( Configuration
-                                                                                                                   .getDefaultFontFamilyName(),
-                                                                                                           Font.PLAIN,
-                                                                                                           12 );
-    private Sequence                        _query_sequence                                    = null;
-    private final FontRenderContext         _frc                                               = new FontRenderContext( null,
-                                                                                                                        false,
-                                                                                                                        false );
+    private static final float           PI                                                 = ( float ) ( Math.PI );
+    private static final double          TWO_PI                                             = 2 * Math.PI;
+    private static final float           ONEHALF_PI                                         = ( float ) ( 1.5 * Math.PI );
+    private static final float           HALF_PI                                            = ( float ) ( Math.PI / 2.0 );
+    private static final float           ANGLE_ROTATION_UNIT                                = ( float ) ( Math.PI / 32 );
+    private static final short           OV_BORDER                                          = 10;
+    final static Cursor                  CUT_CURSOR                                         = Cursor.getPredefinedCursor( Cursor.CROSSHAIR_CURSOR );
+    final static Cursor                  MOVE_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.MOVE_CURSOR );
+    final static Cursor                  ARROW_CURSOR                                       = Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR );
+    final static Cursor                  HAND_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.HAND_CURSOR );
+    final static Cursor                  WAIT_CURSOR                                        = Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR );
+    private final static long            serialVersionUID                                   = -978349745916505029L;
+    private final static int             EURO_D                                             = 10;
+    private final static String          NODE_POPMENU_NODE_CLIENT_PROPERTY                  = "node";
+    private final static int             MIN_ROOT_LENGTH                                    = 3;
+    private final static int             MAX_SUBTREES                                       = 100;
+    private final static int             MAX_NODE_FRAMES                                    = 10;
+    private final static int             MOVE                                               = 20;
+    private final static NumberFormat    FORMATTER_CONFIDENCE;
+    private final static NumberFormat    FORMATTER_BRANCH_LENGTH;
+    private final static int             WIGGLE                                             = 2;
+    private final static int             LIMIT_FOR_HQ_RENDERING                             = 1000;
+    private final static int             CONFIDENCE_LEFT_MARGIN                             = 4;
+    private final RenderingHints         _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
+                                                                                                                  RenderingHints.VALUE_RENDER_DEFAULT );
+    private File                         _treefile                                          = null;
+    private Configuration                _configuration                                     = null;
+    private final NodeFrame[]            _node_frames                                       = new NodeFrame[ TreePanel.MAX_NODE_FRAMES ];
+    private int                          _node_frame_index                                  = 0;
+    private Phylogeny                    _phylogeny                                         = null;
+    private final Phylogeny[]            _sub_phylogenies                                   = new Phylogeny[ TreePanel.MAX_SUBTREES ];
+    private final PhylogenyNode[]        _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
+    private int                          _subtree_index                                     = 0;
+    private MainPanel                    _main_panel                                        = null;
+    private Set<Long>                    _found_nodes                                       = null;
+    private PhylogenyNode                _highlight_node                                    = null;
+    private JPopupMenu                   _node_popup_menu                                   = null;
+    private JMenuItem                    _node_popup_menu_items[]                           = null;
+    private int                          _longest_ext_node_info                             = 0;
+    private float                        _x_correction_factor                               = 0.0f;
+    private float                        _ov_x_correction_factor                            = 0.0f;
+    private float                        _x_distance                                        = 0.0f;
+    private float                        _y_distance                                        = 0.0f;
+    private PHYLOGENY_GRAPHICS_TYPE      _graphics_type                                     = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+    private double                       _domain_structure_width                            = Constants.DOMAIN_STRUCTURE_DEFAULT_WIDTH;
+    private int                          _domain_structure_e_value_thr_exp                  = Constants.DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP;
+    private float                        _last_drag_point_x                                 = 0;
+    private float                        _last_drag_point_y                                 = 0;
+    private ControlPanel                 _control_panel                                     = null;
+    private int                          _external_node_index                               = 0;
+    private final Polygon                _polygon                                           = new Polygon();
+    private final StringBuilder          _sb                                                = new StringBuilder();
+    private JColorChooser                _color_chooser                                     = null;
+    private double                       _scale_distance                                    = 0.0;
+    private String                       _scale_label                                       = null;
+    private final CubicCurve2D           _cubic_curve                                       = new CubicCurve2D.Float();
+    private final QuadCurve2D            _quad_curve                                        = new QuadCurve2D.Float();
+    private final Line2D                 _line                                              = new Line2D.Float();
+    private final Ellipse2D              _ellipse                                           = new Ellipse2D.Float();
+    private final Rectangle2D            _rectangle                                         = new Rectangle2D.Float();
+    private Options                      _options                                           = null;
+    private float                        _ov_max_width                                      = 0;
+    private float                        _ov_max_height                                     = 0;
+    private int                          _ov_x_position                                     = 0;
+    private int                          _ov_y_position                                     = 0;
+    private int                          _ov_y_start                                        = 0;
+    private float                        _ov_y_distance                                     = 0;
+    private float                        _ov_x_distance                                     = 0;
+    private boolean                      _ov_on                                             = false;
+    private double                       _urt_starting_angle                                = ( float ) ( Math.PI / 2 );
+    private float                        _urt_factor                                        = 1;
+    private float                        _urt_factor_ov                                     = 1;
+    private final boolean                _phy_has_branch_lengths;
+    private final Rectangle2D            _ov_rectangle                                      = new Rectangle2D.Float();
+    private boolean                      _in_ov_rect                                        = false;
+    private boolean                      _in_ov                                             = false;
+    private final Rectangle              _ov_virtual_rectangle                              = new Rectangle();
+    final private static double          _180_OVER_PI                                       = 180.0 / Math.PI;
+    private static final float           ROUNDED_D                                          = 8;
+    private int                          _circ_max_depth;
+    private PhylogenyNode                _root;
+    final private Arc2D                  _arc                                               = new Arc2D.Double();
+    final private HashMap<Long, Double>  _urt_nodeid_angle_map                              = new HashMap<Long, Double>();
+    final private HashMap<Long, Integer> _urt_nodeid_index_map                              = new HashMap<Long, Integer>();
+    final private Set<Long>              _collapsed_external_nodeid_set                     = new HashSet<Long>();
+    HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
+    private AffineTransform              _at;
+    private double                       _max_distance_to_root                              = -1;
+    private int                          _dynamic_hiding_factor                             = 0;
+    private boolean                      _edited                                            = false;
+    private Popup                        _node_desc_popup;
+    private JTextArea                    _rollover_popup;
+    private final StringBuffer           _popup_buffer                                      = new StringBuffer();
+    final private static Font            POPUP_FONT                                         = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                                                        Font.PLAIN,
+                                                                                                        12 );
+    private Sequence                     _query_sequence                                    = null;
+    private final FontRenderContext      _frc                                               = new FontRenderContext( null,
+                                                                                                                     false,
+                                                                                                                     false );
     // expression values menu:
-    private DescriptiveStatistics           _statistics_for_vector_data;
-    private PhylogenyNode[]                 _nodes_in_preorder                                 = null;
-    private StringBuilder                   _current_external_nodes_data_buffer                = new StringBuilder();
-    private int                             _current_external_nodes_data_buffer_change_counter = 0;
-    private Set<Integer>                    _current_external_nodes                            = null;
+    private DescriptiveStatistics        _statistics_for_vector_data;
+    private PhylogenyNode[]              _nodes_in_preorder                                 = null;
+    private StringBuilder                _current_external_nodes_data_buffer                = new StringBuilder();
+    private int                          _current_external_nodes_data_buffer_change_counter = 0;
+    private Set<Long>                    _current_external_nodes                            = null;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -931,7 +930,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _domain_structure_e_value_thr_exp;
     }
 
-    final Set<Integer> getFoundNodes() {
+    final Set<Long> getFoundNodes() {
         return _found_nodes;
     }
 
@@ -1188,7 +1187,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( ( e.getModifiers() & InputEvent.SHIFT_MASK ) != 0 ) {
                     // Yes, so add to _found_nodes
                     if ( getFoundNodes() == null ) {
-                        setFoundNodes( new HashSet<Integer>() );
+                        setFoundNodes( new HashSet<Long>() );
                     }
                     getFoundNodes().add( node.getId() );
                     // Check if control key is down
@@ -1741,7 +1740,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void resetNodeIdToDistToLeafMap() {
-        _nodeid_dist_to_leaf = new HashMap<Integer, Short>();
+        _nodeid_dist_to_leaf = new HashMap<Long, Short>();
     }
 
     final void resetPreferredSize() {
@@ -1788,7 +1787,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             getControlPanel().getSearchResetButton().setEnabled( true );
             getControlPanel().getSearchResetButton().setVisible( true );
             if ( getFoundNodes() == null ) {
-                setFoundNodes( new HashSet<Integer>() );
+                setFoundNodes( new HashSet<Long>() );
             }
             getFoundNodes().add( node.getId() );
             getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
@@ -1809,7 +1808,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _current_external_nodes_data_buffer = sb;
     }
 
-    final void setFoundNodes( final Set<Integer> found_nodes ) {
+    final void setFoundNodes( final Set<Long> found_nodes ) {
         _found_nodes = found_nodes;
     }
 
@@ -2198,9 +2197,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
-    final private void addToCurrentExternalNodes( final int i ) {
+    final private void addToCurrentExternalNodes( final long i ) {
         if ( _current_external_nodes == null ) {
-            _current_external_nodes = new HashSet<Integer>();
+            _current_external_nodes = new HashSet<Long>();
         }
         _current_external_nodes.add( i );
     }
@@ -2416,7 +2415,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setNodeInPreorderToNull();
         setCutOrCopiedTree( _phylogeny.copy( node ) );
         final List<PhylogenyNode> nodes = PhylogenyMethods.getAllDescendants( node );
-        final Set<Integer> node_ids = new HashSet<Integer>( nodes.size() );
+        final Set<Long> node_ids = new HashSet<Long>( nodes.size() );
         for( final PhylogenyNode n : nodes ) {
             node_ids.add( n.getId() );
         }
@@ -2709,11 +2708,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                        JOptionPane.ERROR_MESSAGE );
     }
 
-    final private Set<Integer> getCopiedAndPastedNodes() {
+    final private Set<Long> getCopiedAndPastedNodes() {
         return getMainPanel().getCopiedAndPastedNodes();
     }
 
-    final private Set<Integer> getCurrentExternalNodes() {
+    final private Set<Long> getCurrentExternalNodes() {
         return _current_external_nodes;
     }
 
@@ -4915,10 +4914,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( getCopiedAndPastedNodes() == null ) {
-            setCopiedAndPastedNodes( new HashSet<Integer>() );
+            setCopiedAndPastedNodes( new HashSet<Long>() );
         }
         final List<PhylogenyNode> nodes = PhylogenyMethods.obtainAllNodesAsList( buffer_phy );
-        final Set<Integer> node_ids = new HashSet<Integer>( nodes.size() );
+        final Set<Long> node_ids = new HashSet<Long>( nodes.size() );
         for( final PhylogenyNode n : nodes ) {
             node_ids.add( n.getId() );
         }
@@ -4958,7 +4957,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return sb;
     }
 
-    final private void setCopiedAndPastedNodes( final Set<Integer> nodeIds ) {
+    final private void setCopiedAndPastedNodes( final Set<Long> nodeIds ) {
         getMainPanel().setCopiedAndPastedNodes( nodeIds );
     }
 

@@ -83,7 +83,12 @@ public class GSDIR implements GSDII {
             //                    g.setLink( null );
             //                }
             //            }
-            final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree, true );
+            final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree,
+                                                                                   true,
+                                                                                   min_duplications_sum );
+            if ( gsdi_result == null ) {
+                continue;
+            }
             if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
                 min_duplications_sum = gsdi_result.getDuplicationsSum();
                 speciations_sum = gsdi_result.getSpeciationsSum();

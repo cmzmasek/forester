@@ -1211,7 +1211,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void annotateSequences() {
         if ( getCurrentTreePanel() != null ) {
-            final Set<Integer> nodes = getCurrentTreePanel().getFoundNodes();
+            final Set<Long> nodes = getCurrentTreePanel().getFoundNodes();
             if ( ( nodes == null ) || nodes.isEmpty() ) {
                 JOptionPane
                         .showMessageDialog( this,
@@ -1260,7 +1260,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         desc = desc.replaceAll( "\\s+", " " );
                     }
                     if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
-                        for( final Integer id : nodes ) {
+                        for( final Long id : nodes ) {
                             final PhylogenyNode n = phy.getNode( id );
                             ForesterUtil.ensurePresenceOfSequence( n );
                             final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()

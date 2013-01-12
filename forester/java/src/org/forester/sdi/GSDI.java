@@ -174,6 +174,37 @@ public final class GSDI implements GSDII {
         return res;
     }
 
+    final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,
+                                                               final boolean most_parsimonious_duplication_model,
+                                                               final int min_duplications ) throws SDIException {
+        final GSDIsummaryResult res = new GSDIsummaryResult();
+        for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode g = it.next();
+            if ( g.isInternal() ) {
+                if ( g.getNumberOfDescendants() != 2 ) {
+                    throw new SDIException( "gene tree contains internal node with " + g.getNumberOfDescendants()
+                            + " descendents" );
+                }
+                PhylogenyNode s1 = g.getChildNode1().getLink();
+                PhylogenyNode s2 = g.getChildNode2().getLink();
+                while ( s1 != s2 ) {
+                    if ( s1.getId() > s2.getId() ) {
+                        s1 = s1.getParent();
+                    }
+                    else {
+                        s2 = s2.getParent();
+                    }
+                }
+                g.setLink( s1 );
+                determineEvent( s1, g, most_parsimonious_duplication_model, res );
+                if ( res.getDuplicationsSum() > min_duplications ) {
+                    return null;
+                }
+            }
+        }
+        return res;
+    }
+
     final static NodesLinkingResult linkNodesOfG( final Phylogeny gene_tree,
                                                   final Phylogeny species_tree,
                                                   final boolean strip_gene_tree,

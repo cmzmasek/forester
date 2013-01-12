@@ -7201,7 +7201,7 @@ public final class Test {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny p = factory.create( "((1,2)A,(((X,Y,Z)a,b)3)B,(4,5,6)C)r", new NHXParser() )[ 0 ];
-            final int count = PhylogenyNode.getNodeCount();
+            final long count = PhylogenyNode.getNodeCount();
             p.levelOrderReID();
             if ( p.getNode( "r" ).getId() != count ) {
                 return false;

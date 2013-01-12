@@ -40,6 +40,8 @@ import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.util.ParserUtils;
+import org.forester.io.writers.PhylogenyWriter;
+import org.forester.phylogeny.Phylogeny;
 import org.forester.rio.RIO;
 import org.forester.rio.RIO.REROOTING;
 import org.forester.rio.RIOException;
@@ -52,18 +54,20 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME      = "rio";
-    final static private String PRG_VERSION   = "4.000 beta 7";
-    final static private String PRG_DATE      = "2013.01.08";
-    final static private String E_MAIL        = "phyloxml@gmail.com";
-    final static private String WWW           = "https://sites.google.com/site/cmzmasek/home/software/forester";
-    final static private String HELP_OPTION_1 = "help";
-    final static private String HELP_OPTION_2 = "h";
-    final static private String GT_FIRST      = "f";
-    final static private String GT_LAST       = "l";
-    final static private String REROOTING_OPT = "r";
-    final static private String OUTGROUP      = "o";
-    final static private String USE_SDIR      = "b";
+    final static private String PRG_NAME              = "rio";
+    final static private String PRG_VERSION           = "4.000 beta 8";
+    final static private String PRG_DATE              = "2013.01.11";
+    final static private String E_MAIL                = "phyloxml@gmail.com";
+    final static private String WWW                   = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1         = "help";
+    final static private String HELP_OPTION_2         = "h";
+    final static private String GT_FIRST              = "f";
+    final static private String GT_LAST               = "l";
+    final static private String REROOTING_OPT         = "r";
+    final static private String OUTGROUP              = "o";
+    final static private String RETURN_SPECIES_TREE   = "s";
+    final static private String RETURN_BEST_GENE_TREE = "g";
+    final static private String USE_SDIR              = "b";
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -83,7 +87,7 @@ public class rio {
         if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
             printHelp();
         }
-        if ( ( args.length < 3 ) || ( args.length > 9 ) ) {
+        if ( ( args.length < 3 ) || ( args.length > 11 ) ) {
             System.out.println();
             System.out.println( "error: incorrect number of arguments" );
             System.out.println();
@@ -95,6 +99,8 @@ public class rio {
         allowed_options.add( REROOTING_OPT );
         allowed_options.add( OUTGROUP );
         allowed_options.add( USE_SDIR );
+        allowed_options.add( RETURN_SPECIES_TREE );
+        allowed_options.add( RETURN_BEST_GENE_TREE );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
@@ -201,6 +207,28 @@ public class rio {
             ForesterUtil.fatalError( "attempt to set range (0-based) of gene to analyze to: from " + gt_first + " to "
                     + gt_last );
         }
+        File return_species_tree = null;
+        if ( !sdir && cla.isOptionSet( RETURN_SPECIES_TREE ) ) {
+            if ( !cla.isOptionHasAValue( RETURN_SPECIES_TREE ) ) {
+                ForesterUtil.fatalError( "no value for -" + RETURN_SPECIES_TREE );
+            }
+            final String s = cla.getOptionValueAsCleanString( RETURN_SPECIES_TREE );
+            return_species_tree = new File( s );
+            if ( return_species_tree.exists() ) {
+                ForesterUtil.fatalError( "\"" + return_species_tree + "\" already exists" );
+            }
+        }
+        File return_gene_tree = null;
+        if ( !sdir && cla.isOptionSet( RETURN_BEST_GENE_TREE ) ) {
+            if ( !cla.isOptionHasAValue( RETURN_BEST_GENE_TREE ) ) {
+                ForesterUtil.fatalError( "no value for -" + RETURN_BEST_GENE_TREE );
+            }
+            final String s = cla.getOptionValueAsCleanString( RETURN_BEST_GENE_TREE );
+            return_gene_tree = new File( s );
+            if ( return_gene_tree.exists() ) {
+                ForesterUtil.fatalError( "\"" + return_gene_tree + "\" already exists" );
+            }
+        }
         ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( orthology_outtable.exists() ) {
@@ -244,6 +272,12 @@ public class rio {
         }
         else {
             System.out.println( "Non binary species tree   : disallowed" );
+        }
+        if ( return_species_tree != null ) {
+            System.out.println( "Write used species tree to: " + return_species_tree );
+        }
+        if ( return_gene_tree != null ) {
+            System.out.println( "Write best gene tree to   : " + return_gene_tree );
         }
         time = System.currentTimeMillis();
         final ALGORITHM algorithm;
@@ -320,6 +354,14 @@ public class rio {
                               PRG_DATE,
                               ForesterUtil.getForesterLibraryInformation() );
             }
+            if ( return_species_tree != null ) {
+                writeTree( rio.getSpeciesTree(), return_species_tree, "Wrote (stripped) species tree to" );
+            }
+            if ( return_gene_tree != null ) {
+                writeTree( rio.getMinDuplicationsGeneTree(),
+                           return_gene_tree,
+                           "Wrote (one) minimal duplication gene tree to" );
+            }
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
             System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "
                     + df.format( stats.sampleStandardDeviation() ) + ") ("
@@ -374,6 +416,10 @@ public class rio {
         System.out.println( "                   or 'outgroup' (default: by minizming duplications)" );
         System.out.println( "  -" + OUTGROUP
                 + "=<outgroup>  : for rooting by outgroup, name of outgroup (external gene tree node)" );
+        System.out
+                .println( "  -" + RETURN_SPECIES_TREE + "=<outfile>   : to write the (stripped) species tree to file" );
+        System.out.println( "  -" + RETURN_BEST_GENE_TREE
+                + "=<outfile>   : to write (one) minimal duplication gene tree to file" );
         System.out.println( "  -" + USE_SDIR
                 + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
         System.out.println( "                   disallowed, as are most options)" );
@@ -447,5 +493,11 @@ public class rio {
         }
         w.close();
         System.out.println( "Wrote table to \"" + table_outfile + "\"" );
+    }
+
+    private static void writeTree( final Phylogeny p, final File f, final String comment ) throws IOException {
+        final PhylogenyWriter writer = new PhylogenyWriter();
+        writer.toPhyloXML( f, p, 0 );
+        System.out.println( comment + " \"" + f + "\"" );
     }
 }
