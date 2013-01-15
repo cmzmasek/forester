@@ -104,7 +104,6 @@ public final class Configuration {
     private File                            _path_to_local_mafft                                   = null;
     private File                            _path_to_local_fastme                                  = null;
     private File                            _path_to_local_raxml                                   = null;
-    private File                            _path_to_local_clustalo                                = null;
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -347,10 +346,6 @@ public final class Configuration {
         return _label_for_get_ext_descendents_data;
     }
 
-    public File getPathToLocalClustalOmega() {
-        return _path_to_local_clustalo;
-    }
-
     public File getPathToLocalFastme() {
         return _path_to_local_fastme;
     }
@@ -521,10 +516,6 @@ public final class Configuration {
 
     public void setNumberOfDigitsAfterCommaForConfidenceValues( final short number_of_digits_after_comma_for_confidence_values ) {
         _number_of_digits_after_comma_for_confidence_values = number_of_digits_after_comma_for_confidence_values;
-    }
-
-    public void setPathToLocalClustalOmega( final File path_to_local_clustalo ) {
-        _path_to_local_clustalo = path_to_local_clustalo;
     }
 
     public void setPhylogenyGraphicsType( final PHYLOGENY_GRAPHICS_TYPE phylogeny_graphics_type ) {
@@ -1198,12 +1189,6 @@ public final class Configuration {
                 ForesterUtil
                         .printWarningMessage( Constants.PRG_NAME,
                                               "value for [default_number_of_bootstrap_resamples] cannot be negative" );
-            }
-        }
-        else if ( key.equals( "clustalo_local" ) ) {
-            final String str = ( ( String ) st.nextElement() ).trim();
-            if ( !ForesterUtil.isEmpty( str ) ) {
-                setPathToLocalClustalOmega( new File( str ) );
             }
         }
         else if ( key.equals( "mafft_local" ) ) {
