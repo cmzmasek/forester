@@ -132,6 +132,8 @@ validate_against_phyloxml_xsd_schema: true
 min_confidence_value:                      0.0
 font_family:                               Verdana,Tahoma,Arial,Helvetica,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
 font_size:                                 10
+font_size_min:                             2
+font_size_max:                             20
 antialias_screen:                          yes
 show_scale:                                yes
 show_branch_length_values:                 no
@@ -322,7 +324,6 @@ use_tabbed_display:      yes
 
 default_number_of_bootstrap_resamples: 100
 mafft_local:                            /bin/mafft
-clustalo_local:                         C:\Users\zma\SOFTWARE\clustal-omega-1.1.0-win32\clustalo.exe
 fastme_local:                           /bin/fastme
 raxml_local:                            /bin/raxml
 
