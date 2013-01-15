@@ -327,8 +327,8 @@ public class PhylogenyMethods {
 
     public static final HashMap<String, PhylogenyNode> createNameToExtNodeMap( final Phylogeny phy ) {
         final HashMap<String, PhylogenyNode> nodes = new HashMap<String, PhylogenyNode>();
-        List<PhylogenyNode> ext = phy.getExternalNodes();
-        for( PhylogenyNode n : ext ) {
+        final List<PhylogenyNode> ext = phy.getExternalNodes();
+        for( final PhylogenyNode n : ext ) {
             nodes.put( n.getName(), n );
         }
         // for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {

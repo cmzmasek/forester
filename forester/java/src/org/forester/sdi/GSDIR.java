@@ -77,7 +77,7 @@ public class GSDIR implements GSDII {
             gene_tree.reRoot( branch );
             PhylogenyMethods.preOrderReId( species_tree );
             //TEST, remove later
-            //            for( final PhylogenyNodeIterator it = _gene_tree.iteratorPostorder(); it.hasNext(); ) {
+            //            for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             //                final PhylogenyNode g = it.next();
             //                if ( g.isInternal() ) {
             //                    g.setLink( null );

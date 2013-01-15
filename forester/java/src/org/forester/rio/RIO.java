@@ -221,6 +221,12 @@ public final class RIO {
         while ( parser.hasNext() ) {
             final Phylogeny gt = parser.next();
             if ( no_range || ( ( i >= first ) && ( i <= last ) ) ) {
+                if ( gt.isEmpty() ) {
+                    throw new RIOException( "gene tree #" + i + " is empty" );
+                }
+                if ( gt.getNumberOfExternalNodes() == 1 ) {
+                    throw new RIOException( "gene tree #" + i + " has only one external node" );
+                }
                 if ( _verbose ) {
                     ForesterUtil.updateProgress( i, pf );
                 }
@@ -302,6 +308,12 @@ public final class RIO {
         int gene_tree_ext_nodes = 0;
         for( int i = 0; i < my_gene_trees.length; ++i ) {
             final Phylogeny gt = my_gene_trees[ i ];
+            if ( gt.isEmpty() ) {
+                throw new RIOException( "gene tree #" + i + " is empty" );
+            }
+            if ( gt.getNumberOfExternalNodes() == 1 ) {
+                throw new RIOException( "gene tree #" + i + " has only one external node" );
+            }
             if ( _verbose && ( my_gene_trees.length > 4 ) ) {
                 ForesterUtil.updateProgress( ( ( double ) i ) / my_gene_trees.length );
             }

@@ -337,7 +337,7 @@ public final class GSDI implements GSDII {
                 final Set<PhylogenyNode> set = new HashSet<PhylogenyNode>();
                 for( PhylogenyNode n : g.getChildNode1().getAllExternalDescendants() ) {
                     n = n.getLink();
-                    while ( n.getParent() != s ) {
+                    while ( ( n.getParent() != s ) && ( n.getParent() != null ) ) {
                         n = n.getParent();
                         if ( n.isRoot() ) {
                             break;
@@ -348,7 +348,7 @@ public final class GSDI implements GSDII {
                 boolean multiple = false;
                 for( PhylogenyNode n : g.getChildNode2().getAllExternalDescendants() ) {
                     n = n.getLink();
-                    while ( n.getParent() != s ) {
+                    while ( ( n.getParent() != s ) && ( n.getParent() != null ) ) {
                         n = n.getParent();
                         if ( n.isRoot() ) {
                             break;

@@ -65,9 +65,6 @@ public final class TestRIO {
                                            "",
                                            true,
                                            false );
-            //if ( rio.getAnalyzedGeneTrees().length != 5 ) {
-            //    return false;
-            //}
             if ( rio.getExtNodesOfAnalyzedGeneTrees() != 6 ) {
                 return false;
             }
@@ -138,6 +135,179 @@ public final class TestRIO {
             nhx.setReplaceUnderscores( false );
             nhx.setIgnoreQuotes( true );
             nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+            //
+            final String gene_trees_00_str = "(MOUSE,RAT);(MOUSE,RAT);(MOUSE,RAT);(RAT,MOUSE);";
+            final Phylogeny[] gene_trees_00 = factory.create( gene_trees_00_str, nhx );
+            final String species_trees_00_str = "(MOUSE,RAT);";
+            final Phylogeny species_tree_00 = factory.create( species_trees_00_str, new NHXParser() )[ 0 ];
+            species_tree_00.setRooted( true );
+            PhylogenyMethods.transferNodeNameToField( species_tree_00, PhylogenyNodeField.TAXONOMY_CODE, true );
+            RIO rio = RIO.executeAnalysis( gene_trees_00,
+                                           species_tree_00,
+                                           ALGORITHM.GSDIR,
+                                           REROOTING.BY_ALGORITHM,
+                                           "",
+                                           true,
+                                           false );
+            if ( rio.getAnalyzedGeneTrees().length != 4 ) {
+                return false;
+            }
+            if ( rio.getExtNodesOfAnalyzedGeneTrees() != 2 ) {
+                return false;
+            }
+            if ( rio.getGSDIRtaxCompBase() != TaxonomyComparisonBase.CODE ) {
+                return false;
+            }
+            if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
+                return false;
+            }
+            IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            if ( !m.getRowAsString( 0, ',' ).equals( "MOUSE,4,4" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            if ( !m.getRowAsString( 1, ',' ).equals( "RAT,4,4" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            //
+            final String gene_trees_000_str = "(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE]);(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE])";
+            final Phylogeny[] gene_trees_000 = factory.create( gene_trees_000_str, nhx );
+            final String species_trees_000_str = "[&&NHX:S=MOUSE];";
+            final Phylogeny species_tree_000 = factory.create( species_trees_000_str, new NHXParser() )[ 0 ];
+            species_tree_000.setRooted( true );
+            rio = RIO.executeAnalysis( gene_trees_000,
+                                       species_tree_000,
+                                       ALGORITHM.GSDIR,
+                                       REROOTING.BY_ALGORITHM,
+                                       "",
+                                       true,
+                                       false );
+            if ( rio.getAnalyzedGeneTrees().length != 2 ) {
+                return false;
+            }
+            if ( rio.getExtNodesOfAnalyzedGeneTrees() != 2 ) {
+                return false;
+            }
+            if ( rio.getGSDIRtaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
+                return false;
+            }
+            m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            if ( !m.getRowAsString( 0, ',' ).equals( "MOUSE1,2,0" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            if ( !m.getRowAsString( 1, ',' ).equals( "MOUSE2,0,2" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            //
+            //
+            final String gene_trees_0000_str = "(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE]);(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE]);(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE])";
+            final Phylogeny[] gene_trees_0000 = factory.create( gene_trees_0000_str, nhx );
+            final String species_trees_0000_str = "([&&NHX:S=MOUSE]);";
+            final Phylogeny species_tree_0000 = factory.create( species_trees_0000_str, new NHXParser() )[ 0 ];
+            species_tree_0000.setRooted( true );
+            rio = RIO.executeAnalysis( gene_trees_0000,
+                                       species_tree_0000,
+                                       ALGORITHM.GSDIR,
+                                       REROOTING.BY_ALGORITHM,
+                                       "",
+                                       true,
+                                       false );
+            if ( rio.getAnalyzedGeneTrees().length != 3 ) {
+                return false;
+            }
+            if ( rio.getExtNodesOfAnalyzedGeneTrees() != 2 ) {
+                return false;
+            }
+            if ( rio.getGSDIRtaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
+                return false;
+            }
+            m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            if ( !m.getRowAsString( 0, ',' ).equals( "MOUSE1,3,0" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            if ( !m.getRowAsString( 1, ',' ).equals( "MOUSE2,0,3" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            //
+            final String gene_trees_x_str = "(MOUSE1[&&NHX:S=MOUSE],MOUSE2[&&NHX:S=MOUSE])";
+            final Phylogeny[] gene_trees_x = factory.create( gene_trees_x_str, nhx );
+            final String species_trees_x_str = "[&&NHX:S=MOUSE];";
+            final Phylogeny species_tree_x = factory.create( species_trees_x_str, new NHXParser() )[ 0 ];
+            species_tree_x.setRooted( true );
+            rio = RIO.executeAnalysis( gene_trees_x,
+                                       species_tree_x,
+                                       ALGORITHM.GSDIR,
+                                       REROOTING.BY_ALGORITHM,
+                                       "",
+                                       true,
+                                       false );
+            if ( rio.getAnalyzedGeneTrees().length != 1 ) {
+                return false;
+            }
+            if ( rio.getExtNodesOfAnalyzedGeneTrees() != 2 ) {
+                return false;
+            }
+            if ( rio.getGSDIRtaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
+                return false;
+            }
+            m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            if ( !m.getRowAsString( 0, ',' ).equals( "MOUSE1,1,0" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            if ( !m.getRowAsString( 1, ',' ).equals( "MOUSE2,0,1" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            //
+            final String gene_trees_xx_str = "(MOUSE1[&&NHX:S=MOUSE],RAT1[&&NHX:S=RAT])";
+            final Phylogeny[] gene_trees_xx = factory.create( gene_trees_xx_str, nhx );
+            final String species_trees_xx_str = "([&&NHX:S=MOUSE],[&&NHX:S=RAT]);";
+            final Phylogeny species_tree_xx = factory.create( species_trees_xx_str, new NHXParser() )[ 0 ];
+            species_tree_xx.setRooted( true );
+            rio = RIO.executeAnalysis( gene_trees_xx,
+                                       species_tree_xx,
+                                       ALGORITHM.GSDIR,
+                                       REROOTING.BY_ALGORITHM,
+                                       "",
+                                       true,
+                                       false );
+            if ( rio.getAnalyzedGeneTrees().length != 1 ) {
+                return false;
+            }
+            if ( rio.getExtNodesOfAnalyzedGeneTrees() != 2 ) {
+                return false;
+            }
+            if ( rio.getGSDIRtaxCompBase() != TaxonomyComparisonBase.SCIENTIFIC_NAME ) {
+                return false;
+            }
+            if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
+                return false;
+            }
+            m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            if ( !m.getRowAsString( 0, ',' ).equals( "MOUSE1,1,1" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            if ( !m.getRowAsString( 1, ',' ).equals( "RAT1,1,1" ) ) {
+                System.out.println( m.toString() );
+                return false;
+            }
+            //
             final String gene_trees_1_str = "(((((MOUSE,RAT),HUMAN),CAEEL),YEAST),ARATH);"
                     + "((((MOUSE,RAT),HUMAN),(ARATH,YEAST)),CAEEL);" + "((MOUSE,RAT),(((ARATH,YEAST),CAEEL),HUMAN));"
                     + "(((((MOUSE,HUMAN),RAT),CAEEL),YEAST),ARATH);" + "((((HUMAN,MOUSE),RAT),(ARATH,YEAST)),CAEEL);";
@@ -146,14 +316,13 @@ public final class TestRIO {
             final Phylogeny species_tree_1 = factory.create( species_trees_1_str, new NHXParser() )[ 0 ];
             species_tree_1.setRooted( true );
             PhylogenyMethods.transferNodeNameToField( species_tree_1, PhylogenyNodeField.TAXONOMY_CODE, true );
-            //Archaeopteryx.createApplication( species_trees_1 );
-            RIO rio = RIO.executeAnalysis( gene_trees_1,
-                                           species_tree_1,
-                                           ALGORITHM.GSDIR,
-                                           REROOTING.BY_ALGORITHM,
-                                           "",
-                                           true,
-                                           false );
+            rio = RIO.executeAnalysis( gene_trees_1,
+                                       species_tree_1,
+                                       ALGORITHM.GSDIR,
+                                       REROOTING.BY_ALGORITHM,
+                                       "",
+                                       true,
+                                       false );
             if ( rio.getAnalyzedGeneTrees().length != 5 ) {
                 return false;
             }
@@ -166,7 +335,7 @@ public final class TestRIO {
             if ( rio.getRemovedGeneTreeNodes().size() != 0 ) {
                 return false;
             }
-            IntMatrix m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
+            m = RIO.calculateOrthologTable( rio.getAnalyzedGeneTrees(), true );
             // System.out.println( m.toString() );
             if ( !m.getRowAsString( 0, ',' ).equals( "ARATH,5,5,5,5,5,5" ) ) {
                 return false;

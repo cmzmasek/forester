@@ -56,13 +56,6 @@ public final class TestGSDI {
         else {
             System.out.println( "OK" );
         }
-        //        boolean success = test();
-        //        if ( success ) {
-        //            System.out.println( "OK" );
-        //        }
-        //        else {
-        //            System.out.println( "failed" );
-        //        }
     }
 
     public static boolean test() {
@@ -90,6 +83,23 @@ public final class TestGSDI {
 
     private static boolean testGSDI_against_binary_gene_tree() {
         try {
+            final PhylogenyFactory factory0 = ParserBasedPhylogenyFactory.getInstance();
+            final String s0 = "([&&NHX:S=1]);";
+            final String gene_0_str = "([&&NHX:S=1],[&&NHX:S=1]);";
+            final Phylogeny s_0 = factory0.create( s0, new NHXParser() )[ 0 ];
+            final Phylogeny gene_0 = factory0.create( gene_0_str, new NHXParser() )[ 0 ];
+            s_0.setRooted( true );
+            gene_0.setRooted( true );
+            final GSDI sdi0 = new GSDI( gene_0, s_0, false, false, false );
+            if ( sdi0.getSpeciationOrDuplicationEventsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi0.getDuplicationsSum() != 1 ) {
+                return false;
+            }
+            if ( sdi0.getSpeciationsSum() != 0 ) {
+                return false;
+            }
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final String multi_species_2_str = "(((((([&&NHX:S=1],[&&NHX:S=2]),"
                     + "([&&NHX:S=3],[&&NHX:S=4],[&&NHX:S=5])),"
@@ -1450,6 +1460,36 @@ public final class TestGSDI {
 
     private static boolean testGSDIR_general() {
         try {
+            final PhylogenyFactory factory0 = ParserBasedPhylogenyFactory.getInstance();
+            final String s0 = "([&&NHX:S=1]);";
+            final String gene_0_str = "([&&NHX:S=1],[&&NHX:S=1]);";
+            final Phylogeny s_0 = factory0.create( s0, new NHXParser() )[ 0 ];
+            final Phylogeny gene_0 = factory0.create( gene_0_str, new NHXParser() )[ 0 ];
+            s_0.setRooted( true );
+            gene_0.setRooted( true );
+            final GSDIR sdi0 = new GSDIR( gene_0, s_0, true, true );
+            if ( sdi0.getSpeciationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi0.getMinDuplicationsSum() != 1 ) {
+                return false;
+            }
+            //
+            final PhylogenyFactory factory00 = ParserBasedPhylogenyFactory.getInstance();
+            final String s00 = "[&&NHX:S=1];";
+            final String gene_00_str = "([&&NHX:S=1],[&&NHX:S=1]);";
+            final Phylogeny s_00 = factory00.create( s00, new NHXParser() )[ 0 ];
+            final Phylogeny gene_00 = factory00.create( gene_00_str, new NHXParser() )[ 0 ];
+            s_00.setRooted( true );
+            gene_00.setRooted( true );
+            final GSDIR sdi00 = new GSDIR( gene_00, s_00, true, true );
+            if ( sdi00.getSpeciationsSum() != 0 ) {
+                return false;
+            }
+            if ( sdi00.getMinDuplicationsSum() != 1 ) {
+                return false;
+            }
+            //
             final String s1str = "(((([&&NHX:S=HUMAN],([&&NHX:S=MOUSE],[&&NHX:S=RAT])),([&&NHX:S=CAEEL],[&&NHX:S=CAEBR])),[&&NHX:S=YEAST]),[&&NHX:S=ARATH])";
             final Phylogeny s1 = ParserBasedPhylogenyFactory.getInstance().create( s1str, new NHXParser() )[ 0 ];
             s1.setRooted( true );
