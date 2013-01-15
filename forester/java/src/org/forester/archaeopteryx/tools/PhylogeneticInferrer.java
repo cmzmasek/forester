@@ -41,7 +41,6 @@ import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
 import org.forester.io.parsers.FastaParser;
 import org.forester.msa.BasicMsa;
-import org.forester.msa.ClustalOmega;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.Msa.MSA_FORMAT;
@@ -98,8 +97,6 @@ public class PhylogeneticInferrer extends RunnableProcess {
         switch ( msa_prg ) {
             case MAFFT:
                 return runMAFFT( _seqs, processMafftOptions() );
-            case CLUSTAL_O:
-                return runClustalOmega( _seqs, processMafftOptions() );
             default:
                 return null;
         }
@@ -279,20 +276,6 @@ public class PhylogeneticInferrer extends RunnableProcess {
         return msa;
     }
 
-    private Msa runClustalOmega( final List<Sequence> seqs, final List<String> opts ) throws IOException,
-            InterruptedException {
-        Msa msa = null;
-        final MsaInferrer clustalo = ClustalOmega.createInstance( _mf.getInferenceManager().getPathToLocalClustalo()
-                .getCanonicalPath() );
-        try {
-            msa = clustalo.infer( seqs, opts );
-        }
-        catch ( final IOException e ) {
-            System.out.println( clustalo.getErrorDescription() );
-        }
-        return msa;
-    }
-
     private void writeToFiles( final BasicSymmetricalDistanceMatrix m ) {
         if ( !ForesterUtil.isEmpty( _options.getIntermediateFilesBase() ) ) {
             try {
@@ -344,6 +327,6 @@ public class PhylogeneticInferrer extends RunnableProcess {
     }
 
     public enum MSA_PRG {
-        MAFFT, CLUSTAL_O;
+        MAFFT;
     }
 }

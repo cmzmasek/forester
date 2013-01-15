@@ -79,14 +79,12 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     private JTextField                         _input_seqs_max_length_tf;
     private JTextField                         _input_seqs_type_tf;
     private JTextField                         _mafft_paramenters_tf;
-    private JTextField                         _clustalo_paramenters_tf;
     private JTextField                         _msa_processing_max_allowed_gap_ratio_tf;
     private JTextField                         _msa_processing_min_allowed_length_tf;
     private JTextField                         _random_seed_tf;
     private JCheckBox                          _execute_msa_processing_cb;
     private JCheckBox                          _msa_processing_remove_all_gap_columns_cb;
     private JCheckBox                          _mafft_cb;
-    private JCheckBox                          _clustalo_cb;
     private JCheckBox                          _save_pwd_file_cb;
     private JCheckBox                          _save_processed_msa_cb;
     private JCheckBox                          _save_original_msa_cb;
@@ -132,9 +130,6 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             inputfile_pnl_3.add( _mafft_cb = new JCheckBox( "MAFFT" ) );
             inputfile_pnl_3.add( new JLabel( "Parameters: " ) );
             inputfile_pnl_3.add( _mafft_paramenters_tf = new JTextField() );
-            inputfile_pnl_4.add( _clustalo_cb = new JCheckBox( "ClustalO" ) );
-            inputfile_pnl_4.add( new JLabel( "Parameters: " ) );
-            inputfile_pnl_4.add( _clustalo_paramenters_tf = new JTextField() );
             _input_seqs_median_length_tf.setColumns( 4 );
             _input_seqs_min_length_tf.setColumns( 4 );
             _input_seqs_max_length_tf.setColumns( 4 );
@@ -149,8 +144,6 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
             _input_seqs_type_tf.setEditable( false );
             _mafft_paramenters_tf.setColumns( 26 );
             _mafft_paramenters_tf.setText( "--maxiterate 1000 --localpair" );
-            _clustalo_paramenters_tf.setColumns( 26 );
-            _clustalo_paramenters_tf.setText( "clustalo options" );
             _select_input_seqs_btn.addActionListener( this );
             _pnl.add( inputfile_pnl_1 );
             _pnl.add( inputfile_pnl_2 );

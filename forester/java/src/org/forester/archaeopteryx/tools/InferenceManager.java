@@ -12,7 +12,6 @@ public final class InferenceManager {
     private final File          _path_to_local_mafft;
     private final File          _path_to_local_fastme;
     private final File          _path_to_local_raxml;
-    private final File          _path_to_local_clustalo;
 
     public static InferenceManager createInstance( final Configuration c ) {
         return new InferenceManager( c.getpathToLocalMafft(),
@@ -22,7 +21,7 @@ public final class InferenceManager {
     }
 
     public boolean canDoMsa() {
-        return ( getPathToLocalMafft() != null ) || ( getPathToLocalClustalo() != null );
+        return ( getPathToLocalMafft() != null );
     }
 
     public File getPathToLocalMafft() {
@@ -35,10 +34,6 @@ public final class InferenceManager {
 
     public File getPathToLocalRaxml() {
         return _path_to_local_raxml;
-    }
-
-    public File getPathToLocalClustalo() {
-        return _path_to_local_clustalo;
     }
 
     private final static File createLocalPath( final File path, final String name ) {
@@ -77,6 +72,5 @@ public final class InferenceManager {
         _path_to_local_mafft = createLocalPath( path_to_local_mafft, "mafft" );
         _path_to_local_fastme = createLocalPath( path_to_local_fastme, "fastme" );
         _path_to_local_raxml = createLocalPath( path_to_local_raxml, "raxml" );
-        _path_to_local_clustalo = createLocalPath( path_to_local_clustalo, "clustalo" );
     }
 }
