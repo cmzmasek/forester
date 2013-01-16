@@ -8,3 +8,11 @@ MDTSMEM
 MDTSMEMSRNP
 >c GN=nmi [XENTR]
 MDTSSEM
+>f isoform [XENTR]
+MDTSSEM
+>f isoform [XENLA]
+MDTSSEM
+>f2 isoform 2 [XENTR]
+MDTSSEM
+>who are you
+MDTSSEM

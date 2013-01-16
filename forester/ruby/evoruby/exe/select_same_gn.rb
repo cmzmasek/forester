@@ -35,6 +35,7 @@ module Evoruby
 
   frag_counter = 0
   no_gn_counter = 0
+  same_seq_counter = 0
 
   for i in 0 ... msa.get_number_of_seqs()
     seq = msa.get_sequence( i )
@@ -45,29 +46,31 @@ module Evoruby
     else
       all_names << name
     end
-    #mol_seq = seq.get_sequence_as_string.upcase
-    #if all_seqs.include?( mol_seq )
-    #  puts "error: sequence of \"" + name + "\" is not unique (#" + i.to_s + ")"
-    #  exit
-    #else
-    #  all_seqs << mol_seq
-    #end
 
-    
-    
     if fragment_re.match( name )
       puts "ignored because fragment: " + name
       frag_counter += 1
       next
     end
-    
-    species = nil
+
     if species_re.match( name )
-      species = species_re[1]
-      puts species
-    else 
-       puts "no species for: " + name
-       exit
+      s_match = species_re.match( name )
+      species = s_match[1]
+
+      unless all_seqs_per_species.include?( species )
+        all_seqs_per_species[ species ] = Set.new
+      end
+      all_seqs = all_seqs_per_species[ species ]
+      mol_seq = seq.get_sequence_as_string.upcase
+      if all_seqs.include?( mol_seq )
+        puts "ignored because identical sequence in same species: " + name
+        same_seq_counter += 1
+        next
+      else
+        all_seqs << mol_seq
+      end
+    else
+      puts "no species for: " + name
     end
 
     gn_match = gn_re.match( name )
@@ -100,8 +103,11 @@ module Evoruby
     gn_to_seqs[gn].add_sequence(seq)
   end
 
-  puts "Sequences ignored because \"fragment\" in desc: " + frag_counter.to_s
-  puts "Sequences ignored because no \"GN=\" in desc  : " + no_gn_counter.to_s
+  puts "Sequences ignored because \"fragment\" in desc                : " + frag_counter.to_s
+  if IGNORE_SEQS_LACKING_GN
+    puts "Sequences ignored because no \"GN=\" in desc                  : " + no_gn_counter.to_s
+  end
+  puts "Sequences ignored because dentical sequence in same species : " + same_seq_counter.to_s
   puts
   puts
 
