@@ -12,7 +12,7 @@ module Evoruby
 
   input = ARGV[ 0 ]
   f = MsaFactory.new()
-  
+
   IGNORE_SEQS_LACKING_GN = false
 
   msa = nil
@@ -37,19 +37,19 @@ module Evoruby
   for i in 0 ... msa.get_number_of_seqs()
     seq = msa.get_sequence( i )
     name = seq.get_name
-    if all_names.has?( name )
-     puts "error: " + name + " is not unique"
-    else      
-      all_names.put( name )
+    if all_names.include?( name )
+      puts "error: " + name + " is not unique"
+    else
+      all_names << name
     end
-    
-    
+
+
     if fragment_re.match( name )
       puts "ignored because fragment: " + name
       frag_counter += 1
       next
     end
-    
+
     gn_match = gn_re.match( name )
     if IGNORE_SEQS_LACKING_GN
       unless gn_match
@@ -62,7 +62,7 @@ module Evoruby
         puts "no GN=: " + name
       end
     end
-    
+
     gn =nil
     if gn_match
       gn = gn_match[1]
@@ -72,8 +72,8 @@ module Evoruby
         exit
       end
       gn = name
-    end  
-    
+    end
+
     unless gn_to_seqs.has_key?(gn)
       gn_to_seqs[gn] = Msa.new
     end
