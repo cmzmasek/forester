@@ -12,6 +12,8 @@ module Evoruby
 
   input = ARGV[ 0 ]
   f = MsaFactory.new()
+  
+  IGNORE_SEQS_LACKING_GN = false
 
   msa = nil
 
@@ -39,21 +41,39 @@ module Evoruby
       frag_counter += 1
       next
     end
+    
     gn_match = gn_re.match( name )
-    unless gn_match
-      puts "ignored because no GN=: " + name
-      no_gn_counter += 1
-      next
+    if IGNORE_SEQS_LACKING_GN
+      unless gn_match
+        puts "ignored because no GN=: " + name
+        no_gn_counter += 1
+        next
+      end
+    else
+      unless gn_match
+        puts "no GN=: " + name
+      end
     end
-    gn = gn_match[1]
+    
+    gn =nil
+    if gn_match
+      gn = gn_match[1]
+    else
+      if IGNORE_SEQS_LACKING_GN
+        puts "cannot be"
+        exit
+      end
+      gn = name
+    end  
+    
     unless gn_to_seqs.has_key?(gn)
       gn_to_seqs[gn] = Msa.new
     end
     gn_to_seqs[gn].add_sequence(seq)
   end
 
-  puts "Sequeunces ignored because \"fragment\" in desc: " + frag_counter.to_s
-  puts "Sequeunces ignored because no \"GN=\" in desc  : " + no_gn_counter.to_s
+  puts "Sequences ignored because \"fragment\" in desc: " + frag_counter.to_s
+  puts "Sequences ignored because no \"GN=\" in desc  : " + no_gn_counter.to_s
   puts
   puts
 
