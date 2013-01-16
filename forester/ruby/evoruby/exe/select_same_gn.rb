@@ -39,14 +39,14 @@ module Evoruby
     seq = msa.get_sequence( i )
     name = seq.get_name
     if all_names.include?( name )
-      puts "error: " + name + " is not unique (#" + i.to_s + ")"
+      puts "error: sequence name \"" + name + "\" is not unique (#" + i.to_s + ")"
       exit
     else
       all_names << name
     end
     mol_seq = seq.get_sequence_as_string.upcase
     if all_seqs.include?( mol_seq )
-      puts "error: sequence of " + name + " is not unique (#" +  i.to_s + ")"
+      puts "error: sequence of \"" + name + "\" is not unique (#" + i.to_s + ")"
       exit
     else
       all_seqs << mol_seq
