@@ -25,12 +25,13 @@ module Evoruby
   end
 
   all_names = Set.new
-  all_seqs = Set.new
+  all_seqs_per_species = Hash.new
   gn_to_seqs = Hash.new
   unique_genes_msa = Msa.new
   longest_non_unique_genes_msa = Msa.new
   gn_re = /GN=(\S+)/
   fragment_re = /fragment/i
+  species_re = /\[([A-Z]{3,5})\]$/
 
   frag_counter = 0
   no_gn_counter = 0
@@ -44,18 +45,29 @@ module Evoruby
     else
       all_names << name
     end
-    mol_seq = seq.get_sequence_as_string.upcase
-    if all_seqs.include?( mol_seq )
-      puts "error: sequence of \"" + name + "\" is not unique (#" + i.to_s + ")"
-      exit
-    else
-      all_seqs << mol_seq
-    end
+    #mol_seq = seq.get_sequence_as_string.upcase
+    #if all_seqs.include?( mol_seq )
+    #  puts "error: sequence of \"" + name + "\" is not unique (#" + i.to_s + ")"
+    #  exit
+    #else
+    #  all_seqs << mol_seq
+    #end
 
+    
+    
     if fragment_re.match( name )
       puts "ignored because fragment: " + name
       frag_counter += 1
       next
+    end
+    
+    species = nil
+    if species_re.match( name )
+      species = species_re[1]
+      puts species
+    else 
+       puts "no species for: " + name
+       exit
     end
 
     gn_match = gn_re.match( name )
