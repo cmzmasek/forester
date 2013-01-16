@@ -1,0 +1,10 @@
+>a GN=nmi [XENTR]
+MDTSM
+>d GN=akap17a [XENTR]
+MDT
+>e [XENTR]
+MDTSMEM
+>b GN=nmi [XENTR]
+MDTSMEMSRNP
+>c GN=nmi [XENTR]
+MDTSSEM
