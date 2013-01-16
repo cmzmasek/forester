@@ -24,6 +24,7 @@ module Evoruby
     exit
   end
 
+  all_names = Set.new
   gn_to_seqs = Hash.new
   unique_genes_msa = Msa.new
   longest_non_unique_genes_msa = Msa.new
@@ -36,6 +37,13 @@ module Evoruby
   for i in 0 ... msa.get_number_of_seqs()
     seq = msa.get_sequence( i )
     name = seq.get_name
+    if all_names.has?( name )
+     puts "error: " + name + " is not unique"
+    else      
+      all_names.put( name )
+    end
+    
+    
     if fragment_re.match( name )
       puts "ignored because fragment: " + name
       frag_counter += 1
