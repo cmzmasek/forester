@@ -48,14 +48,14 @@ module Evoruby
 
     def run
 
-      Util.print_program_information( PRG_NAME,
-        PRG_VERSION,
-        PRG_DESC,
-        PRG_DATE,
-        COPYRIGHT,
-        CONTACT,
-        WWW,
-        STDOUT )
+   #   Util.print_program_information( PRG_NAME,
+   #     PRG_VERSION,
+   #     PRG_DESC,
+   #     PRG_DATE,
+   #     COPYRIGHT,
+   #     CONTACT,
+   #     WWW,
+   #     STDOUT )
 
       begin
         cla = CommandLineArguments.new( ARGV )
@@ -165,7 +165,7 @@ module Evoruby
       if ( cla.is_option_set?( PARSE_OUT_DESCRIPITION_OPTION ) )
         parse_descriptions = true
       end
-
+/*
       puts()
       puts( "hmmpfam outputfile  : " + inpath )
       puts( "outputfile          : " + outpath )
@@ -202,7 +202,7 @@ module Evoruby
         puts( "Uniprot             : " + uniprot )
       end
       puts()
-
+*/
       begin
         parse( inpath,
           outpath,
@@ -219,14 +219,14 @@ module Evoruby
       end
       domain_counts = get_domain_counts()
 
-      puts
+ /*     puts
       puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
       puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
       puts
       puts( Util.draw_histogram( domain_counts, "#" ) )
       puts
       Util.print_message( PRG_NAME, 'OK' )
-      puts
+      puts */
 
     end # def run
 
