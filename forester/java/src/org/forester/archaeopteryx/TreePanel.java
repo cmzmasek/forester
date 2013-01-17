@@ -477,8 +477,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     /**
      * Set parameters for printing the displayed tree
      * 
-     * @param x
-     * @param y
      */
     final void calcParametersForPainting( final int x, final int y, final boolean recalc_longest_ext_node_info ) {
         // updateStyle(); not needed?
@@ -489,7 +487,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getOptions().isAllowFontSizeChange() ) {
                     if ( ( getLongestExtNodeInfo() > ( x * 0.6 ) )
                             && ( getTreeFontSet().getLargeFont().getSize() > 2 + TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) {
-                        while ( ( getLongestExtNodeInfo() > ( x * 0.6 ) )
+                        while ( ( getLongestExtNodeInfo() > ( x * 0.7 ) )
                                 && ( getTreeFontSet().getLargeFont().getSize() > 2 ) ) {
                             getMainPanel().getTreeFontSet().decreaseFontSize( getConfiguration().getMinBaseFontSize(),
                                                                               true );
@@ -497,7 +495,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                     else {
-                        while ( ( getLongestExtNodeInfo() < ( x * 0.5 ) )
+                        while ( ( getLongestExtNodeInfo() < ( x * 0.6 ) )
                                 && ( getTreeFontSet().getLargeFont().getSize() <= getTreeFontSet().getLargeFontMemory()
                                         .getSize() - TreeFontSet.FONT_SIZE_CHANGE_STEP ) ) {
                             getMainPanel().getTreeFontSet().increaseFontSize();
