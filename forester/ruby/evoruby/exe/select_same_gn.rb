@@ -53,6 +53,7 @@ module Evoruby
       next
     end
 
+    species = nil
     if species_re.match( name )
       s_match = species_re.match( name )
       species = s_match[1]
@@ -70,7 +71,8 @@ module Evoruby
         all_seqs << mol_seq
       end
     else
-      puts "no species for: " + name
+      puts "error: no species for: " + name
+      exit
     end
 
     gn_match = gn_re.match( name )
@@ -88,7 +90,7 @@ module Evoruby
 
     gn =nil
     if gn_match
-      gn = gn_match[1]
+      gn = gn_match[1] + "_" + species
     else
       if IGNORE_SEQS_LACKING_GN
         puts "cannot be"

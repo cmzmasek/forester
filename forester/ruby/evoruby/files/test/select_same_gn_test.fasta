@@ -1,18 +1,18 @@
 >a GN=nmi [XENTR]
 MDTSM
->d GN=akap17a [XENTR]
+>b GN=akap17a [XENTR]
 MDT
->e [XENTR]
+>c [XENTR]
 MDTSMEM
->b GN=nmi [XENTR]
+>d GN=nmi [XENTR]
 MDTSMEMSRNP
->c GN=nmi [XENTR]
+>e GN=nmi [XENTR]
 MDTSSEM
->f isoform [XENTR]
+>f GN=nmi [DROME]
+MDTS
+>g isoform [XENTR]
 MDTSSEM
->f isoform [XENLA]
+>h isoform [DROME]
 MDTSSEM
->f2 isoform 2 [XENTR]
-MDTSSEM
->who are you
+>h isoform [XENTR]
 MDTSSEM
