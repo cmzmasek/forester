@@ -151,9 +151,9 @@ module Evoruby
   w.write(unique_genes_msa, "seqs_from_unique_genes.fasta")
   w.write(longest_non_unique_genes_msa, "longest_seqs_from_nonunique_genes.fasta")
 
-  all_msa_per_species.each_pair do |species,msa|
+  all_msa_per_species.each_pair do |s,m|
     w = FastaWriter.new
-    w.write(msa, species +".fasta")
+    w.write(m, s +".fasta")
   end
 
 end
