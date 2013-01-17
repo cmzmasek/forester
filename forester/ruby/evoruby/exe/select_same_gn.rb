@@ -31,7 +31,7 @@ module Evoruby
   longest_non_unique_genes_msa = Msa.new
   gn_re = /GN=(\S+)/
   fragment_re = /fragment/i
-  species_re = /\[([A-Z]{3,6})\]$/
+  species_re = /\[([A-Z0-9]{3,6})\]$/
 
   frag_counter = 0
   no_gn_counter = 0
