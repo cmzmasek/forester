@@ -26,6 +26,7 @@ module Evoruby
 
   all_names = Set.new
   all_seqs_per_species = Hash.new
+  all_msa_per_species = Hash.new
   gn_to_seqs = Hash.new
   unique_genes_msa = Msa.new
   longest_non_unique_genes_msa = Msa.new
@@ -58,7 +59,7 @@ module Evoruby
       s_match = species_re.match( name )
       species = s_match[1]
 
-      unless all_seqs_per_species.include?( species )
+      unless all_seqs_per_species.has_key?( species )
         all_seqs_per_species[ species ] = Set.new
       end
       all_seqs = all_seqs_per_species[ species ]
@@ -115,6 +116,7 @@ module Evoruby
 
   counter = 1
   gn_to_seqs.each_pair do |gene,seqs|
+    seq = nil
     if seqs.get_number_of_seqs > 1
       puts counter.to_s + ": " + gene
       puts seqs.to_fasta
@@ -130,12 +132,28 @@ module Evoruby
           longest_seq = current
         end
       end
-      longest_non_unique_genes_msa.add_sequence(longest_seq)
+      seq = longest_seq
+      longest_non_unique_genes_msa.add_sequence( seq )
     else
-      unique_genes_msa.add_sequence( seqs.get_sequence( 0 ) )
+      seq = seqs.get_sequence( 0 )
+      unique_genes_msa.add_sequence( seq )
     end
+
+    species = species_re.match( seq.get_name )[ 1 ]
+    unless all_msa_per_species.has_key?(species)
+      all_msa_per_species[species] = Msa.new
+    end
+    all_msa_per_species[species].add_sequence(seq)
+
   end
+
   w = FastaWriter.new
   w.write(unique_genes_msa, "seqs_from_unique_genes.fasta")
   w.write(longest_non_unique_genes_msa, "longest_seqs_from_nonunique_genes.fasta")
+
+  all_msa_per_species.each_pair do |species,msa|
+    w = FastaWriter.new
+    w.write(msa, species +".fasta")
+  end
+
 end
