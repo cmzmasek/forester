@@ -31,7 +31,7 @@ module Evoruby
   longest_non_unique_genes_msa = Msa.new
   gn_re = /GN=(\S+)/
   fragment_re = /fragment/i
-  species_re = /\[([A-Z]{3,5})\]$/
+  species_re = /\[([A-Z]{3,6})\]$/
 
   frag_counter = 0
   no_gn_counter = 0
@@ -107,7 +107,7 @@ module Evoruby
   if IGNORE_SEQS_LACKING_GN
     puts "Sequences ignored because no \"GN=\" in desc                  : " + no_gn_counter.to_s
   end
-  puts "Sequences ignored because dentical sequence in same species : " + same_seq_counter.to_s
+  puts "Sequences ignored because identical sequence in same species: " + same_seq_counter.to_s
   puts
   puts
 
