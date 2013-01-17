@@ -165,44 +165,44 @@ module Evoruby
       if ( cla.is_option_set?( PARSE_OUT_DESCRIPITION_OPTION ) )
         parse_descriptions = true
       end
-/*
-      puts()
-      puts( "hmmpfam outputfile  : " + inpath )
-      puts( "outputfile          : " + outpath )
-      puts( "species             : " + species )
-      if ( i_e_value_threshold >= 0.0 )
-        puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
-      else
-        puts( "i-E-value threshold : no threshold" )
-      end
-      if ( parse_descriptions )
-        puts( "parse descriptions  : true" )
-      else
-        puts( "parse descriptions  : false" )
-      end
-      if ( ignore_dufs )
-        puts( "ignore DUFs         : true" )
-      else
-        puts( "ignore DUFs         : false" )
-      end
-      if ( column_delimiter == "\t" )
-        puts( "column delimiter    : TAB" )
-      else
-        puts( "column delimiter     : " + column_delimiter )
-      end
-      if fs_e_value_threshold >= 0.0
-        puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
-      else
-        puts( "E-value threshold   : no threshold" )
-      end
-      if !hmm_for_protein_output.empty?
-        puts( "HMM for proteins    : " + hmm_for_protein_output )
-      end
-      if !uniprot.empty?
-        puts( "Uniprot             : " + uniprot )
-      end
-      puts()
-*/
+
+#      puts()
+#      puts( "hmmpfam outputfile  : " + inpath )
+#      puts( "outputfile          : " + outpath )
+#      puts( "species             : " + species )
+#      if ( i_e_value_threshold >= 0.0 )
+#        puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
+#      else
+#        puts( "i-E-value threshold : no threshold" )
+#      end
+#      if ( parse_descriptions )
+#        puts( "parse descriptions  : true" )
+#      else
+#        puts( "parse descriptions  : false" )
+#      end
+#      if ( ignore_dufs )
+#        puts( "ignore DUFs         : true" )
+#      else
+#        puts( "ignore DUFs         : false" )
+#      end
+#      if ( column_delimiter == "\t" )
+#        puts( "column delimiter    : TAB" )
+#      else
+#        puts( "column delimiter     : " + column_delimiter )
+#      end
+#      if fs_e_value_threshold >= 0.0
+#        puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
+#      else
+#        puts( "E-value threshold   : no threshold" )
+#      end
+#      if !hmm_for_protein_output.empty?
+#        puts( "HMM for proteins    : " + hmm_for_protein_output )
+#      end
+#      if !uniprot.empty?
+#        puts( "Uniprot             : " + uniprot )
+#      end
+#      puts()
+
       begin
         parse( inpath,
           outpath,
@@ -219,14 +219,14 @@ module Evoruby
       end
       domain_counts = get_domain_counts()
 
- /*     puts
-      puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
-      puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
-      puts
-      puts( Util.draw_histogram( domain_counts, "#" ) )
-      puts
-      Util.print_message( PRG_NAME, 'OK' )
-      puts */
+#      puts
+#      puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
+#      puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
+#      puts
+#      puts( Util.draw_histogram( domain_counts, "#" ) )
+#      puts
+#      Util.print_message( PRG_NAME, 'OK' )
+#      puts 
 
     end # def run
 
