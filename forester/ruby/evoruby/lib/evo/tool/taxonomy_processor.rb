@@ -222,9 +222,7 @@ module Evoruby
       elsif SIMPLE
         new_desc = counter.to_s( 16 )
       elsif extract_taxonomy
-        if ( desc.count( "[" ) != desc.count( "]" ) )
-          Util.fatal_error( PRG_NAME, "illegal bracket count in: " + desc )
-        end
+
         species = nil
         species_map.each_key do | key |
           if desc =~ /[\b|_]#{key}\b/  # Added boundaries to prevent e.g. RAT matching ARATH.
@@ -234,7 +232,8 @@ module Evoruby
           end
         end
         if species == nil
-          if desc =~/.*\[(\S{3,}?)\]/
+          #if desc =~/.*\[(\S{3,}?)\]/
+          if desc =~/\[([A-Z0-9]{3,6})\]\s*$/ #new
             species = $1
             species.strip!
             species.upcase!
