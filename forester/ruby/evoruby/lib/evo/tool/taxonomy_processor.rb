@@ -22,7 +22,7 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "2012.09.27"
+    PRG_DATE       = "2013.01.18"
     PRG_DESC       = "replacement of species names in multiple sequence files"
     PRG_VERSION    = "1.02"
     COPYRIGHT      = "2012 Christian M Zmasek"
