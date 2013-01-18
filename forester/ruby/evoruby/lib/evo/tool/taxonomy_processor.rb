@@ -29,7 +29,7 @@ module Evoruby
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
 
-    SIMPLE = true
+    SIMPLE = false
 
     EXTRACT_TAXONOMY_OPTION = "t"
 
