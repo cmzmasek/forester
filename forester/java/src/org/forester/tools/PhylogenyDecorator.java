@@ -221,8 +221,8 @@ public final class PhylogenyDecorator {
             String tilde_annotation = null;
             if ( trim_after_tilde && ( name.indexOf( '~' ) > 0 ) ) {
                 final int ti = name.indexOf( '~' );
-                name = name.substring( 0, ti );
                 tilde_annotation = name.substring( ti );
+                name = name.substring( 0, ti );
             }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
