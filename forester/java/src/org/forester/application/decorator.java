@@ -71,8 +71,8 @@ public final class decorator {
     final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
     final static private String MAPPING_FILE_SEPARATOR_DEFAULT          = ": ";
     final static private String PRG_NAME                                = "decorator";
-    final static private String PRG_VERSION                             = "1.12";
-    final static private String PRG_DATE                                = "2012.12.21";
+    final static private String PRG_VERSION                             = "1.13";
+    final static private String PRG_DATE                                = "2013.01.19";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( decorator.PRG_NAME, decorator.PRG_VERSION, decorator.PRG_DATE );

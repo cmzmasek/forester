@@ -218,8 +218,11 @@ public final class PhylogenyDecorator {
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             String name = node.getName();
+            String tilde_annotation = null;
             if ( trim_after_tilde && ( name.indexOf( '~' ) > 0 ) ) {
-                name = name.substring( 0, name.indexOf( '~' ) );
+                final int ti = name.indexOf( '~' );
+                name = name.substring( 0, ti );
+                tilde_annotation = name.substring( ti );
             }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
@@ -279,6 +282,9 @@ public final class PhylogenyDecorator {
                                 node.getNodeData().getTaxonomy().setScientificName( new_value );
                                 break;
                             case SEQUENCE_NAME:
+                                if ( trim_after_tilde ) {
+                                    new_value = addTildeAnnotation( tilde_annotation, new_value );
+                                }
                                 if ( PhylogenyDecorator.VERBOSE ) {
                                     System.out.println( name + ": " + new_value );
                                 }
@@ -312,6 +318,9 @@ public final class PhylogenyDecorator {
                                 if ( PhylogenyDecorator.SANITIZE ) {
                                     new_value = PhylogenyDecorator.sanitize( new_value );
                                 }
+                                if ( trim_after_tilde ) {
+                                    new_value = addTildeAnnotation( tilde_annotation, new_value );
+                                }
                                 if ( PhylogenyDecorator.VERBOSE ) {
                                     System.out.println( new_value );
                                 }
@@ -327,6 +336,13 @@ public final class PhylogenyDecorator {
                 }
             }
         }
+    }
+
+    private final static String addTildeAnnotation( final String tilde_annotation, final String new_value ) {
+        if ( ForesterUtil.isEmpty( tilde_annotation ) ) {
+            return new_value;
+        }
+        return new_value + tilde_annotation;
     }
 
     public static void decorate( final Phylogeny[] phylogenies,
@@ -438,7 +454,10 @@ public final class PhylogenyDecorator {
 
     private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
         final int i = new_value.lastIndexOf( "[" );
-        final String tc = new_value.substring( i + 1, new_value.length() - 1 );
+        String tc = new_value.substring( i + 1, new_value.length() - 1 );
+        if ( tc.length() == 6 ) {
+            tc = tc.substring( 0, 5 );
+        }
         ForesterUtil.ensurePresenceOfTaxonomy( node );
         try {
             node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
