@@ -129,9 +129,10 @@ public final class MainFrameApplication extends MainFrame {
     private final static DefaultFilter       defaultfilter                         = new DefaultFilter();
     private static final long                serialVersionUID                      = -799735726778865234L;
     private final JFileChooser               _values_filechooser;
+    private final JFileChooser               _sequences_filechooser;
     private final JFileChooser               _open_filechooser;
     private final JFileChooser               _msa_filechooser;
-    private final JFileChooser               _seqs_filechooser;
+    private final JFileChooser               _seqs_pi_filechooser;
     private final JFileChooser               _open_filechooser_for_species_tree;
     private final JFileChooser               _save_filechooser;
     private final JFileChooser               _writetopdf_filechooser;
@@ -169,8 +170,8 @@ public final class MainFrameApplication extends MainFrame {
     private File                             _msa_file                             = null;
     private List<Sequence>                   _seqs                                 = null;
     private File                             _seqs_file                            = null;
-    // expression values menu:
     JMenuItem                                _read_values_jmi;
+    JMenuItem                                _read_seqs_jmi;
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
         _configuration = config;
@@ -186,8 +187,9 @@ public final class MainFrameApplication extends MainFrame {
         _writetopdf_filechooser = null;
         _writetographics_filechooser = null;
         _msa_filechooser = null;
-        _seqs_filechooser = null;
+        _seqs_pi_filechooser = null;
         _values_filechooser = null;
+        _sequences_filechooser = null;
         _jmenubar = new JMenuBar();
         buildFileMenu();
         buildTypeMenu();
@@ -317,16 +319,20 @@ public final class MainFrameApplication extends MainFrame {
         _msa_filechooser.addChoosableFileFilter( _msa_filechooser.getAcceptAllFileFilter() );
         _msa_filechooser.addChoosableFileFilter( MainFrameApplication.msafilter );
         // Seqs:
-        _seqs_filechooser = new JFileChooser();
-        _seqs_filechooser.setName( "Read Sequences File" );
-        _seqs_filechooser.setCurrentDirectory( new File( "." ) );
-        _seqs_filechooser.setMultiSelectionEnabled( false );
-        _seqs_filechooser.addChoosableFileFilter( _seqs_filechooser.getAcceptAllFileFilter() );
-        _seqs_filechooser.addChoosableFileFilter( MainFrameApplication.seqsfilter );
+        _seqs_pi_filechooser = new JFileChooser();
+        _seqs_pi_filechooser.setName( "Read Sequences File" );
+        _seqs_pi_filechooser.setCurrentDirectory( new File( "." ) );
+        _seqs_pi_filechooser.setMultiSelectionEnabled( false );
+        _seqs_pi_filechooser.addChoosableFileFilter( _seqs_pi_filechooser.getAcceptAllFileFilter() );
+        _seqs_pi_filechooser.addChoosableFileFilter( MainFrameApplication.seqsfilter );
         // Expression
         _values_filechooser = new JFileChooser();
         _values_filechooser.setCurrentDirectory( new File( "." ) );
         _values_filechooser.setMultiSelectionEnabled( false );
+        // Sequences
+        _sequences_filechooser = new JFileChooser();
+        _sequences_filechooser.setCurrentDirectory( new File( "." ) );
+        _sequences_filechooser.setMultiSelectionEnabled( false );
         // build the menu bar
         _jmenubar = new JMenuBar();
         if ( !_configuration.isUseNativeUI() ) {
@@ -499,6 +505,12 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 addExpressionValuesFromFile();
             }
+            else if ( o == _read_seqs_jmi ) {
+                if ( isSubtreeDisplayed() ) {
+                    return;
+                }
+                addSequencesFromFile();
+            }
             else if ( o == _move_node_names_to_tax_sn_jmi ) {
                 moveNodeNamesToTaxSn();
             }
@@ -644,12 +656,7 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
             catch ( final MsaFormatException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Multiple sequence alignment format error",
@@ -657,12 +664,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final IOException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Failed to read multiple sequence alignment",
@@ -670,12 +672,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final IllegalArgumentException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Unexpected error during reading of multiple sequence alignment",
@@ -683,12 +680,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final Exception e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 e.printStackTrace();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
@@ -723,18 +715,18 @@ public final class MainFrameApplication extends MainFrame {
         }
     }
 
-    public void readSeqsFromFile() {
+    public void readSeqsFromFileforPI() {
         // Set an initial directory if none set yet
         final File my_dir = getCurrentDir();
-        _seqs_filechooser.setMultiSelectionEnabled( false );
+        _seqs_pi_filechooser.setMultiSelectionEnabled( false );
         // Open file-open dialog and set current directory
         if ( my_dir != null ) {
-            _seqs_filechooser.setCurrentDirectory( my_dir );
+            _seqs_pi_filechooser.setCurrentDirectory( my_dir );
         }
-        final int result = _seqs_filechooser.showOpenDialog( _contentpane );
+        final int result = _seqs_pi_filechooser.showOpenDialog( _contentpane );
         // All done: get the seqs
-        final File file = _seqs_filechooser.getSelectedFile();
-        setCurrentDir( _seqs_filechooser.getCurrentDirectory() );
+        final File file = _seqs_pi_filechooser.getSelectedFile();
+        setCurrentDir( _seqs_pi_filechooser.getCurrentDirectory() );
         if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
             setSeqsFile( null );
             setSeqs( null );
@@ -751,12 +743,7 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
             catch ( final MsaFormatException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Multiple sequence file format error",
@@ -764,12 +751,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final IOException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Failed to read multiple sequence file",
@@ -777,12 +759,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final IllegalArgumentException e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
                                                "Unexpected error during reading of multiple sequence file",
@@ -790,12 +767,7 @@ public final class MainFrameApplication extends MainFrame {
                 return;
             }
             catch ( final Exception e ) {
-                try {
-                    _mainpanel.getCurrentTreePanel().setArrowCursor();
-                }
-                catch ( final Exception ex ) {
-                    // Do nothing.
-                }
+                setArrowCursor();
                 e.printStackTrace();
                 JOptionPane.showMessageDialog( this,
                                                e.getLocalizedMessage(),
@@ -825,7 +797,7 @@ public final class MainFrameApplication extends MainFrame {
             //       return;
             //   }
             System.gc();
-            setSeqsFile( _seqs_filechooser.getSelectedFile() );
+            setSeqsFile( _seqs_pi_filechooser.getSelectedFile() );
             setSeqs( seqs );
         }
     }
@@ -1168,9 +1140,14 @@ public final class MainFrameApplication extends MainFrame {
                     .setToolTipText( "To add UniProtKB annotations for sequences with appropriate identifiers" );
             _tools_menu.addSeparator();
         }
-        _tools_menu.add( _read_values_jmi = new JMenuItem( "Read Vector/Expression Values" ) );
+        _tools_menu.add( _read_values_jmi = new JMenuItem( "Attach Vector/Expression Values" ) );
         customizeJMenuItem( _read_values_jmi );
-        _read_values_jmi.setToolTipText( "To add vector (e.g. gene expression) values (beta)" );
+        _read_values_jmi.setToolTipText( "To attach vector (e.g. gene expression) values to tree nodes (beta)" );
+        _jmenubar.add( _tools_menu );
+        _tools_menu.add( _read_seqs_jmi = new JMenuItem( "Attach Molecular Sequences" ) );
+        customizeJMenuItem( _read_seqs_jmi );
+        _read_seqs_jmi
+                .setToolTipText( "To attach molecular sequences to tree nodes (from Fasta-formatted file) (beta)" );
         _jmenubar.add( _tools_menu );
     }
 
@@ -1510,6 +1487,171 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         _contentpane.repaint();
+    }
+
+    private void addSequencesFromFile() {
+        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Need to load evolutionary tree first",
+                                           "Can Not Read Sequences",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _sequences_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _sequences_filechooser.showOpenDialog( _contentpane );
+        final File file = _sequences_filechooser.getSelectedFile();
+        List<Sequence> seqs = null;
+        if ( ( file != null ) && !file.isDirectory() && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            try {
+                if ( FastaParser.isLikelyFasta( new FileInputStream( file ) ) ) {
+                    seqs = FastaParser.parse( new FileInputStream( file ) );
+                }
+                else {
+                    JOptionPane.showMessageDialog( this,
+                                                   "Format does not appear to be Fasta",
+                                                   "Multiple sequence file format error",
+                                                   JOptionPane.ERROR_MESSAGE );
+                    return;
+                }
+            }
+            catch ( final MsaFormatException e ) {
+                setArrowCursor();
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Multiple sequence file format error",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final IOException e ) {
+                setArrowCursor();
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Failed to read multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            catch ( final Exception e ) {
+                setArrowCursor();
+                e.printStackTrace();
+                JOptionPane.showMessageDialog( this,
+                                               e.getLocalizedMessage(),
+                                               "Unexpected error during reading of multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( ( seqs == null ) || ( seqs.size() < 1 ) ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Multiple sequence file is empty",
+                                               "Empty multiple sequence file",
+                                               JOptionPane.ERROR_MESSAGE );
+                setArrowCursor();
+                return;
+            }
+        }
+        if ( seqs != null ) {
+            for( final Sequence seq : seqs ) {
+                System.out.println( seq.getIdentifier() );
+            }
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            int total_counter = 0;
+            int attached_counter = 0;
+            for( final Sequence seq : seqs ) {
+                ++total_counter;
+                final String seq_name = seq.getIdentifier();
+                if ( !ForesterUtil.isEmpty( seq_name ) ) {
+                    List<PhylogenyNode> nodes = phy.getNodesViaSequenceName( seq_name );
+                    if ( nodes.isEmpty() ) {
+                        nodes = phy.getNodesViaSequenceSymbol( seq_name );
+                    }
+                    if ( nodes.isEmpty() ) {
+                        nodes = phy.getNodes( seq_name );
+                    }
+                    if ( nodes.size() > 1 ) {
+                        JOptionPane.showMessageDialog( this,
+                                                       "Sequence name \"" + seq_name + "\" is not unique",
+                                                       "Sequence name not unique",
+                                                       JOptionPane.ERROR_MESSAGE );
+                        setArrowCursor();
+                        return;
+                    }
+                    final String[] a = seq_name.split( "\\s" );
+                    if ( nodes.isEmpty() && ( a.length > 1 ) ) {
+                        final String seq_name_split = a[ 0 ];
+                        nodes = phy.getNodesViaSequenceName( seq_name_split );
+                        if ( nodes.isEmpty() ) {
+                            nodes = phy.getNodesViaSequenceSymbol( seq_name_split );
+                        }
+                        if ( nodes.isEmpty() ) {
+                            nodes = phy.getNodes( seq_name_split );
+                        }
+                        if ( nodes.size() > 1 ) {
+                            JOptionPane.showMessageDialog( this, "Split sequence name \"" + seq_name_split
+                                    + "\" is not unique", "Sequence name not unique", JOptionPane.ERROR_MESSAGE );
+                            setArrowCursor();
+                            return;
+                        }
+                    }
+                    if ( nodes.size() == 1 ) {
+                        ++attached_counter;
+                        final PhylogenyNode n = nodes.get( 0 );
+                        if ( !n.getNodeData().isHasSequence() ) {
+                            n.getNodeData().addSequence( new org.forester.phylogeny.data.Sequence() );
+                        }
+                        n.getNodeData().getSequence().setMolecularSequence( seq.getMolecularSequenceAsString() );
+                        if ( ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+                            n.getNodeData().getSequence().setName( seq_name );
+                        }
+                    }
+                }
+            }
+            if ( attached_counter > 0 ) {
+                int ext_nodes = 0;
+                int ext_nodes_with_seq = 0;
+                for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+                    ++ext_nodes;
+                    final PhylogenyNode n = iter.next();
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        ++ext_nodes_with_seq;
+                    }
+                }
+                final String s;
+                if ( ext_nodes == ext_nodes_with_seq ) {
+                    s = "All " + ext_nodes_with_seq + " external nodes now have a molecular sequence attached to them.";
+                }
+                else {
+                    s = ext_nodes_with_seq + " out of " + ext_nodes
+                            + " external nodes now have a molecular sequence attached to them.";
+                }
+                if ( ( attached_counter == total_counter ) && ( ext_nodes == ext_nodes_with_seq ) ) {
+                    JOptionPane.showMessageDialog( this,
+                                                   "Attached all " + total_counter + " sequences to tree nodes.\n" + s,
+                                                   "All sequences attached",
+                                                   JOptionPane.INFORMATION_MESSAGE );
+                }
+                else {
+                    JOptionPane.showMessageDialog( this, "Attached " + attached_counter
+                            + " sequences out of a total of " + total_counter + " sequences.\n" + s, attached_counter
+                            + " sequences attached", JOptionPane.WARNING_MESSAGE );
+                }
+            }
+            else {
+                JOptionPane.showMessageDialog( this, "No maching tree node for any of the " + total_counter
+                        + " sequences", "Could not attach any sequences", JOptionPane.ERROR_MESSAGE );
+            }
+        }
+    }
+
+    private void setArrowCursor() {
+        try {
+            _mainpanel.getCurrentTreePanel().setArrowCursor();
+        }
+        catch ( final Exception ex ) {
+            // Do nothing.
+        }
     }
 
     private void addExpressionValuesFromFile() {

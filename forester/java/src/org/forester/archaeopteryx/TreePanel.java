@@ -5060,6 +5060,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         data.add( n.getNodeData().getSequence().getMolecularSequence() );
                     }
                     break;
+                case SEQUENCE_MOL_SEQ_FASTA:
+                    StringBuilder sb = new StringBuilder();
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        data.add( n.getNodeData().getSequence().getMolecularSequence() );
+                    }
+                    break;
                 case SEQUENCE_ACC:
                     if ( n.getNodeData().isHasSequence() && ( n.getNodeData().getSequence().getAccession() != null )
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAccession().toString() ) ) {

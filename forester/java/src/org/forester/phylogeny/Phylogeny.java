@@ -475,6 +475,20 @@ public class Phylogeny {
         return nodes;
     }
 
+    public List<PhylogenyNode> getNodesViaSequenceSymbol( final String seq_name ) {
+        if ( isEmpty() ) {
+            return null;
+        }
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        for( final PhylogenyNodeIterator iter = iteratorPreorder(); iter.hasNext(); ) {
+            final PhylogenyNode n = iter.next();
+            if ( n.getNodeData().isHasSequence() && n.getNodeData().getSequence().getSymbol().equals( seq_name ) ) {
+                nodes.add( n );
+            }
+        }
+        return nodes;
+    }
+
     public List<PhylogenyNode> getNodesViaTaxonomyCode( final String taxonomy_code ) {
         if ( isEmpty() ) {
             return null;

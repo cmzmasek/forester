@@ -386,7 +386,7 @@ public class PhyloInferenceDialog extends JDialog implements ActionListener {
     }
 
     private void readInputSeqsFile() {
-        getParentFrame().readSeqsFromFile();
+        getParentFrame().readSeqsFromFileforPI();
         updateSeqsItems();
     }
 
