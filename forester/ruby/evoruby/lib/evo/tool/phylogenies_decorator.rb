@@ -23,7 +23,8 @@ module Evoruby
   class PhylogeniesDecorator
 
     #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
-    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
+    #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
+    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -c -tc'
     # -mdn is a hidden expert option to rename e.g. "6_ORYLA3" to "6_[3]_ORYLA"
     #DECORATOR_OPTIONS_SEQ_NAMES = '-sn -r=1'
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
@@ -233,7 +234,7 @@ module Evoruby
               my_infile = phylogeny_file
             end
             cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-             '-f=s ' + my_infile + ' ' +
+             '-f=n ' + my_infile + ' ' +
              ids_mapfile_name + ' ' + outfile
             execute_cmd( cmd, log )
           end
