@@ -38,6 +38,31 @@ public class SequenceWriter {
         }
         return sb;
     }
+    
+    public static StringBuilder toFasta( final String name, final String mol_seq, final int width ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( ">" );
+        sb.append( name );
+        sb.append( ForesterUtil.LINE_SEPARATOR );
+        if ( ( width < 1 ) || ( width >= mol_seq.length() ) ) {
+            sb.append( mol_seq );
+        }
+        else {
+            final int lines = mol_seq.length() / width;
+            final int rest =mol_seq.length() - ( lines * width );
+            for( int i = 0; i < lines; ++i ) {
+                sb.append( mol_seq, i * width, width );
+                if ( i < ( lines - 1 ) ) {
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            if ( rest > 0 ) {
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+                sb.append( mol_seq, lines * width, rest );
+            }
+        }
+        return sb;
+    }
 
     public static void toFasta( final Sequence seq, final Writer w, final int width ) throws IOException {
         w.write( ">" );

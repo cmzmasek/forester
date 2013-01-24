@@ -100,6 +100,7 @@ import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
 import org.forester.archaeopteryx.tools.Blast;
 import org.forester.archaeopteryx.tools.ImageLoader;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
+import org.forester.io.writers.SequenceWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
@@ -5064,7 +5065,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     StringBuilder sb = new StringBuilder();
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
-                        data.add( n.getNodeData().getSequence().getMolecularSequence() );
+                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
+                            sb.append( SequenceWriter.toFasta( n.getNodeData().getSequence().getName(),  n.getNodeData().getSequence().getMolecularSequence(), 60 )  );
+                        }
+                        else {
+                            sb.append( SequenceWriter.toFasta( n.getName(),  n.getNodeData().getSequence().getMolecularSequence(), 60 )  );
+                             
+                        }
+                        data.add( sb.toString() + "\n" );
                     }
                     break;
                 case SEQUENCE_ACC:
