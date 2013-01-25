@@ -109,13 +109,15 @@ public class UrlTreeReader implements Runnable {
                         break;
                     case NH_EXTRACT_TAXONOMY:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                        ( ( NHXParser ) parser )
+                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case PFAM:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                        ( ( NHXParser ) parser )
+                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;

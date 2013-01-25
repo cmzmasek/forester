@@ -86,7 +86,7 @@ public final class Configuration {
     private short                           _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
     private boolean                         _editable                                              = true;
     private boolean                         _nh_parsing_replace_underscores                        = false;
-    private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
+    private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT;
     private boolean                         _internal_number_are_confidence_for_nh_parsing         = false;
     private boolean                         _display_sequence_relations                            = false;
     private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
@@ -1342,10 +1342,10 @@ public final class Configuration {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
             }
             else if ( s.equalsIgnoreCase( "yes" ) ) {
-                setTaxonomyExtraction( TAXONOMY_EXTRACTION.YES );
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             }
             else if ( s.equalsIgnoreCase( "pfam" ) ) {
-                setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
             }
             else {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME,

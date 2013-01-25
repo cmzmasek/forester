@@ -209,11 +209,13 @@ public class phyloxml_converter {
                         && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_COMMON_NAME )
                         && ( field != PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME ) ) {
                     if ( extr_taxonomy_pf_only ) {
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                        ( ( NHXParser ) parser )
+                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
                         replace_underscores = false;
                     }
                     else if ( extr_taxonomy ) {
-                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.YES );
+                        ( ( NHXParser ) parser )
+                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
                         replace_underscores = false;
                     }
                 }

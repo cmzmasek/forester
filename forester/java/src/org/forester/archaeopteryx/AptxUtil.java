@@ -43,6 +43,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -474,7 +475,7 @@ public final class AptxUtil {
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
             if ( !n.isExternal() && !n.isCollapse() && ( n.getNumberOfDescendants() > 1 ) ) {
-                final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( n );
+                final Set<Taxonomy> taxs = obtainDistinctTaxonomies( n );
                 if ( ( taxs != null ) && ( taxs.size() == 1 ) ) {
                     AptxUtil.collapseSubtree( n, true );
                     if ( !n.getNodeData().isHasTaxonomy() ) {
@@ -491,6 +492,40 @@ public final class AptxUtil {
         if ( inferred ) {
             phy.setRerootable( false );
         }
+    }
+
+    /**
+     * Returns the set of distinct taxonomies of
+     * all external nodes of node.
+     * If at least one the external nodes has no taxonomy,
+     * null is returned.
+     * 
+     */
+    public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
+        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
+        for( final PhylogenyNode n : descs ) {
+            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
+                return null;
+            }
+            tax_set.add( n.getNodeData().getTaxonomy() );
+        }
+        return tax_set;
+    }
+
+    public static Set<Taxonomy> obtainAllDistinctTaxonomies( final PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
+        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
+        for( final PhylogenyNode n : descs ) {
+            if ( n.getNodeData().isHasTaxonomy() && !n.getNodeData().getTaxonomy().isEmpty() ) {
+                tax_set.add( n.getNodeData().getTaxonomy() );
+                System.out.println( n.getNodeData().getTaxonomy() );
+            }
+        }
+        for( final Taxonomy taxonomy : tax_set ) {
+            System.out.println( taxonomy );
+        }
+        return tax_set;
     }
 
     final static void collapseSubtree( final PhylogenyNode node, final boolean collapse ) {
@@ -636,7 +671,22 @@ public final class AptxUtil {
             }
             if ( phy.getIdentifier() != null ) {
                 desc.append( "Id: " );
-                desc.append( phy.getIdentifier() );
+                desc.append( phy.getIdentifier().toString() );
+                desc.append( "\n" );
+            }
+            if ( !ForesterUtil.isEmpty( phy.getDescription() ) ) {
+                desc.append( "Description: " );
+                desc.append( phy.getDescription() );
+                desc.append( "\n" );
+            }
+            if ( !ForesterUtil.isEmpty( phy.getDistanceUnit() ) ) {
+                desc.append( "Distance Unit: " );
+                desc.append( phy.getDistanceUnit() );
+                desc.append( "\n" );
+            }
+            if ( !ForesterUtil.isEmpty( phy.getType() ) ) {
+                desc.append( "Type: " );
+                desc.append( phy.getType() );
                 desc.append( "\n" );
             }
             desc.append( "Rooted: " );
@@ -663,7 +713,7 @@ public final class AptxUtil {
             desc.append( "Maximum distance to root: " );
             desc.append( ForesterUtil.round( PhylogenyMethods.calculateMaxDistanceToRoot( phy ), 6 ) );
             desc.append( "\n" );
-            final Set<Taxonomy> taxs = PhylogenyMethods.obtainDistinctTaxonomies( phy.getRoot() );
+            final Set<Taxonomy> taxs = obtainAllDistinctTaxonomies( phy.getRoot() );
             if ( taxs != null ) {
                 desc.append( "Distinct external taxonomies: " );
                 desc.append( taxs.size() );

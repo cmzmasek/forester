@@ -768,25 +768,6 @@ public class PhylogenyMethods {
     }
 
     /**
-     * Returns the set of distinct taxonomies of
-     * all external nodes of node.
-     * If at least one the external nodes has no taxonomy,
-     * null is returned.
-     * 
-     */
-    public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
-        for( final PhylogenyNode n : descs ) {
-            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
-                return null;
-            }
-            tax_set.add( n.getNodeData().getTaxonomy() );
-        }
-        return tax_set;
-    }
-
-    /**
      * Returns a map of distinct taxonomies of
      * all external nodes of node.
      * If at least one of the external nodes has no taxonomy,

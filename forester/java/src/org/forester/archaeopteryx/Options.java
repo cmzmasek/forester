@@ -458,7 +458,7 @@ final public class Options {
         _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
         _number_of_digits_after_comma_for_confidence_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
         _nh_parsing_replace_underscores = false;
-        _taxonomy_extraction = TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY;
+        _taxonomy_extraction = TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT;
         _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
         setAbbreviateScientificTaxonNames( false );

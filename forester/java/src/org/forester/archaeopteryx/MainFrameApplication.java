@@ -1040,9 +1040,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeRadioButtonMenuItem( _extract_taxonomy_no_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.NO );
         customizeRadioButtonMenuItem( _extract_taxonomy_yes_rbmi,
-                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.YES );
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
         customizeRadioButtonMenuItem( _extract_taxonomy_pfam_rbmi,
-                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_ONLY );
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
         customizeCheckBoxMenuItem( _replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
@@ -2026,7 +2026,8 @@ public final class MainFrameApplication extends MainFrame {
                     final PhylogenyNode n = it.next();
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
-                        final String nt = ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.YES );
+                        final String nt = ParserUtils
+                                .extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
                         if ( !ForesterUtil.isEmpty( nt ) ) {
                             if ( counter < 15 ) {
                                 sb.append( name + ": " + nt + "\n" );
@@ -2576,7 +2577,12 @@ public final class MainFrameApplication extends MainFrame {
             final int count = getMainPanel().getTabbedPane().getTabCount();
             final List<Phylogeny> trees = new ArrayList<Phylogeny>();
             for( int i = 0; i < count; ++i ) {
-                trees.add( getMainPanel().getPhylogeny( i ) );
+                final Phylogeny phy = getMainPanel().getPhylogeny( i );
+                if ( ForesterUtil.isEmpty( phy.getName() )
+                        && !ForesterUtil.isEmpty( getMainPanel().getTabbedPane().getTitleAt( i ) ) ) {
+                    phy.setName( getMainPanel().getTabbedPane().getTitleAt( i ) );
+                }
+                trees.add( phy );
                 getMainPanel().getTreePanels().get( i ).setEdited( false );
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
