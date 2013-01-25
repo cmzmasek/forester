@@ -76,6 +76,7 @@ native_ui: ?
 #                      sequence_name
 #                      sequence_acc
 #                      sequence_mol_seq
+#                      sequence_mol_seq_fasta
 #                      sequence_symbol
 #                      taxonomy_scientific_name
 #                      taxonomy_code
