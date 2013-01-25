@@ -1448,6 +1448,9 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "sequence_acc" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_ACC );
             }
+            else if ( s.equalsIgnoreCase( "sequence_mol_seq_fasta" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_MOL_SEQ_FASTA );
+            }
             else if ( s.equalsIgnoreCase( "sequence_mol_seq" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_MOL_SEQ );
             }

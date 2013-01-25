@@ -3228,6 +3228,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return "Sequence Symbols";
             case SEQUENCE_MOL_SEQ:
                 return "Molecular Sequences";
+            case SEQUENCE_MOL_SEQ_FASTA:
+                return "Molecular Sequences (Fasta)";
             case SEQUENCE_ACC:
                 return "Sequence Accessors";
             case TAXONOMY_SCIENTIFIC_NAME:
@@ -5062,17 +5064,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                     break;
                 case SEQUENCE_MOL_SEQ_FASTA:
-                    StringBuilder sb = new StringBuilder();
+                    final StringBuilder sb = new StringBuilder();
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
                         if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
-                            sb.append( SequenceWriter.toFasta( n.getNodeData().getSequence().getName(),  n.getNodeData().getSequence().getMolecularSequence(), 60 )  );
+                            sb.append( SequenceWriter.toFasta( n.getNodeData().getSequence().getName(), n.getNodeData()
+                                    .getSequence().getMolecularSequence(), 60 ) );
                         }
                         else {
-                            sb.append( SequenceWriter.toFasta( n.getName(),  n.getNodeData().getSequence().getMolecularSequence(), 60 )  );
-                             
+                            sb.append( SequenceWriter.toFasta( n.getName(), n.getNodeData().getSequence()
+                                    .getMolecularSequence(), 60 ) );
                         }
-                        data.add( sb.toString() + "\n" );
+                        data.add( sb.toString() );
                     }
                     break;
                 case SEQUENCE_ACC:

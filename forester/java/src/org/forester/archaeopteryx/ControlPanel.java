@@ -1746,6 +1746,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     case SEQUENCE_MOL_SEQ:
                         s = "Molecular Sequence";
                         break;
+                    case SEQUENCE_MOL_SEQ_FASTA:
+                        s = "Molecular Sequence (Fasta)";
+                        break;
                     case SEQUENCE_NAME:
                         s = "Sequence Names";
                         break;

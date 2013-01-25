@@ -38,7 +38,7 @@ public class SequenceWriter {
         }
         return sb;
     }
-    
+
     public static StringBuilder toFasta( final String name, final String mol_seq, final int width ) {
         final StringBuilder sb = new StringBuilder();
         sb.append( ">" );
@@ -49,7 +49,7 @@ public class SequenceWriter {
         }
         else {
             final int lines = mol_seq.length() / width;
-            final int rest =mol_seq.length() - ( lines * width );
+            final int rest = mol_seq.length() - ( lines * width );
             for( int i = 0; i < lines; ++i ) {
                 sb.append( mol_seq, i * width, width );
                 if ( i < ( lines - 1 ) ) {
