@@ -250,7 +250,8 @@ public final class ParserUtils {
                 }
             }
         }
-        else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) {
+        if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                || ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGRESSIVE ) ) {
             final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( name );
             if ( m1.matches() ) {
                 return name;

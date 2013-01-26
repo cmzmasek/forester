@@ -186,6 +186,36 @@ public final class AptxUtil {
         }
     }
 
+    public static Set<Taxonomy> obtainAllDistinctTaxonomies( final PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
+        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
+        for( final PhylogenyNode n : descs ) {
+            if ( n.getNodeData().isHasTaxonomy() && !n.getNodeData().getTaxonomy().isEmpty() ) {
+                tax_set.add( n.getNodeData().getTaxonomy() );
+            }
+        }
+        return tax_set;
+    }
+
+    /**
+     * Returns the set of distinct taxonomies of
+     * all external nodes of node.
+     * If at least one the external nodes has no taxonomy,
+     * null is returned.
+     * 
+     */
+    public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
+        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
+        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
+        for( final PhylogenyNode n : descs ) {
+            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
+                return null;
+            }
+            tax_set.add( n.getNodeData().getTaxonomy() );
+        }
+        return tax_set;
+    }
+
     public final static Accession obtainSequenceAccessionFromName( final String sequence_name ) {
         final String n = sequence_name.trim();
         final Matcher matcher1 = seq_identifier_pattern_1.matcher( n );
@@ -494,40 +524,6 @@ public final class AptxUtil {
         }
     }
 
-    /**
-     * Returns the set of distinct taxonomies of
-     * all external nodes of node.
-     * If at least one the external nodes has no taxonomy,
-     * null is returned.
-     * 
-     */
-    public static Set<Taxonomy> obtainDistinctTaxonomies( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
-        for( final PhylogenyNode n : descs ) {
-            if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
-                return null;
-            }
-            tax_set.add( n.getNodeData().getTaxonomy() );
-        }
-        return tax_set;
-    }
-
-    public static Set<Taxonomy> obtainAllDistinctTaxonomies( final PhylogenyNode node ) {
-        final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final Set<Taxonomy> tax_set = new HashSet<Taxonomy>();
-        for( final PhylogenyNode n : descs ) {
-            if ( n.getNodeData().isHasTaxonomy() && !n.getNodeData().getTaxonomy().isEmpty() ) {
-                tax_set.add( n.getNodeData().getTaxonomy() );
-                System.out.println( n.getNodeData().getTaxonomy() );
-            }
-        }
-        for( final Taxonomy taxonomy : tax_set ) {
-            System.out.println( taxonomy );
-        }
-        return tax_set;
-    }
-
     final static void collapseSubtree( final PhylogenyNode node, final boolean collapse ) {
         node.setCollapse( collapse );
         if ( node.isExternal() ) {
@@ -695,16 +691,19 @@ public final class AptxUtil {
             desc.append( "Rerootable: " );
             desc.append( phy.isRerootable() );
             desc.append( "\n" );
-            desc.append( "Node sum: " );
+            desc.append( "Nodes: " );
             desc.append( phy.getNodeCount() );
             desc.append( "\n" );
-            desc.append( "External node sum: " );
+            desc.append( "External nodes: " );
             desc.append( phy.getNumberOfExternalNodes() );
             desc.append( "\n" );
-            desc.append( "Internal node sum: " );
+            desc.append( "Internal nodes: " );
             desc.append( phy.getNodeCount() - phy.getNumberOfExternalNodes() );
             desc.append( "\n" );
-            desc.append( "Branche sum: " );
+            desc.append( "Internal nodes with polytomies: " );
+            desc.append( PhylogenyMethods.countNumberOfPolytomies( phy ) );
+            desc.append( "\n" );
+            desc.append( "Branches: " );
             desc.append( phy.getNumberOfBranches() );
             desc.append( "\n" );
             desc.append( "Depth: " );
@@ -950,6 +949,20 @@ public final class AptxUtil {
         }
     }
 
+    final static void outOfMemoryError( final OutOfMemoryError e ) {
+        System.err.println();
+        System.err.println( "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option" );
+        System.err.println();
+        e.printStackTrace();
+        System.err.println();
+        JOptionPane.showMessageDialog( null,
+                                       "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
+                                               + "\n\nError: " + e.getLocalizedMessage(),
+                                       "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
+                                       JOptionPane.ERROR_MESSAGE );
+        System.exit( -1 );
+    }
+
     final static void printAppletMessage( final String applet_name, final String message ) {
         System.out.println( "[" + applet_name + "] > " + message );
     }
@@ -1012,20 +1025,6 @@ public final class AptxUtil {
                                             + sb,
                                     "Unexpected Severe Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
                                     JOptionPane.ERROR_MESSAGE );
-        System.exit( -1 );
-    }
-
-    final static void outOfMemoryError( final OutOfMemoryError e ) {
-        System.err.println();
-        System.err.println( "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option" );
-        System.err.println();
-        e.printStackTrace();
-        System.err.println();
-        JOptionPane.showMessageDialog( null,
-                                       "Java memory allocation might be too small, try \"-Xmx2048m\" java command line option"
-                                               + "\n\nError: " + e.getLocalizedMessage(),
-                                       "Out of Memory Error [" + Constants.PRG_NAME + " " + Constants.VERSION + "]",
-                                       JOptionPane.ERROR_MESSAGE );
         System.exit( -1 );
     }
 

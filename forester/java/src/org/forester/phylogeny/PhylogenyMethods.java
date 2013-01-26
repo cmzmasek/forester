@@ -62,52 +62,15 @@ import org.forester.util.ForesterUtil;
 
 public class PhylogenyMethods {
 
-    //private static PhylogenyMethods _instance   = null;
-    //private final PhylogenyNode     _farthest_1 = null;
-    //private final PhylogenyNode     _farthest_2 = null;
     private PhylogenyMethods() {
         // Hidden constructor.
     }
 
-    //    public double calculateFurthestDistance( final Phylogeny phylogeny ) {
-    //        if ( phylogeny.getNumberOfExternalNodes() < 2 ) {
-    //            return 0.0;
-    //        }
-    //        _farthest_1 = null;
-    //        _farthest_2 = null;
-    //        PhylogenyNode node_1 = null;
-    //        PhylogenyNode node_2 = null;
-    //        double farthest_d = -Double.MAX_VALUE;
-    //        final PhylogenyMethods methods = PhylogenyMethods.getInstance();
-    //        final List<PhylogenyNode> ext_nodes = phylogeny.getRoot().getAllExternalDescendants();
-    //        for( int i = 1; i < ext_nodes.size(); ++i ) {
-    //            for( int j = 0; j < i; ++j ) {
-    //                final double d = methods.calculateDistance( ext_nodes.get( i ), ext_nodes.get( j ) );
-    //                if ( d < 0.0 ) {
-    //                    throw new RuntimeException( "distance cannot be negative" );
-    //                }
-    //                if ( d > farthest_d ) {
-    //                    farthest_d = d;
-    //                    node_1 = ext_nodes.get( i );
-    //                    node_2 = ext_nodes.get( j );
-    //                }
-    //            }
-    //        }
-    //        _farthest_1 = node_1;
-    //        _farthest_2 = node_2;
-    //        return farthest_d;
-    //    }
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 
-    // public PhylogenyNode getFarthestNode1() {
-    //      return _farthest_1;
-    // }
-    //  public PhylogenyNode getFarthestNode2() {
-    //      return _farthest_2;
-    //  }
     public static DescriptiveStatistics calculatBranchLengthStatistics( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
@@ -331,10 +294,6 @@ public class PhylogenyMethods {
         for( final PhylogenyNode n : ext ) {
             nodes.put( n.getName(), n );
         }
-        // for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-        //     final PhylogenyNode n = iter.next();
-        //     nodes.put( n.getName(), n );
-        // }
         return nodes;
     }
 
@@ -702,39 +661,6 @@ public class PhylogenyMethods {
             phylogeny.reRoot( a, x );
         }
         phylogeny.recalculateNumberOfExternalDescendants( true );
-    }
-
-    public static void midpointRootOLD( final Phylogeny phylogeny ) {
-        //   if ( phylogeny.getNumberOfExternalNodes() < 2 ) {
-        //       return;
-        //   }
-        //    final PhylogenyMethods methods = getInstance();
-        //final double farthest_d = methods.calculateFurthestDistance( phylogeny );
-        // final PhylogenyNode f1 = methods.getFarthestNode1();
-        // final PhylogenyNode f2 = methods.getFarthestNode2();
-        //        if ( farthest_d <= 0.0 ) {
-        //            return;
-        //        }
-        //        double x = farthest_d / 2.0;
-        //        PhylogenyNode n = f1;
-        //        if ( PhylogenyMethods.getDistance( f1, phylogeny.getRoot() ) < PhylogenyMethods.getDistance( f2, phylogeny
-        //                .getRoot() ) ) {
-        //            n = f2;
-        //        }
-        //        while ( ( x > n.getDistanceToParent() ) && !n.isRoot() ) {
-        //            x -= ( n.getDistanceToParent() > 0 ? n.getDistanceToParent() : 0 );
-        //            n = n.getParent();
-        //        }
-        //        phylogeny.reRoot( n, x );
-        //        phylogeny.recalculateNumberOfExternalDescendants( true );
-        //        final PhylogenyNode a = getFurthestDescendant( phylogeny.getRoot().getChildNode1() );
-        //        final PhylogenyNode b = getFurthestDescendant( phylogeny.getRoot().getChildNode2() );
-        //        final double da = getDistance( a, phylogeny.getRoot() );
-        //        final double db = getDistance( b, phylogeny.getRoot() );
-        //        if ( Math.abs( da - db ) > 0.000001 ) {
-        //            throw new FailedConditionCheckException( "this should not have happened: midpoint rooting failed:  da="
-        //                    + da + ",  db=" + db + ",  diff=" + Math.abs( da - db ) );
-        //        }
     }
 
     public static void normalizeBootstrapValues( final Phylogeny phylogeny,

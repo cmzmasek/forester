@@ -58,7 +58,6 @@ import org.forester.util.ForesterUtil;
 public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParser {
 
     public static final TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT = TAXONOMY_EXTRACTION.NO;
-    public final static Pattern             UC_LETTERS_NUMBERS_PATTERN  = Pattern.compile( "^[A-Z0-9]+$" );
     public final static Pattern             NUMBERS_ONLY_PATTERN        = Pattern.compile( "^[0-9\\.]+$" );
     public final static Pattern             MB_PROB_PATTERN             = Pattern.compile( "prob=([^,]+)" );
     public final static Pattern             MB_PROB_SD_PATTERN          = Pattern.compile( "prob_stddev=([^,]+)" );
