@@ -72,7 +72,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * Default constructor for PhylogenyNode.
      */
     public PhylogenyNode() {
-        //  init();
         setId( PhylogenyNode.getNodeCount() );
         PhylogenyNode.increaseNodeCount();
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)

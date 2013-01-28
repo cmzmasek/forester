@@ -387,6 +387,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "Tree methods: " );
+        if ( Test.testTreeMethods() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Postorder Iterator: " );
         if ( Test.testPostOrderIterator() ) {
             System.out.println( "OK." );
@@ -1938,6 +1947,34 @@ public final class Test {
             final char[] a10 = new char[] { 'a', ':', '6' };
             final Phylogeny t10 = factory.create( a10, new NHXParser() )[ 0 ];
             if ( t10.getHeight() != 6 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testTreeMethods() {
+        try {
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny t0 = factory.create( "((((A,B)ab,C)abc,D)abcd,E)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.collapseSubtreeStructure( t0.getNode( "abcd" ) );
+            if ( !t0.toNewHampshireX().equals( "((A,B,C,D)abcd,E)" ) ) {
+                System.out.println( t0.toNewHampshireX() );
+                return false;
+            }
+            final Phylogeny t1 = factory.create( "((((A:0.1,B)ab:0.2,C)abc:0.3,D)abcd:0.4,E)", new NHXParser() )[ 0 ];
+            PhylogenyMethods.collapseSubtreeStructure( t1.getNode( "abcd" ) );
+            if ( !isEqual( t1.getNode( "A" ).getDistanceToParent(), 0.6 ) ) {
+                return false;
+            }
+            if ( !isEqual( t1.getNode( "B" ).getDistanceToParent(), 0.5 ) ) {
+                return false;
+            }
+            if ( !isEqual( t1.getNode( "C" ).getDistanceToParent(), 0.3 ) ) {
                 return false;
             }
         }
@@ -5911,6 +5948,7 @@ public final class Test {
                 return false;
             }
             if ( !n6.toNewHampshireX().equals( "n6:1.0E-6[&&NHX:T=1:S=Ecoli:D=N:B=100]" ) ) {
+                System.out.println( n6.toNewHampshireX() );
                 return false;
             }
         }

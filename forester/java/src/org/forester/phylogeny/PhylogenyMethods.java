@@ -266,6 +266,18 @@ public class PhylogenyMethods {
         return stats;
     }
 
+    public final static void collapseSubtreeStructure( final PhylogenyNode n ) {
+        final List<PhylogenyNode> eds = n.getAllExternalDescendants();
+        final List<Double> d = new ArrayList<Double>();
+        for( final PhylogenyNode ed : eds ) {
+            d.add( calculateDistanceToAncestor( n, ed ) );
+        }
+        for( int i = 0; i < eds.size(); ++i ) {
+            n.setChildNode( i, eds.get( i ) );
+            eds.get( i ).setDistanceToParent( d.get( i ) );
+        }
+    }
+
     public static int countNumberOfOneDescendantNodes( final Phylogeny phy ) {
         int count = 0;
         for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
@@ -1479,6 +1491,24 @@ public class PhylogenyMethods {
             return b;
         }
         return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
+    }
+
+    static double calculateDistanceToAncestor( final PhylogenyNode anc, PhylogenyNode desc ) {
+        double d = 0;
+        boolean all_default = true;
+        while ( anc != desc ) {
+            if ( desc.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                d += desc.getDistanceToParent();
+                if ( all_default ) {
+                    all_default = false;
+                }
+            }
+            desc = desc.getParent();
+        }
+        if ( all_default ) {
+            return PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
+        }
+        return d;
     }
 
     /**
