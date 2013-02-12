@@ -734,6 +734,10 @@ public final class Configuration {
     }
 
     boolean isAntialiasScreen() {
+        if ( AptxUtil.isMac() ) {
+            // Apple Macintosh graphics are slow, turn off anti-alias.
+            return false;
+        }
         return _antialias_screen;
     }
 
@@ -783,7 +787,7 @@ public final class Configuration {
     }
 
     final boolean isUseNativeUI() {
-        if ( ( _ui == UI.UNKNOWN ) && AptxUtil.isMac() && AptxUtil.isJava15() ) {
+        if ( ( _ui == UI.UNKNOWN ) && AptxUtil.isMac() ) {
             _ui = UI.NATIVE;
         }
         return _ui == UI.NATIVE;

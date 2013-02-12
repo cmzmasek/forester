@@ -853,17 +853,6 @@ public final class AptxUtil {
         return true;
     }
 
-    final static boolean isJava15() {
-        try {
-            final String s = ForesterUtil.JAVA_VERSION;
-            return s.startsWith( "1.5" );
-        }
-        catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
-            return false;
-        }
-    }
-
     final static boolean isMac() {
         try {
             final String s = ForesterUtil.OS_NAME.toLowerCase();
