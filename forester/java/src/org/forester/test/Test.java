@@ -897,6 +897,21 @@ public final class Test {
                     .equals( "MOUSE" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.AGRESSIVE )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "x_MOUSE_x", TAXONOMY_EXTRACTION.AGRESSIVE )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

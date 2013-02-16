@@ -1121,7 +1121,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
                 && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
         if ( ( _extract_taxonomy_yes_rbmi != null ) && _extract_taxonomy_yes_rbmi.isSelected() ) {
-            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.AGRESSIVE );
         }
         else if ( ( _extract_taxonomy_pfam_rbmi != null ) && _extract_taxonomy_pfam_rbmi.isSelected() ) {
             options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
