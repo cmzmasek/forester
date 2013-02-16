@@ -167,7 +167,7 @@ ext_descendents_data_to_return:            sequence_mol_seq_fasta
 #  NH/NHX/Nexus file parsing:
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
-taxonomy_extraction_in_nh_parsing:         pfam
+taxonomy_extraction_in_nh_parsing:         yes
 
 
 #  Checkbox Display Selection
