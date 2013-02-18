@@ -23,6 +23,7 @@
 // Contact: phylosoft @ gmail . com
 // WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
+
 package org.forester.util;
 
 public final class ForesterConstants {
