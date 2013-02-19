@@ -1196,6 +1196,7 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
         if ( gsdi.getStrippedExternalGeneTreeNodes().size() > 0 ) {
             JOptionPane.showMessageDialog( this,
                                            "Duplications: " + gsdi.getDuplicationsSum() + "\n"
@@ -1204,7 +1205,8 @@ public final class MainFrameApplication extends MainFrame {
                                                    + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
                                                    + "Stripped gene tree nodes: "
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n",
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
                                            "GSDI successfully completed",
                                            JOptionPane.WARNING_MESSAGE );
         }
@@ -1216,7 +1218,8 @@ public final class MainFrameApplication extends MainFrame {
                                                    + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
                                                    + "Stripped gene tree nodes: "
                                                    + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n",
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
                                            "GSDI successfully completed",
                                            JOptionPane.INFORMATION_MESSAGE );
         }
@@ -1267,21 +1270,26 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
         if ( gsdir.getStrippedExternalGeneTreeNodes().size() > 0 ) {
             JOptionPane.showMessageDialog( this,
-                                           "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
-                                                   + gsdir.getSpeciationsSum() + "\n" + "Stripped gene tree nodes: "
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n",
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
                                            "GSDIR successfully completed",
                                            JOptionPane.WARNING_MESSAGE );
         }
         else {
             JOptionPane.showMessageDialog( this,
-                                           "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
-                                                   + gsdir.getSpeciationsSum() + "\n" + "Stripped gene tree nodes: "
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
                                                    + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n",
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
                                            "GSDIR successfully completed",
                                            JOptionPane.INFORMATION_MESSAGE );
         }

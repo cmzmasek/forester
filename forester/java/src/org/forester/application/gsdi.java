@@ -280,11 +280,6 @@ public final class gsdi {
                 + "ms" );
         System.out.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
         log_writer.println( "Mapping based on                         : " + gsdii.getTaxCompBase() );
-        if ( ( base_algorithm == ALGORITHM.GSDIR ) ) {
-            final GSDIR gsdir = ( GSDIR ) gsdii;
-            System.out.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
-            log_writer.println( "Duplications sum statistics              : " + gsdir.getMinDuplicationsSum() );
-        }
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
             if ( base_algorithm == ALGORITHM.GSDIR ) {
