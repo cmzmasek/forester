@@ -101,7 +101,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
-import org.forester.sdi.SDIR;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -142,8 +141,6 @@ public final class MainFrameApplication extends MainFrame {
     private JMenuItem                        _load_species_tree_item;
     private JMenuItem                        _gsdi_item;
     private JMenuItem                        _gsdir_item;
-    private JMenuItem                        _root_min_dups_item;
-    private JMenuItem                        _root_min_cost_l_item;
     private JMenuItem                        _lineage_inference;
     private JMenuItem                        _function_analysis;
     // Application-only print menu items
@@ -532,18 +529,6 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 executeGSDIR();
             }
-            else if ( o == _root_min_dups_item ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                executeSDIR( false );
-            }
-            else if ( o == _root_min_cost_l_item ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                executeSDIR( true );
-            }
             else if ( o == _graphics_export_visible_only_cbmi ) {
                 updateOptions( getOptions() );
             }
@@ -805,16 +790,10 @@ public final class MainFrameApplication extends MainFrame {
     void buildAnalysisMenu() {
         _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
         _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
-        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (re-rooting)" ) );
-        _analysis_menu.addSeparator();
-        _analysis_menu.add( _root_min_dups_item = new JMenuItem( "Root by Minimizing Duplications | Height (SDI)" ) );
-        _analysis_menu.add( _root_min_cost_l_item = new JMenuItem( "Root by Minimizing Cost L | Height (SDI)" ) );
-        _analysis_menu.addSeparator();
+        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (GSDI with re-rooting)" ) );
         _analysis_menu.add( _load_species_tree_item = new JMenuItem( "Load Species Tree..." ) );
         customizeJMenuItem( _gsdi_item );
         customizeJMenuItem( _gsdir_item );
-        customizeJMenuItem( _root_min_dups_item );
-        customizeJMenuItem( _root_min_cost_l_item );
         customizeJMenuItem( _load_species_tree_item );
         _analysis_menu.addSeparator();
         _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
@@ -1206,11 +1185,9 @@ public final class MainFrameApplication extends MainFrame {
             return;
         }
         gene_tree.setRerootable( false );
-        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        _mainpanel.getCurrentPhylogeny().clearHashIdToNodeMap();
-        _mainpanel.getCurrentPhylogeny().recalculateNumberOfExternalDescendants( true );
-        _mainpanel.getCurrentTreePanel().resetNodeIdToDistToLeafMap();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
+        gene_tree.clearHashIdToNodeMap();
+        gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( gene_tree, getConfiguration(), "gene tree", null );
         getControlPanel().setShowEvents( true );
         showWhole();
         final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
@@ -1219,13 +1196,43 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this, "Duplications: " + gsdi.getDuplicationsSum() + "\n"
-                + "Potential duplications: " + gsdi.getSpeciationOrDuplicationEventsSum() + "\n" + "Speciations: "
-                + gsdi.getSpeciationsSum(), "GSDI successfully completed", JOptionPane.INFORMATION_MESSAGE );
+        if ( gsdi.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
     }
 
     void executeGSDIR() {
-        if ( !isOKforSDI( false, true ) ) {
+        if ( !isOKforSDI( false, false ) ) {
+            return;
+        }
+        final int p = PhylogenyMethods.countNumberOfPolytomies( _mainpanel.getCurrentPhylogeny() );
+        if ( ( p > 0 )
+                && !( ( p == 1 ) && ( _mainpanel.getCurrentPhylogeny().getRoot().getNumberOfDescendants() == 3 ) ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
             return;
         }
         final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
@@ -1260,11 +1267,24 @@ public final class MainFrameApplication extends MainFrame {
         _mainpanel.getTabbedPane().setSelectedIndex( selected );
         showWhole();
         _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Duplications (min): " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
-                                               + gsdir.getSpeciationsSum(),
-                                       "GSDIR successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
+        if ( gsdir.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
+                                                   + gsdir.getSpeciationsSum() + "\n" + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdir.getMinDuplicationsSum() + "\n" + "Speciations: "
+                                                   + gsdir.getSpeciationsSum() + "\n" + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
     }
 
     void executeLineageInference() {
@@ -1285,37 +1305,6 @@ public final class MainFrameApplication extends MainFrame {
         new Thread( inferrer ).start();
     }
 
-    void executeSDIR( final boolean minimize_cost ) {
-        if ( !isOKforSDI( true, true ) ) {
-            return;
-        }
-        Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        final SDIR sdiunrooted = new SDIR();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        try {
-            gene_tree = sdiunrooted.infer( gene_tree, _species_tree, minimize_cost, // minimize cost
-                                           !minimize_cost, // minimize sum of dups
-                                           true, // minimize height
-                                           true, // return tree(s)
-                                           1 )[ 0 ]; // # of trees to return
-        }
-        catch ( final Exception e ) {
-            JOptionPane.showMessageDialog( this, e.toString(), "Error during SDIR", JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final int duplications = sdiunrooted.getMinimalDuplications();
-        gene_tree.setRerootable( false );
-        _mainpanel.getCurrentTreePanel().setTree( gene_tree );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        JOptionPane.showMessageDialog( this,
-                                       "Number of duplications: " + duplications,
-                                       "SDIR successfully completed",
-                                       JOptionPane.INFORMATION_MESSAGE );
-    }
-
     void exit() {
         removeAllTextFrames();
         _mainpanel.terminate();
@@ -1332,21 +1321,21 @@ public final class MainFrameApplication extends MainFrame {
         else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
             JOptionPane.showMessageDialog( this,
                                            "No species tree loaded",
-                                           "Cannot execute SDI",
+                                           "Cannot execute GSDI",
                                            JOptionPane.ERROR_MESSAGE );
             return false;
         }
         else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
             JOptionPane.showMessageDialog( this,
                                            "Species tree is not completely binary",
-                                           "Cannot execute SDI",
+                                           "Cannot execute GSDI",
                                            JOptionPane.ERROR_MESSAGE );
             return false;
         }
         else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
             JOptionPane.showMessageDialog( this,
                                            "Gene tree is not completely binary",
-                                           "Cannot execute SDI",
+                                           "Cannot execute GSDI",
                                            JOptionPane.ERROR_MESSAGE );
             return false;
         }
