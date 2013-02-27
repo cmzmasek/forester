@@ -151,7 +151,6 @@ public final class MainFrameApplication extends MainFrame {
     private JMenuItem                        _write_to_tif_item;
     private JMenuItem                        _write_to_png_item;
     private JMenuItem                        _write_to_bmp_item;
-    private Phylogeny                        _species_tree;
     private File                             _current_dir;
     private ButtonGroup                      _radio_group_1;
     private ButtonGroup                      _radio_group_2;
@@ -276,7 +275,6 @@ public final class MainFrameApplication extends MainFrame {
         setInferenceManager( InferenceManager.createInstance( _configuration ) );
         setPhylogeneticInferenceOptions( PhylogeneticInferenceOptions.createInstance( _configuration ) );
         //     _textframe = null; #~~~~
-        _species_tree = null;
         // set title
         setTitle( Constants.PRG_NAME + " " + Constants.VERSION + " (" + Constants.PRG_DATE + ")" );
         _mainpanel = new MainPanel( _configuration, this );

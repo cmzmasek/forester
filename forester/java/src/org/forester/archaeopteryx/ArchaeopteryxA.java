@@ -35,22 +35,24 @@ import java.net.URL;
 import javax.swing.JApplet;
 import javax.swing.UIManager;
 
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
 public class ArchaeopteryxA extends JApplet {
 
-    private static final long  serialVersionUID    = 2314899014580484146L;
-    private final static Color background_color    = new Color( 0, 0, 0 );
-    private final static Color font_color          = new Color( 0, 255, 0 );
-    private final static Color ex_background_color = new Color( 0, 0, 0 );
-    private final static Color ex_font_color       = new Color( 255, 0, 0 );
-    private final static Font  font                = new Font( Configuration.getDefaultFontFamilyName(), Font.BOLD, 9 );
+    private static final long  serialVersionUID      = 2314899014580484146L;
+    private final static Color background_color      = new Color( 0, 0, 0 );
+    private final static Color font_color            = new Color( 0, 255, 0 );
+    private final static Color ex_background_color   = new Color( 0, 0, 0 );
+    private final static Color ex_font_color         = new Color( 255, 0, 0 );
+    private final static Font  font                  = new Font( Configuration.getDefaultFontFamilyName(), Font.BOLD, 9 );
     private MainFrameApplet    _mainframe_applet;
-    private String             _url_string         = "";
-    private String             _message_1          = "";
-    private String             _message_2          = "";
-    public final static String NAME                = "ArchaeopteryxA";
+    private String             _tree_url_str         = "";
+    private String             _species_tree_url_str = "";
+    private String             _message_1            = "";
+    private String             _message_2            = "";
+    public final static String NAME                  = "ArchaeopteryxA";
 
     @Override
     public void destroy() {
@@ -80,16 +82,34 @@ public class ArchaeopteryxA extends JApplet {
         return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
     }
 
-    public String getUrlString() {
-        return _url_string;
+    public String getTreeUrlStr() {
+        return _tree_url_str;
+    }
+
+    public String getSpeciesTreeUrlStr() {
+        return _species_tree_url_str;
     }
 
     @Override
     public void init() {
         boolean has_exception = false;
         setName( NAME );
-        setUrlString( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
-        AptxUtil.printAppletMessage( NAME, "URL of phylogenies to load: \"" + getUrlString() + "\"" );
+        setTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
+        setSpeciesTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD ) );
+        if ( !ForesterUtil.isEmpty( getTreeUrlStr() ) ) {
+            AptxUtil.printAppletMessage( NAME, "URL of tree(s) to load: \"" + getTreeUrlStr() + "\"" );
+        }
+        else {
+            ForesterUtil.printErrorMessage( NAME, "no URL for tree(s) to load!" );
+            setBackground( ex_background_color );
+            setForeground( ex_font_color );
+            has_exception = true;
+            setMessage1( "no URL for tree(s) to load" );
+            repaint();
+        }
+        if ( !ForesterUtil.isEmpty( getSpeciesTreeUrlStr() ) ) {
+            AptxUtil.printAppletMessage( NAME, "URL of species tree to load: \"" + getSpeciesTreeUrlStr() + "\"" );
+        }
         setBackground( background_color );
         setForeground( font_color );
         setFont( font );
@@ -117,16 +137,28 @@ public class ArchaeopteryxA extends JApplet {
             }
             setVisible( false );
             _mainframe_applet = new MainFrameApplet( this, configuration );
-            URL url = null;
-            url = new URL( getUrlString() );
-            final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( url, configuration
+            final URL tree_url = new URL( getTreeUrlStr() );
+            final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( tree_url, configuration
                     .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
                     .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction() );
             AptxUtil.addPhylogeniesToTabs( phys,
-                                           new File( url.getFile() ).getName(),
-                                           getUrlString(),
+                                           new File( tree_url.getFile() ).getName(),
+                                           getTreeUrlStr(),
                                            getMainFrameApplet().getConfiguration(),
                                            getMainFrameApplet().getMainPanel() );
+            if ( !ForesterUtil.isEmpty( getSpeciesTreeUrlStr() ) ) {
+                final URL species_tree_url = new URL( getSpeciesTreeUrlStr() );
+                final Phylogeny[] species_trees = AptxUtil
+                        .readPhylogeniesFromUrl( species_tree_url,
+                                                 configuration.isValidatePhyloXmlAgainstSchema(),
+                                                 configuration.isReplaceUnderscoresInNhParsing(),
+                                                 false,
+                                                 TAXONOMY_EXTRACTION.NO );
+                if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
+                    AptxUtil.printAppletMessage( NAME, "successfully read species tree" );
+                    getMainFrameApplet().setSpeciesTree( species_trees[ 0 ] );
+                }
+            }
             getMainFrameApplet().getMainPanel().getControlPanel().showWholeAll();
             getMainFrameApplet().getMainPanel().getControlPanel().showWhole();
             setVisible( true );
@@ -207,7 +239,11 @@ public class ArchaeopteryxA extends JApplet {
         _message_2 = message_2;
     }
 
-    private void setUrlString( final String url_string ) {
-        _url_string = url_string;
+    private void setTreeUrlStr( final String url_string ) {
+        _tree_url_str = url_string;
+    }
+
+    private void setSpeciesTreeUrlStr( final String url_string ) {
+        _species_tree_url_str = url_string;
     }
 }

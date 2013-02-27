@@ -67,16 +67,16 @@ public final class MainFrameApplet extends MainFrame {
         URL url = null;
         Phylogeny[] phys = null;
         // Get URL to tree file
-        if ( _applet.getUrlString() != null ) {
+        if ( _applet.getTreeUrlStr() != null ) {
             try {
-                url = new URL( _applet.getUrlString() );
+                url = new URL( _applet.getTreeUrlStr() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );
                 e.printStackTrace();
                 JOptionPane.showMessageDialog( this,
                                                ArchaeopteryxA.NAME + ": Could not create URL from: \""
-                                                       + _applet.getUrlString() + "\"\nError: " + e,
+                                                       + _applet.getTreeUrlStr() + "\"\nError: " + e,
                                                "Failed to create URL",
                                                JOptionPane.ERROR_MESSAGE );
                 close();
@@ -113,6 +113,8 @@ public final class MainFrameApplet extends MainFrame {
         if ( !_configuration.isUseNativeUI() ) {
             _jmenubar.setBackground( _configuration.getGuiMenuBackgroundColor() );
         }
+        //TODO if species tree...
+        buildAnalysisMenu();
         buildToolsMenu();
         buildViewMenu();
         buildFontSizeMenu();
@@ -150,6 +152,19 @@ public final class MainFrameApplet extends MainFrame {
         requestFocusInWindow();
         setVisible( true );
         System.gc();
+    }
+
+    void buildAnalysisMenu() {
+        _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
+        _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
+        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (GSDI with re-rooting)" ) );
+        customizeJMenuItem( _gsdi_item );
+        customizeJMenuItem( _gsdir_item );
+        //  _analysis_menu.addSeparator();
+        //  _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
+        //  customizeJMenuItem( _lineage_inference );
+        //  _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
+        _jmenubar.add( _analysis_menu );
     }
 
     void buildOptionsMenu() {
@@ -286,5 +301,9 @@ public final class MainFrameApplet extends MainFrame {
     @Override
     void readPhylogeniesFromURL() {
         throw new NoSuchMethodError( "not implemented" );
+    }
+
+    void setSpeciesTree( final Phylogeny species_tree ) {
+        _species_tree = species_tree;
     }
 }

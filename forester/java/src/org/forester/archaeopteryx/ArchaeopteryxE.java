@@ -422,17 +422,17 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         setupUI();
         URL phys_url = null;
         Phylogeny[] phys = null;
-        final String phys_url_string = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
-        AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + phys_url_string );
+        final String tree_url_str = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+        AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + tree_url_str );
         // Get URL to tree file
-        if ( phys_url_string != null ) {
+        if ( tree_url_str != null ) {
             try {
-                phys_url = new URL( phys_url_string );
+                phys_url = new URL( tree_url_str );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( NAME, "error: " + e );
                 e.printStackTrace();
-                JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + phys_url_string
+                JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + tree_url_str
                         + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
             }
         }

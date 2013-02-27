@@ -124,6 +124,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenu                       _font_size_menu;
     JMenu                       _help_jmenu;
     JMenuItem[]                 _load_phylogeny_from_webservice_menu_items;
+    // Analysis menu
+    JMenu                       _analysis_menu;
+    JMenuItem                   _load_species_tree_item;
+    JMenuItem                   _gsdi_item;
+    JMenuItem                   _gsdir_item;
+    JMenuItem                   _lineage_inference;
+    JMenuItem                   _function_analysis;
     // file menu:
     JMenuItem                   _open_item;
     JMenuItem                   _open_url_item;
@@ -229,6 +236,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration               _configuration;
     JMenuItem                   _remove_branch_color_item;
     Options                     _options;
+    Phylogeny                   _species_tree;
     InferenceManager            _inference_manager;
     final ProcessPool           _process_pool;
     private String              _previous_node_annotation_ref;

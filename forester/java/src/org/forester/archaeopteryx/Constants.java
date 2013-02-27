@@ -65,6 +65,7 @@ public final class Constants {
     static final Dimension      NODE_PANEL_SIZE                                               = new Dimension( 500, 600 );
     static final Dimension      NODE_FRAME_SIZE                                               = new Dimension( 520, 640 );
     static final String         APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD                     = "url_of_tree_to_load";
+    static final String         APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD             = "url_of_species_tree_to_load";
     static final String         APPLET_PARAM_NAME_FOR_CONFIG_FILE_URL                         = "config_file";
     static final String         APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE                  = "homology_type_analysis_query_sequence";
     static final String         APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE          = "homology_type_analysis_initial_relation_type";
