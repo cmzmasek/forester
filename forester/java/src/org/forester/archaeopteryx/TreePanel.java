@@ -77,6 +77,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.regex.Matcher;
 
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -2910,18 +2911,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return Blast.isContainsQueryForBlast( node );
     }
 
-    final private boolean isCanOpenSeqWeb( final PhylogenyNode node ) {
-        if ( node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
-                        .toLowerCase() ) ) {
-            return true;
-        }
-        return false;
-    }
-
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {
         if ( node.getNodeData().isHasTaxonomy()
                 && ( ( ( node.getNodeData().getTaxonomy().getIdentifier() != null )
@@ -3244,36 +3233,104 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    final private boolean isCanOpenSeqWeb( final PhylogenyNode node ) {
+        if ( node.getNodeData().isHasSequence()
+                && ( node.getNodeData().getSequence().getAccession() != null )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
+                        .toLowerCase() ) ) {
+            return true;
+        }
+        if ( !ForesterUtil.isEmpty( node.getName() ) && AptxUtil.UNIPROT_KB_PATTERN.matcher( node.getName() ).find() ) {
+            return true;
+        }
+        if ( node.getNodeData().isHasSequence() ) {
+            Sequence seq = node.getNodeData().getSequence();
+            if ( !ForesterUtil.isEmpty( seq.getName() ) && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getName() ).find() ) {
+                return true;
+            }
+            if ( !ForesterUtil.isEmpty( seq.getSymbol() )
+                    && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getSymbol() ).find() ) {
+                return true;
+            }
+            if ( ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() )
+                    && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getAccession().getValue() ).find() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     final private void openSeqWeb( final PhylogenyNode node ) {
         if ( !isCanOpenSeqWeb( node ) ) {
             cannotOpenBrowserWarningMessage( "sequence" );
             return;
         }
         String uri_str = null;
-        final Sequence seq = node.getNodeData().getSequence();
-        final String source = seq.getAccession().getSource().toLowerCase();
-        String url;
-        if ( source.toLowerCase().equals( "ncbi" ) ) {
-            url = Constants.NCBI_ALL_DATABASE_SEARCH;
+        if ( node.getNodeData().isHasSequence()
+                && ( node.getNodeData().getSequence().getAccession() != null )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
+                        .toLowerCase() ) ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            final String source = seq.getAccession().getSource().toLowerCase();
+            String url;
+            if ( source.toLowerCase().equals( "ncbi" ) ) {
+                url = Constants.NCBI_ALL_DATABASE_SEARCH;
+            }
+            else {
+                final WebLink weblink = getConfiguration().getWebLink( source );
+                url = weblink.getUrl().toString();
+            }
+            try {
+                uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
+            }
+            catch ( final UnsupportedEncodingException e ) {
+                AptxUtil.showErrorMessage( this, e.toString() );
+                e.printStackTrace();
+            }
         }
         else {
-            final WebLink weblink = getConfiguration().getWebLink( source );
-            url = weblink.getUrl().toString();
-        }
-        try {
-            uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
-        }
-        catch ( final UnsupportedEncodingException e ) {
-            AptxUtil.showErrorMessage( this, e.toString() );
-            e.printStackTrace();
+            String upkb = null;
+            if ( node.getNodeData().isHasSequence() ) {
+                Sequence seq = node.getNodeData().getSequence();
+                if ( !ForesterUtil.isEmpty( seq.getSymbol() )
+                        && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getSymbol() ).find() ) {
+                    upkb = AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getSymbol() ).group();
+                }
+                else if ( !ForesterUtil.isEmpty( seq.getName() )
+                        && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getName() ).find() ) {
+                    upkb = AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getName() ).group();
+                }
+                else if ( ( node.getNodeData().getSequence().getAccession() != null )
+                        && !ForesterUtil.isEmpty( seq.getAccession().getValue() )
+                        && AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getAccession().getValue() ).find() ) {
+                    upkb = AptxUtil.UNIPROT_KB_PATTERN.matcher( seq.getAccession().getValue() ).group();
+                }
+            }
+            if ( ForesterUtil.isEmpty( upkb ) && !ForesterUtil.isEmpty( node.getName() ) ) {
+                final Matcher m = AptxUtil.UNIPROT_KB_PATTERN.matcher( node.getName() );
+                if ( m.find() ) {
+                    upkb = m.group();
+                }
+            }
+            try {
+                uri_str = AptxUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
+            }
+            catch ( final UnsupportedEncodingException e ) {
+                AptxUtil.showErrorMessage( this, e.toString() );
+                e.printStackTrace();
+            }
         }
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
-                JApplet applet = null;
-                if ( isApplet() ) {
-                    applet = obtainApplet();
-                }
-                AptxUtil.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_seq" );
+                AptxUtil.launchWebBrowser( new URI( uri_str ),
+                                           isApplet(),
+                                           isApplet() ? obtainApplet() : null,
+                                           "_aptx_seq" );
             }
             catch ( final IOException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
@@ -4533,10 +4590,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private void paintOvRectangle( final Graphics2D g ) {
-        final float w_ratio = ( float ) getWidth() / getVisibleRect().width;
-        final float h_ratio = ( float ) getHeight() / getVisibleRect().height;
-        final float x_ratio = ( float ) getWidth() / getVisibleRect().x;
-        final float y_ratio = ( float ) getHeight() / getVisibleRect().y;
+        final float w_ratio = ( ( float ) getWidth() ) / getVisibleRect().width;
+        final float h_ratio = ( ( float ) getHeight() ) / getVisibleRect().height;
+        final float x_ratio = ( ( float ) getWidth() ) / getVisibleRect().x;
+        final float y_ratio = ( ( float ) getHeight() ) / getVisibleRect().y;
         final float width = getOvMaxWidth() / w_ratio;
         final float height = getOvMaxHeight() / h_ratio;
         final float x = getVisibleRect().x + getOvXPosition() + ( getOvMaxWidth() / x_ratio );
