@@ -89,7 +89,10 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 public final class AptxUtil {
 
     final static String           UNIPROT_KB                     = "http://www.uniprot.org/uniprot/";
-    final static Pattern          UNIPROT_KB_PATTERN             = Pattern
+    final static Pattern          UNIPROT_KB_PATTERN_1             = Pattern
+            .compile( "\\bsp|tr.\\S([A-Z0-9]{5,6})\\b" );
+
+    final static Pattern          UNIPROT_KB_PATTERN_2             = Pattern
                                                                          .compile( "\\b[A-Z0-9]{5,6}_[A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA\\b" );
     private final static Pattern  seq_identifier_pattern_1       = Pattern
                                                                          .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})\\s*$" );
