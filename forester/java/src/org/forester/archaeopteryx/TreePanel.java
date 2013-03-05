@@ -3243,30 +3243,26 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return true;
         }
         if ( !ForesterUtil.isEmpty( node.getName() )
-                && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( node.getName() ).find()
-                        || AptxUtil.UNIPROT_KB_PATTERN_2.matcher( node.getName() ).find()
-                        ) ) {
+                && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( node.getName() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
+                        .matcher( node.getName() ).find() ) ) {
             return true;
         }
         if ( node.getNodeData().isHasSequence() ) {
             Sequence seq = node.getNodeData().getSequence();
-            if ( !ForesterUtil.isEmpty( seq.getName() ) && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getName() ).find()
-                    ||  AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getName() ).find()
-                    
-                    ) ) {
+            if ( !ForesterUtil.isEmpty( seq.getName() )
+                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getName() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
+                            .matcher( seq.getName() ).find() ) ) {
                 return true;
             }
             if ( !ForesterUtil.isEmpty( seq.getSymbol() )
-                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() ).find() 
-                          ||  AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() ).find() ) ) {
+                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
+                            .matcher( seq.getSymbol() ).find() ) ) {
                 return true;
             }
             if ( ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( seq.getAccession().getValue() )
-                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() ).find() 
-                            
-                            || AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() ).find() 
-                            ) ) {
+                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
+                            .matcher( seq.getAccession().getValue() ).find() ) ) {
                 return true;
             }
         }
@@ -3307,24 +3303,57 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             String upkb = null;
             if ( node.getNodeData().isHasSequence() ) {
                 Sequence seq = node.getNodeData().getSequence();
-                if ( !ForesterUtil.isEmpty( seq.getSymbol() )
-                        && AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() ).find() ) {
-                    upkb = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() ).group();
+                Matcher m;
+                if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
+                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() );
+                    if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
+                        if ( m.find() ) {
+                            upkb = m.group( 2 );
+                        }
+                        else {
+                            m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() );
+                            if ( m.find() ) {
+                                upkb = m.group();
+                            }
+                        }
+                    }
                 }
-                else if ( !ForesterUtil.isEmpty( seq.getName() )
-                        && AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getName() ).find() ) {
-                    upkb = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getName() ).group();
+                if ( ForesterUtil.isEmpty( upkb ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
+                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getName() );
+                    if ( m.find() ) {
+                        upkb = m.group( 2 );
+                    }
+                    else {
+                        m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getName() );
+                        if ( m.find() ) {
+                            upkb = m.group();
+                        }
+                    }
                 }
-                else if ( ( node.getNodeData().getSequence().getAccession() != null )
-                        && !ForesterUtil.isEmpty( seq.getAccession().getValue() )
-                        && AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() ).find() ) {
-                    upkb = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() ).group();
+                if ( ForesterUtil.isEmpty( upkb ) && ( node.getNodeData().getSequence().getAccession() != null )
+                        && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
+                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() );
+                    if ( m.find() ) {
+                        upkb = m.group( 2 );
+                    }
+                    else {
+                        m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() );
+                        if ( m.find() ) {
+                            upkb = m.group();
+                        }
+                    }
                 }
             }
             if ( ForesterUtil.isEmpty( upkb ) && !ForesterUtil.isEmpty( node.getName() ) ) {
-                final Matcher m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( node.getName() );
-                if ( m.find() ) {
-                    upkb = m.group();
+                final Matcher m1 = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( node.getName() );
+                if ( m1.find() ) {
+                    upkb = m1.group( 2 );
+                }
+                else {
+                    final Matcher m2 = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( node.getName() );
+                    if ( m2.find() ) {
+                        upkb = m2.group();
+                    }
                 }
             }
             try {
