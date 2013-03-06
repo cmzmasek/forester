@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -448,7 +447,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             about();
         }
         else if ( o == _help_item ) {
-            help( getConfiguration().getWebLinks() );
+            help();
         }
         else if ( o == _website_item ) {
             try {
@@ -803,7 +802,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _jmenubar;
     }
 
-    void help( final Map<String, WebLink> weblinks ) {
+    void help() {
         final StringBuilder sb = new StringBuilder();
         sb.append( "Display options\n" );
         sb.append( "-------------------\n" );
@@ -841,14 +840,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
         sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
         sb.append( "the '-Xmx' Java command line option. For example:\n" );
-        sb.append( "java -Xms32m -Xmx256m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
-        if ( ( weblinks != null ) && ( weblinks.size() > 0 ) ) {
-            sb.append( "Active web links\n" );
-            sb.append( "--------------------\n" );
-            for( final String key : weblinks.keySet() ) {
-                sb.append( " " + weblinks.get( key ).toString() + "\n" );
-            }
-        }
+        sb.append( "java -Xmx1024m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
         // + "General remarks\n"
         // + "---------------\n"
         // +
@@ -889,7 +881,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         // + "    incorrect and need to be inferred again\n"
         // +
         // "    with: \"SDI\"|\"SDI (Speciation Duplication Inference)\n\n"
-        sb.append( "\n" );
         sb.append( "phyloXML\n" );
         sb.append( "-------------------\n" );
         sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );

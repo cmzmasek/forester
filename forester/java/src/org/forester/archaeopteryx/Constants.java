@@ -42,8 +42,8 @@ public final class Constants {
     public final static boolean __SYNTH_LF                                                    = false;                                                               // TODO remove me
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9804";
-    final static String         PRG_DATE                                                      = "130304";
+    final static String         VERSION                                                       = "0.9805 A1ST";
+    final static String         PRG_DATE                                                      = "130306";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Verdana", "Tahoma",
             "Arial", "Helvetica", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans" };
@@ -109,5 +109,5 @@ public final class Constants {
                                                                                                            144,
                                                                                                            144 );
     final static String         NCBI_ALL_DATABASE_SEARCH                                      = "http://www.ncbi.nlm.nih.gov/gquery/?term=";
-    final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 6;
+    final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 4;
 }

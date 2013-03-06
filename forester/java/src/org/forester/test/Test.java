@@ -1023,32 +1023,30 @@ public final class Test {
             final PhylogenyNode n = new PhylogenyNode();
             n.setName( "tr|B3RJ64" );
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B3RJ64" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
-                System.exit( -1 );
                 return false;
             }
             n.setName( "B0LM41_HUMAN" );
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B0LM41_HUMAN" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
-                System.exit( -1 );
                 return false;
             }
             n.setName( "NP_001025424" );
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
-                System.exit( -1 );
                 return false;
             }
             n.setName( "_NM_001030253-" );
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "NM_001030253" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
-                System.exit( -1 );
                 return false;
             }
-            n.setName( "NP_001025424" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
-                System.exit( -1 );
+            n.setName( "XM_002122186" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "XM_002122186" ) ) {
+                return false;
+            }
+            n.setName( "AAA34956" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
+                return false;
+            }
+            n.setName( "Q06891.1" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891" ) ) {
                 return false;
             }
         }

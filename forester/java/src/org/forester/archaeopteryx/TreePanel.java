@@ -2912,11 +2912,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {
         if ( node.getNodeData().isHasTaxonomy()
-                && ( ( ( node.getNodeData().getTaxonomy().getIdentifier() != null )
-                        && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getProvider() )
-                        && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) && getConfiguration()
-                        .isHasWebLink( node.getNodeData().getTaxonomy().getIdentifier().getProvider().toLowerCase() ) )
-                        || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
+                && ( ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
                         || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) )
                         || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) || ( ( node
                         .getNodeData().getTaxonomy().getIdentifier() != null )
@@ -3240,14 +3236,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
-        if ( node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
-                        .toLowerCase() ) ) {
-            return node.getNodeData().getSequence().getAccession().getSource();
-        }
         String v = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
         if ( ForesterUtil.isEmpty( v ) ) {
             v = ForesterUtil.extractGenbankAccessor( node );
@@ -3292,19 +3280,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         String uri_str = null;
         final Taxonomy tax = node.getNodeData().getTaxonomy();
-        if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getProvider() )
-                && getConfiguration().isHasWebLink( tax.getIdentifier().getProvider().toLowerCase() ) ) {
-            final String type = tax.getIdentifier().getProvider().toLowerCase();
-            final WebLink weblink = getConfiguration().getWebLink( type );
-            try {
-                uri_str = weblink.getUrl() + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF8 );
-            }
-            catch ( final UnsupportedEncodingException e ) {
-                AptxUtil.showErrorMessage( this, e.toString() );
-                e.printStackTrace();
-            }
-        }
-        else if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
+        if ( ( tax.getIdentifier() != null ) && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
                 && tax.getIdentifier().getValue().startsWith( "http://" ) ) {
             try {
                 uri_str = new URI( tax.getIdentifier().getValue() ).toString();

@@ -78,7 +78,6 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
-import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -107,38 +106,14 @@ public final class AptxUtil {
                                                    final Configuration conf,
                                                    final TreePanel tp ) {
         String uri_str = null;
-        if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                && conf.isHasWebLink( node.getNodeData().getSequence().getAccession().getSource().toLowerCase() ) ) {
-            final Sequence seq = node.getNodeData().getSequence();
-            final String source = seq.getAccession().getSource().toLowerCase();
-            String url;
-            if ( source.toLowerCase().equals( "ncbi" ) ) {
-                url = Constants.NCBI_ALL_DATABASE_SEARCH;
-            }
-            else {
-                final WebLink weblink = conf.getWebLink( source );
-                url = weblink.getUrl().toString();
-            }
+        final String upkb = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
+        if ( !ForesterUtil.isEmpty( upkb ) ) {
             try {
-                uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
+                uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
                 showErrorMessage( tp, e.toString() );
                 e.printStackTrace();
-            }
-        }
-        if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String upkb = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
-            if ( !ForesterUtil.isEmpty( upkb ) ) {
-                try {
-                    uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
-                }
-                catch ( final UnsupportedEncodingException e ) {
-                    showErrorMessage( tp, e.toString() );
-                    e.printStackTrace();
-                }
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {

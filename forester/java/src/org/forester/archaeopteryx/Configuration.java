@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -57,14 +56,12 @@ import org.forester.util.ForesterUtil;
 public final class Configuration {
 
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
-    private static final String             WEB_LINK_KEY                                           = "web_link";
     private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
     private static final int                DEPRECATED                                             = -2;
     private UI                              _ui                                                    = UI.UNKNOWN;
     private boolean                         _use_tabbed_display                                    = false;
     private boolean                         _hide_controls_and_menus                               = false;
     private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
-    private SortedMap<String, WebLink>      _weblinks                                              = null;
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _antialias_screen                                      = true;
     private PHYLOGENY_GRAPHICS_TYPE         _phylogeny_graphics_type                               = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
@@ -96,8 +93,8 @@ public final class Configuration {
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private boolean                         _show_default_node_shapes_internal                     = false;
     private boolean                         _show_default_node_shapes_external                     = false;
-    private NodeShape                       _default_node_shape                                    = NodeShape.CIRCLE;
-    private NodeFill                        _default_node_fill                                     = NodeFill.GRADIENT;
+    private NodeShape                       _default_node_shape                                    = NodeShape.RECTANGLE;
+    private NodeFill                        _default_node_fill                                     = NodeFill.SOLID;
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private boolean                         _taxonomy_colorize_node_shapes                         = false;
     private int                             _default_bootstrap_samples                             = -1;
@@ -244,7 +241,6 @@ public final class Configuration {
         else {
             config_filename = cf;
         }
-        setWebLinks( new TreeMap<String, WebLink>() );
         setDisplayColors( new TreeMap<String, Color>() );
         config_filename = config_filename.trim();
         URL u = null;
@@ -725,14 +721,6 @@ public final class Configuration {
         return _taxonomy_extraction;
     }
 
-    WebLink getWebLink( final String source ) {
-        return getWebLinks().get( source );
-    }
-
-    Map<String, WebLink> getWebLinks() {
-        return _weblinks;
-    }
-
     boolean isAntialiasScreen() {
         if ( AptxUtil.isMac() ) {
             // Apple Macintosh graphics are slow, turn off anti-alias.
@@ -752,10 +740,6 @@ public final class Configuration {
 
     boolean isEditable() {
         return _editable;
-    }
-
-    boolean isHasWebLink( final String source ) {
-        return getWebLinks().containsKey( source );
     }
 
     /**
@@ -807,25 +791,6 @@ public final class Configuration {
 
     final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
-    }
-
-    void setWebLinks( final SortedMap<String, WebLink> weblinks ) {
-        _weblinks = weblinks;
-    }
-
-    private void createWebLink( final String url_str, final String desc, final String source_identifier ) {
-        WebLink weblink = null;
-        boolean ex = false;
-        try {
-            weblink = new WebLink( new URL( url_str.trim() ), desc.trim(), source_identifier.trim() );
-        }
-        catch ( final MalformedURLException e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "could not create URL from [" + url_str + "]" );
-            ex = true;
-        }
-        if ( !ex && ( weblink != null ) ) {
-            getWebLinks().put( weblink.getSourceIdentifier().toLowerCase(), weblink );
-        }
     }
 
     private int getClickToIndex( final String name ) {
@@ -1677,17 +1642,6 @@ public final class Configuration {
                 }
                 else if ( key.equals( DISPLAY_COLOR_KEY ) ) {
                     putDisplayColors( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
-                }
-                else if ( key.equals( WEB_LINK_KEY ) ) {
-                    if ( st.countTokens() == 3 ) {
-                        createWebLink( ( String ) st.nextElement(),
-                                       ( String ) st.nextElement(),
-                                       ( String ) st.nextElement() );
-                    }
-                    else {
-                        ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                          "illegal format in configuration file for key [" + key + "]" );
-                    }
                 }
                 else {
                     ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown configuration key [" + key
