@@ -127,9 +127,9 @@ phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
 show_default_node_shapes_internal:         no
 show_default_node_shapes_external:         no
-default_node_size:                         6
-default_node_shape:                        circle
-default_node_fill:                         gradient
+default_node_size:                         4
+default_node_shape:                        rectangle
+default_node_fill:                         solid
 taxonomy_colorize_node_shapes:             no
 #graphics_export_x:                         595
 #graphics_export_y:                         792
@@ -274,32 +274,6 @@ gui_button_border_color:              0x000000
 
 
 
-
-#  Web Links
-#  --------- 
-#  Format: web_link: <URL> <description> <source identifier>
-#  E.g. "http://www.uniprot.org/uniprot/?query= UniProtKB   UniProtKB"
-#  <description> is not used at the moment.
-#  <source identifier> corresponds to the <source> element for <sequence> <accession>,
-#  and to the <type> of <taxonomy> <id> (see www.phyloxml.org).
- 
-web_link: http://www.uniprot.org/uniprot/?query=                            UniProtKB        UniProtKB
-web_link: http://www.uniprot.org/uniprot/?query=                            SPTREMBL         sptrembl
-web_link: http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?cmd=Retrieve&val=  NCBI             GI
-web_link: http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?cmd=Retrieve&val=  RefSeq           RefSeq
-web_link: http://www.ebi.ac.uk/interpro/IEntry?ac=                          InterPro         InterPro
-web_link: http://www.rcsb.org/pdb/explore.do?structureId=                   PDB              PDB
-web_link: http://pfam.sanger.ac.uk/protein?entry=                           Pfam             pfam
-web_link: http://tolweb.org/                                                ToL              tol
-web_link: http://www.eol.org/pages/                                         EOL              eol
-web_link: http://www.uniprot.org/taxonomy/                                  UniProt-Taxonomy uniprot
-web_link: http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=       NCBI-Taxonomy    ncbi
-web_link: http://www.ubio.org/browser/details.php?namebankID=               uBio             namebankID
-# not working at the moment:
-web_link: http://www.ensembl.org/Homo_sapiens/Search/Summary?species=all;idx=;q=  Ensembl  Ensembl
-
-
-
 #  Settings Specific for ArchaeopteryxE
 #  ------------------------------------
 #  To hide controls and menus: 'hide_controls_and_menus: yes'
@@ -307,7 +281,6 @@ web_link: http://www.ensembl.org/Homo_sapiens/Search/Summary?species=all;idx=;q=
 
 hide_controls_and_menus: no
 use_tabbed_display:      yes
-
 
 
 
