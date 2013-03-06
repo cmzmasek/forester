@@ -77,7 +77,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.regex.Matcher;
 
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -3142,7 +3141,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final String title = clickto_names.get( i );
             _node_popup_menu_items[ i ] = new JMenuItem( title );
             if ( title.equals( Configuration.clickto_options[ Configuration.open_seq_web ][ 0 ] ) ) {
-                _node_popup_menu_items[ i ].setEnabled( isCanOpenSeqWeb( node ) );
+                final String id = isCanOpenSeqWeb( node );
+                if ( !ForesterUtil.isEmpty( id ) ) {
+                    _node_popup_menu_items[ i ].setText( _node_popup_menu_items[ i ].getText() + " [" + id + "]" );
+                    _node_popup_menu_items[ i ].setEnabled( true );
+                }
+                else {
+                    _node_popup_menu_items[ i ].setEnabled( false );
+                }
             }
             else if ( title.equals( Configuration.clickto_options[ Configuration.open_tax_web ][ 0 ] ) ) {
                 _node_popup_menu_items[ i ].setEnabled( isCanOpenTaxWeb( node ) );
@@ -3233,137 +3239,31 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private boolean isCanOpenSeqWeb( final PhylogenyNode node ) {
+    final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
         if ( node.getNodeData().isHasSequence()
                 && ( node.getNodeData().getSequence().getAccession() != null )
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
                 && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
                         .toLowerCase() ) ) {
-            return true;
+            return node.getNodeData().getSequence().getAccession().getSource();
         }
-        if ( !ForesterUtil.isEmpty( node.getName() )
-                && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( node.getName() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
-                        .matcher( node.getName() ).find() ) ) {
-            return true;
+        String v = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractGenbankAccessor( node );
         }
-        if ( node.getNodeData().isHasSequence() ) {
-            Sequence seq = node.getNodeData().getSequence();
-            if ( !ForesterUtil.isEmpty( seq.getName() )
-                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getName() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
-                            .matcher( seq.getName() ).find() ) ) {
-                return true;
-            }
-            if ( !ForesterUtil.isEmpty( seq.getSymbol() )
-                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
-                            .matcher( seq.getSymbol() ).find() ) ) {
-                return true;
-            }
-            if ( ( node.getNodeData().getSequence().getAccession() != null )
-                    && !ForesterUtil.isEmpty( seq.getAccession().getValue() )
-                    && ( AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() ).find() || AptxUtil.UNIPROT_KB_PATTERN_2
-                            .matcher( seq.getAccession().getValue() ).find() ) ) {
-                return true;
-            }
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractRefSeqAccessorAccessor( node );
         }
-        return false;
+        return v;
     }
 
     final private void openSeqWeb( final PhylogenyNode node ) {
-        if ( !isCanOpenSeqWeb( node ) ) {
+        if ( ForesterUtil.isEmpty( isCanOpenSeqWeb( node ) ) ) {
             cannotOpenBrowserWarningMessage( "sequence" );
             return;
         }
-        String uri_str = null;
-        if ( node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getAccession() != null )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                && getConfiguration().isHasWebLink( node.getNodeData().getSequence().getAccession().getSource()
-                        .toLowerCase() ) ) {
-            final Sequence seq = node.getNodeData().getSequence();
-            final String source = seq.getAccession().getSource().toLowerCase();
-            String url;
-            if ( source.toLowerCase().equals( "ncbi" ) ) {
-                url = Constants.NCBI_ALL_DATABASE_SEARCH;
-            }
-            else {
-                final WebLink weblink = getConfiguration().getWebLink( source );
-                url = weblink.getUrl().toString();
-            }
-            try {
-                uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
-            }
-            catch ( final UnsupportedEncodingException e ) {
-                AptxUtil.showErrorMessage( this, e.toString() );
-                e.printStackTrace();
-            }
-        }
-        else {
-            String upkb = null;
-            if ( node.getNodeData().isHasSequence() ) {
-                Sequence seq = node.getNodeData().getSequence();
-                Matcher m;
-                if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
-                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() );
-                    if ( !ForesterUtil.isEmpty( seq.getSymbol() ) ) {
-                        if ( m.find() ) {
-                            upkb = m.group( 2 );
-                        }
-                        else {
-                            m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() );
-                            if ( m.find() ) {
-                                upkb = m.group();
-                            }
-                        }
-                    }
-                }
-                if ( ForesterUtil.isEmpty( upkb ) && !ForesterUtil.isEmpty( seq.getName() ) ) {
-                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getName() );
-                    if ( m.find() ) {
-                        upkb = m.group( 2 );
-                    }
-                    else {
-                        m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getName() );
-                        if ( m.find() ) {
-                            upkb = m.group();
-                        }
-                    }
-                }
-                if ( ForesterUtil.isEmpty( upkb ) && ( node.getNodeData().getSequence().getAccession() != null )
-                        && !ForesterUtil.isEmpty( seq.getAccession().getValue() ) ) {
-                    m = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() );
-                    if ( m.find() ) {
-                        upkb = m.group( 2 );
-                    }
-                    else {
-                        m = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() );
-                        if ( m.find() ) {
-                            upkb = m.group();
-                        }
-                    }
-                }
-            }
-            if ( ForesterUtil.isEmpty( upkb ) && !ForesterUtil.isEmpty( node.getName() ) ) {
-                final Matcher m1 = AptxUtil.UNIPROT_KB_PATTERN_1.matcher( node.getName() );
-                if ( m1.find() ) {
-                    upkb = m1.group( 2 );
-                }
-                else {
-                    final Matcher m2 = AptxUtil.UNIPROT_KB_PATTERN_2.matcher( node.getName() );
-                    if ( m2.find() ) {
-                        upkb = m2.group();
-                    }
-                }
-            }
-            try {
-                uri_str = AptxUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
-            }
-            catch ( final UnsupportedEncodingException e ) {
-                AptxUtil.showErrorMessage( this, e.toString() );
-                e.printStackTrace();
-            }
-        }
+        final String uri_str = AptxUtil.createUriForSeqWeb( node, getConfiguration(), this );
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
@@ -3417,7 +3317,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             try {
-                uri_str = "http://www.eol.org/search?q="
+                uri_str = "http://www.uniprot.org/taxonomy/?query="
                         + URLEncoder.encode( tax.getScientificName(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
@@ -3437,7 +3337,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
             try {
-                uri_str = "http://www.eol.org/search?q="
+                uri_str = "http://www.uniprot.org/taxonomy/?query="
                         + URLEncoder.encode( tax.getCommonName(), ForesterConstants.UTF8 );
             }
             catch ( final UnsupportedEncodingException e ) {
@@ -3447,11 +3347,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
-                JApplet applet = null;
-                if ( isApplet() ) {
-                    applet = obtainApplet();
-                }
-                AptxUtil.launchWebBrowser( new URI( uri_str ), isApplet(), applet, "_aptx_tax" );
+                AptxUtil.launchWebBrowser( new URI( uri_str ),
+                                           isApplet(),
+                                           isApplet() ? obtainApplet() : null,
+                                           "_aptx_tax" );
             }
             catch ( final IOException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );

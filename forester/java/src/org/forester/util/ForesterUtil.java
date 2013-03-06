@@ -59,6 +59,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.phylogeny.PhylogenyNode;
@@ -82,6 +83,13 @@ public final class ForesterUtil {
     public static final NumberFormat FORMATTER_6;
     public static final NumberFormat FORMATTER_06;
     public static final NumberFormat FORMATTER_3;
+    public static final String       NCBI_PROTEIN                     = "http://www.ncbi.nlm.nih.gov/protein/";
+    public static final String       NCBI_NUCCORE                     = "http://www.ncbi.nlm.nih.gov/nuccore/";
+    public final static String       UNIPROT_KB                       = "http://www.uniprot.org/uniprot/";
+    public final static Pattern      UNIPROT_KB_PATTERN_1             = Pattern
+                                                                              .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]([A-Z][0-9][A-Z0-9]{3}[0-9])(?:\\b|_)" );
+    public final static Pattern      UNIPROT_KB_PATTERN_2             = Pattern
+                                                                              .compile( "\\b(?:[A-Z0-9]{2,5}|(?:[A-Z][0-9][A-Z0-9]{3}[0-9]))_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)\\b" );
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -93,6 +101,106 @@ public final class ForesterUtil {
     }
 
     private ForesterUtil() {
+    }
+
+    public static String extractRefSeqAccessorAccessor( final PhylogenyNode node ) {
+        String v = null;
+        if ( node.getNodeData().isHasSequence() ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            if ( !isEmpty( seq.getSymbol() ) ) {
+                v = SequenceIdParser.parseRefSeqAccessor( seq.getSymbol() );
+            }
+            if ( isEmpty( v ) && !isEmpty( seq.getName() ) ) {
+                v = SequenceIdParser.parseRefSeqAccessor( seq.getName() );
+            }
+            if ( isEmpty( v ) && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !isEmpty( seq.getAccession().getValue() ) ) {
+                v = SequenceIdParser.parseRefSeqAccessor( seq.getAccession().getValue() );
+            }
+        }
+        if ( isEmpty( v ) && !isEmpty( node.getName() ) ) {
+            v = SequenceIdParser.parseRefSeqAccessor( node.getName() );
+        }
+        return v;
+    }
+
+    public static String extractGenbankAccessor( final PhylogenyNode node ) {
+        String v = null;
+        if ( node.getNodeData().isHasSequence() ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            if ( !isEmpty( seq.getSymbol() ) ) {
+                v = SequenceIdParser.parseGenbankAccessor( seq.getSymbol() );
+            }
+            if ( isEmpty( v ) && !isEmpty( seq.getName() ) ) {
+                v = SequenceIdParser.parseGenbankAccessor( seq.getName() );
+            }
+            if ( isEmpty( v ) && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !isEmpty( seq.getAccession().getValue() ) ) {
+                v = SequenceIdParser.parseGenbankAccessor( seq.getAccession().getValue() );
+            }
+        }
+        if ( isEmpty( v ) && !isEmpty( node.getName() ) ) {
+            v = SequenceIdParser.parseGenbankAccessor( node.getName() );
+        }
+        return v;
+    }
+
+    public static String extractUniProtKbProteinSeqIdentifier( final PhylogenyNode node ) {
+        String upkb = null;
+        if ( node.getNodeData().isHasSequence() ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            Matcher m;
+            if ( !isEmpty( seq.getSymbol() ) ) {
+                m = UNIPROT_KB_PATTERN_1.matcher( seq.getSymbol() );
+                if ( m.find() ) {
+                    upkb = m.group( 1 );
+                }
+                else {
+                    m = UNIPROT_KB_PATTERN_2.matcher( seq.getSymbol() );
+                    if ( m.find() ) {
+                        upkb = m.group();
+                    }
+                }
+            }
+            if ( isEmpty( upkb ) && !isEmpty( seq.getName() ) ) {
+                m = UNIPROT_KB_PATTERN_1.matcher( seq.getName() );
+                if ( m.find() ) {
+                    upkb = m.group( 1 );
+                }
+                else {
+                    m = UNIPROT_KB_PATTERN_2.matcher( seq.getName() );
+                    if ( m.find() ) {
+                        upkb = m.group();
+                    }
+                }
+            }
+            if ( isEmpty( upkb ) && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !isEmpty( seq.getAccession().getValue() ) ) {
+                m = UNIPROT_KB_PATTERN_1.matcher( seq.getAccession().getValue() );
+                if ( m.find() ) {
+                    upkb = m.group( 1 );
+                }
+                else {
+                    m = UNIPROT_KB_PATTERN_2.matcher( seq.getAccession().getValue() );
+                    if ( m.find() ) {
+                        upkb = m.group();
+                    }
+                }
+            }
+        }
+        if ( isEmpty( upkb ) && !isEmpty( node.getName() ) ) {
+            final Matcher m1 = UNIPROT_KB_PATTERN_1.matcher( node.getName() );
+            if ( m1.find() ) {
+                upkb = m1.group( 1 );
+            }
+            else {
+                final Matcher m2 = UNIPROT_KB_PATTERN_2.matcher( node.getName() );
+                if ( m2.find() ) {
+                    upkb = m2.group();
+                }
+            }
+        }
+        return upkb;
     }
 
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {

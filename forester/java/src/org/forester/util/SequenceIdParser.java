@@ -125,7 +125,7 @@ public final class SequenceIdParser {
      * Returns null if no match.
      * 
      */
-    private final static String parseRefSeqAccessor( final String query ) {
+    public final static String parseRefSeqAccessor( final String query ) {
         final Matcher m = REFSEQ_PATTERN.matcher( query );
         if ( m.lookingAt() ) {
             return m.group( 1 );

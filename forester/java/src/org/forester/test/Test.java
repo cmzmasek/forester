@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -67,6 +68,7 @@ import org.forester.phylogeny.PhylogenyBranch;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -209,6 +211,24 @@ public final class Test {
         }
         System.out.print( "Taxonomy extraction (general): " );
         if ( Test.testTaxonomyExtraction() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "UniProtKB id extraction: " );
+        if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Uri for Aptx web sequence accession: " );
+        if ( Test.testCreateUriForSeqWeb() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -822,6 +842,221 @@ public final class Test {
         else {
             System.out.println( "Not OK." );
         }
+    }
+
+    private static boolean testExtractUniProtKbProteinSeqIdentifier() {
+        try {
+            PhylogenyNode n = new PhylogenyNode();
+            n.setName( "tr|B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr.B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr=B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr-B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr/B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr\\B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "tr_B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( " tr|B3RJ64 " );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "-tr|B3RJ64-" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "-tr=B3RJ64-" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "_tr=B3RJ64_" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( " tr_tr|B3RJ64_sp|123 " );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "sp|B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "ssp|B3RJ64" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "sp|B3RJ64C" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "sp B3RJ64" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "sp|B3RJ6X" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "sp|B3RJ6" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "K1PYK7_CRAGI" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+                return false;
+            }
+            n.setName( "K1PYK7_PEA" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PEA" ) ) {
+                return false;
+            }
+            n.setName( "K1PYK7_RAT" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_RAT" ) ) {
+                return false;
+            }
+            n.setName( "K1PYK7_PIG" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
+                return false;
+            }
+            n.setName( "~K1PYK7_PIG~" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
+                return false;
+            }
+            n.setName( "123456_ECOLI-K1PYK7_CRAGI-sp" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+                return false;
+            }
+            n.setName( "K1PYKX_CRAGI" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "XXXXX_CRAGI" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "XXXXX_CRAGI" ) ) {
+                return false;
+            }
+            n.setName( "tr|H3IB65|H3IB65_STRPU~2-2" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "H3IB65" ) ) {
+                return false;
+            }
+            n.setName( "jgi|Lacbi2|181470|Lacbi1.estExt_GeneWisePlus_human.C_10729~2-3" );
+            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+                return false;
+            }
+            n.setName( "sp|Q86U06|RBM23_HUMAN~2-2" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "Q86U06" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode();
+            org.forester.phylogeny.data.Sequence seq = new org.forester.phylogeny.data.Sequence();
+            seq.setSymbol( "K1PYK7_CRAGI" );
+            n.getNodeData().addSequence( seq );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+                return false;
+            }
+            seq.setSymbol( "tr|B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode();
+            seq = new org.forester.phylogeny.data.Sequence();
+            seq.setName( "K1PYK7_CRAGI" );
+            n.getNodeData().addSequence( seq );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+                return false;
+            }
+            seq.setName( "tr|B3RJ64" );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode();
+            seq = new org.forester.phylogeny.data.Sequence();
+            seq.setAccession( new Accession( "K1PYK8_CRAGI", "?" ) );
+            n.getNodeData().addSequence( seq );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK8_CRAGI" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode();
+            seq = new org.forester.phylogeny.data.Sequence();
+            seq.setAccession( new Accession( "tr|B3RJ64", "?" ) );
+            n.getNodeData().addSequence( seq );
+            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            //
+            n = new PhylogenyNode();
+            n.setName( "ACP19736" );
+            if ( !ForesterUtil.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
+                return false;
+            }
+            n = new PhylogenyNode();
+            n.setName( "_ACP19736_" );
+            if ( !ForesterUtil.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testCreateUriForSeqWeb() {
+        try {
+            final PhylogenyNode n = new PhylogenyNode();
+            n.setName( "tr|B3RJ64" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B3RJ64" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                System.exit( -1 );
+                return false;
+            }
+            n.setName( "B0LM41_HUMAN" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B0LM41_HUMAN" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                System.exit( -1 );
+                return false;
+            }
+            n.setName( "NP_001025424" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                System.exit( -1 );
+                return false;
+            }
+            n.setName( "_NM_001030253-" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "NM_001030253" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                System.exit( -1 );
+                return false;
+            }
+            n.setName( "NP_001025424" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                System.exit( -1 );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
     }
 
     private static boolean testExtractTaxonomyCodeFromNodeName() {

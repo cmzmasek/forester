@@ -36,10 +36,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,6 +78,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -83,17 +86,13 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.DescriptiveStatistics;
+import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceIdParser;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public final class AptxUtil {
 
-    final static String           UNIPROT_KB                     = "http://www.uniprot.org/uniprot/";
-    final static Pattern          UNIPROT_KB_PATTERN_1             = Pattern
-            .compile( "\\b(sp|tr)\\W([A-Z0-9]{5,6})\\b" );
-
-    final static Pattern          UNIPROT_KB_PATTERN_2             = Pattern
-                                                                         .compile( "\\b[A-Z0-9]{5,6}_[A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA\\b" );
     private final static Pattern  seq_identifier_pattern_1       = Pattern
                                                                          .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})\\s*$" );
     private final static Pattern  seq_identifier_pattern_2       = Pattern
@@ -102,6 +101,81 @@ public final class AptxUtil {
                                                                          .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
+    }
+
+    public final static String createUriForSeqWeb( final PhylogenyNode node,
+                                                   final Configuration conf,
+                                                   final TreePanel tp ) {
+        String uri_str = null;
+        if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                && conf.isHasWebLink( node.getNodeData().getSequence().getAccession().getSource().toLowerCase() ) ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            final String source = seq.getAccession().getSource().toLowerCase();
+            String url;
+            if ( source.toLowerCase().equals( "ncbi" ) ) {
+                url = Constants.NCBI_ALL_DATABASE_SEARCH;
+            }
+            else {
+                final WebLink weblink = conf.getWebLink( source );
+                url = weblink.getUrl().toString();
+            }
+            try {
+                uri_str = url + URLEncoder.encode( seq.getAccession().getValue(), ForesterConstants.UTF8 );
+            }
+            catch ( final UnsupportedEncodingException e ) {
+                showErrorMessage( tp, e.toString() );
+                e.printStackTrace();
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String upkb = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
+            if ( !ForesterUtil.isEmpty( upkb ) ) {
+                try {
+                    uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = ForesterUtil.extractGenbankAccessor( node );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    if ( SequenceIdParser.isProtein( v ) ) {
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                    }
+                    else {
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                    }
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = ForesterUtil.extractRefSeqAccessorAccessor( node );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    if ( SequenceIdParser.isProtein( v ) ) {
+                        uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                    }
+                    else {
+                        uri_str = ForesterUtil.NCBI_NUCCORE + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                    }
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        return uri_str;
     }
 
     public static MaskFormatter createMaskFormatter( final String s ) {
