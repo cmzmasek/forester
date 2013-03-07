@@ -9416,45 +9416,6 @@ public final class Test {
     }
 
     private static boolean testUniprotEntryRetrieval() {
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P12345" ).equals( "P12345" ) ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "EP12345" ) != null ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "3 4P12345" ) != null ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "P12345E" ) != null ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "P123455" ) != null ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "EP12345E" ) != null ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "AY423861" ) != null ) {
-            return false;
-        }
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1DDD5" ).equals( "P1DDD5" ) ) {
-            return false;
-        }
-        if ( SequenceDbWsTools.parseUniProtAccessor( "P1DDDD" ) != null ) {
-            return false;
-        }
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X/P12345/12-42" ).equals( "P12345" ) ) {
-            return false;
-        }
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X P12345 12-42" ).equals( "P12345" ) ) {
-            return false;
-        }
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P12345/12-42" ).equals( "P12345" ) ) {
-            return false;
-        }
-        if ( !SequenceDbWsTools.parseUniProtAccessor( "P1234X/P12345" ).equals( "P12345" ) ) {
-            return false;
-        }
         try {
             final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainUniProtEntry( "P12345", 200 );
             if ( !entry.getAccession().equals( "P12345" ) ) {

@@ -32,10 +32,9 @@ import org.forester.util.ForesterUtil;
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private String _ac;
-    private String _rec_name;
+    private String _name;
     private String _os_scientific_name;
     private String _tax_id;
-    private String _symbol;
 
     private UniProtEntry() {
     }
@@ -51,14 +50,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             if ( line.startsWith( "AC" ) ) {
                 e.setAc( DatabaseTools.extract( line, "AC", ";" ) );
             }
-            else if ( line.startsWith( "DE" ) ) {
+            else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceName() ) ) {
                 if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setRecName( DatabaseTools.extract( line, "Full=", ";" ) );
+                    e.setSequenceName( DatabaseTools.extract( line, "Full=", ";" ) );
                 }
-            }
-            else if ( line.startsWith( "GN" ) ) {
-                if ( ( line.indexOf( "Name=" ) > 0 ) ) {
-                    e.setSymbol( DatabaseTools.extract( line, "Name=", ";" ) );
+                else if ( ( line.indexOf( "SubName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
+                    e.setSequenceName( DatabaseTools.extract( line, "Full=", ";" ) );
                 }
             }
             else if ( line.startsWith( "OS" ) ) {
@@ -91,12 +88,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     @Override
     public String getSequenceName() {
-        return _rec_name;
+        return _name;
     }
 
-    private void setRecName( final String rec_name ) {
-        if ( _rec_name == null ) {
-            _rec_name = rec_name;
+    private void setSequenceName( final String name ) {
+        if ( _name == null ) {
+            _name = name;
         }
     }
 
@@ -124,13 +121,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     @Override
     public String getSequenceSymbol() {
-        return _symbol;
-    }
-
-    private void setSymbol( final String symbol ) {
-        if ( _symbol == null ) {
-            _symbol = symbol;
-        }
+        return "";
     }
 
     @Override

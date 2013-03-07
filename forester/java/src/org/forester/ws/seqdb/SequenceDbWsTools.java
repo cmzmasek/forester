@@ -36,8 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -51,20 +49,13 @@ import org.forester.util.SequenceIdParser;
 
 public final class SequenceDbWsTools {
 
-    private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true;                                                                                  //TODO turn off for final realease!
+    private static final boolean ALLOW_TAXONOMY_CODE_HACKS = true;                                         //TODO turn off for final realease!
     public final static String   BASE_UNIPROT_URL          = "http://www.uniprot.org/";
     public final static String   BASE_EMBL_DB_URL          = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
     public final static String   EMBL_DBS_EMBL             = "embl";
     public final static String   EMBL_DBS_REFSEQ_P         = "refseqp";
     public final static String   EMBL_DBS_REFSEQ_N         = "refseqn";
     private final static String  URL_ENC                   = "UTF-8";
-    // uniprot/expasy accession number format (6 chars):
-    // letter digit letter-or-digit letter-or-digit letter-or-digit digit
-    // ?: => no back-reference
-    // \A => begin of String
-    // \Z => end of String
-    private final static Pattern UNIPROT_AC_PATTERN        = Pattern
-                                                                   .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d[A-Z0-9]{3}\\d)(?:[^a-zA-Z0-9]|\\Z)" );
     private final static boolean DEBUG                     = false;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
@@ -202,7 +193,7 @@ public final class SequenceDbWsTools {
                 db = Db.EMBL;
             }
             else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                if ( ( query = parseUniProtAccessor( node.getName() ) ) != null ) {
+                if ( ( query = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node ) ) != null ) {
                     db = Db.UNIPROT;
                 }
                 else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
@@ -240,50 +231,50 @@ public final class SequenceDbWsTools {
             }
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
                 db_entry = obtainEmblEntry( id, lines_to_return );
-                if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
-                    final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
-                            : new Sequence();
-                    if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
-                        String type = null;
-                        if ( db == Db.EMBL ) {
-                            type = "embl";
-                        }
-                        else if ( db == Db.UNIPROT ) {
-                            type = "uniprot";
-                        }
-                        else if ( db == Db.NCBI ) {
-                            type = "ncbi";
-                        }
-                        else if ( db == Db.REFSEQ ) {
-                            type = "refseq";
-                        }
-                        seq.setAccession( new Accession( db_entry.getAccession(), type ) );
+            }
+            if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
+                final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
+                        : new Sequence();
+                if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
+                    String type = null;
+                    if ( db == Db.EMBL ) {
+                        type = "embl";
                     }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
-                        seq.setName( db_entry.getSequenceName() );
+                    else if ( db == Db.UNIPROT ) {
+                        type = "uniprot";
                     }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
-                        seq.setSymbol( db_entry.getSequenceSymbol() );
+                    else if ( db == Db.NCBI ) {
+                        type = "ncbi";
                     }
-                    final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
-                            : new Taxonomy();
-                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
-                        tax.setScientificName( db_entry.getTaxonomyScientificName() );
+                    else if ( db == Db.REFSEQ ) {
+                        type = "refseq";
                     }
-                    if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
-                        tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
-                    }
-                    node.getNodeData().setTaxonomy( tax );
-                    node.getNodeData().setSequence( seq );
+                    seq.setAccession( new Accession( db_entry.getAccession(), type ) );
                 }
-                else if ( db != Db.NONE ) {
-                    not_found.add( node.getName() );
+                if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
+                    seq.setName( db_entry.getSequenceName() );
                 }
-                try {
-                    Thread.sleep( 10 );// Sleep for 10 ms
+                if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
+                    seq.setSymbol( db_entry.getSequenceSymbol() );
                 }
-                catch ( final InterruptedException ie ) {
+                final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
+                        : new Taxonomy();
+                if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
+                    tax.setScientificName( db_entry.getTaxonomyScientificName() );
                 }
+                if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                    tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
+                }
+                node.getNodeData().setTaxonomy( tax );
+                node.getNodeData().setSequence( seq );
+            }
+            else if ( db != Db.NONE ) {
+                not_found.add( node.getName() );
+            }
+            try {
+                Thread.sleep( 10 );// Sleep for 10 ms
+            }
+            catch ( final InterruptedException ie ) {
             }
         }
         return not_found;
@@ -293,23 +284,6 @@ public final class SequenceDbWsTools {
             throws IOException {
         final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
         return UniProtEntry.createInstanceFromPlainText( lines );
-    }
-
-    /**
-     * Returns null if no match.
-     * 
-     * @param query
-     * @param db 
-     * @return
-     */
-    static public String parseUniProtAccessor( final String query ) {
-        final Matcher m = UNIPROT_AC_PATTERN.matcher( query );
-        if ( m.lookingAt() ) {
-            return m.group( 1 );
-        }
-        else {
-            return null;
-        }
     }
 
     public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
