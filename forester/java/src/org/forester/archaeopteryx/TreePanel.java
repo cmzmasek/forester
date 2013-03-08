@@ -3243,6 +3243,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ForesterUtil.isEmpty( v ) ) {
             v = ForesterUtil.extractRefSeqAccessorAccessor( node );
         }
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractGInumber( node );
+        }
         return v;
     }
 

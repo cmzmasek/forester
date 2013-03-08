@@ -90,6 +90,7 @@ public final class ForesterUtil {
                                                                               .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]([A-Z][0-9][A-Z0-9]{3}[0-9])(?:\\b|_)" );
     public final static Pattern      UNIPROT_KB_PATTERN_2             = Pattern
                                                                               .compile( "\\b(?:[A-Z0-9]{2,5}|(?:[A-Z][0-9][A-Z0-9]{3}[0-9]))_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)\\b" );
+    public static final String       NCBI_GI                          = "http://www.ncbi.nlm.nih.gov/protein/gi:";
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -141,6 +142,24 @@ public final class ForesterUtil {
         }
         if ( isEmpty( v ) && !isEmpty( node.getName() ) ) {
             v = SequenceIdParser.parseGenbankAccessor( node.getName() );
+        }
+        return v;
+    }
+
+    public static String extractGInumber( final PhylogenyNode node ) {
+        String v = null;
+        if ( node.getNodeData().isHasSequence() ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            if ( isEmpty( v ) && !isEmpty( seq.getName() ) ) {
+                v = SequenceIdParser.parseGInumber( seq.getName() );
+            }
+            if ( isEmpty( v ) && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !isEmpty( seq.getAccession().getValue() ) ) {
+                v = SequenceIdParser.parseGInumber( seq.getAccession().getValue() );
+            }
+        }
+        if ( isEmpty( v ) && !isEmpty( node.getName() ) ) {
+            v = SequenceIdParser.parseGInumber( node.getName() );
         }
         return v;
     }

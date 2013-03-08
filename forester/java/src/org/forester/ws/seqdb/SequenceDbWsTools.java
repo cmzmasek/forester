@@ -230,7 +230,7 @@ public final class SequenceDbWsTools {
                 db_entry = obtainRefSeqEntryFromEmbl( id, lines_to_return );
             }
             else if ( ( db == Db.NCBI ) && ( id != null ) ) {
-                db_entry = obtainEmblEntry( id, lines_to_return );
+                db_entry = obtainEmblEntry( id, lines_to_return ); //TODO ?
             }
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()

@@ -49,11 +49,11 @@ public final class SequenceIdParser {
     //Protein:    3 letters + 5 numerals
     //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
     private final static Pattern GENBANK_NUCLEOTIDE_AC_PATTERN_1 = Pattern
-                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5})(?:[^a-zA-Z0-9]|\\Z)" );
+                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern GENBANK_NUCLEOTIDE_AC_PATTERN_2 = Pattern
-                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6})(?:[^a-zA-Z0-9]|\\Z)" );
+                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{2}\\d{6}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     private final static Pattern GENBANK_PROTEIN_AC_PATTERN      = Pattern
-                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5})(?:[^a-zA-Z0-9]|\\Z)" );
+                                                                         .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     // RefSeq accession numbers can be distinguished from GenBank accessions 
     // by their distinct prefix format of 2 characters followed by an
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325. 
@@ -62,6 +62,8 @@ public final class SequenceIdParser {
     // See: http://web.expasy.org/docs/userman.html#ID_line
     private final static Pattern TREMBL_PATTERN                  = Pattern
                                                                          .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z][0-9][A-Z0-9]{3}[0-9])(?:[^a-zA-Z0-9]|\\Z)" );
+    private final static Pattern GI_PATTERN                      = Pattern
+                                                                         .compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
 
     /**
      * Returns null if no match.
@@ -147,5 +149,13 @@ public final class SequenceIdParser {
 
     private SequenceIdParser() {
         // Hiding the constructor.
+    }
+
+    public static String parseGInumber( final String query ) {
+        final Matcher m = GI_PATTERN.matcher( query );
+        if ( m.find() ) {
+            return m.group( 1 );
+        }
+        return null;
     }
 }

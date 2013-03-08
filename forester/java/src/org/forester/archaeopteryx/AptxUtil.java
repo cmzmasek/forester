@@ -150,6 +150,18 @@ public final class AptxUtil {
                 }
             }
         }
+        if ( ForesterUtil.isEmpty( uri_str ) ) {
+            final String v = ForesterUtil.extractGInumber( node );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                try {
+                    uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF8 );
+                }
+                catch ( final UnsupportedEncodingException e ) {
+                    showErrorMessage( tp, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
         return uri_str;
     }
 

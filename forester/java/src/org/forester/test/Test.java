@@ -1041,12 +1041,27 @@ public final class Test {
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "XM_002122186" ) ) {
                 return false;
             }
-            n.setName( "AAA34956" );
+            n.setName( "dgh_AAA34956_gdg" );
             if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
                 return false;
             }
-            n.setName( "Q06891.1" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891" ) ) {
+            n.setName( "j40f4_Q06891.1_fndn2 fnr3" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891.1" ) ) {
+                return false;
+            }
+            n.setName( "GI:394892" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                return false;
+            }
+            n.setName( "gi_394892" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+                return false;
+            }
+            n.setName( "gi6335_gi_394892_56635_Gi_43" );
+            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
                 return false;
             }
         }
@@ -9376,7 +9391,10 @@ public final class Test {
         if ( !SequenceIdParser.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( ".AY423861." ).equals( "AY423861" ) ) {
+        if ( !SequenceIdParser.parseGenbankAccessor( ".AY423861.2" ).equals( "AY423861.2" ) ) {
+            return false;
+        }
+        if ( !SequenceIdParser.parseGenbankAccessor( "345_.AY423861.24_345" ).equals( "AY423861.24" ) ) {
             return false;
         }
         if ( SequenceIdParser.parseGenbankAccessor( "AAY423861" ) != null ) {
@@ -9425,9 +9443,6 @@ public final class Test {
                 return false;
             }
             if ( !entry.getSequenceName().equals( "Aspartate aminotransferase, mitochondrial" ) ) {
-                return false;
-            }
-            if ( !entry.getSequenceSymbol().equals( "GOT2" ) ) {
                 return false;
             }
             if ( !entry.getTaxonomyIdentifier().equals( "9986" ) ) {
