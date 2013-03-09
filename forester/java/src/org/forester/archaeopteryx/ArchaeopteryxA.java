@@ -82,12 +82,12 @@ public class ArchaeopteryxA extends JApplet {
         return getMainFrameApplet().getCurrentTreePanel().getCurrentExternalNodesDataBufferAsString().length();
     }
 
-    public String getTreeUrlStr() {
-        return _tree_url_str;
-    }
-
     public String getSpeciesTreeUrlStr() {
         return _species_tree_url_str;
+    }
+
+    public String getTreeUrlStr() {
+        return _tree_url_str;
     }
 
     @Override
@@ -156,7 +156,18 @@ public class ArchaeopteryxA extends JApplet {
                                                  TAXONOMY_EXTRACTION.NO );
                 if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
                     AptxUtil.printAppletMessage( NAME, "successfully read species tree" );
-                    getMainFrameApplet().setSpeciesTree( species_trees[ 0 ] );
+                    if ( species_trees[ 0 ].isEmpty() ) {
+                        ForesterUtil.printErrorMessage( NAME, "species tree is empty" );
+                    }
+                    else if ( !species_trees[ 0 ].isRooted() ) {
+                        ForesterUtil.printErrorMessage( NAME, "species tree is not rooted" );
+                    }
+                    else {
+                        getMainFrameApplet().setSpeciesTree( species_trees[ 0 ] );
+                    }
+                }
+                else {
+                    ForesterUtil.printErrorMessage( NAME, "failed to read species tree from " + getSpeciesTreeUrlStr() );
                 }
             }
             getMainFrameApplet().getMainPanel().getControlPanel().showWholeAll();
@@ -191,8 +202,8 @@ public class ArchaeopteryxA extends JApplet {
         if ( default_sequence != null ) {
             getMainFrameApplet().getMainPanel().getControlPanel().getSequenceRelationBox()
                     .setSelectedItem( default_sequence );
-            /* GUILHEM_END */
         }
+        /* GUILHEM_END */
     }
 
     /**
@@ -239,11 +250,11 @@ public class ArchaeopteryxA extends JApplet {
         _message_2 = message_2;
     }
 
-    private void setTreeUrlStr( final String url_string ) {
-        _tree_url_str = url_string;
-    }
-
     private void setSpeciesTreeUrlStr( final String url_string ) {
         _species_tree_url_str = url_string;
+    }
+
+    private void setTreeUrlStr( final String url_string ) {
+        _tree_url_str = url_string;
     }
 }

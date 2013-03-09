@@ -98,9 +98,6 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.sdi.GSDI;
-import org.forester.sdi.GSDIR;
-import org.forester.sdi.SDIException;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -136,13 +133,6 @@ public final class MainFrameApplication extends MainFrame {
     private final JFileChooser               _save_filechooser;
     private final JFileChooser               _writetopdf_filechooser;
     private final JFileChooser               _writetographics_filechooser;
-    // Analysis menu
-    private JMenu                            _analysis_menu;
-    private JMenuItem                        _load_species_tree_item;
-    private JMenuItem                        _gsdi_item;
-    private JMenuItem                        _gsdir_item;
-    private JMenuItem                        _lineage_inference;
-    private JMenuItem                        _function_analysis;
     // Application-only print menu items
     private JMenuItem                        _print_item;
     private JMenuItem                        _write_to_pdf_item;
@@ -514,18 +504,6 @@ public final class MainFrameApplication extends MainFrame {
             }
             else if ( o == _extract_tax_code_from_node_names_jmi ) {
                 extractTaxDataFromNodeNames();
-            }
-            else if ( o == _gsdi_item ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                executeGSDI();
-            }
-            else if ( o == _gsdir_item ) {
-                if ( isSubtreeDisplayed() ) {
-                    return;
-                }
-                executeGSDIR();
             }
             else if ( o == _graphics_export_visible_only_cbmi ) {
                 updateOptions( getOptions() );
@@ -1152,147 +1130,6 @@ public final class MainFrameApplication extends MainFrame {
         new Thread( a ).start();
     }
 
-    void executeGSDI() {
-        if ( !isOKforSDI( false, true ) ) {
-            return;
-        }
-        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not rooted.",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        GSDI gsdi = null;
-        final Phylogeny species_tree = _species_tree.copy();
-        try {
-            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
-        }
-        catch ( final SDIException e ) {
-            JOptionPane.showMessageDialog( this,
-                                           e.getLocalizedMessage(),
-                                           "Error during GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final Exception e ) {
-            AptxUtil.unexpectedException( e );
-            return;
-        }
-        gene_tree.setRerootable( false );
-        gene_tree.clearHashIdToNodeMap();
-        gene_tree.recalculateNumberOfExternalDescendants( true );
-        _mainpanel.addPhylogenyInNewTab( gene_tree, getConfiguration(), "gene tree", null );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
-        showWhole();
-        _mainpanel.getTabbedPane().setSelectedIndex( selected );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
-        if ( gsdi.getStrippedExternalGeneTreeNodes().size() > 0 ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
-                                                   + "Potential duplications: "
-                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
-                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
-                                                   + "Stripped gene tree nodes: "
-                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
-                                                   + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
-        }
-        else {
-            JOptionPane.showMessageDialog( this,
-                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
-                                                   + "Potential duplications: "
-                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
-                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
-                                                   + "Stripped gene tree nodes: "
-                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
-                                                   + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDI successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
-        }
-    }
-
-    void executeGSDIR() {
-        if ( !isOKforSDI( false, false ) ) {
-            return;
-        }
-        final int p = PhylogenyMethods.countNumberOfPolytomies( _mainpanel.getCurrentPhylogeny() );
-        if ( ( p > 0 )
-                && !( ( p == 1 ) && ( _mainpanel.getCurrentPhylogeny().getRoot().getNumberOfDescendants() == 3 ) ) ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not completely binary",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
-        gene_tree.setAllNodesToNotCollapse();
-        gene_tree.recalculateNumberOfExternalDescendants( false );
-        GSDIR gsdir = null;
-        final Phylogeny species_tree = _species_tree.copy();
-        try {
-            gsdir = new GSDIR( gene_tree, species_tree, true, true );
-        }
-        catch ( final SDIException e ) {
-            JOptionPane.showMessageDialog( this,
-                                           e.getLocalizedMessage(),
-                                           "Error during GSDIR",
-                                           JOptionPane.ERROR_MESSAGE );
-            return;
-        }
-        catch ( final Exception e ) {
-            AptxUtil.unexpectedException( e );
-            return;
-        }
-        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTree();
-        result_gene_tree.setRerootable( false );
-        result_gene_tree.clearHashIdToNodeMap();
-        result_gene_tree.recalculateNumberOfExternalDescendants( true );
-        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
-        getControlPanel().setShowEvents( true );
-        showWhole();
-        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
-        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
-        showWhole();
-        _mainpanel.getTabbedPane().setSelectedIndex( selected );
-        showWhole();
-        _mainpanel.getCurrentTreePanel().setEdited( true );
-        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
-        if ( gsdir.getStrippedExternalGeneTreeNodes().size() > 0 ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
-                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
-                                                   + "Stripped gene tree nodes: "
-                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
-                                                   + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.WARNING_MESSAGE );
-        }
-        else {
-            JOptionPane.showMessageDialog( this,
-                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
-                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
-                                                   + "Stripped gene tree nodes: "
-                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
-                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
-                                                   + "Number of polytomies in species tree used: " + poly + "\n",
-                                           "GSDIR successfully completed",
-                                           JOptionPane.INFORMATION_MESSAGE );
-        }
-    }
-
     void executeLineageInference() {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
             return;
@@ -1318,36 +1155,6 @@ public final class MainFrameApplication extends MainFrame {
         setVisible( false );
         dispose();
         System.exit( 0 );
-    }
-
-    boolean isOKforSDI( final boolean species_tree_has_to_binary, final boolean gene_tree_has_to_binary ) {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
-            return false;
-        }
-        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "No species tree loaded",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Species tree is not completely binary",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Gene tree is not completely binary",
-                                           "Cannot execute GSDI",
-                                           JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        else {
-            return true;
-        }
     }
 
     @Override
@@ -1482,6 +1289,118 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         _contentpane.repaint();
+    }
+
+    private void addExpressionValuesFromFile() {
+        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Need to load evolutionary tree first",
+                                           "Can Not Read Expression Values",
+                                           JOptionPane.WARNING_MESSAGE );
+            return;
+        }
+        final File my_dir = getCurrentDir();
+        if ( my_dir != null ) {
+            _values_filechooser.setCurrentDirectory( my_dir );
+        }
+        final int result = _values_filechooser.showOpenDialog( _contentpane );
+        final File file = _values_filechooser.getSelectedFile();
+        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
+            BasicTable<String> t = null;
+            try {
+                t = BasicTableParser.parse( file, "\t" );
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, "," );
+                }
+                if ( t.getNumberOfColumns() < 2 ) {
+                    t = BasicTableParser.parse( file, " " );
+                }
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               e.getMessage(),
+                                               "Could Not Read Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfColumns() < 2 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
+                                               "Problem with Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            if ( t.getNumberOfRows() < 1 ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains zero rows",
+                                               "Problem with Expression Value Table",
+                                               JOptionPane.ERROR_MESSAGE );
+                return;
+            }
+            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
+            if ( t.getNumberOfRows() != phy.getNumberOfExternalNodes() ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
+                                                       + phy.getNumberOfExternalNodes() + " external nodes",
+                                               "Warning",
+                                               JOptionPane.WARNING_MESSAGE );
+            }
+            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+            int not_found = 0;
+            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
+                final PhylogenyNode node = iter.next();
+                final String node_name = node.getName();
+                if ( !ForesterUtil.isEmpty( node_name ) ) {
+                    int row = -1;
+                    try {
+                        row = t.findRow( node_name );
+                    }
+                    catch ( final IllegalArgumentException e ) {
+                        JOptionPane
+                                .showMessageDialog( this,
+                                                    e.getMessage(),
+                                                    "Error Mapping Node Identifiers to Expression Value Identifiers",
+                                                    JOptionPane.ERROR_MESSAGE );
+                        return;
+                    }
+                    if ( row < 0 ) {
+                        if ( node.isExternal() ) {
+                            not_found++;
+                        }
+                        continue;
+                    }
+                    final List<Double> l = new ArrayList<Double>();
+                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
+                        double d = -100;
+                        try {
+                            d = Double.parseDouble( t.getValueAsString( col, row ) );
+                        }
+                        catch ( final NumberFormatException e ) {
+                            JOptionPane.showMessageDialog( this,
+                                                           "Could not parse \"" + t.getValueAsString( col, row )
+                                                                   + "\" into a decimal value",
+                                                           "Issue with Expression Value Table",
+                                                           JOptionPane.ERROR_MESSAGE );
+                            return;
+                        }
+                        stats.addValue( d );
+                        l.add( d );
+                    }
+                    if ( !l.isEmpty() ) {
+                        if ( node.getNodeData().getProperties() != null ) {
+                            node.getNodeData().getProperties()
+                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
+                        }
+                        node.getNodeData().setVector( l );
+                    }
+                }
+            }
+            if ( not_found > 0 ) {
+                JOptionPane.showMessageDialog( this, "Could not fine expression values for " + not_found
+                        + " external node(s)", "Warning", JOptionPane.WARNING_MESSAGE );
+            }
+            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
+        }
     }
 
     private void addSequencesFromFile() {
@@ -1637,127 +1556,6 @@ public final class MainFrameApplication extends MainFrame {
                 JOptionPane.showMessageDialog( this, "No maching tree node for any of the " + total_counter
                         + " sequences", "Could not attach any sequences", JOptionPane.ERROR_MESSAGE );
             }
-        }
-    }
-
-    private void setArrowCursor() {
-        try {
-            _mainpanel.getCurrentTreePanel().setArrowCursor();
-        }
-        catch ( final Exception ex ) {
-            // Do nothing.
-        }
-    }
-
-    private void addExpressionValuesFromFile() {
-        if ( ( getCurrentTreePanel() == null ) || ( getCurrentTreePanel().getPhylogeny() == null ) ) {
-            JOptionPane.showMessageDialog( this,
-                                           "Need to load evolutionary tree first",
-                                           "Can Not Read Expression Values",
-                                           JOptionPane.WARNING_MESSAGE );
-            return;
-        }
-        final File my_dir = getCurrentDir();
-        if ( my_dir != null ) {
-            _values_filechooser.setCurrentDirectory( my_dir );
-        }
-        final int result = _values_filechooser.showOpenDialog( _contentpane );
-        final File file = _values_filechooser.getSelectedFile();
-        if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
-            BasicTable<String> t = null;
-            try {
-                t = BasicTableParser.parse( file, "\t" );
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, "," );
-                }
-                if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, " " );
-                }
-            }
-            catch ( final IOException e ) {
-                JOptionPane.showMessageDialog( this,
-                                               e.getMessage(),
-                                               "Could Not Read Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfColumns() < 2 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains " + t.getNumberOfColumns() + " column(s)",
-                                               "Problem with Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            if ( t.getNumberOfRows() < 1 ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains zero rows",
-                                               "Problem with Expression Value Table",
-                                               JOptionPane.ERROR_MESSAGE );
-                return;
-            }
-            final Phylogeny phy = getCurrentTreePanel().getPhylogeny();
-            if ( t.getNumberOfRows() != phy.getNumberOfExternalNodes() ) {
-                JOptionPane.showMessageDialog( this,
-                                               "Table contains " + t.getNumberOfRows() + " rows, but tree contains "
-                                                       + phy.getNumberOfExternalNodes() + " external nodes",
-                                               "Warning",
-                                               JOptionPane.WARNING_MESSAGE );
-            }
-            final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-            int not_found = 0;
-            for( final PhylogenyNodeIterator iter = phy.iteratorPreorder(); iter.hasNext(); ) {
-                final PhylogenyNode node = iter.next();
-                final String node_name = node.getName();
-                if ( !ForesterUtil.isEmpty( node_name ) ) {
-                    int row = -1;
-                    try {
-                        row = t.findRow( node_name );
-                    }
-                    catch ( final IllegalArgumentException e ) {
-                        JOptionPane
-                                .showMessageDialog( this,
-                                                    e.getMessage(),
-                                                    "Error Mapping Node Identifiers to Expression Value Identifiers",
-                                                    JOptionPane.ERROR_MESSAGE );
-                        return;
-                    }
-                    if ( row < 0 ) {
-                        if ( node.isExternal() ) {
-                            not_found++;
-                        }
-                        continue;
-                    }
-                    final List<Double> l = new ArrayList<Double>();
-                    for( int col = 1; col < t.getNumberOfColumns(); ++col ) {
-                        double d = -100;
-                        try {
-                            d = Double.parseDouble( t.getValueAsString( col, row ) );
-                        }
-                        catch ( final NumberFormatException e ) {
-                            JOptionPane.showMessageDialog( this,
-                                                           "Could not parse \"" + t.getValueAsString( col, row )
-                                                                   + "\" into a decimal value",
-                                                           "Issue with Expression Value Table",
-                                                           JOptionPane.ERROR_MESSAGE );
-                            return;
-                        }
-                        stats.addValue( d );
-                        l.add( d );
-                    }
-                    if ( !l.isEmpty() ) {
-                        if ( node.getNodeData().getProperties() != null ) {
-                            node.getNodeData().getProperties()
-                                    .removePropertiesWithGivenReferencePrefix( PhyloXmlUtil.VECTOR_PROPERTY_REF );
-                        }
-                        node.getNodeData().setVector( l );
-                    }
-                }
-            }
-            if ( not_found > 0 ) {
-                JOptionPane.showMessageDialog( this, "Could not fine expression values for " + not_found
-                        + " external node(s)", "Warning", JOptionPane.WARNING_MESSAGE );
-            }
-            getCurrentTreePanel().setStatisticsForExpressionValues( stats );
         }
     }
 
@@ -2510,6 +2308,15 @@ public final class MainFrameApplication extends MainFrame {
             }
             _contentpane.repaint();
             System.gc();
+        }
+    }
+
+    private void setArrowCursor() {
+        try {
+            _mainpanel.getCurrentTreePanel().setArrowCursor();
+        }
+        catch ( final Exception ex ) {
+            // Do nothing.
         }
     }
 

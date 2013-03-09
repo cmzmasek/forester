@@ -113,8 +113,9 @@ public final class MainFrameApplet extends MainFrame {
         if ( !_configuration.isUseNativeUI() ) {
             _jmenubar.setBackground( _configuration.getGuiMenuBackgroundColor() );
         }
-        //TODO if species tree...
-        buildAnalysisMenu();
+        if ( _species_tree != null ) {
+            buildAnalysisMenu();
+        }
         buildToolsMenu();
         buildViewMenu();
         buildFontSizeMenu();
@@ -152,6 +153,11 @@ public final class MainFrameApplet extends MainFrame {
         requestFocusInWindow();
         setVisible( true );
         System.gc();
+    }
+
+    @Override
+    public MainPanel getMainPanel() {
+        return _mainpanel;
     }
 
     void buildAnalysisMenu() {
@@ -291,11 +297,6 @@ public final class MainFrameApplet extends MainFrame {
 
     JApplet getApplet() {
         return _applet;
-    }
-
-    @Override
-    public MainPanel getMainPanel() {
-        return _mainpanel;
     }
 
     @Override

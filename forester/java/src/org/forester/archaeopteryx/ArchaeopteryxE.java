@@ -33,8 +33,13 @@ import org.forester.archaeopteryx.AptxUtil.GraphicsExportType;
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.data.SequenceRelation;
+import org.forester.sdi.GSDI;
+import org.forester.sdi.GSDIR;
+import org.forester.sdi.SDIException;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
@@ -55,7 +60,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private final static String         NAME             = "ArchaeopteryxE";
     private static final long           serialVersionUID = -1220055577935759443L;
     private Configuration               _configuration;
-    private MainPanelApplets            _main_panel;
+    private MainPanelApplets            _mainpanel;
     private JMenuBar                    _jmenubar;
     private JMenu                       _options_jmenu;
     private JMenu                       _font_size_menu;
@@ -120,14 +125,28 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _taxonomy_colorize_node_shapes_cbmi;
     private JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
     private final LinkedList<TextFrame> _textframes      = new LinkedList<TextFrame>();
+    private JMenu                       _analysis_menu;
+    private JMenuItem                   _gsdi_item;
+    private JMenuItem                   _gsdir_item;
+    private Phylogeny                   _species_tree;
 
-    // private String                      _ext_node_data_buffer                = "";
-    // private int                         _ext_node_data_buffer_change_counter = 0;
     @Override
     public void actionPerformed( final ActionEvent e ) {
         final Object o = e.getSource();
         if ( o == _midpoint_root_item ) {
             getMainPanel().getCurrentTreePanel().midpointRoot();
+        }
+        else if ( o == _gsdi_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            executeGSDI();
+        }
+        else if ( o == _gsdir_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            executeGSDIR();
         }
         else if ( o == _taxcolor_item ) {
             getMainPanel().getCurrentTreePanel().taxColor();
@@ -208,15 +227,15 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
             updateOptions( getOptions() );
-            _main_panel.getControlPanel().showWhole();
+            _mainpanel.getControlPanel().showWhole();
         }
         else if ( o == _uniform_cladograms_rbmi ) {
             updateOptions( getOptions() );
-            _main_panel.getControlPanel().showWhole();
+            _mainpanel.getControlPanel().showWhole();
         }
         else if ( o == _ext_node_dependent_cladogram_rbmi ) {
             updateOptions( getOptions() );
-            _main_panel.getControlPanel().showWhole();
+            _mainpanel.getControlPanel().showWhole();
         }
         else if ( o == _search_case_senstive_cbmi ) {
             updateOptions( getOptions() );
@@ -386,8 +405,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             AptxUtil.writePhylogenyToGraphicsByteArrayOutputStream( baos,
-                                                                    _main_panel.getWidth(),
-                                                                    _main_panel.getHeight(),
+                                                                    _mainpanel.getWidth(),
+                                                                    _mainpanel.getHeight(),
                                                                     getCurrentTreePanel(),
                                                                     getCurrentTreePanel().getControlPanel(),
                                                                     GraphicsExportType.valueOf( format ),
@@ -464,12 +483,48 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else {
             AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + phys_url );
         }
+        //
+        final String species_tree_url_str = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD );
+        if ( !ForesterUtil.isEmpty( species_tree_url_str ) ) {
+            AptxUtil.printAppletMessage( NAME, "URL of species tree to load: \"" + species_tree_url_str + "\"" );
+            Phylogeny[] species_trees = null;
+            try {
+                final URL species_tree_url = new URL( species_tree_url_str );
+                species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
+                                                                 configuration.isValidatePhyloXmlAgainstSchema(),
+                                                                 configuration.isReplaceUnderscoresInNhParsing(),
+                                                                 false,
+                                                                 TAXONOMY_EXTRACTION.NO );
+            }
+            catch ( final IOException e ) {
+                ForesterUtil.printErrorMessage( NAME, "could not read species tree from  [" + species_tree_url_str
+                        + "]" );
+                JOptionPane.showMessageDialog( this, NAME + ": could not read species tree from  ["
+                        + species_tree_url_str + "]", "Failed to read species tree", JOptionPane.ERROR_MESSAGE );
+            }
+            if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
+                AptxUtil.printAppletMessage( NAME, "successfully read species tree" );
+                if ( species_trees[ 0 ].isEmpty() ) {
+                    ForesterUtil.printErrorMessage( NAME, "species tree is empty" );
+                }
+                else if ( !species_trees[ 0 ].isRooted() ) {
+                    ForesterUtil.printErrorMessage( NAME, "species tree is not rooted" );
+                }
+                else {
+                    setSpeciesTree( species_trees[ 0 ] );
+                }
+            }
+        }
+        //
         setVisible( false );
         setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
         _jmenubar = new JMenuBar();
         if ( !getConfiguration().isHideControlPanelAndMenubar() ) {
             if ( !getConfiguration().isUseNativeUI() ) {
                 _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+            }
+            if ( getSpeciesTree() != null ) {
+                buildAnalysisMenu();
             }
             buildToolsMenu();
             buildViewMenu();
@@ -529,8 +584,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
         if ( default_sequence != null ) {
             getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
-            /* GUILHEM_END */
         }
+        /* GUILHEM_END */
         setVisible( true );
     }
 
@@ -548,6 +603,19 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         requestFocusInWindow();
         requestFocus();
         AptxUtil.printAppletMessage( NAME, "started" );
+    }
+
+    void buildAnalysisMenu() {
+        _analysis_menu = MainFrame.createMenu( "Analysis", getConfiguration() );
+        _analysis_menu.add( _gsdi_item = new JMenuItem( "GSDI (Generalized Speciation Duplication Inference)" ) );
+        _analysis_menu.add( _gsdir_item = new JMenuItem( "GSDIR (GSDI with re-rooting)" ) );
+        customizeJMenuItem( _gsdi_item );
+        customizeJMenuItem( _gsdir_item );
+        //  _analysis_menu.addSeparator();
+        //  _analysis_menu.add( _lineage_inference = new JMenuItem( INFER_ANCESTOR_TAXONOMIES ) );
+        //  customizeJMenuItem( _lineage_inference );
+        //  _lineage_inference.setToolTipText( "Inference of ancestor taxonomies/lineages" );
+        _jmenubar.add( _analysis_menu );
     }
 
     void buildFontSizeMenu() {
@@ -799,6 +867,147 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
     }
 
+    void executeGSDI() {
+        if ( !isOKforSDI( false, true ) ) {
+            return;
+        }
+        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not rooted.",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDI gsdi = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        gene_tree.setRerootable( false );
+        gene_tree.clearHashIdToNodeMap();
+        gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( gene_tree, getConfiguration(), "gene tree", null );
+        getMainPanel().getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
+        if ( gsdi.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+    }
+
+    void executeGSDIR() {
+        if ( !isOKforSDI( false, false ) ) {
+            return;
+        }
+        final int p = PhylogenyMethods.countNumberOfPolytomies( _mainpanel.getCurrentPhylogeny() );
+        if ( ( p > 0 )
+                && !( ( p == 1 ) && ( _mainpanel.getCurrentPhylogeny().getRoot().getNumberOfDescendants() == 3 ) ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDIR gsdir = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdir = new GSDIR( gene_tree, species_tree, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDIR",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTree();
+        result_gene_tree.setRerootable( false );
+        result_gene_tree.clearHashIdToNodeMap();
+        result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
+        getMainPanel().getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
+        if ( gsdir.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+    }
+
     Configuration getConfiguration() {
         return _configuration;
     }
@@ -848,12 +1057,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         sb.append( "------------------------\n" );
         sb.append( "Order Subtrees -- order the tree by branch length\n" );
         sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
-        sb.append( "Memory problems (Java heap space error)\n" );
-        sb.append( "---------------------------------------\n" );
-        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
-        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
-        sb.append( "the '-Xmx' Java command line option. For example:\n" );
-        sb.append( "java -Xmx1024m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
         sb.append( "phyloXML\n" );
         sb.append( "-------------------\n" );
         sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
@@ -898,6 +1101,50 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         catch ( final NullPointerException np ) {
             // In all likelihood, this is caused by menu-less display.
         }
+    }
+
+    boolean isOKforSDI( final boolean species_tree_has_to_binary, final boolean gene_tree_has_to_binary ) {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            return false;
+        }
+        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "No species tree loaded",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Species tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    boolean isSubtreeDisplayed() {
+        if ( getCurrentTreePanel() != null ) {
+            if ( getCurrentTreePanel().isCurrentTreeIsSubtree() ) {
+                JOptionPane
+                        .showMessageDialog( this,
+                                            "This operation can only be performed on a complete tree, not on the currently displayed sub-tree only.",
+                                            "Operation can not be exectuted on a sub-tree",
+                                            JOptionPane.WARNING_MESSAGE );
+                return true;
+            }
+        }
+        return false;
     }
 
     void removeAllTextFrames() {
@@ -979,6 +1226,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( _circular_type_cbmi != null ) {
             _circular_type_cbmi.setSelected( false );
         }
+    }
+
+    void showWhole() {
+        _mainpanel.getControlPanel().showWhole();
     }
 
     void switchColors() {
@@ -1174,7 +1425,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     private MainPanel getMainPanel() {
-        return _main_panel;
+        return _mainpanel;
+    }
+
+    private Phylogeny getSpeciesTree() {
+        return _species_tree;
     }
 
     private boolean isScreenAntialias() {
@@ -1188,7 +1443,11 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     }
 
     private void setMainPanel( final MainPanelApplets main_panel ) {
-        _main_panel = main_panel;
+        _mainpanel = main_panel;
+    }
+
+    private void setSpeciesTree( final Phylogeny species_tree ) {
+        _species_tree = species_tree;
     }
 
     private void setupUI() {

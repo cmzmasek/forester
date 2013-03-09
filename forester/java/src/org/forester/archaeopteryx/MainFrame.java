@@ -59,11 +59,15 @@ import org.forester.archaeopteryx.tools.ProcessPool;
 import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.NodeVisualization.NodeFill;
 import org.forester.phylogeny.data.NodeVisualization.NodeShape;
+import org.forester.sdi.GSDI;
+import org.forester.sdi.GSDIR;
+import org.forester.sdi.SDIException;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 
@@ -263,6 +267,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _exit_item ) {
             close();
+        }
+        else if ( o == _gsdi_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            executeGSDI();
+        }
+        else if ( o == _gsdir_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            executeGSDIR();
         }
         else if ( o == _taxcolor_item ) {
             taxColor();
@@ -766,6 +782,147 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog( this, "Exception" + e, "Error during File|SaveAs", JOptionPane.ERROR_MESSAGE );
     }
 
+    void executeGSDI() {
+        if ( !isOKforSDI( false, true ) ) {
+            return;
+        }
+        if ( !_mainpanel.getCurrentPhylogeny().isRooted() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not rooted.",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDI gsdi = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        gene_tree.setRerootable( false );
+        gene_tree.clearHashIdToNodeMap();
+        gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( gene_tree, getConfiguration(), "gene tree", null );
+        getMainPanel().getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
+        if ( gsdi.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Duplications: " + gsdi.getDuplicationsSum() + "\n"
+                                                   + "Potential duplications: "
+                                                   + gsdi.getSpeciationOrDuplicationEventsSum() + "\n"
+                                                   + "Speciations: " + gsdi.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdi.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdi.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDI successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+    }
+
+    void executeGSDIR() {
+        if ( !isOKforSDI( false, false ) ) {
+            return;
+        }
+        final int p = PhylogenyMethods.countNumberOfPolytomies( _mainpanel.getCurrentPhylogeny() );
+        if ( ( p > 0 )
+                && !( ( p == 1 ) && ( _mainpanel.getCurrentPhylogeny().getRoot().getNumberOfDescendants() == 3 ) ) ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final Phylogeny gene_tree = _mainpanel.getCurrentPhylogeny().copy();
+        gene_tree.setAllNodesToNotCollapse();
+        gene_tree.recalculateNumberOfExternalDescendants( false );
+        GSDIR gsdir = null;
+        final Phylogeny species_tree = _species_tree.copy();
+        try {
+            gsdir = new GSDIR( gene_tree, species_tree, true, true );
+        }
+        catch ( final SDIException e ) {
+            JOptionPane.showMessageDialog( this,
+                                           e.getLocalizedMessage(),
+                                           "Error during GSDIR",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        catch ( final Exception e ) {
+            AptxUtil.unexpectedException( e );
+            return;
+        }
+        final Phylogeny result_gene_tree = gsdir.getMinDuplicationsSumGeneTree();
+        result_gene_tree.setRerootable( false );
+        result_gene_tree.clearHashIdToNodeMap();
+        result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
+        getMainPanel().getControlPanel().setShowEvents( true );
+        showWhole();
+        final int selected = _mainpanel.getTabbedPane().getSelectedIndex();
+        _mainpanel.addPhylogenyInNewTab( species_tree, getConfiguration(), "species tree", null );
+        showWhole();
+        _mainpanel.getTabbedPane().setSelectedIndex( selected );
+        showWhole();
+        _mainpanel.getCurrentTreePanel().setEdited( true );
+        final int poly = PhylogenyMethods.countNumberOfPolytomies( species_tree );
+        if ( gsdir.getStrippedExternalGeneTreeNodes().size() > 0 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.WARNING_MESSAGE );
+        }
+        else {
+            JOptionPane.showMessageDialog( this,
+                                           "Minimal duplications: " + gsdir.getMinDuplicationsSum() + "\n"
+                                                   + "Speciations: " + gsdir.getSpeciationsSum() + "\n"
+                                                   + "Stripped gene tree nodes: "
+                                                   + gsdir.getStrippedExternalGeneTreeNodes().size() + "\n"
+                                                   + "Taxonomy linkage based on: " + gsdir.getTaxCompBase() + "\n"
+                                                   + "Number of polytomies in species tree used: " + poly + "\n",
+                                           "GSDIR successfully completed",
+                                           JOptionPane.INFORMATION_MESSAGE );
+        }
+    }
+
     boolean GAndSDoHaveMoreThanOneSpeciesInComman( final Phylogeny gene_tree ) {
         if ( ( gene_tree == null ) || gene_tree.isEmpty() ) {
             JOptionPane.showMessageDialog( this,
@@ -919,6 +1076,36 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             default:
                 _rectangular_type_cbmi.setSelected( true );
                 break;
+        }
+    }
+
+    boolean isOKforSDI( final boolean species_tree_has_to_binary, final boolean gene_tree_has_to_binary ) {
+        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
+            return false;
+        }
+        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "No species tree loaded",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Species tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else if ( gene_tree_has_to_binary && !_mainpanel.getCurrentPhylogeny().isCompletelyBinary() ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Gene tree is not completely binary",
+                                           "Cannot execute GSDI",
+                                           JOptionPane.ERROR_MESSAGE );
+            return false;
+        }
+        else {
+            return true;
         }
     }
 
