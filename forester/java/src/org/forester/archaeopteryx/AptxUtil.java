@@ -1027,8 +1027,9 @@ public final class AptxUtil {
                                                      final boolean phyloxml_validate_against_xsd,
                                                      final boolean replace_underscores,
                                                      final boolean internal_numbers_are_confidences,
-                                                     final TAXONOMY_EXTRACTION taxonomy_extraction )
-            throws FileNotFoundException, IOException {
+                                                     final TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                     final boolean midpoint_reroot ) throws FileNotFoundException,
+            IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser parser;
         boolean nhx_or_nexus = false;
@@ -1055,6 +1056,11 @@ public final class AptxUtil {
         if ( nhx_or_nexus && internal_numbers_are_confidences ) {
             for( final Phylogeny phy : phys ) {
                 PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+            }
+        }
+        if ( midpoint_reroot ) {
+            for( final Phylogeny phy : phys ) {
+                PhylogenyMethods.midpointRoot( phy );
             }
         }
         return phys;

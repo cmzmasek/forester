@@ -217,6 +217,7 @@ public final class Configuration {
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private int                             _frame_x_size;
     private int                             _frame_y_size;
+    private boolean                         _midpoint_root                                         = false;
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
@@ -869,10 +870,6 @@ public final class Configuration {
         else if ( name.equals( "color_subtree" ) ) {
             index = Configuration.color_subtree;
         }
-        else if ( name.equals( "go_to_swiss_prot" ) ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "configuration key [go_to_swiss_prot] is deprecated" );
-            return DEPRECATED;
-        }
         return index;
     }
 
@@ -1409,6 +1406,9 @@ public final class Configuration {
         else if ( key.equals( "taxonomy_colorize_node_shapes" ) ) {
             setTaxonomyColorizeNodeShapes( parseBoolean( ( String ) st.nextElement() ) );
         }
+        else if ( key.equals( "midpoint_reroot" ) ) {
+            setMidpointReroot( parseBoolean( ( String ) st.nextElement() ) );
+        }
         else if ( key.equals( "ext_descendents_data_to_return" ) ) {
             final String s = ( ( String ) st.nextElement() ).trim();
             if ( s.equalsIgnoreCase( "node_name" ) ) {
@@ -1705,5 +1705,13 @@ public final class Configuration {
 
     static enum TRIPLET {
         TRUE, FALSE, UNKNOWN
+    }
+
+    public boolean isMidpointReroot() {
+        return _midpoint_root;
+    }
+
+    public void setMidpointReroot( final boolean midpoint_root ) {
+        _midpoint_root = midpoint_root;
     }
 }

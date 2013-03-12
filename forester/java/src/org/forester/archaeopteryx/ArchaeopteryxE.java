@@ -461,7 +461,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                         getConfiguration().isValidatePhyloXmlAgainstSchema(),
                                                         getConfiguration().isReplaceUnderscoresInNhParsing(),
                                                         getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
-                                                        getConfiguration().getTaxonomyExtraction() );
+                                                        getConfiguration().getTaxonomyExtraction(),
+                                                        getConfiguration().isMidpointReroot() );
             }
             catch ( final Exception e ) {
                 ForesterUtil.printErrorMessage( NAME, e.toString() );
@@ -494,7 +495,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                                                  configuration.isValidatePhyloXmlAgainstSchema(),
                                                                  configuration.isReplaceUnderscoresInNhParsing(),
                                                                  false,
-                                                                 TAXONOMY_EXTRACTION.NO );
+                                                                 TAXONOMY_EXTRACTION.NO,
+                                                                 false );
             }
             catch ( final IOException e ) {
                 ForesterUtil.printErrorMessage( NAME, "could not read species tree from  [" + species_tree_url_str
@@ -512,6 +514,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 }
                 else {
                     setSpeciesTree( species_trees[ 0 ] );
+                    AptxUtil.printAppletMessage( NAME, "species tree OK" );
                 }
             }
         }
@@ -563,6 +566,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else {
             AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
+            if ( getSpeciesTree() != null ) {
+                AptxUtil.printAppletMessage( NAME,
+                                             "Warning: gsdi (gene duplication inference) only available tabbed display" );
+            }
             AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
         }
         validate();

@@ -33,6 +33,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.ButtonGroup;
@@ -40,13 +43,13 @@ import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
@@ -58,62 +61,30 @@ public final class MainFrameApplet extends MainFrame {
     private final ArchaeopteryxA _applet;
     private ButtonGroup          _radio_group_1;
 
-    MainFrameApplet( final ArchaeopteryxA parent_applet, final Configuration configuration ) {
+    MainFrameApplet( final ArchaeopteryxA parent_applet,
+                     final Configuration configuration,
+                     final String species_tree_url_str ) {
         setTitle( ArchaeopteryxA.NAME );
         _applet = parent_applet;
         setConfiguration( configuration );
         setOptions( Options.createInstance( configuration ) );
-        //_textframes = null; //~~~~
-        URL url = null;
-        Phylogeny[] phys = null;
-        // Get URL to tree file
-        if ( _applet.getTreeUrlStr() != null ) {
-            try {
-                url = new URL( _applet.getTreeUrlStr() );
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this,
-                                               ArchaeopteryxA.NAME + ": Could not create URL from: \""
-                                                       + _applet.getTreeUrlStr() + "\"\nError: " + e,
-                                               "Failed to create URL",
-                                               JOptionPane.ERROR_MESSAGE );
-                close();
-            }
-        }
-        // Load the tree from URL
-        if ( url != null ) {
-            try {
-                phys = AptxUtil.readPhylogeniesFromUrl( url,
-                                                        configuration.isValidatePhyloXmlAgainstSchema(),
-                                                        configuration.isReplaceUnderscoresInNhParsing(),
-                                                        configuration.isInternalNumberAreConfidenceForNhParsing(),
-                                                        configuration.getTaxonomyExtraction() );
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this, ArchaeopteryxA.NAME + ": Failed to read phylogenies: "
-                        + "\nError: " + e, "Failed to read phylogenies", JOptionPane.ERROR_MESSAGE );
-                close();
-            }
-        }
-        if ( ( phys == null ) || ( phys.length < 1 ) ) {
-            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "phylogenies from [" + url + "] are null or empty" );
-            JOptionPane.showMessageDialog( this, ArchaeopteryxA.NAME + ": phylogenies from [" + url
-                    + "] are null or empty", "Failed to read phylogenies", JOptionPane.ERROR_MESSAGE );
-        }
-        else {
-            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "loaded " + phys.length + " phylogenies from: " + url );
-        }
         _mainpanel = new MainPanelApplets( _configuration, this );
+        if ( !ForesterUtil.isEmpty( species_tree_url_str ) ) {
+            try {
+                readSpeciesTree( configuration, species_tree_url_str );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
+                        + species_tree_url_str );
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, e.toString() );
+            }
+        }
         // build the menu bar
         _jmenubar = new JMenuBar();
         if ( !_configuration.isUseNativeUI() ) {
             _jmenubar.setBackground( _configuration.getGuiMenuBackgroundColor() );
         }
-        if ( _species_tree != null ) {
+        if ( getSpeciesTree() != null ) {
             buildAnalysisMenu();
         }
         buildToolsMenu();
@@ -153,6 +124,36 @@ public final class MainFrameApplet extends MainFrame {
         requestFocusInWindow();
         setVisible( true );
         System.gc();
+    }
+
+    private void readSpeciesTree( final Configuration configuration, final String species_tree_url_str )
+            throws MalformedURLException, FileNotFoundException, IOException {
+        final URL species_tree_url = new URL( species_tree_url_str );
+        final Phylogeny[] species_trees = AptxUtil.readPhylogeniesFromUrl( species_tree_url,
+                                                                           configuration
+                                                                                   .isValidatePhyloXmlAgainstSchema(),
+                                                                           configuration
+                                                                                   .isReplaceUnderscoresInNhParsing(),
+                                                                           false,
+                                                                           TAXONOMY_EXTRACTION.NO,
+                                                                           false );
+        if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
+            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "successfully read species tree" );
+            if ( species_trees[ 0 ].isEmpty() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is empty" );
+            }
+            else if ( !species_trees[ 0 ].isRooted() ) {
+                ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "species tree is not rooted" );
+            }
+            else {
+                setSpeciesTree( species_trees[ 0 ] );
+                AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "species tree OK" );
+            }
+        }
+        else {
+            ForesterUtil.printErrorMessage( ArchaeopteryxA.NAME, "failed to read species tree from "
+                    + species_tree_url_str );
+        }
     }
 
     @Override
@@ -302,9 +303,5 @@ public final class MainFrameApplet extends MainFrame {
     @Override
     void readPhylogeniesFromURL() {
         throw new NoSuchMethodError( "not implemented" );
-    }
-
-    void setSpeciesTree( final Phylogeny species_tree ) {
-        _species_tree = species_tree;
     }
 }

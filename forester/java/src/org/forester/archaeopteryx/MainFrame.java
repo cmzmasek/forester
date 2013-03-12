@@ -239,7 +239,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Configuration               _configuration;
     JMenuItem                   _remove_branch_color_item;
     Options                     _options;
-    Phylogeny                   _species_tree;
+    private Phylogeny           _species_tree;
     InferenceManager            _inference_manager;
     final ProcessPool           _process_pool;
     private String              _previous_node_annotation_ref;
@@ -797,7 +797,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDI gsdi = null;
-        final Phylogeny species_tree = _species_tree.copy();
+        final Phylogeny species_tree = getSpeciesTree().copy();
         try {
             gsdi = new GSDI( gene_tree, species_tree, false, true, true );
         }
@@ -870,7 +870,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         gene_tree.setAllNodesToNotCollapse();
         gene_tree.recalculateNumberOfExternalDescendants( false );
         GSDIR gsdir = null;
-        final Phylogeny species_tree = _species_tree.copy();
+        final Phylogeny species_tree = getSpeciesTree().copy();
         try {
             gsdir = new GSDIR( gene_tree, species_tree, true, true );
         }
@@ -957,6 +957,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     JMenuBar getMenuBarOfMainFrame() {
         return _jmenubar;
+    }
+
+    final Phylogeny getSpeciesTree() {
+        return _species_tree;
     }
 
     void help() {
@@ -1083,14 +1087,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() == null ) || _mainpanel.getCurrentPhylogeny().isEmpty() ) {
             return false;
         }
-        else if ( ( _species_tree == null ) || _species_tree.isEmpty() ) {
+        else if ( ( getSpeciesTree() == null ) || getSpeciesTree().isEmpty() ) {
             JOptionPane.showMessageDialog( this,
                                            "No species tree loaded",
                                            "Cannot execute GSDI",
                                            JOptionPane.ERROR_MESSAGE );
             return false;
         }
-        else if ( species_tree_has_to_binary && !_species_tree.isCompletelyBinary() ) {
+        else if ( species_tree_has_to_binary && !getSpeciesTree().isCompletelyBinary() ) {
             JOptionPane.showMessageDialog( this,
                                            "Species tree is not completely binary",
                                            "Cannot execute GSDI",
@@ -1187,6 +1191,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             default:
                 throw new IllegalArgumentException( "unknown type: " + type );
         }
+    }
+
+    final void setSpeciesTree( final Phylogeny species_tree ) {
+        _species_tree = species_tree;
     }
 
     void setTypeMenuToAllUnselected() {

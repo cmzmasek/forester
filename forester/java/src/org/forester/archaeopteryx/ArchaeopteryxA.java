@@ -35,7 +35,6 @@ import java.net.URL;
 import javax.swing.JApplet;
 import javax.swing.UIManager;
 
-import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
@@ -97,7 +96,7 @@ public class ArchaeopteryxA extends JApplet {
         setTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD ) );
         setSpeciesTreeUrlStr( getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_SPECIES_TREE_TO_LOAD ) );
         if ( !ForesterUtil.isEmpty( getTreeUrlStr() ) ) {
-            AptxUtil.printAppletMessage( NAME, "URL of tree(s) to load: \"" + getTreeUrlStr() + "\"" );
+            AptxUtil.printAppletMessage( NAME, "URL of tree(s) to load: " + getTreeUrlStr() );
         }
         else {
             ForesterUtil.printErrorMessage( NAME, "no URL for tree(s) to load!" );
@@ -108,7 +107,7 @@ public class ArchaeopteryxA extends JApplet {
             repaint();
         }
         if ( !ForesterUtil.isEmpty( getSpeciesTreeUrlStr() ) ) {
-            AptxUtil.printAppletMessage( NAME, "URL of species tree to load: \"" + getSpeciesTreeUrlStr() + "\"" );
+            AptxUtil.printAppletMessage( NAME, "URL of species tree to load: " + getSpeciesTreeUrlStr() );
         }
         setBackground( background_color );
         setForeground( font_color );
@@ -136,40 +135,19 @@ public class ArchaeopteryxA extends JApplet {
                 UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
             }
             setVisible( false );
-            _mainframe_applet = new MainFrameApplet( this, configuration );
+            _mainframe_applet = new MainFrameApplet( this, configuration, getSpeciesTreeUrlStr() );
             final URL tree_url = new URL( getTreeUrlStr() );
             final Phylogeny[] phys = AptxUtil.readPhylogeniesFromUrl( tree_url, configuration
                     .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
-                    .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction() );
+                    .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction(), configuration
+                    .isMidpointReroot() );
+            AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "loaded " + phys.length + " phylogenies from: "
+                    + tree_url );
             AptxUtil.addPhylogeniesToTabs( phys,
                                            new File( tree_url.getFile() ).getName(),
                                            getTreeUrlStr(),
                                            getMainFrameApplet().getConfiguration(),
                                            getMainFrameApplet().getMainPanel() );
-            if ( !ForesterUtil.isEmpty( getSpeciesTreeUrlStr() ) ) {
-                final URL species_tree_url = new URL( getSpeciesTreeUrlStr() );
-                final Phylogeny[] species_trees = AptxUtil
-                        .readPhylogeniesFromUrl( species_tree_url,
-                                                 configuration.isValidatePhyloXmlAgainstSchema(),
-                                                 configuration.isReplaceUnderscoresInNhParsing(),
-                                                 false,
-                                                 TAXONOMY_EXTRACTION.NO );
-                if ( ( species_trees != null ) && ( species_trees.length > 0 ) ) {
-                    AptxUtil.printAppletMessage( NAME, "successfully read species tree" );
-                    if ( species_trees[ 0 ].isEmpty() ) {
-                        ForesterUtil.printErrorMessage( NAME, "species tree is empty" );
-                    }
-                    else if ( !species_trees[ 0 ].isRooted() ) {
-                        ForesterUtil.printErrorMessage( NAME, "species tree is not rooted" );
-                    }
-                    else {
-                        getMainFrameApplet().setSpeciesTree( species_trees[ 0 ] );
-                    }
-                }
-                else {
-                    ForesterUtil.printErrorMessage( NAME, "failed to read species tree from " + getSpeciesTreeUrlStr() );
-                }
-            }
             getMainFrameApplet().getMainPanel().getControlPanel().showWholeAll();
             getMainFrameApplet().getMainPanel().getControlPanel().showWhole();
             setVisible( true );

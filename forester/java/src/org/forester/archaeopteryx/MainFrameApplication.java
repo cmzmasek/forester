@@ -2300,7 +2300,7 @@ public final class MainFrameApplication extends MainFrame {
                 }
             }
             if ( !exception && ( t != null ) ) {
-                _species_tree = t;
+                setSpeciesTree( t );
                 JOptionPane.showMessageDialog( this,
                                                "Species tree successfully loaded",
                                                "Species tree loaded",
