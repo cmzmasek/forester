@@ -830,35 +830,6 @@ public class Phylogeny {
     }
 
     /**
-     * Places the root of this Phylogeny on Branch b. The new root is always
-     * placed on the middle of the branch b.
-     * 
-     */
-    public void reRoot( final PhylogenyBranch b ) {
-        final PhylogenyNode n1 = b.getFirstNode();
-        final PhylogenyNode n2 = b.getSecondNode();
-        if ( n1.isExternal() ) {
-            reRoot( n1 );
-        }
-        else if ( n2.isExternal() ) {
-            reRoot( n2 );
-        }
-        else if ( ( n2 == n1.getChildNode1() ) || ( n2 == n1.getChildNode2() ) ) {
-            reRoot( n2 );
-        }
-        else if ( ( n1 == n2.getChildNode1() ) || ( n1 == n2.getChildNode2() ) ) {
-            reRoot( n1 );
-        }
-        else if ( ( n1.getParent() != null ) && n1.getParent().isRoot()
-                && ( ( n1.getParent().getChildNode1() == n2 ) || ( n1.getParent().getChildNode2() == n2 ) ) ) {
-            reRoot( n1 );
-        }
-        else {
-            throw new IllegalArgumentException( "reRoot( Branch b ): b is not a branch." );
-        }
-    }
-
-    /**
      * Places the root of this Phylogeny on the parent branch PhylogenyNode n.
      * The new root is always placed on the middle of the branch.
      * <p>

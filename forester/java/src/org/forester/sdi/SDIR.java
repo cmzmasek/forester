@@ -292,7 +292,7 @@ public class SDIR {
             prev_root_c2 = prev_root.getChildNode2();
             prev_root_was_dup = prev_root.isDuplication();
             final PhylogenyBranch current_branch = branches.get( j );
-            g.reRoot( current_branch );
+            GSDIR.reRoot( current_branch, g );
             if ( minimize_mapping_cost || minimize_sum_of_dup ) {
                 duplications = sdise.updateM( prev_root_was_dup, prev_root_c1, prev_root_c2 );
             }

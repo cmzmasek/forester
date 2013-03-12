@@ -60,6 +60,7 @@ import org.forester.archaeopteryx.tools.ProcessRunning;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
@@ -889,6 +890,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         result_gene_tree.setRerootable( false );
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        PhylogenyMethods.orderAppearance( result_gene_tree.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
         _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
         getMainPanel().getControlPanel().setShowEvents( true );
         showWhole();

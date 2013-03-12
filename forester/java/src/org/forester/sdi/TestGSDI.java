@@ -1517,6 +1517,16 @@ public final class TestGSDI {
             if ( sdi4.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
+            //
+            final String s2str = "(((([&&NHX:S=HUMAN],([&&NHX:S=MOUSE],[&&NHX:S=RAT])),([&&NHX:S=CAEEL],[&&NHX:S=CAEBR])),[&&NHX:S=YEAST]),([&&NHX:S=ARATH],[&&NHX:S=SOYBN]))";
+            final Phylogeny s2 = ParserBasedPhylogenyFactory.getInstance().create( s2str, new NHXParser() )[ 0 ];
+            s2.setRooted( true );
+            final Phylogeny g5 = TestGSDI.createPhylogeny( s2str );
+            final GSDIR sdi5 = new GSDIR( g5, s2, false, false );
+            if ( sdi5.getMinDuplicationsSum() != 0 ) {
+                System.out.println( sdi5.getMinDuplicationsSum() );
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

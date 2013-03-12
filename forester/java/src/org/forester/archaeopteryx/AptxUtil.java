@@ -75,6 +75,7 @@ import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.BranchColor;
@@ -1061,6 +1062,7 @@ public final class AptxUtil {
         if ( midpoint_reroot ) {
             for( final Phylogeny phy : phys ) {
                 PhylogenyMethods.midpointRoot( phy );
+                PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
             }
         }
         return phys;

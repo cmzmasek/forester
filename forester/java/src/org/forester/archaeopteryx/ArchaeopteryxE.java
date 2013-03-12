@@ -36,6 +36,7 @@ import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
@@ -981,6 +982,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         result_gene_tree.setRerootable( false );
         result_gene_tree.clearHashIdToNodeMap();
         result_gene_tree.recalculateNumberOfExternalDescendants( true );
+        PhylogenyMethods.orderAppearance( result_gene_tree.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
         _mainpanel.addPhylogenyInNewTab( result_gene_tree, getConfiguration(), "gene tree", null );
         getMainPanel().getControlPanel().setShowEvents( true );
         showWhole();

@@ -66,15 +66,19 @@ public class GSDIR implements GSDII {
         final List<PhylogenyBranch> gene_tree_branches_post_order = new ArrayList<PhylogenyBranch>();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode n = it.next();
-            if ( !n.isRoot() /*&& !( n.getParent().isRoot() && n.isFirstChildNode() )*/) {
+            if ( !n.isRoot() && !( n.getParent().isRoot() && ( gene_tree.getRoot().getNumberOfDescendants() == 2 ) ) ) {
                 gene_tree_branches_post_order.add( new PhylogenyBranch( n, n.getParent() ) );
             }
+        }
+        if ( gene_tree.getRoot().getNumberOfDescendants() == 2 ) {
+            gene_tree_branches_post_order.add( new PhylogenyBranch( gene_tree.getRoot().getChildNode1(), gene_tree
+                    .getRoot().getChildNode2() ) );
         }
         int min_duplications_sum = Integer.MAX_VALUE;
         int speciations_sum = 0;
         _duplications_sum_stats = new BasicDescriptiveStatistics();
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
-            gene_tree.reRoot( branch );
+            reRoot( branch, gene_tree );
             PhylogenyMethods.preOrderReId( species_tree );
             //TEST, remove later
             //            for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
@@ -179,5 +183,35 @@ public class GSDIR implements GSDII {
             }
         }
         return shortests;
+    }
+
+    /**
+     * Places the root of this Phylogeny on Branch b. The new root is always
+     * placed on the middle of the branch b.
+     * 
+     */
+    static final void reRoot( final PhylogenyBranch b, final Phylogeny phy ) {
+        final PhylogenyNode n1 = b.getFirstNode();
+        final PhylogenyNode n2 = b.getSecondNode();
+        if ( n1.isExternal() ) {
+            phy.reRoot( n1 );
+        }
+        else if ( n2.isExternal() ) {
+            phy.reRoot( n2 );
+        }
+        else if ( ( n2 == n1.getChildNode1() ) || ( n2 == n1.getChildNode2() ) ) {
+            phy.reRoot( n2 );
+        }
+        else if ( ( n1 == n2.getChildNode1() ) || ( n1 == n2.getChildNode2() ) ) {
+            phy.reRoot( n1 );
+        }
+        //        else if ( ( n1.getParent() != null ) && n1.getParent().isRoot()
+        //                && ( ( n1.getParent().getChildNode1() == n2 ) || ( n1.getParent().getChildNode2() == n2 ) ) ) {
+        //            phy.reRoot( n1 );
+        //           
+        //        }
+        else {
+            throw new IllegalArgumentException( "reRoot( Branch b ): b is not a branch." );
+        }
     }
 }
