@@ -284,8 +284,16 @@ domain_structure_font_color:          0x909090
 
 
 
-#  Settings Specific for ArchaeopteryxE
-#  ------------------------------------
+#  Settings Specific for Archaeopteryx Applets
+#  -------------------------------------------
+#  To automatically midpoint reroot trees upon loading: 'midpoint_reroot: yes'
+
+midpoint_reroot: yes
+
+
+
+#  Settings Specific for ArchaeopteryxE Applets
+#  --------------------------------------------
 #  To hide controls and menus: 'hide_controls_and_menus: yes'
 #  To use tabbed display     : 'use_tabbed_display: yes'
 
