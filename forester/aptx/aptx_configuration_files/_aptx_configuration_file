@@ -284,8 +284,8 @@ domain_structure_font_color:          0x909090
 
 
 
-#  Settings Specific for Archaeopteryx Applets
-#  -------------------------------------------
+#  Settings Specific for Archaeopteryx Applets (E and A)
+#  -----------------------------------------------------
 #  To automatically midpoint reroot trees upon loading: 'midpoint_reroot: yes'
 
 midpoint_reroot: yes
