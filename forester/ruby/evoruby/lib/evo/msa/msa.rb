@@ -85,8 +85,31 @@ module Evoruby
       indices
     end
 
+    def find_by_name_pattern( name_re )
+      indices = []
+      for i in 0 ... get_number_of_seqs()
+        if name_re.match( get_sequence( i ).get_name() )
+          indices.push( i )
+        end
+      end
+      indices
+    end
+
+    # throws ArgumentError
+    def get_by_name_pattern( name_re )
+      indices = find_by_name_pattern( name_re )
+      if ( indices.length > 1 )
+        error_msg = "pattern \"" + name_re.to_s + "\" not unique"
+        raise ArgumentError, error_msg
+      elsif ( indices.length < 1 )
+        error_msg = "pattern \"" + name_re.to_s + "\" not found"
+        raise ArgumentError, error_msg
+      end
+      get_sequence( indices[ 0 ] )
+    end
+
     def find_by_name_start( name, case_sensitive )
-      indices = Array.new()
+      indices = []
       for i in 0 ... get_number_of_seqs()
         get_sequence( i ).get_name() =~ /^\s*(\S+)/
         current_name = $1
@@ -168,7 +191,7 @@ module Evoruby
     end
 
     def to_str
-      to_fasta 
+      to_fasta
     end
 
     def to_fasta
@@ -178,8 +201,8 @@ module Evoruby
       end
       s
     end
-    
-    
+
+
     def print_overlap_diagram( min_overlap = 1, io = STDOUT, max_name_length = 10 )
       if ( !is_aligned() )
         error_msg = "attempt to get overlap diagram of unaligned msa"
@@ -328,7 +351,7 @@ module Evoruby
           end
         end
       end
-    
+
       to_be_removed_ary = to_be_removed.to_a.sort.reverse
 
       to_be_removed_ary.each { | index |

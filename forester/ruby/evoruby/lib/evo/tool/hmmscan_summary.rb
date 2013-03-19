@@ -13,16 +13,15 @@ require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
 require 'lib/evo/io/parser/hmmscan_parser'
-require 'lib/evo/io/web/uniprotkb'
 
 module Evoruby
 
   class HmmscanSummary
 
     PRG_NAME       = "hsp"
-    PRG_VERSION    = "2.001"
+    PRG_VERSION    = "2.002"
     PRG_DESC       = "hmmscan summary"
-    PRG_DATE       = "2013.10.23"
+    PRG_DATE       = "130319"
     COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phyloxml@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -34,7 +33,6 @@ module Evoruby
     HMM_FOR_PROTEIN_OUTPUT        = "m"
     IGNORE_DUF_OPTION             = "i"
     PARSE_OUT_DESCRIPITION_OPTION = "a"
-    UNIPROT                       = "u"
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
@@ -48,14 +46,14 @@ module Evoruby
 
     def run
 
-   #   Util.print_program_information( PRG_NAME,
-   #     PRG_VERSION,
-   #     PRG_DESC,
-   #     PRG_DATE,
-   #     COPYRIGHT,
-   #     CONTACT,
-   #     WWW,
-   #     STDOUT )
+      Util.print_program_information( PRG_NAME,
+        PRG_VERSION,
+        PRG_DESC,
+        PRG_DATE,
+        COPYRIGHT,
+        CONTACT,
+        WWW,
+        STDOUT )
 
       begin
         cla = CommandLineArguments.new( ARGV )
@@ -81,7 +79,6 @@ module Evoruby
       allowed_opts.push( IGNORE_DUF_OPTION )
       allowed_opts.push( PARSE_OUT_DESCRIPITION_OPTION )
       allowed_opts.push( HMM_FOR_PROTEIN_OUTPUT )
-      allowed_opts.push( UNIPROT )
       allowed_opts.push( SPECIES_OPTION )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
@@ -115,8 +112,6 @@ module Evoruby
         end
       end
 
-
-
       fs_e_value_threshold = -1.0
       if ( cla.is_option_set?( FS_E_VALUE_THRESHOLD_OPTION ) )
         begin
@@ -133,15 +128,6 @@ module Evoruby
       if ( cla.is_option_set?( HMM_FOR_PROTEIN_OUTPUT ) )
         begin
           hmm_for_protein_output = cla.get_option_value( HMM_FOR_PROTEIN_OUTPUT )
-        rescue ArgumentError => e
-          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
-        end
-      end
-
-      uniprot = ""
-      if ( cla.is_option_set?( UNIPROT ) )
-        begin
-          uniprot = cla.get_option_value( UNIPROT )
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
@@ -166,42 +152,39 @@ module Evoruby
         parse_descriptions = true
       end
 
-#      puts()
-#      puts( "hmmpfam outputfile  : " + inpath )
-#      puts( "outputfile          : " + outpath )
-#      puts( "species             : " + species )
-#      if ( i_e_value_threshold >= 0.0 )
-#        puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
-#      else
-#        puts( "i-E-value threshold : no threshold" )
-#      end
-#      if ( parse_descriptions )
-#        puts( "parse descriptions  : true" )
-#      else
-#        puts( "parse descriptions  : false" )
-#      end
-#      if ( ignore_dufs )
-#        puts( "ignore DUFs         : true" )
-#      else
-#        puts( "ignore DUFs         : false" )
-#      end
-#      if ( column_delimiter == "\t" )
-#        puts( "column delimiter    : TAB" )
-#      else
-#        puts( "column delimiter     : " + column_delimiter )
-#      end
-#      if fs_e_value_threshold >= 0.0
-#        puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
-#      else
-#        puts( "E-value threshold   : no threshold" )
-#      end
-#      if !hmm_for_protein_output.empty?
-#        puts( "HMM for proteins    : " + hmm_for_protein_output )
-#      end
-#      if !uniprot.empty?
-#        puts( "Uniprot             : " + uniprot )
-#      end
-#      puts()
+      puts()
+      puts( "hmmpfam outputfile  : " + inpath )
+      puts( "outputfile          : " + outpath )
+      puts( "species             : " + species )
+      if ( i_e_value_threshold >= 0.0 )
+        puts( "i-E-value threshold : " + i_e_value_threshold.to_s )
+      else
+        puts( "i-E-value threshold : no threshold" )
+      end
+      if ( parse_descriptions )
+        puts( "parse descriptions  : true" )
+      else
+        puts( "parse descriptions  : false" )
+      end
+      if ( ignore_dufs )
+        puts( "ignore DUFs         : true" )
+      else
+        puts( "ignore DUFs         : false" )
+      end
+      if ( column_delimiter == "\t" )
+        puts( "column delimiter    : TAB" )
+      else
+        puts( "column delimiter     : " + column_delimiter )
+      end
+      if fs_e_value_threshold >= 0.0
+        puts( "E-value threshold   : " + fs_e_value_threshold.to_s )
+      else
+        puts( "E-value threshold   : no threshold" )
+      end
+      if !hmm_for_protein_output.empty?
+        puts( "HMM for proteins    : " + hmm_for_protein_output )
+      end
+      puts()
 
       begin
         parse( inpath,
@@ -212,21 +195,20 @@ module Evoruby
           parse_descriptions,
           fs_e_value_threshold,
           hmm_for_protein_output,
-          uniprot,
           species )
       rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
       domain_counts = get_domain_counts()
 
-#      puts
-#      puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
-#      puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
-#      puts
-#      puts( Util.draw_histogram( domain_counts, "#" ) )
-#      puts
-#      Util.print_message( PRG_NAME, 'OK' )
-#      puts 
+      puts
+      puts( "domain counts (considering potential i-E-value threshold and ignoring of DUFs):" )
+      puts( "(number of different domains: " + domain_counts.length.to_s + ")" )
+      puts
+      puts( Util.draw_histogram( domain_counts, "#" ) )
+      puts
+      Util.print_message( PRG_NAME, 'OK' )
+      puts
 
     end # def run
 
@@ -241,7 +223,6 @@ module Evoruby
         get_descriptions,
         fs_e_value_threshold,
         hmm_for_protein_output,
-        uniprot,
         species )
 
       Util.check_file_for_readability( inpath )
@@ -296,7 +277,6 @@ module Evoruby
                 fs_e_value_threshold,
                 hmm_for_protein_output,
                 i_e_value_threshold,
-                uniprot,
                 species )
             end
             hmmscan_results_per_protein.clear
@@ -318,7 +298,6 @@ module Evoruby
           fs_e_value_threshold,
           hmm_for_protein_output,
           i_e_value_threshold,
-          uniprot,
           species )
       end
 
@@ -347,7 +326,6 @@ module Evoruby
         fs_e_value_threshold,
         hmm_for_protein_output,
         i_e_value_threshold,
-        uniprotkb,
         species )
 
       dc = 0
@@ -397,15 +375,6 @@ module Evoruby
       end
       s << "\t"
 
-      if !uniprotkb.empty?
-        #e = UniprotKB::get_entry_by_id( process_id( own.query ) )
-
-        #if e != nil
-        #  s << uniprot_annotation( e )
-        # # s << "\uniprot_annotationt"
-        #end
-      end
-
       overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
 
       s << overview  + "\t"
@@ -414,7 +383,6 @@ module Evoruby
 
       prev_r = nil
       hmmscan_results_per_protein_filtered.each do | r |
-
         if  prev_r != nil
           s << make_interdomain_sequence( r.env_from - prev_r.env_to - 1 )
         else
@@ -428,21 +396,8 @@ module Evoruby
         s << "]"
         prev_r = r
       end
-      s << make_interdomain_sequence( own.qlen - prev_r.env_from, false )
+      s << make_interdomain_sequence( own.qlen - prev_r.env_to, false )
       puts s
-    end
-
-    def uniprot_annotation( e )
-      s = ""
-      pdb_ids = e.get_pdb_ids
-      if !pdb_ids.empty?
-        pdb_ids.each do | pdb |
-          s << pdb << ", "
-        end
-      else
-        s << "-"
-      end
-      s
     end
 
     def calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )

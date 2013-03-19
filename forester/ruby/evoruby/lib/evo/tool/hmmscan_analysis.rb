@@ -23,21 +23,18 @@ module Evoruby
 
   class HmmscanAnalysis
 
-    PRG_NAME       = "hsp"
-    PRG_VERSION    = "2.001"
+    PRG_NAME       = "hsa"
+    PRG_VERSION    = "1.000"
     PRG_DESC       = "hmmscan summary"
-    PRG_DATE       = "2013.10.23"
+    PRG_DATE       = "130319"
     COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phyloxml@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
-    DELIMITER_OPTION              = "d"
     SPECIES_OPTION                = "s"
     I_E_VALUE_THRESHOLD_OPTION    = "ie"
     FS_E_VALUE_THRESHOLD_OPTION   = "pe"
     HMM_FOR_PROTEIN_OUTPUT        = "m"
-    IGNORE_DUF_OPTION             = "i"
-    PARSE_OUT_DESCRIPITION_OPTION = "a"
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
@@ -78,11 +75,8 @@ module Evoruby
       end
 
       allowed_opts = Array.new
-      allowed_opts.push( DELIMITER_OPTION )
       allowed_opts.push( I_E_VALUE_THRESHOLD_OPTION )
       allowed_opts.push( FS_E_VALUE_THRESHOLD_OPTION )
-      allowed_opts.push( IGNORE_DUF_OPTION )
-      allowed_opts.push( PARSE_OUT_DESCRIPITION_OPTION )
       allowed_opts.push( HMM_FOR_PROTEIN_OUTPUT )
       allowed_opts.push( SPECIES_OPTION )
 
@@ -103,15 +97,6 @@ module Evoruby
       msa = nil
       if seq_file_path != nil
         msa = read_fasta_file(seq_file_path )
-      end
-
-      column_delimiter = "\t"
-      if ( cla.is_option_set?( DELIMITER_OPTION ) )
-        begin
-          column_delimiter = cla.get_option_value( DELIMITER_OPTION )
-        rescue ArgumentError => e
-          Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
-        end
       end
 
       i_e_value_threshold = -1
@@ -142,7 +127,7 @@ module Evoruby
       if ( cla.is_option_set?( HMM_FOR_PROTEIN_OUTPUT ) )
         begin
           hmm_for_protein_output = cla.get_option_value( HMM_FOR_PROTEIN_OUTPUT )
-          hmm_for_protein_outputs = hmm_for_protein_output.split( "~" );
+          hmm_for_protein_outputs = hmm_for_protein_output.split( "/" );
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
@@ -157,27 +142,13 @@ module Evoruby
         end
       end
 
-      ignore_dufs = false
-      if ( cla.is_option_set?( IGNORE_DUF_OPTION ) )
-        ignore_dufs = true
-      end
-
-      parse_descriptions = false
-      if ( cla.is_option_set?( PARSE_OUT_DESCRIPITION_OPTION ) )
-        parse_descriptions = true
-      end
-
-
       begin
         parse( inpath,
-          column_delimiter,
           i_e_value_threshold,
-          ignore_dufs,
-          parse_descriptions,
           fs_e_value_threshold,
           hmm_for_protein_outputs,
           species,
-          msa        )
+          msa )
       rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
       end
@@ -200,10 +171,7 @@ module Evoruby
 
     # raises ArgumentError, IOError
     def parse( inpath,
-        column_delimiter,
         i_e_value_threshold,
-        ignore_dufs,
-        get_descriptions,
         fs_e_value_threshold,
         hmm_for_protein_outputs,
         species,
@@ -214,25 +182,14 @@ module Evoruby
       hmmscan_parser = HmmscanParser.new( inpath )
       results = hmmscan_parser.parse
 
-
-      query     = ""
-      desc      = ""
-      model     = ""
-      env_from  = ""
-      env_to    = ""
-      i_e_value = ""
-
       hmmscan_results_per_protein = []
 
+      query     = ""
       prev_query = ""
 
       results.each do | r |
-        model     = r.model
-        query     = r.query
-        i_e_value = r.i_e_value
-        env_from  = r.env_from
-        env_to    = r.env_to
 
+        query     = r.query
 
         if !prev_query.empty? && prev_query != query
           if !hmmscan_results_per_protein.empty?
@@ -241,7 +198,7 @@ module Evoruby
               hmm_for_protein_outputs,
               i_e_value_threshold,
               species,
-              msa            )
+              msa )
           end
           hmmscan_results_per_protein.clear
         end
@@ -263,7 +220,7 @@ module Evoruby
           hmm_for_protein_outputs,
           i_e_value_threshold,
           species,
-          msa        )
+          msa )
       end
 
 
@@ -339,52 +296,46 @@ module Evoruby
         end
       end
 
-      s = ""
+
       query = nil
+      qlen = nil
       owns.each do | own |
-        s << own.query + "\t"
-        query = own.query
+
+        if query == nil
+          query = own.query
+
+          qlen = own.qlen
+        else
+          # sanity checks
+          raise StandardError, "failed sanity check" if query != own.query || qlen != own.qlen
+          raise StandardError, "failed sanity check: qlen != own.qlen" if qlen != own.qlen
+        end
       end
+
+      s = query + "\t"
       s << species + "\t"
       owns.each do | own |
         s << own.fs_e_value.to_s + "\t"
       end
-      owns.each do | own |
-        s << own.qlen.to_s + "\t" #TODO !
-      end
 
-      #   dcs.each do | dc |
-      #     s << dc.to_s + "\t"
-      #   end
+      s << qlen.to_s + "\t"
+
       s << hmmscan_results_per_protein_filtered.length.to_s + "\t"
       hmmscan_results_per_protein_filtered.each do | r |
         s << r.model + " "
       end
       s << "\t"
-
-
-
-      # overview = make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
-
-      #   s << overview  + "\t"
-
-      #  s << calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )  + "\t"
-
+      s <<  make_overview_da( hmmscan_results_per_protein_filtered )
+      s << "\t"
       prev_r = nil
       hmmscan_results_per_protein_filtered.each do | r |
-
         if  prev_r != nil
           s << make_interdomain_sequence( r.env_from - prev_r.env_to - 1 )
-
           if ( target_hmms.length == 2 && prev_r.model == target_hmms[ 0 ] && r.model == target_hmms[ 1 ] )
-            puts "xxx"
-            linker( prev_r.env_to, r.env_from, query, msa )
+            extract_linker( prev_r.env_to, r.env_from, query, msa )
           end
-
-
         else
           s << make_interdomain_sequence( r.env_from, false )
-
         end
         s << r.model
         s << "["
@@ -393,20 +344,73 @@ module Evoruby
         s << "]"
         prev_r = r
       end
-      # s << make_interdomain_sequence( own.qlen - prev_r.env_from, false )
+      s << make_interdomain_sequence( qlen - prev_r.env_to, false )
+
       puts s
     end
 
-
-    def linker( first, last , query , msa)
-      puts first.to_s + "-" + last.to_s
-      if ( last - first >= 1 )
-        seq = msa.get_by_name( query, true, false )
-        linker = seq.get_subsequence( first -1 , last - 1 )
-        puts linker.get_sequence_as_string
+    def extract_linkers( hmmscan_results_per_protein_filtered, target_hmms, query, msa  )
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+        if  prev_r != nil
+          if ( target_hmms.length == 2 && prev_r.model == target_hmms[ 0 ] && r.model == target_hmms[ 1 ] )
+            extract_linker( prev_r.env_to, r.env_from, query, msa )
+          end
+        end
+        prev_r = r
       end
-
     end
+
+    def extract_linker( first, last , query , msa)
+      if ( last - first >= 1 )
+        seq = msa.get_by_name_pattern( /\b#{Regexp.quote(query)}\b/ )
+        linker = seq.get_subsequence( first - 1 , last - 1 )
+        linker.get_sequence_as_string
+      end
+    end
+
+    def make_detailed_da( hmmscan_results_per_protein_filtered  )
+      s = ""
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+        if  prev_r != nil
+          s << make_interdomain_sequence( r.env_from - prev_r.env_to - 1 )
+        else
+          s << make_interdomain_sequence( r.env_from, false )
+        end
+        s << r.model
+        s << "["
+        s << r.env_from.to_s << "-" << r.env_to.to_s
+        s << " " << r.i_e_value.to_s
+        s << "]"
+        prev_r = r
+      end
+      s << make_interdomain_sequence( qlen - prev_r.env_to, false )
+      s
+    end
+
+    def make_overview_da( hmmscan_results_per_protein_filtered )
+      overview = ""
+      prev_r = nil
+      hmmscan_results_per_protein_filtered.each do | r |
+
+        if prev_r == nil
+          overview << r.model
+        else
+          if  ( r.env_from - prev_r.env_to - 1 ) <= LIMIT_FOR_CLOSE_DOMAINS
+            overview << "~" << r.model
+          else
+            overview << "----" << r.model
+          end
+        end
+        prev_r = r
+
+      end
+      overview
+    end
+
+
+
 
 
     def calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )
@@ -423,27 +427,6 @@ module Evoruby
       linkers
     end
 
-
-
-    def make_overview( hmmscan_results_per_protein_filtered, hmm_for_protein_output )
-      overview = ""
-      prev_r = nil
-      hmmscan_results_per_protein_filtered.each do | r |
-        if r.model == hmm_for_protein_output
-          if prev_r == nil
-            overview << hmm_for_protein_output
-          else
-            if  ( r.env_from - prev_r.env_to - 1 ) <= LIMIT_FOR_CLOSE_DOMAINS
-              overview << "~" << hmm_for_protein_output
-            else
-              overview << "----" << hmm_for_protein_output
-            end
-          end
-          prev_r = r
-        end
-      end
-      overview
-    end
 
     def make_interdomain_sequence( d, mark_short = true )
       s = ""
@@ -466,10 +449,7 @@ module Evoruby
       puts()
       puts( "  " + PRG_NAME + ".rb [options] <hmmscan outputfile> <outputfile>" )
       puts()
-      puts( "  options: -" + DELIMITER_OPTION + ": column delimiter for outputfile, default is TAB" )
-      puts( "           -" + I_E_VALUE_THRESHOLD_OPTION  + ": i-E-value threshold, default is no threshold" )
-      puts( "           -" + PARSE_OUT_DESCRIPITION_OPTION  + ": parse query description (in addition to query name)" )
-      puts( "           -" + IGNORE_DUF_OPTION  + ": ignore DUFs" )
+      puts( "  options: -" + I_E_VALUE_THRESHOLD_OPTION  + ": i-E-value threshold, default is no threshold" )
       puts( "           -" + FS_E_VALUE_THRESHOLD_OPTION  + ": E-value threshold for full protein sequences, only for protein summary" )
       puts( "           -" + HMM_FOR_PROTEIN_OUTPUT + ": HMM for protein summary" )
       puts( "           -" + SPECIES_OPTION + ": species for protein summary" )

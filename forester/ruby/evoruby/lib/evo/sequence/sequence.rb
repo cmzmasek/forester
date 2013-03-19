@@ -159,11 +159,11 @@ module Evoruby
         def to_str
             return "[" + @name + "] " + @molecular_sequence
         end
-        
+
         def to_fasta
             return ">" + @name + Constants::LINE_DELIMITER  + @molecular_sequence
         end
-        
+
 
     end # class Sequence
 
