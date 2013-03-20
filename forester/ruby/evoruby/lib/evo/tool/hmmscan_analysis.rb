@@ -7,8 +7,6 @@
 # $Id: hmmscan_parser.rb,v 1.5 2010/12/13 19:00:11 cmzmasek Exp $
 #
 
-require 'set'
-
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
 require 'lib/evo/util/command_line_arguments'
@@ -17,7 +15,6 @@ require 'lib/evo/msa/msa'
 require 'lib/evo/msa/msa_factory'
 require 'lib/evo/io/msa_io'
 require 'lib/evo/io/parser/fasta_parser'
-require 'lib/evo/io/writer/fasta_writer'
 
 module Evoruby
 
@@ -38,7 +35,7 @@ module Evoruby
     HELP_OPTION_1                 = "help"
     HELP_OPTION_2                 = "h"
 
-    USE_AVOID_HMMS = false
+    USE_AVOID_HMMS = true
     AVOID_HHMS = [ "RRM_1", "RRM_2", "RRM_3", "RRM_4", "RRM_5", "RRM_6" ]
     LIMIT_FOR_CLOSE_DOMAINS = 20
 
@@ -148,8 +145,6 @@ module Evoruby
         end
       end
 
-
-
       begin
         parse( inpath,
           i_e_value_threshold,
@@ -163,6 +158,7 @@ module Evoruby
       end
 
     end # def run
+
 
     private
 
@@ -241,7 +237,6 @@ module Evoruby
     end # def parse
 
 
-
     def process_hmmscan_results_per_protein( hmmscan_results_per_protein,
         fs_e_value_threshold,
         target_hmms,
@@ -266,7 +261,6 @@ module Evoruby
         end
       end
 
-      #  dcs = []
       hmmscan_results_per_protein_filtered = []
       matched = Set.new
 
@@ -314,8 +308,18 @@ module Evoruby
         end
       end
 
+      species = nil
+      if msa != nil
+        seq = get_sequence( query, msa  )
+        species = get_species( seq )
+        raise StandardError, "could not get species" if species == nil || species.empty?
+        if x_models != nil &&  x_models.length > 0
+          extract_linkers( hmmscan_results_per_protein_filtered, x_models, seq,  extraction_output_file )
+        end
+      end
+
       s = query + "\t"
-      s << "species" + "\t"
+      s << species + "\t"
       owns.each do | own |
         s << own.fs_e_value.to_s + "\t"
       end
@@ -331,10 +335,9 @@ module Evoruby
       s << "\t"
       s << make_detailed_da( hmmscan_results_per_protein_filtered, qlen )
       puts s
-      if x_models != nil &&  x_models.length > 0
-        extract_linkers( hmmscan_results_per_protein_filtered, x_models, query, "lizrd",  msa,  extraction_output_file )
-      end
+
     end
+
 
     def extract_linkers( hmmscan_results_per_protein_filtered, x_models, seq, extraction_output_file )
       raise StandardError, "extraction output file is nil" if extraction_output_file == nil
@@ -349,7 +352,7 @@ module Evoruby
       end
     end
 
-    
+
     def get_sequence( query, msa  )
       seq = nil
       indices = msa.find_by_name_start( query , true )
@@ -363,29 +366,24 @@ module Evoruby
       end
       seq
     end
-    
-    
+
+
+    def get_species( seq )
+      species = nil
+      if seq.get_name =~ /\[([A-Z0-9]{3,5})\]/
+        species = $1
+      end
+      species
+    end
+
+
     def extract_linker( first, last , seq,  output_file )
-     
       if ( last - first >= 1 )
-        indices = msa.find_by_name_start( query , true )
-        if indices.length != 1
-          if query[ -1, 1 ] == "|"
-            query.chop!
-          end
-          seq = msa.get_by_name_pattern( /\b#{Regexp.quote(query)}\b/ )
-        else
-          seq = msa.get_sequence( indices[ 0 ] )
-        end
-        species = nil
-        if seq.get_name =~ /\[([A-Z0-9]{3,5})\]/
-          species = $1
-        end 
-       
         output_file.print( ">" + seq.get_name + " [" +  first.to_s + "-" + last.to_s +  "]" + "\n")
         output_file.print( seq.get_subsequence( first - 1 , last - 1 ).get_sequence_as_string + "\n" )
       end
     end
+
 
     def make_detailed_da( hmmscan_results_per_protein_filtered , qlen )
       s = ""
@@ -407,6 +405,7 @@ module Evoruby
       s
     end
 
+
     def make_overview_da( hmmscan_results_per_protein_filtered )
       overview = ""
       prev_r = nil
@@ -424,24 +423,6 @@ module Evoruby
 
       end
       overview
-    end
-
-
-
-
-
-    def calc_linkers(  hmmscan_results_per_protein_filtered, hmm_for_protein_output )
-      linkers = ""
-      prev_r = nil
-      hmmscan_results_per_protein_filtered.each do | r |
-        if r.model == hmm_for_protein_output
-          if  prev_r != nil
-            linkers << ( r.env_from - prev_r.env_to - 1 ).to_s + " "
-          end
-          prev_r = r
-        end
-      end
-      linkers
     end
 
 
