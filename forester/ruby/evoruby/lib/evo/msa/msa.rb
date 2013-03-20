@@ -85,24 +85,31 @@ module Evoruby
       indices
     end
 
-    def find_by_name_pattern( name_re )
+    def find_by_name_pattern( name_re, avoid_similar_to = true )
       indices = []
       for i in 0 ... get_number_of_seqs()
-        if name_re.match( get_sequence( i ).get_name() )
-          indices.push( i )
+        if avoid_similar_to
+          m = name_re.match( get_sequence( i ).get_name() )
+          if m && !m.pre_match.downcase.include?( "similar to " )
+            indices.push( i )
+          end
+        else
+          if name_re.match( get_sequence( i ).get_name() )
+            indices.push( i )
+          end
         end
       end
       indices
     end
 
     # throws ArgumentError
-    def get_by_name_pattern( name_re )
-      indices = find_by_name_pattern( name_re )
+    def get_by_name_pattern( name_re , avoid_similar_to = true )
+      indices = find_by_name_pattern( name_re, avoid_similar_to  )
       if ( indices.length > 1 )
-        error_msg = "pattern \"" + name_re.to_s + "\" not unique"
+        error_msg = "pattern  " + name_re.to_s + " not unique"
         raise ArgumentError, error_msg
       elsif ( indices.length < 1 )
-        error_msg = "pattern \"" + name_re.to_s + "\" not found"
+        error_msg = "pattern " + name_re.to_s + " not found"
         raise ArgumentError, error_msg
       end
       get_sequence( indices[ 0 ] )
