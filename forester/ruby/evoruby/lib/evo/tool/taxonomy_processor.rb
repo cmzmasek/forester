@@ -22,20 +22,14 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "2013.01.18"
+    PRG_DATE       = "2013.03.20"
     PRG_DESC       = "replacement of species names in multiple sequence files"
-    PRG_VERSION    = "1.02"
-    COPYRIGHT      = "2012 Christian M Zmasek"
+    PRG_VERSION    = "2.00"
+    COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
-
-    SIMPLE = true
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     EXTRACT_TAXONOMY_OPTION = "t"
-
-    def initialize()
-      @taxonomies = Hash.new()
-    end
 
     def run()
 
@@ -49,7 +43,7 @@ module Evoruby
         STDOUT )
 
       if ( ARGV == nil || ( ARGV.length != 1 && ARGV.length != 2 && ARGV.length != 3 && ARGV.length != 4 && ARGV.length != 5 && ARGV.length != 6 ) )
-        puts( "Usage: #{PRG_NAME}.rb [options] [input map file] <input sequences> [output sequences] [output id list]" )
+        puts( "Usage: #{PRG_NAME}.rb [options] <input sequences> [output sequences] [output id list]" )
         puts()
         puts( "  options: -" + EXTRACT_TAXONOMY_OPTION + ": to extract taxonomy information from bracketed expression" )
         puts()
@@ -62,20 +56,11 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
-
-      mapfile   = nil
       input     = nil
       output    = nil
       list_file = nil
 
-
-
-      if cla.get_number_of_files == 4
-        mapfile   = cla.get_file_name( 0 )
-        input     = cla.get_file_name( 1 )
-        output    = cla.get_file_name( 2 )
-        list_file = cla.get_file_name( 3 )
-      elsif cla.get_number_of_files == 3
+      if cla.get_number_of_files == 3
         input     = cla.get_file_name( 0 )
         output    = cla.get_file_name( 1 )
         list_file = cla.get_file_name( 2 )
@@ -116,16 +101,10 @@ module Evoruby
       if ( !File.exists?( input) )
         Util.fatal_error( PRG_NAME, "infile [" + input + "] does not exist" )
       end
-      if ( mapfile != nil && !File.exists?( mapfile ) )
-        Util.fatal_error( PRG_NAME, "mapfile [" + mapfile + "] does not exist" )
-      end
 
       fasta_like = Util.looks_like_fasta?( input )
 
       puts()
-      if mapfile != nil
-        puts( "Map file        : " + mapfile )
-      end
       puts( "Input alignment : " + input )
       puts( "Output alignment: " + output )
       puts( "Name list       : " + list_file )
@@ -138,18 +117,6 @@ module Evoruby
         puts( "Extract taxonomy: true"  )
       end
       puts()
-
-      species_map = Hash.new
-      if mapfile != nil
-        File.open( mapfile ) do | file |
-          while line = file.gets
-            if ( line =~/(.+)#(.+)/ || line =~/(.+)\s+(.+)/ )
-              species_map[ $1 ] = $2
-              Util.print_message( PRG_NAME, "mapping: " + $1 + ' => ' + $2 )
-            end
-          end
-        end
-      end
 
       f = MsaFactory.new()
       begin
@@ -171,21 +138,11 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "error: " + e.to_, STDOUT )
       end
 
-      #removed = msa.remove_redundant_sequences!( true )
-      #if removed.size > 0
-      #  Util.print_message( PRG_NAME, "going to ignore the following " + removed.size.to_s + " redundant sequences:" )
-      #  removed.each { | seq_name |
-      #    puts seq_name
-      #  }
-      #  Util.print_message( PRG_NAME, "will process " + msa.get_number_of_seqs.to_s + " non redundant sequences" )
-      #end
-
       lf = File.open( list_file, "a" )
       for i in 0 ... msa.get_number_of_seqs
-        seq  = msa.get_sequence( i )
-        seq.set_name( Util::normalize_seq_name( modify_name( seq.get_name(), i, lf, species_map, extract_taxonomy ), 10 ) )
+        seq = msa.get_sequence( i )
+        seq.set_name( modify_name( seq.get_name(), i, lf, extract_taxonomy ) )
       end
-
       io = MsaIO.new()
       w = nil
       if ( fasta_like )
@@ -211,105 +168,25 @@ module Evoruby
 
     private
 
-    def modify_name( desc, counter, file, species_map, extract_taxonomy )
+    def modify_name( desc, counter, file, extract_taxonomy )
       new_desc = nil
-      my_species = nil
-      # if desc =~ /^>?\s*\S{1,10}_([0-9A-Z]{3,5})/
-      desc.gsub!( /:\s+/, ":" ) #new
-      desc.gsub!( /\s+/, " " ) #new
+      desc.gsub!( /:\s+/, ":" )
+      desc.gsub!( /\s+/, " " )
       if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
-      elsif SIMPLE
-        new_desc = counter.to_s( 16 )
       elsif extract_taxonomy
-
-        species = nil
-        species_map.each_key do | key |
-          if desc =~ /[\b|_]#{key}\b/  # Added boundaries to prevent e.g. RAT matching ARATH.
-            species = species_map[ key ]
-            new_desc = counter.to_s( 16 ) + "_" + species
-            break
-          end
-        end
-        if species == nil
-          #if desc =~/.*\[(\S{3,}?)\]/
-          if desc =~/\[([A-Z0-9]{3,6})\]\s*$/ #new
-            species = $1
-            species.strip!
-            species.upcase!
-            species.gsub!( /\s+/, " " )
-            species.gsub!( /-/, "" )
-            species.gsub!( /\)/, "" )
-            species.gsub!( /\(/, "" )
-            species.gsub!( /\'/, "" )
-            if species =~ /\S+\s\S+/ || species =~ /\S{3,5}/
-              if species =~ /(\S+)\s(\S+)/
-                code = $1[ 0..2 ] + $2[ 0..1 ]
-              elsif  species =~ /\S{3,5}/
-                code = species
-              elsif species.count( " " ) > 2
-                species =~ /(\S+)\s+(\S+)\s+(\S+)$/
-                third_last = $1
-                second_last = $2
-                last = $3
-                code = code[ 0 ] + third_last[ 0 ] + second_last[ 0 ] + last[ 0 ] + last[ last.size - 1 ]
-              elsif species.count( " " ) > 1
-                species =~ /(\S+)\s+(\S+)$/
-                second_last = $1
-                last = $2
-                code = code[ 0..1 ] + second_last[ 0 ] + last[ 0 ] + last[ last.size - 1 ]
-              end
-              new_desc = counter.to_s( 16 ) + "_" + code
-              if @taxonomies.has_key?( code )
-                if ( !@taxonomies.has_value?( species ) )
-                  Util.fatal_error( PRG_NAME, "code [#{code}] is not unique in [#{desc}]" )
-                end
-              else
-                if ( @taxonomies.has_value?( species ) )
-                  Util.fatal_error( PRG_NAME, "genome [#{species}] is not unique in [#{desc}]" )
-                else
-                  @taxonomies[ code ] = species
-                end
-              end
-            else
-              Util.fatal_error( PRG_NAME, "illegal format [#{species}] in: " + desc )
-            end
-          else
-            Util.fatal_error( PRG_NAME, "illegal format in: " + desc )
-          end
+        if desc =~/\s\[([A-Z0-9]{3,5})\]\b/
+          new_desc = counter.to_s( 16 ) + "_" + $1
+        else
+          Util.fatal_error( PRG_NAME, "illegal format in: " + desc )
         end
       else
-        species = nil
-        my_species = nil
-        species_map.each_key do | key |
-          if desc =~ /#{key}/
-            species = species_map[ key ]
-            species = species.gsub( /\s+/, "" )
-            species = species.gsub( /_/, " " )
-            my_species = species
-            if species =~ /(\S+)\s+(\S+)/
-              species = $1[0..2] + $2[0..1]
-            end
-            species = species.gsub( /\s+/, "" )
-            species = species.slice(0, 5)
-            species.upcase!
-            break
-          end
-        end
-        if species == nil
-          Util.fatal_error( PRG_NAME, "species not found in: " + desc  )
-        else
-          new_desc = counter.to_s( 16 ) + "_" + species
-        end
+        new_desc = counter.to_s( 16 )
       end
       if new_desc == nil
         Util.fatal_error( PRG_NAME, "failed to extract species from: " + desc  )
       end
-      if my_species != nil
-        file.print( new_desc + ": " + desc + " [" + my_species + "]" + "\n" )
-      else
-        file.print( new_desc + ": " + desc + "\n" )
-      end
+      file.print( new_desc + ": " + desc + "\n" )
       new_desc
     end
 

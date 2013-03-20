@@ -309,12 +309,13 @@ module Evoruby
       end
 
       species = nil
+      ll = nil
       if msa != nil
         seq = get_sequence( query, msa  )
         species = get_species( seq )
         raise StandardError, "could not get species" if species == nil || species.empty?
         if x_models != nil &&  x_models.length > 0
-          extract_linkers( hmmscan_results_per_protein_filtered, x_models, seq,  extraction_output_file )
+          ll = extract_linker( hmmscan_results_per_protein_filtered, x_models, seq,  extraction_output_file )
         end
       end
 
@@ -331,6 +332,12 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
+      if msa != nil
+        if ll != nil
+          s << ll.to_s
+        end
+        s << "\t"
+      end
       s <<  make_overview_da( hmmscan_results_per_protein_filtered )
       s << "\t"
       s << make_detailed_da( hmmscan_results_per_protein_filtered, qlen )
@@ -339,17 +346,19 @@ module Evoruby
     end
 
 
-    def extract_linkers( hmmscan_results_per_protein_filtered, x_models, seq, extraction_output_file )
+    def extract_linker( hmmscan_results_per_protein_filtered, x_models, seq, extraction_output_file )
       raise StandardError, "extraction output file is nil" if extraction_output_file == nil
       prev_r = nil
       hmmscan_results_per_protein_filtered.each do | r |
         if  prev_r != nil
           if ( x_models.length == 2 && prev_r.model == x_models[ 0 ] && r.model == x_models[ 1 ] )
-            extract_linker( prev_r.env_to, r.env_from, seq, extraction_output_file )
+            ll = output_linker( prev_r.env_to, r.env_from, seq, extraction_output_file )
+            return ll
           end
         end
         prev_r = r
       end
+      return nil
     end
 
 
@@ -377,11 +386,13 @@ module Evoruby
     end
 
 
-    def extract_linker( first, last , seq,  output_file )
+    def output_linker( first, last , seq,  output_file )
       if ( last - first >= 1 )
         output_file.print( ">" + seq.get_name + " [" +  first.to_s + "-" + last.to_s +  "]" + "\n")
         output_file.print( seq.get_subsequence( first - 1 , last - 1 ).get_sequence_as_string + "\n" )
       end
+      last - first + 1
+
     end
 
 
