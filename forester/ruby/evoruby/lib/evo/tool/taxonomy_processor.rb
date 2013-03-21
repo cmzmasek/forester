@@ -175,16 +175,13 @@ module Evoruby
       if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif extract_taxonomy
-        if desc =~/\s\[([A-Z0-9]{3,5})\]\b/
+        if desc =~/\[([A-Z0-9]{3,5})\]\b/
           new_desc = counter.to_s( 16 ) + "_" + $1
         else
           Util.fatal_error( PRG_NAME, "illegal format in: " + desc )
         end
       else
         new_desc = counter.to_s( 16 )
-      end
-      if new_desc == nil
-        Util.fatal_error( PRG_NAME, "failed to extract species from: " + desc  )
       end
       file.print( new_desc + ": " + desc + "\n" )
       new_desc
