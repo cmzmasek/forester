@@ -158,9 +158,6 @@ module Evoruby
         Util.fatal_error( PRG_NAME, "failed to write file: " + e.to_s )
       end
       lf.close()
-      if ( @taxonomies.length > 0 )
-        Util.print_message( PRG_NAME, "number of unique taxonomies: " + @taxonomies.length.to_s )
-      end
       Util.print_message( PRG_NAME, "wrote: " + list_file )
       Util.print_message( PRG_NAME, "wrote: " + output )
       Util.print_message( PRG_NAME, "OK" )
@@ -170,13 +167,13 @@ module Evoruby
 
     def modify_name( desc, counter, file, extract_taxonomy )
       new_desc = nil
-      if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
+      if desc =~ /^>?\s*\S{1,10}_([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif extract_taxonomy
-        if desc =~/\[([A-Z0-9]{3,5})\]/
+        if desc =~/\s\[([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\]/
           new_desc = counter.to_s( 16 ) + "_" + $1
         else
-          Util.fatal_error( PRG_NAME, "illegal format in: " + desc )
+          Util.fatal_error( PRG_NAME, "could not get taxonomy from: " + desc )
         end
       else
         new_desc = counter.to_s( 16 )
