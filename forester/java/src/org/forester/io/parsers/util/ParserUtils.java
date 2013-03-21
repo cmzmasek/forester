@@ -65,6 +65,8 @@ public final class ParserUtils {
                                                                         .compile( "_([A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP)_" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PF       = Pattern
                                                                         .compile( "([A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_4        = Pattern
+                                                                        .compile( "\\[(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\\]" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_1  = Pattern.compile( "\\b\\d{1,7}\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_2  = Pattern.compile( "(\\d{1,7})[^0-9A-Za-z].*" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PF = Pattern.compile( "(\\d{1,7})/\\d+-\\d+" );

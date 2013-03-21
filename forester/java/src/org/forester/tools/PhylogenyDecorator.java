@@ -29,9 +29,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.forester.io.parsers.nhx.NHXFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
@@ -242,7 +244,8 @@ public final class PhylogenyDecorator {
                         if ( extract_bracketed_scientific_name && new_value.endsWith( "]" ) ) {
                             new_value = extractBracketedScientificNames( node, new_value );
                         }
-                        else if ( extract_bracketed_tax_code && new_value.endsWith( "]" ) ) {
+                        else if ( extract_bracketed_tax_code
+                                && ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value ).matches() ) {
                             new_value = extractBracketedTaxCodes( node, new_value );
                         }
                         switch ( field ) {
@@ -453,10 +456,10 @@ public final class PhylogenyDecorator {
     }
 
     private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
-        final int i = new_value.lastIndexOf( "[" );
-        String tc = new_value.substring( i + 1, new_value.length() - 1 );
-        if ( tc.length() == 6 ) {
-            tc = tc.substring( 0, 5 );
+        final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value );
+        String tc = null;
+        if ( m.matches() ) {
+            tc = m.group( 1 );
         }
         ForesterUtil.ensurePresenceOfTaxonomy( node );
         try {
@@ -465,7 +468,7 @@ public final class PhylogenyDecorator {
         catch ( final PhyloXmlDataFormatException e ) {
             throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
         }
-        return new_value.substring( 0, i - 1 ).trim();
+        return new_value; //TODO //FIXME
     }
 
     private static String extractIntermediate( final Map<String, String> intermediate_map, final String name ) {
