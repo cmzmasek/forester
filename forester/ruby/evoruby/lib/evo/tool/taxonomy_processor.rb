@@ -167,10 +167,10 @@ module Evoruby
 
     def modify_name( desc, counter, file, extract_taxonomy )
       new_desc = nil
-      if desc =~ /^>?\s*\S{1,10}_([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)/
+      if desc =~ /^>?\s*\S{1,10}_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif extract_taxonomy
-        if desc =~/\s\[([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\]/
+        if desc =~/\s\[(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\]/
           new_desc = counter.to_s( 16 ) + "_" + $1
         else
           Util.fatal_error( PRG_NAME, "could not get taxonomy from: " + desc )
