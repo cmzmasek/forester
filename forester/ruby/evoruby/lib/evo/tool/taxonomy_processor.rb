@@ -170,8 +170,6 @@ module Evoruby
 
     def modify_name( desc, counter, file, extract_taxonomy )
       new_desc = nil
-      desc.gsub!( /:\s+/, ":" )
-      desc.gsub!( /\s+/, " " )
       if desc =~ /^>?\s*\S{1,10}_([A-Z]{3,5})/
         new_desc = counter.to_s( 16 ) + "_" + $1
       elsif extract_taxonomy
