@@ -370,20 +370,17 @@ module Evoruby
 
 
     def remove_sequences_by_non_gap_length!( min_non_gap_length )
-      if ( !is_aligned() )
-        error_msg = "attempt to remove sequences by non gap length on unaligned msa"
-        raise StandardError, error_msg, caller
-      end
       n = get_number_of_seqs
-      l = get_length
       removed = Array.new
       for s in 0 ... n
-        if ( ( l - get_sequence( ( n - 1 ) - s ).get_gap_length ) < min_non_gap_length )
+        x = ( n - 1 ) - s
+        seq = get_sequence( x )
+        if ( ( seq.get_length - seq.get_gap_length ) < min_non_gap_length )
           if ( Evoruby::Constants::VERBOSE )
-            puts( "removed: " + get_sequence( ( n - 1 ) - s  ).get_name )
+            puts( "removed: " + seq.get_name )
           end
-          removed << get_sequence( ( n - 1 ) - s  ).get_name
-          remove_sequence!( ( n - 1 ) - s )
+          removed << seq.get_name
+          remove_sequence!( x )
         end
       end
       removed
