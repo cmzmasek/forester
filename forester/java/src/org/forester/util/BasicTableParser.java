@@ -38,13 +38,13 @@ public class BasicTableParser {
     private BasicTableParser() {
     }
 
-    public static BasicTable<String> parse( final Object source, final String column_delimiter ) throws IOException {
+    public static BasicTable<String> parse( final Object source, final char column_delimiter ) throws IOException {
         return BasicTableParser.parse( source, column_delimiter, false, false, START_OF_COMMENT_LINE_DEFAULT, false )
                 .get( 0 );
     }
 
     public static BasicTable<String> parse( final Object source,
-                                            final String column_delimiter,
+                                            final char column_delimiter,
                                             final boolean use_first_separator_only,
                                             final boolean use_last_separator_only ) throws IOException {
         return BasicTableParser.parse( source,
@@ -56,7 +56,7 @@ public class BasicTableParser {
     }
 
     public static List<BasicTable<String>> parse( final Object source,
-                                                  final String column_delimiter,
+                                                  final char column_delimiter,
                                                   final boolean use_first_separator_only,
                                                   final boolean use_last_separator_only,
                                                   final String start_of_comment_line,
@@ -93,7 +93,7 @@ public class BasicTableParser {
                     && ( !use_start_of_comment_line || !line.startsWith( start_of_comment_line ) ) ) {
                 saw_first_table = true;
                 if ( use_last_separator_only ) {
-                    final String e[] = line.split( column_delimiter );
+                    final String e[] = line.split( column_delimiter + "" );
                     final StringBuffer rest = new StringBuffer();
                     for( int i = 0; i < ( e.length - 1 ); ++i ) {
                         rest.append( e[ i ].trim() );
@@ -102,7 +102,7 @@ public class BasicTableParser {
                     table.setValue( 1, row, e[ e.length - 1 ] );
                 }
                 else {
-                    final StringTokenizer st = new StringTokenizer( line, column_delimiter );
+                    final StringTokenizer st = new StringTokenizer( line, column_delimiter + "" );
                     int col = 0;
                     if ( st.hasMoreTokens() ) {
                         table.setValue( col++, row, st.nextToken().trim() );

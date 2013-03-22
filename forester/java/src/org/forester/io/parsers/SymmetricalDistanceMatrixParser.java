@@ -55,7 +55,7 @@ public class SymmetricalDistanceMatrixParser {
 
     private final static InputMatrixType INPUT_MATRIX_TYPE_DEFAULT = InputMatrixType.LOWER_TRIANGLE;
     private final static String          COMMENT                   = "#";
-    private final static String          VALUE_SEPARATOR           = " ";
+    private final static char            VALUE_SEPARATOR           = ' ';
     private int                          _matrix_size;
     private InputMatrixType              _input_matrix_type;
 

@@ -1308,12 +1308,12 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && ( file.length() > 0 ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             BasicTable<String> t = null;
             try {
-                t = BasicTableParser.parse( file, "\t" );
+                t = BasicTableParser.parse( file, '\t' );
                 if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, "," );
+                    t = BasicTableParser.parse( file, ',' );
                 }
                 if ( t.getNumberOfColumns() < 2 ) {
-                    t = BasicTableParser.parse( file, " " );
+                    t = BasicTableParser.parse( file, ' ' );
                 }
             }
             catch ( final IOException e ) {

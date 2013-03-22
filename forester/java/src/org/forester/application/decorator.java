@@ -69,7 +69,7 @@ public final class decorator {
     final static private String KEY_COLUMN                              = "k";
     final static private String VALUE_COLUMN                            = "v";
     final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
-    final static private String MAPPING_FILE_SEPARATOR_DEFAULT          = ": ";
+    final static private char   MAPPING_FILE_SEPARATOR_DEFAULT          = '\t';
     final static private String PRG_NAME                                = "decorator";
     final static private String PRG_VERSION                             = "1.13";
     final static private String PRG_DATE                                = "2013.01.19";
@@ -126,12 +126,12 @@ public final class decorator {
             }
         }
         final boolean picky = cla.isOptionSet( decorator.PICKY_OPTION );
-        String separator = decorator.MAPPING_FILE_SEPARATOR_DEFAULT;
+        char separator = decorator.MAPPING_FILE_SEPARATOR_DEFAULT;
         if ( cla.isOptionSet( decorator.MAPPING_FILE_SEPARATOR_OPTION ) ) {
             if ( advanced_table ) {
                 argumentsError();
             }
-            separator = cla.getOptionValue( decorator.MAPPING_FILE_SEPARATOR_OPTION );
+            separator = cla.getOptionValueAsChar( decorator.MAPPING_FILE_SEPARATOR_OPTION );
         }
         int key_column = 0;
         int value_column = 1;
@@ -277,7 +277,7 @@ public final class decorator {
         if ( !advanced_table ) {
             BasicTable<String> mapping_table = null;
             try {
-                mapping_table = BasicTableParser.parse( mapping_infile, separator, false, true );
+                mapping_table = BasicTableParser.parse( mapping_infile, separator, true, false );
             }
             catch ( final Exception e ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME,

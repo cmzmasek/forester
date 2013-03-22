@@ -112,6 +112,10 @@ public final class CommandLineArguments {
         return getOptionValue( option_name ).replaceAll( "\"", "" ).replaceAll( "\'", "" );
     }
 
+    public char getOptionValueAsChar( final String option_name ) throws IllegalArgumentException {
+        return getOptionValue( option_name ).charAt( 0 );
+    }
+
     public double getOptionValueAsDouble( final String option_name ) throws IOException {
         double d = -Double.MAX_VALUE;
         try {

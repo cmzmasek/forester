@@ -176,7 +176,7 @@ public class pccx {
                 if ( !ForesterUtil.isEmpty( error ) ) {
                     ForesterUtil.fatalError( pccx.PRG_NAME, error );
                 }
-                intable = BasicTableParser.parse( infile, " ", false, false );
+                intable = BasicTableParser.parse( infile, ' ', false, false );
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( pccx.PRG_NAME, "failed to read \"" + infile + "\" [" + e.getMessage() + "]" );

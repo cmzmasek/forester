@@ -627,7 +627,7 @@ public final class SurfacingUtil {
 
     public static Map<DomainId, Set<String>> createDomainIdToSecondaryFeaturesMap( final File secondary_features_map_file )
             throws IOException {
-        final BasicTable<String> primary_table = BasicTableParser.parse( secondary_features_map_file, "\t" );
+        final BasicTable<String> primary_table = BasicTableParser.parse( secondary_features_map_file, '\t' );
         final Map<DomainId, Set<String>> map = new TreeMap<DomainId, Set<String>>();
         for( int r = 0; r < primary_table.getNumberOfRows(); ++r ) {
             final DomainId domain_id = new DomainId( primary_table.getValue( 0, r ) );

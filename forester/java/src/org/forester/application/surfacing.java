@@ -697,7 +697,7 @@ public class surfacing {
                         + error );
             }
             try {
-                final BasicTable<String> scores_table = BasicTableParser.parse( cutoff_scores_file, " " );
+                final BasicTable<String> scores_table = BasicTableParser.parse( cutoff_scores_file, ' ' );
                 individual_score_cutoffs = scores_table.getColumnsAsMapDouble( 0, 1 );
             }
             catch ( final IOException e ) {

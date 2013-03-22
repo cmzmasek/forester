@@ -217,6 +217,9 @@ public final class PhylogenyDecorator {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "attempt to extract bracketed scientific name together with data field pointing to scientific name" );
         }
+        if ( map.isEmpty() ) {
+            throw new IllegalArgumentException( "map is empty" );
+        }
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             String name = node.getName();
@@ -244,9 +247,14 @@ public final class PhylogenyDecorator {
                         if ( extract_bracketed_scientific_name && new_value.endsWith( "]" ) ) {
                             new_value = extractBracketedScientificNames( node, new_value );
                         }
-                        else if ( extract_bracketed_tax_code
-                                && ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value ).matches() ) {
-                            new_value = extractBracketedTaxCodes( node, new_value );
+                        else if ( extract_bracketed_tax_code ) {
+                            if ( ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value ).find() ) {
+                                new_value = extractBracketedTaxCodes( node, new_value );
+                            }
+                            else if ( picky ) {
+                                throw new IllegalArgumentException( " could not get taxonomy from \"" + new_value
+                                        + "\"" );
+                            }
                         }
                         switch ( field ) {
                             case SEQUENCE_ANNOTATION_DESC:
@@ -419,7 +427,7 @@ public final class PhylogenyDecorator {
             throws IOException {
         final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
         BasicTable<String> mapping_table = null;
-        mapping_table = BasicTableParser.parse( mapping_table_file, "\t", false, false );
+        mapping_table = BasicTableParser.parse( mapping_table_file, '\t', false, false );
         for( int row = 0; row < mapping_table.getNumberOfRows(); ++row ) {
             final Map<String, String> row_map = new HashMap<String, String>();
             String name = null;
@@ -457,8 +465,8 @@ public final class PhylogenyDecorator {
 
     private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
         final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value );
-        String tc = null;
-        if ( m.matches() ) {
+        String tc = "?";
+        if ( m.find() ) {
             tc = m.group( 1 );
         }
         ForesterUtil.ensurePresenceOfTaxonomy( node );

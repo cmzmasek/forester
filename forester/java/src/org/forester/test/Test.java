@@ -1897,7 +1897,7 @@ public final class Test {
             source.append( "40 41 42 43" + l );
             source.append( "  # 1 1 1 1 1 " + l );
             source.append( "50 51 52 53 54" + l );
-            final BasicTable<String> t1 = BasicTableParser.parse( source.toString(), " " );
+            final BasicTable<String> t1 = BasicTableParser.parse( source.toString(), ' ' );
             if ( t1.getNumberOfColumns() != 5 ) {
                 return false;
             }
@@ -1926,7 +1926,7 @@ public final class Test {
             source1.append( "40;41;42;43" + l );
             source1.append( "  # 1 1 1 1 1 " + l );
             source1.append( ";;;50  ;  ;52; 53;;54   " + l );
-            final BasicTable<String> t2 = BasicTableParser.parse( source1.toString(), ";" );
+            final BasicTable<String> t2 = BasicTableParser.parse( source1.toString(), ';' );
             if ( t2.getNumberOfColumns() != 5 ) {
                 return false;
             }
@@ -1963,7 +1963,7 @@ public final class Test {
             source2.append( "  comment: 1 1 1 1 1 " + l );
             source2.append( ";;;50  ;   52; 53;;54   " + l );
             final List<BasicTable<String>> tl = BasicTableParser.parse( source2.toString(),
-                                                                        ";",
+                                                                        ';',
                                                                         false,
                                                                         false,
                                                                         "comment:",
