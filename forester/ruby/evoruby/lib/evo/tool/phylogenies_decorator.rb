@@ -10,7 +10,7 @@
 # $Id: phylogenies_decorator.rb,v 1.34 2010/12/13 19:00:11 cmzmasek Exp $
 #
 # Environment variable FORESTER_HOME needs to point to the appropriate
-# directory (e.g. setenv FORESTER_HOME $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester-atv/)
+# directory (e.g. setenv FORESTER_HOME $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/)
 
 require 'lib/evo/util/constants'
 require 'lib/evo/util/util'
@@ -44,7 +44,7 @@ module Evoruby
     PRG_VERSION    = "1.02"
     COPYRIGHT      = "2012 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
-    WWW            = "www.phylosoft.org"
+    WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
     IDS_ONLY_OPTION     = "n"
     DOMAINS_ONLY_OPTION = "d"
@@ -224,6 +224,7 @@ module Evoruby
             cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
              '-f=d ' + phylogeny_file + ' ' +
              domains_mapfile_name + ' ' + my_outfile
+            puts cmd
             execute_cmd( cmd, log )
           end
 
@@ -236,6 +237,7 @@ module Evoruby
             cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
              '-f=n ' + my_infile + ' ' +
              ids_mapfile_name + ' ' + outfile
+            puts cmd
             execute_cmd( cmd, log )
           end
 

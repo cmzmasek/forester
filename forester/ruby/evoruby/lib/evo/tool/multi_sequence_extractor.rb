@@ -25,10 +25,10 @@ module Evoruby
     PRG_NAME                           = "mse"
     PRG_VERSION                        = "1.02"
     PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "2012.07.20"
-    COPYRIGHT                          = "2008-2012 Christian M Zmasek"
+    PRG_DATE                           = "130322"
+    COPYRIGHT                          = "2008-2013 Christian M Zmasek"
     CONTACT                            = "phylosoft@gmail.com"
-    WWW                                = "www.phylosoft.org"
+    WWW                                = "https://sites.google.com/site/cmzmasek/home/software/forester"
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
 
@@ -314,7 +314,7 @@ module Evoruby
 
             per_species_counter.to_i
 
-            ids_map_writer.write( normalized_id + ": " + seq.get_name + Constants::LINE_DELIMITER )
+            ids_map_writer.write( normalized_id + "\t" + seq.get_name + Constants::LINE_DELIMITER )
 
             orig_name = nil
             if seq != nil
