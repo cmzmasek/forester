@@ -37,6 +37,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Event;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.SDIutil.TaxonomyComparisonBase;
 import org.forester.util.ForesterUtil;
@@ -74,7 +75,8 @@ public final class GSDI implements GSDII {
         _tax_comp_base = nodes_linking_result.getTaxCompBase();
         PhylogenyMethods.preOrderReId( species_tree );
         final GSDIsummaryResult gsdi_summary_result = geneTreePostOrderTraversal( gene_tree,
-                                                                                  _most_parsimonious_duplication_model );
+                                                                                  _most_parsimonious_duplication_model,
+                                                                                  true );
         _speciation_or_duplication_events_sum = gsdi_summary_result.getSpeciationOrDuplicationEventsSum();
         _speciations_sum = gsdi_summary_result.getSpeciationsSum();
         _duplications_sum = gsdi_summary_result.getDuplicationsSum();
@@ -142,13 +144,14 @@ public final class GSDI implements GSDII {
      * Preconditions: Mapping M for external nodes must have been calculated and
      * the species tree must be labeled in preorder.
      * <p>
+     * @param transfer_taxonomy 
      * @return 
      * @throws SDIException 
      * 
      */
     final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,
-                                                               final boolean most_parsimonious_duplication_model )
-            throws SDIException {
+                                                               final boolean most_parsimonious_duplication_model,
+                                                               final boolean transfer_taxonomy ) throws SDIException {
         final GSDIsummaryResult res = new GSDIsummaryResult();
         for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
             final PhylogenyNode g = it.next();
@@ -168,10 +171,46 @@ public final class GSDI implements GSDII {
                     }
                 }
                 g.setLink( s1 );
+                if ( transfer_taxonomy ) {
+                    transferTaxonomy( g, s1 );
+                }
                 determineEvent( s1, g, most_parsimonious_duplication_model, res );
             }
         }
         return res;
+    }
+
+    private static final void transferTaxonomy( final PhylogenyNode g, final PhylogenyNode s ) {
+        if ( s.getNodeData().isHasTaxonomy() ) {
+            g.getNodeData().setTaxonomy(  s.getNodeData().getTaxonomy() );
+            if ( g.isInternal() ) {
+                if ( g.getChildNode1().isInternal() ) {
+                    if ( g.getChildNode1().getNodeData().isHasTaxonomy() && g.getChildNode1().getNodeData().getTaxonomy() == s.getNodeData().getTaxonomy() ) {
+                        g.getChildNode1().getNodeData().setTaxonomy( null );
+                    }
+                }
+                if ( g.getChildNode2().isInternal() ) {
+                    if ( g.getChildNode2().getNodeData().isHasTaxonomy() && g.getChildNode2().getNodeData().getTaxonomy() == s.getNodeData().getTaxonomy() ) {
+                        g.getChildNode2().getNodeData().setTaxonomy( null );
+                    }
+                }
+            }
+        }
+        else if ( ForesterUtil.isEmpty( g.getName() ) && !ForesterUtil.isEmpty( s.getName() ) ) {
+            g.setName( s.getName() );
+            if ( g.isInternal() ) {
+                if ( g.getChildNode1().isInternal() ) {
+                    if ( g.getChildNode1().getName() == s.getName() ) {
+                        g.getChildNode1().setName(  "" );
+                    }
+                }
+                if ( g.getChildNode2().isInternal() ) {
+                    if ( g.getChildNode2().getName() == s.getName() ) {
+                        g.getChildNode2().setName(  "" );
+                    }
+                }
+            }
+        }
     }
 
     final static GSDIsummaryResult geneTreePostOrderTraversal( final Phylogeny gene_tree,

@@ -36,12 +36,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.util.ForesterUtil;
 
-//
-// java -javaagent:shiftone-jrat.jar -cp
-// $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester-atv/java/forester.jar:.
-// org.forester.archaeopteryx.Archaeopteryx
-// -c $HOME/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester-atv/_aptx_configuration_file
-//
+
 public final class Archaeopteryx {
 
     public static MainFrame createApplication( final Phylogeny phylogeny ) {
