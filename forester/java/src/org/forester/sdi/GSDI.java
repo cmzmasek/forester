@@ -182,7 +182,7 @@ public final class GSDI implements GSDII {
 
     private static final void transferTaxonomy( final PhylogenyNode g, final PhylogenyNode s ) {
         if ( s.getNodeData().isHasTaxonomy() ) {
-            g.getNodeData().setTaxonomy(  s.getNodeData().getTaxonomy() );
+            g.getNodeData().setTaxonomy( s.getNodeData().getTaxonomy() );
             if ( g.isInternal() ) {
                 if ( g.getChildNode1().isInternal() ) {
                     if ( g.getChildNode1().getNodeData().isHasTaxonomy() && g.getChildNode1().getNodeData().getTaxonomy() == s.getNodeData().getTaxonomy() ) {
@@ -201,12 +201,12 @@ public final class GSDI implements GSDII {
             if ( g.isInternal() ) {
                 if ( g.getChildNode1().isInternal() ) {
                     if ( g.getChildNode1().getName() == s.getName() ) {
-                        g.getChildNode1().setName(  "" );
+                        g.getChildNode1().setName( "" );
                     }
                 }
                 if ( g.getChildNode2().isInternal() ) {
                     if ( g.getChildNode2().getName() == s.getName() ) {
-                        g.getChildNode2().setName(  "" );
+                        g.getChildNode2().setName( "" );
                     }
                 }
             }

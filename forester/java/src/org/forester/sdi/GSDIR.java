@@ -80,13 +80,7 @@ public class GSDIR implements GSDII {
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
             reRoot( branch, gene_tree );
             PhylogenyMethods.preOrderReId( species_tree );
-            //TEST, remove later
-            //            for( final PhylogenyNodeIterator it = gene_tree.iteratorPostorder(); it.hasNext(); ) {
-            //                final PhylogenyNode g = it.next();
-            //                if ( g.isInternal() ) {
-            //                    g.setLink( null );
-            //                }
-            //            }
+          
             final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree,
                                                                                    true,
                                                                                    min_duplications_sum );
