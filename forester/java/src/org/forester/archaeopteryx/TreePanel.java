@@ -2915,9 +2915,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
                         || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) )
                         || ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) || ( ( node
-                        .getNodeData().getTaxonomy().getIdentifier() != null )
-                        && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) && node
-                        .getNodeData().getTaxonomy().getIdentifier().getValue().startsWith( "http://" ) ) ) ) {
+                        .getNodeData().getTaxonomy().getIdentifier() != null ) && !ForesterUtil.isEmpty( node
+                        .getNodeData().getTaxonomy().getIdentifier().getValue() ) ) ) ) {
             return true;
         }
         else {
@@ -3291,6 +3290,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             catch ( final URISyntaxException e ) {
                 AptxUtil.showErrorMessage( this, e.toString() );
                 uri_str = null;
+                e.printStackTrace();
+            }
+        }
+        else if ( ( tax.getIdentifier() != null )
+                && !ForesterUtil.isEmpty( tax.getIdentifier().getValue() )
+                && !ForesterUtil.isEmpty( tax.getIdentifier().getProvider() )
+                && ( tax.getIdentifier().getProvider().equalsIgnoreCase( "ncbi" ) || tax.getIdentifier().getProvider()
+                        .equalsIgnoreCase( "uniprot" ) ) ) {
+            try {
+                uri_str = "http://www.uniprot.org/taxonomy/"
+                        + URLEncoder.encode( tax.getIdentifier().getValue(), ForesterConstants.UTF8 );
+            }
+            catch ( final UnsupportedEncodingException e ) {
+                AptxUtil.showErrorMessage( this, e.toString() );
                 e.printStackTrace();
             }
         }
