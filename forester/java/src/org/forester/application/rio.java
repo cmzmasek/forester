@@ -88,7 +88,7 @@ public class rio {
         if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length == 0 ) ) {
             printHelp();
         }
-        if ( ( args.length < 3 ) || ( args.length > 11 ) ) {
+        if ( ( args.length < 3 ) || ( args.length > 11 ) || ( cla.getNumberOfNames() < 3 ) ) {
             System.out.println();
             System.out.println( "error: incorrect number of arguments" );
             System.out.println();
@@ -287,6 +287,7 @@ public class rio {
         }
         if ( return_gene_tree != null ) {
             System.out.println( "Write best gene tree to   : " + return_gene_tree );
+            System.out.println( "Transfer taxonomic data   : " + transfer_taxonomy );
         }
         time = System.currentTimeMillis();
         final ALGORITHM algorithm;
@@ -369,9 +370,13 @@ public class rio {
                 writeTree( rio.getSpeciesTree(), return_species_tree, "Wrote (stripped) species tree to" );
             }
             if ( return_gene_tree != null ) {
+                String tt = "";
+                if ( transfer_taxonomy ) {
+                    tt = "(with transferred taxonomic data) ";
+                }
                 writeTree( rio.getMinDuplicationsGeneTree(),
                            return_gene_tree,
-                           "Wrote (one) minimal duplication gene tree to" );
+                           "Wrote (one) minimal duplication gene tree " + tt + "to" );
             }
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
             System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "

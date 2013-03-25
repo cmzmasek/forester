@@ -90,10 +90,10 @@ public class GSDIR implements GSDII {
             if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
                 min_duplications_sum = gsdi_result.getDuplicationsSum();
                 speciations_sum = gsdi_result.getSpeciationsSum();
-                if ( transfer_taxonomy ) {
-                    transferTaxonomy( gene_tree );
-                }
                 _min_duplications_sum_gene_tree = gene_tree.copy();
+                if ( transfer_taxonomy ) {
+                    transferTaxonomy( _min_duplications_sum_gene_tree );
+                }
             }
             else if ( gsdi_result.getDuplicationsSum() == min_duplications_sum ) {
                 final List<Phylogeny> l = new ArrayList<Phylogeny>();
@@ -101,10 +101,10 @@ public class GSDIR implements GSDII {
                 l.add( gene_tree );
                 final int index = getIndexesOfShortestTree( l ).get( 0 );
                 if ( index == 1 ) {
-                    if ( transfer_taxonomy ) {
-                        transferTaxonomy( gene_tree );
-                    }
                     _min_duplications_sum_gene_tree = gene_tree.copy();
+                    if ( transfer_taxonomy ) {
+                        transferTaxonomy( _min_duplications_sum_gene_tree );
+                    }
                 }
             }
             _duplications_sum_stats.addValue( gsdi_result.getDuplicationsSum() );

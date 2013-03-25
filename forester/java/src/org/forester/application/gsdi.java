@@ -245,12 +245,12 @@ public final class gsdi {
         final long start_time = new Date().getTime();
         try {
             if ( base_algorithm == ALGORITHM.GSDI ) {
-                System.out.println( "Algorithm       : GSDI" );
-                log_writer.println( "Algorithm       : GSDI" );
+                System.out.println( "Algorithm                                : GSDI" );
+                log_writer.println( "Algorithm                                : GSDI" );
             }
             else if ( base_algorithm == ALGORITHM.GSDIR ) {
-                System.out.println( "Algorithm       : GSDIR" );
-                log_writer.println( "Algorithm       : GSDIR" );
+                System.out.println( "Algorithm                                : GSDIR" );
+                log_writer.println( "Algorithm                                : GSDIR" );
             }
             System.out.println( "Use most parsimonous duplication model   : " + most_parsimonous_duplication_model );
             System.out.println( "Allow stripping of gene tree nodes       : " + allow_stripping_of_gene_tree );
