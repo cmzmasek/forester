@@ -30,7 +30,6 @@
                 <clade>
                   <name>Choanoflagellatea &amp; Metazoa</name>
                   <clade>
-                    <name>Metazoa</name>
                     <taxonomy>
                       <id provider="uniprot">33208</id>
                       <scientific_name>Metazoa</scientific_name>
@@ -41,7 +40,7 @@
                       <reference doi="10.1038/nature06614">
                       </reference>
                       <clade>
-                        <name>Bilateria_Cnidaria</name>
+                        <name>Bilateria &amp; Cnidaria</name>
                         <clade>
                           <name>Bilateria</name>
                           <clade>
@@ -49,7 +48,6 @@
                             <reference doi="10.1038/nature04336">
                             </reference>
                             <clade>
-                              <name>Chordata</name>
                               <taxonomy>
                                 <id provider="uniprot">7711</id>
                                 <scientific_name>Chordata</scientific_name>
@@ -198,7 +196,7 @@
                                                                       <common_name>Sumatran orangutan</common_name>
                                                                       <synonym>Pongo pygmaeus abelii</synonym>
                                                                       <rank>species</rank>
-                                                                      <uri>http://www.kidszoo.org/images/animals/orangutan.jpg</uri>
+                                                                      <uri>http://www.ism.ac.jp/~hasegawa/photos/animal3b.jpg</uri>
                                                                     </taxonomy>
                                                                   </clade>
                                                                 </clade>
@@ -349,7 +347,7 @@
                                                                     <scientific_name>Mus musculus</scientific_name>
                                                                     <common_name>Mouse</common_name>
                                                                     <rank>species</rank>
-                                                                    <uri>http://www.zoologi.no/patlas/images/husmus-RS.jpg</uri>
+                                                                    <uri>http://www.nsrl.ttu.edu/tmot1/images/mus_musc.jpg</uri>
                                                                   </taxonomy>
                                                                 </clade>
                                                                 <clade>
@@ -370,7 +368,7 @@
                                                                   <scientific_name>Mesocricetus auratus</scientific_name>
                                                                   <common_name>Golden hamster</common_name>
                                                                   <rank>species</rank>
-                                                                  <uri>http://www.zipcodezoo.com/hp350/Mesocricetus_auratus_0.jpg</uri>
+                                                                  <uri>http://www.dicts.info/img/ud/syrian_hamster.jpg</uri>
                                                                 </taxonomy>
                                                               </clade>
                                                             </clade>
@@ -392,7 +390,7 @@
                                                               <scientific_name>Cavia porcellus</scientific_name>
                                                               <common_name>Guinea pig</common_name>
                                                               <rank>species</rank>
-                                                              <uri>http://upload.wikimedia.org/wikipedia/commons/7/77/Guinea_1.jpg</uri>
+                                                              <uri>http://archive.vetknowledge.com/files/images/guinea-pig---tan.jpg</uri>
                                                             </taxonomy>
                                                           </clade>
                                                         </clade>
@@ -432,7 +430,6 @@
                                                             <scientific_name>Oryctolagus cuniculus</scientific_name>
                                                             <common_name>Rabbit</common_name>
                                                             <rank>species</rank>
-                                                            <uri>http://www.animalpictures.tk/wp-content/uploads/pictures/pictures-of-rabbit-pictures-818.jpg</uri>
                                                             <uri>http://greennature.com/gallery/farm-animal-pictures/albino_rabbit.jpg</uri>
                                                           </taxonomy>
                                                         </clade>
@@ -542,7 +539,7 @@
                                                                 <common_name>Alpaca</common_name>
                                                                 <synonym>Lama pacos</synonym>
                                                                 <rank>species</rank>
-                                                                <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/A_group_of_Alpacas_on_a_property_including_cria.jpg/800px-A_group_of_Alpacas_on_a_property_including_cria.jpg</uri>
+                                                                <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/1206/0658.jpeg</uri>
                                                               </taxonomy>
                                                             </clade>
                                                           </clade>
@@ -738,7 +735,6 @@
                                                         <scientific_name>Dasypus novemcinctus</scientific_name>
                                                         <common_name>Nine-banded armadillo</common_name>
                                                         <rank>species</rank>
-                                                        <uri>http://images.enature.com/mammals/mammals_l/ma0154_1l.jpg</uri>
                                                         <uri>http://anthropometaphors.files.wordpress.com/2008/11/nine-banded-armadillo41.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
@@ -994,6 +990,18 @@
                                                 </taxonomy>
                                               </clade>
                                             </clade>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">8128</id>
+                                                <code>ORENI</code>
+                                                <scientific_name>Tilapia nilotica</scientific_name>
+                                                <authority>Linnaeus, 1758</authority>
+                                                <common_name>Nile tilapia</common_name>
+                                                <synonym>Tilapia nilotica</synonym>
+                                                <rank>species</rank>
+                                                <uri>http://www.biolib.cz/IMG/GAL/87809.jpg</uri>
+                                              </taxonomy>
+                                            </clade>
                                           </clade>
                                           <clade>
                                             <taxonomy>
@@ -1117,7 +1125,7 @@
                                   <authority>Agassiz, 1873</authority>
                                   <common_name>Acorn worm</common_name>
                                   <rank>species</rank>
-                                  <uri>http://www.amnh.org/exhibitions/hall_tour/spectrum/specimens/a158.jpg</uri>
+                                  <uri>http://faculty.washington.edu/bjswalla/Hemichordata/Enteropneusta/SkowAK.jpg</uri>
                                 </taxonomy>
                               </clade>
                               <clade>
@@ -1228,6 +1236,7 @@
                                                     <scientific_name>Drosophila melanogaster</scientific_name>
                                                     <common_name>Fruit fly</common_name>
                                                     <rank>species</rank>
+                                                    <uri>http://www.snv.jussieu.fr/bmedia/ATP/images/dro-mal1.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                                 <clade>
@@ -1238,6 +1247,7 @@
                                                     <scientific_name>Drosophila pseudoobscura pseudoobscura</scientific_name>
                                                     <common_name>Fruit fly</common_name>
                                                     <rank>subspecies</rank>
+                                                    <uri>http://www.naylorgallery.com/wp-content/uploads/fly4stack01small.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
@@ -1250,6 +1260,7 @@
                                                 <scientific_name>Bombyx mori</scientific_name>
                                                 <common_name>Silk moth</common_name>
                                                 <rank>species</rank>
+                                                <uri>http://lepidoptera.butterflyhouse.com.au/bomb/mori5.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -1260,14 +1271,33 @@
                                               <common_name>wasps, ants and bees</common_name>
                                             </taxonomy>
                                             <clade>
-                                              <name>APIME</name>
                                               <taxonomy>
-                                                <id provider="uniprot">7460</id>
-                                                <code>APIME</code>
-                                                <scientific_name>Apis mellifera</scientific_name>
-                                                <common_name>Honeybee</common_name>
-                                                <rank>species</rank>
+                                                <id provider="uniprot">7434</id>
+                                                <scientific_name>Aculeata</scientific_name>
+                                                <rank>suborder</rank>
                                               </taxonomy>
+                                              <clade>
+                                                <name>APIME</name>
+                                                <taxonomy>
+                                                  <id provider="uniprot">7460</id>
+                                                  <code>APIME</code>
+                                                  <scientific_name>Apis mellifera</scientific_name>
+                                                  <common_name>Honeybee</common_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://www.floridanature.org/photos/Apis_mellifera_6b_&amp;_Trifolium_sp.,_TBP,_Tallahassee,_20030323.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">12957</id>
+                                                  <code>ATTCE</code>
+                                                  <scientific_name>Atta cephalotes</scientific_name>
+                                                  <authority>Linnaeus, 1758</authority>
+                                                  <common_name>Leafcutter ant</common_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/4/4e/Leaf-cutting_ant.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
                                             </clade>
                                             <clade>
                                               <name>NASVI</name>
@@ -1277,6 +1307,7 @@
                                                 <scientific_name>Nasonia vitripennis</scientific_name>
                                                 <common_name>Parasitic wasp</common_name>
                                                 <rank>species</rank>
+                                                <uri>http://www.freshpond.org/nasonia.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -1289,6 +1320,7 @@
                                             <scientific_name>Tribolium castaneum</scientific_name>
                                             <common_name>Red flour beetle</common_name>
                                             <rank>species</rank>
+                                            <uri>http://www.ars.usda.gov/sp2UserFiles/Place/54300530/proj/tribolium/rfb.jpg</uri>
                                           </taxonomy>
                                         </clade>
                                       </clade>
@@ -1306,6 +1338,7 @@
                                             <scientific_name>Acyrthosiphon pisum</scientific_name>
                                             <common_name>Pea aphid</common_name>
                                             <rank>species</rank>
+                                            <uri>http://www.agroatlas.ru/content/pests/Acyrthosiphon_pisum/Acyrthosiphon_pisum.jpg</uri>
                                           </taxonomy>
                                         </clade>
                                         <clade>
@@ -1464,6 +1497,7 @@
                                         <code>CAEBR</code>
                                         <scientific_name>Caenorhabditis briggsae</scientific_name>
                                         <rank>species</rank>
+                                        <uri>http://www.life.umd.edu/biology/haag/briggsae_herm.jpg</uri>
                                       </taxonomy>
                                     </clade>
                                     <clade>
@@ -1473,6 +1507,7 @@
                                         <code>CAEEL</code>
                                         <scientific_name>Caenorhabditis elegans</scientific_name>
                                         <rank>species</rank>
+                                        <uri>http://homepages.ed.ac.uk/mbx/C_elegans/N2_picture.gif</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
@@ -1483,6 +1518,7 @@
                                       <code>PRIPA</code>
                                       <scientific_name>Pristionchus pacificus</scientific_name>
                                       <rank>species</rank>
+                                      <uri>http://smithlabdb.usc.edu/images/Pristionchus_pacificus.jpg</uri>
                                     </taxonomy>
                                   </clade>
                                 </clade>
@@ -1494,6 +1530,7 @@
                                     <scientific_name>Brugia malayi</scientific_name>
                                     <common_name>Filarial nematode worm</common_name>
                                     <rank>species</rank>
+                                    <uri>http://upload.wikimedia.org/wikipedia/commons/4/4a/Brugia_malayi.JPG</uri>
                                   </taxonomy>
                                 </clade>
                               </clade>
@@ -1593,6 +1630,7 @@
                                     <scientific_name>Schistosoma mansoni</scientific_name>
                                     <common_name>Blood fluke</common_name>
                                     <rank>species</rank>
+                                    <uri>http://animaldiversity.ummz.umich.edu/site/resources/Grzimek_inverts/Trematoda/Schistosoma_mansoni.jpg/medium.jpg</uri>
                                   </taxonomy>
                                 </clade>
                                 <clade>
@@ -1603,6 +1641,7 @@
                                     <scientific_name>Schmidtea mediterranea</scientific_name>
                                     <common_name>Freshwater planarian flatworm</common_name>
                                     <rank>species</rank>
+                                    <uri>http://www.astrobio.net/images/galleryimages_images/Gallery_Image_8136.jpg</uri>
                                   </taxonomy>
                                 </clade>
                               </clade>
@@ -1631,6 +1670,7 @@
                                 <scientific_name>Nematostella vectensis</scientific_name>
                                 <common_name>Starlet sea anemone</common_name>
                                 <rank>species</rank>
+                                <uri>http://genome.jgi-psf.org/Nemve1/Nematostellapolyp.jpg</uri>
                               </taxonomy>
                             </clade>
                             <clade>
@@ -1647,12 +1687,12 @@
                           <clade>
                             <name>HYDMA</name>
                             <taxonomy>
-                              <id provider="eol">9119928</id>
+                              <id provider="uniprot">6085</id>
                               <code>HYDMA</code>
                               <scientific_name>Hydra magnipapillata</scientific_name>
                               <authority>Ito, 1947</authority>
                               <rank>species</rank>
-                              <uri>http://www.nig.ac.jp/labs/OntoGen/magni.html</uri>
+                              <uri>http://www.ncbi.nlm.nih.gov/UniGene/IMG/6085.gif</uri>
                             </taxonomy>
                           </clade>
                         </clade>
@@ -1665,6 +1705,7 @@
                           <scientific_name>Trichoplax adhaerens</scientific_name>
                           <synonym>Trichoplax reptans</synonym>
                           <rank>species</rank>
+                          <uri>http://ncse.com/files/images/trichoplax_ana_signorovitch.jpg</uri>
                         </taxonomy>
                         <reference doi="10.1073/pnas.0602076103">
                         </reference>
@@ -1674,9 +1715,13 @@
                       <name>AMPQU</name>
                       <taxonomy>
                         <id provider="uniprot">400682</id>
-                        <code>AMPQU</code>
+                        <code>AMPQE</code>
                         <scientific_name>Amphimedon queenslandica</scientific_name>
+                        <authority>Hooper &amp; Van Soest, 2006</authority>
+                        <common_name>Sponge</common_name>
+                        <synonym>Reniera sp. JGI-2005</synonym>
                         <rank>species</rank>
+                        <uri>http://images.marinespecies.org/resized/46694_amphimedon-queenslandica.jpg</uri>
                       </taxonomy>
                     </clade>
                   </clade>
@@ -1694,6 +1739,7 @@
                         <scientific_name>Monosiga brevicollis</scientific_name>
                         <common_name>Choanoflagellate</common_name>
                         <rank>species</rank>
+                        <uri>http://genome.jgi-psf.org/Monbr1/Monosiga_1.jpg</uri>
                       </taxonomy>
                     </clade>
                     <clade>
@@ -1704,6 +1750,7 @@
                         <synonym>Proterospongia sp. ATCC 50818</synonym>
                         <synonym>Salpingoeca sp. ATCC 50818</synonym>
                         <rank>species</rank>
+                        <uri>http://cfb.unh.edu/phycokey/Choices/Amoebae_Flagellates_Ciliates/Choanoflagellates/SALPINGOECA/salpingoeca_02_300x240_Kalle%20Olli_botany.ut.ee.jpg</uri>
                       </taxonomy>
                     </clade>
                   </clade>
@@ -1722,7 +1769,7 @@
                         <code>AMOPA</code>
                         <scientific_name>Amoebidium parasiticum</scientific_name>
                         <rank>species</rank>
-                        <uri>http://www.diark.org/img/species_pict/Amoebidium_parasiticum</uri>
+                        <uri>http://www.nhm.ku.edu/~fungi/Ilustgenera/amoebi.jpg</uri>
                       </taxonomy>
                     </clade>
                     <clade>
@@ -1749,6 +1796,7 @@
                         <id provider="uniprot">192875</id>
                         <scientific_name>Capsaspora owczarzaki</scientific_name>
                         <rank>species</rank>
+                        <uri>http://www.berfrois.com/wp-content/uploads/2011/03/Capsaspora_owczarzaki.jpg</uri>
                       </taxonomy>
                     </clade>
                     <clade>
@@ -2211,13 +2259,28 @@
                                               <rank>genus</rank>
                                             </taxonomy>
                                             <clade>
-                                              <name>ASPFL</name>
                                               <taxonomy>
-                                                <id provider="uniprot">5059</id>
-                                                <code>ASPFL</code>
                                                 <scientific_name>Aspergillus flavus</scientific_name>
-                                                <rank>species</rank>
                                               </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">5059</id>
+                                                  <code>ASPFL</code>
+                                                  <scientific_name>Aspergillus flavus</scientific_name>
+                                                  <authority>Link 1809</authority>
+                                                  <synonym>Petromyces flavus</synonym>
+                                                  <rank>species</rank>
+                                                  <uri>http://www.schoolproject2.ewebsite.com/img/original/21/aspergillus-flavus.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">332952</id>
+                                                  <code>ASPFN</code>
+                                                  <scientific_name>Aspergillus flavus (strain ATCC 200026 / FGSC A1120 / NRRL 3357 / JCM 12722 / SRRC 167)</scientific_name>
+                                                  <synonym>Aspergillus flavus NRRL3357</synonym>
+                                                </taxonomy>
+                                              </clade>
                                             </clade>
                                             <clade>
                                               <name>ASPNG</name>
