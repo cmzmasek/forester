@@ -52,7 +52,8 @@ public class GSDIR implements GSDII {
     public GSDIR( final Phylogeny gene_tree,
                   final Phylogeny species_tree,
                   final boolean strip_gene_tree,
-                  final boolean strip_species_tree ) throws SDIException {
+                  final boolean strip_species_tree,
+                  final boolean transfer_taxonomy ) throws SDIException {
         final NodesLinkingResult nodes_linking_result = GSDI.linkNodesOfG( gene_tree,
                                                                            species_tree,
                                                                            strip_gene_tree,
@@ -80,7 +81,6 @@ public class GSDIR implements GSDII {
         for( final PhylogenyBranch branch : gene_tree_branches_post_order ) {
             reRoot( branch, gene_tree );
             PhylogenyMethods.preOrderReId( species_tree );
-          
             final GSDIsummaryResult gsdi_result = GSDI.geneTreePostOrderTraversal( gene_tree,
                                                                                    true,
                                                                                    min_duplications_sum );
@@ -90,6 +90,9 @@ public class GSDIR implements GSDII {
             if ( gsdi_result.getDuplicationsSum() < min_duplications_sum ) {
                 min_duplications_sum = gsdi_result.getDuplicationsSum();
                 speciations_sum = gsdi_result.getSpeciationsSum();
+                if ( transfer_taxonomy ) {
+                    transferTaxonomy( gene_tree );
+                }
                 _min_duplications_sum_gene_tree = gene_tree.copy();
             }
             else if ( gsdi_result.getDuplicationsSum() == min_duplications_sum ) {
@@ -98,6 +101,9 @@ public class GSDIR implements GSDII {
                 l.add( gene_tree );
                 final int index = getIndexesOfShortestTree( l ).get( 0 );
                 if ( index == 1 ) {
+                    if ( transfer_taxonomy ) {
+                        transferTaxonomy( gene_tree );
+                    }
                     _min_duplications_sum_gene_tree = gene_tree.copy();
                 }
             }
@@ -206,6 +212,12 @@ public class GSDIR implements GSDII {
         //        }
         else {
             throw new IllegalArgumentException( "reRoot( Branch b ): b is not a branch." );
+        }
+    }
+
+    private final static void transferTaxonomy( final Phylogeny gt ) {
+        for( final PhylogenyNodeIterator it = gt.iteratorPostorder(); it.hasNext(); ) {
+            GSDI.transferTaxonomy( it.next() );
         }
     }
 }

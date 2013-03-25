@@ -36,7 +36,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.util.ForesterUtil;
 
-
 public final class Archaeopteryx {
 
     public static MainFrame createApplication( final Phylogeny phylogeny ) {

@@ -63,17 +63,18 @@ public final class gsdi {
     final static private String GSDIR_OPTION                           = "r";
     final static private String MOST_PARSIMONIOUS_OPTION               = "m";
     final static private String GUESS_FORMAT_OF_SPECIES_TREE           = "q";
+    final static private String TRANSFER_TAXONOMY_OPTION               = "t";
     final static private String HELP_OPTION_1                          = "help";
     final static private String HELP_OPTION_2                          = "h";
     final static private String SUFFIX_FOR_SPECIES_TREE_USED           = "_species_tree_used.xml";
     final static private String LOGFILE_SUFFIX                         = "_gsdi_log.txt";
     final static private String REMAPPED_SUFFIX                        = "_gsdi_remapped.txt";
     final static private String PRG_NAME                               = "gsdi";
-    final static private String PRG_VERSION                            = "1.000";
-    final static private String PRG_DATE                               = "120629";
+    final static private String PRG_VERSION                            = "1.001";
+    final static private String PRG_DATE                               = "130325";
     final static private String PRG_DESC                               = "general speciation duplication inference";
     final static private String E_MAIL                                 = "phylosoft@gmail.com";
-    final static private String WWW                                    = "www.phylosoft.org/forester";
+    final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
         try {
@@ -108,6 +109,7 @@ public final class gsdi {
             allowed_options.add( gsdi.GUESS_FORMAT_OF_SPECIES_TREE );
             allowed_options.add( gsdi.MOST_PARSIMONIOUS_OPTION );
             allowed_options.add( gsdi.ALLOW_STRIPPING_OF_GENE_TREE_OPTION );
+            allowed_options.add( TRANSFER_TAXONOMY_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -137,6 +139,10 @@ public final class gsdi {
                 ForesterUtil.fatalError( gsdi.PRG_NAME, "Cannot allow stripping of gene tree with SDI" );
             }
             allow_stripping_of_gene_tree = true;
+        }
+        boolean transfer_taxonomy = false;
+        if ( cla.isOptionSet( TRANSFER_TAXONOMY_OPTION ) ) {
+            transfer_taxonomy = true;
         }
         Phylogeny species_tree = null;
         Phylogeny gene_tree = null;
@@ -234,6 +240,7 @@ public final class gsdi {
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
         System.out.println( "Species tree name                        : "
                 + ( ForesterUtil.isEmpty( species_tree.getName() ) ? "" : gene_tree.getName() ) );
+        System.out.println( "Transfer taxonomy                        : " + transfer_taxonomy );
         GSDII gsdii = null;
         final long start_time = new Date().getTime();
         try {
@@ -255,10 +262,11 @@ public final class gsdi {
                                   species_tree,
                                   most_parsimonous_duplication_model,
                                   allow_stripping_of_gene_tree,
-                                  true );
+                                  true,
+                                  transfer_taxonomy );
             }
             else if ( base_algorithm == ALGORITHM.GSDIR ) {
-                gsdii = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true );
+                gsdii = new GSDIR( gene_tree, species_tree, allow_stripping_of_gene_tree, true, transfer_taxonomy );
             }
         }
         catch ( final SDIException e ) {
@@ -385,6 +393,8 @@ public final class gsdi {
                 + ": to allow species tree in other formats than phyloXML (i.e. Newick, NHX, Nexus)" );
         System.out.println( " -" + gsdi.GSDIR_OPTION
                 + ": to use GSDIR algorithm instead of GSDI algorithm (re-rooting)" );
+        System.out.println( " -" + TRANSFER_TAXONOMY_OPTION
+                + ": to transfer taxonomic data from species tree to gene tree\n" );
         System.out.println();
         System.out.println( "Gene tree:" );
         System.out.println( " in phyloXM format, with taxonomy and sequence data in appropriate fields" );

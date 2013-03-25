@@ -54,20 +54,21 @@ import org.forester.util.ForesterUtil;
 
 public class rio {
 
-    final static private String PRG_NAME              = "rio";
-    final static private String PRG_VERSION           = "4.000 beta 9";
-    final static private String PRG_DATE              = "2013.01.14";
-    final static private String E_MAIL                = "phyloxml@gmail.com";
-    final static private String WWW                   = "https://sites.google.com/site/cmzmasek/home/software/forester";
-    final static private String HELP_OPTION_1         = "help";
-    final static private String HELP_OPTION_2         = "h";
-    final static private String GT_FIRST              = "f";
-    final static private String GT_LAST               = "l";
-    final static private String REROOTING_OPT         = "r";
-    final static private String OUTGROUP              = "o";
-    final static private String RETURN_SPECIES_TREE   = "s";
-    final static private String RETURN_BEST_GENE_TREE = "g";
-    final static private String USE_SDIR              = "b";
+    final static private String PRG_NAME                 = "rio";
+    final static private String PRG_VERSION              = "4.000 beta 10";
+    final static private String PRG_DATE                 = "130325";
+    final static private String E_MAIL                   = "phyloxml@gmail.com";
+    final static private String WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1            = "help";
+    final static private String HELP_OPTION_2            = "h";
+    final static private String GT_FIRST                 = "f";
+    final static private String GT_LAST                  = "l";
+    final static private String REROOTING_OPT            = "r";
+    final static private String OUTGROUP                 = "o";
+    final static private String RETURN_SPECIES_TREE      = "s";
+    final static private String RETURN_BEST_GENE_TREE    = "g";
+    final static private String USE_SDIR                 = "b";
+    final static private String TRANSFER_TAXONOMY_OPTION = "t";
 
     public static void main( final String[] args ) {
         ForesterUtil.printProgramInformation( PRG_NAME,
@@ -101,6 +102,7 @@ public class rio {
         allowed_options.add( USE_SDIR );
         allowed_options.add( RETURN_SPECIES_TREE );
         allowed_options.add( RETURN_BEST_GENE_TREE );
+        allowed_options.add( TRANSFER_TAXONOMY_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( "unknown option(s): " + dissallowed_options );
@@ -229,6 +231,13 @@ public class rio {
                 ForesterUtil.fatalError( "\"" + return_gene_tree + "\" already exists" );
             }
         }
+        boolean transfer_taxonomy = false;
+        if ( !sdir && cla.isOptionSet( TRANSFER_TAXONOMY_OPTION ) ) {
+            if ( return_gene_tree == null ) {
+                ForesterUtil.fatalError( "no point in transferring taxonomy data without returning best gene tree" );
+            }
+            transfer_taxonomy = true;
+        }
         ForesterUtil.fatalErrorIfFileNotReadable( gene_trees_file );
         ForesterUtil.fatalErrorIfFileNotReadable( species_tree_file );
         if ( orthology_outtable.exists() ) {
@@ -300,7 +309,8 @@ public class rio {
                                            gt_first,
                                            gt_last,
                                            logfile != null,
-                                           true );
+                                           true,
+                                           transfer_taxonomy );
             }
             else {
                 iterating = true;
@@ -329,7 +339,8 @@ public class rio {
                                            gt_first,
                                            gt_last,
                                            logfile != null,
-                                           true );
+                                           true,
+                                           transfer_taxonomy );
             }
             if ( algorithm == ALGORITHM.GSDIR ) {
                 System.out.println( "Taxonomy linking based on : " + rio.getGSDIRtaxCompBase() );
@@ -420,6 +431,11 @@ public class rio {
                 .println( "  -" + RETURN_SPECIES_TREE + "=<outfile>   : to write the (stripped) species tree to file" );
         System.out.println( "  -" + RETURN_BEST_GENE_TREE
                 + "=<outfile>   : to write (one) minimal duplication gene tree to file" );
+        System.out
+                .println( "  -"
+                        + TRANSFER_TAXONOMY_OPTION
+                        + "             : to transfer taxonomic data from species tree to returned minimal duplication gene tree\n"
+                        + "                   (if -" + RETURN_BEST_GENE_TREE + " option is used)" );
         System.out.println( "  -" + USE_SDIR
                 + "             : to use SDIR instead of GSDIR (faster, but non-binary species trees are" );
         System.out.println( "                   disallowed, as are most options)" );

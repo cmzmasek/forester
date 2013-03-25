@@ -800,7 +800,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         GSDI gsdi = null;
         final Phylogeny species_tree = getSpeciesTree().copy();
         try {
-            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true, true );
         }
         catch ( final SDIException e ) {
             JOptionPane.showMessageDialog( this,
@@ -873,7 +873,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         GSDIR gsdir = null;
         final Phylogeny species_tree = getSpeciesTree().copy();
         try {
-            gsdir = new GSDIR( gene_tree, species_tree, true, true );
+            gsdir = new GSDIR( gene_tree, species_tree, true, true, true );
         }
         catch ( final SDIException e ) {
             JOptionPane.showMessageDialog( this,

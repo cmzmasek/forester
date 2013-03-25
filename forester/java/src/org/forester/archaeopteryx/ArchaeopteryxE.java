@@ -892,7 +892,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         GSDI gsdi = null;
         final Phylogeny species_tree = _species_tree.copy();
         try {
-            gsdi = new GSDI( gene_tree, species_tree, false, true, true );
+            gsdi = new GSDI( gene_tree, species_tree, false, true, true, true );
         }
         catch ( final SDIException e ) {
             JOptionPane.showMessageDialog( this,
@@ -965,7 +965,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         GSDIR gsdir = null;
         final Phylogeny species_tree = _species_tree.copy();
         try {
-            gsdir = new GSDIR( gene_tree, species_tree, true, true );
+            gsdir = new GSDIR( gene_tree, species_tree, true, true, true );
         }
         catch ( final SDIException e ) {
             JOptionPane.showMessageDialog( this,

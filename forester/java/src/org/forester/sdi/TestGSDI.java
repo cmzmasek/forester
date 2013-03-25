@@ -1467,7 +1467,7 @@ public final class TestGSDI {
             final Phylogeny gene_0 = factory0.create( gene_0_str, new NHXParser() )[ 0 ];
             s_0.setRooted( true );
             gene_0.setRooted( true );
-            final GSDIR sdi0 = new GSDIR( gene_0, s_0, true, true );
+            final GSDIR sdi0 = new GSDIR( gene_0, s_0, true, true, true );
             if ( sdi0.getSpeciationsSum() != 0 ) {
                 return false;
             }
@@ -1482,7 +1482,7 @@ public final class TestGSDI {
             final Phylogeny gene_00 = factory00.create( gene_00_str, new NHXParser() )[ 0 ];
             s_00.setRooted( true );
             gene_00.setRooted( true );
-            final GSDIR sdi00 = new GSDIR( gene_00, s_00, true, true );
+            final GSDIR sdi00 = new GSDIR( gene_00, s_00, true, true, true );
             if ( sdi00.getSpeciationsSum() != 0 ) {
                 return false;
             }
@@ -1495,25 +1495,25 @@ public final class TestGSDI {
             s1.setRooted( true );
             final Phylogeny g1 = TestGSDI
                     .createPhylogeny( "(HUMAN[&&NHX:S=HUMAN],(RAT[&&NHX:S=RAT],(CAEEL[&&NHX:T=:S=CAEEL],YEAST[&&NHX:S=YEAST])))" );
-            final GSDIR sdi1 = new GSDIR( g1.copy(), s1.copy(), false, false );
+            final GSDIR sdi1 = new GSDIR( g1.copy(), s1.copy(), false, false, true );
             if ( sdi1.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
             final Phylogeny g2 = TestGSDI
                     .createPhylogeny( "(((HUMAN[&&NHX:S=HUMAN],RAT[&&NHX:S=RAT]),CAEEL[&&NHX:T=:S=CAEEL]),YEAST[&&NHX:S=YEAST])" );
-            final GSDIR sdi2 = new GSDIR( g2.copy(), s1.copy(), false, false );
+            final GSDIR sdi2 = new GSDIR( g2.copy(), s1.copy(), false, false, true );
             if ( sdi2.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
             final Phylogeny g3 = TestGSDI
                     .createPhylogeny( "(RAT[&&NHX:S=RAT],HUMAN[&&NHX:S=HUMAN],(YEAST[&&NHX:S=YEAST],CAEEL[&&NHX:T=:S=CAEEL]))" );
-            final GSDIR sdi3 = new GSDIR( g3.copy(), s1.copy(), false, false );
+            final GSDIR sdi3 = new GSDIR( g3.copy(), s1.copy(), false, false, true );
             if ( sdi3.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
             final Phylogeny g4 = TestGSDI
                     .createPhylogeny( "(((((MOUSE[&&NHX:S=MOUSE],[&&NHX:S=RAT]),[&&NHX:S=HUMAN]),([&&NHX:S=ARATH],[&&NHX:S=YEAST])),[&&NHX:S=CAEEL]),[&&NHX:S=CAEBR])" );
-            final GSDIR sdi4 = new GSDIR( g4.copy(), s1.copy(), false, false );
+            final GSDIR sdi4 = new GSDIR( g4.copy(), s1.copy(), false, false, true );
             if ( sdi4.getMinDuplicationsSum() != 0 ) {
                 return false;
             }
@@ -1522,7 +1522,7 @@ public final class TestGSDI {
             final Phylogeny s2 = ParserBasedPhylogenyFactory.getInstance().create( s2str, new NHXParser() )[ 0 ];
             s2.setRooted( true );
             final Phylogeny g5 = TestGSDI.createPhylogeny( s2str );
-            final GSDIR sdi5 = new GSDIR( g5, s2, false, false );
+            final GSDIR sdi5 = new GSDIR( g5, s2, false, false, true );
             if ( sdi5.getMinDuplicationsSum() != 0 ) {
                 System.out.println( sdi5.getMinDuplicationsSum() );
                 return false;
