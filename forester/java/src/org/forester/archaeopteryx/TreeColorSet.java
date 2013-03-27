@@ -103,9 +103,9 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // box_color
             new Color( 0, 0, 0 ), // collapesed_fill_color
             new Color( 255, 0, 0 ), // found_color
-            new Color( 0, 0, 0 ), // duplication_box_color
-            new Color( 200, 200, 200 ), // speciation_box_color
-            new Color( 0, 0, 0 ), // duplication_speciation_color
+            new Color( 255, 0, 0 ), // duplication_box_color
+            new Color( 0, 255, 0 ), // speciation_box_color
+            new Color( 255, 255, 0 ), // duplication_speciation_color
             new Color( 0, 0, 0 ), // domains_color
             new Color( 0, 0, 0 ), // binary_domain_combinations_color
             new Color( 0, 0, 0 ) // annotation
@@ -121,8 +121,8 @@ public final class TreeColorSet {
             new Color( 140, 140, 140 ), // collapesed_fill_color
             new Color( 255, 0, 0 ), // found_color
             new Color( 255, 0, 0 ), // duplication_box_color
-            new Color( 200, 200, 200 ), // speciation_box_color
-            new Color( 140, 140, 140 ), // duplication_speciation_color
+            new Color( 0, 255, 0 ), // speciation_box_color
+            new Color( 255, 255, 0 ), // duplication_speciation_color
             new Color( 180, 180, 180 ), // domains_color
             new Color( 180, 180, 180 ), // binary_domain_combinations_color
             new Color( 140, 140, 140 ) // annotation
@@ -137,9 +137,9 @@ public final class TreeColorSet {
             new Color( 0, 255, 0 ), // box_color
             new Color( 0, 255, 0 ), // collapesed_fill_color
             new Color( 255, 255, 255 ), // found_color
-            new Color( 255, 255, 255 ), // duplication_box_color
+            new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
-            new Color( 120, 120, 120 ), // duplication_speciation_color
+            new Color( 255, 255, 0 ), // duplication_speciation_color
             new Color( 0, 235, 0 ), // domains_color
             new Color( 0, 235, 0 ), // binary_domain_combinations_color
             new Color( 0, 235, 0 ) // annotation
@@ -205,9 +205,9 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // box_color
             new Color( 0, 0, 0 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color
-            new Color( 255, 0, 255 ), // duplication_box_color
-            new Color( 255, 255, 255 ), // speciation_box_color
-            new Color( 100, 100, 100 ), // duplication_speciation_color
+            new Color( 255, 0, 0 ), // duplication_box_color
+            new Color( 0, 255, 0 ), // speciation_box_color
+            new Color( 255, 255, 0 ), // duplication_speciation_color
             new Color( 255, 255, 255 ), // domains_color
             new Color( 255, 255, 255 ), // binary_domain_combinations_color
             new Color( 255, 255, 255 ) // annotation
