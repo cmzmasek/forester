@@ -117,7 +117,7 @@ native_ui: ?
 
 
 min_confidence_value:                      0.0
-font_family:                               Verdana,Tahoma,Arial,Helvetica,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
+font_family:                               Arial,Helvetica,Verdana,Tahoma,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
 font_size:                                 10
 antialias_screen:                          yes
 show_scale:                                yes

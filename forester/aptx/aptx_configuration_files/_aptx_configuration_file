@@ -131,7 +131,7 @@ validate_against_phyloxml_xsd_schema: true
 
 
 min_confidence_value:                      0.0
-font_family:                               Verdana,Tahoma,Arial,Helvetica,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
+font_family:                               Arial,Helvetica,Verdana,Tahoma,Dialog,Lucida-Sans,SansSerif,Sans-serif,Sans
 font_size:                                 10
 font_size_min:                             2
 font_size_max:                             20
