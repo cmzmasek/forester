@@ -25,6 +25,7 @@
 
 package org.forester.archaeopteryx.tools;
 
+import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -50,6 +51,11 @@ public class ImageLoader implements Runnable {
 
     public ImageLoader( final TreePanel tp ) {
         _tp = tp;
+    }
+
+    @Override
+    public void run() {
+        load();
     }
 
     private void load() {
@@ -90,12 +96,20 @@ public class ImageLoader implements Runnable {
                                 bi = ImageIO.read( uri.getValue().toURL() );
                             }
                             catch ( final MalformedURLException e ) {
-                                AptxUtil.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
-                                        + "\": Malformed URL Exception: " + e.getLocalizedMessage() );
+                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                                              "could not load image from \"" + uri.getValue()
+                                                                      + "\": Malformed URL Exception: "
+                                                                      + e.getLocalizedMessage() );
                             }
                             catch ( final IOException e ) {
-                                AptxUtil.printWarningMessage( Constants.PRG_NAME, "\"" + uri.getValue()
-                                        + "\": IO Exception: " + e.getLocalizedMessage() );
+                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                                              "could not load image from \"" + uri.getValue()
+                                                                      + "\": IO Exception: " + e.getLocalizedMessage() );
+                            }
+                            catch ( final CMMException e ) {
+                                AptxUtil.printWarningMessage( Constants.PRG_NAME,
+                                                              "could not load image from \"" + uri.getValue()
+                                                                      + "\": CMMException: " + e.getLocalizedMessage() );
                             }
                             if ( bi != null ) {
                                 image_map.put( uri_str, bi );
@@ -109,10 +123,5 @@ public class ImageLoader implements Runnable {
                 }
             }
         }
-    }
-
-    @Override
-    public void run() {
-        load();
     }
 }
