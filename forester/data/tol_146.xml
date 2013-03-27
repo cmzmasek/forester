@@ -2,7 +2,7 @@
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="false">
   <clade>
-    <name>cellular_organisms</name>
+    <name>cellular organisms</name>
     <clade>
       <taxonomy>
         <scientific_name>Neomura</scientific_name>
@@ -227,7 +227,7 @@
                                                                     <scientific_name>Macaca mulatta</scientific_name>
                                                                     <common_name>Rhesus macaque</common_name>
                                                                     <rank>species</rank>
-                                                                    <uri>http://www.biolib.cz/IMG/GAL/39329.jpg</uri>
+                                                                    <uri>http://www.our-pets.net/images/rhesus1.jpg</uri>
                                                                   </taxonomy>
                                                                 </clade>
                                                                 <clade>
@@ -476,7 +476,7 @@
                                                                       <common_name>Bovine</common_name>
                                                                       <synonym>Bos bovis</synonym>
                                                                       <rank>species</rank>
-                                                                      <uri>http://www.biolib.cz/IMG/GAL/18578.jpg</uri>
+                                                                      <uri>http://www.biopix.eu/photos/jcs-bos-taurus-(dansk-rodbroget-kvaeg)-22141.jpg</uri>
                                                                     </taxonomy>
                                                                   </clade>
                                                                   <clade>
@@ -799,7 +799,7 @@
                                                 <scientific_name>Ornithorhynchus anatinus</scientific_name>
                                                 <common_name>Duckbill platypus</common_name>
                                                 <rank>species</rank>
-                                                <uri>http://www.biolib.cz/IMG/GAL/39610.jpg</uri>
+                                                <uri>http://upload.wikimedia.org/wikipedia/commons/1/12/Platypus_BrokenRiver_QLD_Australia2.png</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -999,7 +999,7 @@
                                                 <common_name>Nile tilapia</common_name>
                                                 <synonym>Tilapia nilotica</synonym>
                                                 <rank>species</rank>
-                                                <uri>http://www.biolib.cz/IMG/GAL/87809.jpg</uri>
+                                                <uri>http://www.jjphoto.dk/fish_archive/warm_freshwater/oreochromis_niloticus_niloticus.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -1110,7 +1110,7 @@
                                   <common_name>Florida lancelet</common_name>
                                   <synonym>Amphioxus</synonym>
                                   <rank>species</rank>
-                                  <uri>http://genome.jgi-psf.org/Brafl1/Amphioxus-1.jpg</uri>
+                                  <uri>http://www.nicerweb.com/sketches/video/PBS-ShapeOfLife/4.8_BonesBrawnBrains/Branchiostoma_floridae.jpg</uri>
                                 </taxonomy>
                               </clade>
                             </clade>
@@ -1805,6 +1805,7 @@
                         <id provider="uniprot">134558</id>
                         <scientific_name>Ministeria vibrans</scientific_name>
                         <rank>species</rank>
+                        <uri>http://ars.els-cdn.com/content/image/1-s2.0-S0959437X03001382-gr2.jpg</uri>
                       </taxonomy>
                     </clade>
                   </clade>
@@ -1848,7 +1849,7 @@
                                   <rank>phylum</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>Pezizomycotina_Saccharomycetales</name>
+                                  <name>Pezizomycotina &amp; Saccharomycetales</name>
                                   <clade>
                                     <taxonomy>
                                       <id provider="uniprot">147538</id>
@@ -1909,17 +1910,19 @@
                                                         <common_name>Wheat head blight fungus</common_name>
                                                         <synonym>Fusarium graminearum</synonym>
                                                         <rank>species</rank>
+                                                        <uri>http://www.apsnet.org/publications/apsnetfeatures/PublishingImages/1999%20Features/Fusarium02sm.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
                                                     <clade>
-                                                      <name>TRIVE</name>
                                                       <taxonomy>
                                                         <id provider="uniprot">29875</id>
-                                                        <code>TRIVE</code>
-                                                        <scientific_name>Trichoderma virens</scientific_name>
+                                                        <code>HYPVI</code>
+                                                        <scientific_name>Hypocrea virens</scientific_name>
                                                         <common_name>Gliocladium virens</common_name>
                                                         <synonym>Trichoderma virens</synonym>
+                                                        <synonym>Gliocladium flavofuscum</synonym>
                                                         <rank>species</rank>
+                                                        <uri>http://www.ars.usda.gov/images/docs/10920_11114/Stroma1.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
                                                   </clade>
@@ -1932,6 +1935,7 @@
                                                       <common_name>Rice blast fungus</common_name>
                                                       <synonym>Pyricularia grisea</synonym>
                                                       <rank>species</rank>
+                                                      <uri>http://www.forestryimages.org/images/768x512/5369002.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
@@ -2193,8 +2197,7 @@
                                                       <synonym>Exserohilum turcicum</synonym>
                                                       <synonym>Helminthosporium turcicum</synonym>
                                                       <rank>species</rank>
-                                                      <uri>http://www.pflanzenkrankheiten.ch/diseases/STU/figures_STU/HTU_Mais_Mik_7_k.jpg</uri>
-                                                      <uri>http://www.pflanzenkrankheiten.ch/diseases/STU/figures_STU/Exserohilum_turcicum_001_k.jpg</uri>
+                                                      <uri>http://openi.nlm.nih.gov/imgs/rescaled512/3017769_1471-2229-10-103-3.png</uri>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
@@ -2327,7 +2330,7 @@
                                         <scientific_name>Tuber melanosporum (strain Mel28)</scientific_name>
                                         <common_name>Perigord black truffle</common_name>
                                         <synonym>Tuber melanosporum Mel28</synonym>
-                                        <uri>http://www.gmvmonza.org/images%20parco/Tuber%20melanosporum%20p106.jpg</uri>
+                                        <uri>http://www.trufamania.com/trufas/Tuber%20melanosporum02.jpg</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
@@ -2619,7 +2622,7 @@
                                                           <common_name>Bicoloured deceiver</common_name>
                                                           <synonym>Laccaria laccata var. bicolor</synonym>
                                                           <rank>species</rank>
-                                                          <uri>https://www.llnl.gov/news/newsreleases/2006/images/Laccaria_big.jpg</uri>
+                                                          <uri>http://botit.botany.wisc.edu/toms_fungi/images/L_bicolor_NM.JPG</uri>
                                                         </taxonomy>
                                                       </clade>
                                                     </clade>
@@ -2678,7 +2681,7 @@
                                                         <scientific_name>Serpula lacrymans</scientific_name>
                                                         <common_name>dry rot fungus</common_name>
                                                         <rank>species</rank>
-                                                        <uri>http://www.biolib.cz/IMG/GAL/BIG/18135.jpg</uri>
+                                                        <uri>http://www.anbg.gov.au/fungi/images/0160.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
                                                   </clade>
@@ -2700,7 +2703,7 @@
                                                   <id provider="uniprot">202697</id>
                                                   <scientific_name>Jaapia argillacea</scientific_name>
                                                   <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Jaapia-argillacea.jpeg/640px-Jaapia-argillacea.jpeg</uri>
+                                                  <uri>http://mycor.nancy.inra.fr/blogGenomes/wp-content/uploads/2012/08/IMG_21261.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
@@ -2712,7 +2715,7 @@
                                                 <scientific_name>Gloeophyllum trabeum</scientific_name>
                                                 <common_name>Brown rot fungus</common_name>
                                                 <rank>species</rank>
-                                                <uri>http://www.cbs.knaw.nl/images/Images_CBSFungi/CD/0001/0008/Gloeophyllum_trabeum.jpg</uri>
+                                                <uri>http://www.commanster.eu/commanster/Mushrooms/Basidio/SpBasidio/Gloeophyllum.trabeum.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -3422,7 +3425,7 @@
                                           <scientific_name>Thellungiella halophila</scientific_name>
                                           <common_name>Salt cress</common_name>
                                           <rank>species</rank>
-                                          <uri>http://thellungiella.org/images/thellun1.jpg</uri>
+                                          <uri>http://mplant.oxfordjournals.org/content/2/1/3/F1.large.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
@@ -3479,7 +3482,6 @@
                                     <common_name>Flooded gum</common_name>
                                     <rank>species</rank>
                                     <uri>http://www.calflora.net/losangelesarboretum/images/eucalyptus_grandis.jpg</uri>
-                                    <uri>http://www.anbg.gov.au/projects/eucalypts/images/eucalyptus-grandis-bark.jpg</uri>
                                   </taxonomy>
                                 </clade>
                               </clade>
@@ -3537,18 +3539,18 @@
                                       <common_name>Currant tomato</common_name>
                                       <synonym>Lycopersicon pimpinellifolium</synonym>
                                       <rank>species</rank>
-                                      <uri>http://botany.csdl.tamu.edu/FLORA/hdwimages2/hdwt4-14.jpg</uri>
+                                      <uri>http://upload.wikimedia.org/wikipedia/commons/b/b8/Currant_tomato.jpg</uri>
                                     </taxonomy>
                                   </clade>
                                 </clade>
                                 <clade>
                                   <taxonomy>
-                                    <id provider="4113">uniprot</id>
+                                    <id provider="uniprot">4113</id>
                                     <code>SOLTU</code>
                                     <scientific_name>Solanum tuberosum</scientific_name>
                                     <common_name>Potato</common_name>
                                     <rank>species</rank>
-                                    <uri>http://www.hear.org/starr/images/images/plants/600/starr-080914-9947.jpg</uri>
+                                    <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0508/0344.jpeg</uri>
                                   </taxonomy>
                                 </clade>
                               </clade>
@@ -3888,9 +3890,8 @@
               <reference doi="10.1073/pnas.0712248105">
               </reference>
               <clade>
-                <name>Heterokonta_Alveolata</name>
+                <name>Heterokonta &amp; Alveolata</name>
                 <clade>
-                  <name>Alveolata</name>
                   <taxonomy>
                     <id provider="uniprot">33630</id>
                     <scientific_name>Alveolata</scientific_name>
