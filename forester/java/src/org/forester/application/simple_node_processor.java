@@ -1,5 +1,5 @@
 
-package org.forester.archaeopteryx;
+package org.forester.application;
 
 import java.io.File;
 

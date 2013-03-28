@@ -27,26 +27,31 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 
-public class strip {
+public class phylostrip {
 
     public static void main( final String args[] ) {
         if ( args.length < 4 ) {
             System.out.println( "\nstrip: Wrong number of arguments.\n" );
             System.out
-                    .println( "Usage: \"strip <infile> <outfile> <options> [name1] [name2] ... OR [phylogenyfile]\"\n" );
-            System.out.println( " Options: -k to keep listed nodes" );
-            System.out.println( "          -r to remove listed nodes" );
-            System.out.println( "          -kp to keep nodes found in [phylogenyfile]" );
-            System.out.println( "          -rp to remove nodes found in [phylogenyfile]\n" );
+                    .println( "Usage: \"phylostrip <in-tree> <out-tree> <options> [name1] [name2] ... OR [ref-tree]\"\n" );
+            System.out.println( " Options: -knn to keep listed nodes" );
+            System.out.println( "          -rnn to remove listed nodes" );
+            System.out.println( "          -knnp to keep nodes found in [ref-tree]" );
+            System.out.println( "          -rnnp to remove nodes found in [ref-tree]" );
+            System.out.println( "          -ktc to keep only nodes from listed taxonomy codes\n" );
             System.exit( -1 );
         }
         final File infile = new File( args[ 0 ] );
@@ -64,23 +69,27 @@ public class strip {
         }
         boolean keep = false;
         boolean from_p0 = false;
-        if ( options.trim().toLowerCase().equals( "-k" ) ) {
+        boolean ktc = false;
+        if ( options.trim().toLowerCase().equals( "-knn" ) ) {
             keep = true;
         }
-        else if ( options.trim().toLowerCase().equals( "-kp" ) ) {
+        else if ( options.trim().toLowerCase().equals( "-knnp" ) ) {
             keep = true;
             from_p0 = true;
         }
-        else if ( options.trim().toLowerCase().equals( "-rp" ) ) {
+        else if ( options.trim().toLowerCase().equals( "-rnnp" ) ) {
             from_p0 = true;
         }
-        else if ( !options.trim().toLowerCase().equals( "-r" ) ) {
+        else if ( options.trim().toLowerCase().equals( "-ktc" ) ) {
+            ktc = true;
+        }
+        else if ( !options.trim().toLowerCase().equals( "-rnn" ) ) {
             System.out.println( "\nUnknown option \"" + options + "\"\n" );
             System.exit( -1 );
         }
         String[] names = null;
         if ( from_p0 ) {
-            names = strip.readInNamesFromPhylogeny( args[ 3 ] );
+            names = phylostrip.readInNamesFromPhylogeny( args[ 3 ] );
         }
         else {
             names = new String[ args.length - 3 ];
@@ -88,7 +97,22 @@ public class strip {
                 names[ i ] = args[ i + 3 ];
             }
         }
-        if ( keep ) {
+        if ( ktc ) {
+            final List<Taxonomy> taxonomies_to_keep = new ArrayList<Taxonomy>();
+            for( final String n : names ) {
+                final Taxonomy t = new Taxonomy();
+                try {
+                    t.setTaxonomyCode( n );
+                }
+                catch ( final PhyloXmlDataFormatException e ) {
+                    System.out.println( e.getMessage() );
+                    System.exit( -1 );
+                }
+                taxonomies_to_keep.add( t );
+            }
+            PhylogenyMethods.deleteExternalNodesPositiveSelectionT( taxonomies_to_keep, p );
+        }
+        else if ( keep ) {
             PhylogenyMethods.deleteExternalNodesPositiveSelection( names, p );
         }
         else {
@@ -96,7 +120,7 @@ public class strip {
         }
         try {
             final PhylogenyWriter w = new PhylogenyWriter();
-            w.toPhyloXML( outfile, p, 1 );
+            w.toPhyloXML( outfile, p, 0 );
         }
         catch ( final IOException e ) {
             System.out.println( "\nFailure to write output [" + e.getMessage() + "]\n" );

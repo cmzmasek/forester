@@ -309,9 +309,8 @@ public class PhylogenyMethods {
         return nodes;
     }
 
-    public static void deleteExternalNodesNegativeSelection( final Set<Integer> to_delete, final Phylogeny phy ) {
-        phy.clearHashIdToNodeMap();
-        for( final Integer id : to_delete ) {
+    public static void deleteExternalNodesNegativeSelection( final Set<Long> to_delete, final Phylogeny phy ) {
+        for( final Long id : to_delete ) {
             phy.deleteSubtree( phy.getNode( id ), true );
         }
         phy.clearHashIdToNodeMap();
@@ -339,24 +338,6 @@ public class PhylogenyMethods {
         p.externalNodesHaveChanged();
     }
 
-    public static void deleteExternalNodesPositiveSelection( final Set<Taxonomy> species_to_keep, final Phylogeny phy ) {
-        //   final Set<Integer> to_delete = new HashSet<Integer>();
-        for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
-            final PhylogenyNode n = it.next();
-            if ( n.getNodeData().isHasTaxonomy() ) {
-                if ( !species_to_keep.contains( n.getNodeData().getTaxonomy() ) ) {
-                    //to_delete.add( n.getNodeId() );
-                    phy.deleteSubtree( n, true );
-                }
-            }
-            else {
-                throw new IllegalArgumentException( "node " + n.getId() + " has no taxonomic data" );
-            }
-        }
-        phy.clearHashIdToNodeMap();
-        phy.externalNodesHaveChanged();
-    }
-
     public static List<String> deleteExternalNodesPositiveSelection( final String[] node_names_to_keep,
                                                                      final Phylogeny p ) {
         final PhylogenyNodeIterator it = p.iteratorExternalForward();
@@ -377,6 +358,22 @@ public class PhylogenyMethods {
             }
         }
         return deleted;
+    }
+
+    public static void deleteExternalNodesPositiveSelectionT( final List<Taxonomy> species_to_keep, final Phylogeny phy ) {
+        final Set<Long> to_delete = new HashSet<Long>();
+        for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy() ) {
+                if ( !species_to_keep.contains( n.getNodeData().getTaxonomy() ) ) {
+                    to_delete.add( n.getId() );
+                }
+            }
+            else {
+                throw new IllegalArgumentException( "node " + n.getId() + " has no taxonomic data" );
+            }
+        }
+        deleteExternalNodesNegativeSelection( to_delete, phy );
     }
 
     final public static void deleteInternalNodesWithOnlyOneDescendent( final Phylogeny phy ) {
