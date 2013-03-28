@@ -262,6 +262,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _label_direction_cbmi ) {
             updateOptions( getOptions() );
         }
+        else if ( o == _abbreviate_scientific_names ) {
+            updateOptions( getOptions() );
+        }
         else if ( o == _show_overview_cbmi ) {
             updateOptions( getOptions() );
             if ( getCurrentTreePanel() != null ) {
@@ -812,7 +815,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     void buildViewMenu() {
         _view_jmenu = MainFrame.createMenu( "View", getConfiguration() );
-        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
+        _view_jmenu
+                .add( _display_basic_information_item = new JMenuItem( MainFrame.SHOW_BASIC_TREE_INFORMATION_LABEL ) );
         _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );

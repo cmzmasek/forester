@@ -120,6 +120,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SHOW_CONF_STDDEV_LABEL                  = "Show Confidence Standard Deviations";
     static final String         USE_BRACKETS_FOR_CONF_IN_NH_LABEL       = "Use Brackets for Confidence Values";
     static final String         USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
+    static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Show Basic Tree Information";
     JMenuBar                    _jmenubar;
     JMenu                       _file_jmenu;
     JMenu                       _tools_menu;
@@ -651,7 +652,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildViewMenu() {
         _view_jmenu = createMenu( "View", getConfiguration() );
-        _view_jmenu.add( _display_basic_information_item = new JMenuItem( "Display Basic Information" ) );
+        _view_jmenu.add( _display_basic_information_item = new JMenuItem( SHOW_BASIC_TREE_INFORMATION_LABEL ) );
         _view_jmenu.addSeparator();
         _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
         _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );

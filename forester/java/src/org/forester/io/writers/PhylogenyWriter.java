@@ -622,44 +622,24 @@ public final class PhylogenyWriter {
         }
         if ( tree != null ) {
             reset( writer, tree );
-            boolean rerootable = true;
             String unit = "";
             String type = "";
-            String rooted = "false";
-            if ( tree.isRooted() ) {
-                rooted = "true";
-            }
-            if ( !tree.isRerootable() ) {
-                rerootable = false;
-            }
             if ( !ForesterUtil.isEmpty( tree.getDistanceUnit() ) ) {
                 unit = tree.getDistanceUnit();
             }
             if ( !ForesterUtil.isEmpty( tree.getType() ) ) {
                 type = tree.getType();
             }
-            if ( rerootable ) {
-                PhylogenyDataUtil.appendOpen( writer,
-                                              PhyloXmlMapping.PHYLOGENY,
-                                              PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR,
-                                              rooted,
-                                              PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR,
-                                              unit,
-                                              PhyloXmlMapping.PHYLOGENY_TYPE_ATTR,
-                                              type );
-            }
-            else {
-                PhylogenyDataUtil.appendOpen( writer,
-                                              PhyloXmlMapping.PHYLOGENY,
-                                              PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR,
-                                              rooted,
-                                              PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR,
-                                              unit,
-                                              PhyloXmlMapping.PHYLOGENY_TYPE_ATTR,
-                                              type,
-                                              PhyloXmlMapping.PHYLOGENY_IS_REROOTABLE_ATTR,
-                                              "false" );
-            }
+            PhylogenyDataUtil.appendOpen( writer,
+                                          PhyloXmlMapping.PHYLOGENY,
+                                          PhyloXmlMapping.PHYLOGENY_IS_ROOTED_ATTR,
+                                          tree.isRooted() + "",
+                                          PhyloXmlMapping.PHYLOGENY_BRANCHLENGTH_UNIT_ATTR,
+                                          unit,
+                                          PhyloXmlMapping.PHYLOGENY_TYPE_ATTR,
+                                          type,
+                                          PhyloXmlMapping.PHYLOGENY_IS_REROOTABLE_ATTR,
+                                          tree.isRerootable() + "" );
             appendPhylogenyLevelPhyloXml( writer, tree );
             while ( isHasNext() ) {
                 next();

@@ -470,11 +470,11 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y = new JButton( "Y+" );
         _zoom_out_y = new JButton( "Y-" );
         _show_whole = new JButton( "F" );
-        _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [Backspace]" );
-        _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+Right]" );
-        _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+Up]" );
-        _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+Left]" );
-        _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+Down]" );
+        _show_whole.setToolTipText( "To fit the complete phylogeny to the current display size [F or Home]" );
+        _zoom_in_x.setToolTipText( "To zoom in horizontally [Shift+cursor-right]" );
+        _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+cursor-up]" );
+        _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+cursor-left]" );
+        _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+cursor-down]" );
         if ( getConfiguration().isUseNativeUI() && AptxUtil.isMac() ) {
             _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
             _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );

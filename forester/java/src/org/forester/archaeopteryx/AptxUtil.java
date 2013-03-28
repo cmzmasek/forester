@@ -795,9 +795,8 @@ public final class AptxUtil {
                 desc.append( "\n" );
                 desc.append( "    Median: " + ForesterUtil.round( bs.median(), 6 ) );
                 desc.append( "\n" );
-                desc.append( "    Mean: " + ForesterUtil.round( bs.arithmeticMean(), 6 ) );
-                desc.append( "\n" );
-                desc.append( "    SD: " + ForesterUtil.round( bs.sampleStandardDeviation(), 6 ) );
+                desc.append( "    Mean: " + ForesterUtil.round( bs.arithmeticMean(), 6 ) + " (±"
+                        + ForesterUtil.round( bs.sampleStandardDeviation(), 6 ) + ")" );
                 desc.append( "\n" );
                 desc.append( "    Minimum: " + ForesterUtil.round( bs.getMin(), 6 ) );
                 desc.append( "\n" );
@@ -816,9 +815,8 @@ public final class AptxUtil {
                 desc.append( "\n" );
                 desc.append( "    Median: " + ForesterUtil.round( ds.median(), 2 ) );
                 desc.append( "\n" );
-                desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 2 ) );
-                desc.append( "\n" );
-                desc.append( "    SD: " + ForesterUtil.round( ds.sampleStandardDeviation(), 2 ) );
+                desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 2 ) + " (±"
+                        + ForesterUtil.round( ds.sampleStandardDeviation(), 2 ) + ")" );
                 desc.append( "\n" );
                 desc.append( "    Minimum: " + ForesterUtil.roundToInt( ds.getMin() ) );
                 desc.append( "\n" );
