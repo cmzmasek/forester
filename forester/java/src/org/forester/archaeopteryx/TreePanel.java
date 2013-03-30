@@ -34,7 +34,6 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -54,6 +53,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -151,7 +151,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final static NumberFormat    FORMATTER_CONFIDENCE;
     private final static NumberFormat    FORMATTER_BRANCH_LENGTH;
     private final static int             WIGGLE                                             = 2;
-    private final static int             LIMIT_FOR_HQ_RENDERING                             = 1000;
+    private final static int             LIMIT_FOR_HQ_RENDERING                             = 2000;
     private final static int             CONFIDENCE_LEFT_MARGIN                             = 4;
     private final RenderingHints         _rendering_hints                                   = new RenderingHints( RenderingHints.KEY_RENDERING,
                                                                                                                   RenderingHints.VALUE_RENDER_DEFAULT );
@@ -180,7 +180,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _last_drag_point_y                                 = 0;
     private ControlPanel                 _control_panel                                     = null;
     private int                          _external_node_index                               = 0;
-    private final Polygon                _polygon                                           = new Polygon();
+    private final Path2D.Float           _polygon                                           = new Path2D.Float();
     private final StringBuilder          _sb                                                = new StringBuilder();
     private JColorChooser                _color_chooser                                     = null;
     private double                       _scale_distance                                    = 0.0;
@@ -1874,22 +1874,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( getMainPanel().getOptions().isAntialiasScreen() ) {
-            if ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
-                    && !getMainPanel().getOptions().isShowDefaultNodeShapesInternal()
-                    && !getMainPanel().getOptions().isShowDefaultNodeShapesExternal()
-                    && ( ( getControlPanel() != null ) && !getControlPanel().isShowDomainArchitectures() ) ) {
-                _rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
-            }
-            else {
-                _rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-            }
-            try {
-                _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING,
-                                      RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB );
-            }
-            catch ( final Throwable e ) {
-                _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
-            }
+            _rendering_hints.put( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            // try {
+            _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB );
+            // }
+            // catch ( final Throwable e ) {
+            //    _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            //}
         }
         else {
             _rendering_hints.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF );
@@ -2428,7 +2419,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         boolean first = true;
         for( final Annotation a : ann ) {
             if ( !first ) {
-                sb.append( "|" );
+                sb.append( "+" );
             }
             else {
                 first = false;
@@ -3652,30 +3643,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             d = ( Math.log10( d ) * _y_distance ) / 2.5;
         }
-        final int box_size = getOptions().getDefaultNodeShapeSize();
+        final int box_size = getOptions().getDefaultNodeShapeSize() + 1;
         if ( d < box_size ) {
             d = box_size;
         }
+        final float xx = node.getXcoord() - ( 2 * box_size );
+        final float xxx = xx > node.getParent().getXcoord() + 1 ? xx : node.getParent().getXcoord() + 1;
         _polygon.reset();
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() - box_size ),
-                           ForesterUtil.roundToInt( node.getYcoord() ) );
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + box_size ),
-                           ForesterUtil.roundToInt( node.getYcoord() - d ) );
-        _polygon.addPoint( ForesterUtil.roundToInt( node.getXcoord() + box_size ),
-                           ForesterUtil.roundToInt( node.getYcoord() + d ) );
+        _polygon.moveTo( xxx, node.getYcoord() );
+        _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() - d );
+        _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() + d );
+        _polygon.closePath();
         if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
             g.setColor( c );
-            g.fillPolygon( _polygon );
+            g.fill( _polygon );
         }
         else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
             g.setColor( getBackground() );
-            g.fillPolygon( _polygon );
+            g.fill( _polygon );
             g.setColor( c );
-            g.drawPolygon( _polygon );
+            g.draw( _polygon );
         }
         else if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-            g.setPaint( new GradientPaint( node.getXcoord() - box_size, node.getYcoord(), getBackground(), ( node
-                    .getXcoord() + box_size ), ( float ) ( node.getYcoord() - d ), c, false ) );
+            g.setPaint( new GradientPaint( xxx, node.getYcoord(), getBackground(), node.getXcoord(), ( float ) ( node
+                    .getYcoord() - d ), c, false ) );
             g.fill( _polygon );
             g.setPaint( c );
             g.draw( _polygon );
@@ -3927,6 +3918,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !getControlPanel().isShowInternalData() && !node.isExternal() && !node.isCollapse() ) {
             return;
         }
+        _sb.setLength( 0 );
         int x = 0;
         final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
         if ( getControlPanel().isShowTaxonomyImages()
@@ -3965,11 +3957,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             g.setColor( getTreeColorSet().getSequenceColor() );
         }
-        _sb.setLength( 0 );
         if ( node.isCollapse() && ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) ) {
-            _sb.append( " [" );
-            _sb.append( node.getAllExternalDescendants().size() );
-            _sb.append( "]" );
+            if ( _sb.length() > 0 ) {
+                _sb.setLength( 0 );
+                _sb.append( "(" );
+                _sb.append( node.getAllExternalDescendants().size() );
+                _sb.append( ")" );
+            }
+        }
+        else {
+            _sb.setLength( 0 );
         }
         if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
             if ( _sb.length() > 0 ) {
@@ -4279,7 +4276,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void paintNodeLite( final Graphics2D g, final PhylogenyNode node ) {
         if ( node.isCollapse() ) {
-            if ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) {
+            if ( !node.isRoot() && !node.getParent().isCollapse() ) {
                 paintCollapsedNode( g, node, false, false, false );
             }
             return;
@@ -4333,7 +4330,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                              final boolean to_graphics_file ) {
         final boolean is_in_found_nodes = isInFoundNodes( node ) || isInCurrentExternalNodes( node );
         if ( node.isCollapse() ) {
-            if ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) {
+            if ( ( !node.isRoot() && !node.getParent().isCollapse() ) ) {
                 paintCollapsedNode( g, node, to_graphics_file, to_pdf, is_in_found_nodes );
             }
             return;
@@ -4557,9 +4554,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 .setXSecondary( ( float ) ( getVisibleRect().x + getOvXPosition() + ( MOVE / ( getVisibleRect().width / getOvRectangle()
                         .getWidth() ) ) ) );
         _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
+        g.setStroke( new BasicStroke( 0.5f ) ); //TODO
         for( final PhylogenyNode element : _nodes_in_preorder ) {
             paintNodeLite( g, element );
         }
+        g.setStroke( new BasicStroke( 1 ) ); //TODO
         paintOvRectangle( g );
     }
 
