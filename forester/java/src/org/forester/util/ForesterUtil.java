@@ -62,6 +62,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.forester.archaeopteryx.Constants;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Sequence;
@@ -683,8 +684,24 @@ public final class ForesterUtil {
         return isReadableFile( new File( s ) );
     }
 
-    public static boolean isWindowns() {
-        return ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) > -1;
+    public final static boolean isWindows() {
+        try {
+            return OS_NAME.toLowerCase().indexOf( "win" ) > -1;
+        }
+        catch ( final Exception e ) {
+            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
+            return false;
+        }
+    }
+
+    public final static boolean isMac() {
+        try {
+            return OS_NAME.toLowerCase().startsWith( "mac" );
+        }
+        catch ( final Exception e ) {
+            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
+            return false;
+        }
     }
 
     final public static String isWritableFile( final File f ) {

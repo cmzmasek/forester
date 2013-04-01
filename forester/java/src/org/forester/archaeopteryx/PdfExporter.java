@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.forester.phylogeny.Phylogeny;
+import org.forester.util.ForesterUtil;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -92,10 +93,10 @@ final class PdfExporter {
         document.open();
         final DefaultFontMapper mapper = new DefaultFontMapper();
         FontFactory.registerDirectories();
-        if ( AptxUtil.isWindows() ) {
+        if ( ForesterUtil.isWindows() ) {
             mapper.insertDirectory( "C:\\WINDOWS\\Fonts\\" );
         }
-        else if ( AptxUtil.isMac() ) {
+        else if ( ForesterUtil.isMac() ) {
             mapper.insertDirectory( "/Library/Fonts/" );
             mapper.insertDirectory( "/System/Library/Fonts/" );
         }

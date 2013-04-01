@@ -723,10 +723,10 @@ public final class Configuration {
     }
 
     boolean isAntialiasScreen() {
-        if ( AptxUtil.isMac() ) {
-            // Apple Macintosh graphics are slow, turn off anti-alias.
-            return false;
-        }
+        // if ( AptxUtil.isMac() ) {
+        // Apple Macintosh graphics are slow, turn off anti-alias.
+        // return false;
+        //}
         return _antialias_screen;
     }
 
@@ -772,7 +772,7 @@ public final class Configuration {
     }
 
     final boolean isUseNativeUI() {
-        if ( ( _ui == UI.UNKNOWN ) && AptxUtil.isMac() ) {
+        if ( ( _ui == UI.UNKNOWN ) && ForesterUtil.isMac() ) {
             _ui = UI.NATIVE;
         }
         return _ui == UI.NATIVE;
@@ -1615,7 +1615,8 @@ public final class Configuration {
                     }
                 }
                 else if ( key.equals( "species_color" ) ) {
-                    getSpeciesColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ), Color.decode( ( String ) st.nextElement() ) );
+                    getSpeciesColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ),
+                                            Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "domain_color" ) ) {
                     getDomainColors().put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );

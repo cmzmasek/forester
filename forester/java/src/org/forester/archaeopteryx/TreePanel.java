@@ -131,6 +131,13 @@ import org.forester.util.SequenceIdParser;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
+    private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
+    private static final BasicStroke     STROKE_1                                           = new BasicStroke( 1f );
+    private static final BasicStroke     STROKE_075                                         = new BasicStroke( 0.75f );
+    private static final BasicStroke     STROKE_05                                          = new BasicStroke( 0.5f );
+    private static final BasicStroke     STROKE_025                                         = new BasicStroke( 0.25f );
+    private static final BasicStroke     STROKE_01                                          = new BasicStroke( 0.1f );
+    private static final BasicStroke     STROKE_005                                         = new BasicStroke( 0.05f );
     private static final float           PI                                                 = ( float ) ( Math.PI );
     private static final double          TWO_PI                                             = 2 * Math.PI;
     private static final float           ONEHALF_PI                                         = ( float ) ( 1.5 * Math.PI );
@@ -696,7 +703,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
             c = getControlPanel().getSpeciesColors().get( tax.getTaxonomyCode() );
         }
-        if ( c == null && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+        if ( ( c == null ) && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             c = getControlPanel().getSpeciesColors().get( tax.getScientificName() );
         }
         if ( c == null ) {
@@ -704,7 +711,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 c = AptxUtil.calculateColorFromString( tax.getTaxonomyCode() );
                 getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
             }
-            else  {
+            else {
                 c = AptxUtil.calculateColorFromString( tax.getScientificName() );
                 getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
             }
@@ -1526,7 +1533,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     g.fillRect( graphics_file_x, graphics_file_y, graphics_file_width, graphics_file_height );
                 }
             }
-            g.setStroke( new BasicStroke( 1 ) );
+            setupStroke( g );
         }
         else {
             g.setStroke( new BasicStroke( getOptions().getPrintLineWidth() ) );
@@ -2906,6 +2913,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return Blast.isContainsQueryForBlast( node );
     }
 
+    final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
+        String v = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractGenbankAccessor( node );
+        }
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractRefSeqAccessorAccessor( node );
+        }
+        if ( ForesterUtil.isEmpty( v ) ) {
+            v = ForesterUtil.extractGInumber( node );
+        }
+        return v;
+    }
+
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {
         if ( node.getNodeData().isHasTaxonomy()
                 && ( ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) )
@@ -3228,20 +3249,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 throw new IllegalArgumentException( "unknown data element: "
                         + getOptions().getExtDescNodeDataToReturn() );
         }
-    }
-
-    final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
-        String v = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractGenbankAccessor( node );
-        }
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractRefSeqAccessorAccessor( node );
-        }
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractGInumber( node );
-        }
-        return v;
     }
 
     final private void openSeqWeb( final PhylogenyNode node ) {
@@ -4560,7 +4567,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         .getWidth() ) ) ) );
         _phylogeny.getRoot().setYSecondary( ( getVisibleRect().y + getOvYStart() ) );
         final Stroke s = g.getStroke();
-        g.setStroke( new BasicStroke( 0.5f ) ); //TODO
+        g.setStroke( STROKE_05 );
         for( final PhylogenyNode element : _nodes_in_preorder ) {
             paintNodeLite( g, element );
         }
@@ -5000,6 +5007,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private void setScaleLabel( final String scale_label ) {
         _scale_label = scale_label;
+    }
+
+    private final void setupStroke( final Graphics2D g ) {
+        if ( getYdistance() < 0.001 ) {
+            g.setStroke( STROKE_005 );
+        }
+        else if ( getYdistance() < 0.01 ) {
+            g.setStroke( STROKE_01 );
+        }
+        else if ( getYdistance() < 0.5 ) {
+            g.setStroke( STROKE_025 );
+        }
+        else if ( getYdistance() < 1 ) {
+            g.setStroke( STROKE_05 );
+        }
+        else if ( getYdistance() < 2 ) {
+            g.setStroke( STROKE_075 );
+        }
+        else if ( getYdistance() < 20 ) {
+            g.setStroke( STROKE_1 );
+        }
+        else {
+            g.setStroke( STROKE_2 );
+        }
     }
 
     final private void setUpUrtFactor() {

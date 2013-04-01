@@ -1875,7 +1875,7 @@ public final class MainFrameApplication extends MainFrame {
 
     private File getCurrentDir() {
         if ( ( _current_dir == null ) || !_current_dir.canRead() ) {
-            if ( ForesterUtil.isWindowns() ) {
+            if ( ForesterUtil.isWindows() ) {
                 try {
                     _current_dir = new File( WindowsUtils.getCurrentUserDesktopPath() );
                 }

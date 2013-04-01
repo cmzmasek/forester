@@ -475,7 +475,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         _zoom_in_y.setToolTipText( "To zoom in vertically [Shift+cursor-up]" );
         _zoom_out_x.setToolTipText( "To zoom out horizontally [Shift+cursor-left]" );
         _zoom_out_y.setToolTipText( "To zoom out vertically [Shift+cursor-down]" );
-        if ( getConfiguration().isUseNativeUI() && AptxUtil.isMac() ) {
+        if ( getConfiguration().isUseNativeUI() && ForesterUtil.isMac() ) {
             _zoom_out_x.setPreferredSize( new Dimension( 55, 10 ) );
             _zoom_in_x.setPreferredSize( new Dimension( 55, 10 ) );
         }

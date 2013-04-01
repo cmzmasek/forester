@@ -919,17 +919,6 @@ public final class AptxUtil {
         return true;
     }
 
-    final static boolean isMac() {
-        try {
-            final String s = ForesterUtil.OS_NAME.toLowerCase();
-            return s.startsWith( "mac" );
-        }
-        catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
-            return false;
-        }
-    }
-
     final static boolean isUsOrCanada() {
         try {
             if ( ( Locale.getDefault().equals( Locale.CANADA ) ) || ( Locale.getDefault().equals( Locale.US ) ) ) {
@@ -940,17 +929,6 @@ public final class AptxUtil {
             return false;
         }
         return false;
-    }
-
-    final static boolean isWindows() {
-        try {
-            final String s = ForesterUtil.OS_NAME.toLowerCase();
-            return s.indexOf( "win" ) > -1;
-        }
-        catch ( final Exception e ) {
-            ForesterUtil.printWarningMessage( Constants.PRG_NAME, "minor error: " + e );
-            return false;
-        }
     }
 
     final static void lookAtSomeTreePropertiesForAptxControlSettings( final Phylogeny t,
@@ -1298,7 +1276,7 @@ public final class AptxUtil {
         if ( os.toLowerCase().startsWith( "win" ) ) {
             Runtime.getRuntime().exec( "rundll32 url.dll,FileProtocolHandler " + url );
         }
-        else if ( isMac() ) {
+        else if ( ForesterUtil.isMac() ) {
             final Class<?> file_mgr = Class.forName( "com.apple.eio.FileManager" );
             final Method open_url = file_mgr.getDeclaredMethod( "openURL", new Class[] { String.class } );
             open_url.invoke( null, new Object[] { url } );
