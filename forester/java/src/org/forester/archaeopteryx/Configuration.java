@@ -1524,18 +1524,6 @@ public final class Configuration {
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;
             }
-            else if ( key.equals( "color_orthologous" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [color_orthologous] is deprecated" );
-            }
-            else if ( key.equals( "color_subtree_neighbors" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [color_subtree_neighbors] is deprecated" );
-            }
-            else if ( key.equals( "color_super_orthologous" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [color_super_orthologous] is deprecated" );
-            }
             else if ( key.equals( "mark_nodes_with_box" ) ) {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME,
                                                   "configuration key [mark_nodes_with_box] is deprecated" );
@@ -1627,7 +1615,7 @@ public final class Configuration {
                     }
                 }
                 else if ( key.equals( "species_color" ) ) {
-                    getSpeciesColors().put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
+                    getSpeciesColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ), Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "domain_color" ) ) {
                     getDomainColors().put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );

@@ -689,21 +689,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color calculateTaxonomyBasedColor( final Taxonomy tax ) {
-        String species = tax.getTaxonomyCode();
-        if ( ForesterUtil.isEmpty( species ) ) {
-            species = tax.getScientificName();
-            if ( ForesterUtil.isEmpty( species ) ) {
-                species = tax.getCommonName();
-            }
-        }
-        if ( ForesterUtil.isEmpty( species ) ) {
+        if ( ForesterUtil.isEmpty( tax.getTaxonomyCode() ) && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
             return getTreeColorSet().getTaxonomyColor();
         }
-        // Look in species hash
-        Color c = getControlPanel().getSpeciesColors().get( species );
+        Color c = null;
+        if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+            c = getControlPanel().getSpeciesColors().get( tax.getTaxonomyCode() );
+        }
+        if ( c == null && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+            c = getControlPanel().getSpeciesColors().get( tax.getScientificName() );
+        }
         if ( c == null ) {
-            c = AptxUtil.calculateColorFromString( species );
-            getControlPanel().getSpeciesColors().put( species, c );
+            if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                c = AptxUtil.calculateColorFromString( tax.getTaxonomyCode() );
+                getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
+            }
+            else  {
+                c = AptxUtil.calculateColorFromString( tax.getScientificName() );
+                getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
+            }
         }
         return c;
     }
