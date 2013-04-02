@@ -26,9 +26,11 @@
 
 package org.forester.archaeopteryx.phylogeny.data;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.Writer;
@@ -58,6 +60,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     private final DomainArchitecture  _domain_structure;
     private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
     private final Configuration       _configuration;
+    private static final BasicStroke  STROKE_1                      = new BasicStroke( 1f );
 
     public RenderableDomainArchitecture( final DomainArchitecture domain_structure, final Configuration configuration ) {
         _domain_structure = domain_structure;
@@ -184,6 +187,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         final double f = getRenderingFactorWidth();
         final double y = y1 + ( _rendering_height / 2 );
         final double start = x1 + 20.0;
+        final Stroke s = g.getStroke();
+        g.setStroke( STROKE_1 );
         g.setColor( getConfiguration().getDomainStructureFontColor() );
         _rectangle.setFrame( start, y - 0.5, _domain_structure.getTotalLength() * f, 1 );
         g.fill( _rectangle );
@@ -201,6 +206,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                 drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
             }
         }
+        g.setStroke( s );
     }
 
     @Override

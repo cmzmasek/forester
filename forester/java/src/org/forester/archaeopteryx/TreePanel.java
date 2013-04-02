@@ -4539,6 +4539,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float y = getVisibleRect().y + getOvYPosition() + ( getOvMaxHeight() / y_ratio );
         g.setColor( getTreeColorSet().getFoundColor() );
         getOvRectangle().setRect( x, y, width, height );
+        final Stroke s = g.getStroke();
+        g.setStroke( STROKE_1 );
         if ( ( width < 6 ) && ( height < 6 ) ) {
             drawRectFilled( x, y, 6, 6, g );
             getOvVirtualRectangle().setRect( x, y, 6, 6 );
@@ -4558,6 +4560,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             getOvVirtualRectangle().setRect( x, y, width, height );
         }
+        g.setStroke( s );
     }
 
     final private void paintPhylogenyLite( final Graphics2D g ) {
@@ -4623,12 +4626,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             g.setColor( getTreeColorSet().getBranchLengthColor() );
         }
+        final Stroke s = g.getStroke();
+        g.setStroke( STROKE_1 );
         drawLine( x1, y1, x1, y2, g );
         drawLine( x2, y1, x2, y2, g );
         drawLine( x1, y3, x2, y3, g );
         if ( getScaleLabel() != null ) {
             g.drawString( getScaleLabel(), ( x1 + 2 ), y3 - 2 );
         }
+        g.setStroke( s );
     }
 
     final private int paintTaxonomy( final Graphics2D g,
