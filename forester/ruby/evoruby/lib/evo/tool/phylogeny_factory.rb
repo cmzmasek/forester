@@ -102,7 +102,7 @@ module Evoruby
       paths       = Hash.new  # path placeholder -> full path
       min_lengths = Hash.new  # alignment id -> minimal length
       options     = Hash.new  # option placeholder -> option
-      ids         = Set.new
+      #  ids         = Set.new
 
       commands    = Array.new
 
@@ -148,12 +148,11 @@ module Evoruby
              file !~ /^00/ )
           aln_name = file.to_str
           id = get_id( aln_name )
-          if !ids.include?( id )
-            ids.add( id )
-          end
-          puts( '[' + PRG_NAME + '] > file [id]  : ' + aln_name + ' [' + id + ']' )
+          #if !ids.include?( id )
+          #  ids.add( id )
+          #end
+          puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [' + id + ']' )
           commands.each do | cmd |
-            id = get_id( aln_name )
             cmd = subst_hmm( cmd, id )
             cmd = subst_min_length( cmd, id, min_lengths )
             cmd = subst_options( cmd, options )
@@ -234,7 +233,7 @@ module Evoruby
     end
 
     def subst_hmm( command, id )
-      if id != nil && id.length > 1
+      if id != nil && id.length > 0
         hmm = PFAM_HHMS + id + ".hmm"
         command = command.gsub( OPTION_OPEN + HMM + OPTION_CLOSE, hmm )
       end
@@ -243,7 +242,7 @@ module Evoruby
 
     def subst_min_length( command, id, min_lengths )
       min_length = nil
-      if id != nil && id.length > 1
+      if id != nil && id.length > 0
         min_length = min_lengths[ id ]
       end
       if  min_length != nil && min_length.size > 0
@@ -255,7 +254,10 @@ module Evoruby
     end
 
     def get_id( aln_name )
-      id = aln_name[ 0, aln_name.index( "__" ) ]
+      id = nil
+      if aln_name.include? "__"
+        id = aln_name[ 0, aln_name.index( "__" ) ]
+      end
       if id == nil || id.length < 1
         puts( '[' + PRG_NAME + '] > WARNING: could not get id from [' + aln_name + ']' )
       end
