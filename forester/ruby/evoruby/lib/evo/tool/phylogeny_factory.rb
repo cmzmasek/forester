@@ -151,7 +151,11 @@ module Evoruby
           #if !ids.include?( id )
           #  ids.add( id )
           #end
-          puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [' + id + ']' )
+          if id != nil && id.length > 0
+            puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [' + id + ']' )
+          else
+            puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [WARNING: could not get id!]' )
+          end
           commands.each do | cmd |
             cmd = subst_hmm( cmd, id )
             cmd = subst_min_length( cmd, id, min_lengths )
@@ -257,9 +261,6 @@ module Evoruby
       id = nil
       if aln_name.include? "__"
         id = aln_name[ 0, aln_name.index( "__" ) ]
-      end
-      if id == nil || id.length < 1
-        puts( '[' + PRG_NAME + '] > WARNING: could not get id from [' + aln_name + ']' )
       end
       id
     end
