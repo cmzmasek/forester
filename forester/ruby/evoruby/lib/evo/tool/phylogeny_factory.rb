@@ -169,7 +169,7 @@ module Evoruby
             if ( cmd =~ /%/ )
               cmd =~ /(%.*?%)/
               problem = $1
-              puts( '[' + PRG_NAME + '] > WARNING    : [' + id + '] command still contains placeholder: ' + problem )
+              puts( '[' + PRG_NAME + '] > WARNING    : [' + aln_name + '] command still contains placeholder: ' + problem )
               log << "WARNING: command still contains placeholder: " + cmd + NL
             else
               tmp_cmd_file = file.to_str[ 0..4 ] + TMP_CMD_FILE_SUFFIX
