@@ -266,3 +266,76 @@ module Evoruby
   end # class PhylogenyFactory
 
 end # module Evoruby
+
+
+=begin
+
+# Name convention if alignment specific parameters
+# are to be used:
+#  the substring between the first two double underscores is a
+#  unique identifier and needs to match the identifiers
+#  in '% <parameter-type> <unique-id>=<value>' statements
+#  Example:
+#  alignment name     : 'x__bcl2__e1'
+#  parameter statments: '% RSL bcl2=60'
+$ PROBCONS=/home/czmasek/SOFTWARE/PROBCONS/probcons_v1_12/probcons
+$ DIALIGN_TX=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/source/dialign-tx
+$ DIALIGN_CONF=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/conf
+$ MAFFT=/home/czmasek/SOFTWARE/MAFFT/mafft-7.017-without-extensions/scripts/mafft
+$ MUSCLE=/home/czmasek/SOFTWARE/MUSCLE/muscle3.8.31/src/muscle
+$ CLUSTALO=/home/czmasek/SOFTWARE/CLUSTAL_OMEGA/clustal-omega-1.1.0/src/clustalo
+$ KALIGN=/home/czmasek/SOFTWARE/KALIGN/kalign203/kalign
+$ HMMALIGN=/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmalign
+$ MSA_PRO=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/msa_pro.rb
+$ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/phylo_pl.pl
+
+
+% RSL Hormone_recep=60
+%
+% RSL Y_phosphatase=100
+% RSL Y_phosphatase2=75
+% RSL Y_phosphatase3=50
+% RSL Y_phosphatase3C=40
+
+% PHYLO_OPT=-B100q@1r4j2IGS21X
+
+% TMP_DIR  = /home/czmasek/tmp/
+
+
+> KALIGN $ > $_kalign
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_kalign_05_%[RSL]%.aln $_kalign_05_%[RSL]% %[TMP_DIR]%
+-
+
+> HMMALIGN --amino --trim --outformat Pfam -o $_hmmalign %[HMM]% $ > /dev/null
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_hmmalign_05_%[RSL]%.aln $_hmmalign_05_%[RSL]% %[TMP_DIR]%
+-
+
+> MAFFT --maxiterate 1000 --localpair $ > $_mafft
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_mafft $_mafft_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_mafft_05_%[RSL]%.aln $_mafft_05_%[RSL]% %[TMP_DIR]%
+-
+
+> MUSCLE  -maxiters 1000 -maxtrees 100 -in $ -out $_muscle
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]%  $_muscle_05_%[RSL]%.aln  $_muscle_05_%[RSL]% %[TMP_DIR]%
+-
+
+> CLUSTALO --full --full-iter --iter=5 -i $ -o $_clustalo
+> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_clustalo $_clustalo_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_clustalo_05_%[RSL]%.aln $_clustalo_05_%[RSL]% %[TMP_DIR]%
+-
+
+> PROBCONS $ > $_probcons
+> MSA_PRO -o=p -n=10 -rem_red -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_probcons_05_%[RSL]%.aln $_probcons_05_%[RSL]% %[TMP_DIR]%
+-
+
+> DIALIGN_TX DIALIGN_CONF $ $_dialigntx
+> MSA_PRO -o=p -n=10 -rem_red -rr=0.5 -c -rsl=%[RSL]% $_dialigntx $_dialigntx_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_dialigntx_05_%[RSL]%.aln $_dialigntx_05_%[RSL]% %[TMP_DIR]%
+-
+
+=end
+
