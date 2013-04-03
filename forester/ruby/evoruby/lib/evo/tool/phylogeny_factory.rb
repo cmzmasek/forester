@@ -257,12 +257,10 @@ module Evoruby
     end
 
     def get_id( aln_name )
-      id = nil
-      aln_name.index
       if aln_name =~ /_{2}(.+)_{2}/
-        id = $1
+        $1
       end
-      id
+      nil
     end
 
   end # class PhylogenyFactory
