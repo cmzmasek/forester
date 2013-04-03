@@ -148,13 +148,12 @@ module Evoruby
              file !~ /^00/ )
           aln_name = file.to_str
           id = get_id( aln_name )
-          #if !ids.include?( id )
-          #  ids.add( id )
-          #end
           if id != nil && id.length > 0
-            puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [' + id + ']' )
+            puts
+            puts( '[' + PRG_NAME + '] > file [id]  : ' + aln_name + ' [' + id + ']' )
           else
-            puts( '[' + PRG_NAME + '] > file [id]: ' + aln_name + ' [WARNING: could not get id!]' )
+            puts
+            puts( '[' + PRG_NAME + '] > file [id]  : ' + aln_name + ' [WARNING: could not get id!]' )
           end
           commands.each do | cmd |
             cmd = subst_hmm( cmd, id )
@@ -169,7 +168,7 @@ module Evoruby
             if ( cmd =~ /%/ )
               cmd =~ /(%.*?%)/
               problem = $1
-              puts( '[' + PRG_NAME + '] > WARNING    : [' + aln_name + '] command still contains placeholder: ' + problem )
+              puts( '[' + PRG_NAME + '] > WARNING     : command still contains placeholder: ' + problem )
               log << "WARNING: command still contains placeholder: " + cmd + NL
             else
               tmp_cmd_file = file.to_str[ 0..4 ] + TMP_CMD_FILE_SUFFIX
