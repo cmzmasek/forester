@@ -547,6 +547,9 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 updateOptions( getOptions() );
             }
+            else if ( o == _extract_taxonomy_no_rbmi ) {
+                updateOptions( getOptions() );
+            }
             else if ( o == _inference_from_msa_item ) {
                 executePhyleneticInference( false );
             }
