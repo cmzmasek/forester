@@ -70,7 +70,7 @@ module Evoruby
       puts
 
       puts "4. dsx:"
-      cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{base_name}_#{hmm}_ee#{e_value_exp.to_s}_#{length}"
+      cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm} #{base_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{base_name}__#{hmm}__ee#{e_value_exp.to_s}_#{length}"
       run_command( cmd )
       puts
 

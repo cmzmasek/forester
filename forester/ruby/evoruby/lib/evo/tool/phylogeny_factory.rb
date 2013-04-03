@@ -258,8 +258,9 @@ module Evoruby
 
     def get_id( aln_name )
       id = nil
-      if aln_name.include? "__"
-        id = aln_name[ 0, aln_name.index( "__" ) ]
+      aln_name.index
+      if aln_name =~ /_{2}(.+)_{2}/
+        id = $1
       end
       id
     end
