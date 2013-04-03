@@ -258,7 +258,7 @@ module Evoruby
 
     def get_id( aln_name )
       if aln_name =~ /_{2}(.+)_{2}/
-        $1
+        return $1
       end
       nil
     end
