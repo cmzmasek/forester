@@ -57,6 +57,7 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.parsers.tol.TolParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
+import org.forester.io.writers.SequenceWriter;
 import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
@@ -173,6 +174,15 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        System.out.print( "Sequence writer: " );
+        if ( testSequenceWriter() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Sequence id parsing: " );
         if ( testSequenceIdParsing() ) {
             System.out.println( "OK." );
@@ -1145,7 +1155,7 @@ public final class Test {
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.AGRESSIVE )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
@@ -1156,7 +1166,7 @@ public final class Test {
             if ( ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) != null ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "x_MOUSE_x", TAXONOMY_EXTRACTION.AGRESSIVE )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "x_MOUSE_x", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
@@ -6235,12 +6245,6 @@ public final class Test {
                 System.out.println( n1.toString() );
                 return false;
             }
-            final PhylogenyNode n2 = PhylogenyNode
-                    .createInstanceFromNhxString( "12345", NHXParser.TAXONOMY_EXTRACTION.AGRESSIVE );
-            if ( !n2.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
-                System.out.println( n2.toString() );
-                return false;
-            }
             final PhylogenyNode n2x = PhylogenyNode
                     .createInstanceFromNhxString( "12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n2x.getNodeData().isHasTaxonomy() ) {
@@ -6649,7 +6653,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n13 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12345/1-2", NHXParser.TAXONOMY_EXTRACTION.AGRESSIVE );
+                    .createInstanceFromNhxString( "blah_12345/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n13.getName().equals( "blah_12345/1-2" ) ) {
                 return false;
             }
@@ -6740,6 +6744,31 @@ public final class Test {
             final PhylogenyNode n32 = PhylogenyNode
                     .createInstanceFromNhxString( "sd_12345678", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n32.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
+            final PhylogenyNode n40 = PhylogenyNode
+                    .createInstanceFromNhxString( "bcl2_12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n40.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
+                return false;
+            }
+            final PhylogenyNode n41 = PhylogenyNode
+                    .createInstanceFromNhxString( "12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( n41.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
+            final PhylogenyNode n42 = PhylogenyNode
+                    .createInstanceFromNhxString( "12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( n42.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
+            final PhylogenyNode n43 = PhylogenyNode.createInstanceFromNhxString( "12345",
+                                                                                 NHXParser.TAXONOMY_EXTRACTION.NO );
+            if ( n43.getNodeData().isHasTaxonomy() ) {
+                return false;
+            }
+            final PhylogenyNode n44 = PhylogenyNode
+                    .createInstanceFromNhxString( "12345~1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( n44.getNodeData().isHasTaxonomy() ) {
                 return false;
             }
         }
@@ -9542,6 +9571,37 @@ public final class Test {
             }
             final Sequence rna1 = BasicSequence.createRnaSequence( "rna1", "..ACGUTX*-?RYMKWSN" );
             if ( !new String( rna1.getMolecularSequence() ).equals( "--ACGUNN*-NRYMKWSN" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testSequenceWriter() {
+        try {
+            final String n = ForesterUtil.LINE_SEPARATOR;
+            if ( !SequenceWriter.toFasta( "name", "awes", 5 ).toString().equals( ">name" + n + "awes" ) ) {
+                return false;
+            }
+            if ( !SequenceWriter.toFasta( "name", "awes", 4 ).toString().equals( ">name" + n + "awes" ) ) {
+                return false;
+            }
+            if ( !SequenceWriter.toFasta( "name", "awes", 3 ).toString().equals( ">name" + n + "awe" + n + "s" ) ) {
+                return false;
+            }
+            if ( !SequenceWriter.toFasta( "name", "awes", 2 ).toString().equals( ">name" + n + "aw" + n + "es" ) ) {
+                return false;
+            }
+            if ( !SequenceWriter.toFasta( "name", "awes", 1 ).toString()
+                    .equals( ">name" + n + "a" + n + "w" + n + "e" + n + "s" ) ) {
+                return false;
+            }
+            if ( !SequenceWriter.toFasta( "name", "abcdefghij", 3 ).toString()
+                    .equals( ">name" + n + "abc" + n + "def" + n + "ghi" + n + "j" ) ) {
                 return false;
             }
         }

@@ -254,8 +254,7 @@ public final class ParserUtils {
                 }
             }
         }
-        if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
-                || ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGRESSIVE ) ) {
+        if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) ) {
             final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( name );
             if ( m1.matches() ) {
                 return name;
@@ -279,6 +278,9 @@ public final class ParserUtils {
     public final static String extractTaxonomyDataFromNodeName( final PhylogenyNode node,
                                                                 final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction )
             throws PhyloXmlDataFormatException {
+        if ( taxonomy_extraction == TAXONOMY_EXTRACTION.NO ) {
+            throw new IllegalArgumentException();
+        }
         final String id = extractUniprotTaxonomyIdFromNodeName( node.getName(), taxonomy_extraction );
         if ( !ForesterUtil.isEmpty( id ) ) {
             if ( !node.getNodeData().isHasTaxonomy() ) {
@@ -301,8 +303,7 @@ public final class ParserUtils {
                     return code;
                 }
             }
-            else if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
-                    || ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGRESSIVE ) ) {
+            else if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) ) {
                 final String sn = extractScientificNameFromNodeName( node.getName() );
                 if ( !ForesterUtil.isEmpty( sn ) ) {
                     if ( !node.getNodeData().isHasTaxonomy() ) {
@@ -321,7 +322,7 @@ public final class ParserUtils {
     public final static String extractUniprotTaxonomyIdFromNodeName( final String name,
                                                                      final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
-                && ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) || ( name.indexOf( "/" ) > 4 ) ) ) {
+                && ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) || ( name.indexOf( "/" ) > 4 ) ) ) {
             final String[] s = name.split( "[_\\s]" );
             if ( s.length > 1 ) {
                 final String str = s[ 1 ];
@@ -343,12 +344,6 @@ public final class ParserUtils {
                         }
                     }
                 }
-            }
-        }
-        if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGRESSIVE ) {
-            final Matcher m1 = TAXOMONY_UNIPROT_ID_PATTERN_1.matcher( name );
-            if ( m1.matches() ) {
-                return name;
             }
         }
         return null;

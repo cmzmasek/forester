@@ -15,28 +15,7 @@ public class SequenceWriter {
     }
 
     public static StringBuilder toFasta( final Sequence seq, final int width ) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( ">" );
-        sb.append( seq.getIdentifier().toString() );
-        sb.append( ForesterUtil.LINE_SEPARATOR );
-        if ( ( width < 1 ) || ( width >= seq.getLength() ) ) {
-            sb.append( seq.getMolecularSequence() );
-        }
-        else {
-            final int lines = seq.getLength() / width;
-            final int rest = seq.getLength() - ( lines * width );
-            for( int i = 0; i < lines; ++i ) {
-                sb.append( seq.getMolecularSequence(), i * width, width );
-                if ( i < ( lines - 1 ) ) {
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
-            if ( rest > 0 ) {
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( seq.getMolecularSequence(), lines * width, rest );
-            }
-        }
-        return sb;
+        return toFasta( seq.getIdentifier(), seq.getMolecularSequenceAsString(), width );
     }
 
     public static StringBuilder toFasta( final String name, final String mol_seq, final int width ) {
@@ -51,14 +30,14 @@ public class SequenceWriter {
             final int lines = mol_seq.length() / width;
             final int rest = mol_seq.length() - ( lines * width );
             for( int i = 0; i < lines; ++i ) {
-                sb.append( mol_seq, i * width, width );
+                sb.append( mol_seq, i * width, ( i + 1 ) * width );
                 if ( i < ( lines - 1 ) ) {
                     sb.append( ForesterUtil.LINE_SEPARATOR );
                 }
             }
             if ( rest > 0 ) {
                 sb.append( ForesterUtil.LINE_SEPARATOR );
-                sb.append( mol_seq, lines * width, rest );
+                sb.append( mol_seq, lines * width, mol_seq.length() );
             }
         }
         return sb;

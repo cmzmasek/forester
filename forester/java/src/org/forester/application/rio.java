@@ -319,13 +319,13 @@ public class rio {
                     final NHXParser nhx = ( NHXParser ) p;
                     nhx.setReplaceUnderscores( false );
                     nhx.setIgnoreQuotes( true );
-                    nhx.setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGRESSIVE );
+                    nhx.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
                 }
                 else if ( p instanceof NexusPhylogeniesParser ) {
                     final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
                     nex.setReplaceUnderscores( false );
                     nex.setIgnoreQuotes( true );
-                    nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGRESSIVE );
+                    nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
                 }
                 else {
                     throw new RuntimeException( "unknown parser type: " + p );

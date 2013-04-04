@@ -901,13 +901,13 @@ public final class RIO {
             final NHXParser nhx = ( NHXParser ) p;
             nhx.setReplaceUnderscores( false );
             nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGRESSIVE );
+            nhx.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
         }
         else if ( p instanceof NexusPhylogeniesParser ) {
             final NexusPhylogeniesParser nex = ( NexusPhylogeniesParser ) p;
             nex.setReplaceUnderscores( false );
             nex.setIgnoreQuotes( true );
-            nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGRESSIVE );
+            nex.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
         }
         return factory.create( gene_trees_file, p );
     }

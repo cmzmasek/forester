@@ -711,6 +711,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     public static enum TAXONOMY_EXTRACTION {
-        NO, AGRESSIVE, PFAM_STYLE_RELAXED, PFAM_STYLE_STRICT;
+        NO, PFAM_STYLE_RELAXED, PFAM_STYLE_STRICT;
     }
 }

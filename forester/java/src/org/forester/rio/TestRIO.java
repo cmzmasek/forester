@@ -48,7 +48,7 @@ public final class TestRIO {
             final NHXParser nhx = new NHXParser();
             nhx.setReplaceUnderscores( false );
             nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.AGRESSIVE );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             //
             final String gene_trees_00_str = "(MOUSE,RAT);(MOUSE,RAT);(MOUSE,RAT);(RAT,MOUSE);";
             final Phylogeny[] gene_trees_00 = factory.create( gene_trees_00_str, nhx );
@@ -740,7 +740,7 @@ public final class TestRIO {
             final NHXParser nhx = new NHXParser();
             nhx.setReplaceUnderscores( false );
             nhx.setIgnoreQuotes( true );
-            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.AGRESSIVE );
+            nhx.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             final String gene_trees_1_str = "(((((MOUSE,RAT),HUMAN),CAEEL),YEAST),ARATH);"
                     + "((((MOUSE,RAT),HUMAN),(ARATH,YEAST)),CAEEL);" + "((MOUSE,RAT),(((ARATH,YEAST),CAEEL),HUMAN));"
                     + "(((((MOUSE,HUMAN),RAT),CAEEL),YEAST),ARATH);" + "((((HUMAN,MOUSE),RAT),(ARATH,YEAST)),CAEEL);";
