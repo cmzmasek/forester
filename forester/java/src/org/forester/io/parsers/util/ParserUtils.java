@@ -58,10 +58,8 @@ public final class ParserUtils {
     final public static String   TAX_CODE                       = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP";
     final public static Pattern  TAXOMONY_SN_PATTERN            = Pattern
                                                                         .compile( "[A-Z0-9]{2,}_([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_R1       = Pattern.compile( "[A-Z0-9]+_(" + TAX_CODE
-                                                                        + ")(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_R2       = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
-                                                                        + ")(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_R1       = Pattern.compile( "[A-Z0-9]+_(" + TAX_CODE + ")\\b" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_R2       = Pattern.compile( "(?:\\b|_)(" + TAX_CODE + ")\\b" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PF       = Pattern.compile( "[A-Z0-9]{2,}_(" + TAX_CODE
                                                                         + ")/\\d+-\\d+" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_4        = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );

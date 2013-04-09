@@ -1148,11 +1148,11 @@ public final class Test {
             if ( ParserUtils.extractTaxonomyCodeFromNodeName( "RAT1", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) != null ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _MOUSE", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _SOYBN_", TAXONOMY_EXTRACTION.AGGRESSIVE )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _SOYBN", TAXONOMY_EXTRACTION.AGGRESSIVE )
                     .equals( "SOYBN" ) ) {
                 return false;
             }
@@ -1180,7 +1180,7 @@ public final class Test {
                     .equals( "SOYBN" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "SOYBN" ) ) {
                 return false;
             }
@@ -1188,7 +1188,7 @@ public final class Test {
                     .equals( "SOYBN" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN_qwerty", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN qwerty", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "SOYBN" ) ) {
                 return false;
             }
@@ -1203,7 +1203,7 @@ public final class Test {
             if ( ParserUtils.extractTaxonomyCodeFromNodeName( "xxxSOYBNxxx", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) != null ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "-SOYBN_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "-SOYBN~", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "SOYBN" ) ) {
                 return false;
             }
@@ -1221,7 +1221,7 @@ public final class Test {
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE_function = 23445",
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE+function = 23445",
                                                                TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
@@ -1243,7 +1243,7 @@ public final class Test {
                                                                TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ).equals( "RAT" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT_function = 23445",
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_RAT function = 23445",
                                                                TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ).equals( "RAT" ) ) {
                 return false;
             }
@@ -1276,18 +1276,18 @@ public final class Test {
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE ", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE^", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
-            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) != null ) {
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "_MOUSE*", TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) != null ) {
                 return false;
             }
-            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "x_MOUSE_x", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "x_MOUSE=x", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
