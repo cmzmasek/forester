@@ -59,6 +59,11 @@ public class UrlTreeReader implements Runnable {
         _webservice_client_index = webservice_client_index;
     }
 
+    @Override
+    public void run() {
+        readPhylogeniesFromWebservice();
+    }
+
     synchronized void readPhylogeniesFromWebservice() {
         final long start_time = new Date().getTime();
         URL url = null;
@@ -109,8 +114,7 @@ public class UrlTreeReader implements Runnable {
                         break;
                     case NH_EXTRACT_TAXONOMY:
                         parser = new NHXParser();
-                        ( ( NHXParser ) parser )
-                                .setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+                        ( ( NHXParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
                         ( ( NHXParser ) parser ).setReplaceUnderscores( false );
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
@@ -253,10 +257,5 @@ public class UrlTreeReader implements Runnable {
         }
         _main_frame.activateSaveAllIfNeeded();
         System.gc();
-    }
-
-    @Override
-    public void run() {
-        readPhylogeniesFromWebservice();
     }
 }

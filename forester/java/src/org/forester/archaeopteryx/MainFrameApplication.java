@@ -541,7 +541,8 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 collapseBelowThreshold();
             }
-            else if ( ( o == _extract_taxonomy_pfam_rbmi ) || ( o == _extract_taxonomy_yes_rbmi ) ) {
+            else if ( ( o == _extract_taxonomy_pfam_strict_rbmi ) || ( o == _extract_taxonomy_pfam_relaxed_rbmi )
+                    || ( o == _extract_taxonomy_agressive_rbmi ) ) {
                 if ( _replace_underscores_cbmi != null ) {
                     _replace_underscores_cbmi.setSelected( false );
                 }
@@ -941,17 +942,22 @@ public final class MainFrameApplication extends MainFrame {
         //
         _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
         _options_jmenu
-                .add( _extract_taxonomy_pfam_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes from Pfam-style Node Names" ) );
-        _extract_taxonomy_pfam_rbmi
-                .setToolTipText( "To extract 5-letter taxonomy codes from node names in the form of \"BCL2_MOUSE/134-298\"" );
+                .add( _extract_taxonomy_pfam_strict_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style Node Names" ) );
         _options_jmenu
-                .add( _extract_taxonomy_yes_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes from Node Names" ) );
-        _extract_taxonomy_yes_rbmi
-                .setToolTipText( "To extract 5-letter taxonomy codes from node names in the form of \"BCL2_MOUSE\" or \"BCL2_MOUSE B-cell lymphoma 2...\"" );
+                .add( _extract_taxonomy_pfam_relaxed_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids from Pfam-style like Node Names" ) );
+        _options_jmenu
+                .add( _extract_taxonomy_agressive_rbmi = new JRadioButtonMenuItem( "Extract Taxonomy Codes/Ids/Scientific Names from Node Names" ) );
+        _extract_taxonomy_pfam_strict_rbmi
+                .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"BCL2_MOUSE/123-304\" or \"BCL2_10090/123-304\"" );
+        _extract_taxonomy_pfam_relaxed_rbmi
+                .setToolTipText( "To extract taxonomy codes/ids from node names in the form of e.g. \"bax_MOUSE\" or \"bax_10090\"" );
+        _extract_taxonomy_agressive_rbmi
+                .setToolTipText( "To extract taxonomy codes/ids or scientific names from node names in the form of e.g. \"MOUSE\" or \"10090\" or \"xyz_Nematostella_vectensis\"" );
         _radio_group_2 = new ButtonGroup();
         _radio_group_2.add( _extract_taxonomy_no_rbmi );
-        _radio_group_2.add( _extract_taxonomy_pfam_rbmi );
-        _radio_group_2.add( _extract_taxonomy_yes_rbmi );
+        _radio_group_2.add( _extract_taxonomy_pfam_strict_rbmi );
+        _radio_group_2.add( _extract_taxonomy_pfam_relaxed_rbmi );
+        _radio_group_2.add( _extract_taxonomy_agressive_rbmi );
         // 
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( "Newick/Nexus Output:" ), getConfiguration() ) );
         _options_jmenu
@@ -997,10 +1003,12 @@ public final class MainFrameApplication extends MainFrame {
                 .isInternalNumberAreConfidenceForNhParsing() );
         customizeRadioButtonMenuItem( _extract_taxonomy_no_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.NO );
-        customizeRadioButtonMenuItem( _extract_taxonomy_yes_rbmi,
-                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-        customizeRadioButtonMenuItem( _extract_taxonomy_pfam_rbmi,
+        customizeRadioButtonMenuItem( _extract_taxonomy_pfam_strict_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+        customizeRadioButtonMenuItem( _extract_taxonomy_pfam_relaxed_rbmi,
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+        customizeRadioButtonMenuItem( _extract_taxonomy_agressive_rbmi,
+                                      getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.AGGRESSIVE );
         customizeCheckBoxMenuItem( _replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
@@ -1822,8 +1830,8 @@ public final class MainFrameApplication extends MainFrame {
                     final PhylogenyNode n = it.next();
                     final String name = n.getName().trim();
                     if ( !ForesterUtil.isEmpty( name ) ) {
-                        final String nt = ParserUtils
-                                .extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                        final String nt = ParserUtils.extractTaxonomyDataFromNodeName( n,
+                                                                                       TAXONOMY_EXTRACTION.AGGRESSIVE );
                         if ( !ForesterUtil.isEmpty( nt ) ) {
                             if ( counter < 15 ) {
                                 sb.append( name + ": " + nt + "\n" );

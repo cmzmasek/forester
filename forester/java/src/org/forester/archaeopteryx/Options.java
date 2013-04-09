@@ -414,7 +414,7 @@ final public class Options {
         _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
-    final void setTaxonomyExtractio( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
+    final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
     }
 
@@ -496,7 +496,7 @@ final public class Options {
                 instance.setNumberOfDigitsAfterCommaForConfidenceValues( configuration
                         .getNumberOfDigitsAfterCommaForConfidenceValues() );
             }
-            instance.setTaxonomyExtractio( configuration.getTaxonomyExtraction() );
+            instance.setTaxonomyExtraction( configuration.getTaxonomyExtraction() );
             instance.setReplaceUnderscoresInNhParsing( configuration.isReplaceUnderscoresInNhParsing() );
             instance.setInternalNumberAreConfidenceForNhParsing( configuration
                     .isInternalNumberAreConfidenceForNhParsing() );

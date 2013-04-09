@@ -1307,15 +1307,21 @@ public final class Configuration {
             if ( s.equalsIgnoreCase( "no" ) ) {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
             }
-            else if ( s.equalsIgnoreCase( "yes" ) ) {
+            else if ( s.equalsIgnoreCase( "pfam_relaxed" ) ) {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             }
-            else if ( s.equalsIgnoreCase( "pfam" ) ) {
+            else if ( s.equalsIgnoreCase( "pfam_strict" ) ) {
                 setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
             }
+            else if ( s.equalsIgnoreCase( "aggressive" ) ) {
+                setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGGRESSIVE );
+            }
             else {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "unknown value for \"taxonomy_extraction_in_nh_parsing\": " + s );
+                ForesterUtil
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "unknown value for \"taxonomy_extraction_in_nh_parsing\": "
+                                                      + s
+                                                      + " (must be either: no, pfam_relaxed, pfam_strict, or aggressive)" );
             }
             if ( ( getTaxonomyExtraction() != TAXONOMY_EXTRACTION.NO ) && isReplaceUnderscoresInNhParsing() ) {
                 ForesterUtil

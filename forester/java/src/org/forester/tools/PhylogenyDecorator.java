@@ -491,7 +491,7 @@ public final class PhylogenyDecorator {
         ForesterUtil.ensurePresenceOfTaxonomy( node );
         try {
             if ( tc.length() == 6 ) {
-                String t = tc.substring( 0, 5 );
+                final String t = tc.substring( 0, 5 );
                 System.out.println( "WARNING: taxonomy code " + tc + " -> " + t );
                 tc = t;
             }

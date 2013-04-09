@@ -201,8 +201,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     // _  parsing
     JCheckBoxMenuItem           _internal_number_are_confidence_for_nh_parsing_cbmi;
     JRadioButtonMenuItem        _extract_taxonomy_no_rbmi;
-    JRadioButtonMenuItem        _extract_taxonomy_yes_rbmi;
-    JRadioButtonMenuItem        _extract_taxonomy_pfam_rbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_agressive_rbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_pfam_strict_rbmi;
+    JRadioButtonMenuItem        _extract_taxonomy_pfam_relaxed_rbmi;
     JCheckBoxMenuItem           _replace_underscores_cbmi;
     JCheckBoxMenuItem           _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem           _use_internal_names_for_conf_in_nh_export_cbmi;
@@ -1317,14 +1318,17 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _print_black_and_white_cbmi.isSelected() );
         options.setInternalNumberAreConfidenceForNhParsing( ( _internal_number_are_confidence_for_nh_parsing_cbmi != null )
                 && _internal_number_are_confidence_for_nh_parsing_cbmi.isSelected() );
-        if ( ( _extract_taxonomy_yes_rbmi != null ) && _extract_taxonomy_yes_rbmi.isSelected() ) {
-            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+        if ( ( _extract_taxonomy_pfam_strict_rbmi != null ) && _extract_taxonomy_pfam_strict_rbmi.isSelected() ) {
+            options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
         }
-        else if ( ( _extract_taxonomy_pfam_rbmi != null ) && _extract_taxonomy_pfam_rbmi.isSelected() ) {
-            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+        else if ( ( _extract_taxonomy_pfam_relaxed_rbmi != null ) && _extract_taxonomy_pfam_relaxed_rbmi.isSelected() ) {
+            options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+        }
+        else if ( ( _extract_taxonomy_agressive_rbmi != null ) && _extract_taxonomy_agressive_rbmi.isSelected() ) {
+            options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.AGGRESSIVE );
         }
         else if ( ( _extract_taxonomy_no_rbmi != null ) && _extract_taxonomy_no_rbmi.isSelected() ) {
-            options.setTaxonomyExtractio( TAXONOMY_EXTRACTION.NO );
+            options.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
         }
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
                 && _replace_underscores_cbmi.isSelected() );
