@@ -107,9 +107,13 @@ native_ui: ?
 #  To replace underscores with spaces during NH/NHX/Nexus file parsing:
 #     'replace_underscores_in_nh_parsing', possible values are 'yes', 'no'
 #
-#  To extract UniProt taxonomy codes (e.g. CAEEL) from node names during NH/NHX/Nexus file parsing:
-#     'taxonomy_extraction_in_nh_parsing',
-#     possible values are 'yes' (for e.g. BCL2_MOUSE), 'pfam' (for e.g. BCL2_MOUSE/23-453), 'no'
+#  To extract UniProt taxonomy codes (e.g. CAEEL) or UniProt identifiers (or scientific names)
+#  from node names during NH/NHX/Nexus file parsing: 'taxonomy_extraction_in_nh_parsing'
+#     possible values are:
+#     'no'
+#     'pfam_strict'  (for e.g. MOUSE from BCL2_MOUSE/23-453, or [uniprot] 10090 from BCL2_10090/23-453)
+#     'pfam_relaxed' (for e.g. MOUSE from bax_MOUSE, or [uniprot] 10090 from bax_10090)
+#     'aggressive'   (for e.g. MOUSE from MOUSE, or [uniprot] 10090 from 10090, or Nematostella vectensis from xyz_Nematostella_vectensis)
 #
 #  Internal node labels are confidence values during NH/NHX/Nexus file parsing:
 #     'internal_labels_are_confidence_values', possible values are 'yes', 'no'
@@ -151,7 +155,7 @@ ext_descendents_data_to_return:            user_selected
 #  NH/NHX/Nexus file parsing:
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
-taxonomy_extraction_in_nh_parsing:         pfam    
+taxonomy_extraction_in_nh_parsing:         pfam_relaxed    
 
 
 
