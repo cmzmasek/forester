@@ -55,18 +55,17 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
+    final public static String   TAX_CODE                       = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP";
     final public static Pattern  TAXOMONY_SN_PATTERN            = Pattern
-                                                                        .compile( "[^_]{2,}_([A-Z][a-z]+_[a-z]{2,}(_[A-Za-z]\\w+|))\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_1        = Pattern
-                                                                        .compile( "\\b[A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP\\b" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_2        = Pattern
-                                                                        .compile( "([A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP)[^0-9A-Za-z].*" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_3        = Pattern
-                                                                        .compile( "_([A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP)_" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_PF       = Pattern
-                                                                        .compile( "([A-Z9][A-Z]{2}[A-Z0-9]{2}|RAT|PIG|PEA|CAP)/\\d+-\\d+" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_4        = Pattern
-                                                                        .compile( "\\[(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\\]" );
+                                                                        .compile( "[A-Z0-9]{2,}_([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)\\b" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_R1       = Pattern.compile( "[A-Z0-9]+_(" + TAX_CODE
+                                                                        + ")(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_R2       = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
+                                                                        + ")(?:\\b|_)" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_PF       = Pattern.compile( "[A-Z0-9]{2,}_(" + TAX_CODE
+                                                                        + ")/\\d+-\\d+" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_4        = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_6        = Pattern.compile( "\\[([A-Z9][A-Z]{2}[A-Z0-9]{3})\\]" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_1  = Pattern.compile( "\\b\\d{1,7}\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_2  = Pattern.compile( "(\\d{1,7})[^0-9A-Za-z].*" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PF = Pattern.compile( "(\\d{1,7})/\\d+-\\d+" );
@@ -229,39 +228,21 @@ public final class ParserUtils {
 
     public final static String extractTaxonomyCodeFromNodeName( final String name,
                                                                 final TAXONOMY_EXTRACTION taxonomy_extraction ) {
-        if ( ( name.indexOf( "_" ) > 0 )
-                && ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) || ( name.indexOf( "/" ) > 4 ) ) ) {
-            final String[] s = name.split( "[_\\s]" );
-            if ( s.length > 1 ) {
-                final String str = s[ 1 ];
-                if ( !ForesterUtil.isEmpty( str ) ) {
-                    if ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) {
-                        final Matcher m = TAXOMONY_CODE_PATTERN_PF.matcher( str );
-                        if ( m.matches() ) {
-                            return m.group( 1 );
-                        }
-                    }
-                    else {
-                        final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( str );
-                        if ( m1.matches() ) {
-                            return m1.group();
-                        }
-                        final Matcher m2 = TAXOMONY_CODE_PATTERN_2.matcher( str );
-                        if ( m2.matches() ) {
-                            return m2.group( 1 );
-                        }
-                    }
-                }
+        if ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) {
+            final Matcher m = TAXOMONY_CODE_PATTERN_PF.matcher( name );
+            if ( m.find() ) {
+                return m.group( 1 );
             }
         }
-        if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) ) {
-            final Matcher m1 = TAXOMONY_CODE_PATTERN_1.matcher( name );
-            if ( m1.matches() ) {
-                return name;
+        else if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                || ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) ) {
+            final Matcher m1 = TAXOMONY_CODE_PATTERN_R1.matcher( name );
+            if ( m1.find() ) {
+                return m1.group( 1 );
             }
-            final Matcher m3 = TAXOMONY_CODE_PATTERN_3.matcher( name );
-            if ( m3.matches() ) {
-                return m3.group( 1 );
+            final Matcher m2 = TAXOMONY_CODE_PATTERN_R2.matcher( name );
+            if ( m2.find() ) {
+                return m2.group( 1 );
             }
         }
         return null;
@@ -269,7 +250,7 @@ public final class ParserUtils {
 
     public final static String extractScientificNameFromNodeName( final String name ) {
         final Matcher m1 = TAXOMONY_SN_PATTERN.matcher( name );
-        if ( m1.matches() ) {
+        if ( m1.find() ) {
             return m1.group( 1 ).replace( '_', ' ' );
         }
         return null;
@@ -286,11 +267,8 @@ public final class ParserUtils {
             if ( !node.getNodeData().isHasTaxonomy() ) {
                 node.getNodeData().setTaxonomy( new Taxonomy() );
             }
-            if ( ( node.getNodeData().getTaxonomy().getIdentifier() == null )
-                    || ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getIdentifier().getValue() ) ) {
-                node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
-                return id;
-            }
+            node.getNodeData().getTaxonomy().setIdentifier( new Identifier( id, "uniprot" ) );
+            return id;
         }
         else {
             final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
@@ -298,21 +276,17 @@ public final class ParserUtils {
                 if ( !node.getNodeData().isHasTaxonomy() ) {
                     node.getNodeData().setTaxonomy( new Taxonomy() );
                 }
-                if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
-                    node.getNodeData().getTaxonomy().setTaxonomyCode( code );
-                    return code;
-                }
+                node.getNodeData().getTaxonomy().setTaxonomyCode( code );
+                return code;
             }
-            else if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) ) {
+            else if ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED || taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) ) {
                 final String sn = extractScientificNameFromNodeName( node.getName() );
                 if ( !ForesterUtil.isEmpty( sn ) ) {
                     if ( !node.getNodeData().isHasTaxonomy() ) {
                         node.getNodeData().setTaxonomy( new Taxonomy() );
                     }
-                    if ( ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        node.getNodeData().getTaxonomy().setScientificName( sn );
-                        return sn;
-                    }
+                    node.getNodeData().getTaxonomy().setScientificName( sn );
+                    return sn;
                 }
             }
         }
@@ -322,7 +296,8 @@ public final class ParserUtils {
     public final static String extractUniprotTaxonomyIdFromNodeName( final String name,
                                                                      final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         if ( ( name.indexOf( "_" ) > 0 )
-                && ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) || ( name.indexOf( "/" ) > 4 ) ) ) {
+                && ( ( ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) || ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) ) || ( ( ( name
+                        .indexOf( "/" ) > 4 ) && ( taxonomy_extraction == TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ) ) ) ) ) {
             final String[] s = name.split( "[_\\s]" );
             if ( s.length > 1 ) {
                 final String str = s[ 1 ];
@@ -344,6 +319,12 @@ public final class ParserUtils {
                         }
                     }
                 }
+            }
+        }
+        if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
+            final Matcher m1 = TAXOMONY_UNIPROT_ID_PATTERN_1.matcher( name );
+            if ( m1.matches() ) {
+                return name;
             }
         }
         return null;

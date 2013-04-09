@@ -251,6 +251,9 @@ public final class PhylogenyDecorator {
                             if ( ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value ).find() ) {
                                 new_value = extractBracketedTaxCodes( node, new_value );
                             }
+                            else if ( ParserUtils.TAXOMONY_CODE_PATTERN_6.matcher( new_value ).find() ) {
+                                new_value = extractBracketedTaxCodes6( node, new_value );
+                            }
                             else if ( picky ) {
                                 throw new IllegalArgumentException( " could not get taxonomy from \"" + new_value
                                         + "\"" );
@@ -471,6 +474,30 @@ public final class PhylogenyDecorator {
         }
         ForesterUtil.ensurePresenceOfTaxonomy( node );
         try {
+            node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
+        }
+        catch ( final PhyloXmlDataFormatException e ) {
+            throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
+        }
+        return new_value; //TODO //FIXME
+    }
+
+    private static String extractBracketedTaxCodes6( final PhylogenyNode node, final String new_value ) {
+        final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_6.matcher( new_value );
+        String tc = "?";
+        if ( m.find() ) {
+            tc = m.group( 1 );
+        }
+        ForesterUtil.ensurePresenceOfTaxonomy( node );
+        try {
+            if ( tc.length() == 6 ) {
+                String t = tc.substring( 0, 5 );
+                System.out.println( "WARNING: taxonomy code " + tc + " -> " + t );
+                tc = t;
+            }
+            else {
+                throw new IllegalArgumentException();
+            }
             node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
         }
         catch ( final PhyloXmlDataFormatException e ) {

@@ -1165,10 +1165,9 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     private PhylogenyNode( final String nhx,
                            final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
                            final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
-        //  init();
         NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
         setId( PhylogenyNode.getNodeCount() );
         PhylogenyNode.increaseNodeCount();
-        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
+        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
     }
 }

@@ -219,6 +219,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "SN extraction: " );
+        if ( Test.testExtractSNFromNodeName() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Taxonomy extraction (general): " );
         if ( Test.testTaxonomyExtraction() ) {
             System.out.println( "OK." );
@@ -228,6 +237,7 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.exit( 0 );
         System.out.print( "UniProtKB id extraction: " );
         if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
@@ -1082,17 +1092,128 @@ public final class Test {
         return true;
     }
 
+    private static boolean testExtractSNFromNodeName() {
+        try {
+            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus_musculus" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus_musculus-12" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( " -XS_Mus_musculus-12" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( " -XS_Mus_musculus-12 affrre e" )
+                    .equals( "Mus musculus" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testExtractTaxonomyCodeFromNodeName() {
         try {
             if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "MOUSE", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "MOUSE" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN", TAXONOMY_EXTRACTION.AGGRESSIVE )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " ARATH ", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "ARATH" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " ARATH ", TAXONOMY_EXTRACTION.AGGRESSIVE )
+                    .equals( "ARATH" ) ) {
+                return false;
+            }
             if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "RAT", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
                     .equals( "RAT" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "RAT", TAXONOMY_EXTRACTION.AGGRESSIVE ).equals( "RAT" ) ) {
+                return false;
+            }
             if ( ParserUtils.extractTaxonomyCodeFromNodeName( "RAT1", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _MOUSE_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "MOUSE" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " _SOYBN_", TAXONOMY_EXTRACTION.AGGRESSIVE )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( " SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "_SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "qwerty SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "qwerty_SOYBN", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN ", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN qwerty", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "SOYBN_qwerty", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( ",SOYBN,", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "xxx,SOYBN,xxx", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractTaxonomyCodeFromNodeName( "xxxSOYBNxxx", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "-SOYBN_", TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "SOYBN" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "N8_ECOLI/1-2:0.01",
+                                                               TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT ).equals( "ECOLI" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "blag_9YX45-blag",
+                                                               TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED )
+                    .equals( "9YX45" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractTaxonomyCodeFromNodeName( "BCL2_MOUSE function = 23445",
@@ -6311,51 +6432,37 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n11 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_Mus_musculus", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n11.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
                 System.out.println( n11.toString() );
                 return false;
             }
             final PhylogenyNode n12 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus_musculus",
+                    .createInstanceFromNhxString( "BLAG_Mus_musculus_musculus",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n12.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
                 System.out.println( n12.toString() );
                 return false;
             }
             final PhylogenyNode n13 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus1",
+                    .createInstanceFromNhxString( "BLAG_Mus_musculus1",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n13.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n13.toString() );
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus_11",
+                    .createInstanceFromNhxString( "BLAG_Mus_musculus_11",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n14.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n14.toString() );
                 return false;
             }
-            final PhylogenyNode n15 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus_v11",
-                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !n15.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus v11" ) ) {
-                System.out.println( n15.toString() );
-                return false;
-            }
             final PhylogenyNode n16 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus_/11",
+                    .createInstanceFromNhxString( "BLAG_Mus_musculus_/11",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n16.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n16.toString() );
-                return false;
-            }
-            final PhylogenyNode n17 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_Mus_musculus_v",
-                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( n17.getNodeData().isHasTaxonomy() ) {
-                System.out.println( n17.toString() );
                 return false;
             }
         }
@@ -6414,20 +6521,19 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n8 = PhylogenyNode
-                    .createInstanceFromNhxString( "n8_ECOLI/12:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n8.getName().equals( "n8_ECOLI/12" ) ) {
+                    .createInstanceFromNhxString( "N8_ECOLI/1-2:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !n8.getName().equals( "N8_ECOLI/1-2" ) ) {
                 return false;
             }
-            if ( PhylogenyMethods.getSpecies( n8 ).equals( "ECOLI" ) ) {
+            if ( !PhylogenyMethods.getSpecies( n8 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n9 = PhylogenyNode
-                    .createInstanceFromNhxString( "n9_ECOLI/12=12:0.01",
-                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n9.getName().equals( "n9_ECOLI/12=12" ) ) {
+                    .createInstanceFromNhxString( "N9_ECOLI/1-12:0.01", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !n9.getName().equals( "N9_ECOLI/1-12" ) ) {
                 return false;
             }
-            if ( PhylogenyMethods.getSpecies( n9 ).equals( "ECOLI" ) ) {
+            if ( !PhylogenyMethods.getSpecies( n9 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n10 = PhylogenyNode
@@ -6436,24 +6542,24 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n20 = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n20.getName().equals( "n20_ECOLI/1-2" ) ) {
+                    .createInstanceFromNhxString( "N20_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !n20.getName().equals( "N20_ECOLI/1-2" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( n20 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n20x = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_ECOL1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !n20x.getName().equals( "n20_ECOL1/1-2" ) ) {
+                    .createInstanceFromNhxString( "N20_ECOL1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n20x.getName().equals( "N20_ECOL1/1-2" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( n20x ).equals( "ECOL1" ) ) {
                 return false;
             }
             final PhylogenyNode n20xx = PhylogenyNode
-                    .createInstanceFromNhxString( "n20_eCOL1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n20xx.getName().equals( "n20_eCOL1/1-2" ) ) {
+                    .createInstanceFromNhxString( "N20_eCOL1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !n20xx.getName().equals( "N20_eCOL1/1-2" ) ) {
                 return false;
             }
             if ( PhylogenyMethods.getSpecies( n20xx ).length() > 0 ) {
@@ -6476,8 +6582,8 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n21 = PhylogenyNode
-                    .createInstanceFromNhxString( "n21_PIG", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !n21.getName().equals( "n21_PIG" ) ) {
+                    .createInstanceFromNhxString( "N21_PIG", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n21.getName().equals( "N21_PIG" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( n21 ).equals( "PIG" ) ) {
@@ -6508,37 +6614,20 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode a = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !a.getName().equals( "n10_ECOLI/1-2" ) ) {
+                    .createInstanceFromNhxString( "N10_ECOLI/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !a.getName().equals( "N10_ECOLI/1-2" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( a ).equals( "ECOLI" ) ) {
                 return false;
             }
-            final PhylogenyNode b = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_ECOLI1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !b.getName().equals( "n10_ECOLI1/1-2" ) ) {
-                return false;
-            }
-            if ( PhylogenyMethods.getSpecies( b ).equals( "ECOLI" ) ) {
-                return false;
-            }
-            final PhylogenyNode c = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RATAF12/1000-2000",
-                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !c.getName().equals( "n10_RATAF12/1000-2000" ) ) {
-                return false;
-            }
-            if ( PhylogenyMethods.getSpecies( c ).equals( "RATAF" ) ) {
-                return false;
-            }
             final PhylogenyNode c1 = PhylogenyNode
                     .createInstanceFromNhxString( "n10_BOVIN_1/1000-2000",
-                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+                                                  NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !c1.getName().equals( "n10_BOVIN_1/1000-2000" ) ) {
                 return false;
             }
-            if ( PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
+            if ( !PhylogenyMethods.getSpecies( c1 ).equals( "BOVIN" ) ) {
                 return false;
             }
             final PhylogenyNode c2 = PhylogenyNode
@@ -6550,30 +6639,6 @@ public final class Test {
             if ( !PhylogenyMethods.getSpecies( c2 ).equals( "" ) ) {
                 return false;
             }
-            final PhylogenyNode d = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !d.getName().equals( "n10_RAT1/1-2" ) ) {
-                return false;
-            }
-            if ( PhylogenyMethods.getSpecies( d ).equals( "RAT" ) ) {
-                return false;
-            }
-            final PhylogenyNode e = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !e.getName().equals( "n10_RAT1" ) ) {
-                return false;
-            }
-            if ( !ForesterUtil.isEmpty( PhylogenyMethods.getSpecies( e ) ) ) {
-                return false;
-            }
-            final PhylogenyNode e2 = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_RAT1", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !e2.getName().equals( "n10_RAT1" ) ) {
-                return false;
-            }
-            if ( PhylogenyMethods.getSpecies( e2 ).equals( "RAT" ) ) {
-                return false;
-            }
             final PhylogenyNode e3 = PhylogenyNode
                     .createInstanceFromNhxString( "n10_RAT~", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !e3.getName().equals( "n10_RAT~" ) ) {
@@ -6583,15 +6648,15 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n11 = PhylogenyNode
-                    .createInstanceFromNhxString( "n111111_ECOLI/jdj:0.4",
+                    .createInstanceFromNhxString( "N111111_ECOLI/1-2:0.4",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n11.getName().equals( "n111111_ECOLI/jdj" ) ) {
+            if ( !n11.getName().equals( "N111111_ECOLI/1-2" ) ) {
                 return false;
             }
             if ( n11.getDistanceToParent() != 0.4 ) {
                 return false;
             }
-            if ( PhylogenyMethods.getSpecies( n11 ).equals( "ECOLI" ) ) {
+            if ( !PhylogenyMethods.getSpecies( n11 ).equals( "ECOLI" ) ) {
                 return false;
             }
             final PhylogenyNode n12 = PhylogenyNode
@@ -6604,14 +6669,6 @@ public final class Test {
                 return false;
             }
             if ( PhylogenyMethods.getSpecies( n12 ).length() > 0 ) {
-                return false;
-            }
-            final PhylogenyNode m = PhylogenyNode
-                    .createInstanceFromNhxString( "n10_MOUSEa", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !m.getName().equals( "n10_MOUSEa" ) ) {
-                return false;
-            }
-            if ( PhylogenyMethods.getSpecies( m ).equals( "MOUSE" ) ) {
                 return false;
             }
             final PhylogenyNode o = PhylogenyNode
@@ -6667,8 +6724,8 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n14 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_9QX45/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
-            if ( !n14.getName().equals( "blah_9QX45/1-2" ) ) {
+                    .createInstanceFromNhxString( "BLA_9QX45/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            if ( !n14.getName().equals( "BLA_9QX45/1-2" ) ) {
                 return false;
             }
             if ( !PhylogenyMethods.getSpecies( n14 ).equals( "9QX45" ) ) {
