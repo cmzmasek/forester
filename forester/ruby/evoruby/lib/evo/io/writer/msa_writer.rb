@@ -13,18 +13,21 @@ require 'lib/evo/util/util'
 
 module Evoruby
 
-    class MsaWriter
+  class MsaWriter
 
-        def initialize()
-            raise TypeError, "Cannot instanciate abstract class MsaWriter"
-        end
+    def initialize()
+      raise TypeError, "Cannot instanciate abstract class MsaWriter"
+    end
 
-        def set_max_name_length( length )
-        end
+    def set_max_name_length( length )
+    end
 
-        def write( msa, path )
-        end
+    def set_exception_if_name_too_long( exception_if_name_too_long )
+    end
 
-    end # class MsaWriter
+    def write( msa, path )
+    end
+
+  end # class MsaWriter
 
 end # module Evoruby

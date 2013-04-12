@@ -27,9 +27,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "2012.05.11"
+    PRG_DATE       = "130411"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.06"
+    PRG_VERSION    = "1.07"
     COPYRIGHT      = "2008-2010 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
@@ -40,6 +40,7 @@ module Evoruby
     INPUT_TYPE_OPTION                  = "i"
     OUTPUT_TYPE_OPTION                 = "o"
     MAXIMAL_NAME_LENGTH_OPTION         = "n"
+    DIE_IF_NAME_TOO_LONG               = "d"
     WIDTH_OPTION                       = "w"
     CLEAN_UP_SEQ_OPTION                = "c"
     REM_RED_OPTION                     = "rem_red"
@@ -78,6 +79,7 @@ module Evoruby
       @rgoc             = false
       @rg               = false  # fasta only
       @rem_red          = false
+      @die_if_name_too_long  = false
       @rgr              = -1
       @rsgr             = -1
       @rsl              = -1
@@ -148,6 +150,7 @@ module Evoruby
       allowed_opts.push( REM_RED_OPTION )
       allowed_opts.push( KEEP_MATCHING_SEQUENCES_OPTION )
       allowed_opts.push( REMOVE_MATCHING_SEQUENCES_OPTION )
+      allowed_opts.push( DIE_IF_NAME_TOO_LONG )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -162,13 +165,13 @@ module Evoruby
 
       begin
         Util.check_file_for_readability( input )
-      rescue ArgumentError => e
+      rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
       begin
         Util.check_file_for_writability( output )
-      rescue ArgumentError => e
+      rescue IOError => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
@@ -511,6 +514,7 @@ module Evoruby
           w = PhylipSequentialWriter.new()
           w.clean( @clean )
           w.set_max_name_length( @name_length )
+          w.set_exception_if_name_too_long( @die_if_name_too_long )
         elsif( @fasta_output )
           w = FastaWriter.new()
           w.set_line_width( @width )
@@ -522,11 +526,13 @@ module Evoruby
           w.clean( @clean )
           if ( @name_length_set )
             w.set_max_name_length( @name_length )
+            w.set_exception_if_name_too_long( @die_if_name_too_long )
           end
         elsif( @nexus_output )
           w = NexusWriter.new()
           w.clean( @clean )
           w.set_max_name_length( @name_length )
+          w.set_exception_if_name_too_long( @die_if_name_too_long )
         end
 
 
@@ -661,6 +667,7 @@ module Evoruby
         @last             = -1
       end
     end
+
     def analyze_command_line( cla )
       if ( cla.is_option_set?( INPUT_TYPE_OPTION ) )
         begin
@@ -806,6 +813,9 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
       end
+      if ( cla.is_option_set?( DIE_IF_NAME_TOO_LONG ) )
+        @die_if_name_too_long = true
+      end
 
 
     end
@@ -819,6 +829,7 @@ module Evoruby
       puts( "  options: -" + INPUT_TYPE_OPTION + "=<input type>: f for fasta, p for phylip selex type" )
       puts( "           -" + OUTPUT_TYPE_OPTION + "=<output type>: f for fasta, n for nexus, p for phylip sequential (default)" )
       puts( "           -" + MAXIMAL_NAME_LENGTH_OPTION + "=<n>: n=maximal name length (default for phylip 10, for fasta: unlimited )" )
+      puts( "           -" + DIE_IF_NAME_TOO_LONG + ": die if sequence name too long" )
       puts( "           -" + WIDTH_OPTION + "=<n>: n=width (fasta output only, default is 60)" )
       puts( "           -" + CLEAN_UP_SEQ_OPTION + ": clean up sequences" )
       puts( "           -" + REMOVE_GAP_COLUMNS_OPTION + ": remove gap columns" )

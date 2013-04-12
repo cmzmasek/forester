@@ -274,10 +274,10 @@ end # module Evoruby
 # are to be used:
 #  the substring between the first two double underscores is a
 #  unique identifier and needs to match the identifiers
-#  in '% <parameter-type> <unique-id>=<value>' statements
+#  in '% <parameter-type> <unique-id>=<value>' statements 
 #  Example:
 #  alignment name     : 'x__bcl2__e1'
-#  parameter statments: '% RSL bcl2=60'
+#  parameter statments: '% RSL bcl2=60' 
 $ PROBCONS=/home/czmasek/SOFTWARE/PROBCONS/probcons_v1_12/probcons
 $ DIALIGN_TX=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/source/dialign-tx
 $ DIALIGN_CONF=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/conf
@@ -291,7 +291,7 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 
 
 % RSL Hormone_recep=60
-%
+% 
 % RSL Y_phosphatase=100
 % RSL Y_phosphatase2=75
 % RSL Y_phosphatase3=50
@@ -303,38 +303,79 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 
 
 > KALIGN $ > $_kalign
-> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.aln
+> MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_kalign_05_%[RSL]%.aln $_kalign_05_%[RSL]% %[TMP_DIR]%
--
+- 
+
+> KALIGN $ > $_kalign_
+> MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_kalign_ $_kalign_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_kalign_09_%[RSL]%.aln $_kalign_09_%[RSL]% %[TMP_DIR]%
+- 
+
 
 > HMMALIGN --amino --trim --outformat Pfam -o $_hmmalign %[HMM]% $ > /dev/null
-> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.aln
+> MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_hmmalign_05_%[RSL]%.aln $_hmmalign_05_%[RSL]% %[TMP_DIR]%
--
+- 
+
+> HMMALIGN --amino --trim --outformat Pfam -o $_hmmalign_ %[HMM]% $ > /dev/null
+> MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_hmmalign_ $_hmmalign_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_hmmalign_09_%[RSL]%.aln $_hmmalign_09_%[RSL]% %[TMP_DIR]%
+- 
+
 
 > MAFFT --maxiterate 1000 --localpair $ > $_mafft
-> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_mafft $_mafft_05_%[RSL]%.aln
+> MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_mafft $_mafft_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_mafft_05_%[RSL]%.aln $_mafft_05_%[RSL]% %[TMP_DIR]%
 -
 
-> MUSCLE  -maxiters 1000 -maxtrees 100 -in $ -out $_muscle
-> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.aln
-> PHYLO_PL %[PHYLO_OPT]%  $_muscle_05_%[RSL]%.aln  $_muscle_05_%[RSL]% %[TMP_DIR]%
+> MAFFT --maxiterate 1000 --localpair $ > $_mafft_
+> MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_mafft_ $_mafft_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_mafft_09_%[RSL]%.aln $_mafft_09_%[RSL]% %[TMP_DIR]%
 -
 
+        
+> MUSCLE  -maxiters 1000 -maxtrees 100 -in $ -out $_muscle
+> MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_muscle_05_%[RSL]%.aln $_muscle_05_%[RSL]% %[TMP_DIR]%
+-
+
+> MUSCLE  -maxiters 1000 -maxtrees 100 -in $ -out $_muscle_
+> MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_muscle_ $_muscle_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_muscle_09_%[RSL]%.aln $_muscle_09_%[RSL]% %[TMP_DIR]%
+-
+
+
 > CLUSTALO --full --full-iter --iter=5 -i $ -o $_clustalo
-> MSA_PRO -o=p -n=10 -rr=0.5 -c -rsl=%[RSL]% $_clustalo $_clustalo_05_%[RSL]%.aln
+> MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_clustalo $_clustalo_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_clustalo_05_%[RSL]%.aln $_clustalo_05_%[RSL]% %[TMP_DIR]%
 -
 
-> PROBCONS $ > $_probcons
-> MSA_PRO -o=p -n=10 -rem_red -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.aln
-> PHYLO_PL %[PHYLO_OPT]% $_probcons_05_%[RSL]%.aln $_probcons_05_%[RSL]% %[TMP_DIR]%
+> CLUSTALO --full --full-iter --iter=5 -i $ -o $_clustalo_
+> MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_clustalo_ $_clustalo_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_clustalo_09_%[RSL]%.aln $_clustalo_09_%[RSL]% %[TMP_DIR]%
 -
 
+
+> PROBCONS $ > $_probcons
+> MSA_PRO -o=p -n=10 -d -rem_red -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_probcons_05_%[RSL]%.aln $_probcons_05_%[RSL]% %[TMP_DIR]%
+-  
+
+> PROBCONS $ > $_probcons_
+> MSA_PRO -o=p -n=10 -d -rem_red -rr=0.9 -c -rsl=%[RSL]% $_probcons_ $_probcons_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_probcons_09_%[RSL]%.aln $_probcons_09_%[RSL]% %[TMP_DIR]%
+-  
+
+
 > DIALIGN_TX DIALIGN_CONF $ $_dialigntx
-> MSA_PRO -o=p -n=10 -rem_red -rr=0.5 -c -rsl=%[RSL]% $_dialigntx $_dialigntx_05_%[RSL]%.aln
+> MSA_PRO -o=p -n=10 -d -rem_red -rr=0.5 -c -rsl=%[RSL]% $_dialigntx $_dialigntx_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_dialigntx_05_%[RSL]%.aln $_dialigntx_05_%[RSL]% %[TMP_DIR]%
+-
+
+> DIALIGN_TX DIALIGN_CONF $ $_dialigntx_
+> MSA_PRO -o=p -n=10 -d -rem_red -rr=0.9 -c -rsl=%[RSL]% $_dialigntx_ $_dialigntx_09_%[RSL]%.aln
+> PHYLO_PL %[PHYLO_OPT]% $_dialigntx_09_%[RSL]%.aln $_dialigntx_09_%[RSL]% %[TMP_DIR]%
 -
 
 =end

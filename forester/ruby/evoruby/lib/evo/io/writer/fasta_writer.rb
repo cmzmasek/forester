@@ -18,10 +18,11 @@ module Evoruby
         MAX_NAME_LENGTH_DEFAULT = 0
 
         def initialize()
-            @line_width       = LINE_WIDTH_DEFAULT
-            @max_name_length  = MAX_NAME_LENGTH_DEFAULT
-            @remove_gap_chars = false
-            @clean            = false
+            @line_width          = LINE_WIDTH_DEFAULT
+            @max_name_length     = MAX_NAME_LENGTH_DEFAULT
+            @remove_gap_chars    = false
+            @clean               = false
+            @ex_if_name_too_long = false
         end
 
 
@@ -47,6 +48,10 @@ module Evoruby
             @clean = clean
         end
 
+        def set_exception_if_name_too_long( exception_if_name_too_long )
+          @ex_if_name_too_long = exception_if_name_too_long
+        end
+
         def write( msa, path )
             Util.check_file_for_writability( path )
             f = File.open( path, "a" )
@@ -55,7 +60,7 @@ module Evoruby
                 name = seq_obj.get_name()
                 f.print( ">" )
                 if ( @max_name_length != MAX_NAME_LENGTH_DEFAULT )
-                    name = Util.normalize_seq_name( name, @max_name_length )
+                    name = Util.normalize_seq_name( name, @max_name_length, @ex_if_name_too_long )
                 end
                 f.print( name )
                 counter = 0

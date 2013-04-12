@@ -17,8 +17,9 @@ module Evoruby
         MAX_NAME_LENGTH_DEFAULT = 10
 
         def initialize()
-            @max_name_length = MAX_NAME_LENGTH_DEFAULT
-            @clean           = false
+            @max_name_length     = MAX_NAME_LENGTH_DEFAULT
+            @clean               = false
+            @ex_if_name_too_long = false
         end
 
         def set_max_name_length( length = MAX_NAME_LENGTH_DEFAULT )
@@ -30,6 +31,10 @@ module Evoruby
 
         def clean( clean = true )
             @clean = clean
+        end
+
+        def set_exception_if_name_too_long( exception_if_name_too_long )
+          @ex_if_name_too_long = exception_if_name_too_long
         end
 
         def write( msa, path )
@@ -60,7 +65,7 @@ module Evoruby
                 seq  = seq_obj.get_sequence_as_string()
                 name = name.gsub( /\s+$/, '')
                 name = name.gsub( /\s+/, '_')
-                name = Util.normalize_seq_name( name, @max_name_length )
+                name = Util.normalize_seq_name( name, @max_name_length, @ex_if_name_too_long )
                 f.print( "      " )
                 f.print( name )
                 f.print( " " )

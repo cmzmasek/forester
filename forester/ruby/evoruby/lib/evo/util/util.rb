@@ -14,8 +14,12 @@ module Evoruby
 
   class Util
 
-    def Util.normalize_seq_name( name, length )
+    def Util.normalize_seq_name( name, length, exception_if_too_long = false )
       if name.length > length
+        if exception_if_too_long
+          error_msg = "sequence name \"#{name}\" is too long (>#{length})"
+          raise StandardError, error_msg
+        end
         name = name[ 0, length ]
       elsif name.length < length
         for i in 0 ... length - name.length

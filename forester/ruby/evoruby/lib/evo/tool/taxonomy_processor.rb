@@ -22,9 +22,9 @@ module Evoruby
   class TaxonomyProcessor
 
     PRG_NAME       = "tap"
-    PRG_DATE       = "2013.03.22"
+    PRG_DATE       = "130411"
     PRG_DESC       = "replacement of species names in multiple sequence files"
-    PRG_VERSION    = "2.001"
+    PRG_VERSION    = "2.002"
     COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -168,9 +168,9 @@ module Evoruby
     def modify_name( desc, counter, file, extract_taxonomy )
       new_desc = nil
       desc.gsub!( /\s+/, ' ' )
-      if desc =~ /^>?\s*\S{1,10}_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)/
-        new_desc = counter.to_s( 16 ) + "_" + $1
-      elsif extract_taxonomy
+      #if desc =~ /^>?\s*\S{1,10}_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)/
+      #  new_desc = counter.to_s( 16 ) + "_" + $1
+      if extract_taxonomy
         if desc =~/\s\[(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA|CAP)\]/
           new_desc = counter.to_s( 16 ) + "_" + $1
         else
