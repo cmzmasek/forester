@@ -35,6 +35,8 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -59,6 +61,8 @@ public final class decorator {
     final static private String TREE_NAME_OPTION                        = "pn";
     final static private String TREE_ID_OPTION                          = "pi";
     final static private String TREE_DESC_OPTION                        = "pd";
+    final static private String MIDPOINT_ROOT_OPTION                    = "mp";
+    final static private String ORDER_TREE_OPTION                       = "or";
     final static private String EXTRACT_BRACKETED_SCIENTIC_NAME_OPTION  = "sn";
     final static private String EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION = "tc";
     final static private String PROCESS_NAME_INTELLIGENTLY_OPTION       = "x";
@@ -71,8 +75,8 @@ public final class decorator {
     final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
     final static private char   MAPPING_FILE_SEPARATOR_DEFAULT          = '\t';
     final static private String PRG_NAME                                = "decorator";
-    final static private String PRG_VERSION                             = "1.13";
-    final static private String PRG_DATE                                = "2013.01.19";
+    final static private String PRG_VERSION                             = "1.14";
+    final static private String PRG_DATE                                = "130426";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( decorator.PRG_NAME, decorator.PRG_VERSION, decorator.PRG_DATE );
@@ -112,6 +116,8 @@ public final class decorator {
         allowed_options.add( decorator.TREE_ID_OPTION );
         allowed_options.add( decorator.TREE_DESC_OPTION );
         allowed_options.add( decorator.TRIM_AFTER_TILDE_OPTION );
+        allowed_options.add( decorator.ORDER_TREE_OPTION );
+        allowed_options.add( decorator.MIDPOINT_ROOT_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( decorator.PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -144,6 +150,8 @@ public final class decorator {
         boolean extract_bracketed_scientific_name = false;
         boolean extract_bracketed_tax_code = false;
         boolean trim_after_tilde = false;
+        boolean order_tree = false;
+        boolean midpoint_root = false;
         String tree_name = "";
         String tree_id = "";
         String tree_desc = "";
@@ -208,6 +216,12 @@ public final class decorator {
             if ( cla.isOptionSet( decorator.ALLOW_REMOVAL_OF_CHARS_OPTION ) ) {
                 numbers_of_chars_allowed_to_remove_if_not_found_in_map = cla
                         .getOptionValueAsInt( decorator.ALLOW_REMOVAL_OF_CHARS_OPTION );
+            }
+            if ( cla.isOptionSet( decorator.MIDPOINT_ROOT_OPTION ) ) {
+                midpoint_root = true;
+            }
+            if ( cla.isOptionSet( decorator.ORDER_TREE_OPTION ) ) {
+                order_tree = true;
             }
             if ( cla.isOptionSet( decorator.FIELD_OPTION ) ) {
                 field_str = cla.getOptionValue( decorator.FIELD_OPTION );
@@ -346,6 +360,16 @@ public final class decorator {
         catch ( final Exception e ) {
             ForesterUtil.fatalError( decorator.PRG_NAME, e.getLocalizedMessage() );
         }
+        if ( midpoint_root || order_tree ) {
+            for( final Phylogeny phy : phylogenies ) {
+                if ( midpoint_root ) {
+                    PhylogenyMethods.midpointRoot( phy );
+                }
+                if ( order_tree ) {
+                    PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.TAXONOMY );
+                }
+            }
+        }
         try {
             final PhylogenyWriter w = new PhylogenyWriter();
             w.toPhyloXML( phylogenies, 0, phylogenies_outfile, ForesterUtil.getLineSeparator() );
@@ -400,6 +424,8 @@ public final class decorator {
         System.out.println( " -c     : cut name after first space (only for -f=n)" );
         System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION
                 + "     : trim node name to be replaced after tilde" );
+        System.out.println( " -" + decorator.MIDPOINT_ROOT_OPTION + "     : to midpoint-root the tree" );
+        System.out.println( " -" + decorator.ORDER_TREE_OPTION + "     : to order tree branches" );
         System.out.println();
         System.exit( -1 );
     }
