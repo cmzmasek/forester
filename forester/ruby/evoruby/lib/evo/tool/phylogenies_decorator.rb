@@ -24,7 +24,7 @@ module Evoruby
 
     #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
     #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
-    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -c -tc'
+    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -c -tc -mp -or'
     # -mdn is a hidden expert option to rename e.g. "6_ORYLA3" to "6_[3]_ORYLA"
     #DECORATOR_OPTIONS_SEQ_NAMES = '-sn -r=1'
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
@@ -289,12 +289,12 @@ module Evoruby
       }
       if matching_files.length < 1 && matching_suffix_files.length == 1
         return matching_suffix_files[ 0 ]
-      end  
-      
+      end
+
       if matching_files.length < 1 && matching_suffix_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
            '_] [' + suffix_pattern + '] present in current directory' )
-      end  
+      end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id +
            '_] [' + suffix_pattern + '] present in current directory' )
