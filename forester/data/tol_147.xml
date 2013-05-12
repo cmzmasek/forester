@@ -804,74 +804,115 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>Diapsida</name>
+                                            <taxonomy>
+                                              <id provider="uniprot">8457</id>
+                                              <scientific_name>Sauropsida</scientific_name>
+                                            </taxonomy>
                                             <clade>
-                                              <name>Neognathae</name>
+                                              <name>Archosauria &amp; Testudines</name>
                                               <taxonomy>
-                                                <id provider="uniprot">8825</id>
-                                                <scientific_name>Neognathae</scientific_name>
-                                                <rank>superorder</rank>
                                               </taxonomy>
+                                              <reference doi="10.1038/ng.2615">
+                                                <desc>The draft genomes of soft-shell turtle and green sea turtle yield insights into the development and evolution of the turtle-specific body plan</desc>
+                                              </reference>
+                                              <reference>
+                                              </reference>
+                                              <reference>
+                                              </reference>
                                               <clade>
-                                                <name>Phasianidae &amp; Anatidae (waterfowl)</name>
+                                                <taxonomy>
+                                                  <id provider="uniprot">8492</id>
+                                                  <scientific_name>Archosauria</scientific_name>
+                                                </taxonomy>
                                                 <clade>
+                                                  <name>Neognathae</name>
                                                   <taxonomy>
-                                                    <id provider="uniprot">9005</id>
-                                                    <scientific_name>Phasianidae</scientific_name>
-                                                    <rank>family</rank>
+                                                    <id provider="uniprot">8825</id>
+                                                    <scientific_name>Neognathae</scientific_name>
+                                                    <rank>superorder</rank>
                                                   </taxonomy>
                                                   <clade>
-                                                    <name>CHICK</name>
-                                                    <taxonomy>
-                                                      <id provider="uniprot">9031</id>
-                                                      <code>CHICK</code>
-                                                      <scientific_name>Gallus gallus</scientific_name>
-                                                      <common_name>Chicken</common_name>
-                                                      <synonym>Gallus domesticus</synonym>
-                                                      <rank>species</rank>
-                                                      <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Rooster04_adjusted.jpg/800px-Rooster04_adjusted.jpg</uri>
-                                                    </taxonomy>
+                                                    <name>Phasianidae &amp; Anatidae (waterfowl)</name>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">9005</id>
+                                                        <scientific_name>Phasianidae</scientific_name>
+                                                        <rank>family</rank>
+                                                      </taxonomy>
+                                                      <clade>
+                                                        <name>CHICK</name>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">9031</id>
+                                                          <code>CHICK</code>
+                                                          <scientific_name>Gallus gallus</scientific_name>
+                                                          <common_name>Chicken</common_name>
+                                                          <synonym>Gallus domesticus</synonym>
+                                                          <rank>species</rank>
+                                                          <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Rooster04_adjusted.jpg/800px-Rooster04_adjusted.jpg</uri>
+                                                        </taxonomy>
+                                                      </clade>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">9103</id>
+                                                          <code>MELGA</code>
+                                                          <scientific_name>Meleagris gallopavo</scientific_name>
+                                                          <common_name>Common turkey</common_name>
+                                                          <rank>species</rank>
+                                                          <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0205/0858.jpeg</uri>
+                                                        </taxonomy>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">8839</id>
+                                                        <code>ANAPL</code>
+                                                        <scientific_name>Anas platyrhynchos</scientific_name>
+                                                        <common_name>Domestic duck</common_name>
+                                                        <synonym>Anas boschas</synonym>
+                                                        <rank>species</rank>
+                                                        <uri>http://content.ornith.cornell.edu/UEWebApp/images/MPR_070302_100009_L.jpg</uri>
+                                                      </taxonomy>
+                                                    </clade>
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">9103</id>
-                                                      <code>MELGA</code>
-                                                      <scientific_name>Meleagris gallopavo</scientific_name>
-                                                      <common_name>Common turkey</common_name>
+                                                      <id provider="uniprot">59729</id>
+                                                      <code>TAEGU</code>
+                                                      <scientific_name>Taeniopygia guttata</scientific_name>
+                                                      <common_name>Zebra finch</common_name>
+                                                      <synonym>Poephila guttata</synonym>
                                                       <rank>species</rank>
-                                                      <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0205/0858.jpeg</uri>
+                                                      <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Taeniopygia_guttata_-_front_view_-_dundee_wildlife_park.jpg/355px-Taeniopygia_guttata_-_front_view_-_dundee_wildlife_park.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">8839</id>
-                                                    <code>ANAPL</code>
-                                                    <scientific_name>Anas platyrhynchos</scientific_name>
-                                                    <common_name>Domestic duck</common_name>
-                                                    <synonym>Anas boschas</synonym>
+                                                    <id provider="uniprot">8496</id>
+                                                    <code>ALLMI</code>
+                                                    <scientific_name>Alligator mississippiensis</scientific_name>
+                                                    <common_name>American alligator</common_name>
                                                     <rank>species</rank>
-                                                    <uri>http://content.ornith.cornell.edu/UEWebApp/images/MPR_070302_100009_L.jpg</uri>
+                                                    <uri>http://upload.wikimedia.org/wikipedia/commons/c/cd/Two_american_alligators.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
                                               <clade>
-                                                <name>TAEGU</name>
                                                 <taxonomy>
-                                                  <id provider="uniprot">59729</id>
-                                                  <code>TAEGU</code>
-                                                  <scientific_name>Taeniopygia guttata</scientific_name>
-                                                  <common_name>Zebra finch</common_name>
-                                                  <synonym>Poephila guttata</synonym>
+                                                  <id provider="uniprot">13735</id>
+                                                  <code>PELSI</code>
+                                                  <scientific_name>Pelodiscus sinensis</scientific_name>
+                                                  <authority>(Wiegmann, 1835) Cox et al. 1998</authority>
+                                                  <common_name>Chinese softshell turtle</common_name>
+                                                  <synonym>Trionyx sinensis</synonym>
                                                   <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Taeniopygia_guttata_-_front_view_-_dundee_wildlife_park.jpg/355px-Taeniopygia_guttata_-_front_view_-_dundee_wildlife_park.jpg</uri>
+                                                  <uri>http://www.chelonia.org/PsinensisTR1.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
                                             <clade>
-                                              <name>ANOCA</name>
                                               <taxonomy>
-                                                <id provider="eol">795869</id>
+                                                <id provider="uniprot">28377</id>
                                                 <code>ANOCA</code>
                                                 <scientific_name>Anolis carolinensis</scientific_name>
                                                 <authority>Voigt, 1832</authority>
@@ -880,6 +921,7 @@
                                                 <rank>species</rank>
                                                 <uri>http://content61.eol.org/content/2009/09/20/01/05528_580_360.jpg</uri>
                                                 <uri>http://content61.eol.org/content/2008/10/08/13/66818_580_360.jpg</uri>
+                                                <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Anolis_carolinensis.jpg/800px-Anolis_carolinensis.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -891,7 +933,6 @@
                                             <rank>genus</rank>
                                           </taxonomy>
                                           <clade>
-                                            <name>XENTR</name>
                                             <taxonomy>
                                               <id provider="uniprot">8364</id>
                                               <code>XENTR</code>
@@ -933,7 +974,40 @@
                                               <scientific_name>Percomorpha</scientific_name>
                                             </taxonomy>
                                             <clade>
-                                              <name>Smegmamorpha</name>
+                                              <taxonomy>
+                                                <id provider="uniprot">129949</id>
+                                                <scientific_name>Smegmamorpha</scientific_name>
+                                              </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">32456</id>
+                                                  <scientific_name>Atherinomorpha</scientific_name>
+                                                </taxonomy>
+                                                <clade>
+                                                  <name>ORYLA</name>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">8090</id>
+                                                    <code>ORYLA</code>
+                                                    <scientific_name>Oryzias latipes</scientific_name>
+                                                    <common_name>Medaka fish</common_name>
+                                                    <synonym>Japanese ricefish</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://upload.wikimedia.org/wikipedia/commons/4/49/Nihonmedaka.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">8083</id>
+                                                    <code>XIPMA</code>
+                                                    <scientific_name>Xiphophorus maculatus</scientific_name>
+                                                    <authority>Guenther, 1866</authority>
+                                                    <common_name>Southern platyfish</common_name>
+                                                    <synonym>Platypoecilus maculatus</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://upload.wikimedia.org/wikipedia/commons/6/6b/Poissons_06.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                              </clade>
                                               <clade>
                                                 <name>GASAC</name>
                                                 <taxonomy>
@@ -943,18 +1017,6 @@
                                                   <common_name>Three-spined stickleback</common_name>
                                                   <rank>species</rank>
                                                   <uri>http://www.fiskbasen.se/images/gasterosteus_aculeatus.jpg</uri>
-                                                </taxonomy>
-                                              </clade>
-                                              <clade>
-                                                <name>ORYLA</name>
-                                                <taxonomy>
-                                                  <id provider="uniprot">8090</id>
-                                                  <code>ORYLA</code>
-                                                  <scientific_name>Oryzias latipes</scientific_name>
-                                                  <common_name>Medaka fish</common_name>
-                                                  <synonym>Japanese ricefish</synonym>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/4/49/Nihonmedaka.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
@@ -1229,7 +1291,6 @@
                                                   <rank>subgenus</rank>
                                                 </taxonomy>
                                                 <clade>
-                                                  <name>DROME</name>
                                                   <taxonomy>
                                                     <id provider="uniprot">7227</id>
                                                     <code>DROME</code>
@@ -1484,30 +1545,67 @@
                                 <clade>
                                   <name>nematode Clade V</name>
                                   <clade>
-                                    <name>Caenorhabditis</name>
                                     <taxonomy>
                                       <id provider="uniprot">6237</id>
                                       <scientific_name>Caenorhabditis</scientific_name>
                                       <rank>genus</rank>
                                     </taxonomy>
+                                    <reference doi="10.1073/pnas.0403094101">
+                                      <desc>Caenorhabditis phylogeny predicts convergence of hermaphroditism and extensive intron loss</desc>
+                                    </reference>
                                     <clade>
-                                      <name>CAEBR</name>
-                                      <taxonomy>
-                                        <id provider="uniprot">6238</id>
-                                        <code>CAEBR</code>
-                                        <scientific_name>Caenorhabditis briggsae</scientific_name>
-                                        <rank>species</rank>
-                                        <uri>http://www.life.umd.edu/biology/haag/briggsae_herm.jpg</uri>
-                                      </taxonomy>
+                                      <name>CAEBR &amp; CAERE &amp; CAEBE &amp; CAEEL</name>
+                                      <clade>
+                                        <name>CAEBR &amp; CAERE &amp; CAEBE</name>
+                                        <clade>
+                                          <name>CAEBR &amp; CAERE</name>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">6238</id>
+                                              <code>CAEBR</code>
+                                              <scientific_name>Caenorhabditis briggsae</scientific_name>
+                                              <rank>species</rank>
+                                              <uri>http://www.life.umd.edu/biology/haag/briggsae_herm.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">31234</id>
+                                              <code>CAERE</code>
+                                              <scientific_name>Caenorhabditis remanei</scientific_name>
+                                              <synonym>Caenorhabditis vulgaris</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://lemur.amu.edu.pl/share/php/mirnest/species_images/Caenorhabditis_remanei.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">135651</id>
+                                            <code>CAEBE</code>
+                                            <scientific_name>Caenorhabditis brenneri</scientific_name>
+                                            <common_name>Nematode worm</common_name>
+                                            <synonym>Caenorhabditis CB5161</synonym>
+                                            <rank>species</rank>
+                                          </taxonomy>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">6239</id>
+                                          <code>CAEEL</code>
+                                          <scientific_name>Caenorhabditis elegans</scientific_name>
+                                          <rank>species</rank>
+                                          <uri>http://homepages.ed.ac.uk/mbx/C_elegans/N2_picture.gif</uri>
+                                        </taxonomy>
+                                      </clade>
                                     </clade>
                                     <clade>
-                                      <name>CAEEL</name>
                                       <taxonomy>
-                                        <id provider="uniprot">6239</id>
-                                        <code>CAEEL</code>
-                                        <scientific_name>Caenorhabditis elegans</scientific_name>
+                                        <id provider="uniprot">281687</id>
+                                        <code>CAEJA</code>
+                                        <scientific_name>Caenorhabditis japonica</scientific_name>
                                         <rank>species</rank>
-                                        <uri>http://homepages.ed.ac.uk/mbx/C_elegans/N2_picture.gif</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
@@ -1546,9 +1644,9 @@
                                     <rank>phylum</rank>
                                   </taxonomy>
                                   <clade>
-                                    <name>CAP</name>
                                     <taxonomy>
                                       <id provider="uniprot">283909</id>
+                                      <code>CTEXX</code>
                                       <scientific_name>Capitella teleta</scientific_name>
                                       <authority>Blake, Grassle &amp; Eckelbarger, 2009</authority>
                                       <synonym>Capitella sp. I</synonym>
@@ -1602,17 +1700,35 @@
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">29159</id>
-                                      <code>CRAGI</code>
-                                      <scientific_name>Crassostrea gigas</scientific_name>
-                                      <authority>Thunberg, 1793</authority>
-                                      <common_name>Pacific oyster</common_name>
-                                      <synonym>Crassotrea gigas</synonym>
-                                      <synonym>Crassostrea angulata</synonym>
-                                      <synonym>Ostrea gigas</synonym>
-                                      <rank>species</rank>
-                                      <uri>http://www.marlin.ac.uk/imgs/o_cragig.jpg</uri>
+                                      <id provider="uniprot">6545</id>
+                                      <scientific_name>Pteriomorphia</scientific_name>
+                                      <synonym>Pteriomorpha</synonym>
+                                      <rank>subclass</rank>
                                     </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">29159</id>
+                                        <code>CRAGI</code>
+                                        <scientific_name>Crassostrea gigas</scientific_name>
+                                        <authority>Thunberg, 1793</authority>
+                                        <common_name>Pacific oyster</common_name>
+                                        <synonym>Crassotrea gigas</synonym>
+                                        <synonym>Crassostrea angulata</synonym>
+                                        <synonym>Ostrea gigas</synonym>
+                                        <rank>species</rank>
+                                        <uri>http://www.marlin.ac.uk/imgs/o_cragig.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">50426</id>
+                                        <code>PINFU</code>
+                                        <scientific_name>Pinctada fucata</scientific_name>
+                                        <common_name>Pearl oyster</common_name>
+                                        <rank>species</rank>
+                                        <uri>http://upload.wikimedia.org/wikipedia/commons/1/1e/Pinctada_margaritifera_MHNT.CON.2002.893.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
                                   </clade>
                                 </clade>
                               </clade>
@@ -1623,7 +1739,6 @@
                                   <rank>phylum</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>SCHMA</name>
                                   <taxonomy>
                                     <id provider="uniprot">6183</id>
                                     <code>SCHMA</code>
@@ -1685,10 +1800,9 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>HYDMA</name>
                             <taxonomy>
                               <id provider="uniprot">6085</id>
-                              <code>HYDMA</code>
+                              <code>HMAXX</code>
                               <scientific_name>Hydra magnipapillata</scientific_name>
                               <authority>Ito, 1947</authority>
                               <rank>species</rank>
@@ -1712,7 +1826,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>AMPQU</name>
                       <taxonomy>
                         <id provider="uniprot">400682</id>
                         <code>AMPQE</code>
