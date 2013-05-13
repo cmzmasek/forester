@@ -810,8 +810,6 @@
                                             </taxonomy>
                                             <clade>
                                               <name>Archosauria &amp; Testudines</name>
-                                              <taxonomy>
-                                              </taxonomy>
                                               <reference doi="10.1038/ng.2615">
                                                 <desc>The draft genomes of soft-shell turtle and green sea turtle yield insights into the development and evolution of the turtle-specific body plan</desc>
                                               </reference>
@@ -1244,6 +1242,175 @@
                                               </taxonomy>
                                               <clade>
                                                 <taxonomy>
+                                                  <id provider="uniprot">7215</id>
+                                                  <scientific_name>Drosophila</scientific_name>
+                                                  <common_name>fruit flies</common_name>
+                                                  <rank>genus</rank>
+                                                </taxonomy>
+                                                <reference doi="10.1534/genetics.111.126540">
+                                                  <desc>The 19 Genomes of Drosophila: A BAC Library Resource for Genus-Wide and Genome-Scale Comparative Evolutionary Research</desc>
+                                                </reference>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">32341</id>
+                                                    <scientific_name>Sophophora</scientific_name>
+                                                    <rank>subgenus</rank>
+                                                  </taxonomy>
+                                                  <clade>
+                                                    <name>melanogaster &amp; pseudoobscura subgroups</name>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">32346</id>
+                                                        <scientific_name>melanogaster group</scientific_name>
+                                                      </taxonomy>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">32351</id>
+                                                          <scientific_name>melanogaster subgroup</scientific_name>
+                                                        </taxonomy>
+                                                        <clade>
+                                                          <name>DROSE &amp; DROSI &amp; DROME &amp; DROYA</name>
+                                                          <clade>
+                                                            <name>DROSE &amp; DROSI &amp; DROME</name>
+                                                            <clade>
+                                                              <name>DROSE &amp; DROSI</name>
+                                                              <clade>
+                                                                <taxonomy>
+                                                                  <id provider="uniprot">7238</id>
+                                                                  <code>DROSE</code>
+                                                                  <scientific_name>Drosophila sechellia</scientific_name>
+                                                                  <common_name>Fruit fly</common_name>
+                                                                  <rank>species</rank>
+                                                                </taxonomy>
+                                                              </clade>
+                                                              <clade>
+                                                                <taxonomy>
+                                                                  <id provider="uniprot">7240</id>
+                                                                  <code>DROSI</code>
+                                                                  <scientific_name>Drosophila simulans</scientific_name>
+                                                                  <common_name>Fruit fly</common_name>
+                                                                  <rank>species</rank>
+                                                                </taxonomy>
+                                                              </clade>
+                                                            </clade>
+                                                            <clade>
+                                                              <taxonomy>
+                                                                <id provider="uniprot">7227</id>
+                                                                <code>DROME</code>
+                                                                <scientific_name>Drosophila melanogaster</scientific_name>
+                                                                <common_name>Fruit fly</common_name>
+                                                                <rank>species</rank>
+                                                                <uri>http://www.snv.jussieu.fr/bmedia/ATP/images/dro-mal1.jpg</uri>
+                                                              </taxonomy>
+                                                            </clade>
+                                                          </clade>
+                                                          <clade>
+                                                            <taxonomy>
+                                                              <id provider="uniprot">7245</id>
+                                                              <code>DROYA</code>
+                                                              <scientific_name>Drosophila yakuba</scientific_name>
+                                                              <common_name>Fruit fly</common_name>
+                                                              <rank>species</rank>
+                                                            </taxonomy>
+                                                          </clade>
+                                                        </clade>
+                                                        <clade>
+                                                          <taxonomy>
+                                                            <id provider="uniprot">7220</id>
+                                                            <code>DROER</code>
+                                                            <scientific_name>Drosophila erecta</scientific_name>
+                                                            <common_name>Fruit fly</common_name>
+                                                            <rank>species</rank>
+                                                          </taxonomy>
+                                                        </clade>
+                                                      </clade>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">7217</id>
+                                                          <code>DROAN</code>
+                                                          <scientific_name>Drosophila ananassae</scientific_name>
+                                                          <common_name>Fruit fly</common_name>
+                                                          <rank>species</rank>
+                                                        </taxonomy>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">32358</id>
+                                                        <scientific_name>pseudoobscura subgroup</scientific_name>
+                                                      </taxonomy>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">7234</id>
+                                                          <code>DROPE</code>
+                                                          <scientific_name>Drosophila persimilis</scientific_name>
+                                                          <common_name>Fruit fly</common_name>
+                                                          <rank>species</rank>
+                                                        </taxonomy>
+                                                      </clade>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">46245</id>
+                                                          <code>DROPS</code>
+                                                          <scientific_name>Drosophila pseudoobscura pseudoobscura</scientific_name>
+                                                          <common_name>Fruit fly</common_name>
+                                                          <rank>subspecies</rank>
+                                                          <uri>http://www.naylorgallery.com/wp-content/uploads/fly4stack01small.jpg</uri>
+                                                        </taxonomy>
+                                                      </clade>
+                                                    </clade>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">7260</id>
+                                                      <code>DROWI</code>
+                                                      <scientific_name>Drosophila willistoni</scientific_name>
+                                                      <common_name>Fruit fly</common_name>
+                                                      <rank>species</rank>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <name>Drosophila subgenus &amp; Hawaiian Drosophila</name>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <scientific_name>Drosophila</scientific_name>
+                                                      <rank>subgenus</rank>
+                                                    </taxonomy>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">7230</id>
+                                                        <code>DROMO</code>
+                                                        <scientific_name>Drosophila mojavensis</scientific_name>
+                                                        <common_name>Fruit fly</common_name>
+                                                        <rank>species</rank>
+                                                      </taxonomy>
+                                                    </clade>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">7244</id>
+                                                        <code>DROVI</code>
+                                                        <scientific_name>Drosophila virilis</scientific_name>
+                                                        <common_name>Fruit fly</common_name>
+                                                        <rank>species</rank>
+                                                      </taxonomy>
+                                                    </clade>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">7222</id>
+                                                      <code>DROGR</code>
+                                                      <scientific_name>Drosophila grimshawi</scientific_name>
+                                                      <common_name>Fruit fly</common_name>
+                                                      <synonym>Idiomyia grimshawi</synonym>
+                                                      <rank>species</rank>
+                                                      <uri>http://www.pacificislandbooks.com/fruitf~1.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
                                                   <id provider="uniprot">7157</id>
                                                   <scientific_name>Culicidae</scientific_name>
                                                   <common_name>mosquitos</common_name>
@@ -1281,34 +1448,6 @@
                                                     <common_name>House mosquito</common_name>
                                                     <rank>species</rank>
                                                     <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Culex_pipiens_2007-1.jpg/628px-Culex_pipiens_2007-1.jpg</uri>
-                                                  </taxonomy>
-                                                </clade>
-                                              </clade>
-                                              <clade>
-                                                <taxonomy>
-                                                  <id provider="uniprot">32341</id>
-                                                  <scientific_name>Sophophora</scientific_name>
-                                                  <rank>subgenus</rank>
-                                                </taxonomy>
-                                                <clade>
-                                                  <taxonomy>
-                                                    <id provider="uniprot">7227</id>
-                                                    <code>DROME</code>
-                                                    <scientific_name>Drosophila melanogaster</scientific_name>
-                                                    <common_name>Fruit fly</common_name>
-                                                    <rank>species</rank>
-                                                    <uri>http://www.snv.jussieu.fr/bmedia/ATP/images/dro-mal1.jpg</uri>
-                                                  </taxonomy>
-                                                </clade>
-                                                <clade>
-                                                  <name>DROPS</name>
-                                                  <taxonomy>
-                                                    <id provider="uniprot">46245</id>
-                                                    <code>DROPS</code>
-                                                    <scientific_name>Drosophila pseudoobscura pseudoobscura</scientific_name>
-                                                    <common_name>Fruit fly</common_name>
-                                                    <rank>subspecies</rank>
-                                                    <uri>http://www.naylorgallery.com/wp-content/uploads/fly4stack01small.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
