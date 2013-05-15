@@ -428,7 +428,7 @@
                                                           <scientific_name>Oryctolagus cuniculus</scientific_name>
                                                           <common_name>Rabbit</common_name>
                                                           <rank>species</rank>
-                                                          <uri>http://greennature.com/gallery/farm-animal-pictures/albino_rabbit.jpg</uri>
+                                                          <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Rabbit_in_montana.jpg/675px-Rabbit_in_montana.jpg</uri>
                                                         </taxonomy>
                                                       </clade>
                                                     </clade>
@@ -474,7 +474,7 @@
                                                                     <common_name>Bovine</common_name>
                                                                     <synonym>Bos bovis</synonym>
                                                                     <rank>species</rank>
-                                                                    <uri>http://www.biopix.eu/photos/jcs-bos-taurus-(dansk-rodbroget-kvaeg)-22141.jpg</uri>
+                                                                    <uri>http://bioweb.uwlax.edu/bio203/s2007/hayes_katy/images/DSC01638.JPG</uri>
                                                                   </taxonomy>
                                                                 </clade>
                                                                 <clade>
@@ -605,7 +605,6 @@
                                                           </taxonomy>
                                                         </clade>
                                                         <clade>
-                                                          <name>CANFA</name>
                                                           <taxonomy>
                                                             <id provider="uniprot">9615</id>
                                                             <code>CANFA</code>
@@ -618,7 +617,6 @@
                                                         </clade>
                                                       </clade>
                                                       <clade>
-                                                        <name>FELCA</name>
                                                         <taxonomy>
                                                           <id provider="uniprot">9685</id>
                                                           <code>FELCA</code>
@@ -777,7 +775,6 @@
                                                 </clade>
                                               </clade>
                                               <clade>
-                                                <name>MONDO</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">13616</id>
                                                   <code>MONDO</code>
@@ -790,7 +787,6 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>ORNAN</name>
                                             <taxonomy>
                                               <id provider="uniprot">9258</id>
                                               <code>ORNAN</code>
@@ -836,7 +832,6 @@
                                                       <rank>family</rank>
                                                     </taxonomy>
                                                     <clade>
-                                                      <name>CHICK</name>
                                                       <taxonomy>
                                                         <id provider="uniprot">9031</id>
                                                         <code>CHICK</code>
@@ -889,7 +884,7 @@
                                                   <scientific_name>Alligator mississippiensis</scientific_name>
                                                   <common_name>American alligator</common_name>
                                                   <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/c/cd/Two_american_alligators.jpg</uri>
+                                                  <uri>http://www.herpcenter.com/reptile-caresheets/images/american_alligator.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
@@ -980,7 +975,6 @@
                                                 <scientific_name>Atherinomorpha</scientific_name>
                                               </taxonomy>
                                               <clade>
-                                                <name>ORYLA</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">8090</id>
                                                   <code>ORYLA</code>
@@ -1005,14 +999,13 @@
                                               </clade>
                                             </clade>
                                             <clade>
-                                              <name>GASAC</name>
                                               <taxonomy>
                                                 <id provider="uniprot">69293</id>
                                                 <code>GASAC</code>
                                                 <scientific_name>Gasterosteus aculeatus</scientific_name>
                                                 <common_name>Three-spined stickleback</common_name>
                                                 <rank>species</rank>
-                                                <uri>http://www.fiskbasen.se/images/gasterosteus_aculeatus.jpg</uri>
+                                                <uri>http://www.jjphoto.dk/fish_archive/freshwater/gasterosteus_aculeatus.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -1035,7 +1028,6 @@
                                               </taxonomy>
                                             </clade>
                                             <clade>
-                                              <name>TETNG</name>
                                               <taxonomy>
                                                 <id provider="uniprot">99883</id>
                                                 <code>TETNG</code>
@@ -1072,7 +1064,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>DANRE</name>
                                         <taxonomy>
                                           <id provider="uniprot">7955</id>
                                           <code>DANRE</code>
@@ -1122,7 +1113,6 @@
                                     <rank>genus</rank>
                                   </taxonomy>
                                   <clade>
-                                    <name>CIOIN</name>
                                     <taxonomy>
                                       <id provider="uniprot">7719</id>
                                       <code>CIOIN</code>
@@ -1134,7 +1124,6 @@
                                     </taxonomy>
                                   </clade>
                                   <clade>
-                                    <name>CIOSA</name>
                                     <taxonomy>
                                       <id provider="uniprot">51511</id>
                                       <code>CIOSA</code>
@@ -1146,7 +1135,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>OIKDI</name>
                                   <taxonomy>
                                     <id provider="ncbi">34765</id>
                                     <code>OIKDI</code>
@@ -1159,7 +1147,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>BRAFL</name>
                               <taxonomy>
                                 <id provider="uniprot">7739</id>
                                 <code>BRAFL</code>
@@ -1174,7 +1161,6 @@
                           <clade>
                             <name>Hemichordata &amp; Echinodermata</name>
                             <clade>
-                              <name>SACKO</name>
                               <taxonomy>
                                 <id provider="uniprot">10224</id>
                                 <code>SACKO</code>
@@ -1186,7 +1172,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>STRPU</name>
                               <taxonomy>
                                 <id provider="uniprot">7668</id>
                                 <code>STRPU</code>
@@ -1414,7 +1399,6 @@
                                                 <rank>family</rank>
                                               </taxonomy>
                                               <clade>
-                                                <name>AEDAE</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">7159</id>
                                                   <code>AEDAE</code>
@@ -1426,7 +1410,6 @@
                                                 </taxonomy>
                                               </clade>
                                               <clade>
-                                                <name>ANOGA</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">7165</id>
                                                   <code>ANOGA</code>
@@ -1437,7 +1420,6 @@
                                                 </taxonomy>
                                               </clade>
                                               <clade>
-                                                <name>CULPI</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">7175</id>
                                                   <code>CULPI</code>
@@ -1450,7 +1432,6 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>BOMMO</name>
                                             <taxonomy>
                                               <id provider="uniprot">7091</id>
                                               <code>BOMMO</code>
@@ -1474,7 +1455,6 @@
                                               <rank>suborder</rank>
                                             </taxonomy>
                                             <clade>
-                                              <name>APIME</name>
                                               <taxonomy>
                                                 <id provider="uniprot">7460</id>
                                                 <code>APIME</code>
@@ -1497,7 +1477,6 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>NASVI</name>
                                             <taxonomy>
                                               <id provider="uniprot">7425</id>
                                               <code>NASVI</code>
@@ -1510,7 +1489,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>TRICA</name>
                                         <taxonomy>
                                           <id provider="uniprot">7070</id>
                                           <code>TRICA</code>
@@ -1534,7 +1512,6 @@
                                           <rank>order</rank>
                                         </taxonomy>
                                         <clade>
-                                          <name>ACYPI</name>
                                           <taxonomy>
                                             <id provider="uniprot">7029</id>
                                             <code>ACYPI</code>
@@ -1545,7 +1522,6 @@
                                           </taxonomy>
                                         </clade>
                                         <clade>
-                                          <name>RHOPR</name>
                                           <taxonomy>
                                             <id provider="uniprot">13249</id>
                                             <code>RHOPR</code>
@@ -1586,7 +1562,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>DAPPU</name>
                                       <taxonomy>
                                         <id provider="uniprot">6669</id>
                                         <code>DAPPU</code>
@@ -1675,7 +1650,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>IXOSC</name>
                                 <taxonomy>
                                   <id provider="uniprot">6945</id>
                                   <code>IXOSC</code>
@@ -1763,7 +1737,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>PRIPA</name>
                                   <taxonomy>
                                     <id provider="uniprot">54126</id>
                                     <code>PRIPA</code>
@@ -1774,7 +1747,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>BRUMA</name>
                                 <taxonomy>
                                   <id provider="uniprot">6279</id>
                                   <code>BRUMA</code>
@@ -1851,7 +1823,7 @@
                                       <scientific_name>Pinctada fucata</scientific_name>
                                       <common_name>Pearl oyster</common_name>
                                       <rank>species</rank>
-                                      <uri>http://upload.wikimedia.org/wikipedia/commons/1/1e/Pinctada_margaritifera_MHNT.CON.2002.893.jpg</uri>
+                                      <uri>http://www.elrincondelmalacologo.com/Web%20fotos%20marinos%20no%20gasteropodos/Fotos%20coleccion/Pteriidae/Pinctada%20fucata.jpg</uri>
                                     </taxonomy>
                                   </clade>
                                 </clade>
@@ -1902,7 +1874,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>SCHMD</name>
                                 <taxonomy>
                                   <id provider="uniprot">79327</id>
                                   <code>SCHMD</code>
@@ -1965,14 +1936,13 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>TRIAD</name>
                       <taxonomy>
                         <id provider="uniprot">10228</id>
                         <code>TRIAD</code>
                         <scientific_name>Trichoplax adhaerens</scientific_name>
                         <synonym>Trichoplax reptans</synonym>
                         <rank>species</rank>
-                        <uri>http://ncse.com/files/images/trichoplax_ana_signorovitch.jpg</uri>
+                        <uri>http://genome.jgi-psf.org/Triad1/placozoan_signorovitch.jpg</uri>
                       </taxonomy>
                       <reference doi="10.1073/pnas.0602076103">
                       </reference>
@@ -1980,14 +1950,14 @@
                   </clade>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">400682</id>
-                      <code>AMPQE</code>
-                      <scientific_name>Amphimedon queenslandica</scientific_name>
-                      <authority>Hooper &amp; Van Soest, 2006</authority>
-                      <common_name>Sponge</common_name>
-                      <synonym>Reniera sp. JGI-2005</synonym>
+                      <id provider="uniprot">27923</id>
+                      <code>MNELE</code>
+                      <scientific_name>Mnemiopsis leidyi</scientific_name>
+                      <authority>A. gassiz, 1865</authority>
+                      <common_name>Sea walnut</common_name>
                       <rank>species</rank>
-                      <uri>http://images.marinespecies.org/resized/46694_amphimedon-queenslandica.jpg</uri>
+                      <uri>http://images.marinespecies.org/resized/12797_mnemiopsis-leidyi.jpg</uri>
+                      <uri>http://i.livescience.com/images/i/000/014/544/original/mnemiopsis-leidyi-jellyfish-101014-02.jpg</uri>
                     </taxonomy>
                   </clade>
                   <clade>
@@ -2010,7 +1980,6 @@
                     <rank>family</rank>
                   </taxonomy>
                   <clade>
-                    <name>MONBE</name>
                     <taxonomy>
                       <id provider="uniprot">81824</id>
                       <code>MONBE</code>
@@ -2178,7 +2147,6 @@
                                                     </taxonomy>
                                                   </clade>
                                                   <clade>
-                                                    <name>GIBZE</name>
                                                     <taxonomy>
                                                       <id provider="uniprot">5518</id>
                                                       <code>GIBZE</code>
@@ -2203,7 +2171,6 @@
                                                   </clade>
                                                 </clade>
                                                 <clade>
-                                                  <name>MAGGR</name>
                                                   <taxonomy>
                                                     <id provider="uniprot">148305</id>
                                                     <code>MAGGR</code>
@@ -2257,7 +2224,6 @@
                                                     </clade>
                                                   </clade>
                                                   <clade>
-                                                    <name>CHAGB</name>
                                                     <taxonomy>
                                                       <id provider="eol">1029505</id>
                                                       <code>CHAGB</code>
@@ -2269,7 +2235,6 @@
                                                   </clade>
                                                 </clade>
                                                 <clade>
-                                                  <name>NEUCR</name>
                                                   <taxonomy>
                                                     <id provider="uniprot">5141</id>
                                                     <code>NEUCR</code>
@@ -2313,7 +2278,6 @@
                                                 </clade>
                                               </clade>
                                               <clade>
-                                                <name>OIDMAI</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">78148</id>
                                                   <scientific_name>Oidiodendron maius</scientific_name>
@@ -2329,7 +2293,6 @@
                                               <rank>subclass</rank>
                                             </taxonomy>
                                             <clade>
-                                              <name>CLAGRA</name>
                                               <taxonomy>
                                                 <id provider="uniprot">27339</id>
                                                 <scientific_name>Cladonia grayi</scientific_name>
@@ -2339,7 +2302,6 @@
                                               </taxonomy>
                                             </clade>
                                             <clade>
-                                              <name>XANPAR</name>
                                               <taxonomy>
                                                 <id provider="uniprot">107463</id>
                                                 <scientific_name>Xanthoria parietina</scientific_name>
@@ -2371,7 +2333,6 @@
                                                 <rank>genus</rank>
                                               </taxonomy>
                                               <clade>
-                                                <name>MYCFI</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">83344</id>
                                                   <scientific_name>Mycosphaerella fijiensis</scientific_name>
@@ -2379,7 +2340,6 @@
                                                 </taxonomy>
                                               </clade>
                                               <clade>
-                                                <name>MYCGR</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">54734</id>
                                                   <code>MYCGR</code>
@@ -2390,7 +2350,6 @@
                                                 </taxonomy>
                                               </clade>
                                               <clade>
-                                                <name>MYCPJ</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">64363</id>
                                                   <code>MYCPJ</code>
@@ -2442,7 +2401,6 @@
                                                     <rank>genus</rank>
                                                   </taxonomy>
                                                   <clade>
-                                                    <name>COCHE</name>
                                                     <taxonomy>
                                                       <id provider="uniprot">5016</id>
                                                       <code>COCHE</code>
@@ -2472,12 +2430,10 @@
                                                     <synonym>Exserohilum turcicum</synonym>
                                                     <synonym>Helminthosporium turcicum</synonym>
                                                     <rank>species</rank>
-                                                    <uri>http://openi.nlm.nih.gov/imgs/rescaled512/3017769_1471-2229-10-103-3.png</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
                                               <clade>
-                                                <name>PYRTR</name>
                                                 <taxonomy>
                                                   <id provider="uniprot">426418</id>
                                                   <code>PYRTR</code>
@@ -2488,7 +2444,6 @@
                                               </clade>
                                             </clade>
                                             <clade>
-                                              <name>PHANO</name>
                                               <taxonomy>
                                                 <id provider="uniprot">13684</id>
                                                 <code>PHANO</code>
@@ -2538,7 +2493,6 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>ASPNG</name>
                                             <taxonomy>
                                               <id provider="uniprot">5061</id>
                                               <code>ASPNG</code>
@@ -2548,9 +2502,8 @@
                                           </clade>
                                         </clade>
                                         <clade>
-                                          <name>Neosartorya_Emericella</name>
+                                          <name>Neosartorya &amp; Emericella</name>
                                           <clade>
-                                            <name>EMENI</name>
                                             <taxonomy>
                                               <id provider="eol">195546</id>
                                               <code>EMENI</code>
@@ -2561,7 +2514,6 @@
                                             </taxonomy>
                                           </clade>
                                           <clade>
-                                            <name>NEOFI</name>
                                             <taxonomy>
                                               <id provider="uniprot">331117</id>
                                               <code>NEOFI</code>
@@ -2579,7 +2531,6 @@
                                         <rank>order</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>COCIM</name>
                                         <taxonomy>
                                           <id provider="uniprot">5501</id>
                                           <code>COCIM</code>
@@ -2589,7 +2540,6 @@
                                         </taxonomy>
                                       </clade>
                                       <clade>
-                                        <name>UNCRE</name>
                                         <taxonomy>
                                           <id provider="uniprot">336963</id>
                                           <code>UNCRE</code>
@@ -2629,7 +2579,6 @@
                                         <clade>
                                           <name>Saccharomyces</name>
                                           <clade>
-                                            <name>SACCA</name>
                                             <taxonomy>
                                               <id provider="uniprot">27288</id>
                                               <code>SACCA</code>
@@ -2640,7 +2589,6 @@
                                             </taxonomy>
                                           </clade>
                                           <clade>
-                                            <name>YEAST</name>
                                             <taxonomy>
                                               <id provider="uniprot">4932</id>
                                               <code>YEAST</code>
@@ -2651,7 +2599,6 @@
                                           </clade>
                                         </clade>
                                         <clade>
-                                          <name>PICAN</name>
                                           <taxonomy>
                                             <id provider="uniprot">4905</id>
                                             <code>PICAN</code>
@@ -2667,7 +2614,6 @@
                                         <clade>
                                           <name>Kluyveromyces</name>
                                           <clade>
-                                            <name>KLULA</name>
                                             <taxonomy>
                                               <id provider="uniprot">28985</id>
                                               <code>KLULA</code>
@@ -2678,7 +2624,6 @@
                                             </taxonomy>
                                           </clade>
                                           <clade>
-                                            <name>KLUWA</name>
                                             <taxonomy>
                                               <id provider="uniprot">4914</id>
                                               <code>KLUWA</code>
@@ -2689,7 +2634,6 @@
                                           </clade>
                                         </clade>
                                         <clade>
-                                          <name>ASHGO</name>
                                           <taxonomy>
                                             <id provider="uniprot">33169</id>
                                             <code>ASHGO</code>
@@ -2710,7 +2654,6 @@
                                           <rank>genus</rank>
                                         </taxonomy>
                                         <clade>
-                                          <name>CANAL</name>
                                           <taxonomy>
                                             <id provider="uniprot">5476</id>
                                             <code>CANAL</code>
@@ -2720,7 +2663,6 @@
                                           </taxonomy>
                                         </clade>
                                         <clade>
-                                          <name>CANTR</name>
                                           <taxonomy>
                                             <id provider="uniprot">5482</id>
                                             <code>CANTR</code>
@@ -2731,7 +2673,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>DEBHA</name>
                                         <taxonomy>
                                           <id provider="uniprot">4959</id>
                                           <code>DEBHA</code>
@@ -2744,7 +2685,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>YARLI</name>
                                     <taxonomy>
                                       <id provider="uniprot">4952</id>
                                       <code>YARLI</code>
@@ -2770,7 +2710,6 @@
                                       <rank>genus</rank>
                                     </taxonomy>
                                     <clade>
-                                      <name>SCHJP</name>
                                       <taxonomy>
                                         <id provider="uniprot">4897</id>
                                         <code>SCHJP</code>
@@ -2790,7 +2729,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>SCHPO</name>
                                       <taxonomy>
                                         <id provider="uniprot">4896</id>
                                         <code>SCHPO</code>
@@ -2801,7 +2739,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>PNECA</name>
                                     <taxonomy>
                                       <id provider="uniprot">4754</id>
                                       <code>PNECA</code>
@@ -2878,7 +2815,6 @@
                                                         </taxonomy>
                                                       </clade>
                                                       <clade>
-                                                        <name>COPCI</name>
                                                         <taxonomy>
                                                           <id provider="uniprot">5346</id>
                                                           <code>COPCI</code>
@@ -2912,7 +2848,6 @@
                                                   </clade>
                                                 </clade>
                                                 <clade>
-                                                  <name>PLEOS</name>
                                                   <taxonomy>
                                                     <id provider="uniprot">5322</id>
                                                     <code>PLEOS</code>
@@ -2965,7 +2900,7 @@
                                                     <scientific_name>Hydnomerulius pinastri</scientific_name>
                                                     <common_name>Spiny dry rot fungus</common_name>
                                                     <rank>species</rank>
-                                                    <uri>http://mycoweb-stv.narod.ru/fungi/Submitted/STV1/Hydnomerulius_pinastri_1_STV_20100913.jpg</uri>
+                                                    <uri>http://genome.jgi.doe.gov/public/Hydpi1/Hydnomerulius_pinastri.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
@@ -2980,7 +2915,6 @@
                                             </clade>
                                           </clade>
                                           <clade>
-                                            <name>GLOTR</name>
                                             <taxonomy>
                                               <id provider="uniprot">104355</id>
                                               <code>GLOTR</code>
@@ -3077,7 +3011,6 @@
                                               </clade>
                                             </clade>
                                             <clade>
-                                              <name>CERSU</name>
                                               <taxonomy>
                                                 <id provider="uniprot">42742</id>
                                                 <code>CERSU</code>
@@ -3099,7 +3032,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>HETAN</name>
                                         <taxonomy>
                                           <id provider="uniprot">13563</id>
                                           <code>HETAN</code>
@@ -3116,7 +3048,6 @@
                                         <rank>family</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>CRYNE</name>
                                         <taxonomy>
                                           <id provider="uniprot">5207</id>
                                           <code>CRYNE</code>
@@ -3126,7 +3057,6 @@
                                         </taxonomy>
                                       </clade>
                                       <clade>
-                                        <name>TREME</name>
                                         <taxonomy>
                                           <id provider="eol">1029985</id>
                                           <code>TREME</code>
@@ -3155,7 +3085,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>USTMA</name>
                                       <taxonomy>
                                         <id provider="uniprot">5270</id>
                                         <code>USTMA</code>
@@ -3180,7 +3109,6 @@
                                       <rank>order</rank>
                                     </taxonomy>
                                     <clade>
-                                      <name>MELLP</name>
                                       <taxonomy>
                                         <id provider="eol">156696</id>
                                         <code>MELLP</code>
@@ -3192,7 +3120,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>PUCGR</name>
                                       <taxonomy>
                                         <id provider="eol">1029947</id>
                                         <code>PUCGR</code>
@@ -3210,7 +3137,6 @@
                                       <scientific_name>mitosporic Sporidiobolales</scientific_name>
                                     </taxonomy>
                                     <clade>
-                                      <name>RHOGR</name>
                                       <taxonomy>
                                         <id provider="uniprot">29898</id>
                                         <code>RHOGR</code>
@@ -3232,7 +3158,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>WALSE</name>
                                 <taxonomy>
                                   <id provider="uniprot">148960</id>
                                   <code>WALSE</code>
@@ -3255,7 +3180,6 @@
                                 <rank>family</rank>
                               </taxonomy>
                               <clade>
-                                <name>MUCCI</name>
                                 <taxonomy>
                                   <id provider="uniprot">36080</id>
                                   <code>MUCCI</code>
@@ -3265,7 +3189,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>PHYBL</name>
                                 <taxonomy>
                                   <id provider="uniprot">4837</id>
                                   <code>PHYBL</code>
@@ -3274,7 +3197,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>RHIOR</name>
                                 <taxonomy>
                                   <id provider="uniprot">64495</id>
                                   <code>RHIOR</code>
@@ -3431,7 +3353,6 @@
                 <rank>genus</rank>
               </taxonomy>
               <clade>
-                <name>DICDI</name>
                 <taxonomy>
                   <id provider="uniprot">44689</id>
                   <code>DICDI</code>
@@ -3441,7 +3362,6 @@
                 </taxonomy>
               </clade>
               <clade>
-                <name>DICPU</name>
                 <taxonomy>
                   <id provider="uniprot">5786</id>
                   <code>DICPU</code>
@@ -3452,7 +3372,6 @@
               </clade>
             </clade>
             <clade>
-              <name>ENTHI</name>
               <taxonomy>
                 <id provider="uniprot">5759</id>
                 <code>ENTHI</code>
@@ -3530,7 +3449,6 @@
                                           <rank>family</rank>
                                         </taxonomy>
                                         <clade>
-                                          <name>FRAVE</name>
                                           <taxonomy>
                                             <id provider="uniprot">57918</id>
                                             <code>FRAVE</code>
@@ -3545,7 +3463,6 @@
                                           </taxonomy>
                                         </clade>
                                         <clade>
-                                          <name>PRUPE</name>
                                           <taxonomy>
                                             <id provider="uniprot">3760</id>
                                             <code>PRUPE</code>
@@ -3559,7 +3476,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>CUCSA</name>
                                         <taxonomy>
                                           <id provider="uniprot">3659</id>
                                           <code>CUCSA</code>
@@ -3576,7 +3492,6 @@
                                         <rank>subfamily</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>SOYBN</name>
                                         <taxonomy>
                                           <id provider="uniprot">3847</id>
                                           <code>SOYBN</code>
@@ -3588,7 +3503,6 @@
                                         </taxonomy>
                                       </clade>
                                       <clade>
-                                        <name>MEDTR</name>
                                         <taxonomy>
                                           <id provider="uniprot">3880</id>
                                           <code>MEDTR</code>
@@ -3614,7 +3528,6 @@
                                         <rank>family</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>MANES</name>
                                         <taxonomy>
                                           <id provider="uniprot">3983</id>
                                           <code>MANES</code>
@@ -3626,7 +3539,6 @@
                                         </taxonomy>
                                       </clade>
                                       <clade>
-                                        <name>RICCO</name>
                                         <taxonomy>
                                           <id provider="uniprot">3988</id>
                                           <code>RICCO</code>
@@ -3639,7 +3551,6 @@
                                       </clade>
                                     </clade>
                                     <clade>
-                                      <name>POPTR</name>
                                       <taxonomy>
                                         <id provider="uniprot">3694</id>
                                         <code>POPTR</code>
@@ -3677,7 +3588,6 @@
                                             <rank>genus</rank>
                                           </taxonomy>
                                           <clade>
-                                            <name>ARALY</name>
                                             <taxonomy>
                                               <id provider="uniprot">59689</id>
                                               <code>ARALY</code>
@@ -3687,7 +3597,6 @@
                                             </taxonomy>
                                           </clade>
                                           <clade>
-                                            <name>ARATH</name>
                                             <taxonomy>
                                               <id provider="uniprot">3702</id>
                                               <code>ARATH</code>
@@ -3709,7 +3618,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>CARPA</name>
                                         <taxonomy>
                                           <id provider="uniprot">3649</id>
                                           <code>CARPA</code>
@@ -3728,7 +3636,6 @@
                                         <rank>genus</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>CITCLE</name>
                                         <taxonomy>
                                           <id provider="uniprot">85681</id>
                                           <scientific_name>Citrus clementina</scientific_name>
@@ -3738,7 +3645,6 @@
                                         </taxonomy>
                                       </clade>
                                       <clade>
-                                        <name>CITSI</name>
                                         <taxonomy>
                                           <id provider="uniprot">2711</id>
                                           <code>CITSI</code>
@@ -3753,7 +3659,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>EUCGR</name>
                                     <taxonomy>
                                       <id provider="uniprot">71139</id>
                                       <code>EUCGR</code>
@@ -3766,7 +3671,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>VITVI</name>
                                 <taxonomy>
                                   <id provider="eol">582304</id>
                                   <code>VITVI</code>
@@ -3845,7 +3749,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>MIMGU</name>
                                 <taxonomy>
                                   <id provider="uniprot">4155</id>
                                   <code>MIMGU</code>
@@ -3858,7 +3761,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>AQUCA</name>
                             <taxonomy>
                               <id provider="uniprot">218851</id>
                               <code>AQUCA</code>
@@ -3867,7 +3769,7 @@
                               <common_name>Rocky mountain columbine</common_name>
                               <synonym>Aquilegia coerulea</synonym>
                               <rank>species</rank>
-                              <uri>http://content9.eol.org/content/2010/01/01/03/15137_large.jpg</uri>
+                              <uri>http://www.wildflower.org/image_archive/320x240/PCD3618/PCD3618_IMG0033.JPG</uri>
                             </taxonomy>
                           </clade>
                         </clade>
@@ -3903,7 +3805,6 @@
                                   <rank>tribe</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>SORBI</name>
                                   <taxonomy>
                                     <id provider="uniprot">4558</id>
                                     <code>SORBI</code>
@@ -3914,7 +3815,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>MAIZE</name>
                                   <taxonomy>
                                     <id provider="uniprot">4577</id>
                                     <code>MAIZE</code>
@@ -3931,7 +3831,6 @@
                                   <rank>tribe</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>PANVIR</name>
                                   <taxonomy>
                                     <id provider="uniprot">38727</id>
                                     <scientific_name>Panicum virgatum</scientific_name>
@@ -3941,7 +3840,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>SETIT</name>
                                   <taxonomy>
                                     <id provider="uniprot">4555</id>
                                     <code>SETIT</code>
@@ -3966,7 +3864,6 @@
                                   <rank>genus</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>ORYSA</name>
                                   <taxonomy>
                                     <id provider="uniprot">4530</id>
                                     <code>ORYSA</code>
@@ -3976,7 +3873,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>ORYSJ</name>
                                   <taxonomy>
                                     <id provider="uniprot">39947</id>
                                     <code>ORYSJ</code>
@@ -3986,7 +3882,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>BRADI</name>
                                 <taxonomy>
                                   <id provider="uniprot">15368</id>
                                   <code>BRADI</code>
@@ -3994,7 +3889,7 @@
                                   <common_name>Purple false brome</common_name>
                                   <synonym>Trachynia distachya</synonym>
                                   <rank>species</rank>
-                                  <uri>http://content5.eol.org/content/2011/01/15/20/16311_large.jpg</uri>
+                                  <uri>http://upload.wikimedia.org/wikipedia/commons/0/01/Brachypodium_distachyon_Bd21-3.jpg</uri>
                                 </taxonomy>
                               </clade>
                             </clade>
@@ -4013,7 +3908,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>SELMO</name>
                         <taxonomy>
                           <id provider="uniprot">34167</id>
                           <code>SELMO</code>
@@ -4024,7 +3918,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>PHYPA</name>
                       <taxonomy>
                         <id provider="uniprot">145481</id>
                         <code>PHYPA</code>
@@ -4053,7 +3946,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>OSTLU</name>
                           <taxonomy>
                             <id provider="uniprot">436017</id>
                             <code>OSTLU</code>
@@ -4061,7 +3953,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>OSTRC</name>
                           <taxonomy>
                             <id provider="uniprot">385169</id>
                             <scientific_name>Ostreococcus sp. RCC809</scientific_name>
@@ -4069,7 +3960,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>OSTTA</name>
                           <taxonomy>
                             <id provider="uniprot">70448</id>
                             <code>OSTTA</code>
@@ -4085,7 +3975,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>MICPC</name>
                           <taxonomy>
                             <id provider="uniprot">564608</id>
                             <code>MICPC</code>
@@ -4094,7 +3983,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>MICSR</name>
                           <taxonomy>
                             <id provider="uniprot">296587</id>
                             <code>MICSR</code>
@@ -4115,7 +4003,6 @@
                           <rank>class</rank>
                         </taxonomy>
                         <clade>
-                          <name>ASTSPC</name>
                           <taxonomy>
                             <id provider="uniprot">763042</id>
                             <scientific_name>Asterochloris sp. Cgr/DA1pho</scientific_name>
@@ -4124,7 +4011,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>CHLSP</name>
                           <taxonomy>
                             <id provider="uniprot">554065</id>
                             <scientific_name>Chlorella variabilis</scientific_name>
@@ -4133,7 +4019,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>CHLVUL</name>
                           <taxonomy>
                             <id provider="uniprot">574566</id>
                             <scientific_name>Coccomyxa sp. C-169</scientific_name>
@@ -4149,7 +4034,6 @@
                           <rank>order</rank>
                         </taxonomy>
                         <clade>
-                          <name>CHLRE</name>
                           <taxonomy>
                             <id provider="uniprot">3055</id>
                             <code>CHLRE</code>
@@ -4303,7 +4187,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>PLACH</name>
                           <taxonomy>
                             <id provider="uniprot">5825</id>
                             <code>PLACH</code>
@@ -4312,7 +4195,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>PLAFA</name>
                           <taxonomy>
                             <id provider="uniprot">5833</id>
                             <code>PLAFA</code>
@@ -4321,7 +4203,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>PLAYO</name>
                           <taxonomy>
                             <id provider="uniprot">73239</id>
                             <code>PLAYO</code>
@@ -4338,7 +4219,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>THEAN</name>
                           <taxonomy>
                             <id provider="uniprot">5874</id>
                             <code>THEAN</code>
@@ -4347,7 +4227,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>THEPA</name>
                           <taxonomy>
                             <id provider="uniprot">5875</id>
                             <code>THEPA</code>
@@ -4370,7 +4249,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>CRYHO</name>
                           <taxonomy>
                             <id provider="uniprot">237895</id>
                             <code>CRYHO</code>
@@ -4379,7 +4257,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>CRYPV</name>
                           <taxonomy>
                             <id provider="uniprot">5807</id>
                             <code>CRYPV</code>
@@ -4406,7 +4283,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>TOXGO</name>
                           <taxonomy>
                             <id provider="uniprot">5811</id>
                             <code>TOXGO</code>
@@ -4430,7 +4306,6 @@
                         <rank>class</rank>
                       </taxonomy>
                       <clade>
-                        <name>PARTE</name>
                         <taxonomy>
                           <id provider="uniprot">5888</id>
                           <code>PARTE</code>
@@ -4439,7 +4314,6 @@
                         </taxonomy>
                       </clade>
                       <clade>
-                        <name>TETTH</name>
                         <taxonomy>
                           <id provider="uniprot">5911</id>
                           <code>TETTH</code>
@@ -4489,7 +4363,6 @@
                             <scientific_name>Bacillariophycidae</scientific_name>
                           </taxonomy>
                           <clade>
-                            <name>FRACY</name>
                             <taxonomy>
                               <id provider="uniprot">186039</id>
                               <code>FRACY</code>
@@ -4501,7 +4374,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>PHATR</name>
                             <taxonomy>
                               <id provider="eol">912693</id>
                               <code>PHATR</code>
@@ -4639,7 +4511,6 @@
                   <rank>family</rank>
                 </taxonomy>
                 <clade>
-                  <name>LEIMA</name>
                   <taxonomy>
                     <id provider="uniprot">5664</id>
                     <code>LEIMA</code>
@@ -4648,7 +4519,6 @@
                   </taxonomy>
                 </clade>
                 <clade>
-                  <name>TRYBB</name>
                   <taxonomy>
                     <id provider="uniprot">5702</id>
                     <code>TRYBB</code>
@@ -4658,7 +4528,6 @@
                 </clade>
               </clade>
               <clade>
-                <name>NAEGR</name>
                 <taxonomy>
                   <id provider="uniprot">5762</id>
                   <code>NAEGR</code>
@@ -4671,7 +4540,6 @@
             <clade>
               <name>Metamonada</name>
               <clade>
-                <name>GIALA</name>
                 <taxonomy>
                   <id provider="uniprot">5741</id>
                   <code>GIALA</code>
@@ -4682,7 +4550,6 @@
                 </taxonomy>
               </clade>
               <clade>
-                <name>TRIVA</name>
                 <taxonomy>
                   <id provider="uniprot">5722</id>
                   <code>TRIVA</code>
@@ -4771,7 +4638,6 @@
                               <clade>
                                 <name>a_2</name>
                                 <clade>
-                                  <name>METAC</name>
                                   <taxonomy>
                                     <id provider="uniprot">2214</id>
                                     <code>METAC</code>
@@ -4780,7 +4646,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>METBF</name>
                                   <taxonomy>
                                     <id provider="uniprot">269797</id>
                                     <code>METBF</code>
@@ -4789,7 +4654,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>METMA</name>
                                 <taxonomy>
                                   <id provider="uniprot">2209</id>
                                   <code>METMA</code>
@@ -4800,7 +4664,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>METBU</name>
                               <taxonomy>
                                 <id provider="uniprot">259564</id>
                                 <code>METBU</code>
@@ -4818,7 +4681,6 @@
                             <clade>
                               <name>a_9</name>
                               <clade>
-                                <name>METB6</name>
                                 <taxonomy>
                                   <id provider="uniprot">456442</id>
                                   <code>METB6</code>
@@ -4826,7 +4688,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>METHU</name>
                                 <taxonomy>
                                   <id provider="uniprot">2203</id>
                                   <code>METHU</code>
@@ -4836,7 +4697,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>METMJ</name>
                               <taxonomy>
                                 <id provider="uniprot">368407</id>
                                 <code>METMJ</code>
@@ -4846,7 +4706,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>METLZ</name>
                           <taxonomy>
                             <id provider="uniprot">410358</id>
                             <code>METLZ</code>
@@ -4855,7 +4714,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>METTP</name>
                         <taxonomy>
                           <id provider="uniprot">349307</id>
                           <code>METTP</code>
@@ -4876,7 +4734,6 @@
                         <clade>
                           <name>a_19</name>
                           <clade>
-                            <name>HALMA</name>
                             <taxonomy>
                               <id provider="uniprot">2238</id>
                               <code>HALMA</code>
@@ -4886,7 +4743,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>NATPH</name>
                             <taxonomy>
                               <id provider="uniprot">2257</id>
                               <code>NATPH</code>
@@ -4904,7 +4760,6 @@
                             <rank>genus</rank>
                           </taxonomy>
                           <clade>
-                            <name>HALS3</name>
                             <taxonomy>
                               <id provider="uniprot">478009</id>
                               <code>HALS3</code>
@@ -4912,7 +4767,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>HALSP</name>
                             <taxonomy>
                               <id provider="uniprot">2243</id>
                               <code>HALSP</code>
@@ -4923,7 +4777,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>HALWD</name>
                         <taxonomy>
                           <id provider="uniprot">362976</id>
                           <code>HALWD</code>
@@ -4933,7 +4786,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>ARCFU</name>
                     <taxonomy>
                       <id provider="uniprot">2234</id>
                       <code>ARCFU</code>
@@ -4956,7 +4808,6 @@
                       <clade>
                         <name>a_31</name>
                         <clade>
-                          <name>METJA</name>
                           <taxonomy>
                             <id provider="uniprot">2190</id>
                             <code>METJA</code>
@@ -4966,7 +4817,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>META3</name>
                           <taxonomy>
                             <id provider="uniprot">419665</id>
                             <code>META3</code>
@@ -4982,7 +4832,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>METMP</name>
                           <taxonomy>
                             <id provider="uniprot">39152</id>
                             <code>METMP</code>
@@ -4992,7 +4841,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>METVS</name>
                           <taxonomy>
                             <id provider="uniprot">406327</id>
                             <code>METVS</code>
@@ -5011,7 +4859,6 @@
                       <clade>
                         <name>a_38</name>
                         <clade>
-                          <name>METS3</name>
                           <taxonomy>
                             <id provider="uniprot">420247</id>
                             <code>METS3</code>
@@ -5019,7 +4866,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>METST</name>
                           <taxonomy>
                             <id provider="uniprot">339860</id>
                             <code>METST</code>
@@ -5028,7 +4874,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>METTH</name>
                         <taxonomy>
                           <id provider="uniprot">187420</id>
                           <code>METTH</code>
@@ -5038,7 +4883,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>METKA</name>
                     <taxonomy>
                       <id provider="uniprot">2320</id>
                       <code>METKA</code>
@@ -5058,7 +4902,6 @@
                 <clade>
                   <name>a_47</name>
                   <clade>
-                    <name>PYRFU</name>
                     <taxonomy>
                       <id provider="uniprot">2261</id>
                       <code>PYRFU</code>
@@ -5083,7 +4926,6 @@
                     <rank>genus</rank>
                   </taxonomy>
                   <clade>
-                    <name>PYRAB</name>
                     <taxonomy>
                       <id provider="uniprot">29292</id>
                       <code>PYRAB</code>
@@ -5092,7 +4934,6 @@
                     </taxonomy>
                   </clade>
                   <clade>
-                    <name>PYRHO</name>
                     <taxonomy>
                       <id provider="uniprot">53953</id>
                       <code>PYRHO</code>
@@ -5106,7 +4947,6 @@
             <clade>
               <name>a_55</name>
               <clade>
-                <name>NANEQ</name>
                 <taxonomy>
                   <id provider="uniprot">228908</id>
                   <code>NANEQ</code>
@@ -5136,7 +4976,6 @@
                 <rank>genus</rank>
               </taxonomy>
               <clade>
-                <name>THEAC</name>
                 <taxonomy>
                   <id provider="uniprot">273075</id>
                   <code>THEAC</code>
@@ -5144,7 +4983,6 @@
                 </taxonomy>
               </clade>
               <clade>
-                <name>THEVO</name>
                 <taxonomy>
                   <id provider="uniprot">273116</id>
                   <code>THEVO</code>
@@ -5153,7 +4991,6 @@
               </clade>
             </clade>
             <clade>
-              <name>PICTO</name>
               <taxonomy>
                 <id provider="uniprot">263820</id>
                 <code>PICTO</code>
@@ -5193,7 +5030,6 @@
                       <clade>
                         <name>a_65</name>
                         <clade>
-                          <name>PYRAR</name>
                           <taxonomy>
                             <id provider="uniprot">340102</id>
                             <code>PYRAR</code>
@@ -5201,7 +5037,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>PYRCJ</name>
                           <taxonomy>
                             <id provider="uniprot">410359</id>
                             <code>PYRCJ</code>
@@ -5210,7 +5045,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>PYRAE</name>
                         <taxonomy>
                           <id provider="uniprot">13773</id>
                           <code>PYRAE</code>
@@ -5222,7 +5056,6 @@
                     <clade>
                       <name>a_70</name>
                       <clade>
-                        <name>PYRIL</name>
                         <taxonomy>
                           <id provider="uniprot">384616</id>
                           <code>PYRIL</code>
@@ -5230,7 +5063,6 @@
                         </taxonomy>
                       </clade>
                       <clade>
-                        <name>THENV</name>
                         <taxonomy>
                           <id provider="uniprot">444157</id>
                           <code>THENV</code>
@@ -5264,7 +5096,6 @@
                     <clade>
                       <name>a_76</name>
                       <clade>
-                        <name>SULAC</name>
                         <taxonomy>
                           <id provider="uniprot">2285</id>
                           <code>SULAC</code>
@@ -5273,7 +5104,6 @@
                         </taxonomy>
                       </clade>
                       <clade>
-                        <name>SULTO</name>
                         <taxonomy>
                           <id provider="uniprot">273063</id>
                           <code>SULTO</code>
@@ -5282,7 +5112,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>SULSO</name>
                       <taxonomy>
                         <id provider="uniprot">2287</id>
                         <code>SULSO</code>
@@ -5292,7 +5121,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>METS5</name>
                     <taxonomy>
                       <id provider="uniprot">399549</id>
                       <code>METS5</code>
@@ -5302,7 +5130,6 @@
                 </clade>
               </clade>
               <clade>
-                <name>AERPE</name>
                 <taxonomy>
                   <id provider="uniprot">56636</id>
                   <code>AERPE</code>
@@ -5318,7 +5145,6 @@
                 <clade>
                   <name>a_86</name>
                   <clade>
-                    <name>STAMF</name>
                     <taxonomy>
                       <id provider="uniprot">399550</id>
                       <code>STAMF</code>
@@ -5326,7 +5152,6 @@
                     </taxonomy>
                   </clade>
                   <clade>
-                    <name>THEPD</name>
                     <taxonomy>
                       <id provider="uniprot">368408</id>
                       <code>THEPD</code>
@@ -5335,7 +5160,6 @@
                   </clade>
                 </clade>
                 <clade>
-                  <name>HYPBU</name>
                   <taxonomy>
                     <id provider="uniprot">415426</id>
                     <code>HYPBU</code>
@@ -5344,7 +5168,6 @@
                 </clade>
               </clade>
               <clade>
-                <name>IGNH4</name>
                 <taxonomy>
                   <id provider="uniprot">453591</id>
                   <code>IGNH4</code>
@@ -5425,7 +5248,6 @@
                                             <rank>genus</rank>
                                           </taxonomy>
                                           <clade>
-                                            <name>ECOLI</name>
                                             <taxonomy>
                                               <id provider="uniprot">83333</id>
                                               <code>ECOLI</code>
@@ -5433,7 +5255,6 @@
                                             </taxonomy>
                                           </clade>
                                           <clade>
-                                            <name>ECO57</name>
                                             <taxonomy>
                                               <id provider="uniprot">83334</id>
                                               <code>ECO57</code>
@@ -5442,7 +5263,6 @@
                                           </clade>
                                         </clade>
                                         <clade>
-                                          <name>SHIFL</name>
                                           <taxonomy>
                                             <id provider="uniprot">623</id>
                                             <code>SHIFL</code>
@@ -5452,7 +5272,6 @@
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>SALTY</name>
                                         <taxonomy>
                                           <id provider="uniprot">90371</id>
                                           <code>SALTY</code>
@@ -5461,7 +5280,6 @@
                                       </clade>
                                     </clade>
                                     <clade>
-                                      <name>YERPE</name>
                                       <taxonomy>
                                         <id provider="uniprot">632</id>
                                         <code>YERPE</code>
@@ -5471,7 +5289,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>PHOLU</name>
                                     <taxonomy>
                                       <id provider="uniprot">29488</id>
                                       <code>PHOLU</code>
@@ -5491,7 +5308,6 @@
                                       <rank>family</rank>
                                     </taxonomy>
                                     <clade>
-                                      <name>PHOPR</name>
                                       <taxonomy>
                                         <id provider="uniprot">74109</id>
                                         <code>PHOPR</code>
@@ -5501,7 +5317,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>VIBCH</name>
                                       <taxonomy>
                                         <id provider="uniprot">666</id>
                                         <code>VIBCH</code>
@@ -5511,7 +5326,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>SHEDO</name>
                                     <taxonomy>
                                       <id provider="uniprot">318161</id>
                                       <code>SHEDO</code>
@@ -5532,7 +5346,6 @@
                                   <clade>
                                     <name>b_19</name>
                                     <clade>
-                                      <name>PSEF5</name>
                                       <taxonomy>
                                         <id provider="uniprot">220664</id>
                                         <code>PSEF5</code>
@@ -5540,7 +5353,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>PSEPF</name>
                                       <taxonomy>
                                         <id provider="uniprot">205922</id>
                                         <code>PSEPF</code>
@@ -5549,7 +5361,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>PSEAE</name>
                                     <taxonomy>
                                       <id provider="uniprot">287</id>
                                       <code>PSEAE</code>
@@ -5559,7 +5370,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>CHRSD</name>
                                   <taxonomy>
                                     <id provider="uniprot">290398</id>
                                     <code>CHRSD</code>
@@ -5576,7 +5386,6 @@
                                 <rank>class</rank>
                               </taxonomy>
                               <clade>
-                                <name>DECAR</name>
                                 <taxonomy>
                                   <id provider="uniprot">159087</id>
                                   <code>DECAR</code>
@@ -5584,7 +5393,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>RALME</name>
                                 <taxonomy>
                                   <id provider="uniprot">266264</id>
                                   <code>RALME</code>
@@ -5612,7 +5420,6 @@
                                     <rank>family</rank>
                                   </taxonomy>
                                   <clade>
-                                    <name>NITEU</name>
                                     <taxonomy>
                                       <id provider="uniprot">915</id>
                                       <code>NITEU</code>
@@ -5621,7 +5428,6 @@
                                     </taxonomy>
                                   </clade>
                                   <clade>
-                                    <name>NITMU</name>
                                     <taxonomy>
                                       <id provider="uniprot">323848</id>
                                       <code>NITMU</code>
@@ -5630,7 +5436,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>THIDE</name>
                                   <taxonomy>
                                     <id provider="uniprot">36861</id>
                                     <code>THIDE</code>
@@ -5655,7 +5460,6 @@
                                     <rank>family</rank>
                                   </taxonomy>
                                   <clade>
-                                    <name>ALHEH</name>
                                     <taxonomy>
                                       <id provider="uniprot">187272</id>
                                       <code>ALHEH</code>
@@ -5663,7 +5467,6 @@
                                     </taxonomy>
                                   </clade>
                                   <clade>
-                                    <name>HALHL</name>
                                     <taxonomy>
                                       <id provider="uniprot">349124</id>
                                       <code>HALHL</code>
@@ -5673,7 +5476,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>NITOC</name>
                                   <taxonomy>
                                     <id provider="uniprot">323261</id>
                                     <code>NITOC</code>
@@ -5683,7 +5485,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>THICR</name>
                               <taxonomy>
                                 <id provider="uniprot">317025</id>
                                 <code>THICR</code>
@@ -5702,7 +5503,6 @@
                           <clade>
                             <name>b_47</name>
                             <clade>
-                              <name>IDILO</name>
                               <taxonomy>
                                 <id provider="uniprot">135577</id>
                                 <code>IDILO</code>
@@ -5711,7 +5511,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>LEGPN</name>
                               <taxonomy>
                                 <id provider="uniprot">446</id>
                                 <code>LEGPN</code>
@@ -5728,7 +5527,6 @@
                               <rank>family</rank>
                             </taxonomy>
                             <clade>
-                              <name>XANAC</name>
                               <taxonomy>
                                 <id provider="uniprot">92829</id>
                                 <code>XANAC</code>
@@ -5737,7 +5535,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>XYLFT</name>
                               <taxonomy>
                                 <id provider="uniprot">183190</id>
                                 <code>XYLFT</code>
@@ -5772,7 +5569,6 @@
                                   <scientific_name>Rhizobium/Agrobacterium group</scientific_name>
                                 </taxonomy>
                                 <clade>
-                                  <name>AGRT5</name>
                                   <taxonomy>
                                     <id provider="uniprot">176299</id>
                                     <code>AGRT5</code>
@@ -5780,7 +5576,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>RHIEC</name>
                                   <taxonomy>
                                     <id provider="uniprot">347834</id>
                                     <code>RHIEC</code>
@@ -5796,7 +5591,6 @@
                                   <rank>family</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>BRAJA</name>
                                   <taxonomy>
                                     <id provider="uniprot">375</id>
                                     <code>BRAJA</code>
@@ -5805,7 +5599,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>RHOPT</name>
                                   <taxonomy>
                                     <id provider="uniprot">395960</id>
                                     <code>RHOPT</code>
@@ -5822,7 +5615,6 @@
                                 <rank>family</rank>
                               </taxonomy>
                               <clade>
-                                <name>RHOS1</name>
                                 <taxonomy>
                                   <id provider="uniprot">349101</id>
                                   <code>RHOS1</code>
@@ -5830,7 +5622,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>ROSDO</name>
                                 <taxonomy>
                                   <id provider="uniprot">375451</id>
                                   <code>ROSDO</code>
@@ -5842,7 +5633,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>CAUCR</name>
                             <taxonomy>
                               <id provider="uniprot">155892</id>
                               <code>CAUCR</code>
@@ -5860,7 +5650,6 @@
                             <rank>order</rank>
                           </taxonomy>
                           <clade>
-                            <name>ACICY</name>
                             <taxonomy>
                               <id provider="uniprot">524</id>
                               <code>ACICY</code>
@@ -5869,7 +5658,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>RHORU</name>
                             <taxonomy>
                               <id provider="uniprot">1085</id>
                               <code>RHORU</code>
@@ -5897,7 +5685,6 @@
                             <rank>family</rank>
                           </taxonomy>
                           <clade>
-                            <name>HAEIN</name>
                             <taxonomy>
                               <id provider="uniprot">727</id>
                               <code>HAEIN</code>
@@ -5906,7 +5693,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>PASMU</name>
                             <taxonomy>
                               <id provider="uniprot">747</id>
                               <code>PASMU</code>
@@ -5916,7 +5702,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>NEIME</name>
                           <taxonomy>
                             <id provider="uniprot">487</id>
                             <code>NEIME</code>
@@ -5926,7 +5711,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>ACIFE</name>
                         <taxonomy>
                           <id provider="uniprot">905</id>
                           <code>ACIFE</code>
@@ -5950,7 +5734,6 @@
                         <clade>
                           <name>b_83</name>
                           <clade>
-                            <name>DESPS</name>
                             <taxonomy>
                               <id provider="uniprot">84980</id>
                               <code>DESPS</code>
@@ -5959,7 +5742,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>DESDE</name>
                             <taxonomy>
                               <id provider="uniprot">876</id>
                               <code>DESDE</code>
@@ -5969,7 +5751,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>SYNAS</name>
                           <taxonomy>
                             <id provider="uniprot">56780</id>
                             <code>SYNAS</code>
@@ -5985,7 +5766,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>GEOME</name>
                           <taxonomy>
                             <id provider="uniprot">28232</id>
                             <code>GEOME</code>
@@ -5994,7 +5774,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>GEOSL</name>
                           <taxonomy>
                             <id provider="uniprot">35554</id>
                             <code>GEOSL</code>
@@ -6016,7 +5795,6 @@
                             <rank>family</rank>
                           </taxonomy>
                           <clade>
-                            <name>ANADE</name>
                             <taxonomy>
                               <id provider="uniprot">290397</id>
                               <code>ANADE</code>
@@ -6024,7 +5802,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>MYXXA</name>
                             <taxonomy>
                               <id provider="uniprot">34</id>
                               <code>MYXXA</code>
@@ -6041,7 +5818,6 @@
                             <rank>phylum</rank>
                           </taxonomy>
                           <clade>
-                            <name>ACIBL</name>
                             <taxonomy>
                               <id provider="uniprot">204669</id>
                               <code>ACIBL</code>
@@ -6049,7 +5825,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>SOLUS</name>
                             <taxonomy>
                               <id provider="uniprot">332163</id>
                               <code>SOLUS</code>
@@ -6060,7 +5835,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>RHOBA</name>
                         <taxonomy>
                           <id provider="uniprot">265606</id>
                           <code>RHOBA</code>
@@ -6094,7 +5868,6 @@
                             <clade>
                               <name>b_115</name>
                               <clade>
-                                <name>KINRD</name>
                                 <taxonomy>
                                   <id provider="uniprot">266940</id>
                                   <code>KINRD</code>
@@ -6102,7 +5875,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>KOCRD</name>
                                 <taxonomy>
                                   <id provider="uniprot">378753</id>
                                   <code>KOCRD</code>
@@ -6119,7 +5891,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>STRCO</name>
                                 <taxonomy>
                                   <id provider="uniprot">1902</id>
                                   <code>STRCO</code>
@@ -6128,7 +5899,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>THEFY</name>
                                 <taxonomy>
                                   <id provider="uniprot">269800</id>
                                   <code>THEFY</code>
@@ -6149,7 +5919,6 @@
                                   <rank>genus</rank>
                                 </taxonomy>
                                 <clade>
-                                  <name>MYCLE</name>
                                   <taxonomy>
                                     <id provider="uniprot">1769</id>
                                     <code>MYCLE</code>
@@ -6158,7 +5927,6 @@
                                   </taxonomy>
                                 </clade>
                                 <clade>
-                                  <name>MYCTU</name>
                                   <taxonomy>
                                     <id provider="uniprot">1773</id>
                                     <code>MYCTU</code>
@@ -6168,7 +5936,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>CORJK</name>
                                 <taxonomy>
                                   <id provider="uniprot">306537</id>
                                   <code>CORJK</code>
@@ -6186,7 +5953,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>RUBXD</name>
                             <taxonomy>
                               <id provider="uniprot">266117</id>
                               <code>RUBXD</code>
@@ -6219,7 +5985,6 @@
                                 <rank>family</rank>
                               </taxonomy>
                               <clade>
-                                <name>CHLAU</name>
                                 <taxonomy>
                                   <id provider="uniprot">1108</id>
                                   <code>CHLAU</code>
@@ -6237,7 +6002,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>HERAU</name>
                               <taxonomy>
                                 <id provider="uniprot">65</id>
                                 <code>HERAU</code>
@@ -6272,7 +6036,6 @@
                             <rank>genus</rank>
                           </taxonomy>
                           <clade>
-                            <name>DEIGD</name>
                             <taxonomy>
                               <id provider="uniprot">319795</id>
                               <code>DEIGD</code>
@@ -6280,7 +6043,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>DEIRA</name>
                             <taxonomy>
                               <id provider="uniprot">1299</id>
                               <code>DEIRA</code>
@@ -6290,7 +6052,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>THETH</name>
                           <taxonomy>
                             <id provider="uniprot">274</id>
                             <code>THETH</code>
@@ -6327,7 +6088,6 @@
                                   <clade>
                                     <name>b_136</name>
                                     <clade>
-                                      <name>ANAVA</name>
                                       <taxonomy>
                                         <id provider="uniprot">1172</id>
                                         <code>ANAVA</code>
@@ -6336,7 +6096,6 @@
                                       </taxonomy>
                                     </clade>
                                     <clade>
-                                      <name>NOSS7</name>
                                       <taxonomy>
                                         <id provider="uniprot">28072</id>
                                         <code>NOSS7</code>
@@ -6346,7 +6105,6 @@
                                     </clade>
                                   </clade>
                                   <clade>
-                                    <name>NOSP7</name>
                                     <taxonomy>
                                       <id provider="uniprot">63737</id>
                                       <code>NOSP7</code>
@@ -6355,7 +6113,6 @@
                                   </clade>
                                 </clade>
                                 <clade>
-                                  <name>ACAMR</name>
                                   <taxonomy>
                                     <id provider="uniprot">155978</id>
                                     <code>ACAMR</code>
@@ -6365,7 +6122,6 @@
                                 </clade>
                               </clade>
                               <clade>
-                                <name>MICAN</name>
                                 <taxonomy>
                                   <id provider="uniprot">449447</id>
                                   <code>MICAN</code>
@@ -6374,7 +6130,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>TRIER</name>
                               <taxonomy>
                                 <id provider="uniprot">1206</id>
                                 <code>TRIER</code>
@@ -6391,7 +6146,6 @@
                               <rank>order</rank>
                             </taxonomy>
                             <clade>
-                              <name>SYNEL</name>
                               <taxonomy>
                                 <id provider="uniprot">32046</id>
                                 <code>SYNEL</code>
@@ -6400,7 +6154,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>SYNY3</name>
                               <taxonomy>
                                 <id provider="uniprot">1148</id>
                                 <code>SYNY3</code>
@@ -6411,7 +6164,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>GLOVI</name>
                           <taxonomy>
                             <id provider="uniprot">33072</id>
                             <code>GLOVI</code>
@@ -6432,7 +6184,6 @@
                           <clade>
                             <name>b_157</name>
                             <clade>
-                              <name>PROMA</name>
                               <taxonomy>
                                 <id provider="uniprot">1219</id>
                                 <code>PROMA</code>
@@ -6441,7 +6192,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>PROMP</name>
                               <taxonomy>
                                 <id provider="uniprot">59919</id>
                                 <code>PROMP</code>
@@ -6450,7 +6200,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>PROMM</name>
                             <taxonomy>
                               <id provider="uniprot">74547</id>
                               <code>PROMM</code>
@@ -6459,7 +6208,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>SYNS3</name>
                           <taxonomy>
                             <id provider="uniprot">64471</id>
                             <code>SYNS3</code>
@@ -6488,7 +6236,6 @@
                             <clade>
                               <name>b_166</name>
                               <clade>
-                                <name>CHLPB</name>
                                 <taxonomy>
                                   <id provider="uniprot">331678</id>
                                   <code>CHLPB</code>
@@ -6496,7 +6243,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>PROAE</name>
                                 <taxonomy>
                                   <id provider="uniprot">1102</id>
                                   <code>PROAE</code>
@@ -6512,7 +6258,6 @@
                                 <scientific_name>Chlorobium/Pelodictyon group</scientific_name>
                               </taxonomy>
                               <clade>
-                                <name>PELLU</name>
                                 <taxonomy>
                                   <id provider="uniprot">1100</id>
                                   <code>PELLU</code>
@@ -6521,7 +6266,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>PROVI</name>
                                 <taxonomy>
                                   <id provider="uniprot">290318</id>
                                   <code>PROVI</code>
@@ -6542,7 +6286,6 @@
                                 <rank>genus</rank>
                               </taxonomy>
                               <clade>
-                                <name>CHLP8</name>
                                 <taxonomy>
                                   <id provider="uniprot">517417</id>
                                   <code>CHLP8</code>
@@ -6551,7 +6294,6 @@
                                 </taxonomy>
                               </clade>
                               <clade>
-                                <name>CHLTE</name>
                                 <taxonomy>
                                   <id provider="uniprot">1097</id>
                                   <code>CHLTE</code>
@@ -6561,7 +6303,6 @@
                               </clade>
                             </clade>
                             <clade>
-                              <name>CHLCH</name>
                               <taxonomy>
                                 <id provider="uniprot">340177</id>
                                 <code>CHLCH</code>
@@ -6571,7 +6312,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>CHLTA</name>
                           <taxonomy>
                             <id provider="uniprot">315277</id>
                             <code>CHLTA</code>
@@ -6596,7 +6336,6 @@
                               <rank>family</rank>
                             </taxonomy>
                             <clade>
-                              <name>FLAJO</name>
                               <taxonomy>
                                 <id provider="uniprot">986</id>
                                 <code>FLAJO</code>
@@ -6606,7 +6345,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>GRAFK</name>
                               <taxonomy>
                                 <id provider="uniprot">411154</id>
                                 <code>GRAFK</code>
@@ -6615,7 +6353,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>CYTH3</name>
                             <taxonomy>
                               <id provider="uniprot">269798</id>
                               <code>CYTH3</code>
@@ -6638,7 +6375,6 @@
                               <rank>genus</rank>
                             </taxonomy>
                             <clade>
-                              <name>BACFR</name>
                               <taxonomy>
                                 <id provider="uniprot">817</id>
                                 <code>BACFR</code>
@@ -6647,7 +6383,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>BACTN</name>
                               <taxonomy>
                                 <id provider="uniprot">818</id>
                                 <code>BACTN</code>
@@ -6657,7 +6392,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>PORGI</name>
                             <taxonomy>
                               <id provider="uniprot">837</id>
                               <code>PORGI</code>
@@ -6670,7 +6404,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>SALRD</name>
                       <taxonomy>
                         <id provider="uniprot">309807</id>
                         <code>SALRD</code>
@@ -6688,7 +6421,6 @@
                     <scientific_name>Verrucomicrobia</scientific_name>
                   </taxonomy>
                   <clade>
-                    <name>AKKM8</name>
                     <taxonomy>
                       <id provider="uniprot">349741</id>
                       <code>AKKM8</code>
@@ -6696,7 +6428,6 @@
                     </taxonomy>
                   </clade>
                   <clade>
-                    <name>METI4</name>
                     <taxonomy>
                       <id provider="uniprot">481448</id>
                       <code>METI4</code>
@@ -6706,7 +6437,6 @@
                   </clade>
                 </clade>
                 <clade>
-                  <name>LEPIC</name>
                   <taxonomy>
                     <id provider="uniprot">44275</id>
                     <code>LEPIC</code>
@@ -6750,7 +6480,6 @@
                             <scientific_name>Bacillus cereus group</scientific_name>
                           </taxonomy>
                           <clade>
-                            <name>BACAN</name>
                             <taxonomy>
                               <id provider="uniprot">1392</id>
                               <code>BACAN</code>
@@ -6779,7 +6508,6 @@
                       <clade>
                         <name>b_206</name>
                         <clade>
-                          <name>BACHD</name>
                           <taxonomy>
                             <id provider="uniprot">86665</id>
                             <code>BACHD</code>
@@ -6788,7 +6516,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>GEOKA</name>
                           <taxonomy>
                             <id provider="uniprot">1462</id>
                             <code>GEOKA</code>
@@ -6801,7 +6528,6 @@
                     <clade>
                       <name>b_210</name>
                       <clade>
-                        <name>LISMO</name>
                         <taxonomy>
                           <id provider="uniprot">1639</id>
                           <code>LISMO</code>
@@ -6810,7 +6536,6 @@
                         </taxonomy>
                       </clade>
                       <clade>
-                        <name>STAAU</name>
                         <taxonomy>
                           <id provider="uniprot">1280</id>
                           <code>STAAU</code>
@@ -6821,7 +6546,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>CLOP1</name>
                     <taxonomy>
                       <id provider="uniprot">195103</id>
                       <code>CLOP1</code>
@@ -6846,7 +6570,6 @@
                         <rank>family</rank>
                       </taxonomy>
                       <clade>
-                        <name>CARHZ</name>
                         <taxonomy>
                           <id provider="uniprot">246194</id>
                           <code>CARHZ</code>
@@ -6854,7 +6577,6 @@
                         </taxonomy>
                       </clade>
                       <clade>
-                        <name>THETN</name>
                         <taxonomy>
                           <id provider="uniprot">119072</id>
                           <code>THETN</code>
@@ -6864,7 +6586,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>DESHA</name>
                       <taxonomy>
                         <id provider="uniprot">49338</id>
                         <code>DESHA</code>
@@ -6875,7 +6596,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>EUBR3</name>
                     <taxonomy>
                       <id provider="uniprot">515619</id>
                       <code>EUBR3</code>
@@ -6894,7 +6614,6 @@
                 <clade>
                   <name>b_222</name>
                   <clade>
-                    <name>FERNB</name>
                     <taxonomy>
                       <id provider="uniprot">381764</id>
                       <code>FERNB</code>
@@ -6902,7 +6621,6 @@
                     </taxonomy>
                   </clade>
                   <clade>
-                    <name>THELT</name>
                     <taxonomy>
                       <id provider="uniprot">416591</id>
                       <code>THELT</code>
@@ -6911,7 +6629,6 @@
                   </clade>
                 </clade>
                 <clade>
-                  <name>THEMA</name>
                   <taxonomy>
                     <id provider="uniprot">2336</id>
                     <code>THEMA</code>
@@ -6949,7 +6666,6 @@
                               <scientific_name>Mycoplasma</scientific_name>
                             </taxonomy>
                             <clade>
-                              <name>MYCGE</name>
                               <taxonomy>
                                 <id provider="uniprot">2097</id>
                                 <code>MYCGE</code>
@@ -6958,7 +6674,6 @@
                               </taxonomy>
                             </clade>
                             <clade>
-                              <name>MYCPN</name>
                               <taxonomy>
                                 <id provider="uniprot">2104</id>
                                 <code>MYCPN</code>
@@ -6968,7 +6683,6 @@
                             </clade>
                           </clade>
                           <clade>
-                            <name>MESFL</name>
                             <taxonomy>
                               <id provider="uniprot">2151</id>
                               <code>MESFL</code>
@@ -6979,7 +6693,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>UREPA</name>
                           <taxonomy>
                             <id provider="uniprot">134821</id>
                             <code>UREPA</code>
@@ -6997,7 +6710,6 @@
                           <rank>family</rank>
                         </taxonomy>
                         <clade>
-                          <name>BORBU</name>
                           <taxonomy>
                             <id provider="uniprot">139</id>
                             <code>BORBU</code>
@@ -7007,7 +6719,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>TREPA</name>
                           <taxonomy>
                             <id provider="uniprot">160</id>
                             <code>TREPA</code>
@@ -7028,7 +6739,6 @@
                         <clade>
                           <name>b_240</name>
                           <clade>
-                            <name>CHLPN</name>
                             <taxonomy>
                               <id provider="uniprot">83558</id>
                               <code>CHLPN</code>
@@ -7038,7 +6748,6 @@
                             </taxonomy>
                           </clade>
                           <clade>
-                            <name>CHLFF</name>
                             <taxonomy>
                               <id provider="uniprot">264202</id>
                               <code>CHLFF</code>
@@ -7047,7 +6756,6 @@
                           </clade>
                         </clade>
                         <clade>
-                          <name>CHLMU</name>
                           <taxonomy>
                             <id provider="uniprot">83560</id>
                             <code>CHLMU</code>
@@ -7057,7 +6765,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>RICTY</name>
                         <taxonomy>
                           <id provider="uniprot">785</id>
                           <code>RICTY</code>
@@ -7115,7 +6822,6 @@
                   </clade>
                 </clade>
                 <clade>
-                  <name>FRATU</name>
                   <taxonomy>
                     <id provider="uniprot">263</id>
                     <code>FRATU</code>
@@ -7150,7 +6856,6 @@
                           <rank>genus</rank>
                         </taxonomy>
                         <clade>
-                          <name>STRPN</name>
                           <taxonomy>
                             <id provider="uniprot">1313</id>
                             <code>STRPN</code>
@@ -7159,7 +6864,6 @@
                           </taxonomy>
                         </clade>
                         <clade>
-                          <name>STRPY</name>
                           <taxonomy>
                             <id provider="uniprot">1314</id>
                             <code>STRPY</code>
@@ -7169,7 +6873,6 @@
                         </clade>
                       </clade>
                       <clade>
-                        <name>LACLA</name>
                         <taxonomy>
                           <id provider="uniprot">1360</id>
                           <code>LACLA</code>
@@ -7180,7 +6883,6 @@
                       </clade>
                     </clade>
                     <clade>
-                      <name>LACAC</name>
                       <taxonomy>
                         <id provider="uniprot">1579</id>
                         <code>LACAC</code>
@@ -7190,7 +6892,6 @@
                     </clade>
                   </clade>
                   <clade>
-                    <name>BIFLO</name>
                     <taxonomy>
                       <id provider="uniprot">216816</id>
                       <code>BIFLO</code>
@@ -7200,7 +6901,6 @@
                   </clade>
                 </clade>
                 <clade>
-                  <name>FUSNU</name>
                   <taxonomy>
                     <id provider="uniprot">851</id>
                     <code>FUSNU</code>
@@ -7218,7 +6918,6 @@
                 <rank>genus</rank>
               </taxonomy>
               <clade>
-                <name>DEHE1</name>
                 <taxonomy>
                   <id provider="uniprot">243164</id>
                   <code>DEHE1</code>
@@ -7226,7 +6925,6 @@
                 </taxonomy>
               </clade>
               <clade>
-                <name>DEHSB</name>
                 <taxonomy>
                   <id provider="uniprot">216389</id>
                   <code>DEHSB</code>
@@ -7247,7 +6945,6 @@
           <clade>
             <name>b_273</name>
             <clade>
-              <name>NITSB</name>
               <taxonomy>
                 <id provider="uniprot">387092</id>
                 <code>NITSB</code>
@@ -7256,7 +6953,6 @@
               </taxonomy>
             </clade>
             <clade>
-              <name>SULNB</name>
               <taxonomy>
                 <id provider="uniprot">387093</id>
                 <code>SULNB</code>
@@ -7273,7 +6969,6 @@
               <rank>order</rank>
             </taxonomy>
             <clade>
-              <name>CAMJE</name>
               <taxonomy>
                 <id provider="uniprot">197</id>
                 <code>CAMJE</code>
@@ -7282,7 +6977,6 @@
               </taxonomy>
             </clade>
             <clade>
-              <name>HELPH</name>
               <taxonomy>
                 <id provider="uniprot">357544</id>
                 <code>HELPH</code>
@@ -7293,7 +6987,6 @@
         </clade>
       </clade>
       <clade>
-        <name>AQUAE</name>
         <taxonomy>
           <id provider="uniprot">63363</id>
           <code>AQUAE</code>
