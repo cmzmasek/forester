@@ -10,10 +10,16 @@ require 'lib/evo/io/parser/fasta_parser'
 
 module Evoruby
 
+  if ARGV.length != 1
+    puts "usage: select_same_gn.rb <fasta formatted multiple sequence file>"
+    exit
+  end
+
   input = ARGV[ 0 ]
   f = MsaFactory.new()
 
   IGNORE_SEQS_LACKING_GN = false
+  IGNORE_SPECIES = true
 
   msa = nil
 
@@ -24,6 +30,10 @@ module Evoruby
     exit
   end
 
+  outbase = input.sub( /\..+/, "" )
+
+  outfile = File.open(outbase + "_log.txt" , "w")
+
   all_names = Set.new
   all_seqs_per_species = Hash.new
   all_msa_per_species = Hash.new
@@ -32,7 +42,7 @@ module Evoruby
   longest_non_unique_genes_msa = Msa.new
   gn_re = /GN=(\S+)/
   fragment_re = /fragment/i
-  species_re = /\[([A-Z0-9]{3,6})\]$/
+  species_re = /\[([A-Z0-9]{3,5})\]$/
 
   frag_counter = 0
   no_gn_counter = 0
@@ -49,15 +59,19 @@ module Evoruby
     end
 
     if fragment_re.match( name )
-      puts "ignored because fragment: " + name
+
+      outfile.puts("ignored because fragment: " + name)
       frag_counter += 1
       next
     end
 
     species = nil
-    if species_re.match( name )
-      s_match = species_re.match( name )
-      species = s_match[1]
+    if IGNORE_SPECIES || species_re.match( name )
+      unless IGNORE_SPECIES
+        species = species_re.match( name )[ 1 ]
+      else
+        species = "XXXXX"
+      end
 
       unless all_seqs_per_species.has_key?( species )
         all_seqs_per_species[ species ] = Set.new
@@ -65,7 +79,8 @@ module Evoruby
       all_seqs = all_seqs_per_species[ species ]
       mol_seq = seq.get_sequence_as_string.upcase
       if all_seqs.include?( mol_seq )
-        puts "ignored because identical sequence in same species: " + name
+        outfile.puts("ignored because identical sequence in same species: " + name )
+
         same_seq_counter += 1
         next
       else
@@ -79,13 +94,13 @@ module Evoruby
     gn_match = gn_re.match( name )
     if IGNORE_SEQS_LACKING_GN
       unless gn_match
-        puts "ignored because no GN=: " + name
+        outfile.puts( "ignored because no GN=: " + name )
         no_gn_counter += 1
         next
       end
     else
       unless gn_match
-        puts "no GN=: " + name
+        outfile.puts( "no GN=: " + name )
       end
     end
 
@@ -106,22 +121,22 @@ module Evoruby
     gn_to_seqs[gn].add_sequence(seq)
   end
 
-  puts "Sequences ignored because \"fragment\" in desc                : " + frag_counter.to_s
+  outfile.puts( "Sequences ignored because \"fragment\" in desc                : " + frag_counter.to_s )
   if IGNORE_SEQS_LACKING_GN
-    puts "Sequences ignored because no \"GN=\" in desc                  : " + no_gn_counter.to_s
+    outfile.puts( "Sequences ignored because no \"GN=\" in desc                  : " + no_gn_counter.to_s )
   end
-  puts "Sequences ignored because identical sequence in same species: " + same_seq_counter.to_s
-  puts
-  puts
+  outfile.puts( "Sequences ignored because identical sequence in same species: " + same_seq_counter.to_s )
+  outfile.puts
+  outfile.puts
 
   counter = 1
   gn_to_seqs.each_pair do |gene,seqs|
     seq = nil
     if seqs.get_number_of_seqs > 1
-      puts counter.to_s + ": " + gene
-      puts seqs.to_fasta
-      puts
-      puts
+      outfile.puts( counter.to_s + ": " + gene )
+      outfile.puts( seqs.to_fasta )
+      outfile.puts
+      outfile.puts
       counter += 1
       longest = 0
       longest_seq = nil
@@ -139,21 +154,28 @@ module Evoruby
       unique_genes_msa.add_sequence( seq )
     end
 
-    species = species_re.match( seq.get_name )[ 1 ]
-    unless all_msa_per_species.has_key?(species)
-      all_msa_per_species[species] = Msa.new
+
+    unless IGNORE_SPECIES
+      species = species_re.match( seq.get_name )[ 1 ]
+    else
+      species = "XXXXX"
     end
-    all_msa_per_species[species].add_sequence(seq)
+    unless all_msa_per_species.has_key?( species )
+      all_msa_per_species[ species ] = Msa.new
+    end
+    all_msa_per_species[ species ].add_sequence( seq )
 
   end
 
+  outfile.close
+
   w = FastaWriter.new
-  w.write(unique_genes_msa, "seqs_from_unique_genes.fasta")
-  w.write(longest_non_unique_genes_msa, "longest_seqs_from_nonunique_genes.fasta")
+  w.write( unique_genes_msa, outbase + "_seqs_from_unique_genes.fasta" )
+  w.write( longest_non_unique_genes_msa, outbase + "_longest_seqs_from_nonunique_genes.fasta" )
 
   all_msa_per_species.each_pair do |s,m|
     w = FastaWriter.new
-    w.write(m, s +".fasta")
+    w.write( m, outbase + "_"  + s + ".fasta" )
   end
 
 end
