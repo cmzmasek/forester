@@ -69,4 +69,6 @@ public interface Protein {
     public int getLength();
 
     public Species getSpecies();
+
+    public List<Domain> getDomainsSortedByPosition();
 }

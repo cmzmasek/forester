@@ -7,7 +7,6 @@ import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -79,13 +78,17 @@ public class simple_node_processor {
         //        }
         if ( node.isExternal() ) {
             if ( node.getNodeData().isHasTaxonomy() ) {
-                final Taxonomy t = node.getNodeData().getTaxonomy();
-                t.setIdentifier( null );
+                //  final Taxonomy t = node.getNodeData().getTaxonomy();
+                //  t.setIdentifier( null );
                 //if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && t.getTaxonomyCode().length() == 5 ) {
                 //    if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
                 //        node.setName( "" );
                 //    }
                 //}
+                node.setName( "" );
+            }
+            else {
+                System.out.println( "node " + node + " has not tax" );
             }
         }
     }

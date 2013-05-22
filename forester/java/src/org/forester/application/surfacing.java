@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,6 +61,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.protein.BasicProtein;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.Domain;
 import org.forester.protein.DomainId;
@@ -283,6 +285,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                              PERFORM_DC_REGAIN_PROTEINS_STATS                                              = true;
+    private static final boolean                              DA_ANALYSIS                                                                   = true;
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -1770,6 +1773,8 @@ public class surfacing {
             domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
         }
         // Main loop:
+        final SortedMap<String, Set<String>> distinct_domain_architecutures_per_genome = new TreeMap<String, Set<String>>();
+        final SortedMap<String, Integer> distinct_domain_architecuture_counts = new TreeMap<String, Integer>();
         for( int i = 0; i < number_of_genomes; ++i ) {
             System.out.println();
             System.out.println( ( i + 1 ) + "/" + number_of_genomes );
@@ -1837,6 +1842,14 @@ public class surfacing {
             }
             final double coverage = ( double ) protein_list.size() / parser.getProteinsEncountered();
             protein_coverage_stats.addValue( coverage );
+            int distinct_das = -1;
+            if ( DA_ANALYSIS ) {
+                final String genome = input_file_properties[ i ][ 0 ];
+                distinct_das = storeDomainArchitectures( genome,
+                                                         distinct_domain_architecutures_per_genome,
+                                                         protein_list,
+                                                         distinct_domain_architecuture_counts );
+            }
             System.out.println( "Number of proteins encountered                 : " + parser.getProteinsEncountered() );
             log( "Number of proteins encountered                 : " + parser.getProteinsEncountered(), log_writer );
             System.out.println( "Number of proteins stored                      : " + protein_list.size() );
@@ -1889,6 +1902,10 @@ public class surfacing {
                         + parser.getProteinsIgnoredDueToFilter() );
                 log( "Proteins ignored due to positive filter        : " + parser.getProteinsIgnoredDueToFilter(),
                      log_writer );
+            }
+            if ( DA_ANALYSIS ) {
+                System.out.println( "Distinct domain architectures stored           : " + distinct_das );
+                log( "Distinct domain architectures stored           : " + distinct_das, log_writer );
             }
             System.out.println( "Time for processing                            : " + parser.getTime() + "ms" );
             log( "", log_writer );
@@ -1995,6 +2012,14 @@ public class surfacing {
         ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
                 + per_genome_domain_promiscuity_statistics_file );
         //
+        if ( DA_ANALYSIS ) {
+            performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
+                                               distinct_domain_architecuture_counts,
+                                               ForesterUtil.roundToInt( number_of_genomes / 2.0 ) );
+            distinct_domain_architecutures_per_genome.clear();
+            distinct_domain_architecuture_counts.clear();
+            System.gc();
+        }
         try {
             domains_per_potein_stats_writer.write( "ALL" );
             domains_per_potein_stats_writer.write( "\t" );
@@ -2374,6 +2399,61 @@ public class surfacing {
         ForesterUtil.programMessage( PRG_NAME, surfacing.WWW );
         ForesterUtil.programMessage( PRG_NAME, "OK" );
         System.out.println();
+    }
+
+    private static void performDomainArchitectureAnalysis( final SortedMap<String, Set<String>> domain_architecutures,
+                                                           final SortedMap<String, Integer> domain_architecuture_counts,
+                                                           final int min_count ) {
+        final StringBuilder unique_das = new StringBuilder();
+        final Iterator<Entry<String, Integer>> it = domain_architecuture_counts.entrySet().iterator();
+        System.out.println( "Domain Architecture Counts (min count:  " + min_count + " ):" );
+        while ( it.hasNext() ) {
+            final Map.Entry<String, Integer> e = it.next();
+            final String da = e.getKey();
+            final int count = e.getValue();
+            if ( count >= min_count ) {
+                System.out.println( da + "\t" + count );
+            }
+            if ( count == 1 ) {
+                final Iterator<Entry<String, Set<String>>> it2 = domain_architecutures.entrySet().iterator();
+                while ( it2.hasNext() ) {
+                    final Map.Entry<String, Set<String>> e2 = it2.next();
+                    final String genome = e2.getKey();
+                    final Set<String> das = e2.getValue();
+                    if ( das.contains( da ) ) {
+                        unique_das.append( genome + "\t" + da + ForesterUtil.LINE_SEPARATOR );
+                    }
+                }
+            }
+        }
+        System.out.println();
+        System.out.println();
+        System.out.println( "Unique Domain Architectures:" );
+        System.out.println( unique_das );
+        System.out.println();
+        System.out.println();
+    }
+
+    private static int storeDomainArchitectures( final String genome,
+                                                 final SortedMap<String, Set<String>> domain_architecutures,
+                                                 final List<Protein> protein_list,
+                                                 final Map<String, Integer> distinct_domain_architecuture_counts ) {
+        final Set<String> da = new HashSet<String>();
+        domain_architecutures.put( genome, da );
+        for( final Protein protein : protein_list ) {
+            final String da_str = ( ( BasicProtein ) protein ).toDomainArchitectureString( "~" );
+            if ( !da.contains( da_str ) ) {
+                if ( !distinct_domain_architecuture_counts.containsKey( da_str ) ) {
+                    distinct_domain_architecuture_counts.put( da_str, 1 );
+                }
+                else {
+                    distinct_domain_architecuture_counts.put( da_str,
+                                                              distinct_domain_architecuture_counts.get( da_str ) + 1 );
+                }
+                da.add( da_str );
+            }
+        }
+        return da.size();
     }
 
     private static void createSplitWriters( final File out_dir,

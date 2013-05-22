@@ -27,6 +27,8 @@
 package org.forester.protein;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -39,13 +41,25 @@ import org.forester.util.ForesterUtil;
 // proteins could have the same name and/or id!
 public class BasicProtein implements Protein {
 
-    private final ProteinId    _id;
-    private final int          _length;
-    private final Species      _species;
-    private String             _name;
-    private String             _desc;
-    private String             _accession;
-    private final List<Domain> _protein_domains;
+    private final ProteinId          _id;
+    private final int                _length;
+    private final Species            _species;
+    private String                   _name;
+    private String                   _desc;
+    private String                   _accession;
+    private final List<Domain>       _protein_domains;
+    public static Comparator<Domain> DomainMidPositionComparator = new Comparator<Domain>() {
+
+                                                                     @Override
+                                                                     public int compare( final Domain d1,
+                                                                                         final Domain d2 ) {
+                                                                         final int m1 = ( d1.getTo() + d1.getFrom() );
+                                                                         final int m2 = ( d2.getTo() + d2.getFrom() );
+                                                                         return m1 < m2 ? -1 : m1 > m2 ? 1 : d1
+                                                                                 .getDomainId().getId()
+                                                                                 .compareTo( d2.getDomainId().getId() );
+                                                                     }
+                                                                 };
 
     public BasicProtein( final String id_str, final String species_str, final int length ) {
         if ( length < 0 ) {
@@ -127,6 +141,21 @@ public class BasicProtein implements Protein {
     }
 
     @Override
+    public List<Domain> getDomainsSortedByPosition() {
+        final List<Domain> domains = new ArrayList<Domain>( getProteinDomains().size() );
+        for( final Domain domain : getProteinDomains() ) {
+            domains.add( domain );
+        }
+        Collections.sort( domains, DomainMidPositionComparator );
+        return domains;
+    }
+
+    @Override
+    public int getLength() {
+        return _length;
+    }
+
+    @Override
     public String getName() {
         return _name;
     }
@@ -144,14 +173,6 @@ public class BasicProtein implements Protein {
     @Override
     public int getProteinDomainCount( final DomainId domain_id ) {
         return getProteinDomains( domain_id ).size();
-    }
-
-    private List<DomainId> getProteinDomainIds() {
-        final List<DomainId> ids = new ArrayList<DomainId>( getProteinDomains().size() );
-        for( final Domain domain : getProteinDomains() ) {
-            ids.add( domain.getDomainId() );
-        }
-        return ids;
     }
 
     @Override
@@ -180,12 +201,6 @@ public class BasicProtein implements Protein {
         return _species;
     }
 
-    private void init() {
-        _desc = "";
-        _accession = "";
-        _name = "";
-    }
-
     public void setAccession( final String accession ) {
         _accession = accession;
     }
@@ -198,8 +213,32 @@ public class BasicProtein implements Protein {
         _name = name;
     }
 
-    @Override
-    public int getLength() {
-        return _length;
+    public String toDomainArchitectureString( final String separator ) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for( final Domain d : getDomainsSortedByPosition() ) {
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( separator );
+            }
+            sb.append( d.getDomainId().getId() );
+        }
+        return sb.toString();
+    }
+
+    private List<DomainId> getProteinDomainIds() {
+        final List<DomainId> ids = new ArrayList<DomainId>( getProteinDomains().size() );
+        for( final Domain domain : getProteinDomains() ) {
+            ids.add( domain.getDomainId() );
+        }
+        return ids;
+    }
+
+    private void init() {
+        _desc = "";
+        _accession = "";
+        _name = "";
     }
 }
