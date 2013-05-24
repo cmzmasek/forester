@@ -1956,32 +1956,34 @@ public class surfacing {
                                                         domains_which_are_sometimes_single_sometimes_not,
                                                         domains_which_never_single,
                                                         domains_per_potein_stats_writer );
-            gwcd_list.add( BasicGenomeWideCombinableDomains
-                    .createInstance( protein_list,
-                                     ignore_combination_with_same,
-                                     new BasicSpecies( input_file_properties[ i ][ 1 ] ),
-                                     domain_id_to_go_ids_map,
-                                     dc_type,
-                                     protein_length_stats_by_dc,
-                                     domain_number_stats_by_dc ) );
             domain_lengths_table.addLengths( protein_list );
-            if ( gwcd_list.get( i ).getSize() > 0 ) {
-                SurfacingUtil.writeDomainCombinationsCountsFile( input_file_properties,
-                                                                 out_dir,
-                                                                 per_genome_domain_promiscuity_statistics_writer,
-                                                                 gwcd_list.get( i ),
-                                                                 i,
-                                                                 dc_sort_order );
-                if ( output_binary_domain_combinationsfor_graph_analysis ) {
-                    SurfacingUtil.writeBinaryDomainCombinationsFileForGraphAnalysis( input_file_properties,
-                                                                                     out_dir,
-                                                                                     gwcd_list.get( i ),
-                                                                                     i,
-                                                                                     dc_sort_order );
+            if ( !DA_ANALYSIS ) {
+                gwcd_list.add( BasicGenomeWideCombinableDomains
+                        .createInstance( protein_list,
+                                         ignore_combination_with_same,
+                                         new BasicSpecies( input_file_properties[ i ][ 1 ] ),
+                                         domain_id_to_go_ids_map,
+                                         dc_type,
+                                         protein_length_stats_by_dc,
+                                         domain_number_stats_by_dc ) );
+                if ( gwcd_list.get( i ).getSize() > 0 ) {
+                    SurfacingUtil.writeDomainCombinationsCountsFile( input_file_properties,
+                                                                     out_dir,
+                                                                     per_genome_domain_promiscuity_statistics_writer,
+                                                                     gwcd_list.get( i ),
+                                                                     i,
+                                                                     dc_sort_order );
+                    if ( output_binary_domain_combinationsfor_graph_analysis ) {
+                        SurfacingUtil.writeBinaryDomainCombinationsFileForGraphAnalysis( input_file_properties,
+                                                                                         out_dir,
+                                                                                         gwcd_list.get( i ),
+                                                                                         i,
+                                                                                         dc_sort_order );
+                    }
+                    SurfacingUtil.addAllDomainIdsToSet( gwcd_list.get( i ), all_domains_encountered );
+                    SurfacingUtil.addAllBinaryDomainCombinationToSet( gwcd_list.get( i ),
+                                                                      all_bin_domain_combinations_encountered );
                 }
-                SurfacingUtil.addAllDomainIdsToSet( gwcd_list.get( i ), all_domains_encountered );
-                SurfacingUtil.addAllBinaryDomainCombinationToSet( gwcd_list.get( i ),
-                                                                  all_bin_domain_combinations_encountered );
             }
             if ( query_domains_writer_ary != null ) {
                 for( int j = 0; j < query_domain_ids_array.length; j++ ) {
@@ -2015,7 +2017,7 @@ public class surfacing {
         if ( DA_ANALYSIS ) {
             performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
                                                distinct_domain_architecuture_counts,
-                                               ForesterUtil.roundToInt( number_of_genomes / 2.0 ) );
+                                               10 );
             distinct_domain_architecutures_per_genome.clear();
             distinct_domain_architecuture_counts.clear();
             System.gc();

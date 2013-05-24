@@ -228,6 +228,35 @@ public class BasicProtein implements Protein {
         return sb.toString();
     }
 
+    public String toDomainArchitectureString( final String separator, int max_repeats ) {
+        if ( max_repeats < 2 ) {
+            throw new IllegalArgumentException( "max repeats cannot be smaller than 2" );
+        }
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        String prev_id = "";
+        int counter = 0;
+        for( final Domain d : getDomainsSortedByPosition() ) {
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( separator );
+            }
+            if ( prev_id.equals( d.getDomainId().getId() ) ) {
+                counter++;
+            }
+            else {
+                counter = 0;
+            }
+            if ( counter >= max_repeats ) {
+            }
+            sb.append( d.getDomainId().getId() );
+            prev_id = d.getDomainId().getId();
+        }
+        return sb.toString();
+    }
+
     private List<DomainId> getProteinDomainIds() {
         final List<DomainId> ids = new ArrayList<DomainId>( getProteinDomains().size() );
         for( final Domain domain : getProteinDomains() ) {
