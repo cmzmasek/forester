@@ -1699,6 +1699,137 @@ public final class Test {
             if ( !p0.toDomainArchitectureString( "~" ).equals( "a~b~c~d~e~x~y" ) ) {
                 return false;
             }
+            if ( !p0.toDomainArchitectureString( "~", 3, "=" ).equals( "a~b~c~d~e~x~y" ) ) {
+                return false;
+            }
+            //
+            final BasicProtein aa0 = new BasicProtein( "aa", "owl", 0 );
+            final Domain a1 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
+            aa0.addProteinDomain( a1 );
+            if ( !aa0.toDomainArchitectureString( "~" ).equals( "a" ) ) {
+                return false;
+            }
+            if ( !aa0.toDomainArchitectureString( "~", 3, "" ).equals( "a" ) ) {
+                return false;
+            }
+            //
+            final BasicProtein aa1 = new BasicProtein( "aa", "owl", 0 );
+            final Domain a11 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain a12 = new BasicDomain( "a", 2, 20, ( short ) 1, ( short ) 5, 0.1, -12 );
+            aa1.addProteinDomain( a11 );
+            aa1.addProteinDomain( a12 );
+            if ( !aa1.toDomainArchitectureString( "~" ).equals( "a~a" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 3, "" ).equals( "a~a" ) ) {
+                return false;
+            }
+            aa1.addProteinDomain( new BasicDomain( "a", 20, 30, ( short ) 1, ( short ) 5, 0.1, -12 ) );
+            if ( !aa1.toDomainArchitectureString( "~" ).equals( "a~a~a" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 3, "" ).equals( "aaa" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 4, "" ).equals( "a~a~a" ) ) {
+                return false;
+            }
+            aa1.addProteinDomain( new BasicDomain( "a", 30, 40, ( short ) 1, ( short ) 5, 0.1, -12 ) );
+            if ( !aa1.toDomainArchitectureString( "~" ).equals( "a~a~a~a" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 3, "" ).equals( "aaa" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 4, "" ).equals( "aaa" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 5, "" ).equals( "a~a~a~a" ) ) {
+                return false;
+            }
+            aa1.addProteinDomain( new BasicDomain( "b", 32, 40, ( short ) 1, ( short ) 5, 0.1, -12 ) );
+            if ( !aa1.toDomainArchitectureString( "~" ).equals( "a~a~a~a~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 3, "" ).equals( "aaa~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 4, "" ).equals( "aaa~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 5, "" ).equals( "a~a~a~a~b" ) ) {
+                return false;
+            }
+            aa1.addProteinDomain( new BasicDomain( "c", 1, 2, ( short ) 1, ( short ) 5, 0.1, -12 ) );
+            if ( !aa1.toDomainArchitectureString( "~" ).equals( "c~a~a~a~a~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 3, "" ).equals( "c~aaa~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 4, "" ).equals( "c~aaa~b" ) ) {
+                return false;
+            }
+            if ( !aa1.toDomainArchitectureString( "~", 5, "" ).equals( "c~a~a~a~a~b" ) ) {
+                return false;
+            }
+            //
+            final BasicProtein p00 = new BasicProtein( "p0", "owl", 0 );
+            final Domain a0 = new BasicDomain( "a", 1, 10, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain b0 = new BasicDomain( "b", 11, 20, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain c0 = new BasicDomain( "c", 9, 23, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain d0 = new BasicDomain( "d", 15, 30, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e0 = new BasicDomain( "e", 60, 70, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e1 = new BasicDomain( "e", 61, 71, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e2 = new BasicDomain( "e", 62, 72, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e3 = new BasicDomain( "e", 63, 73, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e4 = new BasicDomain( "e", 64, 74, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain e5 = new BasicDomain( "e", 65, 75, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain x0 = new BasicDomain( "x", 100, 110, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain y0 = new BasicDomain( "y", 100, 110, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain y1 = new BasicDomain( "y", 120, 130, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain y2 = new BasicDomain( "y", 140, 150, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain y3 = new BasicDomain( "y", 160, 170, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain z0 = new BasicDomain( "z", 200, 210, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain z1 = new BasicDomain( "z", 300, 310, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain z2 = new BasicDomain( "z", 400, 410, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain zz0 = new BasicDomain( "Z", 500, 510, ( short ) 1, ( short ) 5, 0.1, -12 );
+            final Domain zz1 = new BasicDomain( "Z", 600, 610, ( short ) 1, ( short ) 5, 0.1, -12 );
+            p00.addProteinDomain( y0 );
+            p00.addProteinDomain( e0 );
+            p00.addProteinDomain( b0 );
+            p00.addProteinDomain( c0 );
+            p00.addProteinDomain( d0 );
+            p00.addProteinDomain( a0 );
+            p00.addProteinDomain( x0 );
+            p00.addProteinDomain( y1 );
+            p00.addProteinDomain( y2 );
+            p00.addProteinDomain( y3 );
+            p00.addProteinDomain( e1 );
+            p00.addProteinDomain( e2 );
+            p00.addProteinDomain( e3 );
+            p00.addProteinDomain( e4 );
+            p00.addProteinDomain( e5 );
+            p00.addProteinDomain( z0 );
+            p00.addProteinDomain( z1 );
+            p00.addProteinDomain( z2 );
+            p00.addProteinDomain( zz0 );
+            p00.addProteinDomain( zz1 );
+            if ( !p00.toDomainArchitectureString( "~", 3, "" ).equals( "a~b~c~d~eee~x~yyy~zzz~Z~Z" ) ) {
+                return false;
+            }
+            if ( !p00.toDomainArchitectureString( "~", 4, "" ).equals( "a~b~c~d~eee~x~yyy~z~z~z~Z~Z" ) ) {
+                return false;
+            }
+            if ( !p00.toDomainArchitectureString( "~", 5, "" ).equals( "a~b~c~d~eee~x~y~y~y~y~z~z~z~Z~Z" ) ) {
+                return false;
+            }
+            if ( !p00.toDomainArchitectureString( "~", 6, "" ).equals( "a~b~c~d~eee~x~y~y~y~y~z~z~z~Z~Z" ) ) {
+                return false;
+            }
+            if ( !p00.toDomainArchitectureString( "~", 7, "" ).equals( "a~b~c~d~e~e~e~e~e~e~x~y~y~y~y~z~z~z~Z~Z" ) ) {
+                return false;
+            }
             // A0  A10  B15  A20  B25  A30  B35  B40  C50  A60  C70  D80
             final Domain A0 = new BasicDomain( "A", 0, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
             final Domain A10 = new BasicDomain( "A", 10, 11, ( short ) 1, ( short ) 4, 0.1, -12 );

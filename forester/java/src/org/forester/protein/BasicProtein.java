@@ -228,33 +228,48 @@ public class BasicProtein implements Protein {
         return sb.toString();
     }
 
-    public String toDomainArchitectureString( final String separator, int max_repeats ) {
-        if ( max_repeats < 2 ) {
-            throw new IllegalArgumentException( "max repeats cannot be smaller than 2" );
+    public String toDomainArchitectureString( final String separator,
+                                              final int repeats_limit,
+                                              final String repeat_separator ) {
+        if ( repeats_limit < 3 ) {
+            throw new IllegalArgumentException( "repeats limit cannot be smaller than 3" );
         }
         final StringBuilder sb = new StringBuilder();
-        boolean first = true;
+        StringBuilder buffer = new StringBuilder();
         String prev_id = "";
-        int counter = 0;
+        int counter = 1;
         for( final Domain d : getDomainsSortedByPosition() ) {
-            if ( first ) {
-                first = false;
-            }
-            else {
-                sb.append( separator );
-            }
-            if ( prev_id.equals( d.getDomainId().getId() ) ) {
+            final String id = d.getDomainId().getId();
+            if ( prev_id.equals( id ) ) {
                 counter++;
             }
             else {
-                counter = 0;
+                counter = 1;
+                sb.append( buffer );
+                buffer = new StringBuilder();
             }
-            if ( counter >= max_repeats ) {
+            if ( counter < repeats_limit ) {
+                buffer.append( id );
+                buffer.append( separator );
             }
-            sb.append( d.getDomainId().getId() );
-            prev_id = d.getDomainId().getId();
+            else if ( counter == repeats_limit ) {
+                buffer = new StringBuilder();
+                buffer.append( id );
+                buffer.append( repeat_separator );
+                buffer.append( id );
+                buffer.append( repeat_separator );
+                buffer.append( id );
+                buffer.append( separator );
+            }
+            prev_id = id;
         }
+        sb.append( buffer.substring( 0, buffer.length() - 1 ) );
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toDomainArchitectureString( "~" );
     }
 
     private List<DomainId> getProteinDomainIds() {

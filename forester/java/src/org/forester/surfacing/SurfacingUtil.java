@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -118,6 +119,75 @@ public final class SurfacingUtil {
 
     private SurfacingUtil() {
         // Hidden constructor.
+    }
+
+    public static void performDomainArchitectureAnalysis( final SortedMap<String, Set<String>> domain_architecutures,
+                                                          final SortedMap<String, Integer> domain_architecuture_counts,
+                                                          final int min_count,
+                                                          final File da_counts_outfile,
+                                                          final File unique_da_outfile ) {
+        checkForOutputFileWriteability( da_counts_outfile );
+        checkForOutputFileWriteability( unique_da_outfile );
+        try {
+            final BufferedWriter da_counts_out = new BufferedWriter( new FileWriter( da_counts_outfile ) );
+            final BufferedWriter unique_da_out = new BufferedWriter( new FileWriter( unique_da_outfile ) );
+            final Iterator<Entry<String, Integer>> it = domain_architecuture_counts.entrySet().iterator();
+            while ( it.hasNext() ) {
+                final Map.Entry<String, Integer> e = it.next();
+                final String da = e.getKey();
+                final int count = e.getValue();
+                if ( count >= min_count ) {
+                    da_counts_out.write( da );
+                    da_counts_out.write( "\t" );
+                    da_counts_out.write( String.valueOf( count ) );
+                    da_counts_out.write( ForesterUtil.LINE_SEPARATOR );
+                }
+                if ( count == 1 ) {
+                    final Iterator<Entry<String, Set<String>>> it2 = domain_architecutures.entrySet().iterator();
+                    while ( it2.hasNext() ) {
+                        final Map.Entry<String, Set<String>> e2 = it2.next();
+                        final String genome = e2.getKey();
+                        final Set<String> das = e2.getValue();
+                        if ( das.contains( da ) ) {
+                            unique_da_out.write( genome );
+                            unique_da_out.write( "\t" );
+                            unique_da_out.write( da );
+                            unique_da_out.write( ForesterUtil.LINE_SEPARATOR );
+                        }
+                    }
+                }
+            }
+            unique_da_out.close();
+            da_counts_out.close();
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
+        }
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote distance matrices to \"" + da_counts_outfile + "\"" );
+        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote distance matrices to \"" + unique_da_outfile + "\"" );
+        //
+    }
+
+    public static int storeDomainArchitectures( final String genome,
+                                                final SortedMap<String, Set<String>> domain_architecutures,
+                                                final List<Protein> protein_list,
+                                                final Map<String, Integer> distinct_domain_architecuture_counts ) {
+        final Set<String> da = new HashSet<String>();
+        domain_architecutures.put( genome, da );
+        for( final Protein protein : protein_list ) {
+            final String da_str = ( ( BasicProtein ) protein ).toDomainArchitectureString( "~" );
+            if ( !da.contains( da_str ) ) {
+                if ( !distinct_domain_architecuture_counts.containsKey( da_str ) ) {
+                    distinct_domain_architecuture_counts.put( da_str, 1 );
+                }
+                else {
+                    distinct_domain_architecuture_counts.put( da_str,
+                                                              distinct_domain_architecuture_counts.get( da_str ) + 1 );
+                }
+                da.add( da_str );
+            }
+        }
+        return da.size();
     }
 
     public static void addAllBinaryDomainCombinationToSet( final GenomeWideCombinableDomains genome,
