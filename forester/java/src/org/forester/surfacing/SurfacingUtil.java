@@ -175,7 +175,7 @@ public final class SurfacingUtil {
         final Set<String> da = new HashSet<String>();
         domain_architecutures.put( genome, da );
         for( final Protein protein : protein_list ) {
-            final String da_str = ( ( BasicProtein ) protein ).toDomainArchitectureString( "~" );
+            final String da_str = ( ( BasicProtein ) protein ).toDomainArchitectureString( "~", 3, "=" );
             if ( !da.contains( da_str ) ) {
                 if ( !distinct_domain_architecuture_counts.containsKey( da_str ) ) {
                     distinct_domain_architecuture_counts.put( da_str, 1 );
