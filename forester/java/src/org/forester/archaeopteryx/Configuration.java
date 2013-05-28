@@ -723,10 +723,10 @@ public final class Configuration {
     }
 
     boolean isAntialiasScreen() {
-        // if ( AptxUtil.isMac() ) {
-        // Apple Macintosh graphics are slow, turn off anti-alias.
-        // return false;
-        //}
+        if ( ForesterUtil.isMac() ) {
+            //Apple Macintosh graphics are slow, turn off anti-alias.
+            return false;
+        }
         return _antialias_screen;
     }
 
