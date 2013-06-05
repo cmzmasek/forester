@@ -3984,6 +3984,7 @@
                             <code>OSTTA</code>
                             <scientific_name>Ostreococcus tauri</scientific_name>
                             <rank>species</rank>
+                            <uri>http://genome.jgi-psf.org/Ost9901_3/Ostta.jpg</uri>
                           </taxonomy>
                         </clade>
                       </clade>
@@ -3999,6 +4000,7 @@
                             <code>MICPC</code>
                             <scientific_name>Micromonas pusilla (strain CCMP1545)</scientific_name>
                             <common_name>Picoplanktonic green alga</common_name>
+                            <uri>http://www.mansfield.ohio-state.edu/~sabedon/microfla.jpg</uri>
                           </taxonomy>
                         </clade>
                         <clade>
@@ -4175,6 +4177,8 @@
             </clade>
             <clade>
               <name>Stramenopiles &amp; Alveolata &amp; Rhizaria</name>
+              <taxonomy>
+              </taxonomy>
               <reference doi="10.1186/1471-2148-10-377">
                 <desc>Evolution of Rhizaria: new insights from phylogenomic analysis of uncultivated protists</desc>
               </reference>
@@ -4186,168 +4190,233 @@
                   <taxonomy>
                     <id provider="uniprot">33630</id>
                     <scientific_name>Alveolata</scientific_name>
+                    <rank>superphylum</rank>
                   </taxonomy>
                   <clade>
-                    <taxonomy>
-                      <id provider="uniprot">5794</id>
-                      <scientific_name>Apicomplexa</scientific_name>
-                      <rank>phylum</rank>
-                    </taxonomy>
+                    <name>Apicomplexa &amp; Dinophyceae</name>
                     <clade>
                       <taxonomy>
-                        <id provider="uniprot">422676</id>
-                        <scientific_name>Aconoidasida</scientific_name>
-                        <rank>class</rank>
+                        <id provider="uniprot">5794</id>
+                        <scientific_name>Apicomplexa</scientific_name>
+                        <rank>phylum</rank>
                       </taxonomy>
                       <clade>
                         <taxonomy>
-                          <id provider="uniprot">5820</id>
-                          <scientific_name>Plasmodium</scientific_name>
-                          <rank>genus</rank>
+                          <id provider="uniprot">422676</id>
+                          <scientific_name>Aconoidasida</scientific_name>
+                          <rank>class</rank>
                         </taxonomy>
                         <clade>
                           <taxonomy>
-                            <id provider="uniprot">5825</id>
-                            <code>PLACH</code>
-                            <scientific_name>Plasmodium chabaudi</scientific_name>
-                            <rank>species</rank>
+                            <id provider="uniprot">5820</id>
+                            <scientific_name>Plasmodium</scientific_name>
+                            <rank>genus</rank>
                           </taxonomy>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5825</id>
+                              <code>PLACH</code>
+                              <scientific_name>Plasmodium chabaudi</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5833</id>
+                              <code>PLAFA</code>
+                              <scientific_name>Plasmodium falciparum</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">73239</id>
+                              <code>PLAYO</code>
+                              <scientific_name>Plasmodium yoelii yoelii</scientific_name>
+                              <rank>subspecies</rank>
+                            </taxonomy>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>Theileria</name>
+                          <taxonomy>
+                            <id provider="uniprot">5873</id>
+                            <scientific_name>Theileria</scientific_name>
+                            <rank>genus</rank>
+                          </taxonomy>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5874</id>
+                              <code>THEAN</code>
+                              <scientific_name>Theileria annulata</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5875</id>
+                              <code>THEPA</code>
+                              <scientific_name>Theileria parva</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
                         </clade>
                         <clade>
                           <taxonomy>
-                            <id provider="uniprot">5833</id>
-                            <code>PLAFA</code>
-                            <scientific_name>Plasmodium falciparum</scientific_name>
+                            <id provider="uniprot">5865</id>
+                            <code>BABBO</code>
+                            <scientific_name>Babesia bovis</scientific_name>
                             <rank>species</rank>
-                          </taxonomy>
-                        </clade>
-                        <clade>
-                          <taxonomy>
-                            <id provider="uniprot">73239</id>
-                            <code>PLAYO</code>
-                            <scientific_name>Plasmodium yoelii yoelii</scientific_name>
-                            <rank>subspecies</rank>
+                            <uri>http://www.perulactea.com/wp-content/uploads/2012/03/Babesia_bovis.jpg</uri>
                           </taxonomy>
                         </clade>
                       </clade>
                       <clade>
-                        <name>Theileria</name>
                         <taxonomy>
-                          <id provider="uniprot">5873</id>
-                          <scientific_name>Theileria</scientific_name>
-                          <rank>genus</rank>
+                          <id provider="uniprot">423054</id>
+                          <scientific_name>Eimeriorina</scientific_name>
+                          <rank>suborder</rank>
                         </taxonomy>
                         <clade>
                           <taxonomy>
-                            <id provider="uniprot">5874</id>
-                            <code>THEAN</code>
-                            <scientific_name>Theileria annulata</scientific_name>
-                            <rank>species</rank>
+                            <id provider="uniprot">5806</id>
+                            <scientific_name>Cryptosporidium</scientific_name>
+                            <rank>genus</rank>
                           </taxonomy>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">237895</id>
+                              <code>CRYHO</code>
+                              <scientific_name>Cryptosporidium hominis</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5807</id>
+                              <code>CRYPV</code>
+                              <scientific_name>Cryptosporidium parvum</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
                         </clade>
                         <clade>
-                          <taxonomy>
-                            <id provider="uniprot">5875</id>
-                            <code>THEPA</code>
-                            <scientific_name>Theileria parva</scientific_name>
-                            <rank>species</rank>
-                          </taxonomy>
+                          <name>Eimeria &amp; Toxoplasma</name>
+                          <reference doi="10.1093/molbev/msn213">
+                            <desc>The Apicomplexan Whole-Genome Phylogeny: An Analysis of Incongruence among Gene Trees</desc>
+                          </reference>
+                          <reference>
+                          </reference>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5802</id>
+                              <code>EIMTE</code>
+                              <scientific_name>Eimeria tenella</scientific_name>
+                              <common_name>Coccidian parasite</common_name>
+                              <rank>species</rank>
+                              <uri>http://www.k-state.edu/parasitology/625tutorials/FIGtenella.jpg</uri>
+                            </taxonomy>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">5811</id>
+                              <code>TOXGO</code>
+                              <scientific_name>Toxoplasma gondii</scientific_name>
+                              <rank>species</rank>
+                            </taxonomy>
+                          </clade>
                         </clade>
                       </clade>
                     </clade>
                     <clade>
                       <taxonomy>
-                        <id provider="uniprot">423054</id>
-                        <scientific_name>Eimeriorina</scientific_name>
-                        <rank>suborder</rank>
+                        <id provider="uniprot">2864</id>
+                        <scientific_name>Dinophyceae</scientific_name>
+                        <authority>Fritsch, 1927</authority>
+                        <common_name>dinoflagellates</common_name>
+                        <synonym>Chromophyta</synonym>
+                        <synonym>Dinoflagellata</synonym>
+                        <synonym>Pyrrophyta</synonym>
+                        <rank>class</rank>
                       </taxonomy>
                       <clade>
                         <taxonomy>
-                          <id provider="uniprot">5806</id>
-                          <scientific_name>Cryptosporidium</scientific_name>
-                          <rank>genus</rank>
+                          <id provider="uniprot">2866</id>
+                          <code>CRYCO</code>
+                          <scientific_name>Crypthecodinium cohnii</scientific_name>
+                          <common_name>Dinoflagellate</common_name>
+                          <rank>species</rank>
+                          <uri>http://www.lamolina.net/image/DHAcell.jpg</uri>
                         </taxonomy>
-                        <clade>
-                          <taxonomy>
-                            <id provider="uniprot">237895</id>
-                            <code>CRYHO</code>
-                            <scientific_name>Cryptosporidium hominis</scientific_name>
-                            <rank>species</rank>
-                          </taxonomy>
-                        </clade>
-                        <clade>
-                          <taxonomy>
-                            <id provider="uniprot">5807</id>
-                            <code>CRYPV</code>
-                            <scientific_name>Cryptosporidium parvum</scientific_name>
-                            <rank>species</rank>
-                          </taxonomy>
-                        </clade>
                       </clade>
                       <clade>
-                        <name>Eimeria &amp; Toxoplasma</name>
-                        <reference doi="10.1093/molbev/msn213">
-                          <desc>The Apicomplexan Whole-Genome Phylogeny: An Analysis of Incongruence among Gene Trees</desc>
-                        </reference>
-                        <reference>
-                        </reference>
-                        <clade>
-                          <taxonomy>
-                            <id provider="uniprot">5802</id>
-                            <code>EIMTE</code>
-                            <scientific_name>Eimeria tenella</scientific_name>
-                            <common_name>Coccidian parasite</common_name>
-                            <rank>species</rank>
-                            <uri>http://www.k-state.edu/parasitology/625tutorials/FIGtenella.jpg</uri>
-                          </taxonomy>
-                        </clade>
-                        <clade>
-                          <taxonomy>
-                            <id provider="uniprot">5811</id>
-                            <code>TOXGO</code>
-                            <scientific_name>Toxoplasma gondii</scientific_name>
-                            <rank>species</rank>
-                          </taxonomy>
-                        </clade>
+                        <taxonomy>
+                          <id provider="uniprot">2923</id>
+                          <code>THOHE</code>
+                          <scientific_name>Thoracosphaera heimii</scientific_name>
+                          <common_name>Dinoflagellate</common_name>
+                          <rank>species</rank>
+                          <uri>http://planktonnet.awi.de/repository/rawdata-PlanktonNet2/viewable/fjouenne_21806a_20080123172436_small.jpg</uri>
+                        </taxonomy>
                       </clade>
                     </clade>
                   </clade>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">431838</id>
-                      <scientific_name>Intramacronucleata</scientific_name>
-                      <rank>subphylum</rank>
+                      <id provider="uniprot">5878</id>
+                      <scientific_name>Ciliophora</scientific_name>
+                      <common_name>ciliates</common_name>
+                      <rank>phylum</rank>
                     </taxonomy>
                     <clade>
                       <taxonomy>
-                        <id provider="uniprot">6020</id>
-                        <scientific_name>Oligohymenophorea</scientific_name>
-                        <rank>class</rank>
+                        <id provider="uniprot">431838</id>
+                        <scientific_name>Intramacronucleata</scientific_name>
+                        <rank>subphylum</rank>
                       </taxonomy>
                       <clade>
                         <taxonomy>
-                          <id provider="uniprot">5888</id>
-                          <code>PARTE</code>
-                          <scientific_name>Paramecium tetraurelia</scientific_name>
-                          <rank>species</rank>
+                          <id provider="uniprot">6020</id>
+                          <scientific_name>Oligohymenophorea</scientific_name>
+                          <rank>class</rank>
                         </taxonomy>
+                        <clade>
+                          <taxonomy>
+                            <id provider="uniprot">5888</id>
+                            <code>PARTE</code>
+                            <scientific_name>Paramecium tetraurelia</scientific_name>
+                            <rank>species</rank>
+                            <uri>http://research.plattsburgh.edu/ciliates/images/jdopics208.jpg</uri>
+                          </taxonomy>
+                        </clade>
+                        <clade>
+                          <taxonomy>
+                            <id provider="uniprot">5911</id>
+                            <code>TETTH</code>
+                            <scientific_name>Tetrahymena thermophila</scientific_name>
+                            <rank>species</rank>
+                            <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Tetrahymena_thermophila.png/220px-Tetrahymena_thermophila.png</uri>
+                          </taxonomy>
+                        </clade>
                       </clade>
                       <clade>
                         <taxonomy>
-                          <id provider="uniprot">5911</id>
-                          <code>TETTH</code>
-                          <scientific_name>Tetrahymena thermophila</scientific_name>
+                          <id provider="uniprot">1172189</id>
+                          <scientific_name>Oxytricha trifallax</scientific_name>
+                          <authority>Stein, 1859</authority>
                           <rank>species</rank>
+                          <uri>http://centexnaturalist.com/foldermainmenus/sfprotists/folderprotozoans/oxytricha04.gif</uri>
                         </taxonomy>
                       </clade>
                     </clade>
                     <clade>
                       <taxonomy>
-                        <id provider="uniprot">1172189</id>
-                        <scientific_name>Oxytricha trifallax</scientific_name>
-                        <authority>Stein, 1859</authority>
+                        <id provider="uniprot">5961</id>
+                        <code>BLEJA</code>
+                        <scientific_name>Blepharisma japonicum</scientific_name>
                         <rank>species</rank>
-                        <uri>http://centexnaturalist.com/foldermainmenus/sfprotists/folderprotozoans/oxytricha04.gif</uri>
+                        <uri>http://upload.wikimedia.org/wikipedia/commons/2/23/Mikrofoto.de-Blepharisma_japonicum_15.jpg</uri>
+                        <uri>http://protist.i.hosei.ac.jp/PDB/PCD0473/C/016.jpg</uri>
                       </taxonomy>
                     </clade>
                   </clade>
@@ -4394,11 +4463,12 @@
                           </clade>
                           <clade>
                             <taxonomy>
-                              <id provider="eol">912693</id>
+                              <id provider="uniprot">2850</id>
                               <code>PHATR</code>
                               <scientific_name>Phaeodactylum tricornutum</scientific_name>
                               <authority>Bohlin</authority>
                               <rank>species</rank>
+                              <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Phaeodactylum_tricornutum.png/637px-Phaeodactylum_tricornutum.png</uri>
                             </taxonomy>
                           </clade>
                         </clade>
@@ -4417,11 +4487,13 @@
                       </clade>
                       <clade>
                         <taxonomy>
-                          <id provider="eol">912461</id>
+                          <id provider="uniprot">44056</id>
                           <code>AURAN</code>
                           <scientific_name>Aureococcus anophagefferens</scientific_name>
                           <authority>Hargraves &amp; Sieburth</authority>
+                          <common_name>Harmful bloom alga</common_name>
                           <rank>species</rank>
+                          <uri>http://www.dec.ny.gov/images/fish_marine_images/alex1.jpg</uri>
                         </taxonomy>
                       </clade>
                     </clade>
@@ -4449,6 +4521,7 @@
                           <scientific_name>Phytophthora ramorum</scientific_name>
                           <common_name>Sudden oak death agent</common_name>
                           <rank>species</rank>
+                          <uri>http://genome.jgi-psf.org/Phyra1_1/pramorum.jpg</uri>
                         </taxonomy>
                       </clade>
                       <clade>
@@ -4459,7 +4532,16 @@
                           <common_name>Soybean stem and root rot agent</common_name>
                           <synonym>Phytophthora megasperma f. sp. glycines</synonym>
                           <rank>species</rank>
-                          <uri>http://genome.jgi-psf.org/Physo1_1/pramorum.jpg</uri>
+                          <uri>http://www.apsnet.org/publications/imageresources/PublishingImages/2003/IW000025b.jpg</uri>
+                        </taxonomy>
+                      </clade>
+                      <clade>
+                        <taxonomy>
+                          <id provider="uniprot">4785</id>
+                          <code>PHYCI</code>
+                          <scientific_name>Phytophthora cinnamomi</scientific_name>
+                          <common_name>Cinnamon fungus</common_name>
+                          <uri>http://genome.jgi.doe.gov/public/Phyci1/Pcinnamomi_hyphae_and_chlamydospores.jpg</uri>
                         </taxonomy>
                       </clade>
                     </clade>
@@ -4553,6 +4635,7 @@
                   <scientific_name>Naegleria gruberi</scientific_name>
                   <common_name>Amoeba</common_name>
                   <rank>species</rank>
+                  <uri>http://media.npr.org/assets/news/2010/03/05/amoeba_custom-a24a7e20b8d9f1b681cf6a25d0d046d84f238349-s3.jpg</uri>
                 </taxonomy>
               </clade>
             </clade>
