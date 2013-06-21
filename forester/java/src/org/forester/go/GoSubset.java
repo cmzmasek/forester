@@ -27,18 +27,15 @@ package org.forester.go;
 
 public interface GoSubset extends Comparable<GoSubset> {
 
-    public static final String GOSLIM_GENERIC_STR           = "goslim_generic";
-    public static final String GOSLIM_GOA_STR               = "goslim_goa";
-    public static final String GOSLIM_PIR_STR               = "goslim_pir";
-    public static final String GOSUBSET_PROK_STR            = "gosubset_prok";
-    public static final String GOSLIM_CANDIDA_STR           = "goslim_candida";
-    public static final String GOSLIM_ASPERGILLUS_STR       = "goslim_aspergillus";
-    public static final String GOSLIM_PLANT_STR             = "goslim_plant";
-    public static final String GOSLIM_YEAST_STR             = "goslim_yeast";
-    public static final String GOSLIM_POMBE_STR             = "goslim_pombe";
-    public static final String HIGH_LEVEL_ANNOTATION_QC_STR = "high_level_annotation_qc";
-    public static final String UNVETTED_STR                 = "unvetted";
-    public static final String MF_NEEDS_REVIEW_STR          = "mf_needs_review";
+    public static final String GOSLIM_GENERIC_STR     = "goslim_generic";
+    public static final String GOSLIM_GOA_STR         = "goslim_goa";
+    public static final String GOSLIM_PIR_STR         = "goslim_pir";
+    public static final String GOSUBSET_PROK_STR      = "gosubset_prok";
+    public static final String GOSLIM_CANDIDA_STR     = "goslim_candida";
+    public static final String GOSLIM_ASPERGILLUS_STR = "goslim_aspergillus";
+    public static final String GOSLIM_PLANT_STR       = "goslim_plant";
+    public static final String GOSLIM_YEAST_STR       = "goslim_yeast";
+    public static final String GOSLIM_POMBE_STR       = "goslim_pombe";
 
     public Type getType();
 
@@ -52,8 +49,6 @@ public interface GoSubset extends Comparable<GoSubset> {
         GOSLIM_PLANT,
         GOSLIM_YEAST,
         GOSLIM_POMBE,
-        HIGH_LEVEL_ANNOTATION_QC,
-        UNVETTED,
-        MF_NEEDS_REVIEW;
+        OTHER;
     }
 }

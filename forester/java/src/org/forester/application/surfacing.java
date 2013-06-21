@@ -222,16 +222,14 @@ public class surfacing {
     private static final int                                  JACKNIFE_NUMBER_OF_RESAMPLINGS_DEFAULT                                        = 100;
     final static private long                                 JACKNIFE_RANDOM_SEED_DEFAULT                                                  = 19;
     final static private double                               JACKNIFE_RATIO_DEFAULT                                                        = 0.5;
-    //final static private String  INFER_SPECIES_TREES_OPTION                                             = "species_tree_inference";
     final static private String                               FILTER_POSITIVE_OPTION                                                        = "pos_filter";
     final static private String                               FILTER_NEGATIVE_OPTION                                                        = "neg_filter";
     final static private String                               FILTER_NEGATIVE_DOMAINS_OPTION                                                = "neg_dom_filter";
-    final static private String                               INPUT_FILES_FROM_FILE_OPTION                                                  = "input";
+    final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private char                                 SEPARATOR_FOR_INPUT_VALUES                                                    = '#';
-    final static private String                               PRG_VERSION                                                                   = "2.252";
-    final static private String                               PRG_DATE                                                                      = "2012.08.01";
+    final static private String                               PRG_VERSION                                                                   = "2.260";
+    final static private String                               PRG_DATE                                                                      = "130721";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -283,7 +281,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
     private static final boolean                              PERFORM_DC_REGAIN_PROTEINS_STATS                                              = true;
-    private static final boolean                              DA_ANALYSIS                                                                   = true;
+    private static final boolean                              DA_ANALYSIS                                                                   = false;
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -610,10 +608,9 @@ public class surfacing {
         allowed_options.add( JACKNIFE_RANDOM_SEED_OPTION );
         allowed_options.add( JACKNIFE_RATIO_OPTION );
         allowed_options.add( INPUT_SPECIES_TREE_OPTION );
-        //allowed_options.add( INFER_SPECIES_TREES_OPTION );
         allowed_options.add( FILTER_POSITIVE_OPTION );
         allowed_options.add( FILTER_NEGATIVE_OPTION );
-        allowed_options.add( INPUT_FILES_FROM_FILE_OPTION );
+        allowed_options.add( INPUT_GENOMES_FILE_OPTION );
         allowed_options.add( RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION );
         allowed_options.add( FILTER_NEGATIVE_DOMAINS_OPTION );
         allowed_options.add( IGNORE_VIRAL_IDS );
@@ -790,30 +787,22 @@ public class surfacing {
                                         plus_minus_analysis_high_copy_target_species,
                                         plus_minus_analysis_high_low_copy_species,
                                         plus_minus_analysis_numbers );
-        File input_files_file = null;
-        String[] input_file_names_from_file = null;
-        if ( cla.isOptionSet( surfacing.INPUT_FILES_FROM_FILE_OPTION ) ) {
-            if ( !cla.isOptionValueSet( surfacing.INPUT_FILES_FROM_FILE_OPTION ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for input files file: -"
-                        + surfacing.INPUT_FILES_FROM_FILE_OPTION + "=<file>" );
+        File input_genomes_file = null;
+        if ( cla.isOptionSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
+            if ( !cla.isOptionValueSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for input genomes file: -"
+                        + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
             }
-            input_files_file = new File( cla.getOptionValue( surfacing.INPUT_FILES_FROM_FILE_OPTION ) );
-            final String msg = ForesterUtil.isReadableFile( input_files_file );
+            input_genomes_file = new File( cla.getOptionValue( surfacing.INPUT_GENOMES_FILE_OPTION ) );
+            final String msg = ForesterUtil.isReadableFile( input_genomes_file );
             if ( !ForesterUtil.isEmpty( msg ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "can not read from \"" + input_files_file + "\": " + msg );
-            }
-            try {
-                input_file_names_from_file = ForesterUtil.file2array( input_files_file );
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "failed to read from \"" + input_files_file + "\": " + e );
+                ForesterUtil
+                        .fatalError( surfacing.PRG_NAME, "can not read from \"" + input_genomes_file + "\": " + msg );
             }
         }
-        if ( ( cla.getNumberOfNames() < 1 )
-                && ( ( input_file_names_from_file == null ) || ( input_file_names_from_file.length < 1 ) ) ) {
-            ForesterUtil.fatalError( surfacing.PRG_NAME,
-                                     "No hmmpfam output file indicated is input: use comand line directly or "
-                                             + surfacing.INPUT_FILES_FROM_FILE_OPTION + "=<file>" );
+        else {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, "no input genomes file given: "
+                    + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
         }
         DomainSimilarity.DomainSimilarityScoring scoring = SCORING_DEFAULT;
         if ( cla.isOptionSet( surfacing.SCORING_OPTION ) ) {
@@ -854,7 +843,6 @@ public class surfacing {
         double output_list_of_all_proteins_per_domain_e_value_max = -1;
         if ( cla.isOptionSet( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS ) ) {
             output_protein_lists_for_all_domains = true;
-            //
             if ( cla.isOptionSet( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION ) ) {
                 try {
                     output_list_of_all_proteins_per_domain_e_value_max = cla
@@ -864,7 +852,6 @@ public class surfacing {
                     ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for per domain E-value maximum" );
                 }
             }
-            //
         }
         Detailedness detailedness = DETAILEDNESS_DEFAULT;
         if ( cla.isOptionSet( surfacing.DETAILEDNESS_OPTION ) ) {
@@ -989,8 +976,6 @@ public class surfacing {
                 domain_similarity_print_option = PrintableDomainSimilarity.PRINT_OPTION.HTML;
             }
             else if ( sort.equals( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML ) ) {
-                // domain_similarity_print_option =
-                // DomainSimilarity.PRINT_OPTION.SIMPLE_HTML;
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "simple HTML output not implemented yet :(" );
             }
             else if ( sort.equals( surfacing.DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED ) ) {
@@ -1033,12 +1018,12 @@ public class surfacing {
                         + surfacing.DOMAIN_COUNT_SORT_COMBINATIONS_COUNT + ">\"" );
             }
         }
-        String[][] input_file_properties = null;
-        if ( input_file_names_from_file != null ) {
-            input_file_properties = surfacing.processInputFileNames( input_file_names_from_file );
-        }
-        else {
-            input_file_properties = surfacing.processInputFileNames( cla.getNames() );
+        final String[][] input_file_properties = processInputGenomesFile( input_genomes_file );
+        for( final String[] input_file_propertie : input_file_properties ) {
+            for( int j = 0; j < input_file_propertie.length; j++ ) {
+                System.out.print( input_file_propertie[ j ] + " " );
+            }
+            System.out.println();
         }
         final int number_of_genomes = input_file_properties.length;
         if ( number_of_genomes < 2 ) {
@@ -1054,7 +1039,7 @@ public class surfacing {
                                                  automated_pairwise_comparison_suffix,
                                                  out_dir );
         for( int i = 0; i < number_of_genomes; i++ ) {
-            File dcc_outfile = new File( input_file_properties[ i ][ 0 ]
+            File dcc_outfile = new File( input_file_properties[ i ][ 1 ]
                     + surfacing.DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX );
             if ( out_dir != null ) {
                 dcc_outfile = new File( out_dir + ForesterUtil.FILE_SEPARATOR + dcc_outfile );
@@ -1206,17 +1191,6 @@ public class surfacing {
                 }
             }
         }
-        //        boolean infer_species_trees = false;
-        //        if ( cla.isOptionSet( surfacing.INFER_SPECIES_TREES_OPTION ) ) {
-        //            if ( ( output_file == null ) || ( number_of_genomes < 3 )
-        //                    || ForesterUtil.isEmpty( automated_pairwise_comparison_suffix ) ) {
-        //                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot infer species trees (-"
-        //                        + surfacing.INFER_SPECIES_TREES_OPTION + " without pairwise analyses ("
-        //                        + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
-        //                        + "=<suffix for pairwise comparison output files>)" );
-        //            }
-        //            infer_species_trees = true;
-        //        }
         File[] intree_files = null;
         Phylogeny[] intrees = null;
         if ( cla.isOptionSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
@@ -1333,12 +1307,8 @@ public class surfacing {
                                              + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>)" );
         }
         System.out.println( "Output directory            : " + out_dir );
-        if ( input_file_names_from_file != null ) {
-            System.out.println( "Input files names from      : " + input_files_file + " ["
-                    + input_file_names_from_file.length + " input files]" );
-            html_desc.append( "<tr><td>Input files names from:</td><td>" + input_files_file + " ["
-                    + input_file_names_from_file.length + " input files]</td></tr>" + nl );
-        }
+        System.out.println( "Input genomes from          : " + input_genomes_file );
+        html_desc.append( "<tr><td>Input genomes from:</td><td>" + input_genomes_file + "</td></tr>" + nl );
         if ( positive_filter_file != null ) {
             final int filter_size = filter.size();
             System.out.println( "Positive protein filter     : " + positive_filter_file + " [" + filter_size
@@ -1613,10 +1583,6 @@ public class surfacing {
                 System.out.println( "    Ratio                   : " + ForesterUtil.round( jacknife_ratio, 2 ) );
                 System.out.println( "    Random number seed      : " + random_seed );
             }
-            //                if ( infer_species_trees ) {
-            //                    html_desc.append( "<tr><td>Infer species trees:</td><td>true</td></tr>" + nl );
-            //                    System.out.println( "  Infer species trees       : true" );
-            //                }
             if ( ( intrees != null ) && ( intrees.length > 0 ) ) {
                 for( final File intree_file : intree_files ) {
                     html_desc.append( "<tr><td>Intree for gain/loss parsimony analysis:</td><td>" + intree_file
@@ -1777,8 +1743,10 @@ public class surfacing {
             System.out.println();
             System.out.println( ( i + 1 ) + "/" + number_of_genomes );
             log( ( i + 1 ) + "/" + number_of_genomes, log_writer );
-            System.out.println( "Processing                                     : " + input_file_properties[ i ][ 0 ] );
-            log( "Genome                                         : " + input_file_properties[ i ][ 0 ], log_writer );
+            System.out.println( "Processing                                     : " + input_file_properties[ i ][ 1 ]
+                    + " [" + input_file_properties[ i ][ 0 ] + "]" );
+            log( "Genome                                         : " + input_file_properties[ i ][ 1 ] + " ["
+                    + input_file_properties[ i ][ 0 ] + "]", log_writer );
             HmmscanPerDomainTableParser parser = null;
             INDIVIDUAL_SCORE_CUTOFF ind_score_cutoff = INDIVIDUAL_SCORE_CUTOFF.NONE;
             if ( individual_score_cutoffs != null ) {
@@ -1924,10 +1892,6 @@ public class surfacing {
                         + parser.getProteinsIgnoredDueToFilter() );
             }
             html_desc.append( "</td></tr>" + nl );
-            // domain_partner_counts_array[ i ] =
-            // Methods.getDomainPartnerCounts( protein_domain_collections_array[
-            // i ],
-            // false, input_file_properties[ i ][ 1 ] );
             try {
                 int count = 0;
                 for( final Protein protein : protein_list ) {
@@ -2599,7 +2563,7 @@ public class surfacing {
                 + "=<file>: to filter out proteins containing at least one domain listed in <file>" );
         System.out.println( surfacing.FILTER_NEGATIVE_DOMAINS_OPTION
                 + "=<file>: to filter out (ignore) domains listed in <file>" );
-        System.out.println( surfacing.INPUT_FILES_FROM_FILE_OPTION + "=<file>: to read input files from <file>" );
+        System.out.println( surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>: to read input files from <file>" );
         System.out
                 .println( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION
                         + "=<seed>: seed for random number generator for Fitch Parsimony analysis (type: long, default: no randomization - given a choice, prefer absence" );
@@ -2621,14 +2585,14 @@ public class surfacing {
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
-                + " -no_eo -mo=0 -input=genomes_limited.txt -out_dir=out -o=o "
+                + " -no_eo -mo=0 -genomes=eukaryotes.txt -out_dir=out -o=o "
                 + " -species_tree=tol.xml -obo=gene_ontology_2012_02_07.obo -pos_filter=f.txt -all_prot" );
         System.out.println();
         System.out.println( "Example 2: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
                 + " -cos=Pfam_ls_22_TC2 -p2g=pfam2go -obo=gene_ontology_edit.obo "
-                + "-dc_sort=dom -ignore_with_self -no_singles -e=0.001 -mo=1 -no_eo "
-                + "-ds_output=detailed_html -scoring=domains -sort=alpha human mouse brafl strpu" );
+                + "-dc_sort=dom -ignore_with_self -no_singles -e=0.001 -mo=1 -no_eo -genomes=eukaryotes.txt "
+                + "-ds_output=detailed_html -scoring=domains -sort=alpha " );
         System.out.println();
     }
 
@@ -2653,24 +2617,17 @@ public class surfacing {
         }
     }
 
-    private static String[][] processInputFileNames( final String[] names ) {
-        final String[][] input_file_properties = new String[ names.length ][];
-        for( int i = 0; i < names.length; ++i ) {
-            if ( names[ i ].indexOf( SEPARATOR_FOR_INPUT_VALUES ) < 0 ) {
-                input_file_properties[ i ] = new String[ 2 ];
-                input_file_properties[ i ][ 0 ] = names[ i ];
-                input_file_properties[ i ][ 1 ] = names[ i ];
-            }
-            else {
-                input_file_properties[ i ] = names[ i ].split( surfacing.SEPARATOR_FOR_INPUT_VALUES + "" );
-                if ( input_file_properties[ i ].length != 3 ) {
-                    ForesterUtil
-                            .fatalError( surfacing.PRG_NAME,
-                                         "properties for the input files (hmmpfam output) are expected "
-                                                 + "to be in the following format \"<hmmpfam output file>#<species>\" (or just one word, which is both the filename and the species id), instead received \""
-                                                 + names[ i ] + "\"" );
-                }
-            }
+    private static String[][] processInputGenomesFile( final File input_genomes ) {
+        String[][] input_file_properties = null;
+        try {
+            input_file_properties = ForesterUtil.file22dArray( input_genomes );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME,
+                                     "genomes files is to be in the following format \"<hmmpfam output file> <species>\": "
+                                             + e.getLocalizedMessage() );
+        }
+        for( int i = 0; i < input_file_properties.length; ++i ) {
             final String error = ForesterUtil.isReadableFile( new File( input_file_properties[ i ][ 0 ] ) );
             if ( !ForesterUtil.isEmpty( error ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, error );

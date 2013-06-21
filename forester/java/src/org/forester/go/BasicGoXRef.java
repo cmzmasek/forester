@@ -100,7 +100,7 @@ public class BasicGoXRef implements GoXRef {
             _type = Type.SABIO_RK;
         }
         else {
-            throw new IllegalArgumentException( "unknown GO xref type: " + type );
+            _type = Type.OTHER;
         }
         _xref = sa[ 1 ].trim();
     }
@@ -191,6 +191,9 @@ public class BasicGoXRef implements GoXRef {
                 break;
             case WIKIPEDIA:
                 sb.append( WIKIPEDIA_STR );
+                break;
+            case OTHER:
+                sb.append( "other" );
                 break;
             default:
                 new AssertionError( "unknown type: " + getType() );

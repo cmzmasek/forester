@@ -34,13 +34,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     String _data;
 
-    //String _id_0;
-    // String _id_1;
-    //DomainId _id_0;
-    //DomainId _id_1;
     BasicBinaryDomainCombination() {
-        //_id_0 = null;
-        // _id_1 = null;
         _data = null;
     }
 
@@ -48,17 +42,11 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         if ( ( id_0 == null ) || ( id_1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        final String my_id_0 = id_0.trim();
-        final String my_id_1 = id_1.trim();
-        if ( my_id_0.toLowerCase().compareTo( my_id_1.toLowerCase() ) < 0 ) {
-            //_id_0 = my_id_0;
-            //_id_1 = my_id_1;
-            _data = my_id_0 + BinaryDomainCombination.SEPARATOR + my_id_1;
+        if ( id_0.toLowerCase().compareTo( id_1.toLowerCase() ) < 0 ) {
+            _data = id_0 + BinaryDomainCombination.SEPARATOR + id_1;
         }
         else {
-            //_id_0 = my_id_1;
-            // _id_1 = my_id_0;
-            _data = my_id_1 + BinaryDomainCombination.SEPARATOR + my_id_0;
+            _data = id_1 + BinaryDomainCombination.SEPARATOR + id_0;
         }
     }
 
@@ -109,14 +97,11 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     @Override
     public DomainId getId1() {
-        // return new DomainId( _id_1 );
         return new DomainId( _data.split( BinaryDomainCombination.SEPARATOR )[ 1 ] );
     }
 
     @Override
     public int hashCode() {
-        // return getId0().hashCode() + ( 19 * getId1().hashCode() );
-        // return ( _id_0 + _id_1 ).hashCode();
         return _data.hashCode();
     }
 
@@ -167,11 +152,6 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     @Override
     public String toString() {
         return _data;
-        //        final StringBuffer sb = new StringBuffer();
-        //        sb.append( _id_0 );
-        //        sb.append( BinaryDomainCombination.SEPARATOR );
-        //        sb.append( _id_1 );
-        //        return sb.toString();
     }
 
     public static BinaryDomainCombination createInstance( final String ids ) {

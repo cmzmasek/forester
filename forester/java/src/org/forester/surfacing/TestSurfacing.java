@@ -1245,7 +1245,7 @@ public class TestSurfacing {
             final BasicBinaryDomainCombination s6 = new BasicBinaryDomainCombination( "b", "c" );
             final BasicBinaryDomainCombination s7 = new BasicBinaryDomainCombination( "d", "a" );
             final BasicBinaryDomainCombination s8 = new BasicBinaryDomainCombination( "b", "d" );
-            final BinaryDomainCombination s9 = BasicBinaryDomainCombination.createInstance( " z-z=a-aa " );
+            final BinaryDomainCombination s9 = BasicBinaryDomainCombination.createInstance( "z-z=a-aa" );
             if ( !s9.toString().equals( "a-aa=z-z" ) ) {
                 System.out.println( s9.toString() );
                 return false;

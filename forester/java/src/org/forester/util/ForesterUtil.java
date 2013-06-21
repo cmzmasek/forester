@@ -477,6 +477,34 @@ public final class ForesterUtil {
         return ary;
     }
 
+    public static String[][] file22dArray( final File file ) throws IOException {
+        final List<String> list = new ArrayList<String>();
+        final BufferedReader in = new BufferedReader( new FileReader( file ) );
+        String str;
+        while ( ( str = in.readLine() ) != null ) {
+            str = str.trim();
+            if ( ( str.length() > 0 ) && !str.startsWith( "#" ) ) {
+                list.add( str );
+            }
+        }
+        in.close();
+        final String[][] ary = new String[ list.size() ][ 2 ];
+        final Pattern pa = Pattern.compile( "(\\S+)\\s+(\\S+)" );
+        int i = 0;
+        for( final String s : list ) {
+            final Matcher m = pa.matcher( s );
+            if ( m.matches() ) {
+                ary[ i ][ 0 ] = m.group( 1 );
+                ary[ i ][ 1 ] = m.group( 2 );
+                ++i;
+            }
+            else {
+                throw new IOException( "unexpcted format: " + s );
+            }
+        }
+        return ary;
+    }
+
     final public static List<String> file2list( final File file ) throws IOException {
         final List<String> list = new ArrayList<String>();
         final BufferedReader in = new BufferedReader( new FileReader( file ) );

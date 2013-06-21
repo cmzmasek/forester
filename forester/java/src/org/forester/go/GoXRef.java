@@ -74,6 +74,7 @@ public interface GoXRef extends Comparable<GoXRef> {
         CORUM,
         UNIPATHWAY,
         PO,
-        SABIO_RK;
+        SABIO_RK,
+        OTHER;
     }
 }

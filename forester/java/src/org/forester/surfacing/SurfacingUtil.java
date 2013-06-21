@@ -1748,7 +1748,7 @@ public final class SurfacingUtil {
                                                                           final GenomeWideCombinableDomains gwcd,
                                                                           final int i,
                                                                           final GenomeWideCombinableDomainsSortOrder dc_sort_order ) {
-        File dc_outfile_dot = new File( input_file_properties[ i ][ 0 ]
+        File dc_outfile_dot = new File( input_file_properties[ i ][ 1 ]
                 + surfacing.DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS );
         if ( output_dir != null ) {
             dc_outfile_dot = new File( output_dir + ForesterUtil.FILE_SEPARATOR + dc_outfile_dot );
@@ -2046,7 +2046,7 @@ public final class SurfacingUtil {
                                                           final GenomeWideCombinableDomains gwcd,
                                                           final int i,
                                                           final GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder dc_sort_order ) {
-        File dc_outfile = new File( input_file_properties[ i ][ 0 ]
+        File dc_outfile = new File( input_file_properties[ i ][ 1 ]
                 + surfacing.DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX );
         if ( output_dir != null ) {
             dc_outfile = new File( output_dir + ForesterUtil.FILE_SEPARATOR + dc_outfile );
@@ -2062,7 +2062,7 @@ public final class SurfacingUtil {
         }
         final DescriptiveStatistics stats = gwcd.getPerGenomeDomainPromiscuityStatistics();
         try {
-            per_genome_domain_promiscuity_statistics_writer.write( input_file_properties[ i ][ 0 ] + "\t" );
+            per_genome_domain_promiscuity_statistics_writer.write( input_file_properties[ i ][ 1 ] + "\t" );
             per_genome_domain_promiscuity_statistics_writer.write( FORMATTER_3.format( stats.arithmeticMean() ) + "\t" );
             if ( stats.getN() < 2 ) {
                 per_genome_domain_promiscuity_statistics_writer.write( "n/a" + "\t" );
