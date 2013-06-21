@@ -2167,24 +2167,26 @@
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">5518</id>
+                                                      <id provider="uniprot">229533</id>
                                                       <code>GIBZE</code>
-                                                      <scientific_name>Gibberella zeae</scientific_name>
+                                                      <scientific_name>Gibberella zeae (strain PH-1 / ATCC MYA-4620 / FGSC 9075 / NRRL 31084)</scientific_name>
                                                       <common_name>Wheat head blight fungus</common_name>
                                                       <synonym>Fusarium graminearum</synonym>
-                                                      <rank>species</rank>
+                                                      <synonym>Gibberella zeae PH-1</synonym>
+                                                      <rank>strain</rank>
                                                       <uri>http://www.apsnet.org/publications/apsnetfeatures/PublishingImages/1999%20Features/Fusarium02sm.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">29875</id>
-                                                      <code>HYPVI</code>
-                                                      <scientific_name>Hypocrea virens</scientific_name>
-                                                      <common_name>Gliocladium virens</common_name>
+                                                      <id provider="uniprot">413071</id>
+                                                      <code>HYPVG</code>
+                                                      <scientific_name>Hypocrea virens (strain Gv29-8 / FGSC 10586)</scientific_name>
                                                       <synonym>Trichoderma virens</synonym>
                                                       <synonym>Gliocladium flavofuscum</synonym>
-                                                      <rank>species</rank>
+                                                      <synonym>Trichoderma virens Gv29-8</synonym>
+                                                      <synonym>Gliocladium virens</synonym>
+                                                      <rank>strain</rank>
                                                       <uri>http://www.ars.usda.gov/images/docs/10920_11114/Stroma1.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
@@ -2244,21 +2246,21 @@
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="eol">1029505</id>
+                                                      <id provider="uniprot">306901</id>
                                                       <code>CHAGB</code>
-                                                      <scientific_name>Chaetomium globosum</scientific_name>
+                                                      <scientific_name>Chaetomium globosum (strain ATCC 6205 / CBS 148.51 / DSM 1962 / NBRC 6347 / NRRL 1970)</scientific_name>
                                                       <authority>Kunze 1817</authority>
                                                       <common_name>Soil fungus</common_name>
-                                                      <rank>species</rank>
+                                                      <rank>strain</rank>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">5141</id>
+                                                    <id provider="uniprot">367110</id>
                                                     <code>NEUCR</code>
-                                                    <scientific_name>Neurospora crassa</scientific_name>
-                                                    <rank>species</rank>
+                                                    <scientific_name>Neurospora crassa (strain ATCC 24698 / 74-OR23-1A / CBS 708.71 / DSM 1257 / FGSC 987)</scientific_name>
+                                                    <rank>strain</rank>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
@@ -2277,22 +2279,22 @@
                                                 </taxonomy>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">40559</id>
-                                                    <code>BOTFU</code>
-                                                    <scientific_name>Botryotinia fuckeliana</scientific_name>
+                                                    <id provider="uniprot">999810</id>
+                                                    <code>BOTF4</code>
+                                                    <scientific_name>Botryotinia fuckeliana (strain T4)</scientific_name>
                                                     <common_name>Noble rot fungus</common_name>
                                                     <synonym>Botrytis cinerea</synonym>
-                                                    <rank>species</rank>
+                                                    <rank>strain</rank>
                                                   </taxonomy>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">5180</id>
-                                                    <code>SCLSC</code>
-                                                    <scientific_name>Sclerotinia sclerotiorum</scientific_name>
+                                                    <id provider="uniprot">665079</id>
+                                                    <code>SCLS1</code>
+                                                    <scientific_name>Sclerotinia sclerotiorum (strain ATCC 18683 / 1980 / Ss-1)</scientific_name>
                                                     <common_name>White mold</common_name>
                                                     <synonym>Whetzelinia sclerotiorum</synonym>
-                                                    <rank>species</rank>
+                                                    <rank>strain</rank>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
@@ -2368,18 +2370,21 @@
                                                 <clade>
                                                   <taxonomy>
                                                     <id provider="uniprot">83344</id>
-                                                    <scientific_name>Mycosphaerella fijiensis</scientific_name>
+                                                    <code>PFIXX</code>
+                                                    <scientific_name>Pseudocercospora fijiensis</scientific_name>
+                                                    <synonym>Mycosphaerella fijiensis</synonym>
                                                     <rank>species</rank>
                                                   </taxonomy>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">54734</id>
-                                                    <code>MYCGR</code>
-                                                    <scientific_name>Mycosphaerella graminicola</scientific_name>
+                                                    <id provider="uniprot">336722</id>
+                                                    <code>MYCGM</code>
+                                                    <scientific_name>Mycosphaerella graminicola (strain CBS 115943 / IPO323)</scientific_name>
                                                     <common_name>Speckled leaf blotch fungus</common_name>
-                                                    <synonym>Septoria tritici</synonym>
-                                                    <rank>species</rank>
+                                                    <synonym>Zymoseptoria tritici IPO323</synonym>
+                                                    <synonym>Mycosphaerella graminicola IPO323</synonym>
+                                                    <rank>strain</rank>
                                                   </taxonomy>
                                                 </clade>
                                                 <clade>
@@ -2408,6 +2413,8 @@
                                                   <id provider="uniprot">430998</id>
                                                   <code>BCOXX</code>
                                                   <scientific_name>Baudoinia compniacensis</scientific_name>
+                                                  <common_name>Angels&apos; Share fungus</common_name>
+                                                  <synonym>Torula compniacensis</synonym>
                                                   <rank>species</rank>
                                                   <uri>http://www.botanicalgarden.ubc.ca/potd/images/2011/baudoinia-compniacensis2.jpg</uri>
                                                 </taxonomy>
@@ -2466,29 +2473,13 @@
                                                 <name>Cochliobolus &amp; Setosphaeria</name>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">5015</id>
-                                                    <scientific_name>Cochliobolus</scientific_name>
-                                                    <rank>genus</rank>
+                                                    <id provider="uniprot">45130</id>
+                                                    <code>COCSA</code>
+                                                    <scientific_name>Cochliobolus sativus</scientific_name>
+                                                    <synonym>Bipolaris sorokiniana</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://www.plantmanagementnetwork.org/pub/php/diagnosticguide/2003/rootrot/image/mathre6sm.jpg</uri>
                                                   </taxonomy>
-                                                  <clade>
-                                                    <taxonomy>
-                                                      <id provider="uniprot">5016</id>
-                                                      <code>COCHE</code>
-                                                      <scientific_name>Cochliobolus heterostrophus</scientific_name>
-                                                      <synonym>Drechslera maydis</synonym>
-                                                      <rank>species</rank>
-                                                    </taxonomy>
-                                                  </clade>
-                                                  <clade>
-                                                    <taxonomy>
-                                                      <id provider="uniprot">45130</id>
-                                                      <code>COCSA</code>
-                                                      <scientific_name>Cochliobolus sativus</scientific_name>
-                                                      <synonym>Bipolaris sorokiniana</synonym>
-                                                      <rank>species</rank>
-                                                      <uri>http://www.plantmanagementnetwork.org/pub/php/diagnosticguide/2003/rootrot/image/mathre6sm.jpg</uri>
-                                                    </taxonomy>
-                                                  </clade>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
@@ -2510,17 +2501,18 @@
                                                   <scientific_name>Pyrenophora tritici-repentis (strain Pt-1C-BFP)</scientific_name>
                                                   <common_name>Wheat tan spot fungus</common_name>
                                                   <synonym>Drechslera tritici-repentis</synonym>
+                                                  <rank>strain</rank>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">13684</id>
+                                                <id provider="uniprot">321614</id>
                                                 <code>PHANO</code>
-                                                <scientific_name>Phaeosphaeria nodorum</scientific_name>
+                                                <scientific_name>Phaeosphaeria nodorum (strain SN15 / ATCC MYA-4574 / FGSC 10173)</scientific_name>
                                                 <common_name>Glume blotch fungus</common_name>
                                                 <synonym>Septoria nodorum</synonym>
-                                                <rank>species</rank>
+                                                <rank>strain</rank>
                                               </taxonomy>
                                             </clade>
                                           </clade>
@@ -2540,22 +2532,21 @@
                                           </taxonomy>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">5059</id>
-                                              <code>ASPFL</code>
-                                              <scientific_name>Aspergillus flavus</scientific_name>
-                                              <authority>Link 1809</authority>
-                                              <synonym>Petromyces flavus</synonym>
-                                              <rank>species</rank>
+                                              <id provider="uniprot">332952</id>
+                                              <code>ASPFN</code>
+                                              <scientific_name>Aspergillus flavus (strain ATCC 200026 / FGSC A1120 / NRRL 3357 / JCM 12722 / SRRC 167)</scientific_name>
+                                              <synonym>Aspergillus flavus NRRL3357</synonym>
+                                              <rank>strain</rank>
                                               <uri>http://www.schoolproject2.ewebsite.com/img/original/21/aspergillus-flavus.jpg</uri>
                                             </taxonomy>
                                           </clade>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">5061</id>
-                                              <code>ASPNG</code>
-                                              <scientific_name>Aspergillus niger</scientific_name>
-                                              <authority>Tiegh</authority>
-                                              <rank>species</rank>
+                                              <id provider="uniprot">425011</id>
+                                              <code>ASPNC</code>
+                                              <scientific_name>Aspergillus niger (strain CBS 513.88 / FGSC A1513)</scientific_name>
+                                              <synonym>Aspergillus niger CBS 513.88</synonym>
+                                              <rank>strain</rank>
                                               <uri>http://www.vetmed.wisc.edu/students/vetmycology/15.jpg</uri>
                                             </taxonomy>
                                           </clade>
@@ -2572,12 +2563,12 @@
                                           <name>Neosartorya &amp; Emericella</name>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="eol">195546</id>
+                                              <id provider="uniprot">227321</id>
                                               <code>EMENI</code>
-                                              <scientific_name>Emericella nidulans</scientific_name>
+                                              <scientific_name>Emericella nidulans (strain FGSC A4 / ATCC 38163 / CBS 112.46 / NRRL 194 / M139)</scientific_name>
                                               <authority>Vuill. 1927</authority>
                                               <synonym>Aspergillus nidulans</synonym>
-                                              <rank>species</rank>
+                                              <rank>strain</rank>
                                             </taxonomy>
                                           </clade>
                                           <clade>
@@ -2586,6 +2577,7 @@
                                               <code>NEOFI</code>
                                               <scientific_name>Neosartorya fischeri (strain ATCC 1020 / DSM 3700 / FGSC A1164 / NRRL 181)</scientific_name>
                                               <synonym>Aspergillus fischerianus</synonym>
+                                              <rank>strain</rank>
                                             </taxonomy>
                                           </clade>
                                         </clade>
@@ -2604,8 +2596,6 @@
                                       </reference>
                                       <clade>
                                         <name>mitosporic Onygenales &amp; Onygenaceae</name>
-                                        <taxonomy>
-                                        </taxonomy>
                                         <clade>
                                           <taxonomy>
                                             <id provider="uniprot">246410</id>
@@ -2620,6 +2610,7 @@
                                             <id provider="uniprot">336963</id>
                                             <code>UNCRE</code>
                                             <scientific_name>Uncinocarpus reesii (strain UAMH 1704)</scientific_name>
+                                            <rank>strain</rank>
                                           </taxonomy>
                                         </clade>
                                       </clade>
@@ -2641,6 +2632,7 @@
                                       <scientific_name>Tuber melanosporum (strain Mel28)</scientific_name>
                                       <common_name>Perigord black truffle</common_name>
                                       <synonym>Tuber melanosporum Mel28</synonym>
+                                      <rank>strain</rank>
                                       <uri>http://www.trufamania.com/trufas/Tuber%20melanosporum02.jpg</uri>
                                     </taxonomy>
                                   </clade>
@@ -2652,8 +2644,13 @@
                                     <common_name>budding yeasts</common_name>
                                     <rank>order</rank>
                                   </taxonomy>
+                                  <reference doi="10.1186/1471-2148-6-99">
+                                    <desc>A fungal phylogeny based on 42 complete genomes derived from supertree and combined gene analysis</desc>
+                                  </reference>
+                                  <reference>
+                                  </reference>
                                   <clade>
-                                    <name>Candida &amp; Debaryomyces &amp; Saccharomycetacea</name>
+                                    <name>mitosporic Saccharomycetales &amp; Debaryomycetaceae &amp; Saccharomycetaceae</name>
                                     <clade>
                                       <taxonomy>
                                         <id provider="uniprot">4893</id>
@@ -2661,63 +2658,38 @@
                                         <rank>family</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>Saccharomyces_Pichia</name>
+                                        <name>Naumovozyma &amp; Saccharomyces</name>
                                         <clade>
-                                          <name>Saccharomyces</name>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">27288</id>
-                                              <code>SACCA</code>
-                                              <scientific_name>Saccharomyces castellii</scientific_name>
-                                              <common_name>Yeast</common_name>
-                                              <synonym>Saccharomyces castellii</synonym>
-                                              <rank>species</rank>
-                                            </taxonomy>
-                                          </clade>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">4932</id>
-                                              <code>YEAST</code>
-                                              <scientific_name>Saccharomyces cerevisiae</scientific_name>
-                                              <common_name>Baker&apos;s yeast</common_name>
-                                              <rank>species</rank>
-                                            </taxonomy>
-                                          </clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">1064592</id>
+                                            <code>NAUCC</code>
+                                            <scientific_name>Naumovozyma castellii (strain ATCC 76901 / CBS 4309 / NBRC 1992 / NRRL Y-12630)</scientific_name>
+                                            <common_name>Yeast</common_name>
+                                            <synonym>Saccharomyces castellii</synonym>
+                                            <rank>strain</rank>
+                                          </taxonomy>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">4905</id>
-                                            <code>PICAN</code>
-                                            <scientific_name>Pichia angusta</scientific_name>
-                                            <common_name>Yeast</common_name>
-                                            <synonym>Hansenula polymorpha</synonym>
-                                            <rank>species</rank>
+                                            <id provider="uniprot">559292</id>
+                                            <code>YEAST</code>
+                                            <scientific_name>Saccharomyces cerevisiae (strain ATCC 204508 / S288c)</scientific_name>
+                                            <common_name>Baker&apos;s yeast</common_name>
+                                            <rank>strain</rank>
                                           </taxonomy>
                                         </clade>
                                       </clade>
                                       <clade>
-                                        <name>Kluyveromyces &amp; Ashbya</name>
+                                        <name>Eremothecium &amp; Kluyveromyces</name>
                                         <clade>
-                                          <name>Kluyveromyces</name>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">284590</id>
-                                              <code>KLULA</code>
-                                              <scientific_name>Kluyveromyces lactis (strain ATCC 8585 / CBS 2359 / DSM 70799 / NBRC 1267 / NRRL Y-1140 / WM37)</scientific_name>
-                                              <common_name>Yeast</common_name>
-                                              <synonym>Candida sphaerica</synonym>
-                                              <synonym>Kluyveromyces lactis NRRL Y-1140</synonym>
-                                            </taxonomy>
-                                          </clade>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">4914</id>
-                                              <code>KLUWA</code>
-                                              <scientific_name>Kluyveromyces waltii</scientific_name>
-                                              <common_name>Yeast</common_name>
-                                              <rank>species</rank>
-                                            </taxonomy>
-                                          </clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">284590</id>
+                                            <code>KLULA</code>
+                                            <scientific_name>Kluyveromyces lactis (strain ATCC 8585 / CBS 2359 / DSM 70799 / NBRC 1267 / NRRL Y-1140 / WM37)</scientific_name>
+                                            <common_name>Yeast</common_name>
+                                            <synonym>Candida sphaerica</synonym>
+                                            <synonym>Kluyveromyces lactis NRRL Y-1140</synonym>
+                                          </taxonomy>
                                         </clade>
                                         <clade>
                                           <taxonomy>
@@ -2731,29 +2703,30 @@
                                       </clade>
                                     </clade>
                                     <clade>
-                                      <name>Candida &amp; Debaryomyces</name>
+                                      <name>Debaryomyces &amp; Candida</name>
                                       <clade>
                                         <taxonomy>
                                           <id provider="uniprot">5475</id>
                                           <scientific_name>Candida</scientific_name>
+                                          <synonym>Torulopsis</synonym>
                                           <rank>genus</rank>
                                         </taxonomy>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">5476</id>
+                                            <id provider="uniprot">237561</id>
                                             <code>CANAL</code>
-                                            <scientific_name>Candida albicans</scientific_name>
+                                            <scientific_name>Candida albicans (strain SC5314 / ATCC MYA-2876)</scientific_name>
                                             <common_name>Yeast</common_name>
-                                            <rank>species</rank>
+                                            <rank>strain</rank>
                                           </taxonomy>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">5482</id>
-                                            <code>CANTR</code>
-                                            <scientific_name>Candida tropicalis</scientific_name>
+                                            <id provider="uniprot">294747</id>
+                                            <code>CANTT</code>
+                                            <scientific_name>Candida tropicalis (strain ATCC MYA-3404 / T1)</scientific_name>
                                             <common_name>Yeast</common_name>
-                                            <rank>species</rank>
+                                            <rank>strain</rank>
                                           </taxonomy>
                                         </clade>
                                       </clade>
@@ -2771,11 +2744,11 @@
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">4952</id>
+                                      <id provider="uniprot">284591</id>
                                       <code>YARLI</code>
-                                      <scientific_name>Yarrowia lipolytica</scientific_name>
+                                      <scientific_name>Yarrowia lipolytica (strain CLIB 122 / E 150)</scientific_name>
                                       <synonym>Candida lipolytica</synonym>
-                                      <rank>species</rank>
+                                      <rank>strain</rank>
                                     </taxonomy>
                                   </clade>
                                 </clade>
@@ -2796,11 +2769,11 @@
                                     </taxonomy>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">4897</id>
-                                        <code>SCHJP</code>
-                                        <scientific_name>Schizosaccharomyces japonicus</scientific_name>
+                                        <id provider="uniprot">402676</id>
+                                        <code>SCHJY</code>
+                                        <scientific_name>Schizosaccharomyces japonicus (strain yFS275 / FY16936)</scientific_name>
                                         <common_name>Fission yeast</common_name>
-                                        <rank>species</rank>
+                                        <rank>strain</rank>
                                       </taxonomy>
                                     </clade>
                                     <clade>
@@ -2815,11 +2788,11 @@
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">4896</id>
+                                        <id provider="uniprot">284812</id>
                                         <code>SCHPO</code>
-                                        <scientific_name>Schizosaccharomyces pombe</scientific_name>
+                                        <scientific_name>Schizosaccharomyces pombe (strain 972 / ATCC 24843)</scientific_name>
                                         <common_name>Fission yeast</common_name>
-                                        <rank>species</rank>
+                                        <rank>strain</rank>
                                       </taxonomy>
                                     </clade>
                                   </clade>
@@ -2902,23 +2875,24 @@
                                                       <clade>
                                                         <taxonomy>
                                                           <id provider="uniprot">5346</id>
-                                                          <code>COPCI</code>
-                                                          <scientific_name>Coprinopsis cinerea</scientific_name>
+                                                          <code>COPC7</code>
+                                                          <scientific_name>Coprinopsis cinerea (strain Okayama-7 / 130 / ATCC MYA-4618 / FGSC 9003)</scientific_name>
                                                           <common_name>Inky cap fungus</common_name>
                                                           <synonym>Hormographiella aspergillata</synonym>
-                                                          <rank>species</rank>
+                                                          <rank>strain</rank>
                                                           <uri>http://upload.wikimedia.org/wikipedia/commons/e/e9/Coprinopsis.cinerea.-.lindsey.jpg</uri>
                                                         </taxonomy>
                                                       </clade>
                                                     </clade>
                                                     <clade>
                                                       <taxonomy>
-                                                        <id provider="uniprot">29883</id>
-                                                        <code>LACBI</code>
+                                                        <id provider="uniprot">486041</id>
+                                                        <code>LACBS</code>
                                                         <scientific_name>Laccaria bicolor</scientific_name>
                                                         <common_name>Bicoloured deceiver</common_name>
                                                         <synonym>Laccaria laccata var. bicolor</synonym>
-                                                        <rank>species</rank>
+                                                        <synonym>Laccaria bicolor S238N-H82</synonym>
+                                                        <rank>strain</rank>
                                                         <uri>http://botit.botany.wisc.edu/toms_fungi/images/L_bicolor_NM.JPG</uri>
                                                       </taxonomy>
                                                     </clade>
@@ -2993,6 +2967,7 @@
                                             <clade>
                                               <taxonomy>
                                                 <id provider="uniprot">202697</id>
+                                                <code>JARXX</code>
                                                 <scientific_name>Jaapia argillacea</scientific_name>
                                                 <rank>species</rank>
                                                 <uri>http://mycor.nancy.inra.fr/blogGenomes/wp-content/uploads/2012/08/IMG_21261.jpg</uri>
@@ -3171,10 +3146,10 @@
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">5270</id>
+                                        <id provider="uniprot">237631</id>
                                         <code>USTMA</code>
-                                        <scientific_name>Ustilago maydis</scientific_name>
-                                        <common_name>Smut fungus</common_name>
+                                        <scientific_name>Ustilago maydis (strain 521 / FGSC 9021)</scientific_name>
+                                        <common_name>Corn smut fungus</common_name>
                                         <rank>species</rank>
                                       </taxonomy>
                                     </clade>
@@ -3195,23 +3170,23 @@
                                     </taxonomy>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="eol">156696</id>
+                                        <id provider="uniprot">747676</id>
                                         <code>MELLP</code>
-                                        <scientific_name>Melampsora laricis-populina</scientific_name>
+                                        <scientific_name>Melampsora larici-populina (strain 98AG31 / pathotype 3-4-7)</scientific_name>
                                         <authority>Kleb. 1902</authority>
-                                        <synonym>Melampsora larici-populina</synonym>
-                                        <synonym>Melampsora laricipopulina</synonym>
-                                        <rank>species</rank>
+                                        <common_name>Poplar leaf rust fungus</common_name>
+                                        <synonym>Melampsora larici-populina 98AG31</synonym>
+                                        <synonym>Melampsora laricis-populina 98AG31</synonym>
+                                        <rank>strain</rank>
                                       </taxonomy>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="eol">1029947</id>
+                                        <id provider="uniprot">5297</id>
                                         <code>PUCGR</code>
                                         <scientific_name>Puccinia graminis</scientific_name>
                                         <authority>Pers. 1794</authority>
                                         <common_name>Black stem rust fungus</common_name>
-                                        <synonym>Wheat rust</synonym>
                                         <rank>species</rank>
                                       </taxonomy>
                                     </clade>
@@ -3244,10 +3219,10 @@
                               </clade>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">148960</id>
-                                  <code>WALSE</code>
-                                  <scientific_name>Wallemia sebi</scientific_name>
-                                  <rank>species</rank>
+                                  <id provider="uniprot">671144</id>
+                                  <code>WALSC</code>
+                                  <scientific_name>Wallemia sebi (strain ATCC MYA-4683 / CBS 633.66)</scientific_name>
+                                  <rank>strain</rank>
                                 </taxonomy>
                               </clade>
                             </clade>
@@ -3306,8 +3281,10 @@
                         <clade>
                           <taxonomy>
                             <id provider="uniprot">61392</id>
+                            <code>CREXX</code>
                             <scientific_name>Coemansia reversa</scientific_name>
                             <rank>species</rank>
+                            <uri>http://genome.jgi.doe.gov/public/Coere1/Coemansia.jpg</uri>
                           </taxonomy>
                         </clade>
                       </clade>
@@ -3336,11 +3313,11 @@
                         </taxonomy>
                         <clade>
                           <taxonomy>
-                            <id provider="uniprot">109871</id>
-                            <code>BATDE</code>
-                            <scientific_name>Batrachochytrium dendrobatidis</scientific_name>
+                            <id provider="uniprot">684364</id>
+                            <code>BATDJ</code>
+                            <scientific_name>Batrachochytrium dendrobatidis (strain JAM81 / FGSC 10211)</scientific_name>
                             <common_name>Frog chytrid fungus</common_name>
-                            <rank>species</rank>
+                            <rank>strain</rank>
                           </taxonomy>
                         </clade>
                         <clade>
@@ -3377,27 +3354,60 @@
                 </clade>
                 <clade>
                   <taxonomy>
-                    <id provider="uniprot">6033</id>
-                    <scientific_name>Encephalitozoon</scientific_name>
-                    <rank>genus</rank>
+                    <id provider="uniprot">6029</id>
+                    <scientific_name>Microsporidia</scientific_name>
+                    <rank>phylum</rank>
                   </taxonomy>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">6035</id>
-                      <code>ENCCU</code>
-                      <scientific_name>Encephalitozoon cuniculi (strain GB-M1)</scientific_name>
-                      <common_name>Microsporidian parasite</common_name>
-                      <rank>species</rank>
-                      <uri>http://www.nature.com/modpathol/journal/v15/n5/images/3880566f7.jpg</uri>
+                      <id provider="uniprot">6032</id>
+                      <scientific_name>Apansporoblastina</scientific_name>
+                      <rank>suborder</rank>
                     </taxonomy>
+                    <clade>
+                      <taxonomy>
+                        <id provider="uniprot">6033</id>
+                        <scientific_name>Encephalitozoon</scientific_name>
+                        <rank>genus</rank>
+                      </taxonomy>
+                      <clade>
+                        <taxonomy>
+                          <id provider="uniprot">284813</id>
+                          <code>ENCCU</code>
+                          <scientific_name>Encephalitozoon cuniculi (strain GB-M1)</scientific_name>
+                          <common_name>Microsporidian parasite</common_name>
+                          <rank>strain</rank>
+                          <uri>http://www.nature.com/modpathol/journal/v15/n5/images/3880566f7.jpg</uri>
+                        </taxonomy>
+                      </clade>
+                      <clade>
+                        <taxonomy>
+                          <id provider="uniprot">907965</id>
+                          <code>ENCHA</code>
+                          <scientific_name>Encephalitozoon hellem (strain ATCC 50504)</scientific_name>
+                          <common_name>Microsporidian parasite</common_name>
+                          <rank>strain</rank>
+                          <uri>http://ruby.fgcu.edu/courses/davidb/50249/web/Encephalitozoonhellem91.jpg</uri>
+                        </taxonomy>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <taxonomy>
+                        <id provider="uniprot">993615</id>
+                        <code>VITCO</code>
+                        <scientific_name>Vittaforma corneae (strain ATCC 50505)</scientific_name>
+                        <common_name>Microsporidian parasite</common_name>
+                        <synonym>Nosema corneum</synonym>
+                      </taxonomy>
+                    </clade>
                   </clade>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">907965</id>
-                      <code>ENCHA</code>
-                      <scientific_name>Encephalitozoon hellem (strain ATCC 50504)</scientific_name>
+                      <id provider="uniprot">72359</id>
+                      <code>TRAHO</code>
+                      <scientific_name>Trachipleistophora hominis</scientific_name>
                       <common_name>Microsporidian parasite</common_name>
-                      <uri>http://ruby.fgcu.edu/courses/davidb/50249/web/Encephalitozoonhellem91.jpg</uri>
+                      <rank>species</rank>
                     </taxonomy>
                   </clade>
                 </clade>
