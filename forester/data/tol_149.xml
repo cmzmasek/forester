@@ -1374,9 +1374,8 @@
                                               <clade>
                                                 <name>Drosophila subgenus &amp; Hawaiian Drosophila</name>
                                                 <clade>
+                                                  <name>Drosophila subgenus</name>
                                                   <taxonomy>
-                                                    <scientific_name>Drosophila</scientific_name>
-                                                    <rank>subgenus</rank>
                                                   </taxonomy>
                                                   <clade>
                                                     <taxonomy>
