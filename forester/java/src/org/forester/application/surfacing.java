@@ -1020,8 +1020,8 @@ public class surfacing {
         }
         final String[][] input_file_properties = processInputGenomesFile( input_genomes_file );
         for( final String[] input_file_propertie : input_file_properties ) {
-            for( int j = 0; j < input_file_propertie.length; j++ ) {
-                System.out.print( input_file_propertie[ j ] + " " );
+            for( final String element : input_file_propertie ) {
+                System.out.print( element + " " );
             }
             System.out.println();
         }
@@ -1710,7 +1710,7 @@ public class surfacing {
         BufferedWriter domains_per_potein_stats_writer = null;
         try {
             domains_per_potein_stats_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
-                    + output_file + "__domains_per_potein_stats.txt" ) );
+                    + output_file + "_domains_per_potein_stats.txt" ) );
             domains_per_potein_stats_writer.write( "Genome" );
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( "Mean" );
@@ -2006,13 +2006,13 @@ public class surfacing {
             domains_per_potein_stats_writer.close();
             printOutPercentageOfMultidomainProteins( all_genomes_domains_per_potein_histo, log_writer );
             ForesterUtil.map2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                    + "__all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
+                    + "_all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
             ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                    + "__domains_always_single_.txt" ), domains_which_are_always_single, "\n" );
+                    + "_domains_always_single_.txt" ), domains_which_are_always_single, "\n" );
             ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                    + "__domains_single_or_combined.txt" ), domains_which_are_sometimes_single_sometimes_not, "\n" );
+                    + "_domains_single_or_combined.txt" ), domains_which_are_sometimes_single_sometimes_not, "\n" );
             ForesterUtil.collection2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
-                    + "__domains_always_combined.txt" ), domains_which_never_single, "\n" );
+                    + "_domains_always_combined.txt" ), domains_which_never_single, "\n" );
             ForesterUtil.programMessage( PRG_NAME,
                                          "Average of proteins with a least one domain assigned: "
                                                  + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
