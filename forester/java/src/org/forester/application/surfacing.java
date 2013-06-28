@@ -54,6 +54,7 @@ import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTOFF;
+import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
@@ -1019,12 +1020,12 @@ public class surfacing {
             }
         }
         final String[][] input_file_properties = processInputGenomesFile( input_genomes_file );
-        for( final String[] input_file_propertie : input_file_properties ) {
-            for( final String element : input_file_propertie ) {
-                System.out.print( element + " " );
-            }
-            System.out.println();
-        }
+        //        for( final String[] input_file_propertie : input_file_properties ) {
+        //            for( final String element : input_file_propertie ) {
+        //                System.out.print( element + " " );
+        //            }
+        //            System.out.println();
+        //        }
         final int number_of_genomes = input_file_properties.length;
         if ( number_of_genomes < 2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot analyze less than two files" );
@@ -2627,7 +2628,23 @@ public class surfacing {
                                      "genomes files is to be in the following format \"<hmmpfam output file> <species>\": "
                                              + e.getLocalizedMessage() );
         }
+        final Set<String> specs = new HashSet<String>();
+        final Set<String> paths = new HashSet<String>();
         for( int i = 0; i < input_file_properties.length; ++i ) {
+            if ( !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( input_file_properties[ i ][ 1 ] ).matches() ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "illegal format for species code: "
+                        + input_file_properties[ i ][ 1 ] );
+            }
+            if ( specs.contains( input_file_properties[ i ][ 1 ] ) ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "species code " + input_file_properties[ i ][ 1 ]
+                        + " is not unique" );
+            }
+            specs.add( input_file_properties[ i ][ 1 ] );
+            if ( paths.contains( input_file_properties[ i ][ 0 ] ) ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "path " + input_file_properties[ i ][ 0 ]
+                        + " is not unique" );
+            }
+            paths.add( input_file_properties[ i ][ 0 ] );
             final String error = ForesterUtil.isReadableFile( new File( input_file_properties[ i ][ 0 ] ) );
             if ( !ForesterUtil.isEmpty( error ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, error );

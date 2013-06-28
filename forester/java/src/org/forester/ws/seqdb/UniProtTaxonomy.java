@@ -32,46 +32,18 @@ import org.forester.util.ForesterUtil;
 
 public final class UniProtTaxonomy {
 
-    private static final String         ARCHAEA                  = "Archaea";
-    private static final String         BACTERIA                 = "Bacteria";
-    private static final String         EUKARYOTA                = "Eukaryota";
-    private final List<String>          _lineage;
-    private final String                _code;
-    private final String                _scientific_name;
-    private final String                _common_name;
-    private final String                _synonym;
-    private final String                _rank;
-    private final String                _id;
-    public final static String          CELLULAR_ORGANISMS       = "cellular organisms";
-    public final static String          VIRUSES                  = "Viruses";
-    public final static UniProtTaxonomy DROSOPHILA_GENUS         = new UniProtTaxonomy( new String[] {
-            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Ecdysozoa", "Arthropoda", "Hexapoda", "Insecta", "Pterygota",
-            "Neoptera", "Endopterygota", "Diptera", "Brachycera", "Muscomorpha", "Ephydroidea", "Drosophilidae",
-            "Drosophila"                                                               },
-                                                                                        "",
-                                                                                        "fruit flies",
-                                                                                        "Drosophila",
-                                                                                        "",
-                                                                                        "genus",
-                                                                                        "7215" );
-    public final static UniProtTaxonomy XENOPUS_GENUS            = new UniProtTaxonomy( new String[] {
-            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Chordata", "Craniata", "Vertebrata", "Euteleostomi", "Amphibia",
-            "Batrachia", "Anura", "Mesobatrachia", "Pipoidea", "Pipidae", "Xenopodinae", "Xenopus" },
-                                                                                        "",
-                                                                                        "",
-                                                                                        "Xenopus",
-                                                                                        "",
-                                                                                        "genus",
-                                                                                        "8353" );
-    public final static UniProtTaxonomy CAPITELLA_TELATA_SPECIES = new UniProtTaxonomy( new String[] {
-            CELLULAR_ORGANISMS, EUKARYOTA, "Metazoa", "Annelida", "Polychaeta", "Scolecida", "Capitellida",
-            "Capitellidae", "Capitella", "Capitella teleta"                            },
-                                                                                        "",
-                                                                                        "",
-                                                                                        "Capitella teleta",
-                                                                                        "Capitella sp. I",
-                                                                                        "species",
-                                                                                        "283909" );
+    private static final String ARCHAEA            = "Archaea";
+    private static final String BACTERIA           = "Bacteria";
+    private static final String EUKARYOTA          = "Eukaryota";
+    private final List<String>  _lineage;
+    private final String        _code;
+    private final String        _scientific_name;
+    private final String        _common_name;
+    private final String        _synonym;
+    private final String        _rank;
+    private final String        _id;
+    public final static String  CELLULAR_ORGANISMS = "cellular organisms";
+    public final static String  VIRUSES            = "Viruses";
 
     public UniProtTaxonomy( final String line ) {
         final String[] items = line.split( "\t" );

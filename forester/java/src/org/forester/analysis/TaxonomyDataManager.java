@@ -326,11 +326,11 @@ public final class TaxonomyDataManager extends RunnableProcess {
     static final UniProtTaxonomy obtainUniProtTaxonomyFromLineage( final List<String> lineage )
             throws AncestralTaxonomyInferenceException, IOException {
         final String lineage_str = ForesterUtil.stringListToString( lineage, ">" );
-        UniProtTaxonomy up_tax = null;
         if ( TaxonomyDataManager.getLineageTaxCacheMap().containsKey( lineage_str ) ) {
-            up_tax = TaxonomyDataManager.getLineageTaxCacheMap().get( lineage_str ).copy();
+            return TaxonomyDataManager.getLineageTaxCacheMap().get( lineage_str ).copy();
         }
         else {
+            final List<UniProtTaxonomy> matching_taxonomies = new ArrayList<UniProtTaxonomy>();
             final List<UniProtTaxonomy> up_taxonomies = getTaxonomiesFromScientificName( lineage
                     .get( lineage.size() - 1 ) );
             if ( ( up_taxonomies != null ) && ( up_taxonomies.size() > 0 ) ) {
@@ -344,34 +344,46 @@ public final class TaxonomyDataManager extends RunnableProcess {
                         }
                     }
                     if ( match ) {
-                        if ( up_tax != null ) {
-                            //TODO this is dead code?!
-                            throw new AncestralTaxonomyInferenceException( "lineage \""
-                                    + ForesterUtil.stringListToString( lineage, " > " ) + "\" is not unique" );
-                        }
-                        up_tax = up_taxonomy;
+                        matching_taxonomies.add( up_taxonomy );
                     }
                 }
-                if ( up_tax == null ) {
+                if ( matching_taxonomies.isEmpty() ) {
                     throw new AncestralTaxonomyInferenceException( "lineage \""
                             + ForesterUtil.stringListToString( lineage, " > " ) + "\" not found" );
                 }
-                TaxonomyDataManager.getLineageTaxCacheMap().put( lineage_str, up_tax );
-                if ( !ForesterUtil.isEmpty( up_tax.getScientificName() ) ) {
-                    TaxonomyDataManager.getSnTaxCacheMap().put( up_tax.getScientificName(), up_tax );
+                //in case of more than one (e.g. "Xenopus" Genus and Subgenus), keep shorter, less specific  one:
+                int shortest = Integer.MAX_VALUE;
+                UniProtTaxonomy least_specific_up_tax = null;
+                for( final UniProtTaxonomy m : matching_taxonomies ) {
+                    final int s = m.getLineage().size();
+                    if ( s < shortest ) {
+                        shortest = s;
+                        least_specific_up_tax = m;
+                    }
                 }
-                if ( !ForesterUtil.isEmpty( up_tax.getCode() ) ) {
-                    TaxonomyDataManager.getCodeTaxCacheMap().put( up_tax.getCode(), up_tax );
+                TaxonomyDataManager.getLineageTaxCacheMap().put( lineage_str, least_specific_up_tax );
+                if ( !ForesterUtil.isEmpty( least_specific_up_tax.getScientificName() ) ) {
+                    TaxonomyDataManager.getSnTaxCacheMap().put( least_specific_up_tax.getScientificName(),
+                                                                least_specific_up_tax );
                 }
-                if ( !ForesterUtil.isEmpty( up_tax.getCommonName() ) ) {
-                    TaxonomyDataManager.getCnTaxCacheMap().put( up_tax.getCommonName(), up_tax );
+                if ( !ForesterUtil.isEmpty( least_specific_up_tax.getCode() ) ) {
+                    TaxonomyDataManager.getCodeTaxCacheMap().put( least_specific_up_tax.getCode(),
+                                                                  least_specific_up_tax );
                 }
-                if ( !ForesterUtil.isEmpty( up_tax.getId() ) ) {
-                    TaxonomyDataManager.getIdTaxCacheMap().put( up_tax.getId(), up_tax );
+                if ( !ForesterUtil.isEmpty( least_specific_up_tax.getCommonName() ) ) {
+                    TaxonomyDataManager.getCnTaxCacheMap().put( least_specific_up_tax.getCommonName(),
+                                                                least_specific_up_tax );
                 }
+                if ( !ForesterUtil.isEmpty( least_specific_up_tax.getId() ) ) {
+                    TaxonomyDataManager.getIdTaxCacheMap().put( least_specific_up_tax.getId(), least_specific_up_tax );
+                }
+                return least_specific_up_tax;
+            }
+            else {
+                throw new AncestralTaxonomyInferenceException( "taxonomy \"" + ( lineage.get( lineage.size() - 1 ) )
+                        + "\" not found" );
             }
         }
-        return up_tax;
     }
 
     synchronized final private static void updateTaxonomy( final QUERY_TYPE qt,

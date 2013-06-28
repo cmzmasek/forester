@@ -11160,6 +11160,84 @@ public final class Test {
                 System.out.println( results.get( 0 ).getLineage() );
                 return false;
             }
+            //
+            results = null;
+            results = SequenceDbWsTools.getTaxonomiesFromScientificNameStrict( "Xenopus tropicalis", 10 );
+            if ( results.size() != 1 ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCode().equals( "XENTR" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "Western clawed frog" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getId().equalsIgnoreCase( "8364" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getScientificName().equals( "Xenopus tropicalis" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getLineage().get( results.get( 0 ).getLineage().size() - 1 )
+                    .equals( "Xenopus tropicalis" ) ) {
+                System.out.println( results.get( 0 ).getLineage() );
+                return false;
+            }
+            //
+            results = null;
+            results = SequenceDbWsTools.getTaxonomiesFromId( "8364", 10 );
+            if ( results.size() != 1 ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCode().equals( "XENTR" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "Western clawed frog" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getId().equalsIgnoreCase( "8364" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getScientificName().equals( "Xenopus tropicalis" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getLineage().get( results.get( 0 ).getLineage().size() - 1 )
+                    .equals( "Xenopus tropicalis" ) ) {
+                System.out.println( results.get( 0 ).getLineage() );
+                return false;
+            }
+            //
+            results = null;
+            results = SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( "XENTR", 10 );
+            if ( results.size() != 1 ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCode().equals( "XENTR" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getCommonName().equalsIgnoreCase( "Western clawed frog" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getId().equalsIgnoreCase( "8364" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getRank().equalsIgnoreCase( "species" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getScientificName().equals( "Xenopus tropicalis" ) ) {
+                return false;
+            }
+            if ( !results.get( 0 ).getLineage().get( results.get( 0 ).getLineage().size() - 1 )
+                    .equals( "Xenopus tropicalis" ) ) {
+                System.out.println( results.get( 0 ).getLineage() );
+                return false;
+            }
         }
         catch ( final IOException e ) {
             System.out.println();
