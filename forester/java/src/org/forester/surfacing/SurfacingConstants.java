@@ -30,19 +30,15 @@ import org.forester.util.ForesterUtil;
 
 public class SurfacingConstants {
 
-    public static final String GOOGLE_WEB_SEARCH_LINK       = "http://www.google.com/search?q=";
-    public static final String GOOGLE_SCHOLAR_LINK          = "http://scholar.google.com/scholar?q=";
-    public static final String GOOGLE_SCHOLAR_LIMITS        = "&as_subj=bio&as_subj=med&as_subj=chm&num=100";
     public static final String AMIGO_LINK                   = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
-    public static final String PFAM_FAMILY_ID_LINK          = "http://pfam.sanger.ac.uk/family?id=";
+    public static final String EOL_LINK                     = "http://www.eol.org/search?q=";
+    public static final String GO_LINK                      = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
+    public static final String GOOGLE_SCHOLAR_SEARCH        = "http://scholar.google.com/scholar?q=";
+    public static final String GOOGLE_WEB_SEARCH_LINK       = "http://www.google.com/search?q=";
     public static final String NL                           = ForesterUtil.LINE_SEPARATOR;
-    public static final String TAXONOMY_LINK                = "http://beta.uniprot.org/taxonomy/?query=";
+    public static final String NONE                         = "[none]";
+    public static final String PFAM_FAMILY_ID_LINK          = "http://pfam.janelia.org/family/";
+    public static final String UNIPROT_TAXONOMY_ID_LINK     = "http://www.uniprot.org/taxonomy/";
     static final boolean       SECONDARY_FEATURES_ARE_SCOP  = true;
     static final String        SECONDARY_FEATURES_SCOP_LINK = "http://scop.mrc-lmb.cam.ac.uk/scop/search.cgi?key=";
-    public static final String NONE                         = "[none]";
-    public static final String UNIPROT_LINK                 = "http://www.uniprot.org/taxonomy/?query=";
-    public static final String GO_LINK                      = "http://amigo.geneontology.org/cgi-bin/amigo/go.cgi?view=details&search_constraint=terms&query=";
-    public static final String EOL_LINK                     = "http://www.eol.org/search?q=";
-    public static final String TOL_LINK                     = "http://www.googlesyndicatedsearch.com/u/TreeofLife?q=";
-    public static final String WIKIPEDIA_LINK               = "http://wikipedia.org/wiki/";
 }

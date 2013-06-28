@@ -185,19 +185,23 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
     }
 
-    private void addSpeciesSpecificDomainData( final StringBuffer sb, final Species species, final boolean html ) {
+    private void addSpeciesSpecificDomainData( final StringBuffer sb,
+                                               final Species species,
+                                               final boolean html,
+                                               final Map<String, Integer> tax_code_to_id_map ) {
         if ( getDetaildness() != DomainSimilarityCalculator.Detailedness.BASIC ) {
             sb.append( "[" );
         }
         if ( html ) {
             sb.append( "<b>" );
-            if ( ( SurfacingConstants.TAXONOMY_LINK != null ) && ( species.getSpeciesId().length() > 2 )
-                    && ( species.getSpeciesId().length() < 6 ) ) {
-                sb.append( "<a href=\"" + SurfacingConstants.TAXONOMY_LINK + species.getSpeciesId()
-                        + "\" target=\"taxonomy_window\">" + species.getSpeciesId() + "</a>" );
+            final String tax_code = species.getSpeciesId();
+            if ( !ForesterUtil.isEmpty( tax_code )
+                    && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
+                sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK
+                        + tax_code_to_id_map.get( tax_code ) + "\" target=\"taxonomy_window\">" + tax_code + "</a>" );
             }
             else {
-                sb.append( species.getSpeciesId() );
+                sb.append( tax_code );
             }
             sb.append( "</b>" );
         }
@@ -510,19 +514,20 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _species_data;
     }
 
-    private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html ) {
+    private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
+                                                            final Map<String, Integer> tax_code_to_id_map ) {
         final StringBuffer sb = new StringBuffer();
         for( final Species species : getSpeciesData().keySet() ) {
-            addSpeciesSpecificDomainData( sb, species, html );
+            addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map );
         }
         return sb;
     }
 
-    private StringBuffer getSpeciesDataInCustomOrder( final boolean html ) {
+    private StringBuffer getSpeciesDataInCustomOrder( final boolean html, final Map<String, Integer> tax_code_to_id_map ) {
         final StringBuffer sb = new StringBuffer();
         for( final Species order_species : getSpeciesCustomOrder() ) {
             if ( getSpeciesData().keySet().contains( order_species ) ) {
-                addSpeciesSpecificDomainData( sb, order_species, html );
+                addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map );
             }
             else {
                 sb.append( PrintableDomainSimilarity.NO_SPECIES );
@@ -575,30 +580,30 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     }
 
     @Override
-    public String toString() {
-        return toStringBuffer( null ).toString();
-    }
-
-    @Override
-    public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option ) {
+    public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option,
+                                        final Map<String, Integer> tax_code_to_id_map ) {
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:
                 return toStringBufferSimpleTabDelimited();
             case HTML:
-                return toStringBufferDetailedHTML();
+                return toStringBufferDetailedHTML( tax_code_to_id_map );
             default:
                 throw new AssertionError( "Unknown print option: " + print_option );
         }
     }
 
-    private StringBuffer toStringBufferDetailedHTML() {
+    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map ) {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<tr>" );
         sb.append( "<td>" );
         boldStartIfSortedBy( DomainSimilaritySortField.DOMAIN_ID, sb );
-        sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\">" + getDomainId()
-                + "</a>" );
+        sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\" target=\"pfam_window\">"
+                + getDomainId() + "</a>" );
         boldEndIfSortedBy( DomainSimilaritySortField.DOMAIN_ID, sb );
+        sb.append( "</td>" );
+        sb.append( "<td>" );
+        sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
+                + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
         sb.append( "<td>" );
         boldStartIfSortedBy( DomainSimilaritySortField.MEAN, sb );
@@ -664,12 +669,12 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
-            sb.append( getSpeciesDataInAlphabeticalOrder( true ) );
+            sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map ) );
             sb.append( "</td>" );
         }
         else {
             sb.append( "<td>" );
-            sb.append( getSpeciesDataInCustomOrder( true ) );
+            sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map ) );
             sb.append( "</td>" );
         }
         sb.append( "</tr>" );

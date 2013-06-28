@@ -102,7 +102,8 @@ public class PairwiseGenomeComparator {
                                             final String automated_pairwise_comparison_prefix,
                                             final String command_line_prg_name,
                                             final File out_dir,
-                                            final boolean write_pairwise_comparisons ) {
+                                            final boolean write_pairwise_comparisons,
+                                            final Map<String, Integer> tax_code_to_id_map ) {
         init();
         final BasicSymmetricalDistanceMatrix domain_distance_scores_means = new BasicSymmetricalDistanceMatrix( number_of_genomes );
         final BasicSymmetricalDistanceMatrix shared_domains_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );
@@ -223,7 +224,8 @@ public class PairwiseGenomeComparator {
                                                                                 domain_similarity_print_option,
                                                                                 domain_similarity_sort_field,
                                                                                 scoring,
-                                                                                false );
+                                                                                false,
+                                                                                tax_code_to_id_map );
                     }
                     catch ( final IOException e ) {
                         ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""

@@ -26,17 +26,27 @@
 
 package org.forester.surfacing;
 
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
 import org.forester.protein.DomainId;
 import org.forester.species.Species;
+import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 
 /*
  * This is to represent a measure of similarity between two or more domains from
  * different genomes.
  */
 public interface DomainSimilarity extends Comparable<DomainSimilarity> {
+
+    static public enum DomainSimilarityScoring {
+        DOMAINS, PROTEINS, COMBINATIONS;
+    }
+
+    public static enum DomainSimilaritySortField {
+        MIN, MAX, SD, MEAN, ABS_MAX_COUNTS_DIFFERENCE, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, SPECIES_COUNT, DOMAIN_ID,
+    }
 
     public SortedSet<DomainId> getCombinableDomainIds( final Species species_of_combinable_domain );;
 
@@ -92,13 +102,5 @@ public interface DomainSimilarity extends Comparable<DomainSimilarity> {
 
     public double getStandardDeviationOfSimilarityScore();
 
-    public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option );
-
-    static public enum DomainSimilarityScoring {
-        DOMAINS, PROTEINS, COMBINATIONS;
-    }
-
-    public static enum DomainSimilaritySortField {
-        MIN, MAX, SD, MEAN, ABS_MAX_COUNTS_DIFFERENCE, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, SPECIES_COUNT, DOMAIN_ID,
-    }
+    public StringBuffer toStringBuffer( PRINT_OPTION print_option, Map<String, Integer> tax_code_to_id_map );
 }

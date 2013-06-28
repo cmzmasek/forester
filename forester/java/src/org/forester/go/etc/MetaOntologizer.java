@@ -520,7 +520,7 @@ public class MetaOntologizer {
         writer.write( "<tr>" );
         writer.write( "<td><h3>" );
         writer.write( species );
-        SurfacingUtil.writeTaxonomyLinks( writer, species );
+        SurfacingUtil.writeTaxonomyLinks( writer, species, null );
         writer.write( "</h3></td>" );
         writer.write( "</tr>" );
         writer.write( ForesterUtil.LINE_SEPARATOR );

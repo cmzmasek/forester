@@ -229,8 +229,8 @@ public class surfacing {
     final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.260";
-    final static private String                               PRG_DATE                                                                      = "130721";
+    final static private String                               PRG_VERSION                                                                   = "2.270";
+    final static private String                               PRG_DATE                                                                      = "130628";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -269,6 +269,7 @@ public class surfacing {
     private static final String                               LOG_FILE_SUFFIX                                                               = "_log.txt";
     private static final String                               DATA_FILE_SUFFIX                                                              = "_domain_combination_data.txt";
     private static final String                               DATA_FILE_DESC                                                                = "#SPECIES\tPRTEIN_ID\tN_TERM_DOMAIN\tC_TERM_DOMAIN\tN_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tC_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tN_TERM_DOMAIN_COUNTS_PER_PROTEIN\tC_TERM_DOMAIN_COUNTS_PER_PROTEIN";
+    private static final String                               WRITE_TO_NEXUS_OPTION                                                         = "nexus";
     private static final INDIVIDUAL_SCORE_CUTOFF              INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                               = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;                                                                                                                                                      //TODO look at me! change?
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                          = "_indep_dc_gains_fitch_counts.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                              = "_indep_dc_gains_fitch_lists.txt";
@@ -622,6 +623,7 @@ public class surfacing {
         allowed_options.add( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS );
         allowed_options.add( OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS );
         allowed_options.add( CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY );
+        allowed_options.add( WRITE_TO_NEXUS_OPTION );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
@@ -629,6 +631,10 @@ public class surfacing {
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown option(s): " + dissallowed_options );
+        }
+        boolean write_to_nexus = false;
+        if ( cla.isOptionSet( WRITE_TO_NEXUS_OPTION ) ) {
+            write_to_nexus = true;
         }
         boolean output_binary_domain_combinationsfor_graph_analysis = false;
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS ) ) {
@@ -1020,12 +1026,6 @@ public class surfacing {
             }
         }
         final String[][] input_file_properties = processInputGenomesFile( input_genomes_file );
-        //        for( final String[] input_file_propertie : input_file_properties ) {
-        //            for( final String element : input_file_propertie ) {
-        //                System.out.print( element + " " );
-        //            }
-        //            System.out.println();
-        //        }
         final int number_of_genomes = input_file_properties.length;
         if ( number_of_genomes < 2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot analyze less than two files" );
@@ -1399,6 +1399,7 @@ public class surfacing {
                     + ( dc_type == BinaryDomainCombination.DomainCombinationType.DIRECTED_ADJACTANT ) + "</td></tr>"
                     + nl );
         }
+        System.out.println( "Write to Nexus files        : " + write_to_nexus );
         System.out.print( "Domain counts sort order    : " );
         switch ( dc_sort_order ) {
             case ALPHABETICAL_KEY_ID:
@@ -2094,7 +2095,7 @@ public class surfacing {
                                                            go_annotation_output,
                                                            go_id_to_term_map,
                                                            go_namespace_limit );
-        DescriptiveStatistics pw_stats = null;
+        final Map<String, Integer> tax_code_to_id_map = SurfacingUtil.createTaxCodeToIdMap( intrees[ 0 ] );
         try {
             String my_outfile = output_file.toString();
             Map<Character, Writer> split_writers = null;
@@ -2125,7 +2126,7 @@ public class surfacing {
                     + new java.text.SimpleDateFormat( "yyyy.MM.dd HH:mm:ss" ).format( new java.util.Date() )
                     + "</td></tr>" + nl );
             html_desc.append( "</table>" + nl );
-            pw_stats = SurfacingUtil
+            final DescriptiveStatistics pw_stats = SurfacingUtil
                     .writeDomainSimilaritiesToFile( html_desc,
                                                     new StringBuilder( number_of_genomes + " genomes" ),
                                                     writer,
@@ -2136,7 +2137,8 @@ public class surfacing {
                                                     domain_similarity_print_option,
                                                     domain_similarity_sort_field,
                                                     scoring,
-                                                    true );
+                                                    true,
+                                                    tax_code_to_id_map );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
         }
@@ -2145,7 +2147,6 @@ public class surfacing {
                     + e.getMessage() + "]" );
         }
         System.out.println();
-        // values_for_all_scores_histogram = pw_stats.getDataAsDoubleArray();
         final Species[] species = new Species[ number_of_genomes ];
         for( int i = 0; i < number_of_genomes; ++i ) {
             species[ i ] = new BasicSpecies( input_file_properties[ i ][ 1 ] );
@@ -2173,7 +2174,8 @@ public class surfacing {
                                              surfacing.PAIRWISE_DOMAIN_COMPARISONS_PREFIX,
                                              surfacing.PRG_NAME,
                                              out_dir,
-                                             write_pwc_files );
+                                             write_pwc_files,
+                                             tax_code_to_id_map );
             String matrix_output_file = new String( output_file.toString() );
             if ( matrix_output_file.indexOf( '.' ) > 1 ) {
                 matrix_output_file = matrix_output_file.substring( 0, matrix_output_file.indexOf( '.' ) );
@@ -2237,7 +2239,9 @@ public class surfacing {
         if ( ( out_dir != null ) && ( !perform_pwc ) ) {
             output_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file );
         }
-        writePresentToNexus( output_file, positive_filter_file, filter, gwcd_list );
+        if ( write_to_nexus ) {
+            writePresentToNexus( output_file, positive_filter_file, filter, gwcd_list );
+        }
         if ( ( ( intrees != null ) && ( intrees.length > 0 ) ) && ( number_of_genomes > 2 ) ) {
             final StringBuilder parameters_sb = createParametersAsString( ignore_dufs,
                                                                           e_value_max,
@@ -2272,7 +2276,9 @@ public class surfacing {
                                                         dc_type,
                                                         protein_length_stats_by_dc,
                                                         domain_number_stats_by_dc,
-                                                        domain_length_stats_by_domain );
+                                                        domain_length_stats_by_domain,
+                                                        tax_code_to_id_map,
+                                                        write_to_nexus );
                 // Listing of all domain combinations gained is only done if only one input tree is used. 
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
@@ -2583,6 +2589,7 @@ public class surfacing {
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION
                 + ": e value max per domain for output of all proteins per domain" );
+        System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
