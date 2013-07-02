@@ -34,7 +34,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
@@ -62,11 +61,11 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
             throw new IllegalArgumentException( "attempt to calculate multiple combinable domains similarity for less than two combinale domains collections" );
         }
         final SortedSet<DomainSimilarity> similarities = new TreeSet<DomainSimilarity>();
-        final SortedSet<DomainId> keys = new TreeSet<DomainId>();
+        final SortedSet<String> keys = new TreeSet<String>();
         for( final GenomeWideCombinableDomains cdc : cdc_list ) {
             keys.addAll( ( cdc ).getAllCombinableDomainsIds().keySet() );
         }
-        for( final DomainId key : keys ) {
+        for( final String key : keys ) {
             final List<CombinableDomains> same_id_cd_list = new ArrayList<CombinableDomains>( cdc_list.size() );
             final List<Species> species_with_key_id_domain = new ArrayList<Species>();
             for( final GenomeWideCombinableDomains cdc : cdc_list ) {
@@ -238,7 +237,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                                                                        cd.getKeyDomainCount(),
                                                                                                        cd.getNumberOfCombinableDomains(),
                                                                                                        cd.getKeyDomainConfidenceDescriptiveStatistics() );
-        for( final DomainId domain : cd.getCombinableDomains() ) {
+        for( final String domain : cd.getCombinableDomains() ) {
             sd.addProteinsExhibitingCombinationCount( domain, cd.getNumberOfProteinsExhibitingCombination( domain ) );
         }
         return sd;

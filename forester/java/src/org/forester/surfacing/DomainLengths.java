@@ -31,17 +31,16 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 
 public class DomainLengths {
 
-    final DomainId                                  _domain_id;
+    final String                                    _domain_id;
     final SortedMap<Species, DescriptiveStatistics> _length_statistics;
 
-    public DomainLengths( final DomainId domain_id ) {
+    public DomainLengths( final String domain_id ) {
         _domain_id = domain_id;
         _length_statistics = new TreeMap<Species, DescriptiveStatistics>();
     }
@@ -91,7 +90,7 @@ public class DomainLengths {
         return ( species_mean - population_mean ) / population_sd;
     }
 
-    public DomainId getDomainId() {
+    public String getDomainId() {
         return _domain_id;
     }
 

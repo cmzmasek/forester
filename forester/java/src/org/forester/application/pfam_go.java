@@ -78,7 +78,7 @@ public class pfam_go {
                     encountered_domains.add( line );
                     boolean found = false;
                     for( final PfamToGoMapping mapping : mappings ) {
-                        if ( mapping.getKey().getId().equals( line ) ) {
+                        if ( mapping.getKey().equals( line ) ) {
                             System.out.println( mapping.getValue() );
                             found = true;
                         }

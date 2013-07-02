@@ -26,26 +26,25 @@
 
 package org.forester.protein;
 
-import org.forester.go.GoId;
 import org.forester.util.ForesterUtil;
 
 public class BasicDomain implements Domain {
 
-    final private DomainId _id;
-    final private int      _from;
-    final private int      _to;
-    final private short    _number;
-    final private short    _total_count;
-    final private double   _per_sequence_evalue;
-    final private double   _per_sequence_score;
-    final private double   _per_domain_evalue;
-    final private double   _per_domain_score;
+    final private String _id;
+    final private int    _from;
+    final private int    _to;
+    final private short  _number;
+    final private short  _total_count;
+    final private double _per_sequence_evalue;
+    final private double _per_sequence_score;
+    final private double _per_domain_evalue;
+    final private double _per_domain_score;
 
-    public BasicDomain( final String id_str ) {
-        if ( ForesterUtil.isEmpty( id_str ) ) {
+    public BasicDomain( final String id ) {
+        if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
         }
-        _id = new DomainId( id_str );
+        _id = id;
         _from = -1;
         _to = -1;
         _number = -1;
@@ -56,17 +55,17 @@ public class BasicDomain implements Domain {
         _per_domain_score = -1;
     }
 
-    public BasicDomain( final String id_str,
+    public BasicDomain( final String id,
                         final int from,
                         final int to,
                         final short number,
                         final short total_count,
                         final double per_sequence_evalue,
                         final double per_sequence_score ) {
-        this( id_str, from, to, number, total_count, per_sequence_evalue, per_sequence_score, 0, 0 );
+        this( id, from, to, number, total_count, per_sequence_evalue, per_sequence_score, 0, 0 );
     }
 
-    public BasicDomain( final String id_str,
+    public BasicDomain( final String id,
                         final int from,
                         final int to,
                         final short number,
@@ -78,7 +77,7 @@ public class BasicDomain implements Domain {
         if ( ( from >= to ) || ( from < 0 ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain from " + from + " to " + to );
         }
-        if ( ForesterUtil.isEmpty( id_str ) ) {
+        if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
         }
         if ( ( number > total_count ) || ( number < 0 ) ) {
@@ -88,7 +87,7 @@ public class BasicDomain implements Domain {
         if ( ( per_sequence_evalue < 0.0 ) || ( per_domain_evalue < 0.0 ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain with negative E-value" );
         }
-        _id = new DomainId( id_str );
+        _id = id;
         _from = from;
         _to = to;
         _number = number;
@@ -99,11 +98,10 @@ public class BasicDomain implements Domain {
         _per_domain_score = per_domain_score;
     }
 
-    @Override
-    public void addGoId( final GoId go_id ) {
-        getDomainId().getGoIds().add( go_id );
-    }
-
+    // ^^     @Override
+    // ^^    public void addGoId( final GoId go_id ) {
+    // ^^       getDomainId().getGoIds().add( go_id );
+    // ^^   }
     /**
      * Basic domains are compared/sorted based upon their identifiers (case
      * insensitive) and their numbers.
@@ -144,7 +142,7 @@ public class BasicDomain implements Domain {
     }
 
     @Override
-    public DomainId getDomainId() {
+    public String getDomainId() {
         return _id;
     }
 
@@ -153,21 +151,19 @@ public class BasicDomain implements Domain {
         return _from;
     }
 
-    @Override
-    public GoId getGoId( final int i ) {
-        return getDomainId().getGoIds().get( i );
-    }
-
+    // ^^  @Override
+    // ^^   public GoId getGoId( final int i ) {
+    // ^^       return getDomainId().getGoIds().get( i );
+    // ^^   }
     @Override
     public short getNumber() {
         return _number;
     }
 
-    @Override
-    public int getNumberOfGoIds() {
-        return getDomainId().getGoIds().size();
-    }
-
+    // ^^  @Override
+    // ^^    public int getNumberOfGoIds() {
+    // ^^        return getDomainId().getGoIds().size();
+    // ^^   }
     @Override
     public double getPerDomainEvalue() {
         return _per_domain_evalue;
@@ -200,16 +196,16 @@ public class BasicDomain implements Domain {
 
     @Override
     public int hashCode() {
-        return getDomainId().getId().hashCode();
+        return getDomainId().hashCode();
     }
 
     @Override
     public String toString() {
-        return toStringBuffer().toString();
+        return getDomainId();
     }
 
     public StringBuffer toStringBuffer() {
-        return new StringBuffer( getDomainId().getId() );
+        return new StringBuffer( getDomainId() );
     }
 
     @Override

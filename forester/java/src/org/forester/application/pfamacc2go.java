@@ -82,7 +82,7 @@ public class pfamacc2go {
                         total_pfam_ids++;
                         boolean mapped = false;
                         for( final PfamToGoMapping pfam_to_go_mapping : pfam2go ) {
-                            if ( pfam_to_go_mapping.getKey().getId().equals( pfam_id ) ) {
+                            if ( pfam_to_go_mapping.getKey().equals( pfam_id ) ) {
                                 mapped = true;
                                 System.out.println( pfam_to_go_mapping.getValue().toString() );
                             }

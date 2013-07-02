@@ -29,14 +29,12 @@ package org.forester.surfacing;
 
 import java.util.SortedMap;
 
-import org.forester.protein.DomainId;
-
 /*
  * A helper class for PrintableDomainSimilarity.
  */
 interface SpeciesSpecificDomainSimilariyData {
 
-    public void addProteinsExhibitingCombinationCount( final DomainId domain_id, final int count );
+    public void addProteinsExhibitingCombinationCount( final String domain_id, final int count );
 
     /**
      * This should return a sorted map mapping domain ids to their corresponding
@@ -44,9 +42,9 @@ interface SpeciesSpecificDomainSimilariyData {
      * 
      * @return a sorted map mapping domain ids to their corresponding counts
      */
-    public SortedMap<DomainId, Integer> getCombinableDomainIdToCountsMap();
+    public SortedMap<String, Integer> getCombinableDomainIdToCountsMap();
 
-    public int getNumberOfProteinsExhibitingCombinationWith( final DomainId domain_id );
+    public int getNumberOfProteinsExhibitingCombinationWith( final String domain_id );
 
     public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, boolean html );
 }

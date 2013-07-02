@@ -56,8 +56,8 @@ public class BasicProtein implements Protein {
                                                                          final int m1 = ( d1.getTo() + d1.getFrom() );
                                                                          final int m2 = ( d2.getTo() + d2.getFrom() );
                                                                          return m1 < m2 ? -1 : m1 > m2 ? 1 : d1
-                                                                                 .getDomainId().getId()
-                                                                                 .compareTo( d2.getDomainId().getId() );
+                                                                                 .getDomainId()
+                                                                                 .compareTo( d2.getDomainId() );
                                                                      }
                                                                  };
 
@@ -96,9 +96,9 @@ public class BasicProtein implements Protein {
      * @param in_nc_order to consider order
      * @return
      */
-    public boolean contains( final List<DomainId> query_domain_ids, final boolean in_nc_order ) {
+    public boolean contains( final List<String> query_domain_ids, final boolean in_nc_order ) {
         if ( !in_nc_order ) {
-            for( final DomainId query_domain_id : query_domain_ids ) {
+            for( final String query_domain_id : query_domain_ids ) {
                 if ( !getProteinDomainIds().contains( query_domain_id ) ) {
                     return false;
                 }
@@ -107,7 +107,7 @@ public class BasicProtein implements Protein {
         }
         else {
             int current_start_position = -1;
-            I: for( final DomainId query_domain_id : query_domain_ids ) {
+            I: for( final String query_domain_id : query_domain_ids ) {
                 if ( getProteinDomainIds().contains( query_domain_id ) ) {
                     final List<Domain> found_domains = getProteinDomains( query_domain_id );
                     final SortedSet<Integer> ordered_start_positions = new TreeSet<Integer>();
@@ -171,7 +171,7 @@ public class BasicProtein implements Protein {
     }
 
     @Override
-    public int getProteinDomainCount( final DomainId domain_id ) {
+    public int getProteinDomainCount( final String domain_id ) {
         return getProteinDomains( domain_id ).size();
     }
 
@@ -181,7 +181,7 @@ public class BasicProtein implements Protein {
     }
 
     @Override
-    public List<Domain> getProteinDomains( final DomainId domain_id ) {
+    public List<Domain> getProteinDomains( final String domain_id ) {
         final List<Domain> domains = new ArrayList<Domain>();
         for( final Domain domain : getProteinDomains() ) {
             if ( domain.getDomainId().equals( domain_id ) ) {
@@ -223,7 +223,7 @@ public class BasicProtein implements Protein {
             else {
                 sb.append( separator );
             }
-            sb.append( d.getDomainId().getId() );
+            sb.append( d.getDomainId() );
         }
         return sb.toString();
     }
@@ -239,7 +239,7 @@ public class BasicProtein implements Protein {
         String prev_id = "";
         int counter = 1;
         for( final Domain d : getDomainsSortedByPosition() ) {
-            final String id = d.getDomainId().getId();
+            final String id = d.getDomainId();
             if ( prev_id.equals( id ) ) {
                 counter++;
             }
@@ -272,8 +272,8 @@ public class BasicProtein implements Protein {
         return toDomainArchitectureString( "~" );
     }
 
-    private List<DomainId> getProteinDomainIds() {
-        final List<DomainId> ids = new ArrayList<DomainId>( getProteinDomains().size() );
+    private List<String> getProteinDomainIds() {
+        final List<String> ids = new ArrayList<String>( getProteinDomains().size() );
         for( final Domain domain : getProteinDomains() ) {
             ids.add( domain.getDomainId() );
         }

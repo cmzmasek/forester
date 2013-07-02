@@ -49,7 +49,6 @@ import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.ForesterUtil;
 
@@ -64,8 +63,8 @@ public final class DomainParsimonyCalculator {
     private int                                     _total_gains;
     private int                                     _total_unchanged;
     private int                                     _cost;
-    private Map<DomainId, Set<String>>              _domain_id_to_secondary_features_map;
-    private SortedSet<DomainId>                     _positive_filter;
+    private Map<String, Set<String>>                _domain_id_to_secondary_features_map;
+    private SortedSet<String>                       _positive_filter;
 
     private DomainParsimonyCalculator( final Phylogeny phylogeny ) {
         init();
@@ -81,7 +80,7 @@ public final class DomainParsimonyCalculator {
 
     private DomainParsimonyCalculator( final Phylogeny phylogeny,
                                        final List<GenomeWideCombinableDomains> gwcd_list,
-                                       final Map<DomainId, Set<String>> domain_id_to_secondary_features_map ) {
+                                       final Map<String, Set<String>> domain_id_to_secondary_features_map ) {
         init();
         _phylogeny = phylogeny;
         _gwcd_list = gwcd_list;
@@ -160,7 +159,7 @@ public final class DomainParsimonyCalculator {
         executeDolloParsimony( true );
     }
 
-    public void executeDolloParsimonyOnDomainPresence( final SortedSet<DomainId> positive_filter ) {
+    public void executeDolloParsimonyOnDomainPresence( final SortedSet<String> positive_filter ) {
         setPositiveFilter( positive_filter );
         executeDolloParsimony( true );
         setPositiveFilter( null );
@@ -231,14 +230,13 @@ public final class DomainParsimonyCalculator {
         fitch.setUseLast( use_last );
         fitch.setReturnGainLossMatrix( true );
         fitch.setReturnInternalStates( true );
-        final Map<DomainId, Set<String>> map = getDomainIdToSecondaryFeaturesMap();
-        final Map<DomainId, String> newmap = new HashMap<DomainId, String>();
-        final Iterator<Entry<DomainId, Set<String>>> it = map.entrySet().iterator();
+        final Map<String, Set<String>> map = getDomainIdToSecondaryFeaturesMap();
+        final Map<String, String> newmap = new HashMap<String, String>();
+        final Iterator<Entry<String, Set<String>>> it = map.entrySet().iterator();
         while ( it.hasNext() ) {
-            final Map.Entry<DomainId, Set<String>> pair = it.next();
+            final Map.Entry<String, Set<String>> pair = it.next();
             if ( pair.getValue().size() != 1 ) {
-                throw new IllegalArgumentException( pair.getKey().getId() + " mapps to " + pair.getValue().size()
-                        + " items" );
+                throw new IllegalArgumentException( pair.getKey() + " mapps to " + pair.getValue().size() + " items" );
             }
             newmap.put( pair.getKey(), ( String ) pair.getValue().toArray()[ 0 ] );
         }
@@ -350,7 +348,7 @@ public final class DomainParsimonyCalculator {
         return _cost;
     }
 
-    private Map<DomainId, Set<String>> getDomainIdToSecondaryFeaturesMap() {
+    private Map<String, Set<String>> getDomainIdToSecondaryFeaturesMap() {
         return _domain_id_to_secondary_features_map;
     }
 
@@ -415,7 +413,7 @@ public final class DomainParsimonyCalculator {
         return _phylogeny;
     }
 
-    private SortedSet<DomainId> getPositiveFilter() {
+    private SortedSet<String> getPositiveFilter() {
         return _positive_filter;
     }
 
@@ -500,7 +498,7 @@ public final class DomainParsimonyCalculator {
         _cost = cost;
     }
 
-    private void setDomainIdToSecondaryFeaturesMap( final Map<DomainId, Set<String>> domain_id_to_secondary_features_map ) {
+    private void setDomainIdToSecondaryFeaturesMap( final Map<String, Set<String>> domain_id_to_secondary_features_map ) {
         _domain_id_to_secondary_features_map = domain_id_to_secondary_features_map;
     }
 
@@ -508,7 +506,7 @@ public final class DomainParsimonyCalculator {
         _gain_loss_matrix = gain_loss_matrix;
     }
 
-    private void setPositiveFilter( final SortedSet<DomainId> positive_filter ) {
+    private void setPositiveFilter( final SortedSet<String> positive_filter ) {
         _positive_filter = positive_filter;
     }
 
@@ -539,7 +537,7 @@ public final class DomainParsimonyCalculator {
 
     public static DomainParsimonyCalculator createInstance( final Phylogeny phylogeny,
                                                             final List<GenomeWideCombinableDomains> gwcd_list,
-                                                            final Map<DomainId, Set<String>> domain_id_to_secondary_features_map ) {
+                                                            final Map<String, Set<String>> domain_id_to_secondary_features_map ) {
         if ( phylogeny.getNumberOfExternalNodes() != gwcd_list.size() ) {
             throw new IllegalArgumentException( "size of external nodes does not equal size of genome wide combinable domains list" );
         }
@@ -554,7 +552,7 @@ public final class DomainParsimonyCalculator {
      * @return
      */
     static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeaturePresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                               final Map<DomainId, Set<String>> domain_id_to_second_features_map,
+                                                                                               final Map<String, Set<String>> domain_id_to_second_features_map,
                                                                                                final Map<Species, MappingResults> mapping_results_map ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
@@ -567,7 +565,7 @@ public final class DomainParsimonyCalculator {
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
             int mapped = 0;
             int not_mapped = 0;
-            for( final DomainId domain : gwcd.getAllDomainIds() ) {
+            for( final String domain : gwcd.getAllDomainIds() ) {
                 if ( domain_id_to_second_features_map.containsKey( domain ) ) {
                     all_secondary_features.addAll( domain_id_to_second_features_map.get( domain ) );
                     mapped++;
@@ -601,7 +599,7 @@ public final class DomainParsimonyCalculator {
             all_identifiers.add( species_id );
             matrix.setIdentifier( identifier_index, species_id );
             final Set<String> all_second_per_gwcd = new HashSet<String>();
-            for( final DomainId domain : gwcd.getAllDomainIds() ) {
+            for( final String domain : gwcd.getAllDomainIds() ) {
                 if ( domain_id_to_second_features_map.containsKey( domain ) ) {
                     all_second_per_gwcd.addAll( domain_id_to_second_features_map.get( domain ) );
                 }
@@ -620,7 +618,7 @@ public final class DomainParsimonyCalculator {
     }
 
     public static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                                                             final Map<DomainId, String> domain_id_to_second_features_map ) {
+                                                                                                                             final Map<String, String> domain_id_to_second_features_map ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
         }
@@ -689,21 +687,21 @@ public final class DomainParsimonyCalculator {
         return matrix;
     }
 
-    private static BinaryDomainCombination mapBinaryDomainCombination( final Map<DomainId, String> domain_id_to_second_features_map,
+    private static BinaryDomainCombination mapBinaryDomainCombination( final Map<String, String> domain_id_to_second_features_map,
                                                                        final BinaryDomainCombination bc,
                                                                        final SortedSet<String> no_mappings ) {
         String id0 = "";
         String id1 = "";
         if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
-            no_mappings.add( bc.getId0().getId() );
-            id0 = bc.getId0().getId();
+            no_mappings.add( bc.getId0() );
+            id0 = bc.getId0();
         }
         else {
             id0 = domain_id_to_second_features_map.get( bc.getId0() );
         }
         if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
-            no_mappings.add( bc.getId1().getId() );
-            id1 = bc.getId1().getId();
+            no_mappings.add( bc.getId1() );
+            id1 = bc.getId1();
         }
         else {
             id1 = domain_id_to_second_features_map.get( bc.getId1() );
@@ -771,7 +769,7 @@ public final class DomainParsimonyCalculator {
     }
 
     public static CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                            final SortedSet<DomainId> positive_filter ) {
+                                                                                            final SortedSet<String> positive_filter ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
         }
@@ -779,9 +777,9 @@ public final class DomainParsimonyCalculator {
             throw new IllegalArgumentException( "positive filter is empty" );
         }
         final int number_of_identifiers = gwcd_list.size();
-        final SortedSet<DomainId> all_domain_ids = new TreeSet<DomainId>();
+        final SortedSet<String> all_domain_ids = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
-            for( final DomainId domain : gwcd.getAllDomainIds() ) {
+            for( final String domain : gwcd.getAllDomainIds() ) {
                 all_domain_ids.add( domain );
             }
         }
@@ -789,7 +787,7 @@ public final class DomainParsimonyCalculator {
         if ( positive_filter != null ) {
             //number_of_characters = positive_filter.size(); -- bad if doms in filter but not in genomes 
             number_of_characters = 0;
-            for( final DomainId id : all_domain_ids ) {
+            for( final String id : all_domain_ids ) {
                 if ( positive_filter.contains( id ) ) {
                     number_of_characters++;
                 }
@@ -798,13 +796,13 @@ public final class DomainParsimonyCalculator {
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
                                                                                                                                                  number_of_characters );
         int character_index = 0;
-        for( final DomainId id : all_domain_ids ) {
+        for( final String id : all_domain_ids ) {
             if ( positive_filter == null ) {
-                matrix.setCharacter( character_index++, id.getId() );
+                matrix.setCharacter( character_index++, id );
             }
             else {
                 if ( positive_filter.contains( id ) ) {
-                    matrix.setCharacter( character_index++, id.getId() );
+                    matrix.setCharacter( character_index++, id );
                 }
             }
         }
@@ -821,7 +819,7 @@ public final class DomainParsimonyCalculator {
                 if ( ForesterUtil.isEmpty( matrix.getCharacter( ci ) ) ) {
                     throw new RuntimeException( "this should not have happened: problem with character #" + ci );
                 }
-                final DomainId id = new DomainId( matrix.getCharacter( ci ) );
+                final String id = matrix.getCharacter( ci );
                 if ( gwcd.contains( id ) ) {
                     matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
                 }

@@ -29,8 +29,6 @@ package org.forester.surfacing;
 
 import java.util.List;
 
-import org.forester.protein.DomainId;
-
 public class CombinationsBasedPairwiseDomainSimilarityCalculator implements PairwiseDomainSimilarityCalculator {
 
     @Override
@@ -39,11 +37,11 @@ public class CombinationsBasedPairwiseDomainSimilarityCalculator implements Pair
         if ( !domains_1.getKeyDomain().equals( domains_2.getKeyDomain() ) ) {
             throw new IllegalArgumentException( "attempt to calculate similarity between domain collection with different keys" );
         }
-        final List<DomainId> d1 = domains_1.getCombinableDomains();
-        final List<DomainId> d2 = domains_2.getCombinableDomains();
+        final List<String> d1 = domains_1.getCombinableDomains();
+        final List<String> d2 = domains_2.getCombinableDomains();
         int same = 0;
         int different = 0;
-        for( final DomainId domain : d1 ) {
+        for( final String domain : d1 ) {
             if ( d2.contains( domain ) ) {
                 same++;
             }
@@ -51,7 +49,7 @@ public class CombinationsBasedPairwiseDomainSimilarityCalculator implements Pair
                 different++;
             }
         }
-        for( final DomainId domain : d2 ) {
+        for( final String domain : d2 ) {
             if ( !( d1.contains( domain ) ) ) {
                 different++;
             }

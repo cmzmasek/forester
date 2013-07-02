@@ -31,19 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 
 public class AdjactantDirectedCombinableDomains extends BasicCombinableDomains {
 
-    public AdjactantDirectedCombinableDomains( final DomainId n_terminal_key_domain, final Species species ) {
+    public AdjactantDirectedCombinableDomains( final String n_terminal_key_domain, final Species species ) {
         super( n_terminal_key_domain, species );
     }
 
     @Override
     public List<BinaryDomainCombination> toBinaryDomainCombinations() {
         final List<BinaryDomainCombination> binary_combinations = new ArrayList<BinaryDomainCombination>( getNumberOfCombinableDomains() );
-        for( final DomainId domain : getCombiningDomains().keySet() ) {
+        for( final String domain : getCombiningDomains().keySet() ) {
             // Precondition (!): key domain is most upstream domain.
             //TODO ensure this is true.
             binary_combinations.add( new AdjactantDirectedBinaryDomainCombination( getKeyDomain(), domain ) );

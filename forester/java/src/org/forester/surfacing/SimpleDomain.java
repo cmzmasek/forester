@@ -26,9 +26,7 @@
 
 package org.forester.surfacing;
 
-import org.forester.go.GoId;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 /*
@@ -37,20 +35,19 @@ import org.forester.util.ForesterUtil;
  */
 public class SimpleDomain implements Domain {
 
-    final private DomainId _id;
+    final private String _id;
 
-    public SimpleDomain( final String id_str ) {
-        if ( ForesterUtil.isEmpty( id_str ) ) {
+    public SimpleDomain( final String id ) {
+        if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
         }
-        _id = new DomainId( id_str );
+        _id = id;
     }
 
-    @Override
-    public void addGoId( final GoId go_id ) {
-        throw new RuntimeException( "method not implemented" );
-    }
-
+    // ^^  @Override
+    // ^^  public void addGoId( final GoId go_id ) {
+    // ^^     throw new RuntimeException( "method not implemented" );
+    // ^^ }
     @Override
     public int compareTo( final Domain domain ) {
         if ( this == domain ) {
@@ -60,7 +57,7 @@ public class SimpleDomain implements Domain {
     }
 
     @Override
-    public DomainId getDomainId() {
+    public String getDomainId() {
         return _id;
     }
 
@@ -69,11 +66,10 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
-    @Override
-    public GoId getGoId( final int i ) {
-        throw new RuntimeException( "method not implemented" );
-    }
-
+    // ^^   @Override
+    // ^^   public GoId getGoId( final int i ) {
+    // ^^      throw new RuntimeException( "method not implemented" );
+    // ^^  }
     @Override
     public int getLength() {
         throw new RuntimeException( "method not implemented" );
@@ -84,11 +80,10 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
-    @Override
-    public int getNumberOfGoIds() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
+    // ^^   @Override
+    // ^^  public int getNumberOfGoIds() {
+    // ^^      throw new RuntimeException( "method not implemented" );
+    // ^^ }
     @Override
     public double getPerDomainEvalue() {
         throw new RuntimeException( "method not implemented" );

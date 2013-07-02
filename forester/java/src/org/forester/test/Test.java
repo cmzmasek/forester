@@ -91,7 +91,6 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.protein.ProteinId;
 import org.forester.rio.TestRIO;
@@ -172,15 +171,6 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
-        System.out.print( "Domain id: " );
-        if ( !testDomainId() ) {
-            System.out.println( "failed." );
-            failed++;
-        }
-        else {
-            succeeded++;
-        }
-        System.out.println( "OK." );
         System.out.print( "Protein id: " );
         if ( !testProteinId() ) {
             System.out.println( "failed." );
@@ -953,7 +943,7 @@ public final class Test {
     private static boolean testBasicDomain() {
         try {
             final Domain pd = new BasicDomain( "id", 23, 25, ( short ) 1, ( short ) 4, 0.1, -12 );
-            if ( !pd.getDomainId().getId().equals( "id" ) ) {
+            if ( !pd.getDomainId().equals( "id" ) ) {
                 return false;
             }
             if ( pd.getNumber() != 1 ) {
@@ -997,7 +987,7 @@ public final class Test {
             if ( a1.compareTo( a2 ) != 0 ) {
                 return false;
             }
-            if ( a1.compareTo( a3 ) != 0 ) {
+            if ( a1.compareTo( a3 ) == 0 ) {
                 return false;
             }
         }
@@ -1856,238 +1846,78 @@ public final class Test {
             p.addProteinDomain( A20 );
             p.addProteinDomain( B25 );
             p.addProteinDomain( D80 );
-            List<DomainId> domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
+            List<String> domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
+            domains_ids.add( "C" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids.add( new DomainId( "X" ) );
+            domains_ids.add( "X" );
             if ( p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
+            domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "C" );
+            domains_ids.add( "D" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            domains_ids.add( new DomainId( "C" ) );
+            domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "D" );
+            domains_ids.add( "C" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
+            domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
+            domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "A" );
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
+            domains_ids.add( "B" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
             if ( !p.contains( domains_ids, true ) ) {
                 return false;
             }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( !p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( !p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( !p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( !p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( !p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            domains_ids.add( new DomainId( "X" ) );
-            if ( p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "X" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
-            if ( p.contains( domains_ids, false ) ) {
-                return false;
-            }
-            if ( p.contains( domains_ids, true ) ) {
-                return false;
-            }
-            domains_ids = new ArrayList<DomainId>();
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "B" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "A" ) );
-            domains_ids.add( new DomainId( "C" ) );
-            domains_ids.add( new DomainId( "D" ) );
+            domains_ids = new ArrayList<String>();
+            domains_ids.add( "A" );
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
+            domains_ids.add( "B" );
+            domains_ids.add( "A" );
+            domains_ids.add( "B" );
+            domains_ids.add( "C" );
+            domains_ids.add( "A" );
+            domains_ids.add( "C" );
+            domains_ids.add( "D" );
             if ( !p.contains( domains_ids, false ) ) {
                 return false;
             }
@@ -3456,69 +3286,6 @@ public final class Test {
             }
         }
         catch ( final Exception e ) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testDomainId() {
-        try {
-            final DomainId id1 = new DomainId( "a" );
-            final DomainId id2 = new DomainId( "a" );
-            final DomainId id3 = new DomainId( "A" );
-            final DomainId id4 = new DomainId( "b" );
-            if ( !id1.equals( id1 ) ) {
-                return false;
-            }
-            if ( id1.getId().equals( "x" ) ) {
-                return false;
-            }
-            if ( id1.getId().equals( null ) ) {
-                return false;
-            }
-            if ( !id1.equals( id2 ) ) {
-                return false;
-            }
-            if ( id1.equals( id3 ) ) {
-                return false;
-            }
-            if ( id1.hashCode() != id1.hashCode() ) {
-                return false;
-            }
-            if ( id1.hashCode() != id2.hashCode() ) {
-                return false;
-            }
-            if ( id1.hashCode() == id3.hashCode() ) {
-                return false;
-            }
-            if ( id1.compareTo( id1 ) != 0 ) {
-                return false;
-            }
-            if ( id1.compareTo( id2 ) != 0 ) {
-                return false;
-            }
-            if ( id1.compareTo( id3 ) != 0 ) {
-                return false;
-            }
-            if ( id1.compareTo( id4 ) >= 0 ) {
-                return false;
-            }
-            if ( id4.compareTo( id1 ) <= 0 ) {
-                return false;
-            }
-            if ( !id4.getId().equals( "b" ) ) {
-                return false;
-            }
-            final DomainId id5 = new DomainId( " C " );
-            if ( !id5.getId().equals( "C" ) ) {
-                return false;
-            }
-            if ( id5.equals( id1 ) ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
             return false;
         }
         return true;

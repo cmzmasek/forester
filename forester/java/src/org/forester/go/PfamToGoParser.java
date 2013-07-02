@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class PfamToGoParser {
@@ -78,7 +77,7 @@ public class PfamToGoParser {
                     if ( ForesterUtil.isEmpty( pfam ) || ForesterUtil.isEmpty( go ) ) {
                         throw new IOException( "unexpected format [\"" + line + "\"]" );
                     }
-                    final PfamToGoMapping map = new PfamToGoMapping( new DomainId( pfam ), new GoId( go ) );
+                    final PfamToGoMapping map = new PfamToGoMapping( pfam, new GoId( go ) );
                     ++_mapping_count;
                     mappings.add( map );
                 }

@@ -27,24 +27,16 @@
 package org.forester.surfacing;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 
 public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainCombination {
-
-    public AdjactantDirectedBinaryDomainCombination( final DomainId n_terminal, final DomainId c_terminal ) {
-        super();
-        if ( ( n_terminal == null ) || ( c_terminal == null ) ) {
-            throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
-        }
-        _data = n_terminal.getId() + BinaryDomainCombination.SEPARATOR + c_terminal.getId();
-    }
 
     public AdjactantDirectedBinaryDomainCombination( final String n_terminal, final String c_terminal ) {
         super();
         if ( ( n_terminal == null ) || ( c_terminal == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        _data = n_terminal + BinaryDomainCombination.SEPARATOR + c_terminal;
+        _id0 = n_terminal;
+        _id1 = c_terminal;
     }
 
     public static AdjactantDirectedBinaryDomainCombination createInstance( final String ids ) {

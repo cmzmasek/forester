@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class TestGo {
@@ -356,11 +355,11 @@ public class TestGo {
 
     private static boolean testPfamToGoMapping() {
         try {
-            final PfamToGoMapping pg0 = new PfamToGoMapping( new DomainId( "A" ), new GoId( "GO:0000001" ) );
-            final PfamToGoMapping pg1 = new PfamToGoMapping( new DomainId( "A" ), new GoId( "GO:0000001" ) );
-            final PfamToGoMapping pg2 = new PfamToGoMapping( new DomainId( "B" ), new GoId( "GO:0000001" ) );
-            final PfamToGoMapping pg3 = new PfamToGoMapping( new DomainId( "A" ), new GoId( "GO:0000002" ) );
-            final PfamToGoMapping pg4 = new PfamToGoMapping( new DomainId( "B" ), new GoId( "GO:0000002" ) );
+            final PfamToGoMapping pg0 = new PfamToGoMapping( "A", new GoId( "GO:0000001" ) );
+            final PfamToGoMapping pg1 = new PfamToGoMapping( "A", new GoId( "GO:0000001" ) );
+            final PfamToGoMapping pg2 = new PfamToGoMapping( "B", new GoId( "GO:0000001" ) );
+            final PfamToGoMapping pg3 = new PfamToGoMapping( "A", new GoId( "GO:0000002" ) );
+            final PfamToGoMapping pg4 = new PfamToGoMapping( "B", new GoId( "GO:0000002" ) );
             if ( !pg0.equals( pg0 ) ) {
                 return false;
             }
@@ -412,55 +411,55 @@ public class TestGo {
             final PfamToGoMapping m5 = mappings.get( 5 );
             final PfamToGoMapping m424 = mappings.get( 424 );
             final PfamToGoMapping m425 = mappings.get( 425 );
-            if ( !m0.getKey().equals( new DomainId( "7tm_1" ) ) ) {
+            if ( !m0.getKey().equals( "7tm_1" ) ) {
                 return false;
             }
             if ( !m0.getValue().equals( new GoId( "GO:0001584" ) ) ) {
                 return false;
             }
-            if ( m0.getKey().equals( new DomainId( "7tm_x" ) ) ) {
+            if ( m0.getKey().equals( "7tm_x" ) ) {
                 return false;
             }
             if ( m0.getValue().equals( new GoId( "GO:0001585" ) ) ) {
                 return false;
             }
-            if ( !m1.getKey().equals( new DomainId( "7tm_1" ) ) ) {
+            if ( !m1.getKey().equals( "7tm_1" ) ) {
                 return false;
             }
             if ( !m1.getValue().equals( new GoId( "GO:0007186" ) ) ) {
                 return false;
             }
-            if ( !m2.getKey().equals( new DomainId( "7tm_1" ) ) ) {
+            if ( !m2.getKey().equals( "7tm_1" ) ) {
                 return false;
             }
             if ( !m2.getValue().equals( new GoId( "GO:0016021" ) ) ) {
                 return false;
             }
-            if ( !m3.getKey().equals( new DomainId( "7tm_2" ) ) ) {
+            if ( !m3.getKey().equals( "7tm_2" ) ) {
                 return false;
             }
             if ( !m3.getValue().equals( new GoId( "GO:0004930" ) ) ) {
                 return false;
             }
-            if ( !m4.getKey().equals( new DomainId( "7tm_2" ) ) ) {
+            if ( !m4.getKey().equals( "7tm_2" ) ) {
                 return false;
             }
             if ( !m4.getValue().equals( new GoId( "GO:0016020" ) ) ) {
                 return false;
             }
-            if ( !m5.getKey().equals( new DomainId( "7tm_3" ) ) ) {
+            if ( !m5.getKey().equals( "7tm_3" ) ) {
                 return false;
             }
             if ( !m5.getValue().equals( new GoId( "GO:0008067" ) ) ) {
                 return false;
             }
-            if ( !m424.getKey().equals( new DomainId( "OMPdecase" ) ) ) {
+            if ( !m424.getKey().equals( "OMPdecase" ) ) {
                 return false;
             }
             if ( !m424.getValue().equals( new GoId( "GO:0006207" ) ) ) {
                 return false;
             }
-            if ( !m425.getKey().equals( new DomainId( "Bac_DNA_binding" ) ) ) {
+            if ( !m425.getKey().equals( "Bac_DNA_binding" ) ) {
                 return false;
             }
             if ( !m425.getValue().equals( new GoId( "GO:0003677" ) ) ) {

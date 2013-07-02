@@ -25,14 +25,12 @@
 
 package org.forester.go;
 
-import org.forester.protein.DomainId;
-
 public class PfamToGoMapping implements Mapping {
 
-    private final DomainId _pfam_domain_id;
-    private final GoId     _go_id;
+    private final String _pfam_domain_id;
+    private final GoId   _go_id;
 
-    public PfamToGoMapping( final DomainId pfam_domain_id, final GoId go_id ) {
+    public PfamToGoMapping( final String pfam_domain_id, final GoId go_id ) {
         _pfam_domain_id = pfam_domain_id;
         _go_id = go_id;
     }
@@ -42,7 +40,7 @@ public class PfamToGoMapping implements Mapping {
         if ( this == m ) {
             return 0;
         }
-        return getKey().compareTo( ( DomainId ) m.getKey() );
+        return getKey().compareTo( ( String ) m.getKey() );
     }
 
     /**
@@ -69,7 +67,7 @@ public class PfamToGoMapping implements Mapping {
     }
 
     @Override
-    public DomainId getKey() {
+    public String getKey() {
         return _pfam_domain_id;
     }
 

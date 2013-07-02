@@ -27,31 +27,39 @@
 package org.forester.surfacing;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    String _data;
+    String _id0;
+    String _id1;
+    String _str;
 
     BasicBinaryDomainCombination() {
-        _data = null;
+        _id0 = null;
+        _id1 = null;
+        _str = null;
     }
 
-    public BasicBinaryDomainCombination( final String id_0, final String id_1 ) {
-        if ( ( id_0 == null ) || ( id_1 == null ) ) {
+    private String getAsStr() {
+        if ( _str == null ) {
+            _str = _id0 + SEPARATOR + _id1;
+        }
+        return _str;
+    }
+
+    public BasicBinaryDomainCombination( final String id0, final String id1 ) {
+        if ( ( id0 == null ) || ( id1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        if ( id_0.toLowerCase().compareTo( id_1.toLowerCase() ) < 0 ) {
-            _data = id_0 + BinaryDomainCombination.SEPARATOR + id_1;
+        if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
+            _id0 = id0;
+            _id1 = id1;
         }
         else {
-            _data = id_1 + BinaryDomainCombination.SEPARATOR + id_0;
+            _id0 = id1;
+            _id1 = id0;
         }
-    }
-
-    public BasicBinaryDomainCombination( final DomainId id_0, final DomainId id_1 ) {
-        this( id_0.getId(), id_1.getId() );
     }
 
     @Override
@@ -91,18 +99,18 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     }
 
     @Override
-    public DomainId getId0() {
-        return new DomainId( _data.split( BinaryDomainCombination.SEPARATOR )[ 0 ] );
+    public String getId0() {
+        return _id0;
     }
 
     @Override
-    public DomainId getId1() {
-        return new DomainId( _data.split( BinaryDomainCombination.SEPARATOR )[ 1 ] );
+    public String getId1() {
+        return _id1;
     }
 
     @Override
     public int hashCode() {
-        return _data.hashCode();
+        return getAsStr().hashCode();
     }
 
     @Override
@@ -151,7 +159,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     @Override
     public String toString() {
-        return _data;
+        return getAsStr();
     }
 
     public static BinaryDomainCombination createInstance( final String ids ) {

@@ -51,7 +51,6 @@ import org.forester.go.GoTerm;
 import org.forester.go.GoUtils;
 import org.forester.go.OBOparser;
 import org.forester.go.PfamToGoMapping;
-import org.forester.protein.DomainId;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
 import org.forester.surfacing.SurfacingConstants;
@@ -85,12 +84,12 @@ public class MetaOntologizer {
     }
 
     private static StringBuilder obtainDomainsForGoId( final List<PfamToGoMapping> pfam_to_go,
-                                                       final SortedSet<DomainId> domains_per_species,
+                                                       final SortedSet<String> domains_per_species,
                                                        final Map<GoId, GoTerm> all_go_terms,
                                                        final GoId query_go_id,
-                                                       final Set<DomainId> found_domain_ids ) {
+                                                       final Set<String> found_domain_ids ) {
         final StringBuilder sb = new StringBuilder();
-        D: for( final DomainId domain_id : domains_per_species ) {
+        D: for( final String domain_id : domains_per_species ) {
             for( final PfamToGoMapping ptg : pfam_to_go ) {
                 if ( ptg.getKey().equals( domain_id ) ) {
                     final GoId go_id = ptg.getValue();
@@ -128,13 +127,12 @@ public class MetaOntologizer {
         return species;
     }
 
-    private static SortedMap<Species, SortedSet<DomainId>> parseDomainGainLossFile( final File input )
-            throws IOException {
+    private static SortedMap<Species, SortedSet<String>> parseDomainGainLossFile( final File input ) throws IOException {
         final String error = ForesterUtil.isReadableFile( input );
         if ( !ForesterUtil.isEmpty( error ) ) {
             throw new IOException( error );
         }
-        final SortedMap<Species, SortedSet<DomainId>> speciesto_to_domain_id = new TreeMap<Species, SortedSet<DomainId>>();
+        final SortedMap<Species, SortedSet<String>> speciesto_to_domain_id = new TreeMap<Species, SortedSet<String>>();
         final BufferedReader br = new BufferedReader( new FileReader( input ) );
         String line;
         int line_number = 0;
@@ -148,7 +146,7 @@ public class MetaOntologizer {
                 }
                 else if ( line.startsWith( "#" ) ) {
                     current_species = new BasicSpecies( line.substring( 1 ) );
-                    speciesto_to_domain_id.put( current_species, new TreeSet<DomainId>() );
+                    speciesto_to_domain_id.put( current_species, new TreeSet<String>() );
                     if ( VERBOSE ) {
                         ForesterUtil.programMessage( PRG_NAME, "saw " + current_species );
                     }
@@ -157,7 +155,7 @@ public class MetaOntologizer {
                     if ( current_species == null ) {
                         throw new IOException( "parsing problem [at line " + line_number + "] in [" + input + "]" );
                     }
-                    speciesto_to_domain_id.get( current_species ).add( new DomainId( line ) );
+                    speciesto_to_domain_id.get( current_species ).add( new String( line ) );
                 }
             }
         }
@@ -178,9 +176,9 @@ public class MetaOntologizer {
                                            final SortedMap<String, SortedSet<OntologizerResult>> species_to_results_map,
                                            final String species,
                                            final double p_adjusted_upper_limit,
-                                           final SortedSet<DomainId> domains_per_species,
+                                           final SortedSet<String> domains_per_species,
                                            final List<PfamToGoMapping> pfam_to_go,
-                                           final Set<DomainId> domain_ids_with_go_annot ) throws IOException {
+                                           final Set<String> domain_ids_with_go_annot ) throws IOException {
         final SortedSet<OntologizerResult> ontologizer_results = species_to_results_map.get( species );
         for( final OntologizerResult ontologizer_result : ontologizer_results ) {
             final GoTerm go_term = go_id_to_terms.get( ontologizer_result.getGoId() );
@@ -230,7 +228,7 @@ public class MetaOntologizer {
             throw new IllegalArgumentException( "adjusted P values limit [" + p_adjusted_upper_limit
                     + "] is out of range" );
         }
-        SortedMap<Species, SortedSet<DomainId>> speciesto_to_domain_id = null;
+        SortedMap<Species, SortedSet<String>> speciesto_to_domain_id = null;
         if ( domain_gain_loss_file != null ) {
             if ( !domain_gain_loss_file.exists() ) {
                 throw new IllegalArgumentException( "[" + domain_gain_loss_file + "] does not exist" );
@@ -333,11 +331,11 @@ public class MetaOntologizer {
                                        GoNameSpace.GoNamespaceType.MOLECULAR_FUNCTION ) ) {
                 writeHtmlSpecies( m_html_writer, species );
             }
-            SortedSet<DomainId> domains_per_species = null;
+            SortedSet<String> domains_per_species = null;
             if ( ( speciesto_to_domain_id != null ) && ( speciesto_to_domain_id.size() > 0 ) ) {
                 domains_per_species = speciesto_to_domain_id.get( new BasicSpecies( species ) );
             }
-            final Set<DomainId> domain_ids_with_go_annot = new HashSet<DomainId>();
+            final Set<String> domain_ids_with_go_annot = new HashSet<String>();
             processOneSpecies( go_id_to_terms,
                                b_html_writer,
                                b_tab_writer,
@@ -398,12 +396,12 @@ public class MetaOntologizer {
     }
 
     private static void writeHtmlDomains( final Writer writer,
-                                          final SortedSet<DomainId> domains,
-                                          final Set<DomainId> domain_ids_with_go_annot ) throws IOException {
+                                          final SortedSet<String> domains,
+                                          final Set<String> domain_ids_with_go_annot ) throws IOException {
         writer.write( "<tr>" );
         writer.write( "<td colspan=\"10\">" );
         if ( domains != null ) {
-            for( final DomainId domain : domains ) {
+            for( final String domain : domains ) {
                 if ( !domain_ids_with_go_annot.contains( domain ) ) {
                     writer.write( "[<a class=\"new_type\" href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain
                             + "\">" + domain + "</a>] " );
@@ -555,9 +553,9 @@ public class MetaOntologizer {
                                                  final double p_adjusted_upper_limit,
                                                  final String species,
                                                  final Map<GoId, GoTerm> go_id_to_terms,
-                                                 final SortedSet<DomainId> domains_per_species,
+                                                 final SortedSet<String> domains_per_species,
                                                  final List<PfamToGoMapping> pfam_to_go,
-                                                 final Set<DomainId> domain_ids_with_go_annot ) throws IOException {
+                                                 final Set<String> domain_ids_with_go_annot ) throws IOException {
         final Color p_adj_color = ForesterUtil.calcColor( ontologizer_result.getPAdjusted(),
                                                           0,
                                                           p_adjusted_upper_limit,

@@ -48,7 +48,6 @@ import org.forester.application.surfacing;
 import org.forester.go.GoId;
 import org.forester.go.GoTerm;
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -86,8 +85,8 @@ public final class DomainCountsDifferenceUtil {
         }
     }
 
-    private static void addCounts( final SortedMap<DomainId, List<Integer>> copy_counts,
-                                   final DomainId domain,
+    private static void addCounts( final SortedMap<String, List<Integer>> copy_counts,
+                                   final String domain,
                                    final GenomeWideCombinableDomains genome ) {
         if ( !copy_counts.containsKey( domain ) ) {
             copy_counts.put( domain, new ArrayList<Integer>() );
@@ -100,8 +99,8 @@ public final class DomainCountsDifferenceUtil {
         }
     }
 
-    private static StringBuilder addGoInformation( final DomainId d,
-                                                   final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+    private static StringBuilder addGoInformation( final String d,
+                                                   final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                    final Map<GoId, GoTerm> go_id_to_term_map ) {
         final StringBuilder sb = new StringBuilder();
         if ( ( domain_id_to_go_ids_map == null ) || domain_id_to_go_ids_map.isEmpty()
@@ -116,7 +115,7 @@ public final class DomainCountsDifferenceUtil {
                 sb.append( "<br>" );
             }
             else {
-                sb.append( "go id \"" + go_id + "\" not found [" + d.getId() + "]" );
+                sb.append( "go id \"" + go_id + "\" not found [" + d + "]" );
             }
         }
         return sb;
@@ -143,7 +142,7 @@ public final class DomainCountsDifferenceUtil {
                                                        final File plain_output_dom,
                                                        final File html_output_dom,
                                                        final File html_output_dc,
-                                                       final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+                                                       final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                        final Map<GoId, GoTerm> go_id_to_term_map,
                                                        final File all_domains_go_ids_out_dom,
                                                        final File passing_domains_go_ids_out_dom,
@@ -175,13 +174,13 @@ public final class DomainCountsDifferenceUtil {
         final Writer html_writer_dc = new BufferedWriter( new FileWriter( html_output_dc ) );
         final Writer all_gos_writer = new BufferedWriter( new FileWriter( all_domains_go_ids_out_dom ) );
         final Writer passing_gos_writer = new BufferedWriter( new FileWriter( passing_domains_go_ids_out_dom ) );
-        final SortedMap<DomainId, Double> high_copy_base_values = new TreeMap<DomainId, Double>();
-        final SortedMap<DomainId, Double> high_copy_target_values = new TreeMap<DomainId, Double>();
-        final SortedMap<DomainId, Double> low_copy_values = new TreeMap<DomainId, Double>();
-        final SortedMap<DomainId, List<Integer>> high_copy_base_copy_counts = new TreeMap<DomainId, List<Integer>>();
-        final SortedMap<DomainId, List<Integer>> high_copy_target_copy_counts = new TreeMap<DomainId, List<Integer>>();
-        final SortedMap<DomainId, List<Integer>> low_copy_copy_counts = new TreeMap<DomainId, List<Integer>>();
-        final SortedSet<DomainId> all_domains = new TreeSet<DomainId>();
+        final SortedMap<String, Double> high_copy_base_values = new TreeMap<String, Double>();
+        final SortedMap<String, Double> high_copy_target_values = new TreeMap<String, Double>();
+        final SortedMap<String, Double> low_copy_values = new TreeMap<String, Double>();
+        final SortedMap<String, List<Integer>> high_copy_base_copy_counts = new TreeMap<String, List<Integer>>();
+        final SortedMap<String, List<Integer>> high_copy_target_copy_counts = new TreeMap<String, List<Integer>>();
+        final SortedMap<String, List<Integer>> low_copy_copy_counts = new TreeMap<String, List<Integer>>();
+        final SortedSet<String> all_domains = new TreeSet<String>();
         final SortedMap<BinaryDomainCombination, Double> high_copy_base_values_dc = new TreeMap<BinaryDomainCombination, Double>();
         final SortedMap<BinaryDomainCombination, Double> high_copy_target_values_dc = new TreeMap<BinaryDomainCombination, Double>();
         final SortedMap<BinaryDomainCombination, Double> low_copy_values_dc = new TreeMap<BinaryDomainCombination, Double>();
@@ -193,11 +192,11 @@ public final class DomainCountsDifferenceUtil {
         final SortedSet<GoId> go_ids_of_passing_domains = new TreeSet<GoId>();
         final SortedSet<GoId> go_ids_all = new TreeSet<GoId>();
         for( final GenomeWideCombinableDomains genome : genomes ) {
-            final SortedSet<DomainId> domains = genome.getAllDomainIds();
+            final SortedSet<String> domains = genome.getAllDomainIds();
             final SortedSet<BinaryDomainCombination> dcs = genome.toBinaryDomainCombinations();
             final String species = genome.getSpecies().getSpeciesId();
             bdcs_per_genome.put( species, genome.toBinaryDomainCombinations() );
-            for( final DomainId d : domains ) {
+            for( final String d : domains ) {
                 all_domains.add( d );
                 if ( domain_id_to_go_ids_map.containsKey( d ) ) {
                     go_ids_all.addAll( domain_id_to_go_ids_map.get( d ) );
@@ -207,7 +206,7 @@ public final class DomainCountsDifferenceUtil {
                 all_dcs.add( dc );
             }
         }
-        for( final DomainId domain : all_domains ) {
+        for( final String domain : all_domains ) {
             for( final GenomeWideCombinableDomains genome : genomes ) {
                 final String species = genome.getSpecies().getSpeciesId();
                 if ( high_copy_base_species.contains( species ) ) {
@@ -244,7 +243,7 @@ public final class DomainCountsDifferenceUtil {
                 }
             }
         }
-        for( final DomainId domain : all_domains ) {
+        for( final String domain : all_domains ) {
             calculateDomainCountsBasedValue( high_copy_target_values,
                                              high_copy_target_copy_counts,
                                              domain,
@@ -332,9 +331,9 @@ public final class DomainCountsDifferenceUtil {
         }
     }
 
-    private static void calculateDomainCountsBasedValue( final SortedMap<DomainId, Double> copy_values,
-                                                         final SortedMap<DomainId, List<Integer>> copy_counts,
-                                                         final DomainId domain,
+    private static void calculateDomainCountsBasedValue( final SortedMap<String, Double> copy_values,
+                                                         final SortedMap<String, List<Integer>> copy_counts,
+                                                         final String domain,
                                                          final COPY_CALCULATION_MODE copy_calc_mode ) {
         if ( copy_counts.containsKey( domain ) ) {
             switch ( copy_calc_mode ) {
@@ -372,9 +371,9 @@ public final class DomainCountsDifferenceUtil {
         results.put( bdc, ( double ) max );
     }
 
-    private static void calculateMaxCount( final SortedMap<DomainId, Double> results,
-                                           final SortedMap<DomainId, List<Integer>> copy_counts,
-                                           final DomainId domain ) {
+    private static void calculateMaxCount( final SortedMap<String, Double> results,
+                                           final SortedMap<String, List<Integer>> copy_counts,
+                                           final String domain ) {
         final List<Integer> counts = copy_counts.get( domain );
         int max = 0;
         for( final Integer count : counts ) {
@@ -396,9 +395,9 @@ public final class DomainCountsDifferenceUtil {
         results.put( bdc, ( ( double ) sum ) / ( ( double ) counts.size() ) );
     }
 
-    private static void calculateMeanCount( final SortedMap<DomainId, Double> results,
-                                            final SortedMap<DomainId, List<Integer>> copy_counts,
-                                            final DomainId domain ) {
+    private static void calculateMeanCount( final SortedMap<String, Double> results,
+                                            final SortedMap<String, List<Integer>> copy_counts,
+                                            final String domain ) {
         final List<Integer> counts = copy_counts.get( domain );
         int sum = 0;
         for( final Integer count : counts ) {
@@ -418,9 +417,9 @@ public final class DomainCountsDifferenceUtil {
         results.put( bdc, stats.median() );
     }
 
-    private static void calculateMedianCount( final SortedMap<DomainId, Double> results,
-                                              final SortedMap<DomainId, List<Integer>> copy_counts,
-                                              final DomainId domain ) {
+    private static void calculateMedianCount( final SortedMap<String, Double> results,
+                                              final SortedMap<String, List<Integer>> copy_counts,
+                                              final String domain ) {
         final List<Integer> counts = copy_counts.get( domain );
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( final Integer count : counts ) {
@@ -442,9 +441,9 @@ public final class DomainCountsDifferenceUtil {
         results.put( bdc, ( double ) min );
     }
 
-    private static void calculateMinCount( final SortedMap<DomainId, Double> results,
-                                           final SortedMap<DomainId, List<Integer>> copy_counts,
-                                           final DomainId domain ) {
+    private static void calculateMinCount( final SortedMap<String, Double> results,
+                                           final SortedMap<String, List<Integer>> copy_counts,
+                                           final String domain ) {
         final List<Integer> counts = copy_counts.get( domain );
         int min = Integer.MAX_VALUE;
         for( final Integer count : counts ) {
@@ -506,8 +505,8 @@ public final class DomainCountsDifferenceUtil {
         html_writer.write( "</td>" );
     }
 
-    private static void writeCopyNumberValues( final SortedMap<DomainId, Double> copy_means,
-                                               final DomainId domain,
+    private static void writeCopyNumberValues( final SortedMap<String, Double> copy_means,
+                                               final String domain,
                                                final GenomeWideCombinableDomains genome,
                                                final String species,
                                                final Writer plain_writer,
@@ -660,15 +659,15 @@ public final class DomainCountsDifferenceUtil {
                                                   final List<String> low_copy_species,
                                                   final int min_diff,
                                                   final Double factor,
-                                                  final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+                                                  final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                   final Map<GoId, GoTerm> go_id_to_term_map,
                                                   final Writer plain_writer,
                                                   final Writer html_writer,
                                                   final File proteins_file_base,
-                                                  final SortedMap<DomainId, Double> high_copy_base_values,
-                                                  final SortedMap<DomainId, Double> high_copy_target_values,
-                                                  final SortedMap<DomainId, Double> low_copy_values,
-                                                  final SortedSet<DomainId> all_domains,
+                                                  final SortedMap<String, Double> high_copy_base_values,
+                                                  final SortedMap<String, Double> high_copy_target_values,
+                                                  final SortedMap<String, Double> low_copy_values,
+                                                  final SortedSet<String> all_domains,
                                                   final SortedSet<GoId> go_ids_of_passing_domains,
                                                   final SortedMap<Species, List<Protein>> protein_lists_per_species )
             throws IOException {
@@ -677,7 +676,7 @@ public final class DomainCountsDifferenceUtil {
         int not_total_absense_counter = 0;
         SurfacingUtil.addHtmlHead( html_writer, "Domain Copy Differences" );
         html_writer.write( "<body><table>" );
-        for( final DomainId domain_id : all_domains ) {
+        for( final String domain_id : all_domains ) {
             if ( ( high_copy_base_values.get( domain_id ) > 0 ) && ( high_copy_target_values.get( domain_id ) > 0 )
                     && ( high_copy_base_values.get( domain_id ) >= low_copy_values.get( domain_id ) ) ) {
                 if ( high_copy_target_values.get( domain_id ) >= ( min_diff + ( factor * low_copy_values
@@ -693,10 +692,10 @@ public final class DomainCountsDifferenceUtil {
                     if ( domain_id_to_go_ids_map.containsKey( domain_id ) ) {
                         go_ids_of_passing_domains.addAll( domain_id_to_go_ids_map.get( domain_id ) );
                     }
-                    plain_writer.write( domain_id.getId() );
+                    plain_writer.write( domain_id );
                     plain_writer.write( SurfacingConstants.NL );
-                    html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK
-                            + domain_id.getId() + "\">" + domain_id.getId() + "</a></td><td>" );
+                    html_writer.write( "<tr><td><a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id
+                            + "\">" + domain_id + "</a></td><td>" );
                     html_writer.write( addGoInformation( domain_id, domain_id_to_go_ids_map, go_id_to_term_map )
                             .toString() );
                     html_writer.write( "</td><td>" );
@@ -820,7 +819,7 @@ public final class DomainCountsDifferenceUtil {
 
     private static void writeProteinsToFile( final File proteins_file_base,
                                              final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                             final DomainId domain_id ) throws IOException {
+                                             final String domain_id ) throws IOException {
         final File my_proteins_file = new File( proteins_file_base.getParentFile() + ForesterUtil.FILE_SEPARATOR
                 + domain_id + PLUS_MINUS_PROTEINS_FILE_DOM_SUFFIX );
         SurfacingUtil.checkForOutputFileWriteability( my_proteins_file );

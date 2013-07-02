@@ -44,7 +44,6 @@ import java.util.TreeSet;
 import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.ForesterUtil;
@@ -65,7 +64,7 @@ public final class HmmscanPerDomainTableParser {
     private static final boolean          IGNORE_DUFS_DEFAULT         = false;
     private static final int              MAX_ALLOWED_OVERLAP_DEFAULT = -1;
     private static final boolean          IGNORE_REPLACED_RRMS        = false;
-    private final Set<DomainId>           _filter;
+    private final Set<String>             _filter;
     private final FilterType              _filter_type;
     private final File                    _input_file;
     private final String                  _species;
@@ -85,7 +84,7 @@ public final class HmmscanPerDomainTableParser {
     private int                           _domains_ignored_due_to_e_value;
     private int                           _domains_ignored_due_to_individual_score_cutoff;
     private int                           _domains_stored;
-    private SortedSet<DomainId>           _domains_stored_set;
+    private SortedSet<String>             _domains_stored_set;
     private long                          _time;
     private int                           _domains_ignored_due_to_negative_domain_filter;
     private Map<String, Integer>          _domains_ignored_due_to_negative_domain_filter_counts_map;
@@ -121,7 +120,7 @@ public final class HmmscanPerDomainTableParser {
 
     public HmmscanPerDomainTableParser( final File input_file,
                                         final String species,
-                                        final Set<DomainId> filter,
+                                        final Set<String> filter,
                                         final FilterType filter_type,
                                         final INDIVIDUAL_SCORE_CUTOFF individual_cutoff_applies_to ) {
         _input_file = input_file;
@@ -135,7 +134,7 @@ public final class HmmscanPerDomainTableParser {
 
     public HmmscanPerDomainTableParser( final File input_file,
                                         final String species,
-                                        final Set<DomainId> filter,
+                                        final Set<String> filter,
                                         final FilterType filter_type,
                                         final INDIVIDUAL_SCORE_CUTOFF individual_cutoff_applies_to,
                                         final boolean allow_proteins_with_same_name ) {
@@ -173,7 +172,7 @@ public final class HmmscanPerDomainTableParser {
             _domains_ignored_due_to_overlap += domains_removed;
         }
         if ( ( getFilterType() == FilterType.POSITIVE_PROTEIN ) || ( getFilterType() == FilterType.NEGATIVE_PROTEIN ) ) {
-            final Set<DomainId> domain_ids_in_protein = new HashSet<DomainId>();
+            final Set<String> domain_ids_in_protein = new HashSet<String>();
             for( final Domain d : current_protein.getProteinDomains() ) {
                 domain_ids_in_protein.add( d.getDomainId() );
             }
@@ -240,7 +239,7 @@ public final class HmmscanPerDomainTableParser {
         return _domains_stored;
     }
 
-    public SortedSet<DomainId> getDomainsStoredSet() {
+    public SortedSet<String> getDomainsStoredSet() {
         return _domains_stored_set;
     }
 
@@ -248,7 +247,7 @@ public final class HmmscanPerDomainTableParser {
         return _e_value_maximum;
     }
 
-    private Set<DomainId> getFilter() {
+    private Set<String> getFilter() {
         return _filter;
     }
 
@@ -308,7 +307,7 @@ public final class HmmscanPerDomainTableParser {
     }
 
     private void intitCounts() {
-        setDomainsStoredSet( new TreeSet<DomainId>() );
+        setDomainsStoredSet( new TreeSet<String>() );
         setDomainsEncountered( 0 );
         setProteinsEncountered( 0 );
         setProteinsIgnoredDueToFilter( 0 );
@@ -459,8 +458,7 @@ public final class HmmscanPerDomainTableParser {
                 ForesterUtil.increaseCountingMap( getDomainsIgnoredDueToVirusLikeIdCountsMap(), target_id );
                 ++_domains_ignored_due_to_virus_like_id;
             }
-            else if ( ( getFilterType() == FilterType.NEGATIVE_DOMAIN )
-                    && getFilter().contains( new DomainId( target_id ) ) ) {
+            else if ( ( getFilterType() == FilterType.NEGATIVE_DOMAIN ) && getFilter().contains( target_id ) ) {
                 ++_domains_ignored_due_to_negative_domain_filter;
                 ForesterUtil.increaseCountingMap( getDomainsIgnoredDueToNegativeDomainFilterCountsMap(), target_id );
             }
@@ -556,7 +554,7 @@ public final class HmmscanPerDomainTableParser {
         _domains_stored = domains_stored;
     }
 
-    private void setDomainsStoredSet( final SortedSet<DomainId> _storeddomains_stored ) {
+    private void setDomainsStoredSet( final SortedSet<String> _storeddomains_stored ) {
         _domains_stored_set = _storeddomains_stored;
     }
 

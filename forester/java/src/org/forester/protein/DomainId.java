@@ -26,18 +26,14 @@
 
 package org.forester.protein;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.forester.go.GoId;
 import org.forester.util.ForesterUtil;
 
 public class DomainId implements Comparable<DomainId> {
 
     final private String _id;
-    private List<GoId>   _go_ids;
 
-    public DomainId( final String id ) {
+    //  private List<GoId>   _go_ids;
+    private DomainId( final String id ) {
         if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "attempt to create domain id from empty or null string" );
         }
@@ -50,16 +46,15 @@ public class DomainId implements Comparable<DomainId> {
             throw new IllegalArgumentException( "attempt to create domain id from string containing the separator character ["
                     + BinaryDomainCombination.SEPARATOR + "] for domain combinations [" + _id + "]" );
         }
-        setGoIds( null );
+        ///////////////////////////// //      setGoIds( null );
     }
 
-    public void addGoId( final GoId go_id ) {
-        if ( getGoIds() == null ) {
-            setGoIds( new ArrayList<GoId>() );
-        }
-        getGoIds().add( go_id );
-    }
-
+    //  public void addGoId( final GoId go_id ) {
+    //       if ( getGoIds() == null ) {
+    //           setGoIds( new ArrayList<GoId>() );
+    //      }
+    //      getGoIds().add( go_id );
+    //  }
     @Override
     public int compareTo( final DomainId domain_id ) {
         if ( this == domain_id ) {
@@ -85,10 +80,9 @@ public class DomainId implements Comparable<DomainId> {
         }
     }
 
-    public GoId getGoId( final int i ) {
-        return getGoIds().get( i );
-    }
-
+    // public GoId getGoId( final int i ) {
+    //     return getGoIds().get( i );
+    //}
     // Note.
     // The fact that equals and compareTo do not behave the same in cases where ids only differ by their case
     // is not ideal. From Sun regarding Interface SortedSet<E>:
@@ -100,30 +94,27 @@ public class DomainId implements Comparable<DomainId> {
     // so two elements that are deemed equal by this method are, from the standpoint of the sorted set,
     // equal. The behavior of a sorted set is well-defined even if its ordering is inconsistent with equals; 
     // it just fails to obey the general contract of the Set interface."
-    public List<GoId> getGoIds() {
-        return _go_ids;
-    }
-
-    public String getId() {
+    // public List<GoId> getGoIds() {
+    //     return _go_ids;
+    // }
+    private String getId() {
         return _id;
     }
 
-    public int getNumberOfGoIds() {
-        if ( getGoIds() == null ) {
-            return 0;
-        }
-        return getGoIds().size();
-    }
-
+    // public int getNumberOfGoIds() {
+    //     if ( getGoIds() == null ) {
+    //         return 0;
+    //     }
+    //     return getGoIds().size();
+    // }
     @Override
     public int hashCode() {
         return getId().hashCode();
     }
 
-    private void setGoIds( final List<GoId> go_ids ) {
-        _go_ids = go_ids;
-    }
-
+    // private void setGoIds( final List<GoId> go_ids ) {
+    //     _go_ids = go_ids;
+    // }
     @Override
     public String toString() {
         return getId();

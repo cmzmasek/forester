@@ -33,13 +33,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.forester.protein.DomainId;
 import org.forester.util.DescriptiveStatistics;
 
 class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDomainSimilariyData {
 
     private final static NumberFormat   FORMATTER = new DecimalFormat( "0.0E0" );
-    final SortedMap<DomainId, Integer>  _combinable_domain_id_to_count_map;
+    final SortedMap<String, Integer>    _combinable_domain_id_to_count_map;
     final private int                   _key_domain_proteins_count;
     final private int                   _key_domain_domains_count;
     final private int                   _combinable_domains_count;
@@ -53,11 +52,11 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
         _key_domain_domains_count = key_domain_domains_count;
         _combinable_domains_count = combinable_domains;
         _key_domain_confidence_descriptive_statistics = key_domain_confidence_descriptive_statistics;
-        _combinable_domain_id_to_count_map = new TreeMap<DomainId, Integer>();
+        _combinable_domain_id_to_count_map = new TreeMap<String, Integer>();
     }
 
     @Override
-    public void addProteinsExhibitingCombinationCount( final DomainId domain_id, final int count ) {
+    public void addProteinsExhibitingCombinationCount( final String domain_id, final int count ) {
         if ( getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " already exists" );
         }
@@ -65,7 +64,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
     }
 
     @Override
-    public SortedMap<DomainId, Integer> getCombinableDomainIdToCountsMap() {
+    public SortedMap<String, Integer> getCombinableDomainIdToCountsMap() {
         return _combinable_domain_id_to_count_map;
     }
 
@@ -86,7 +85,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
     }
 
     @Override
-    public int getNumberOfProteinsExhibitingCombinationWith( final DomainId domain_id ) {
+    public int getNumberOfProteinsExhibitingCombinationWith( final String domain_id ) {
         if ( !getCombinableDomainIdToCountsMap().containsKey( domain_id ) ) {
             throw new IllegalArgumentException( "Domain with id " + domain_id + " not found" );
         }
@@ -121,17 +120,17 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
                 sb.append( ":" );
             }
         }
-        final Set<DomainId> ids = getCombinableDomainIdToCountsMap().keySet();
+        final Set<String> ids = getCombinableDomainIdToCountsMap().keySet();
         int i = 0;
-        for( final DomainId domain_id : ids ) {
+        for( final String domain_id : ids ) {
             ++i;
             sb.append( " " );
             if ( html ) {
-                sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id.getId() + "\">"
-                        + domain_id.getId() + "</a>" );
+                sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
+                        + "</a>" );
             }
             else {
-                sb.append( domain_id.getId() );
+                sb.append( domain_id );
             }
             if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
                 sb.append( ":" );

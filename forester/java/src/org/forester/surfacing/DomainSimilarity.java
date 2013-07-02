@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 
@@ -48,9 +47,9 @@ public interface DomainSimilarity extends Comparable<DomainSimilarity> {
         MIN, MAX, SD, MEAN, ABS_MAX_COUNTS_DIFFERENCE, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, SPECIES_COUNT, DOMAIN_ID,
     }
 
-    public SortedSet<DomainId> getCombinableDomainIds( final Species species_of_combinable_domain );;
+    public SortedSet<String> getCombinableDomainIds( final Species species_of_combinable_domain );;
 
-    public DomainId getDomainId();
+    public String getDomainId();
 
     /**
      * For pairwise similarities, this should return the "difference"; for example the difference in counts

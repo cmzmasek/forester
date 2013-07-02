@@ -53,7 +53,6 @@ import org.forester.protein.BasicProtein;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.protein.ProteinId;
 import org.forester.species.BasicSpecies;
@@ -336,7 +335,7 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it = sims.iterator();
             final DomainSimilarity sa = sims_it.next();
-            if ( !sa.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa.getSpeciesData().size() != 4 ) {
@@ -377,7 +376,7 @@ public class TestSurfacing {
                 return false;
             }
             final DomainSimilarity sb = sims_it.next();
-            if ( !sb.getDomainId().getId().equals( "B" ) ) {
+            if ( !sb.getDomainId().equals( "B" ) ) {
                 return false;
             }
             if ( sb.getSpeciesData().size() != 2 ) {
@@ -411,7 +410,7 @@ public class TestSurfacing {
                 return false;
             }
             final DomainSimilarity sc = sims_it.next();
-            if ( !sc.getDomainId().getId().equals( "C" ) ) {
+            if ( !sc.getDomainId().equals( "C" ) ) {
                 return false;
             }
             if ( sc.getSpeciesData().size() != 3 ) {
@@ -486,7 +485,7 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it2 = sims2.iterator();
             final DomainSimilarity sa2 = sims_it2.next();
-            if ( !sa2.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa2.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa2.getSpeciesData().size() != 4 ) {
@@ -573,23 +572,23 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it3 = sims3.iterator();
             final DomainSimilarity sa3 = sims_it3.next();
-            if ( !sa3.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa3.getDomainId().equals( "A" ) ) {
                 return false;
             }
             final SpeciesSpecificDomainSimilariyData ssdsd = sa3.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd.getCombinableDomainIdToCountsMap().size() != 4 ) {
                 return false;
             }
-            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "B" ) ) != 2 ) {
+            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( "B" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "F" ) ) != 2 ) {
+            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( "F" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "G" ) ) != 2 ) {
+            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( "G" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "X" ) ) != 3 ) {
+            if ( ssdsd.getNumberOfProteinsExhibitingCombinationWith( "X" ) != 3 ) {
                 return false;
             }
             final List<GenomeWideCombinableDomains> cdc_list4 = new ArrayList<GenomeWideCombinableDomains>();
@@ -616,33 +615,33 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it4 = sims4.iterator();
             final DomainSimilarity sa4 = sims_it4.next();
-            if ( !sa4.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa4.getDomainId().equals( "A" ) ) {
                 return false;
             }
             final SpeciesSpecificDomainSimilariyData ssdsd4 = sa4.getSpeciesData().get( new BasicSpecies( "ciona" ) );
             if ( ssdsd4.getCombinableDomainIdToCountsMap().size() != 5 ) {
                 return false;
             }
-            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "A" ) ) != 3 ) {
+            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "A" ) != 3 ) {
                 return false;
             }
-            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "B" ) ) != 2 ) {
+            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "B" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "F" ) ) != 2 ) {
+            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "F" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "G" ) ) != 2 ) {
+            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "G" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "X" ) ) != 3 ) {
+            if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "X" ) != 3 ) {
                 return false;
             }
             final SortedSet<DomainSimilarity> sims4_d = calc4
                     .calculateSimilarities( new DomainCountsBasedPairwiseSimilarityCalculator(), cdc_list4, false, true );
             final Iterator<DomainSimilarity> sims_it4_d = sims4_d.iterator();
             final DomainSimilarity sa4_d = sims_it4_d.next();
-            if ( !sa4_d.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa4_d.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa4_d.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).size() != 5 ) {
@@ -669,25 +668,25 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it4_p = sims4_p.iterator();
             final DomainSimilarity sa4_p = sims_it4_p.next();
-            if ( !sa4_p.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa4_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).size() != 5 ) {
                 return false;
             }
-            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "A" ) ) ) {
+            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( "A" ) ) {
                 return false;
             }
-            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "B" ) ) ) {
+            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( "B" ) ) {
                 return false;
             }
-            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "F" ) ) ) {
+            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( "F" ) ) {
                 return false;
             }
-            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "G" ) ) ) {
+            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( "G" ) ) {
                 return false;
             }
-            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( new DomainId( "X" ) ) ) {
+            if ( !sa4_p.getCombinableDomainIds( new BasicSpecies( "ciona" ) ).contains( "X" ) ) {
                 return false;
             }
             if ( !TestSurfacing
@@ -731,38 +730,38 @@ public class TestSurfacing {
             if ( ssdsd5.getCombinableDomainIdToCountsMap().size() != 4 ) {
                 return false;
             }
-            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "B" ) ) != 2 ) {
+            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( "B" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "F" ) ) != 2 ) {
+            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( "F" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "G" ) ) != 2 ) {
+            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( "G" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "X" ) ) != 3 ) {
+            if ( ssdsd5.getNumberOfProteinsExhibitingCombinationWith( "X" ) != 3 ) {
                 return false;
             }
-            if ( !sa5_d.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa5_d.getDomainId().equals( "A" ) ) {
                 return false;
             }
             final Species ciona = new BasicSpecies( "ciona" );
             if ( sa5_d.getCombinableDomainIds( ciona ).size() != 4 ) {
                 return false;
             }
-            if ( sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "A" ) ) ) {
+            if ( sa5_d.getCombinableDomainIds( ciona ).contains( "A" ) ) {
                 return false;
             }
-            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "B" ) ) ) {
+            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( "B" ) ) {
                 return false;
             }
-            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "F" ) ) ) {
+            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( "F" ) ) {
                 return false;
             }
-            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "G" ) ) ) {
+            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( "G" ) ) {
                 return false;
             }
-            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
+            if ( !sa5_d.getCombinableDomainIds( ciona ).contains( "X" ) ) {
                 return false;
             }
             if ( !TestSurfacing
@@ -795,25 +794,25 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it5_p = sims5_p.iterator();
             final DomainSimilarity sa5_p = sims_it5_p.next();
-            if ( !sa5_p.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa5_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa5_p.getCombinableDomainIds( ciona ).size() != 4 ) {
                 return false;
             }
-            if ( sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "A" ) ) ) {
+            if ( sa5_p.getCombinableDomainIds( ciona ).contains( "A" ) ) {
                 return false;
             }
-            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "B" ) ) ) {
+            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( "B" ) ) {
                 return false;
             }
-            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "F" ) ) ) {
+            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( "F" ) ) {
                 return false;
             }
-            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "G" ) ) ) {
+            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( "G" ) ) {
                 return false;
             }
-            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
+            if ( !sa5_p.getCombinableDomainIds( ciona ).contains( "X" ) ) {
                 return false;
             }
             if ( !TestSurfacing
@@ -866,38 +865,38 @@ public class TestSurfacing {
             if ( ssdsd6.getCombinableDomainIdToCountsMap().size() != 5 ) {
                 return false;
             }
-            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "B" ) ) != 2 ) {
+            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( "B" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "F" ) ) != 2 ) {
+            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( "F" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "G" ) ) != 2 ) {
+            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( "G" ) != 2 ) {
                 return false;
             }
-            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( new DomainId( "X" ) ) != 3 ) {
+            if ( ssdsd6.getNumberOfProteinsExhibitingCombinationWith( "X" ) != 3 ) {
                 return false;
             }
-            if ( !sa5_d.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa5_d.getDomainId().equals( "A" ) ) {
                 return false;
             }
             final Species ciona6 = new BasicSpecies( "ciona" );
             if ( sa6_d.getCombinableDomainIds( ciona6 ).size() != 5 ) {
                 return false;
             }
-            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "A" ) ) ) {
+            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( "A" ) ) {
                 return false;
             }
-            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "B" ) ) ) {
+            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( "B" ) ) {
                 return false;
             }
-            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "F" ) ) ) {
+            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( "F" ) ) {
                 return false;
             }
-            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "G" ) ) ) {
+            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( "G" ) ) {
                 return false;
             }
-            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( new DomainId( "X" ) ) ) {
+            if ( !sa6_d.getCombinableDomainIds( ciona6 ).contains( "X" ) ) {
                 return false;
             }
             if ( !TestSurfacing
@@ -930,25 +929,25 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it6_p = sims6_p.iterator();
             final DomainSimilarity sa6_p = sims_it6_p.next();
-            if ( !sa6_p.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa6_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa6_p.getCombinableDomainIds( ciona ).size() != 5 ) {
                 return false;
             }
-            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "A" ) ) ) {
+            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( "A" ) ) {
                 return false;
             }
-            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "B" ) ) ) {
+            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( "B" ) ) {
                 return false;
             }
-            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "F" ) ) ) {
+            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( "F" ) ) {
                 return false;
             }
-            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "G" ) ) ) {
+            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( "G" ) ) {
                 return false;
             }
-            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( new DomainId( "X" ) ) ) {
+            if ( !sa6_p.getCombinableDomainIds( ciona ).contains( "X" ) ) {
                 return false;
             }
             if ( !TestSurfacing
@@ -1047,7 +1046,7 @@ public class TestSurfacing {
                                             false );
             final Iterator<DomainSimilarity> sims_it = sims.iterator();
             final DomainSimilarity sa = sims_it.next();
-            if ( !sa.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa.getSpeciesData().size() != 1 ) {
@@ -1078,7 +1077,7 @@ public class TestSurfacing {
                 return false;
             }
             final DomainSimilarity sb = sims_it.next();
-            if ( !sb.getDomainId().getId().equals( "B" ) ) {
+            if ( !sb.getDomainId().equals( "B" ) ) {
                 return false;
             }
             if ( sb.getSpeciesData().size() != 1 ) {
@@ -1094,7 +1093,7 @@ public class TestSurfacing {
                                             true );
             final Iterator<DomainSimilarity> sims_it2 = sims2.iterator();
             final DomainSimilarity sa2 = sims_it2.next();
-            if ( !sa2.getDomainId().getId().equals( "D" ) ) {
+            if ( !sa2.getDomainId().equals( "D" ) ) {
                 return false;
             }
             if ( sa2.getSpeciesData().size() != 2 ) {
@@ -1158,7 +1157,7 @@ public class TestSurfacing {
             }
             final Iterator<DomainSimilarity> sims_it = sims.iterator();
             final DomainSimilarity sa = sims_it.next();
-            if ( !sa.getDomainId().getId().equals( "A" ) ) {
+            if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sa.getSpeciesData().size() != 4 ) {
@@ -1277,17 +1276,18 @@ public class TestSurfacing {
             final SortedSet<BasicBinaryDomainCombination> sorted = new TreeSet<BasicBinaryDomainCombination>();
             sorted.add( s0 );
             sorted.add( s1 );
-            sorted.add( s2 );
+            sorted.add( s2 );//
             sorted.add( s3 );
-            sorted.add( s3 );
-            sorted.add( s3 );
-            sorted.add( s4 );
+            sorted.add( s3 );//
+            sorted.add( s3 );//
+            sorted.add( s4 );//
             sorted.add( s5 );
             sorted.add( s6 );
             sorted.add( s7 );
-            sorted.add( s7 );
+            sorted.add( s7 );//
             sorted.add( s8 );
-            if ( sorted.size() != 6 ) {
+            if ( sorted.size() != 7 ) {
+                System.out.println( sorted.size() );
                 return false;
             }
             final DirectedBinaryDomainCombination aa = new DirectedBinaryDomainCombination( "a", "a" );
@@ -2751,7 +2751,7 @@ public class TestSurfacing {
             if ( !calc_i.getSharedDomains().contains( f.getDomainId() ) ) {
                 return false;
             }
-            final Set<DomainId> all = calc_ni.getAllDomains();
+            final Set<String> all = calc_ni.getAllDomains();
             if ( !all.contains( a.getDomainId() ) ) {
                 return false;
             }
@@ -3226,8 +3226,8 @@ public class TestSurfacing {
             }
             calc_u.setAllowDomainsToBeIgnored( true );
             calc_u.addDomainIdToIgnore( u.getDomainId() );
-            calc_u.addDomainIdToIgnore( new DomainId( "other" ) );
-            calc_u.addDomainIdToIgnore( new DomainId( "other_too" ) );
+            calc_u.addDomainIdToIgnore( "other" );
+            calc_u.addDomainIdToIgnore( "other_too" );
             if ( calc_u.getAllDomains().size() != 5 ) {
                 return false;
             }
@@ -3331,10 +3331,10 @@ public class TestSurfacing {
             //------------
             calc_u.setAllowDomainsToBeIgnored( true );
             calc_u.deleteAllDomainIdsToIgnore();
-            calc_u.addDomainIdToIgnore( new DomainId( "v" ) );
-            calc_u.addDomainIdToIgnore( new DomainId( "w" ) );
-            calc_u.addDomainIdToIgnore( new DomainId( "other" ) );
-            calc_u.addDomainIdToIgnore( new DomainId( "other_too" ) );
+            calc_u.addDomainIdToIgnore( "v" );
+            calc_u.addDomainIdToIgnore( "w" );
+            calc_u.addDomainIdToIgnore( "other" );
+            calc_u.addDomainIdToIgnore( "other_too" );
             if ( calc_u.getAllDomains().size() != 4 ) {
                 return false;
             }
@@ -3453,7 +3453,7 @@ public class TestSurfacing {
             final List<Protein> domain_collections = parser.parse();
             final BasicGenomeWideCombinableDomains cdcc = BasicGenomeWideCombinableDomains
                     .createInstance( domain_collections, false, new BasicSpecies( "human" ) );
-            CombinableDomains cd = cdcc.get( new DomainId( "A" ) );
+            CombinableDomains cd = cdcc.get( "A" );
             if ( cd.getKeyDomainCount() != 9 ) {
                 return false;
             }
@@ -3502,7 +3502,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainCount() != 9 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "B" ) );
+            cd = cdcc.get( "B" );
             if ( cd.getKeyDomainCount() != 12 ) {
                 return false;
             }
@@ -3551,7 +3551,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainCount() != 12 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "C" ) );
+            cd = cdcc.get( "C" );
             if ( cd.getKeyDomainCount() != 10 ) {
                 return false;
             }
@@ -3597,7 +3597,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "NN" ).getDomainId() ) != 0 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "D" ) );
+            cd = cdcc.get( "D" );
             if ( cd.getKeyDomainCount() != 15 ) {
                 return false;
             }
@@ -3607,7 +3607,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 11 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "E" ) );
+            cd = cdcc.get( "E" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
@@ -3617,7 +3617,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainProteinsCount() != 1 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "U" ) );
+            cd = cdcc.get( "U" );
             if ( cd.getNumberOfCombinableDomains() != 11 ) {
                 return false;
             }
@@ -3627,7 +3627,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainProteinsCount() != 3 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "V" ) );
+            cd = cdcc.get( "V" );
             if ( cd.getNumberOfCombinableDomains() != 11 ) {
                 return false;
             }
@@ -3637,7 +3637,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainProteinsCount() != 2 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "W" ) );
+            cd = cdcc.get( "W" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
@@ -3647,22 +3647,22 @@ public class TestSurfacing {
             if ( cd.getKeyDomainProteinsCount() != 2 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "X" ) );
+            cd = cdcc.get( "X" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
             if ( cd.getKeyDomainCount() != 2 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "Y" ) );
+            cd = cdcc.get( "Y" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "Z" ) );
+            cd = cdcc.get( "Z" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "NN" ) );
+            cd = cdcc.get( "NN" );
             if ( cd.getKeyDomainCount() != 1 ) {
                 return false;
             }
@@ -3675,7 +3675,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "NN" ).getDomainId() ) != 0 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "MM" ) );
+            cd = cdcc.get( "MM" );
             if ( cd.getNumberOfCombinableDomains() != 1 ) {
                 return false;
             }
@@ -3685,7 +3685,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "OO" ).getDomainId() ) != 1 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "OO" ) );
+            cd = cdcc.get( "OO" );
             if ( cd.getNumberOfCombinableDomains() != 2 ) {
                 return false;
             }
@@ -3695,7 +3695,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "MM" ).getDomainId() ) != 1 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "QQ" ) );
+            cd = cdcc.get( "QQ" );
             if ( cd.getNumberOfCombinableDomains() != 1 ) {
                 return false;
             }
@@ -3708,7 +3708,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "QQ" ).getDomainId() ) != 3 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "PP" ) );
+            cd = cdcc.get( "PP" );
             if ( cd.getNumberOfCombinableDomains() != 0 ) {
                 return false;
             }
@@ -3718,7 +3718,7 @@ public class TestSurfacing {
             if ( cd.getKeyDomainProteinsCount() != 2 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "singlet" ) );
+            cd = cdcc.get( "singlet" );
             if ( cd.getKeyDomainCount() != 1 ) {
                 return false;
             }
@@ -3731,7 +3731,7 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "singlet" ).getDomainId() ) != 0 ) {
                 return false;
             }
-            cd = cdcc.get( new DomainId( "three" ) );
+            cd = cdcc.get( "three" );
             if ( cd.getKeyDomainCount() != 3 ) {
                 return false;
             }
@@ -3741,10 +3741,10 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "three" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "three" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "so_far_so_bad" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "so_far_so_bad" ) != 0 ) {
                 return false;
             }
             // Ignore combinations with same:
@@ -3756,7 +3756,7 @@ public class TestSurfacing {
                                      DomainCombinationType.BASIC,
                                      null,
                                      null );
-            cd = cdcc2.get( new DomainId( "A" ) );
+            cd = cdcc2.get( "A" );
             if ( cd.getKeyDomainCount() != 9 ) {
                 return false;
             }
@@ -3781,28 +3781,28 @@ public class TestSurfacing {
             if ( cd.getNumberOfProteinsExhibitingCombination( new SimpleDomain( "E" ).getDomainId() ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "U" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "U" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "V" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "V" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "W" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "W" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "X" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "X" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Y" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Y" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Z" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Z" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "NN" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "NN" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "B" ) );
+            cd = cdcc2.get( "B" );
             if ( cd.getKeyDomainCount() != 12 ) {
                 return false;
             }
@@ -3812,43 +3812,43 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "A" ) ) != 6 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "A" ) != 6 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "B" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "B" ) != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "C" ) ) != 4 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "C" ) != 4 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "D" ) ) != 3 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "D" ) != 3 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "E" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "E" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "U" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "U" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "V" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "V" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "W" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "W" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "X" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "X" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Y" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Y" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Z" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Z" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "NN" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "NN" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "C" ) );
+            cd = cdcc2.get( "C" );
             if ( cd.getKeyDomainCount() != 10 ) {
                 return false;
             }
@@ -3858,112 +3858,112 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "A" ) ) != 4 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "A" ) != 4 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "B" ) ) != 4 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "B" ) != 4 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "C" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "C" ) != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "D" ) ) != 3 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "D" ) != 3 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "E" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "E" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "U" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "U" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "V" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "V" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "W" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "W" ) != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "X" ) ) != 2 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "X" ) != 2 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Y" ) ) != 2 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Y" ) != 2 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "Z" ) ) != 2 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "Z" ) != 2 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "NN" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "NN" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "D" ) );
+            cd = cdcc2.get( "D" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "E" ) );
+            cd = cdcc2.get( "E" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
             if ( cd.getKeyDomainCount() != 1 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "U" ) );
+            cd = cdcc2.get( "U" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "V" ) );
+            cd = cdcc2.get( "V" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "W" ) );
+            cd = cdcc2.get( "W" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "X" ) );
+            cd = cdcc2.get( "X" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "Y" ) );
+            cd = cdcc2.get( "Y" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "Z" ) );
+            cd = cdcc2.get( "Z" );
             if ( cd.getNumberOfCombinableDomains() != 10 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "NN" ) );
+            cd = cdcc2.get( "NN" );
             if ( cd.getNumberOfCombinableDomains() != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "NN" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "NN" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "MM" ) );
+            cd = cdcc2.get( "MM" );
             if ( cd.getNumberOfCombinableDomains() != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "MM" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "MM" ) != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "OO" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "OO" ) != 1 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "OO" ) );
+            cd = cdcc2.get( "OO" );
             if ( cd.getNumberOfCombinableDomains() != 1 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "OO" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "OO" ) != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "MM" ) ) != 1 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "MM" ) != 1 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "QQ" ) );
+            cd = cdcc2.get( "QQ" );
             if ( cd.getNumberOfCombinableDomains() != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "QQ" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "QQ" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "singlet" ) );
+            cd = cdcc2.get( "singlet" );
             if ( cd.getKeyDomainCount() != 1 ) {
                 return false;
             }
@@ -3973,10 +3973,10 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "singlet" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "singlet" ) != 0 ) {
                 return false;
             }
-            cd = cdcc2.get( new DomainId( "three" ) );
+            cd = cdcc2.get( "three" );
             if ( cd.getKeyDomainCount() != 3 ) {
                 return false;
             }
@@ -3986,10 +3986,10 @@ public class TestSurfacing {
             if ( cd.getNumberOfCombinableDomains() != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "three" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "three" ) != 0 ) {
                 return false;
             }
-            if ( cd.getNumberOfProteinsExhibitingCombination( new DomainId( "so_far_so_bad" ) ) != 0 ) {
+            if ( cd.getNumberOfProteinsExhibitingCombination( "so_far_so_bad" ) != 0 ) {
                 return false;
             }
         }
@@ -4045,73 +4045,73 @@ public class TestSurfacing {
             if ( sorted.size() != 17 ) {
                 return false;
             }
-            if ( !sorted.get( 0 ).getDomainId().getId().equals( "A" ) ) {
+            if ( !sorted.get( 0 ).getDomainId().equals( "A" ) ) {
                 return false;
             }
             if ( sorted.get( 0 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 1 ).getDomainId().getId().equals( "B" ) ) {
+            if ( !sorted.get( 1 ).getDomainId().equals( "B" ) ) {
                 return false;
             }
             if ( sorted.get( 1 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 2 ).getDomainId().getId().equals( "C" ) ) {
+            if ( !sorted.get( 2 ).getDomainId().equals( "C" ) ) {
                 return false;
             }
             if ( sorted.get( 2 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 3 ).getDomainId().getId().equals( "D" ) ) {
+            if ( !sorted.get( 3 ).getDomainId().equals( "D" ) ) {
                 return false;
             }
             if ( sorted.get( 3 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 4 ).getDomainId().getId().equals( "E" ) ) {
+            if ( !sorted.get( 4 ).getDomainId().equals( "E" ) ) {
                 return false;
             }
             if ( sorted.get( 4 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 5 ).getDomainId().getId().equals( "F" ) ) {
+            if ( !sorted.get( 5 ).getDomainId().equals( "F" ) ) {
                 return false;
             }
             if ( sorted.get( 5 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 6 ).getDomainId().getId().equals( "G" ) ) {
+            if ( !sorted.get( 6 ).getDomainId().equals( "G" ) ) {
                 return false;
             }
             if ( sorted.get( 6 ).getNumber() != 1 ) {
                 return false;
             }
-            if ( !sorted.get( 7 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 7 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 7 ).getNumber() != 5 ) {
                 return false;
             }
-            if ( !sorted.get( 8 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 8 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 8 ).getNumber() != 2 ) {
                 return false;
             }
-            if ( !sorted.get( 9 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 9 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 9 ).getNumber() != 6 ) {
                 return false;
             }
-            if ( !sorted.get( 10 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 10 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 10 ).getNumber() != 4 ) {
                 return false;
             }
-            if ( !sorted.get( 11 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 11 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 11 ).getNumber() != 1 ) {
@@ -4120,25 +4120,25 @@ public class TestSurfacing {
             if ( sorted.get( 11 ).getTotalCount() != 5 ) {
                 return false;
             }
-            if ( !sorted.get( 12 ).getDomainId().getId().equals( "H" ) ) {
+            if ( !sorted.get( 12 ).getDomainId().equals( "H" ) ) {
                 return false;
             }
             if ( sorted.get( 12 ).getNumber() != 3 ) {
                 return false;
             }
-            if ( !sorted.get( 13 ).getDomainId().getId().equals( "H7" ) ) {
+            if ( !sorted.get( 13 ).getDomainId().equals( "H7" ) ) {
                 return false;
             }
             if ( sorted.get( 13 ).getNumber() != 5 ) {
                 return false;
             }
-            if ( !sorted.get( 14 ).getDomainId().getId().equals( "H7" ) ) {
+            if ( !sorted.get( 14 ).getDomainId().equals( "H7" ) ) {
                 return false;
             }
             if ( sorted.get( 14 ).getNumber() != 5 ) {
                 return false;
             }
-            if ( !sorted.get( 15 ).getDomainId().getId().equals( "H7" ) ) {
+            if ( !sorted.get( 15 ).getDomainId().equals( "H7" ) ) {
                 return false;
             }
             if ( sorted.get( 15 ).getNumber() != 5 ) {
@@ -4146,7 +4146,7 @@ public class TestSurfacing {
             }
             // To check if sorting is stable [as claimed by Sun for
             // Collections.sort( List )]
-            if ( !sorted.get( 16 ).getDomainId().getId().equals( "H7" ) ) {
+            if ( !sorted.get( 16 ).getDomainId().equals( "H7" ) ) {
                 return false;
             }
             if ( sorted.get( 16 ).getNumber() != 5 ) {
@@ -4221,10 +4221,10 @@ public class TestSurfacing {
             if ( abc_r2.getNumberOfProteinDomains() != 2 ) {
                 return false;
             }
-            if ( !abc_r2.getProteinDomain( 0 ).getDomainId().getId().equals( "a" ) ) {
+            if ( !abc_r2.getProteinDomain( 0 ).getDomainId().equals( "a" ) ) {
                 return false;
             }
-            if ( !abc_r2.getProteinDomain( 1 ).getDomainId().getId().equals( "b" ) ) {
+            if ( !abc_r2.getProteinDomain( 1 ).getDomainId().equals( "b" ) ) {
                 return false;
             }
             final Domain d = new BasicDomain( "d", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
@@ -4245,13 +4245,13 @@ public class TestSurfacing {
             if ( def_r2.getNumberOfProteinDomains() != 3 ) {
                 return false;
             }
-            if ( !def_r2.getProteinDomain( 0 ).getDomainId().getId().equals( "d" ) ) {
+            if ( !def_r2.getProteinDomain( 0 ).getDomainId().equals( "d" ) ) {
                 return false;
             }
-            if ( !def_r2.getProteinDomain( 1 ).getDomainId().getId().equals( "f" ) ) {
+            if ( !def_r2.getProteinDomain( 1 ).getDomainId().equals( "f" ) ) {
                 return false;
             }
-            if ( !def_r2.getProteinDomain( 2 ).getDomainId().getId().equals( "e" ) ) {
+            if ( !def_r2.getProteinDomain( 2 ).getDomainId().equals( "e" ) ) {
                 return false;
             }
         }
@@ -4311,58 +4311,58 @@ public class TestSurfacing {
                     .createInstance( protein_list_eel, false, new BasicSpecies( "eel" ) );
             final BasicGenomeWideCombinableDomains eel_ignore = BasicGenomeWideCombinableDomains
                     .createInstance( protein_list_eel, true, new BasicSpecies( "eel" ) );
-            if ( !eel_not_ignore.contains( new DomainId( "a" ) ) ) {
+            if ( !eel_not_ignore.contains( "a" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "b" ) ) ) {
+            if ( !eel_not_ignore.contains( "b" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "c" ) ) ) {
+            if ( !eel_not_ignore.contains( "c" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "d" ) ) ) {
+            if ( !eel_not_ignore.contains( "d" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "e" ) ) ) {
+            if ( !eel_not_ignore.contains( "e" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "f" ) ) ) {
+            if ( !eel_not_ignore.contains( "f" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "g" ) ) ) {
+            if ( !eel_not_ignore.contains( "g" ) ) {
                 return false;
             }
-            if ( !eel_not_ignore.contains( new DomainId( "h" ) ) ) {
+            if ( !eel_not_ignore.contains( "h" ) ) {
                 return false;
             }
-            if ( eel_not_ignore.contains( new DomainId( "x" ) ) ) {
+            if ( eel_not_ignore.contains( "x" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "a" ) ) ) {
+            if ( !eel_ignore.contains( "a" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "b" ) ) ) {
+            if ( !eel_ignore.contains( "b" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "c" ) ) ) {
+            if ( !eel_ignore.contains( "c" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "d" ) ) ) {
+            if ( !eel_ignore.contains( "d" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "e" ) ) ) {
+            if ( !eel_ignore.contains( "e" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "f" ) ) ) {
+            if ( !eel_ignore.contains( "f" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "g" ) ) ) {
+            if ( !eel_ignore.contains( "g" ) ) {
                 return false;
             }
-            if ( !eel_ignore.contains( new DomainId( "h" ) ) ) {
+            if ( !eel_ignore.contains( "h" ) ) {
                 return false;
             }
-            if ( eel_ignore.contains( new DomainId( "x" ) ) ) {
+            if ( eel_ignore.contains( "x" ) ) {
                 return false;
             }
             if ( eel_not_ignore.getSize() != 8 ) {
@@ -4371,52 +4371,52 @@ public class TestSurfacing {
             if ( eel_ignore.getSize() != 8 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "a" ) ).getCombinableDomainsIds().size() != 5 ) {
+            if ( eel_not_ignore.get( "a" ).getCombinableDomainsIds().size() != 5 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "b" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_not_ignore.get( "b" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "c" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_not_ignore.get( "c" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "d" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_not_ignore.get( "d" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "e" ) ).getCombinableDomainsIds().size() != 6 ) {
+            if ( eel_not_ignore.get( "e" ).getCombinableDomainsIds().size() != 6 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "f" ) ).getCombinableDomainsIds().size() != 2 ) {
+            if ( eel_not_ignore.get( "f" ).getCombinableDomainsIds().size() != 2 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "g" ) ).getCombinableDomainsIds().size() != 1 ) {
+            if ( eel_not_ignore.get( "g" ).getCombinableDomainsIds().size() != 1 ) {
                 return false;
             }
-            if ( eel_not_ignore.get( new DomainId( "h" ) ).getCombinableDomainsIds().size() != 1 ) {
+            if ( eel_not_ignore.get( "h" ).getCombinableDomainsIds().size() != 1 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "a" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_ignore.get( "a" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "b" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_ignore.get( "b" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "c" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_ignore.get( "c" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "d" ) ).getCombinableDomainsIds().size() != 4 ) {
+            if ( eel_ignore.get( "d" ).getCombinableDomainsIds().size() != 4 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "e" ) ).getCombinableDomainsIds().size() != 5 ) {
+            if ( eel_ignore.get( "e" ).getCombinableDomainsIds().size() != 5 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "f" ) ).getCombinableDomainsIds().size() != 1 ) {
+            if ( eel_ignore.get( "f" ).getCombinableDomainsIds().size() != 1 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "g" ) ).getCombinableDomainsIds().size() != 1 ) {
+            if ( eel_ignore.get( "g" ).getCombinableDomainsIds().size() != 1 ) {
                 return false;
             }
-            if ( eel_ignore.get( new DomainId( "h" ) ).getCombinableDomainsIds().size() != 1 ) {
+            if ( eel_ignore.get( "h" ).getCombinableDomainsIds().size() != 1 ) {
                 return false;
             }
             if ( eel_not_ignore.getAllDomainIds().size() != 8 ) {
@@ -4660,9 +4660,9 @@ public class TestSurfacing {
                     .equals( "pep:known chromosome:NCBI36:21:16024215:16174248:1 gene:ENSG00000155313 transcript:ENST00000285681" ) ) {
                 return false;
             }
-            final List<Domain> uba = pdc.getProteinDomains( new DomainId( "UBA" ) );
-            final List<Domain> uim = pdc.getProteinDomains( new DomainId( "UIM" ) );
-            final List<Domain> uch = pdc.getProteinDomains( new DomainId( "UCH" ) );
+            final List<Domain> uba = pdc.getProteinDomains( "UBA" );
+            final List<Domain> uim = pdc.getProteinDomains( "UIM" );
+            final List<Domain> uch = pdc.getProteinDomains( "UCH" );
             if ( uba.size() != 1 ) {
                 return false;
             }
@@ -4673,14 +4673,14 @@ public class TestSurfacing {
                 return false;
             }
             final BasicDomain uim_domain = ( BasicDomain ) uim.get( 1 );
-            if ( !uim_domain.getDomainId().equals( new DomainId( "UIM" ) ) ) {
+            if ( !uim_domain.getDomainId().equals( "UIM" ) ) {
                 return false;
             }
             if ( uim_domain.getTotalCount() != 2 ) {
                 return false;
             }
             final BasicDomain uba_domain = ( BasicDomain ) uba.get( 0 );
-            if ( !uba_domain.getDomainId().equals( new DomainId( "UBA" ) ) ) {
+            if ( !uba_domain.getDomainId().equals( "UBA" ) ) {
                 return false;
             }
             if ( uba_domain.getNumber() != 1 ) {
@@ -4747,9 +4747,9 @@ public class TestSurfacing {
             if ( pdc2.getNumberOfProteinDomains() != 3 ) {
                 return false;
             }
-            final List<Domain> uba2 = pdc2.getProteinDomains( new DomainId( "UBA" ) );
-            final List<Domain> uim2 = pdc2.getProteinDomains( new DomainId( "UIM" ) );
-            final List<Domain> uch2 = pdc2.getProteinDomains( new DomainId( "UCH" ) );
+            final List<Domain> uba2 = pdc2.getProteinDomains( "UBA" );
+            final List<Domain> uim2 = pdc2.getProteinDomains( "UIM" );
+            final List<Domain> uch2 = pdc2.getProteinDomains( "UCH" );
             if ( uba2.size() != 1 ) {
                 return false;
             }
@@ -4760,14 +4760,14 @@ public class TestSurfacing {
                 return false;
             }
             final BasicDomain uim_domain2 = ( BasicDomain ) uim2.get( 1 );
-            if ( !uim_domain2.getDomainId().getId().equals( "UIM" ) ) {
+            if ( !uim_domain2.getDomainId().equals( "UIM" ) ) {
                 return false;
             }
             if ( uim_domain2.getTotalCount() != 2 ) {
                 return false;
             }
             final BasicDomain uba_domain2 = ( BasicDomain ) uba2.get( 0 );
-            if ( !uba_domain2.getDomainId().getId().equals( "UBA" ) ) {
+            if ( !uba_domain2.getDomainId().equals( "UBA" ) ) {
                 return false;
             }
             if ( uba_domain2.getNumber() != 1 ) {
@@ -4809,9 +4809,9 @@ public class TestSurfacing {
                 return false;
             }
             //
-            Set<DomainId> filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "beauty" ) );
-            filter.add( new DomainId( "strange" ) );
+            Set<String> filter = new TreeSet<String>();
+            filter.add( "beauty" );
+            filter.add( "strange" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4829,9 +4829,9 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "beauty" ) );
-            filter.add( new DomainId( "strange" ) );
+            filter = new TreeSet<String>();
+            filter.add( "beauty" );
+            filter.add( "strange" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4849,10 +4849,10 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "UIM" ) );
-            filter.add( new DomainId( "A" ) );
-            filter.add( new DomainId( "C" ) );
+            filter = new TreeSet<String>();
+            filter.add( "UIM" );
+            filter.add( "A" );
+            filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4870,11 +4870,11 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "UIM" ) );
-            filter.add( new DomainId( "A" ) );
-            filter.add( new DomainId( "C" ) );
-            filter.add( new DomainId( "X" ) );
+            filter = new TreeSet<String>();
+            filter.add( "UIM" );
+            filter.add( "A" );
+            filter.add( "C" );
+            filter.add( "X" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4892,10 +4892,10 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "UIM" ) );
-            filter.add( new DomainId( "A" ) );
-            filter.add( new DomainId( "C" ) );
+            filter = new TreeSet<String>();
+            filter.add( "UIM" );
+            filter.add( "A" );
+            filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4913,8 +4913,8 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "UIM" ) );
+            filter = new TreeSet<String>();
+            filter.add( "UIM" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4935,8 +4935,8 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "UIM" ) );
+            filter = new TreeSet<String>();
+            filter.add( "UIM" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -4957,9 +4957,9 @@ public class TestSurfacing {
                 return false;
             }
             //
-            filter = new TreeSet<DomainId>();
-            filter.add( new DomainId( "A" ) );
-            filter.add( new DomainId( "C" ) );
+            filter = new TreeSet<String>();
+            filter.add( "A" );
+            filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
                                               "ls",
@@ -5037,7 +5037,7 @@ public class TestSurfacing {
             if ( ab_s0.getNumberOfProteinDomains() != 1 ) {
                 return false;
             }
-            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().getId().equals( "a" ) ) {
+            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().equals( "a" ) ) {
                 return false;
             }
             final Protein ab_s1 = SurfacingUtil.removeOverlappingDomains( 4, false, ab );
@@ -5087,7 +5087,7 @@ public class TestSurfacing {
             if ( fghi_s0.getNumberOfProteinDomains() != 1 ) {
                 return false;
             }
-            if ( !fghi_s0.getProteinDomain( 0 ).getDomainId().getId().equals( "h" ) ) {
+            if ( !fghi_s0.getProteinDomain( 0 ).getDomainId().equals( "h" ) ) {
                 return false;
             }
             final Protein fghi_s1 = SurfacingUtil.removeOverlappingDomains( 11, false, fghi );
@@ -5119,7 +5119,7 @@ public class TestSurfacing {
             if ( jklm_s0.getNumberOfProteinDomains() != 1 ) {
                 return false;
             }
-            if ( !jklm_s0.getProteinDomain( 0 ).getDomainId().getId().equals( "l" ) ) {
+            if ( !jklm_s0.getProteinDomain( 0 ).getDomainId().equals( "l" ) ) {
                 return false;
             }
             final Protein jklm_s1 = SurfacingUtil.removeOverlappingDomains( 11, false, jklm );
@@ -5554,7 +5554,7 @@ public class TestSurfacing {
             gwcd_list.add( two );
             gwcd_list.add( three );
             gwcd_list.add( four );
-            final Map<DomainId, Set<String>> map_same = new HashMap<DomainId, Set<String>>();
+            final Map<String, Set<String>> map_same = new HashMap<String, Set<String>>();
             final HashSet<String> a_s = new HashSet<String>();
             a_s.add( "AAA" );
             final HashSet<String> b_s = new HashSet<String>();

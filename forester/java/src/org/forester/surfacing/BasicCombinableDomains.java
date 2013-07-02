@@ -33,28 +33,27 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
 public class BasicCombinableDomains implements CombinableDomains {
 
-    final private DomainId                   _key_domain;
-    private int                              _key_domain_count;
-    private int                              _key_domain_proteins_count;
-    final private Species                    _species;
-    final private TreeMap<DomainId, Integer> _combining_domains;
-    private DescriptiveStatistics            _key_domain_confidence_statistics;
+    final private String                   _key_domain;
+    private int                            _key_domain_count;
+    private int                            _key_domain_proteins_count;
+    final private Species                  _species;
+    final private TreeMap<String, Integer> _combining_domains;
+    private DescriptiveStatistics          _key_domain_confidence_statistics;
 
-    public BasicCombinableDomains( final DomainId key_domain, final Species species ) {
+    public BasicCombinableDomains( final String key_domain, final Species species ) {
         _key_domain = key_domain;
         _species = species;
-        _combining_domains = new TreeMap<DomainId, Integer>();
+        _combining_domains = new TreeMap<String, Integer>();
         init();
     }
 
     @Override
-    public void addCombinableDomain( final DomainId protein_domain ) {
+    public void addCombinableDomain( final String protein_domain ) {
         if ( getCombiningDomains().containsKey( protein_domain ) ) {
             getCombiningDomains().put( protein_domain, getCombiningDomains().get( protein_domain ) + 1 );
         }
@@ -64,8 +63,8 @@ public class BasicCombinableDomains implements CombinableDomains {
     }
 
     @Override
-    public List<DomainId> getAllDomains() {
-        final List<DomainId> domains = getCombinableDomains();
+    public List<String> getAllDomains() {
+        final List<String> domains = getCombinableDomains();
         if ( !domains.contains( getKeyDomain() ) ) {
             domains.add( getKeyDomain() );
         }
@@ -73,19 +72,19 @@ public class BasicCombinableDomains implements CombinableDomains {
     }
 
     @Override
-    public List<DomainId> getCombinableDomains() {
-        final List<DomainId> domains = new ArrayList<DomainId>( getNumberOfCombinableDomains() );
-        for( final DomainId domain : getCombiningDomains().keySet() ) {
+    public List<String> getCombinableDomains() {
+        final List<String> domains = new ArrayList<String>( getNumberOfCombinableDomains() );
+        for( final String domain : getCombiningDomains().keySet() ) {
             domains.add( domain );
         }
         return domains;
     }
 
     @Override
-    public SortedMap<DomainId, Integer> getCombinableDomainsIds() {
-        final SortedMap<DomainId, Integer> ids = new TreeMap<DomainId, Integer>();
-        for( final DomainId domain : getCombiningDomains().keySet() ) {
-            final DomainId pd = domain;
+    public SortedMap<String, Integer> getCombinableDomainsIds() {
+        final SortedMap<String, Integer> ids = new TreeMap<String, Integer>();
+        for( final String domain : getCombiningDomains().keySet() ) {
+            final String pd = domain;
             ids.put( pd, getCombiningDomains().get( pd ) );
         }
         return ids;
@@ -94,8 +93,8 @@ public class BasicCombinableDomains implements CombinableDomains {
     @Override
     public StringBuilder getCombiningDomainIdsAsStringBuilder() {
         final StringBuilder sb = new StringBuilder();
-        for( final Iterator<DomainId> iter = getCombiningDomains().keySet().iterator(); iter.hasNext(); ) {
-            final DomainId key = iter.next();
+        for( final Iterator<String> iter = getCombiningDomains().keySet().iterator(); iter.hasNext(); ) {
+            final String key = iter.next();
             sb.append( key.toString() );
             sb.append( " [" );
             final int count = getCombiningDomains().get( key );
@@ -108,12 +107,12 @@ public class BasicCombinableDomains implements CombinableDomains {
         return sb;
     }
 
-    protected TreeMap<DomainId, Integer> getCombiningDomains() {
+    protected TreeMap<String, Integer> getCombiningDomains() {
         return _combining_domains;
     }
 
     @Override
-    public DomainId getKeyDomain() {
+    public String getKeyDomain() {
         return _key_domain;
     }
 
@@ -138,7 +137,7 @@ public class BasicCombinableDomains implements CombinableDomains {
     }
 
     @Override
-    public int getNumberOfProteinsExhibitingCombination( final DomainId protein_domain ) {
+    public int getNumberOfProteinsExhibitingCombination( final String protein_domain ) {
         if ( getCombiningDomains().containsKey( protein_domain ) ) {
             return getCombiningDomains().get( protein_domain );
         }
@@ -159,7 +158,7 @@ public class BasicCombinableDomains implements CombinableDomains {
     }
 
     @Override
-    public boolean isCombinable( final DomainId protein_domain ) {
+    public boolean isCombinable( final String protein_domain ) {
         return getCombiningDomains().containsKey( protein_domain );
     }
 
@@ -181,7 +180,7 @@ public class BasicCombinableDomains implements CombinableDomains {
     @Override
     public List<BinaryDomainCombination> toBinaryDomainCombinations() {
         final List<BinaryDomainCombination> binary_combinations = new ArrayList<BinaryDomainCombination>( getNumberOfCombinableDomains() );
-        for( final DomainId domain : getCombiningDomains().keySet() ) {
+        for( final String domain : getCombiningDomains().keySet() ) {
             binary_combinations.add( new BasicBinaryDomainCombination( getKeyDomain(), domain ) );
         }
         return binary_combinations;

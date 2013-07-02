@@ -32,28 +32,27 @@ import java.util.SortedSet;
 
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
 public interface GenomeWideCombinableDomains {
 
-    public boolean contains( DomainId key_id );
+    public boolean contains( String key_id );
 
-    public CombinableDomains get( DomainId key_id );
+    public CombinableDomains get( String key_id );
 
-    public SortedMap<DomainId, CombinableDomains> getAllCombinableDomainsIds();
+    public SortedMap<String, CombinableDomains> getAllCombinableDomainsIds();
 
     /**
      * This should return all domains ids present in the genome.
      * 
      * @return a sorted set of domains ids
      */
-    public SortedSet<DomainId> getAllDomainIds();
+    public SortedSet<String> getAllDomainIds();
 
     public DomainCombinationType getDomainCombinationType();
 
-    SortedSet<DomainId> getMostPromiscuosDomain();
+    SortedSet<String> getMostPromiscuosDomain();
 
     /**
      * This should return a statistic for per domain 

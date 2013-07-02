@@ -43,7 +43,6 @@ import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.DescriptiveStatistics;
@@ -90,7 +89,7 @@ public class PairwiseGenomeComparator {
                                             final DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field,
                                             final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                             final DomainSimilarity.DomainSimilarityScoring scoring,
-                                            final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+                                            final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                             final Map<GoId, GoTerm> go_id_to_term_map,
                                             final GoNameSpace go_namespace_limit,
                                             final Species[] species,
@@ -268,7 +267,7 @@ public class PairwiseGenomeComparator {
         else if ( jacknife_ratio >= 1.0 ) {
             throw new IllegalArgumentException( "attempt to perform jacknife resampling with jacknife ratio 1.0 or more" );
         }
-        final DomainId[] all_unique_domain_ids = getAllUniqueDomainIdAsArray( list_of_genome_wide_combinable_domains );
+        final String[] all_unique_domain_ids = getAllUniqueDomainIdAsArray( list_of_genome_wide_combinable_domains );
         if ( verbose ) {
             System.out.println();
             System.out.println( "Jacknife: total of domains: " + all_unique_domain_ids.length );
@@ -281,9 +280,9 @@ public class PairwiseGenomeComparator {
             if ( verbose ) {
                 System.out.print( " " + r );
             }
-            final SortedSet<DomainId> domain_ids_to_ignore = randomlyPickDomainIds( all_unique_domain_ids,
-                                                                                    jacknife_ratio,
-                                                                                    generator );
+            final SortedSet<String> domain_ids_to_ignore = randomlyPickDomainIds( all_unique_domain_ids,
+                                                                                  jacknife_ratio,
+                                                                                  generator );
             final BasicSymmetricalDistanceMatrix shared_domains_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );
             final BasicSymmetricalDistanceMatrix shared_binary_combinations_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );
             for( int i = 0; i < number_of_genomes; ++i ) {
@@ -314,28 +313,28 @@ public class PairwiseGenomeComparator {
         }
     }
 
-    static private DomainId[] getAllUniqueDomainIdAsArray( final List<GenomeWideCombinableDomains> list_of_genome_wide_combinable_domains ) {
-        DomainId[] all_domain_ids_array;
-        final SortedSet<DomainId> all_domain_ids = new TreeSet<DomainId>();
+    static private String[] getAllUniqueDomainIdAsArray( final List<GenomeWideCombinableDomains> list_of_genome_wide_combinable_domains ) {
+        String[] all_domain_ids_array;
+        final SortedSet<String> all_domain_ids = new TreeSet<String>();
         for( final GenomeWideCombinableDomains genome_wide_combinable_domains : list_of_genome_wide_combinable_domains ) {
-            final SortedSet<DomainId> all_domains = genome_wide_combinable_domains.getAllDomainIds();
-            for( final DomainId domain : all_domains ) {
+            final SortedSet<String> all_domains = genome_wide_combinable_domains.getAllDomainIds();
+            for( final String domain : all_domains ) {
                 all_domain_ids.add( domain );
             }
         }
-        all_domain_ids_array = new DomainId[ all_domain_ids.size() ];
+        all_domain_ids_array = new String[ all_domain_ids.size() ];
         int n = 0;
-        for( final DomainId domain_id : all_domain_ids ) {
+        for( final String domain_id : all_domain_ids ) {
             all_domain_ids_array[ n++ ] = domain_id;
         }
         return all_domain_ids_array;
     }
 
-    static private SortedSet<DomainId> randomlyPickDomainIds( final DomainId[] all_domain_ids_array,
-                                                              final double jacknife_ratio,
-                                                              final Random generator ) {
+    static private SortedSet<String> randomlyPickDomainIds( final String[] all_domain_ids_array,
+                                                            final double jacknife_ratio,
+                                                            final Random generator ) {
         final int size = all_domain_ids_array.length;
-        final SortedSet<DomainId> random_domain_ids = new TreeSet<DomainId>();
+        final SortedSet<String> random_domain_ids = new TreeSet<String>();
         final int number_of_ids_pick = ForesterUtil.roundToInt( jacknife_ratio * size );
         while ( random_domain_ids.size() < number_of_ids_pick ) {
             final int r = generator.nextInt( size );

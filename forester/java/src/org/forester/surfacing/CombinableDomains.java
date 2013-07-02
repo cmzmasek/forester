@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.SortedMap;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 import org.forester.species.Species;
 import org.forester.util.DescriptiveStatistics;
 
@@ -41,7 +40,7 @@ public interface CombinableDomains {
      * 
      * @param protein_domain
      */
-    public void addCombinableDomain( final DomainId protein_domain );
+    public void addCombinableDomain( final String protein_domain );
 
     /**
      * 
@@ -50,9 +49,9 @@ public interface CombinableDomains {
      * 
      *  @return all domains
      */
-    List<DomainId> getAllDomains();
+    List<String> getAllDomains();
 
-    List<DomainId> getCombinableDomains();
+    List<String> getCombinableDomains();
 
     /**
      * Returns the combinable domain identifiers sorted in alphabetical manner: -
@@ -61,7 +60,7 @@ public interface CombinableDomains {
      * 
      * @return combining domain identifiers sorted in alphabetical manner
      */
-    public SortedMap<DomainId, Integer> getCombinableDomainsIds();
+    public SortedMap<String, Integer> getCombinableDomainsIds();
 
     public StringBuilder getCombiningDomainIdsAsStringBuilder();
 
@@ -71,7 +70,7 @@ public interface CombinableDomains {
      * 
      * @return the domain identifier
      */
-    public DomainId getKeyDomain();
+    public String getKeyDomain();
 
     /**
      * Gets descriptive statistics for the confidence (i.e. E-values) of the key
@@ -100,7 +99,7 @@ public interface CombinableDomains {
 
     public int getNumberOfCombinableDomains();
 
-    public int getNumberOfProteinsExhibitingCombination( final DomainId protein_domain );
+    public int getNumberOfProteinsExhibitingCombination( final String protein_domain );
 
     /**
      * Returns the species of this combinable domains.
@@ -109,7 +108,7 @@ public interface CombinableDomains {
      */
     public Species getSpecies();
 
-    public boolean isCombinable( final DomainId protein_domain );
+    public boolean isCombinable( final String protein_domain );
 
     /**
      * This is to set descriptive statistics for the confidence (i.e. E-values)

@@ -46,7 +46,7 @@ public interface Protein {
      * @param in_nc_order to consider order
      * @return
      */
-    public boolean contains( final List<DomainId> domains, final boolean in_nc_order );
+    public boolean contains( final List<String> domains, final boolean in_nc_order );
 
     public String getAccession();
 
@@ -58,11 +58,11 @@ public interface Protein {
 
     public Domain getProteinDomain( final int index );
 
-    public int getProteinDomainCount( final DomainId domain_id );
+    public int getProteinDomainCount( final String domain_id );
 
     public List<Domain> getProteinDomains();
 
-    public List<Domain> getProteinDomains( final DomainId domain_id );
+    public List<Domain> getProteinDomains( final String domain_id );
 
     public ProteinId getProteinId();
 

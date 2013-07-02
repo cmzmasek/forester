@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.forester.protein.BinaryDomainCombination;
-import org.forester.protein.DomainId;
 
 public class DomainArchitectureBasedGenomeSimilarityCalculator {
 
@@ -38,12 +37,12 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
     public static final double                MIN_SIMILARITY_SCORE = 0.0;
     final private GenomeWideCombinableDomains _combinable_domains_genome_0;
     final private GenomeWideCombinableDomains _combinable_domains_genome_1;
-    private Set<DomainId>                     _domain_ids_to_ignore;
+    private Set<String>                       _domain_ids_to_ignore;
     private boolean                           _allow_domains_to_be_ignored;
-    private Set<DomainId>                     _all_domains;
-    private Set<DomainId>                     _shared_domains;
-    private Set<DomainId>                     _domains_specific_to_0;
-    private Set<DomainId>                     _domains_specific_to_1;
+    private Set<String>                       _all_domains;
+    private Set<String>                       _shared_domains;
+    private Set<String>                       _domains_specific_to_0;
+    private Set<String>                       _domains_specific_to_1;
     private Set<BinaryDomainCombination>      _all_binary_domain_combinations;
     private Set<BinaryDomainCombination>      _shared_binary_domain_combinations;
     private Set<BinaryDomainCombination>      _binary_domain_combinations_specific_to_0;
@@ -64,7 +63,7 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         forceRecalculation();
     }
 
-    public void addDomainIdToIgnore( final DomainId domain_id_to_ignore ) {
+    public void addDomainIdToIgnore( final String domain_id_to_ignore ) {
         forceRecalculation();
         getDomainIdsToIgnore().add( domain_id_to_ignore );
     }
@@ -113,7 +112,7 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
 
     public void deleteAllDomainIdsToIgnore() {
         forceRecalculation();
-        setDomainIdsToIgnore( new HashSet<DomainId>() );
+        setDomainIdsToIgnore( new HashSet<String>() );
     }
 
     private void forceRecalculation() {
@@ -155,9 +154,9 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
      * 
      * @return
      */
-    public Set<DomainId> getAllDomains() {
+    public Set<String> getAllDomains() {
         if ( _all_domains == null ) {
-            final Set<DomainId> all = new HashSet<DomainId>();
+            final Set<String> all = new HashSet<String>();
             all.addAll( getCombinableDomainsGenome0().getAllDomainIds() );
             all.addAll( getCombinableDomainsGenome1().getAllDomainIds() );
             if ( isAllowDomainsToBeIgnored() && !getDomainIdsToIgnore().isEmpty() ) {
@@ -216,23 +215,23 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         return _combinable_domains_genome_1;
     }
 
-    private Set<DomainId> getDomainIdsToIgnore() {
+    private Set<String> getDomainIdsToIgnore() {
         return _domain_ids_to_ignore;
     }
 
-    private Set<DomainId> getDomainsSpecificToGenome( final boolean specific_to_genome_0 ) {
-        final Set<DomainId> specific = new HashSet<DomainId>();
-        final Set<DomainId> d0 = getCombinableDomainsGenome0().getAllDomainIds();
-        final Set<DomainId> d1 = getCombinableDomainsGenome1().getAllDomainIds();
+    private Set<String> getDomainsSpecificToGenome( final boolean specific_to_genome_0 ) {
+        final Set<String> specific = new HashSet<String>();
+        final Set<String> d0 = getCombinableDomainsGenome0().getAllDomainIds();
+        final Set<String> d1 = getCombinableDomainsGenome1().getAllDomainIds();
         if ( specific_to_genome_0 ) {
-            for( final DomainId domain0 : d0 ) {
+            for( final String domain0 : d0 ) {
                 if ( !d1.contains( domain0 ) ) {
                     specific.add( domain0 );
                 }
             }
         }
         else {
-            for( final DomainId domain1 : d1 ) {
+            for( final String domain1 : d1 ) {
                 if ( !d0.contains( domain1 ) ) {
                     specific.add( domain1 );
                 }
@@ -244,14 +243,14 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         return specific;
     }
 
-    public Set<DomainId> getDomainsSpecificToGenome0() {
+    public Set<String> getDomainsSpecificToGenome0() {
         if ( _domains_specific_to_0 == null ) {
             _domains_specific_to_0 = getDomainsSpecificToGenome( true );
         }
         return _domains_specific_to_0;
     }
 
-    public Set<DomainId> getDomainsSpecificToGenome1() {
+    public Set<String> getDomainsSpecificToGenome1() {
         if ( _domains_specific_to_1 == null ) {
             _domains_specific_to_1 = getDomainsSpecificToGenome( false );
         }
@@ -276,12 +275,12 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         return _shared_binary_domain_combinations;
     }
 
-    public Set<DomainId> getSharedDomains() {
+    public Set<String> getSharedDomains() {
         if ( _shared_domains == null ) {
-            final Set<DomainId> shared = new HashSet<DomainId>();
-            final Set<DomainId> d0 = getCombinableDomainsGenome0().getAllDomainIds();
-            final Set<DomainId> d1 = getCombinableDomainsGenome1().getAllDomainIds();
-            for( final DomainId domain0 : d0 ) {
+            final Set<String> shared = new HashSet<String>();
+            final Set<String> d0 = getCombinableDomainsGenome0().getAllDomainIds();
+            final Set<String> d1 = getCombinableDomainsGenome1().getAllDomainIds();
+            for( final String domain0 : d0 ) {
                 if ( d1.contains( domain0 ) ) {
                     shared.add( domain0 );
                 }
@@ -314,9 +313,9 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         return pruned;
     }
 
-    private Set<DomainId> pruneDomains( final Set<DomainId> all ) {
-        final Set<DomainId> pruned = new HashSet<DomainId>();
-        for( final DomainId d : all ) {
+    private Set<String> pruneDomains( final Set<String> all ) {
+        final Set<String> pruned = new HashSet<String>();
+        for( final String d : all ) {
             if ( !getDomainIdsToIgnore().contains( d ) ) {
                 pruned.add( d );
             }
@@ -329,7 +328,7 @@ public class DomainArchitectureBasedGenomeSimilarityCalculator {
         _allow_domains_to_be_ignored = allow_domains_to_be_ignored;
     }
 
-    void setDomainIdsToIgnore( final Set<DomainId> domain_ids_to_ignore ) {
+    void setDomainIdsToIgnore( final Set<String> domain_ids_to_ignore ) {
         forceRecalculation();
         _domain_ids_to_ignore = domain_ids_to_ignore;
     }

@@ -39,7 +39,6 @@ import org.forester.go.GoUtils;
 import org.forester.go.OBOparser;
 import org.forester.go.PfamToGoMapping;
 import org.forester.go.PfamToGoParser;
-import org.forester.protein.DomainId;
 
 public class pfam2go_extractor {
 
@@ -79,7 +78,7 @@ public class pfam2go_extractor {
         }
         final SortedSet<String> pfams = new TreeSet<String>();
         for( final PfamToGoMapping pfam_to_go_mapping : pfam2go ) {
-            final DomainId domain_id = pfam_to_go_mapping.getKey();
+            final String domain_id = pfam_to_go_mapping.getKey();
             final GoId go_id = pfam_to_go_mapping.getValue();
             final Set<GoId> supers = GoUtils.getAllSuperGoIds( go_id, goid_to_term_map );
             supers.add( go_id );

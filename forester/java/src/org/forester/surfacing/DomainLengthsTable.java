@@ -33,7 +33,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -42,12 +41,12 @@ import org.forester.util.ForesterUtil;
 
 public class DomainLengthsTable {
 
-    private final static DecimalFormat       DF = new DecimalFormat( "#.0" );
-    final SortedMap<DomainId, DomainLengths> _domain_lengths;
-    final List<Species>                      _species;
+    private final static DecimalFormat     DF = new DecimalFormat( "#.0" );
+    final SortedMap<String, DomainLengths> _domain_lengths;
+    final List<Species>                    _species;
 
     public DomainLengthsTable() {
-        _domain_lengths = new TreeMap<DomainId, DomainLengths>();
+        _domain_lengths = new TreeMap<String, DomainLengths>();
         _species = new ArrayList<Species>();
     }
 
@@ -59,7 +58,7 @@ public class DomainLengthsTable {
         getDomainLengths().put( domain_lengths.getDomainId(), domain_lengths );
     }
 
-    private void addLength( final DomainId domain_id, final Species species, final int domain_length ) {
+    private void addLength( final String domain_id, final Species species, final int domain_length ) {
         if ( !getDomainLengths().containsKey( domain_id ) ) {
             addDomainLengths( new DomainLengths( domain_id ) );
         }
@@ -87,7 +86,7 @@ public class DomainLengthsTable {
         return stats;
     }
 
-    public DescriptiveStatistics calculateMeanBasedStatisticsForDomain( final DomainId domain_id ) {
+    public DescriptiveStatistics calculateMeanBasedStatisticsForDomain( final String domain_id ) {
         return getDomainLengths( domain_id ).calculateMeanBasedStatistics();
     }
 
@@ -143,11 +142,11 @@ public class DomainLengthsTable {
         return sb;
     }
 
-    private SortedMap<DomainId, DomainLengths> getDomainLengths() {
+    private SortedMap<String, DomainLengths> getDomainLengths() {
         return _domain_lengths;
     }
 
-    public DomainLengths getDomainLengths( final DomainId domain_id ) {
+    public DomainLengths getDomainLengths( final String domain_id ) {
         return getDomainLengths().get( domain_id );
     }
 
@@ -159,7 +158,7 @@ public class DomainLengthsTable {
         return list;
     }
 
-    public DescriptiveStatistics getLengthStatistic( final DomainId domain_id, final Species species ) {
+    public DescriptiveStatistics getLengthStatistic( final String domain_id, final Species species ) {
         return getDomainLengths( domain_id ).getLengthStatistic( species );
     }
 

@@ -79,7 +79,6 @@ import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
@@ -123,16 +122,16 @@ public final class SurfacingUtil {
 
     public static void addAllBinaryDomainCombinationToSet( final GenomeWideCombinableDomains genome,
                                                            final SortedSet<BinaryDomainCombination> binary_domain_combinations ) {
-        final SortedMap<DomainId, CombinableDomains> all_cd = genome.getAllCombinableDomainsIds();
-        for( final DomainId domain_id : all_cd.keySet() ) {
+        final SortedMap<String, CombinableDomains> all_cd = genome.getAllCombinableDomainsIds();
+        for( final String domain_id : all_cd.keySet() ) {
             binary_domain_combinations.addAll( all_cd.get( domain_id ).toBinaryDomainCombinations() );
         }
     }
 
     public static void addAllDomainIdsToSet( final GenomeWideCombinableDomains genome,
-                                             final SortedSet<DomainId> domain_ids ) {
-        final SortedSet<DomainId> domains = genome.getAllDomainIds();
-        for( final DomainId domain : domains ) {
+                                             final SortedSet<String> domain_ids ) {
+        final SortedSet<String> domains = genome.getAllDomainIds();
+        for( final String domain : domains ) {
             domain_ids.add( domain );
         }
     }
@@ -220,9 +219,8 @@ public final class SurfacingUtil {
         }
     }
 
-    public static Map<DomainId, List<GoId>> createDomainIdToGoIdMap( final List<PfamToGoMapping> pfam_to_go_mappings ) {
-        final Map<DomainId, List<GoId>> domain_id_to_go_ids_map = new HashMap<DomainId, List<GoId>>( pfam_to_go_mappings
-                .size() );
+    public static Map<String, List<GoId>> createDomainIdToGoIdMap( final List<PfamToGoMapping> pfam_to_go_mappings ) {
+        final Map<String, List<GoId>> domain_id_to_go_ids_map = new HashMap<String, List<GoId>>( pfam_to_go_mappings.size() );
         for( final PfamToGoMapping pfam_to_go : pfam_to_go_mappings ) {
             if ( !domain_id_to_go_ids_map.containsKey( pfam_to_go.getKey() ) ) {
                 domain_id_to_go_ids_map.put( pfam_to_go.getKey(), new ArrayList<GoId>() );
@@ -232,12 +230,12 @@ public final class SurfacingUtil {
         return domain_id_to_go_ids_map;
     }
 
-    public static Map<DomainId, Set<String>> createDomainIdToSecondaryFeaturesMap( final File secondary_features_map_file )
+    public static Map<String, Set<String>> createDomainIdToSecondaryFeaturesMap( final File secondary_features_map_file )
             throws IOException {
         final BasicTable<String> primary_table = BasicTableParser.parse( secondary_features_map_file, '\t' );
-        final Map<DomainId, Set<String>> map = new TreeMap<DomainId, Set<String>>();
+        final Map<String, Set<String>> map = new TreeMap<String, Set<String>>();
         for( int r = 0; r < primary_table.getNumberOfRows(); ++r ) {
-            final DomainId domain_id = new DomainId( primary_table.getValue( 0, r ) );
+            final String domain_id = primary_table.getValue( 0, r );
             if ( !map.containsKey( domain_id ) ) {
                 map.put( domain_id, new HashSet<String>() );
             }
@@ -307,7 +305,7 @@ public final class SurfacingUtil {
     }
 
     public static void doit( final List<Protein> proteins,
-                             final List<DomainId> query_domain_ids_nc_order,
+                             final List<String> query_domain_ids_nc_order,
                              final Writer out,
                              final String separator,
                              final String limit_to_species,
@@ -321,7 +319,7 @@ public final class SurfacingUtil {
                     out.write( protein.getProteinId().getId() );
                     out.write( separator );
                     out.write( "[" );
-                    final Set<DomainId> visited_domain_ids = new HashSet<DomainId>();
+                    final Set<String> visited_domain_ids = new HashSet<String>();
                     boolean first = true;
                     for( final Domain domain : protein.getProteinDomains() ) {
                         if ( !visited_domain_ids.contains( domain.getDomainId() ) ) {
@@ -332,7 +330,7 @@ public final class SurfacingUtil {
                             else {
                                 out.write( " " );
                             }
-                            out.write( domain.getDomainId().getId() );
+                            out.write( domain.getDomainId() );
                             out.write( " {" );
                             out.write( "" + domain.getTotalCount() );
                             out.write( "}" );
@@ -378,7 +376,7 @@ public final class SurfacingUtil {
                                                           1 + all_genomes_domains_per_potein_histo.get( domains ) );
             }
             if ( domains == 1 ) {
-                final String domain = protein.getProteinDomain( 0 ).getDomainId().getId();
+                final String domain = protein.getProteinDomain( 0 ).getDomainId();
                 if ( !domains_which_are_sometimes_single_sometimes_not.contains( domain ) ) {
                     if ( domains_which_never_single.contains( domain ) ) {
                         domains_which_never_single.remove( domain );
@@ -391,7 +389,7 @@ public final class SurfacingUtil {
             }
             else if ( domains > 1 ) {
                 for( final Domain d : protein.getProteinDomains() ) {
-                    final String domain = d.getDomainId().getId();
+                    final String domain = d.getDomainId();
                     // System.out.println( domain );
                     if ( !domains_which_are_sometimes_single_sometimes_not.contains( domain ) ) {
                         if ( domains_which_are_always_single.contains( domain ) ) {
@@ -526,12 +524,12 @@ public final class SurfacingUtil {
                                                  final String outfile_name,
                                                  final DomainParsimonyCalculator domain_parsimony,
                                                  final Phylogeny phylogeny,
-                                                 final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+                                                 final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                  final Map<GoId, GoTerm> go_id_to_term_map,
                                                  final GoNameSpace go_namespace_limit,
                                                  final String parameters_str,
-                                                 final Map<DomainId, Set<String>>[] domain_id_to_secondary_features_maps,
-                                                 final SortedSet<DomainId> positive_filter,
+                                                 final Map<String, Set<String>>[] domain_id_to_secondary_features_maps,
+                                                 final SortedSet<String> positive_filter,
                                                  final boolean output_binary_domain_combinations_for_graphs,
                                                  final List<BinaryDomainCombination> all_binary_domains_combination_gained_fitch,
                                                  final List<BinaryDomainCombination> all_binary_domains_combination_lost_fitch,
@@ -856,7 +854,7 @@ public final class SurfacingUtil {
     }
 
     public static void extractProteinNames( final List<Protein> proteins,
-                                            final List<DomainId> query_domain_ids_nc_order,
+                                            final List<String> query_domain_ids_nc_order,
                                             final Writer out,
                                             final String separator,
                                             final String limit_to_species ) throws IOException {
@@ -869,7 +867,7 @@ public final class SurfacingUtil {
                     out.write( protein.getProteinId().getId() );
                     out.write( separator );
                     out.write( "[" );
-                    final Set<DomainId> visited_domain_ids = new HashSet<DomainId>();
+                    final Set<String> visited_domain_ids = new HashSet<String>();
                     boolean first = true;
                     for( final Domain domain : protein.getProteinDomains() ) {
                         if ( !visited_domain_ids.contains( domain.getDomainId() ) ) {
@@ -880,7 +878,7 @@ public final class SurfacingUtil {
                             else {
                                 out.write( " " );
                             }
-                            out.write( domain.getDomainId().getId() );
+                            out.write( domain.getDomainId() );
                             out.write( " {" );
                             out.write( "" + domain.getTotalCount() );
                             out.write( "}" );
@@ -905,7 +903,7 @@ public final class SurfacingUtil {
     }
 
     public static void extractProteinNames( final SortedMap<Species, List<Protein>> protein_lists_per_species,
-                                            final DomainId domain_id,
+                                            final String domain_id,
                                             final Writer out,
                                             final String separator,
                                             final String limit_to_species,
@@ -980,10 +978,10 @@ public final class SurfacingUtil {
         out.flush();
     }
 
-    public static SortedSet<DomainId> getAllDomainIds( final List<GenomeWideCombinableDomains> gwcd_list ) {
-        final SortedSet<DomainId> all_domains_ids = new TreeSet<DomainId>();
+    public static SortedSet<String> getAllDomainIds( final List<GenomeWideCombinableDomains> gwcd_list ) {
+        final SortedSet<String> all_domains_ids = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
-            final Set<DomainId> all_domains = gwcd.getAllDomainIds();
+            final Set<String> all_domains = gwcd.getAllDomainIds();
             //    for( final Domain domain : all_domains ) {
             all_domains_ids.addAll( all_domains );
             //    }
@@ -996,7 +994,7 @@ public final class SurfacingUtil {
         for( final Protein protein_domain_collection : protein_domain_collections ) {
             for( final Object name : protein_domain_collection.getProteinDomains() ) {
                 final BasicDomain protein_domain = ( BasicDomain ) name;
-                final String id = protein_domain.getDomainId().getId();
+                final String id = protein_domain.getDomainId();
                 if ( map.containsKey( id ) ) {
                     map.put( id, map.get( id ) + 1 );
                 }
@@ -1136,7 +1134,7 @@ public final class SurfacingUtil {
         if ( domains.size() > 1 ) {
             final Map<String, Integer> counts = new HashMap<String, Integer>();
             for( final Domain domain : domains ) {
-                final String id = domain.getDomainId().getId();
+                final String id = domain.getDomainId();
                 if ( counts.containsKey( id ) ) {
                     counts.put( id, counts.get( id ) + 1 );
                 }
@@ -1153,24 +1151,24 @@ public final class SurfacingUtil {
                         domain_n = domains.get( j );
                         domain_c = domains.get( i );
                     }
-                    final String dc = domain_n.getDomainId().getId() + domain_c.getDomainId().getId();
+                    final String dc = domain_n.getDomainId() + domain_c.getDomainId();
                     if ( !dcs.contains( dc ) ) {
                         dcs.add( dc );
                         sb.append( protein.getSpecies() );
                         sb.append( separator );
                         sb.append( protein_id );
                         sb.append( separator );
-                        sb.append( domain_n.getDomainId().getId() );
+                        sb.append( domain_n.getDomainId() );
                         sb.append( separator );
-                        sb.append( domain_c.getDomainId().getId() );
+                        sb.append( domain_c.getDomainId() );
                         sb.append( separator );
                         sb.append( domain_n.getPerDomainEvalue() );
                         sb.append( separator );
                         sb.append( domain_c.getPerDomainEvalue() );
                         sb.append( separator );
-                        sb.append( counts.get( domain_n.getDomainId().getId() ) );
+                        sb.append( counts.get( domain_n.getDomainId() ) );
                         sb.append( separator );
-                        sb.append( counts.get( domain_c.getDomainId().getId() ) );
+                        sb.append( counts.get( domain_c.getDomainId() ) );
                         sb.append( ForesterUtil.LINE_SEPARATOR );
                     }
                 }
@@ -1181,7 +1179,7 @@ public final class SurfacingUtil {
             sb.append( separator );
             sb.append( protein_id );
             sb.append( separator );
-            sb.append( domains.get( 0 ).getDomainId().getId() );
+            sb.append( domains.get( 0 ).getDomainId() );
             sb.append( separator );
             sb.append( separator );
             sb.append( domains.get( 0 ).getPerDomainEvalue() );
@@ -1432,7 +1430,7 @@ public final class SurfacingUtil {
         ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote characters list: \"" + filename + "\"" );
     }
 
-    public static void writeBinaryStatesMatrixToList( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+    public static void writeBinaryStatesMatrixToList( final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                       final Map<GoId, GoTerm> go_id_to_term_map,
                                                       final GoNameSpace go_namespace_limit,
                                                       final boolean domain_combinations,
@@ -1443,7 +1441,7 @@ public final class SurfacingUtil {
                                                       final String character_separator,
                                                       final String title_for_html,
                                                       final String prefix_for_html,
-                                                      final Map<DomainId, Set<String>>[] domain_id_to_secondary_features_maps,
+                                                      final Map<String, Set<String>>[] domain_id_to_secondary_features_maps,
                                                       final SortedSet<String> all_pfams_encountered,
                                                       final SortedSet<String> pfams_gained_or_lost,
                                                       final String suffix_for_per_node_events_file,
@@ -1648,9 +1646,9 @@ public final class SurfacingUtil {
             per_genome_domain_promiscuity_statistics_writer.write( ( int ) stats.getMin() + "\t" );
             per_genome_domain_promiscuity_statistics_writer.write( ( int ) stats.getMax() + "\t" );
             per_genome_domain_promiscuity_statistics_writer.write( stats.getN() + "\t" );
-            final SortedSet<DomainId> mpds = gwcd.getMostPromiscuosDomain();
-            for( final DomainId mpd : mpds ) {
-                per_genome_domain_promiscuity_statistics_writer.write( mpd.getId() + " " );
+            final SortedSet<String> mpds = gwcd.getMostPromiscuosDomain();
+            for( final String mpd : mpds ) {
+                per_genome_domain_promiscuity_statistics_writer.write( mpd + " " );
             }
             per_genome_domain_promiscuity_statistics_writer.write( ForesterUtil.LINE_SEPARATOR );
         }
@@ -1872,18 +1870,20 @@ public final class SurfacingUtil {
             }
             if ( single_writer != null ) {
                 single_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );
+                single_writer.write( SurfacingConstants.NL );
             }
             else {
-                Writer local_writer = split_writers.get( ( similarity.getDomainId().getId().charAt( 0 ) + "" )
-                        .toLowerCase().charAt( 0 ) );
+                Writer local_writer = split_writers.get( ( similarity.getDomainId().charAt( 0 ) + "" ).toLowerCase()
+                        .charAt( 0 ) );
                 if ( local_writer == null ) {
                     local_writer = split_writers.get( '0' );
                 }
                 local_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );
+                local_writer.write( SurfacingConstants.NL );
             }
-            for( final Writer w : split_writers.values() ) {
-                w.write( SurfacingConstants.NL );
-            }
+            // for( final Writer w : split_writers.values() ) {
+            //w.write( SurfacingConstants.NL );
+            // }
         }
         switch ( print_option ) {
             case HTML:
@@ -2370,9 +2370,9 @@ public final class SurfacingUtil {
     }
 
     private static SortedSet<BinaryDomainCombination> createSetOfAllBinaryDomainCombinationsPerGenome( final GenomeWideCombinableDomains gwcd ) {
-        final SortedMap<DomainId, CombinableDomains> cds = gwcd.getAllCombinableDomainsIds();
+        final SortedMap<String, CombinableDomains> cds = gwcd.getAllCombinableDomainsIds();
         final SortedSet<BinaryDomainCombination> binary_combinations = new TreeSet<BinaryDomainCombination>();
-        for( final DomainId domain_id : cds.keySet() ) {
+        for( final String domain_id : cds.keySet() ) {
             final CombinableDomains cd = cds.get( domain_id );
             binary_combinations.addAll( cd.toBinaryDomainCombinations() );
         }
@@ -2392,7 +2392,7 @@ public final class SurfacingUtil {
         return l;
     }
 
-    private static void writeAllEncounteredPfamsToFile( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+    private static void writeAllEncounteredPfamsToFile( final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                         final Map<GoId, GoTerm> go_id_to_term_map,
                                                         final String outfile_name,
                                                         final SortedSet<String> all_pfams_encountered ) {
@@ -2420,7 +2420,7 @@ public final class SurfacingUtil {
             for( final String pfam : all_pfams_encountered ) {
                 all_pfams_encountered_writer.write( pfam );
                 all_pfams_encountered_writer.write( ForesterUtil.LINE_SEPARATOR );
-                final DomainId domain_id = new DomainId( pfam );
+                final String domain_id = new String( pfam );
                 if ( domain_id_to_go_ids_map.containsKey( domain_id ) ) {
                     ++pfams_with_mappings_counter;
                     all_pfams_encountered_with_go_annotation_writer.write( pfam );
@@ -2530,7 +2530,7 @@ public final class SurfacingUtil {
         }
     }
 
-    private static void writeDomainData( final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+    private static void writeDomainData( final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                          final Map<GoId, GoTerm> go_id_to_term_map,
                                          final GoNameSpace go_namespace_limit,
                                          final Writer out,
@@ -2538,7 +2538,7 @@ public final class SurfacingUtil {
                                          final String domain_1,
                                          final String prefix_for_html,
                                          final String character_separator_for_non_html_output,
-                                         final Map<DomainId, Set<String>>[] domain_id_to_secondary_features_maps,
+                                         final Map<String, Set<String>>[] domain_id_to_secondary_features_maps,
                                          final Set<GoId> all_go_ids ) throws IOException {
         boolean any_go_annotation_present = false;
         boolean first_has_no_go = false;
@@ -2551,22 +2551,20 @@ public final class SurfacingUtil {
             List<GoId> go_ids = null;
             boolean go_annotation_present = false;
             if ( d == 0 ) {
-                final DomainId domain_id = new DomainId( domain_0 );
-                if ( domain_id_to_go_ids_map.containsKey( domain_id ) ) {
+                if ( domain_id_to_go_ids_map.containsKey( domain_0 ) ) {
                     go_annotation_present = true;
                     any_go_annotation_present = true;
-                    go_ids = domain_id_to_go_ids_map.get( domain_id );
+                    go_ids = domain_id_to_go_ids_map.get( domain_0 );
                 }
                 else {
                     first_has_no_go = true;
                 }
             }
             else {
-                final DomainId domain_id = new DomainId( domain_1 );
-                if ( domain_id_to_go_ids_map.containsKey( domain_id ) ) {
+                if ( domain_id_to_go_ids_map.containsKey( domain_1 ) ) {
                     go_annotation_present = true;
                     any_go_annotation_present = true;
-                    go_ids = domain_id_to_go_ids_map.get( domain_id );
+                    go_ids = domain_id_to_go_ids_map.get( domain_1 );
                 }
             }
             if ( go_annotation_present ) {
@@ -2639,7 +2637,7 @@ public final class SurfacingUtil {
                                               final String domain_0,
                                               final String domain_1,
                                               final String prefix_for_detailed_html,
-                                              final Map<DomainId, Set<String>>[] domain_id_to_secondary_features_maps )
+                                              final Map<String, Set<String>>[] domain_id_to_secondary_features_maps )
             throws IOException {
         out.write( "<td>" );
         if ( !ForesterUtil.isEmpty( prefix_for_detailed_html ) ) {

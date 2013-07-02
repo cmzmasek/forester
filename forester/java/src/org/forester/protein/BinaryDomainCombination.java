@@ -29,9 +29,9 @@ public interface BinaryDomainCombination extends Comparable<BinaryDomainCombinat
 
     public static final String SEPARATOR = "=";
 
-    public DomainId getId0();
+    public String getId0();
 
-    public DomainId getId1();
+    public String getId1();
 
     public abstract StringBuffer toGraphDescribingLanguage( final OutputFormat format,
                                                             final String node_attribute,

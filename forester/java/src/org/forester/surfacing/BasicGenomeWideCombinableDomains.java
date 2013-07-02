@@ -20,7 +20,6 @@ import org.forester.go.GoId;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.BinaryDomainCombination.DomainCombinationType;
 import org.forester.protein.Domain;
-import org.forester.protein.DomainId;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -29,115 +28,109 @@ import org.forester.util.ForesterUtil;
 
 public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDomains {
 
-    private final static NumberFormat                    FORMATTER                                  = new DecimalFormat( "0.0E0" );
-    private static final Comparator<CombinableDomains>   DESCENDING_KEY_DOMAIN_COUNT_ORDER          = new Comparator<CombinableDomains>() {
+    private final static NumberFormat                  FORMATTER                                  = new DecimalFormat( "0.0E0" );
+    private static final Comparator<CombinableDomains> DESCENDING_KEY_DOMAIN_COUNT_ORDER          = new Comparator<CombinableDomains>() {
 
-                                                                                                        @Override
-                                                                                                        public int compare( final CombinableDomains d1,
-                                                                                                                            final CombinableDomains d2 ) {
-                                                                                                            if ( d1.getKeyDomainCount() < d2
-                                                                                                                    .getKeyDomainCount() ) {
-                                                                                                                return 1;
-                                                                                                            }
-                                                                                                            else if ( d1
-                                                                                                                    .getKeyDomainCount() > d2
-                                                                                                                    .getKeyDomainCount() ) {
-                                                                                                                return -1;
-                                                                                                            }
-                                                                                                            else {
-                                                                                                                return d1
-                                                                                                                        .getKeyDomain()
-                                                                                                                        .getId()
-                                                                                                                        .compareTo( d2
-                                                                                                                                .getKeyDomain()
-                                                                                                                                .getId() );
-                                                                                                            }
-                                                                                                        }
-                                                                                                    };
-    private static final Comparator<CombinableDomains>   DESCENDING_KEY_DOMAIN_PROTEINS_COUNT_ORDER = new Comparator<CombinableDomains>() {
+                                                                                                      @Override
+                                                                                                      public int compare( final CombinableDomains d1,
+                                                                                                                          final CombinableDomains d2 ) {
+                                                                                                          if ( d1.getKeyDomainCount() < d2
+                                                                                                                  .getKeyDomainCount() ) {
+                                                                                                              return 1;
+                                                                                                          }
+                                                                                                          else if ( d1
+                                                                                                                  .getKeyDomainCount() > d2
+                                                                                                                  .getKeyDomainCount() ) {
+                                                                                                              return -1;
+                                                                                                          }
+                                                                                                          else {
+                                                                                                              return d1
+                                                                                                                      .getKeyDomain()
+                                                                                                                      .compareTo( d2
+                                                                                                                              .getKeyDomain() );
+                                                                                                          }
+                                                                                                      }
+                                                                                                  };
+    private static final Comparator<CombinableDomains> DESCENDING_KEY_DOMAIN_PROTEINS_COUNT_ORDER = new Comparator<CombinableDomains>() {
 
-                                                                                                        @Override
-                                                                                                        public int compare( final CombinableDomains d1,
-                                                                                                                            final CombinableDomains d2 ) {
-                                                                                                            if ( d1.getKeyDomainProteinsCount() < d2
-                                                                                                                    .getKeyDomainProteinsCount() ) {
-                                                                                                                return 1;
-                                                                                                            }
-                                                                                                            else if ( d1
-                                                                                                                    .getKeyDomainProteinsCount() > d2
-                                                                                                                    .getKeyDomainProteinsCount() ) {
-                                                                                                                return -1;
-                                                                                                            }
-                                                                                                            else {
-                                                                                                                return d1
-                                                                                                                        .getKeyDomain()
-                                                                                                                        .getId()
-                                                                                                                        .compareTo( d2
-                                                                                                                                .getKeyDomain()
-                                                                                                                                .getId() );
-                                                                                                            }
-                                                                                                        }
-                                                                                                    };
-    private static final Comparator<CombinableDomains>   DESCENDING_COMBINATIONS_COUNT_ORDER        = new Comparator<CombinableDomains>() {
+                                                                                                      @Override
+                                                                                                      public int compare( final CombinableDomains d1,
+                                                                                                                          final CombinableDomains d2 ) {
+                                                                                                          if ( d1.getKeyDomainProteinsCount() < d2
+                                                                                                                  .getKeyDomainProteinsCount() ) {
+                                                                                                              return 1;
+                                                                                                          }
+                                                                                                          else if ( d1
+                                                                                                                  .getKeyDomainProteinsCount() > d2
+                                                                                                                  .getKeyDomainProteinsCount() ) {
+                                                                                                              return -1;
+                                                                                                          }
+                                                                                                          else {
+                                                                                                              return d1
+                                                                                                                      .getKeyDomain()
+                                                                                                                      .compareTo( d2
+                                                                                                                              .getKeyDomain() );
+                                                                                                          }
+                                                                                                      }
+                                                                                                  };
+    private static final Comparator<CombinableDomains> DESCENDING_COMBINATIONS_COUNT_ORDER        = new Comparator<CombinableDomains>() {
 
-                                                                                                        @Override
-                                                                                                        public int compare( final CombinableDomains d1,
-                                                                                                                            final CombinableDomains d2 ) {
-                                                                                                            if ( d1.getNumberOfCombinableDomains() < d2
-                                                                                                                    .getNumberOfCombinableDomains() ) {
-                                                                                                                return 1;
-                                                                                                            }
-                                                                                                            else if ( d1
-                                                                                                                    .getNumberOfCombinableDomains() > d2
-                                                                                                                    .getNumberOfCombinableDomains() ) {
-                                                                                                                return -1;
-                                                                                                            }
-                                                                                                            else {
-                                                                                                                return d1
-                                                                                                                        .getKeyDomain()
-                                                                                                                        .getId()
-                                                                                                                        .compareTo( d2
-                                                                                                                                .getKeyDomain()
-                                                                                                                                .getId() );
-                                                                                                            }
-                                                                                                        }
-                                                                                                    };
-    final private SortedMap<DomainId, CombinableDomains> _combinable_domains_map;
-    final private Species                                _species;
-    final private DomainCombinationType                  _dc_type;
+                                                                                                      @Override
+                                                                                                      public int compare( final CombinableDomains d1,
+                                                                                                                          final CombinableDomains d2 ) {
+                                                                                                          if ( d1.getNumberOfCombinableDomains() < d2
+                                                                                                                  .getNumberOfCombinableDomains() ) {
+                                                                                                              return 1;
+                                                                                                          }
+                                                                                                          else if ( d1
+                                                                                                                  .getNumberOfCombinableDomains() > d2
+                                                                                                                  .getNumberOfCombinableDomains() ) {
+                                                                                                              return -1;
+                                                                                                          }
+                                                                                                          else {
+                                                                                                              return d1
+                                                                                                                      .getKeyDomain()
+                                                                                                                      .compareTo( d2
+                                                                                                                              .getKeyDomain() );
+                                                                                                          }
+                                                                                                      }
+                                                                                                  };
+    final private SortedMap<String, CombinableDomains> _combinable_domains_map;
+    final private Species                              _species;
+    final private DomainCombinationType                _dc_type;
 
     private BasicGenomeWideCombinableDomains( final Species species, final DomainCombinationType dc_type ) {
-        _combinable_domains_map = new TreeMap<DomainId, CombinableDomains>();
+        _combinable_domains_map = new TreeMap<String, CombinableDomains>();
         _species = species;
         _dc_type = dc_type;
     }
 
-    private void add( final DomainId key, final CombinableDomains cdc ) {
+    private void add( final String key, final CombinableDomains cdc ) {
         _combinable_domains_map.put( key, cdc );
     }
 
     @Override
-    public boolean contains( final DomainId key_id ) {
+    public boolean contains( final String key_id ) {
         return _combinable_domains_map.containsKey( key_id );
     }
 
     @Override
-    public CombinableDomains get( final DomainId key_id ) {
+    public CombinableDomains get( final String key_id ) {
         return _combinable_domains_map.get( key_id );
     }
 
     @Override
-    public SortedMap<DomainId, CombinableDomains> getAllCombinableDomainsIds() {
+    public SortedMap<String, CombinableDomains> getAllCombinableDomainsIds() {
         return _combinable_domains_map;
     }
 
     @Override
-    public SortedSet<DomainId> getAllDomainIds() {
-        final SortedSet<DomainId> domains = new TreeSet<DomainId>();
-        for( final DomainId key : getAllCombinableDomainsIds().keySet() ) {
+    public SortedSet<String> getAllDomainIds() {
+        final SortedSet<String> domains = new TreeSet<String>();
+        for( final String key : getAllCombinableDomainsIds().keySet() ) {
             final CombinableDomains cb = getAllCombinableDomainsIds().get( key );
-            final List<DomainId> ds = cb.getAllDomains();
-            for( final DomainId d : ds ) {
+            final List<String> ds = cb.getAllDomains();
+            for( final String d : ds ) {
                 domains.add( d );
             }
         }
@@ -150,10 +143,10 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     }
 
     @Override
-    public SortedSet<DomainId> getMostPromiscuosDomain() {
-        final SortedSet<DomainId> doms = new TreeSet<DomainId>();
+    public SortedSet<String> getMostPromiscuosDomain() {
+        final SortedSet<String> doms = new TreeSet<String>();
         final int max = ( int ) getPerGenomeDomainPromiscuityStatistics().getMax();
-        for( final DomainId key : getAllCombinableDomainsIds().keySet() ) {
+        for( final String key : getAllCombinableDomainsIds().keySet() ) {
             final CombinableDomains cb = getAllCombinableDomainsIds().get( key );
             if ( cb.getNumberOfCombinableDomains() == max ) {
                 doms.add( key );
@@ -165,7 +158,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     @Override
     public DescriptiveStatistics getPerGenomeDomainPromiscuityStatistics() {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final DomainId key : getAllCombinableDomainsIds().keySet() ) {
+        for( final String key : getAllCombinableDomainsIds().keySet() ) {
             final CombinableDomains cb = getAllCombinableDomainsIds().get( key );
             stats.addValue( cb.getNumberOfCombinableDomains() );
         }
@@ -185,7 +178,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     @Override
     public SortedSet<BinaryDomainCombination> toBinaryDomainCombinations() {
         final SortedSet<BinaryDomainCombination> binary_combinations = new TreeSet<BinaryDomainCombination>();
-        for( final DomainId key : getAllCombinableDomainsIds().keySet() ) {
+        for( final String key : getAllCombinableDomainsIds().keySet() ) {
             final CombinableDomains cb = getAllCombinableDomainsIds().get( key );
             for( final BinaryDomainCombination b : cb.toBinaryDomainCombinations() ) {
                 binary_combinations.add( b );
@@ -205,7 +198,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     public StringBuilder toStringBuilder( final GenomeWideCombinableDomainsSortOrder sort_order ) {
         final StringBuilder sb = new StringBuilder();
         final List<CombinableDomains> combinable_domains = new ArrayList<CombinableDomains>();
-        for( final DomainId key : getAllCombinableDomainsIds().keySet() ) {
+        for( final String key : getAllCombinableDomainsIds().keySet() ) {
             final CombinableDomains cb = getAllCombinableDomainsIds().get( key );
             combinable_domains.add( cb );
         }
@@ -236,11 +229,11 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
         return sb;
     }
 
-    private static void countDomains( final Map<DomainId, Integer> domain_counts,
-                                      final Map<DomainId, Integer> domain_protein_counts,
-                                      final Map<DomainId, DescriptiveStatistics> stats,
-                                      final Set<DomainId> saw_c,
-                                      final DomainId id_i,
+    private static void countDomains( final Map<String, Integer> domain_counts,
+                                      final Map<String, Integer> domain_protein_counts,
+                                      final Map<String, DescriptiveStatistics> stats,
+                                      final Set<String> saw_c,
+                                      final String id_i,
                                       final double support ) {
         if ( domain_counts.containsKey( id_i ) ) {
             domain_counts.put( id_i, 1 + domain_counts.get( ( id_i ) ) );
@@ -279,24 +272,24 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     public static BasicGenomeWideCombinableDomains createInstance( final List<Protein> protein_list,
                                                                    final boolean ignore_combination_with_same_domain,
                                                                    final Species species,
-                                                                   final Map<DomainId, List<GoId>> domain_id_to_go_ids_map,
+                                                                   final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                                                    final DomainCombinationType dc_type,
                                                                    final Map<String, DescriptiveStatistics> protein_length_stats_by_dc,
                                                                    final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
         final BasicGenomeWideCombinableDomains instance = new BasicGenomeWideCombinableDomains( species, dc_type );
-        final Map<DomainId, Integer> domain_counts = new HashMap<DomainId, Integer>();
-        final Map<DomainId, Integer> domain_protein_counts = new HashMap<DomainId, Integer>();
-        final Map<DomainId, DescriptiveStatistics> stats = new HashMap<DomainId, DescriptiveStatistics>();
+        final Map<String, Integer> domain_counts = new HashMap<String, Integer>();
+        final Map<String, Integer> domain_protein_counts = new HashMap<String, Integer>();
+        final Map<String, DescriptiveStatistics> stats = new HashMap<String, DescriptiveStatistics>();
         for( final Protein protein : protein_list ) {
             if ( !protein.getSpecies().equals( species ) ) {
                 throw new IllegalArgumentException( "species (" + protein.getSpecies()
                         + ") does not match species of combinable domains collection (" + species + ")" );
             }
-            final Set<DomainId> saw_i = new HashSet<DomainId>();
-            final Set<DomainId> saw_c = new HashSet<DomainId>();
+            final Set<String> saw_i = new HashSet<String>();
+            final Set<String> saw_c = new HashSet<String>();
             for( int i = 0; i < protein.getProteinDomains().size(); ++i ) {
                 final Domain pd_i = protein.getProteinDomain( i );
-                final DomainId id_i = pd_i.getDomainId();
+                final String id_i = pd_i.getDomainId();
                 final int current_start = pd_i.getFrom();
                 BasicGenomeWideCombinableDomains.countDomains( domain_counts,
                                                                domain_protein_counts,
@@ -322,16 +315,16 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                         else {
                             domain_combination = new BasicCombinableDomains( pd_i.getDomainId(), species );
                         }
-                        if ( ( domain_id_to_go_ids_map != null )
-                                && domain_id_to_go_ids_map.containsKey( pd_i.getDomainId() ) ) {
-                            final List<GoId> go_ids = domain_id_to_go_ids_map.get( pd_i.getDomainId() );
-                            for( final GoId go_id : go_ids ) {
-                                domain_combination.getKeyDomain().addGoId( go_id );
-                            }
-                        }
+                        // ^^       if ( ( domain_id_to_go_ids_map != null )
+                        // ^^             && domain_id_to_go_ids_map.containsKey( pd_i.getDomainId() ) ) {
+                        // ^^        final List<GoId> go_ids = domain_id_to_go_ids_map.get( pd_i.getDomainId() );
+                        // ^^        for( final GoId go_id : go_ids ) {
+                        // ^^           domain_combination.getKeyDomain().addGoId( go_id );
+                        // ^^       }
+                        // ^^  }
                         instance.add( id_i, domain_combination );
                     }
-                    final Set<DomainId> saw_j = new HashSet<DomainId>();
+                    final Set<String> saw_j = new HashSet<String>();
                     if ( ignore_combination_with_same_domain ) {
                         saw_j.add( id_i );
                     }
@@ -342,7 +335,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                             continue;
                         }
                         if ( i != j ) {
-                            final DomainId id = protein.getProteinDomain( j ).getDomainId();
+                            final String id = protein.getProteinDomain( j ).getDomainId();
                             if ( !saw_j.contains( id ) ) {
                                 saw_j.add( id );
                                 if ( dc_type != DomainCombinationType.DIRECTED_ADJACTANT ) {
@@ -389,7 +382,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                 }
             }
         }
-        for( final DomainId key_id : domain_counts.keySet() ) {
+        for( final String key_id : domain_counts.keySet() ) {
             instance.get( key_id ).setKeyDomainCount( domain_counts.get( key_id ) );
             instance.get( key_id ).setKeyDomainProteinsCount( domain_protein_counts.get( key_id ) );
             instance.get( key_id ).setKeyDomainConfidenceDescriptiveStatistics( stats.get( key_id ) );
