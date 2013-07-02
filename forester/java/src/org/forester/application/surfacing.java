@@ -187,6 +187,9 @@ public class surfacing {
     final static private String                               MAX_ALLOWED_OVERLAP_OPTION                                                    = "mo";
     final static private String                               NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
     final static private String                               IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
+    final static private String                               PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION                                       = "dc_regain_stats";
+    final static private String                               DA_ANALYSIS_OPTION                                                            = "DA_analyis";
+    final static private String                               USE_LAST_IN_FITCH_OPTION                                                      = "last";
     final static private String                               PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
     final static private String                               PAIRWISE_DOMAIN_COMPARISONS_OPTION                                            = "pwc";
     final static private String                               OUTPUT_FILE_OPTION                                                            = "o";
@@ -216,12 +219,6 @@ public class surfacing {
                                                                                                                                                     + ForesterConstants.PHYLO_XML_SUFFIX;
     final static private String                               NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX                  = "_bin_combinations_NJ"
                                                                                                                                                     + ForesterConstants.PHYLO_XML_SUFFIX;
-    final static private String                               JACKNIFE_OPTION                                                               = "jack";
-    final static private String                               JACKNIFE_RANDOM_SEED_OPTION                                                   = "seed";
-    final static private String                               JACKNIFE_RATIO_OPTION                                                         = "jack_ratio";
-    private static final int                                  JACKNIFE_NUMBER_OF_RESAMPLINGS_DEFAULT                                        = 100;
-    final static private long                                 JACKNIFE_RANDOM_SEED_DEFAULT                                                  = 19;
-    final static private double                               JACKNIFE_RATIO_DEFAULT                                                        = 0.5;
     final static private String                               FILTER_POSITIVE_OPTION                                                        = "pos_filter";
     final static private String                               FILTER_NEGATIVE_OPTION                                                        = "neg_filter";
     final static private String                               FILTER_NEGATIVE_DOMAINS_OPTION                                                = "neg_dom_filter";
@@ -281,8 +278,6 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
-    private static final boolean                              PERFORM_DC_REGAIN_PROTEINS_STATS                                              = true;
-    private static final boolean                              DA_ANALYSIS                                                                   = false;
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -605,9 +600,9 @@ public class surfacing {
         allowed_options.add( surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION );
         allowed_options.add( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION );
         allowed_options.add( surfacing.CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS );
-        allowed_options.add( JACKNIFE_OPTION );
-        allowed_options.add( JACKNIFE_RANDOM_SEED_OPTION );
-        allowed_options.add( JACKNIFE_RATIO_OPTION );
+        //allowed_options.add( JACKNIFE_OPTION );
+        // allowed_options.add( JACKNIFE_RANDOM_SEED_OPTION );
+        // allowed_options.add( JACKNIFE_RATIO_OPTION );
         allowed_options.add( INPUT_SPECIES_TREE_OPTION );
         allowed_options.add( FILTER_POSITIVE_OPTION );
         allowed_options.add( FILTER_NEGATIVE_OPTION );
@@ -623,6 +618,9 @@ public class surfacing {
         allowed_options.add( OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS );
         allowed_options.add( CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY );
         allowed_options.add( WRITE_TO_NEXUS_OPTION );
+        allowed_options.add( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION );
+        allowed_options.add( DA_ANALYSIS_OPTION );
+        allowed_options.add( USE_LAST_IN_FITCH_OPTION );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
@@ -631,9 +629,21 @@ public class surfacing {
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown option(s): " + dissallowed_options );
         }
+        boolean use_last_in_fitch_parsimony = false;
+        if ( cla.isOptionSet( USE_LAST_IN_FITCH_OPTION ) ) {
+            use_last_in_fitch_parsimony = true;
+        }
         boolean write_to_nexus = false;
         if ( cla.isOptionSet( WRITE_TO_NEXUS_OPTION ) ) {
             write_to_nexus = true;
+        }
+        boolean perform_dc_regain_proteins_stats = false;
+        if ( cla.isOptionSet( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION ) ) {
+            perform_dc_regain_proteins_stats = true;
+        }
+        boolean da_analysis = false;
+        if ( cla.isOptionSet( DA_ANALYSIS_OPTION ) ) {
+            da_analysis = true;
         }
         boolean output_binary_domain_combinationsfor_graph_analysis = false;
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS ) ) {
@@ -1145,56 +1155,9 @@ public class surfacing {
                 && ( number_of_genomes > 2 ) ) {
             domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
         }
-        boolean jacknifed_distances = false;
-        int jacknife_resamplings = JACKNIFE_NUMBER_OF_RESAMPLINGS_DEFAULT;
-        double jacknife_ratio = JACKNIFE_RATIO_DEFAULT;
-        long random_seed = JACKNIFE_RANDOM_SEED_DEFAULT;
-        if ( cla.isOptionSet( surfacing.JACKNIFE_OPTION ) ) {
-            if ( ( number_of_genomes < 3 ) || !perform_pwc ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot use jacknife resampling analysis (-"
-                        + surfacing.JACKNIFE_OPTION + "[=<number of resamplings>]) without pairwise analyses ("
-                        + surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION
-                        + "=<suffix for pairwise comparison output files>)" );
-            }
-            jacknifed_distances = true;
-            if ( cla.isOptionHasAValue( surfacing.JACKNIFE_OPTION ) ) {
-                try {
-                    jacknife_resamplings = cla.getOptionValueAsInt( surfacing.JACKNIFE_OPTION );
-                }
-                catch ( final IOException e ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "illegal format for number of resamplings" );
-                }
-                if ( jacknife_resamplings < 2 ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "attempt to use less than 2 resamplings" );
-                }
-            }
-            if ( cla.isOptionSet( surfacing.JACKNIFE_RATIO_OPTION )
-                    && cla.isOptionHasAValue( surfacing.JACKNIFE_RATIO_OPTION ) ) {
-                try {
-                    jacknife_ratio = cla.getOptionValueAsDouble( surfacing.JACKNIFE_RATIO_OPTION );
-                }
-                catch ( final IOException e ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "illegal format for jacknife ratio" );
-                }
-                if ( ( jacknife_ratio <= 0.0 ) || ( jacknife_ratio >= 1.0 ) ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "attempt to use illegal value for jacknife ratio: "
-                            + jacknife_ratio );
-                }
-            }
-            if ( cla.isOptionSet( surfacing.JACKNIFE_RANDOM_SEED_OPTION )
-                    && cla.isOptionHasAValue( surfacing.JACKNIFE_RANDOM_SEED_OPTION ) ) {
-                try {
-                    random_seed = cla.getOptionValueAsLong( surfacing.JACKNIFE_RANDOM_SEED_OPTION );
-                }
-                catch ( final IOException e ) {
-                    ForesterUtil.fatalError( surfacing.PRG_NAME, "illegal format for random generator seed" );
-                }
-            }
-        }
         File[] intree_files = null;
         Phylogeny[] intrees = null;
         if ( cla.isOptionSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
-            // TODO FIXME if jacknife.... maybe not
             if ( number_of_genomes < 3 ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot infer gains and losses on input species trees (-"
                         + surfacing.INPUT_SPECIES_TREE_OPTION + " without pairwise analyses ("
@@ -1398,20 +1361,34 @@ public class surfacing {
                     + ( dc_type == BinaryDomainCombination.DomainCombinationType.DIRECTED_ADJACTANT ) + "</td></tr>"
                     + nl );
         }
+        System.out.println( "Use last in Fitch parimony  : " + use_last_in_fitch_parsimony );
+        html_desc.append( "<tr><td>Use last in Fitch parimon:</td><td>" + use_last_in_fitch_parsimony + "</td></tr>"
+                + nl );
         System.out.println( "Write to Nexus files        : " + write_to_nexus );
+        html_desc.append( "<tr><td>Write to Nexus files:</td><td>" + write_to_nexus + "</td></tr>" + nl );
+        System.out.println( "DC regain prot stats        : " + perform_dc_regain_proteins_stats );
+        html_desc.append( "<tr><td>DC regain prot stats:</td><td>" + perform_dc_regain_proteins_stats + "</td></tr>"
+                + nl );
+        System.out.println( "DA analysis                 : " + da_analysis );
+        html_desc.append( "<tr><td>DA analysis :</td><td>" + da_analysis + "</td></tr>" + nl );
         System.out.print( "Domain counts sort order    : " );
+        html_desc.append( "<tr><td>Domain counts sort order:</td><td>" );
         switch ( dc_sort_order ) {
             case ALPHABETICAL_KEY_ID:
                 System.out.println( "alphabetical" );
+                html_desc.append( "alphabetical" + "</td></tr>" + nl );
                 break;
             case KEY_DOMAIN_COUNT:
                 System.out.println( "domain count" );
+                html_desc.append( "domain count" + "</td></tr>" + nl );
                 break;
             case KEY_DOMAIN_PROTEINS_COUNT:
                 System.out.println( "domain proteins count" );
+                html_desc.append( "domain proteins count" + "</td></tr>" + nl );
                 break;
             case COMBINATIONS_COUNT:
                 System.out.println( "domain combinations count" );
+                html_desc.append( "domain combinations count" + "</td></tr>" + nl );
                 break;
             default:
                 ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME, "unknown value for dc sort order" );
@@ -1575,15 +1552,6 @@ public class surfacing {
             }
             System.out.println();
             html_desc.append( "</td></tr>" + nl );
-            if ( jacknifed_distances ) {
-                html_desc.append( "<tr><td>Jacknife:</td><td>" + jacknife_resamplings + " resamplings</td></tr>" + nl );
-                html_desc.append( "<tr><td>Jacknife ratio:</td><td>" + ForesterUtil.round( jacknife_ratio, 2 )
-                        + "</td></tr>" + nl );
-                html_desc.append( "<tr><td>Jacknife random number seed:</td><td>" + random_seed + "</td></tr>" + nl );
-                System.out.println( "  Jacknife                  : " + jacknife_resamplings + " resamplings" );
-                System.out.println( "    Ratio                   : " + ForesterUtil.round( jacknife_ratio, 2 ) );
-                System.out.println( "    Random number seed      : " + random_seed );
-            }
             if ( ( intrees != null ) && ( intrees.length > 0 ) ) {
                 for( final File intree_file : intree_files ) {
                     html_desc.append( "<tr><td>Intree for gain/loss parsimony analysis:</td><td>" + intree_file
@@ -1733,7 +1701,7 @@ public class surfacing {
         Map<String, DescriptiveStatistics> protein_length_stats_by_dc = null;
         Map<String, DescriptiveStatistics> domain_number_stats_by_dc = null;
         final Map<String, DescriptiveStatistics> domain_length_stats_by_domain = new HashMap<String, DescriptiveStatistics>();
-        if ( PERFORM_DC_REGAIN_PROTEINS_STATS ) {
+        if ( perform_dc_regain_proteins_stats ) {
             protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
             domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
         }
@@ -1810,7 +1778,7 @@ public class surfacing {
             final double coverage = ( double ) protein_list.size() / parser.getProteinsEncountered();
             protein_coverage_stats.addValue( coverage );
             int distinct_das = -1;
-            if ( DA_ANALYSIS ) {
+            if ( da_analysis ) {
                 final String genome = input_file_properties[ i ][ 0 ];
                 distinct_das = SurfacingUtil.storeDomainArchitectures( genome,
                                                                        distinct_domain_architecutures_per_genome,
@@ -1870,7 +1838,7 @@ public class surfacing {
                 log( "Proteins ignored due to positive filter        : " + parser.getProteinsIgnoredDueToFilter(),
                      log_writer );
             }
-            if ( DA_ANALYSIS ) {
+            if ( da_analysis ) {
                 System.out.println( "Distinct domain architectures stored           : " + distinct_das );
                 log( "Distinct domain architectures stored           : " + distinct_das, log_writer );
             }
@@ -1920,7 +1888,7 @@ public class surfacing {
                                                         domains_which_never_single,
                                                         domains_per_potein_stats_writer );
             domain_lengths_table.addLengths( protein_list );
-            if ( !DA_ANALYSIS ) {
+            if ( !da_analysis ) {
                 gwcd_list.add( BasicGenomeWideCombinableDomains
                         .createInstance( protein_list,
                                          ignore_combination_with_same,
@@ -1977,7 +1945,7 @@ public class surfacing {
         ForesterUtil.programMessage( PRG_NAME, "Wrote domain promiscuities to: "
                 + per_genome_domain_promiscuity_statistics_file );
         //
-        if ( DA_ANALYSIS ) {
+        if ( da_analysis ) {
             SurfacingUtil.performDomainArchitectureAnalysis( distinct_domain_architecutures_per_genome,
                                                              distinct_domain_architecuture_counts,
                                                              10,
@@ -2205,35 +2173,6 @@ public class surfacing {
             inferred_trees.add( nj_gd );
             inferred_trees.add( nj_bc );
             inferred_trees.add( nj_d );
-            if ( jacknifed_distances ) {
-                pwgc.performPairwiseComparisonsJacknifed( species,
-                                                          number_of_genomes,
-                                                          gwcd_list,
-                                                          true,
-                                                          jacknife_resamplings,
-                                                          jacknife_ratio,
-                                                          random_seed );
-                SurfacingUtil
-                        .writeMatrixToFile( new File( matrix_output_file
-                                                    + "_"
-                                                    + ForesterUtil.round( jacknife_ratio, 2 )
-                                                    + "_"
-                                                    + jacknife_resamplings
-                                                    + surfacing.MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX ),
-                                            pwgc.getSharedBinaryCombinationsBasedDistances() );
-                SurfacingUtil
-                        .writeMatrixToFile( new File( matrix_output_file + "_" + ForesterUtil.round( jacknife_ratio, 2 )
-                                                    + "_" + jacknife_resamplings
-                                                    + surfacing.MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX ),
-                                            pwgc.getSharedDomainsBasedDistances() );
-                //                if ( infer_species_trees ) {
-                //                    inferSpeciesTrees( new File( output_file + "_" + jacknife_resamplings
-                //                            + INFERRED_SBC_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc
-                //                            .getSharedBinaryCombinationsBasedDistances() );
-                //                    inferSpeciesTrees( new File( output_file + "_" + jacknife_resamplings
-                //                            + INFERRED_SD_BASED_NJ_SPECIES_TREE_SUFFIX ), pwgc.getSharedDomainsBasedDistances() );
-                //                }
-            }
         } // if ( ( output_file != null ) && ( number_of_genomes > 2 ) && !isEmpty( automated_pairwise_comparison_suffix ) )
         if ( ( out_dir != null ) && ( !perform_pwc ) ) {
             output_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file );
@@ -2277,7 +2216,8 @@ public class surfacing {
                                                         domain_number_stats_by_dc,
                                                         domain_length_stats_by_domain,
                                                         tax_code_to_id_map,
-                                                        write_to_nexus );
+                                                        write_to_nexus,
+                                                        use_last_in_fitch_parsimony );
                 // Listing of all domain combinations gained is only done if only one input tree is used. 
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
@@ -2293,7 +2233,8 @@ public class surfacing {
                                                                                secondary_features_parsimony,
                                                                                intree,
                                                                                parameters_sb.toString(),
-                                                                               mapping_results_map );
+                                                                               mapping_results_map,
+                                                                               use_last_in_fitch_parsimony );
                         if ( i == 0 ) {
                             System.out.println();
                             System.out.println( "Mapping to secondary features:" );
@@ -2550,17 +2491,6 @@ public class surfacing {
         System.out.println( surfacing.INPUT_SPECIES_TREE_OPTION
                 + ": species tree, to perform (Dollo, Fitch) parismony analyses" );
         System.out
-                .println( JACKNIFE_OPTION
-                        + ": perform jacknife resampling for domain and binary domain combination based distance matrices [default resamplings: "
-                        + JACKNIFE_NUMBER_OF_RESAMPLINGS_DEFAULT + "]" );
-        System.out.println( JACKNIFE_RATIO_OPTION + ": ratio for jacknife resampling [default: "
-                + JACKNIFE_RATIO_DEFAULT + "]" );
-        System.out.println( JACKNIFE_RANDOM_SEED_OPTION
-                + ": seed for random number generator for jacknife resampling [default: "
-                + JACKNIFE_RANDOM_SEED_DEFAULT + "]" );
-        //        System.out.println( surfacing.INFER_SPECIES_TREES_OPTION
-        //                + ": to infer NJ species trees based on shared domains/binary domain combinations" );
-        System.out
                 .println( surfacing.INPUT_SPECIES_TREE_OPTION
                         + "=<treefiles in phyloXML format, separated by #>: to infer domain/binary domain combination gains/losses on given species trees" );
         System.out.println( surfacing.FILTER_POSITIVE_OPTION
@@ -2588,7 +2518,10 @@ public class surfacing {
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION
                 + ": e value max per domain for output of all proteins per domain" );
+        System.out.println( surfacing.USE_LAST_IN_FITCH_OPTION + ": to use last in Fitch parsimony" );
         System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
+        System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
+        System.out.println( DA_ANALYSIS_OPTION + ": to DA analysis" );
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"

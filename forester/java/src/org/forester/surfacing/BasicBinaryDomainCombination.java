@@ -38,14 +38,10 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     BasicBinaryDomainCombination() {
         _id0 = null;
         _id1 = null;
-        _str = null;
     }
 
     private String getAsStr() {
-        if ( _str == null ) {
-            _str = _id0 + SEPARATOR + _id1;
-        }
-        return _str;
+        return _id0 + SEPARATOR + _id1;
     }
 
     public BasicBinaryDomainCombination( final String id0, final String id1 ) {

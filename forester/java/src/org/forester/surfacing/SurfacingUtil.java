@@ -114,7 +114,6 @@ public final class SurfacingUtil {
                                                                                  }
                                                                              };
     public final static Pattern             PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
-    private static final boolean            USE_LAST                         = true;
 
     private SurfacingUtil() {
         // Hidden constructor.
@@ -515,6 +514,7 @@ public final class SurfacingUtil {
     /**
      * 
      * @param all_binary_domains_combination_lost_fitch 
+     * @param use_last_in_fitch_parsimony 
      * @param consider_directedness_and_adjacency_for_bin_combinations 
      * @param all_binary_domains_combination_gained if null ignored, otherwise this is to list all binary domain combinations
      * which were gained under unweighted (Fitch) parsimony.
@@ -538,7 +538,8 @@ public final class SurfacingUtil {
                                                  final Map<String, DescriptiveStatistics> domain_number_stats_by_dc,
                                                  final Map<String, DescriptiveStatistics> domain_length_stats_by_domain,
                                                  final Map<String, Integer> tax_code_to_id_map,
-                                                 final boolean write_to_nexus ) {
+                                                 final boolean write_to_nexus,
+                                                 final boolean use_last_in_fitch_parsimony ) {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         final SortedSet<String> all_pfams_encountered = new TreeSet<String>();
@@ -609,22 +610,22 @@ public final class SurfacingUtil {
                                        all_pfams_lost_as_domains,
                                        "_dollo_losses_d",
                                        tax_code_to_id_map );
-        writeBinaryStatesMatrixToList( domain_id_to_go_ids_map,
-                                       go_id_to_term_map,
-                                       go_namespace_limit,
-                                       false,
-                                       domain_parsimony.getGainLossMatrix(),
-                                       null,
-                                       outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D,
-                                       sep,
-                                       ForesterUtil.LINE_SEPARATOR,
-                                       "Dollo Parsimony | Present | Domains",
-                                       "",
-                                       domain_id_to_secondary_features_maps,
-                                       all_pfams_encountered,
-                                       null,
-                                       "_dollo_present_d",
-                                       tax_code_to_id_map );
+        //        writeBinaryStatesMatrixToList( domain_id_to_go_ids_map,
+        //                                       go_id_to_term_map,
+        //                                       go_namespace_limit,
+        //                                       false,
+        //                                       domain_parsimony.getGainLossMatrix(),
+        //                                       null,
+        //                                       outfile_name + surfacing.PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D,
+        //                                       sep,
+        //                                       ForesterUtil.LINE_SEPARATOR,
+        //                                       "Dollo Parsimony | Present | Domains",
+        //                                       "",
+        //                                       domain_id_to_secondary_features_maps,
+        //                                       all_pfams_encountered,
+        //                                       null,
+        //                                       "_dollo_present_d",
+        //                                       tax_code_to_id_map );
         preparePhylogeny( local_phylogeny_l,
                           domain_parsimony,
                           date_time,
@@ -651,7 +652,7 @@ public final class SurfacingUtil {
                 randomization = "yes, seed = " + random_number_seed_for_fitch_parsimony;
             }
             else {
-                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( USE_LAST );
+                domain_parsimony.executeFitchParsimonyOnBinaryDomainCombintion( use_last_in_fitch_parsimony );
             }
             SurfacingUtil.writeMatrixToFile( domain_parsimony.getGainLossMatrix(), outfile_name
                     + surfacing.PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS, Format.FORESTER );
@@ -729,22 +730,22 @@ public final class SurfacingUtil {
                                            all_pfams_lost_as_dom_combinations,
                                            "_fitch_losses_dc",
                                            tax_code_to_id_map );
-            writeBinaryStatesMatrixToList( domain_id_to_go_ids_map,
-                                           go_id_to_term_map,
-                                           go_namespace_limit,
-                                           true,
-                                           domain_parsimony.getGainLossMatrix(),
-                                           null,
-                                           outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC,
-                                           sep,
-                                           ForesterUtil.LINE_SEPARATOR,
-                                           "Fitch Parsimony | Present | Domain Combinations",
-                                           "",
-                                           null,
-                                           all_pfams_encountered,
-                                           null,
-                                           "_fitch_present_dc",
-                                           tax_code_to_id_map );
+            //            writeBinaryStatesMatrixToList( domain_id_to_go_ids_map,
+            //                                           go_id_to_term_map,
+            //                                           go_namespace_limit,
+            //                                           true,
+            //                                           domain_parsimony.getGainLossMatrix(),
+            //                                           null,
+            //                                           outfile_name + surfacing.PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC,
+            //                                           sep,
+            //                                           ForesterUtil.LINE_SEPARATOR,
+            //                                           "Fitch Parsimony | Present | Domain Combinations",
+            //                                           "",
+            //                                           null,
+            //                                           all_pfams_encountered,
+            //                                           null,
+            //                                           "_fitch_present_dc",
+            //                                           tax_code_to_id_map );
             writeAllEncounteredPfamsToFile( domain_id_to_go_ids_map,
                                             go_id_to_term_map,
                                             outfile_name,
@@ -785,7 +786,8 @@ public final class SurfacingUtil {
                                                                      final DomainParsimonyCalculator secondary_features_parsimony,
                                                                      final Phylogeny phylogeny,
                                                                      final String parameters_str,
-                                                                     final Map<Species, MappingResults> mapping_results_map ) {
+                                                                     final Map<Species, MappingResults> mapping_results_map,
+                                                                     final boolean use_last_in_fitch_parsimony ) {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         System.out.println();
@@ -834,7 +836,8 @@ public final class SurfacingUtil {
         // -------------------------
         local_phylogeny_copy = phylogeny.copy();
         final String randomization = "no";
-        secondary_features_parsimony.executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( USE_LAST );
+        secondary_features_parsimony
+                .executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( use_last_in_fitch_parsimony );
         preparePhylogeny( local_phylogeny_copy,
                           secondary_features_parsimony,
                           date_time,
@@ -2046,9 +2049,9 @@ public final class SurfacingUtil {
             final SortedMap<Integer, SortedSet<String>> domain_lists_go_unique = new TreeMap<Integer, SortedSet<String>>();
             final Set<String> dcs = dc_gain_counts.keySet();
             final SortedSet<String> more_than_once = new TreeSet<String>();
-            final DescriptiveStatistics gained_once_lengths_stats = new BasicDescriptiveStatistics();
-            final DescriptiveStatistics gained_once_domain_count_stats = new BasicDescriptiveStatistics();
-            final DescriptiveStatistics gained_multiple_times_lengths_stats = new BasicDescriptiveStatistics();
+            DescriptiveStatistics gained_once_lengths_stats = new BasicDescriptiveStatistics();
+            DescriptiveStatistics gained_once_domain_count_stats = new BasicDescriptiveStatistics();
+            DescriptiveStatistics gained_multiple_times_lengths_stats = new BasicDescriptiveStatistics();
             final DescriptiveStatistics gained_multiple_times_domain_count_stats = new BasicDescriptiveStatistics();
             long gained_multiple_times_domain_length_sum = 0;
             long gained_once_domain_length_sum = 0;
@@ -2282,16 +2285,19 @@ public final class SurfacingUtil {
                 w.write( "Gained once, protein lengths:" );
                 w.write( "\n" );
                 w.write( gained_once_lengths_stats.toString() );
+                gained_once_lengths_stats = null;
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "Gained once, domain counts:" );
                 w.write( "\n" );
                 w.write( gained_once_domain_count_stats.toString() );
+                gained_once_domain_count_stats = null;
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "Gained multiple times, protein lengths:" );
                 w.write( "\n" );
                 w.write( gained_multiple_times_lengths_stats.toString() );
+                gained_multiple_times_lengths_stats = null;
                 w.write( "\n" );
                 w.write( "\n" );
                 w.write( "Gained multiple times, domain counts:" );
