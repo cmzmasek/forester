@@ -455,10 +455,10 @@ public class FitchParsimony<STATE_TYPE> {
     private void setInternalNodeStatePriorToTraceback( final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
                                                        final int character_state_column,
                                                        final PhylogenyNode node ) {
-        getInternalStatesMatrixPriorToTraceback().setState( ForesterUtil.isEmpty( node.getName() ) ? node.getId() + ""
-                                                                    : node.getName(),
-                                                            character_state_column,
-                                                            toListSorted( states.get( node ) ) );
+        getInternalStatesMatrixPriorToTraceback()
+                .setState( ForesterUtil.isEmpty( node.getName() ) ? String.valueOf( node.getId() ) : node.getName(),
+                           character_state_column,
+                           toListSorted( states.get( node ) ) );
     }
 
     private void setInternalStatesMatrixPriorToTraceback( final CharacterStateMatrix<List<STATE_TYPE>> internal_states_matrix_prior_to_traceback ) {
