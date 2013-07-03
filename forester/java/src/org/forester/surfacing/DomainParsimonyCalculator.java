@@ -206,7 +206,7 @@ public final class DomainParsimonyCalculator {
         else {
             states = createMatrixOfBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
         }
-        fitch.execute( getPhylogeny(), states );
+        fitch.execute( getPhylogeny(), states, true );
         setGainLossMatrix( fitch.getGainLossMatrix() );
         setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
         setCost( fitch.getCost() );
@@ -242,7 +242,7 @@ public final class DomainParsimonyCalculator {
         }
         final CharacterStateMatrix<BinaryStates> states = createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList(),
                                                                                                                                   newmap );
-        fitch.execute( getPhylogeny(), states );
+        fitch.execute( getPhylogeny(), states, true );
         setGainLossMatrix( fitch.getGainLossMatrix() );
         setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
         setCost( fitch.getCost() );

@@ -1625,7 +1625,7 @@ public class surfacing {
         if ( need_protein_lists_per_species ) {
             protein_lists_per_species = new TreeMap<Species, List<Protein>>();
         }
-        final List<GenomeWideCombinableDomains> gwcd_list = new ArrayList<GenomeWideCombinableDomains>( number_of_genomes );
+        List<GenomeWideCombinableDomains> gwcd_list = new ArrayList<GenomeWideCombinableDomains>( number_of_genomes );
         final SortedSet<String> all_domains_encountered = new TreeSet<String>();
         final SortedSet<BinaryDomainCombination> all_bin_domain_combinations_encountered = new TreeSet<BinaryDomainCombination>();
         List<BinaryDomainCombination> all_bin_domain_combinations_gained_fitch = null;
@@ -2276,6 +2276,7 @@ public class surfacing {
                                             gwcd_list,
                                             output_list_of_all_proteins_per_domain_e_value_max );
         }
+        gwcd_list = null;
         if ( all_bin_domain_combinations_gained_fitch != null ) {
             try {
                 executeFitchGainsAnalysis( new File( output_file
