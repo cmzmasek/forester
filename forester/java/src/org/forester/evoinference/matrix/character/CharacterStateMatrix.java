@@ -128,7 +128,7 @@ public interface CharacterStateMatrix<S> {
                 case UNKNOWN:
                     return "?";
             }
-            throw new AssertionError( "unknown state: " + this );
+            throw new RuntimeException( "unknown state: " + this );
         }
     }
 

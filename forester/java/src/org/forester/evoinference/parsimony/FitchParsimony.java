@@ -26,6 +26,7 @@
 
 package org.forester.evoinference.parsimony;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,46 +48,43 @@ import org.forester.util.ForesterUtil;
 
 public class FitchParsimony<STATE_TYPE> {
 
-    final static private BinaryStates              PRESENT                         = BinaryStates.PRESENT;
     final static private BinaryStates              ABSENT                          = BinaryStates.ABSENT;
-    final static private GainLossStates            LOSS                            = GainLossStates.LOSS;
     final static private GainLossStates            GAIN                            = GainLossStates.GAIN;
-    final static private GainLossStates            UNCHANGED_PRESENT               = GainLossStates.UNCHANGED_PRESENT;
-    final static private GainLossStates            UNCHANGED_ABSENT                = GainLossStates.UNCHANGED_ABSENT;
-    private static final boolean                   RETURN_INTERNAL_STATES_DEFAULT  = false;
-    private static final boolean                   RETURN_GAIN_LOSS_MATRIX_DEFAULT = false;
-    private static final boolean                   RANDOMIZE_DEFAULT               = false;
+    final static private GainLossStates            LOSS                            = GainLossStates.LOSS;
+    final static private BinaryStates              PRESENT                         = BinaryStates.PRESENT;
     private static final long                      RANDOM_NUMBER_SEED_DEFAULT      = 21;
+    private static final boolean                   RANDOMIZE_DEFAULT               = false;
+    private static final boolean                   RETURN_GAIN_LOSS_MATRIX_DEFAULT = false;
+    private static final boolean                   RETURN_INTERNAL_STATES_DEFAULT  = false;
+    final static private GainLossStates            UNCHANGED_ABSENT                = GainLossStates.UNCHANGED_ABSENT;
+    final static private GainLossStates            UNCHANGED_PRESENT               = GainLossStates.UNCHANGED_PRESENT;
     private static final boolean                   USE_LAST_DEFAULT                = false;
-    private boolean                                _return_internal_states         = false;
+    private int                                    _cost;
+    private CharacterStateMatrix<GainLossStates>   _gain_loss_matrix;
+    private CharacterStateMatrix<STATE_TYPE>       _internal_states_matrix_after_traceback;
+    private CharacterStateMatrix<List<STATE_TYPE>> _internal_states_matrix_prior_to_traceback;
+    private Random                                 _random_generator;
+    private long                                   _random_number_seed;
+    private boolean                                _randomize;
     private boolean                                _return_gain_loss               = false;
+    private boolean                                _return_internal_states         = false;
     private int                                    _total_gains;
     private int                                    _total_losses;
     private int                                    _total_unchanged;
-    private CharacterStateMatrix<List<STATE_TYPE>> _internal_states_matrix_prior_to_traceback;
-    private CharacterStateMatrix<STATE_TYPE>       _internal_states_matrix_after_traceback;
-    private CharacterStateMatrix<GainLossStates>   _gain_loss_matrix;
-    private boolean                                _randomize;
     private boolean                                _use_last;
-    private int                                    _cost;
-    private long                                   _random_number_seed;
-    private Random                                 _random_generator;
+    private boolean                                _verbose                        = false;
 
     public FitchParsimony() {
         init();
     }
 
-    private int determineIndex( final SortedSet<STATE_TYPE> current_node_states, int i ) {
-        if ( isRandomize() ) {
-            i = getRandomGenerator().nextInt( current_node_states.size() );
-        }
-        else if ( isUseLast() ) {
-            i = current_node_states.size() - 1;
-        }
-        return i;
+    public void execute( final Phylogeny p, final CharacterStateMatrix<STATE_TYPE> external_node_states_matrix ) {
+        execute( p, external_node_states_matrix, false );
     }
 
-    public void execute( final Phylogeny p, final CharacterStateMatrix<STATE_TYPE> external_node_states_matrix ) {
+    public void execute( final Phylogeny p,
+                         final CharacterStateMatrix<STATE_TYPE> external_node_states_matrix,
+                         final boolean verbose ) {
         if ( !p.isRooted() ) {
             throw new IllegalArgumentException( "attempt to execute Fitch parsimony on unroored phylogeny" );
         }
@@ -98,6 +96,7 @@ public class FitchParsimony<STATE_TYPE> {
                     + p.getNumberOfExternalNodes() + "] and number of indentifiers ["
                     + external_node_states_matrix.getNumberOfIdentifiers() + "] in matrix are not equal" );
         }
+        setVerbose( verbose );
         reset();
         if ( isReturnInternalStates() ) {
             initializeInternalStates( p, external_node_states_matrix );
@@ -105,11 +104,21 @@ public class FitchParsimony<STATE_TYPE> {
         if ( isReturnGainLossMatrix() ) {
             initializeGainLossMatrix( p, external_node_states_matrix );
         }
+        final DecimalFormat pf = new java.text.DecimalFormat( "000000" );
+        if ( isVerbose() ) {
+            System.out.println( "Number of characters: " + external_node_states_matrix.getNumberOfCharacters() );
+        }
         for( int character_index = 0; character_index < external_node_states_matrix.getNumberOfCharacters(); ++character_index ) {
+            if ( isVerbose() ) {
+                ForesterUtil.updateProgress( character_index, pf );
+            }
             executeForOneCharacter( p,
                                     getStatesForCharacter( p, external_node_states_matrix, character_index ),
                                     getStatesForCharacterForTraceback( p, external_node_states_matrix, character_index ),
                                     character_index );
+        }
+        if ( isVerbose() ) {
+            System.out.println();
         }
         if ( external_node_states_matrix.getState( 0, 0 ) instanceof BinaryStates ) {
             if ( ( external_node_states_matrix.getNumberOfCharacters() * p.getNumberOfBranches() ) != ( getTotalGains()
@@ -117,14 +126,6 @@ public class FitchParsimony<STATE_TYPE> {
                 throw new FailedConditionCheckException( "this should not have happened: something is deeply wrong with Fitch parsimony implementation" );
             }
         }
-    }
-
-    private void executeForOneCharacter( final Phylogeny p,
-                                         final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
-                                         final Map<PhylogenyNode, STATE_TYPE> traceback_states,
-                                         final int character_state_column ) {
-        postOrderTraversal( p, states );
-        preOrderTraversal( p, states, traceback_states, character_state_column );
     }
 
     public int getCost() {
@@ -155,6 +156,86 @@ public class FitchParsimony<STATE_TYPE> {
             throw new RuntimeException( "creation of internal state matrix has not been enabled" );
         }
         return _internal_states_matrix_prior_to_traceback;
+    }
+
+    public int getTotalGains() {
+        return _total_gains;
+    }
+
+    public int getTotalLosses() {
+        return _total_losses;
+    }
+
+    public int getTotalUnchanged() {
+        return _total_unchanged;
+    }
+
+    public boolean isVerbose() {
+        return _verbose;
+    }
+
+    public void setRandomize( final boolean randomize ) {
+        if ( randomize && isUseLast() ) {
+            throw new IllegalArgumentException( "attempt to allways use last state (ordered) if more than one choices and randomization at the same time" );
+        }
+        _randomize = randomize;
+    }
+
+    public void setRandomNumberSeed( final long random_number_seed ) {
+        if ( !isRandomize() ) {
+            throw new IllegalArgumentException( "attempt to set random number generator seed without randomization enabled" );
+        }
+        _random_number_seed = random_number_seed;
+    }
+
+    public void setReturnGainLossMatrix( final boolean return_gain_loss ) {
+        _return_gain_loss = return_gain_loss;
+    }
+
+    public void setReturnInternalStates( final boolean return_internal_states ) {
+        _return_internal_states = return_internal_states;
+    }
+
+    /**
+     * This sets whether to use the first or last state in the sorted
+     * states at the undecided internal nodes.
+     * For randomized choices set randomize to true (and this to false).
+     * 
+     * Note. It might be advisable to set this to false
+     * for BinaryStates if absence at the root is preferred
+     * (given the enum BinaryStates sorts in the following order: 
+     * ABSENT, UNKNOWN, PRESENT).
+     * 
+     * 
+     * @param use_last
+     */
+    public void setUseLast( final boolean use_last ) {
+        if ( use_last && isRandomize() ) {
+            throw new IllegalArgumentException( "attempt to allways use last state (ordered) if more than one choices and randomization at the same time" );
+        }
+        _use_last = use_last;
+    }
+
+    public void setVerbose( final boolean verbose ) {
+        _verbose = verbose;
+    }
+
+    private int determineIndex( final SortedSet<STATE_TYPE> current_node_states, int i ) {
+        if ( isRandomize() ) {
+            i = getRandomGenerator().nextInt( current_node_states.size() );
+        }
+        else if ( isUseLast() ) {
+            i = current_node_states.size() - 1;
+        }
+        return i;
+    }
+
+    private void executeForOneCharacter( final Phylogeny p,
+                                         final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
+                                         final Map<PhylogenyNode, STATE_TYPE> traceback_states,
+                                         final int character_state_column ) {
+        postOrderTraversal( p, states );
+        preOrderTraversal( p, states, traceback_states, character_state_column );
     }
 
     private SortedSet<STATE_TYPE> getIntersectionOfStatesOfChildNodes( final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
@@ -223,18 +304,6 @@ public class FitchParsimony<STATE_TYPE> {
             states.put( p.getNode( matrix.getIdentifier( indentifier_index ) ), state );
         }
         return states;
-    }
-
-    public int getTotalGains() {
-        return _total_gains;
-    }
-
-    public int getTotalLosses() {
-        return _total_losses;
-    }
-
-    public int getTotalUnchanged() {
-        return _total_unchanged;
     }
 
     private SortedSet<STATE_TYPE> getUnionOfStatesOfChildNodes( final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
@@ -335,8 +404,7 @@ public class FitchParsimony<STATE_TYPE> {
         return _use_last;
     }
 
-    private void postOrderTraversal( final Phylogeny p, final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states )
-            throws AssertionError {
+    private void postOrderTraversal( final Phylogeny p, final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states ) {
         for( final PhylogenyNodeIterator postorder = p.iteratorPostorder(); postorder.hasNext(); ) {
             final PhylogenyNode node = postorder.next();
             if ( !node.isExternal() ) {
@@ -352,7 +420,7 @@ public class FitchParsimony<STATE_TYPE> {
     private void preOrderTraversal( final Phylogeny p,
                                     final Map<PhylogenyNode, SortedSet<STATE_TYPE>> states,
                                     final Map<PhylogenyNode, STATE_TYPE> traceback_states,
-                                    final int character_state_column ) throws AssertionError {
+                                    final int character_state_column ) {
         for( final PhylogenyNodeIterator preorder = p.iteratorPreorder(); preorder.hasNext(); ) {
             final PhylogenyNode current_node = preorder.next();
             final SortedSet<STATE_TYPE> current_node_states = states.get( current_node );
@@ -473,28 +541,6 @@ public class FitchParsimony<STATE_TYPE> {
         _random_generator = random_generator;
     }
 
-    public void setRandomize( final boolean randomize ) {
-        if ( randomize && isUseLast() ) {
-            throw new IllegalArgumentException( "attempt to allways use last state (ordered) if more than one choices and randomization at the same time" );
-        }
-        _randomize = randomize;
-    }
-
-    public void setRandomNumberSeed( final long random_number_seed ) {
-        if ( !isRandomize() ) {
-            throw new IllegalArgumentException( "attempt to set random number generator seed without randomization enabled" );
-        }
-        _random_number_seed = random_number_seed;
-    }
-
-    public void setReturnGainLossMatrix( final boolean return_gain_loss ) {
-        _return_gain_loss = return_gain_loss;
-    }
-
-    public void setReturnInternalStates( final boolean return_internal_states ) {
-        _return_internal_states = return_internal_states;
-    }
-
     private void setTotalGains( final int total_gains ) {
         _total_gains = total_gains;
     }
@@ -505,26 +551,6 @@ public class FitchParsimony<STATE_TYPE> {
 
     private void setTotalUnchanged( final int total_unchanged ) {
         _total_unchanged = total_unchanged;
-    }
-
-    /**
-     * This sets whether to use the first or last state in the sorted
-     * states at the undecided internal nodes.
-     * For randomized choices set randomize to true (and this to false).
-     * 
-     * Note. It might be advisable to set this to false
-     * for BinaryStates if absence at the root is preferred
-     * (given the enum BinaryStates sorts in the following order: 
-     * ABSENT, UNKNOWN, PRESENT).
-     * 
-     * 
-     * @param use_last
-     */
-    public void setUseLast( final boolean use_last ) {
-        if ( use_last && isRandomize() ) {
-            throw new IllegalArgumentException( "attempt to allways use last state (ordered) if more than one choices and randomization at the same time" );
-        }
-        _use_last = use_last;
     }
 
     private List<STATE_TYPE> toListSorted( final SortedSet<STATE_TYPE> states ) {
