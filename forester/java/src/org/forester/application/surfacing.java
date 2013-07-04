@@ -2522,7 +2522,7 @@ public class surfacing {
         System.out.println( surfacing.USE_LAST_IN_FITCH_OPTION + ": to use last in Fitch parsimony" );
         System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
         System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
-        System.out.println( DA_ANALYSIS_OPTION + ": to DA analysis" );
+        System.out.println( DA_ANALYSIS_OPTION + ": to do DA analysis" );
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
