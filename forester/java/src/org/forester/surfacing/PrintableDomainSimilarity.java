@@ -32,13 +32,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.forester.go.GoId;
-import org.forester.go.GoNameSpace;
-import org.forester.go.GoTerm;
-import org.forester.go.GoXRef;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
-import org.forester.surfacing.DomainSimilarityCalculator.GoAnnotationOutput;
 import org.forester.util.ForesterUtil;
 
 public class PrintableDomainSimilarity implements DomainSimilarity {
@@ -56,15 +51,12 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     final private int                                                    _n;
     private final int                                                    _max_difference_in_counts;
     private final int                                                    _max_difference;
-    private DomainSimilarityCalculator.GoAnnotationOutput                _go_annotation_output;
     final private CombinableDomains                                      _combinable_domains;
     final private SortedMap<Species, SpeciesSpecificDomainSimilariyData> _species_data;
     final private DomainSimilaritySortField                              _sort_field;
     private List<Species>                                                _species_order;
     private final boolean                                                _sort_by_species_count_first;
     private DomainSimilarityCalculator.Detailedness                      _detailedness;
-    private Map<GoId, GoTerm>                                            _go_id_to_term_map;
-    private GoNameSpace                                                  _go_namespace_limit;
     private final boolean                                                _treat_as_binary_comparison;
 
     /**
@@ -138,51 +130,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
     }
 
-    //    private void addGoInformation( final StringBuffer sb, final boolean for_table, final boolean html ) {
-    //        if ( !for_table ) {
-    //            sb.append( "<" );
-    //        }
-    //        switch ( getGoAnnotationOutput() ) {
-    //            case ALL: {
-    //                final int go_ids = getCombinableDomains().getKeyDomain().getNumberOfGoIds();
-    //                boolean first = true;
-    //                for( int i = 0; i < go_ids; ++i ) {
-    //                    final GoId go_id = getCombinableDomains().getKeyDomain().getGoId( i );
-    //                    if ( getGoIdToTermMap() != null ) {
-    //                        if ( getGoIdToTermMap().containsKey( go_id ) ) {
-    //                            first = appendGoTerm( sb, getGoIdToTermMap().get( go_id ), first, html );
-    //                        }
-    //                        else {
-    //                            sb.append( "go id \"" + go_id + "\" not found ["
-    //                                    + getCombinableDomains().getKeyDomain().getId() + "]" );
-    //                        }
-    //                    }
-    //                    else {
-    //                        if ( !first ) {
-    //                            sb.append( ", " );
-    //                        }
-    //                        if ( html ) {
-    //                            sb.append( "<a href=\"" + SurfacingConstants.AMIGO_LINK + go_id
-    //                                    + "\" target=\"amigo_window\">" + go_id + "</a>" );
-    //                        }
-    //                        else {
-    //                            sb.append( go_id );
-    //                        }
-    //                        first = false;
-    //                    }
-    //                }
-    //                break;
-    //            }
-    //            case NONE: {
-    //                break;
-    //            }
-    //            default:
-    //                throw new RuntimeException( "unknown " + getGoAnnotationOutput() );
-    //        }
-    //        if ( !for_table ) {
-    //            sb.append( ">: " );
-    //        }
-    //    }
     private void addSpeciesSpecificDomainData( final StringBuffer sb,
                                                final Species species,
                                                final boolean html,
@@ -215,36 +162,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( "<br>" );
         }
         sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
-    }
-
-    private boolean appendGoTerm( final StringBuffer sb, final GoTerm go_term, final boolean first, final boolean html ) {
-        if ( ( getGoNamespaceLimit() == null ) || getGoNamespaceLimit().equals( go_term.getGoNameSpace() ) ) {
-            if ( !first ) {
-                sb.append( ", " );
-            }
-            final GoId go_id = go_term.getGoId();
-            if ( html ) {
-                sb.append( "<a href=\"" + SurfacingConstants.AMIGO_LINK + go_id + "\" target=\"amigo_window\">" + go_id
-                        + "</a>" );
-            }
-            else {
-                sb.append( go_id );
-            }
-            sb.append( ":" );
-            sb.append( go_term.getName() );
-            if ( !html ) {
-                if ( getGoNamespaceLimit() == null ) {
-                    sb.append( ":" );
-                    sb.append( go_term.getGoNameSpace().toString() );
-                }
-                for( final GoXRef xref : go_term.getGoXRefs() ) {
-                    sb.append( ":" );
-                    sb.append( xref.toString() );
-                }
-            }
-            return false;
-        }
-        return true;
     }
 
     private void boldEndIfSortedBy( final DomainSimilaritySortField sort_field, final StringBuffer sb ) {
@@ -448,18 +365,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return getCombinableDomains().getKeyDomain();
     }
 
-    private DomainSimilarityCalculator.GoAnnotationOutput getGoAnnotationOutput() {
-        return _go_annotation_output;
-    }
-
-    private Map<GoId, GoTerm> getGoIdToTermMap() {
-        return _go_id_to_term_map;
-    }
-
-    public GoNameSpace getGoNamespaceLimit() {
-        return _go_namespace_limit;
-    }
-
     @Override
     public int getMaximalDifference() {
         return _max_difference;
@@ -542,8 +447,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     private void init() {
         _detailedness = DomainSimilarityCalculator.Detailedness.PUNCTILIOUS;
-        _go_annotation_output = null;
-        _go_id_to_term_map = null;
     }
 
     private boolean isSortBySpeciesCountFirst() {
@@ -556,18 +459,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     public void setDetailedness( final Detailedness detailedness ) {
         _detailedness = detailedness;
-    }
-
-    public void setGoAnnotationOutput( final GoAnnotationOutput go_annotation_output ) {
-        _go_annotation_output = go_annotation_output;
-    }
-
-    public void setGoIdToTermMap( final Map<GoId, GoTerm> go_id_to_term_map ) {
-        _go_id_to_term_map = go_id_to_term_map;
-    }
-
-    public void setGoNamespaceLimit( final GoNameSpace go_namespace_limit ) {
-        _go_namespace_limit = go_namespace_limit;
     }
 
     public void setSpeciesOrder( final List<Species> species_order ) {
@@ -598,6 +489,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\" target=\"pfam_window\">"
                 + getDomainId() + "</a>" );
         boldEndIfSortedBy( DomainSimilaritySortField.DOMAIN_ID, sb );
+        sb.append( "<a name=\"" + getDomainId() + "\">" );
         sb.append( "</td>" );
         sb.append( "<td>" );
         sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
@@ -621,7 +513,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             boldStartIfSortedBy( DomainSimilaritySortField.MIN, sb );
             sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
             boldEndIfSortedBy( DomainSimilaritySortField.MIN, sb );
-            sb.append( "," );
+            sb.append( "-" );
             boldStartIfSortedBy( DomainSimilaritySortField.MAX, sb );
             sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
             boldEndIfSortedBy( DomainSimilaritySortField.MAX, sb );
@@ -660,11 +552,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             }
             sb.append( "</td>" );
         }
-        // ^^     if ( getGoAnnotationOutput() != DomainSimilarityCalculator.GoAnnotationOutput.NONE ) {
-        // ^^         sb.append( "<td>" );
-        // ^^         addGoInformation( sb, true, true );
-        // ^^         sb.append( "</td>" );
-        // ^^     }
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map ) );

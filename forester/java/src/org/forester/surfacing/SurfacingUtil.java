@@ -82,7 +82,6 @@ import org.forester.protein.Domain;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
-import org.forester.surfacing.DomainSimilarityCalculator.GoAnnotationOutput;
 import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -285,20 +284,11 @@ public final class SurfacingUtil {
     }
 
     public static void decoratePrintableDomainSimilarities( final SortedSet<DomainSimilarity> domain_similarities,
-                                                            final Detailedness detailedness,
-                                                            final GoAnnotationOutput go_annotation_output,
-                                                            final Map<GoId, GoTerm> go_id_to_term_map,
-                                                            final GoNameSpace go_namespace_limit ) {
-        if ( ( go_namespace_limit != null ) && ( ( go_id_to_term_map == null ) || go_id_to_term_map.isEmpty() ) ) {
-            throw new IllegalArgumentException( "attempt to use a GO namespace limit without a GO id to term map" );
-        }
+                                                            final Detailedness detailedness ) {
         for( final DomainSimilarity domain_similarity : domain_similarities ) {
             if ( domain_similarity instanceof PrintableDomainSimilarity ) {
                 final PrintableDomainSimilarity printable_domain_similarity = ( PrintableDomainSimilarity ) domain_similarity;
                 printable_domain_similarity.setDetailedness( detailedness );
-                printable_domain_similarity.setGoAnnotationOutput( go_annotation_output );
-                printable_domain_similarity.setGoIdToTermMap( go_id_to_term_map );
-                printable_domain_similarity.setGoNamespaceLimit( go_namespace_limit );
             }
         }
     }
@@ -1765,31 +1755,13 @@ public final class SurfacingUtil {
             }
         }
         AsciiHistogram histo = null;
-        if ( stats.getMin() < stats.getMin() ) {
-            histo = new AsciiHistogram( stats, histogram_title );
+        try {
+            if ( stats.getMin() < stats.getMax() ) {
+                histo = new AsciiHistogram( stats, histogram_title );
+            }
         }
-        if ( verbose ) {
-            if ( histo != null ) {
-                System.out.println( histo.toStringBuffer( 20, '|', 40, 5 ) );
-            }
-            System.out.println();
-            System.out.println( "N                   : " + stats.getN() );
-            System.out.println( "Min                 : " + stats.getMin() );
-            System.out.println( "Max                 : " + stats.getMax() );
-            System.out.println( "Mean                : " + stats.arithmeticMean() );
-            if ( stats.getN() > 1 ) {
-                System.out.println( "SD                  : " + stats.sampleStandardDeviation() );
-            }
-            else {
-                System.out.println( "SD                  : n/a" );
-            }
-            System.out.println( "Median              : " + stats.median() );
-            if ( stats.getN() > 1 ) {
-                System.out.println( "Pearsonian skewness : " + stats.pearsonianSkewness() );
-            }
-            else {
-                System.out.println( "Pearsonian skewness : n/a" );
-            }
+        catch ( Exception e ) {
+            histo = null;
         }
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
@@ -1844,13 +1816,6 @@ public final class SurfacingUtil {
                     w.write( SurfacingConstants.NL );
                     w.write( "<tr><td>Median: </td><td>" + stats.median() + "</td></tr>" );
                     w.write( SurfacingConstants.NL );
-                    if ( stats.getN() > 1 ) {
-                        w.write( "<tr><td>Pearsonian skewness: </td><td>" + stats.pearsonianSkewness() + "</td></tr>" );
-                    }
-                    else {
-                        w.write( "<tr><td>Pearsonian skewness: </td><td>n/a</td></tr>" );
-                    }
-                    w.write( SurfacingConstants.NL );
                     w.write( "</table>" );
                     w.write( SurfacingConstants.NL );
                     w.write( "<br>" );
@@ -1867,6 +1832,30 @@ public final class SurfacingUtil {
         for( final Writer w : split_writers.values() ) {
             w.write( SurfacingConstants.NL );
         }
+        //
+        for( final DomainSimilarity similarity : similarities ) {
+            if ( ( species_order != null ) && !species_order.isEmpty() ) {
+                ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
+            }
+            if ( single_writer != null ) {
+                single_writer.write( "<a href=\"#" + similarity.getDomainId() + "\">" + similarity.getDomainId()
+                        + "</a><br>" );
+                single_writer.write( SurfacingConstants.NL );
+            }
+            else {
+                Writer local_writer = split_writers.get( ( similarity.getDomainId().charAt( 0 ) + "" ).toLowerCase()
+                        .charAt( 0 ) );
+                if ( local_writer == null ) {
+                    local_writer = split_writers.get( '0' );
+                }
+                local_writer.write( "<a href=\"#" + similarity.getDomainId() + "\">" + similarity.getDomainId()
+                        + "</a><br>" );
+                local_writer.write( SurfacingConstants.NL );
+            }
+        }
+        // w.write( "<hr>" );
+        // w.write( SurfacingConstants.NL );
+        //
         for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
@@ -1884,9 +1873,6 @@ public final class SurfacingUtil {
                 local_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );
                 local_writer.write( SurfacingConstants.NL );
             }
-            // for( final Writer w : split_writers.values() ) {
-            //w.write( SurfacingConstants.NL );
-            // }
         }
         switch ( print_option ) {
             case HTML:

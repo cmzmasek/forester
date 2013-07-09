@@ -152,11 +152,7 @@ public class PairwiseGenomeComparator {
                                                 genome_pair,
                                                 ignore_domains_without_combs_in_all_spec,
                                                 ignore_domains_specific_to_one_species );
-                SurfacingUtil.decoratePrintableDomainSimilarities( similarities,
-                                                                   detailedness,
-                                                                   go_annotation_output,
-                                                                   go_id_to_term_map,
-                                                                   go_namespace_limit );
+                SurfacingUtil.decoratePrintableDomainSimilarities( similarities, detailedness );
                 final DescriptiveStatistics stats = SurfacingUtil
                         .calculateDescriptiveStatisticsForMeanValues( similarities );
                 final String species_j = species[ j ].getSpeciesId();

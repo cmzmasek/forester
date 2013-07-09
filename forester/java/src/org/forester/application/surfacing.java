@@ -228,7 +228,7 @@ public class surfacing {
     final static private String                               PRG_VERSION                                                                   = "2.280";
     final static private String                               PRG_DATE                                                                      = "130701";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
-    final static private String                               WWW                                                                           = "www.phylosoft.org/forester/applications/surfacing";
+    final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
     final static private boolean                              IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                         = false;
     final static private double                               MAX_E_VALUE_DEFAULT                                                           = -1;
@@ -1844,14 +1844,13 @@ public class surfacing {
             }
             System.out.println( "Time for processing                            : " + parser.getTime() + "ms" );
             log( "", log_writer );
-            html_desc.append( "<tr><td>" + input_file_properties[ i ][ 0 ] + " [species: "
-                    + input_file_properties[ i ][ 1 ] + "]" + ":</td><td>domains analyzed: "
-                    + parser.getDomainsStored() + "; domains ignored: [ind score cutoffs: "
+            html_desc.append( "<tr><td>" + input_file_properties[ i ][ 0 ] + ":</td><td>doms analyzed: "
+                    + parser.getDomainsStored() + "; doms ignored: [ind score cutoffs: "
                     + parser.getDomainsIgnoredDueToIndividualScoreCutoff() + "] [E-value cutoff: "
                     + parser.getDomainsIgnoredDueToEval() + "] [DUF: " + parser.getDomainsIgnoredDueToDuf()
-                    + "] [virus like ids: " + parser.getDomainsIgnoredDueToVirusLikeIds()
-                    + "] [negative domain filter: " + parser.getDomainsIgnoredDueToNegativeDomainFilter()
-                    + "] [overlap: " + parser.getDomainsIgnoredDueToOverlap() + "]" );
+                    + "] [virus like ids: " + parser.getDomainsIgnoredDueToVirusLikeIds() + "] [negative dom filter: "
+                    + parser.getDomainsIgnoredDueToNegativeDomainFilter() + "] [overlap: "
+                    + parser.getDomainsIgnoredDueToOverlap() + "]" );
             if ( negative_filter_file != null ) {
                 html_desc.append( "; proteins ignored due to negative filter: "
                         + parser.getProteinsIgnoredDueToFilter() );
@@ -2057,11 +2056,7 @@ public class surfacing {
                                         gwcd_list,
                                         ignore_domains_without_combs_in_all_spec,
                                         ignore_species_specific_domains );
-        SurfacingUtil.decoratePrintableDomainSimilarities( similarities,
-                                                           detailedness,
-                                                           go_annotation_output,
-                                                           go_id_to_term_map,
-                                                           go_namespace_limit );
+        SurfacingUtil.decoratePrintableDomainSimilarities( similarities, detailedness );
         final Map<String, Integer> tax_code_to_id_map = SurfacingUtil.createTaxCodeToIdMap( intrees[ 0 ] );
         try {
             String my_outfile = output_file.toString();
