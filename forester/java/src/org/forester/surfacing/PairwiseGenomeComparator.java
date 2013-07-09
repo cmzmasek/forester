@@ -217,10 +217,10 @@ public class PairwiseGenomeComparator {
                                                                                 true,
                                                                                 null,
                                                                                 domain_similarity_print_option,
-                                                                                domain_similarity_sort_field,
                                                                                 scoring,
                                                                                 false,
-                                                                                tax_code_to_id_map );
+                                                                                tax_code_to_id_map,
+                                                                                false );
                     }
                     catch ( final IOException e ) {
                         ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""

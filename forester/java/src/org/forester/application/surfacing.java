@@ -225,8 +225,8 @@ public class surfacing {
     final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.280";
-    final static private String                               PRG_DATE                                                                      = "130701";
+    final static private String                               PRG_VERSION                                                                   = "2.290";
+    final static private String                               PRG_DATE                                                                      = "130709";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -600,9 +600,6 @@ public class surfacing {
         allowed_options.add( surfacing.PAIRWISE_DOMAIN_COMPARISONS_OPTION );
         allowed_options.add( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION );
         allowed_options.add( surfacing.CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS );
-        //allowed_options.add( JACKNIFE_OPTION );
-        // allowed_options.add( JACKNIFE_RANDOM_SEED_OPTION );
-        // allowed_options.add( JACKNIFE_RATIO_OPTION );
         allowed_options.add( INPUT_SPECIES_TREE_OPTION );
         allowed_options.add( FILTER_POSITIVE_OPTION );
         allowed_options.add( FILTER_NEGATIVE_OPTION );
@@ -1844,22 +1841,6 @@ public class surfacing {
             }
             System.out.println( "Time for processing                            : " + parser.getTime() + "ms" );
             log( "", log_writer );
-            html_desc.append( "<tr><td>" + input_file_properties[ i ][ 0 ] + ":</td><td>doms analyzed: "
-                    + parser.getDomainsStored() + "; doms ignored: [ind score cutoffs: "
-                    + parser.getDomainsIgnoredDueToIndividualScoreCutoff() + "] [E-value cutoff: "
-                    + parser.getDomainsIgnoredDueToEval() + "] [DUF: " + parser.getDomainsIgnoredDueToDuf()
-                    + "] [virus like ids: " + parser.getDomainsIgnoredDueToVirusLikeIds() + "] [negative dom filter: "
-                    + parser.getDomainsIgnoredDueToNegativeDomainFilter() + "] [overlap: "
-                    + parser.getDomainsIgnoredDueToOverlap() + "]" );
-            if ( negative_filter_file != null ) {
-                html_desc.append( "; proteins ignored due to negative filter: "
-                        + parser.getProteinsIgnoredDueToFilter() );
-            }
-            if ( positive_filter_file != null ) {
-                html_desc.append( "; proteins ignored due to positive filter: "
-                        + parser.getProteinsIgnoredDueToFilter() );
-            }
-            html_desc.append( "</td></tr>" + nl );
             try {
                 int count = 0;
                 for( final Protein protein : protein_list ) {
@@ -2097,10 +2078,10 @@ public class surfacing {
                                                     number_of_genomes == 2,
                                                     species_order,
                                                     domain_similarity_print_option,
-                                                    domain_similarity_sort_field,
                                                     scoring,
                                                     true,
-                                                    tax_code_to_id_map );
+                                                    tax_code_to_id_map,
+                                                    false );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
         }

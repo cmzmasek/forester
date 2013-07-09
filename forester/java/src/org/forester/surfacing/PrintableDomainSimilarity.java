@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.forester.species.Species;
@@ -39,11 +40,9 @@ import org.forester.util.ForesterUtil;
 public class PrintableDomainSimilarity implements DomainSimilarity {
 
     final public static String                                           SPECIES_SEPARATOR = "  ";
-    final private static char                                            TAB               = '\t';
-    final private static int                                             BEFORE            = -1;
     final private static int                                             EQUAL             = 0;
-    final private static int                                             AFTER             = 1;
     final private static String                                          NO_SPECIES        = "     ";
+    private static final boolean                                         PRINT_MORE_INFO   = false;
     final private double                                                 _min;
     final private double                                                 _max;
     final private double                                                 _mean;
@@ -53,18 +52,10 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     private final int                                                    _max_difference;
     final private CombinableDomains                                      _combinable_domains;
     final private SortedMap<Species, SpeciesSpecificDomainSimilariyData> _species_data;
-    final private DomainSimilaritySortField                              _sort_field;
     private List<Species>                                                _species_order;
-    private final boolean                                                _sort_by_species_count_first;
     private DomainSimilarityCalculator.Detailedness                      _detailedness;
     private final boolean                                                _treat_as_binary_comparison;
 
-    /**
-     * If go_id_to_term_map not null, detailed GO information is written,
-     * only GO ids otherwise.
-     * 
-     * 
-     */
     public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
                                       final double min,
                                       final double max,
@@ -75,14 +66,10 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                       final int max_difference_in_counts,
                                       final int max_difference,
                                       final SortedMap<Species, SpeciesSpecificDomainSimilariyData> species_data,
-                                      final DomainSimilaritySortField sort_field,
                                       final boolean sort_by_species_count_first,
                                       final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
             throw new IllegalArgumentException( "attempt to use null combinable domains" );
-        }
-        if ( sort_field == null ) {
-            throw new IllegalArgumentException( "attempt to use null sorting" );
         }
         if ( species_data == null ) {
             throw new IllegalArgumentException( "attempt to use null species data" );
@@ -112,8 +99,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         _max_difference_in_counts = max_difference_in_counts;
         _max_difference = max_difference;
         _species_data = species_data;
-        _sort_field = sort_field;
-        _sort_by_species_count_first = sort_by_species_count_first;
         _treat_as_binary_comparison = treat_as_binary_comparison;
         final int s = species_data.size();
         if ( ( ( s * s ) - s ) != ( getN() * 2 ) ) {
@@ -134,21 +119,8 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                                final Species species,
                                                final boolean html,
                                                final Map<String, Integer> tax_code_to_id_map ) {
-        if ( getDetaildness() != DomainSimilarityCalculator.Detailedness.BASIC ) {
-            sb.append( "[" );
-        }
         if ( html ) {
-            sb.append( "<b>" );
-            final String tax_code = species.getSpeciesId();
-            if ( !ForesterUtil.isEmpty( tax_code )
-                    && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
-                sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK
-                        + tax_code_to_id_map.get( tax_code ) + "\" target=\"taxonomy_window\">" + tax_code + "</a>" );
-            }
-            else {
-                sb.append( tax_code );
-            }
-            sb.append( "</b>" );
+            addTaxWithLink( sb, species.getSpeciesId(), tax_code_to_id_map );
         }
         else {
             sb.append( species.getSpeciesId() );
@@ -156,48 +128,38 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         if ( getDetaildness() != DomainSimilarityCalculator.Detailedness.BASIC ) {
             sb.append( ":" );
             sb.append( getSpeciesData().get( species ).toStringBuffer( getDetaildness(), html ) );
-            sb.append( "]" );
         }
         if ( html ) {
             sb.append( "<br>" );
         }
-        sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
-    }
-
-    private void boldEndIfSortedBy( final DomainSimilaritySortField sort_field, final StringBuffer sb ) {
-        if ( getSortField() == sort_field ) {
-            sb.append( "</b>" );
+        else {
+            sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
         }
     }
 
-    private void boldStartIfSortedBy( final DomainSimilaritySortField sort_field, final StringBuffer sb ) {
-        if ( getSortField() == sort_field ) {
-            sb.append( "<b>" );
+    private void addTaxWithLink( final StringBuffer sb,
+                                 final String tax_code,
+                                 final Map<String, Integer> tax_code_to_id_map ) {
+        sb.append( "<b>" );
+        if ( !ForesterUtil.isEmpty( tax_code )
+                && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
+            sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK + tax_code_to_id_map.get( tax_code )
+                    + "\" target=\"taxonomy_window\">" + tax_code + "</a>" );
         }
+        else {
+            sb.append( tax_code );
+        }
+        sb.append( "</b>" );
     }
 
     private int compareByDomainId( final DomainSimilarity other ) {
-        return getDomainId().compareTo( other.getDomainId() );
-    }
-
-    private int compareBySpeciesCount( final DomainSimilarity domain_similarity ) {
-        final int s_this = getSpeciesData().size();
-        final int s_other = domain_similarity.getSpeciesData().size();
-        if ( s_this < s_other ) {
-            return PrintableDomainSimilarity.BEFORE;
-        }
-        else if ( s_this > s_other ) {
-            return PrintableDomainSimilarity.AFTER;
-        }
-        else {
-            return PrintableDomainSimilarity.EQUAL;
-        }
+        return getDomainId().compareToIgnoreCase( other.getDomainId() );
     }
 
     @Override
     public int compareTo( final DomainSimilarity domain_similarity ) {
         if ( this == domain_similarity ) {
-            return PrintableDomainSimilarity.EQUAL;
+            return EQUAL;
         }
         else if ( domain_similarity == null ) {
             throw new IllegalArgumentException( "attempt to compare " + this.getClass() + " to null" );
@@ -206,138 +168,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             throw new IllegalArgumentException( "attempt to compare " + this.getClass() + " to "
                     + domain_similarity.getClass() );
         }
-        switch ( getSortField() ) {
-            case MIN:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getMinimalSimilarityScore() < domain_similarity.getMinimalSimilarityScore() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getMinimalSimilarityScore() > domain_similarity.getMinimalSimilarityScore() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case MAX:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getMaximalSimilarityScore() < domain_similarity.getMaximalSimilarityScore() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getMaximalSimilarityScore() > domain_similarity.getMaximalSimilarityScore() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case MEAN:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getMeanSimilarityScore() < domain_similarity.getMeanSimilarityScore() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getMeanSimilarityScore() > domain_similarity.getMeanSimilarityScore() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case SD:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getStandardDeviationOfSimilarityScore() < domain_similarity
-                        .getStandardDeviationOfSimilarityScore() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getStandardDeviationOfSimilarityScore() > domain_similarity
-                        .getStandardDeviationOfSimilarityScore() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case MAX_DIFFERENCE:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getMaximalDifference() > domain_similarity.getMaximalDifference() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getMaximalDifference() < domain_similarity.getMaximalDifference() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case ABS_MAX_COUNTS_DIFFERENCE:
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( Math.abs( getMaximalDifferenceInCounts() ) > Math.abs( domain_similarity
-                        .getMaximalDifferenceInCounts() ) ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( Math.abs( getMaximalDifferenceInCounts() ) < Math.abs( domain_similarity
-                        .getMaximalDifferenceInCounts() ) ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case MAX_COUNTS_DIFFERENCE:
-                if ( getSpeciesData().size() != 2 ) {
-                    throw new RuntimeException( "attempt to sort by maximal difference with species not equal to two" );
-                }
-                if ( isSortBySpeciesCountFirst() ) {
-                    final int i = compareBySpeciesCount( domain_similarity );
-                    if ( i != PrintableDomainSimilarity.EQUAL ) {
-                        return i;
-                    }
-                }
-                if ( getMaximalDifferenceInCounts() > domain_similarity.getMaximalDifferenceInCounts() ) {
-                    return PrintableDomainSimilarity.BEFORE;
-                }
-                else if ( getMaximalDifferenceInCounts() < domain_similarity.getMaximalDifferenceInCounts() ) {
-                    return PrintableDomainSimilarity.AFTER;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case SPECIES_COUNT:
-                final int i = compareBySpeciesCount( domain_similarity );
-                if ( i != PrintableDomainSimilarity.EQUAL ) {
-                    return i;
-                }
-                else {
-                    return compareByDomainId( domain_similarity );
-                }
-            case DOMAIN_ID:
-                return compareByDomainId( domain_similarity );
-        }
-        throw new AssertionError( "Unknown sort method: " + getSortField() );
+        return compareByDomainId( domain_similarity );
     }
 
     @Override
@@ -395,10 +226,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _n;
     }
 
-    private DomainSimilaritySortField getSortField() {
-        return _sort_field;
-    }
-
     @Override
     public SortedSet<Species> getSpecies() {
         final SortedSet<Species> species = new TreeSet<Species>();
@@ -426,6 +253,29 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
+    private StringBuffer getDomainDataInAlphabeticalOrder() {
+        final SortedMap<String, SortedSet<String>> m = new TreeMap<String, SortedSet<String>>();
+        final StringBuffer sb = new StringBuffer();
+        for( final Species species : getSpeciesData().keySet() ) {
+            for( final String combable_dom : getCombinableDomainIds( species ) ) {
+                if ( !m.containsKey( combable_dom ) ) {
+                    m.put( combable_dom, new TreeSet<String>() );
+                }
+                m.get( combable_dom ).add( species.getSpeciesId() );
+            }
+        }
+        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
+            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
+            sb.append( ": " );
+            for( final String s : e.getValue() ) {
+                sb.append( s );
+                sb.append( " " );
+            }
+            sb.append( "<br>" );
+        }
+        return sb;
+    }
+
     private StringBuffer getSpeciesDataInCustomOrder( final boolean html, final Map<String, Integer> tax_code_to_id_map ) {
         final StringBuffer sb = new StringBuffer();
         for( final Species order_species : getSpeciesCustomOrder() ) {
@@ -447,10 +297,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     private void init() {
         _detailedness = DomainSimilarityCalculator.Detailedness.PUNCTILIOUS;
-    }
-
-    private boolean isSortBySpeciesCountFirst() {
-        return _sort_by_species_count_first;
     }
 
     private boolean isTreatAsBinaryComparison() {
@@ -485,10 +331,10 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<tr>" );
         sb.append( "<td>" );
-        boldStartIfSortedBy( DomainSimilaritySortField.DOMAIN_ID, sb );
+        sb.append( "<b>" );
         sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + getDomainId() + "\" target=\"pfam_window\">"
                 + getDomainId() + "</a>" );
-        boldEndIfSortedBy( DomainSimilaritySortField.DOMAIN_ID, sb );
+        sb.append( "</b>" );
         sb.append( "<a name=\"" + getDomainId() + "\">" );
         sb.append( "</td>" );
         sb.append( "<td>" );
@@ -496,70 +342,52 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                 + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
         sb.append( "<td>" );
-        boldStartIfSortedBy( DomainSimilaritySortField.MEAN, sb );
         sb.append( ForesterUtil.round( getMeanSimilarityScore(), 3 ) );
-        boldEndIfSortedBy( DomainSimilaritySortField.MEAN, sb );
         sb.append( "</td>" );
-        if ( !isTreatAsBinaryComparison() ) {
-            sb.append( "<td>" );
-            sb.append( "(" );
-            boldStartIfSortedBy( DomainSimilaritySortField.SD, sb );
-            sb.append( ForesterUtil.round( getStandardDeviationOfSimilarityScore(), 3 ) );
-            boldEndIfSortedBy( DomainSimilaritySortField.SD, sb );
-            sb.append( ")" );
-            sb.append( "</td>" );
-            sb.append( "<td>" );
-            sb.append( "[" );
-            boldStartIfSortedBy( DomainSimilaritySortField.MIN, sb );
-            sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
-            boldEndIfSortedBy( DomainSimilaritySortField.MIN, sb );
-            sb.append( "-" );
-            boldStartIfSortedBy( DomainSimilaritySortField.MAX, sb );
-            sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
-            boldEndIfSortedBy( DomainSimilaritySortField.MAX, sb );
-            sb.append( "]" );
-            sb.append( "</td>" );
+        if ( PRINT_MORE_INFO ) {
+            if ( !isTreatAsBinaryComparison() ) {
+                sb.append( "<td>" );
+                sb.append( "(" );
+                sb.append( ForesterUtil.round( getStandardDeviationOfSimilarityScore(), 3 ) );
+                sb.append( ")" );
+                sb.append( "</td>" );
+                sb.append( "<td>" );
+                sb.append( "[" );
+                sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
+                sb.append( "-" );
+                sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
+                sb.append( "]" );
+                sb.append( "</td>" );
+            }
         }
         sb.append( "<td>" );
-        boldStartIfSortedBy( DomainSimilaritySortField.MAX_DIFFERENCE, sb );
         sb.append( getMaximalDifference() );
-        boldEndIfSortedBy( DomainSimilaritySortField.MAX_DIFFERENCE, sb );
         sb.append( "</td>" );
         sb.append( "<td>" );
         if ( isTreatAsBinaryComparison() ) {
-            boldStartIfSortedBy( DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE, sb );
-            boldStartIfSortedBy( DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE, sb );
             sb.append( getMaximalDifferenceInCounts() );
-            boldEndIfSortedBy( DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE, sb );
-            boldStartIfSortedBy( DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE, sb );
         }
         else {
-            boldStartIfSortedBy( DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE, sb );
-            boldStartIfSortedBy( DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE, sb );
             sb.append( Math.abs( getMaximalDifferenceInCounts() ) );
-            boldEndIfSortedBy( DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE, sb );
-            boldStartIfSortedBy( DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE, sb );
         }
         sb.append( "</td>" );
         if ( !isTreatAsBinaryComparison() ) {
             sb.append( "<td>" );
-            if ( ( getSortField() == DomainSimilaritySortField.SPECIES_COUNT ) || isSortBySpeciesCountFirst() ) {
-                sb.append( "<b>" );
-            }
+            sb.append( "<b>" );
             sb.append( getSpeciesData().size() );
-            if ( ( getSortField() == DomainSimilaritySortField.SPECIES_COUNT ) || isSortBySpeciesCountFirst() ) {
-                sb.append( "</b>" );
-            }
+            sb.append( "</b>" );
             sb.append( "</td>" );
         }
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map ) );
+            sb.append( getDomainDataInAlphabeticalOrder() );
             sb.append( "</td>" );
         }
         else {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map ) );
+            sb.append( getDomainDataInAlphabeticalOrder() );
             sb.append( "</td>" );
         }
         sb.append( "</tr>" );
@@ -569,49 +397,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     private StringBuffer toStringBufferSimpleTabDelimited() {
         final StringBuffer sb = new StringBuffer();
         sb.append( getDomainId() );
-        switch ( getSortField() ) {
-            case MIN:
-                sb.append( TAB );
-                sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
-                break;
-            case MAX:
-                sb.append( TAB );
-                sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
-                break;
-            case MEAN:
-                sb.append( TAB );
-                sb.append( ForesterUtil.round( getMeanSimilarityScore(), 3 ) );
-                break;
-            case SD:
-                sb.append( TAB );
-                sb.append( ForesterUtil.round( getStandardDeviationOfSimilarityScore(), 3 ) );
-                break;
-            case MAX_DIFFERENCE:
-                sb.append( TAB );
-                sb.append( getMaximalDifference() );
-            case ABS_MAX_COUNTS_DIFFERENCE:
-            case MAX_COUNTS_DIFFERENCE:
-                sb.append( TAB );
-                if ( isTreatAsBinaryComparison() ) {
-                    sb.append( getMaximalDifferenceInCounts() );
-                }
-                else {
-                    sb.append( Math.abs( getMaximalDifferenceInCounts() ) );
-                }
-                break;
-            case SPECIES_COUNT:
-                sb.append( TAB );
-                sb.append( getSpeciesData().size() );
-                break;
-            case DOMAIN_ID:
-                break;
-            default:
-                throw new AssertionError( "Unknown sort method: " + getSortField() );
-        }
-        // ^^     if ( getGoAnnotationOutput() != DomainSimilarityCalculator.GoAnnotationOutput.NONE ) {
-        // ^^       sb.append( TAB );
-        // ^^       addGoInformation( sb, true, false );
-        // ^^   }
         return sb;
     }
 

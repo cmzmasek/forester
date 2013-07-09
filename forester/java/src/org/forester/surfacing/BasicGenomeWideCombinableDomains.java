@@ -315,13 +315,6 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                         else {
                             domain_combination = new BasicCombinableDomains( pd_i.getDomainId(), species );
                         }
-                        // ^^       if ( ( domain_id_to_go_ids_map != null )
-                        // ^^             && domain_id_to_go_ids_map.containsKey( pd_i.getDomainId() ) ) {
-                        // ^^        final List<GoId> go_ids = domain_id_to_go_ids_map.get( pd_i.getDomainId() );
-                        // ^^        for( final GoId go_id : go_ids ) {
-                        // ^^           domain_combination.getKeyDomain().addGoId( go_id );
-                        // ^^       }
-                        // ^^  }
                         instance.add( id_i, domain_combination );
                     }
                     final Set<String> saw_j = new HashSet<String>();

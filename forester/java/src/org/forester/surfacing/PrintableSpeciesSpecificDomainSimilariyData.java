@@ -27,31 +27,23 @@
 
 package org.forester.surfacing;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.forester.util.DescriptiveStatistics;
-
 class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDomainSimilariyData {
 
-    private final static NumberFormat   FORMATTER = new DecimalFormat( "0.0E0" );
-    final SortedMap<String, Integer>    _combinable_domain_id_to_count_map;
-    final private int                   _key_domain_proteins_count;
-    final private int                   _key_domain_domains_count;
-    final private int                   _combinable_domains_count;
-    final private DescriptiveStatistics _key_domain_confidence_descriptive_statistics;
+    final SortedMap<String, Integer> _combinable_domain_id_to_count_map;
+    final private int                _key_domain_proteins_count;
+    final private int                _key_domain_domains_count;
+    final private int                _combinable_domains_count;
 
     public PrintableSpeciesSpecificDomainSimilariyData( final int key_domain_proteins_count,
                                                         final int key_domain_domains_count,
-                                                        final int combinable_domains,
-                                                        final DescriptiveStatistics key_domain_confidence_descriptive_statistics ) {
+                                                        final int combinable_domains ) {
         _key_domain_proteins_count = key_domain_proteins_count;
         _key_domain_domains_count = key_domain_domains_count;
         _combinable_domains_count = combinable_domains;
-        _key_domain_confidence_descriptive_statistics = key_domain_confidence_descriptive_statistics;
         _combinable_domain_id_to_count_map = new TreeMap<String, Integer>();
     }
 
@@ -70,10 +62,6 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
 
     private int getCombinableDomainsCount() {
         return _combinable_domains_count;
-    }
-
-    private DescriptiveStatistics getKeyDomainConfidenceDescriptiveStatistics() {
-        return _key_domain_confidence_descriptive_statistics;
     }
 
     private int getKeyDomainDomainsCount() {
@@ -108,14 +96,6 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
             sb.append( getKeyDomainProteinsCount() );
             sb.append( ", " );
             sb.append( getCombinableDomainsCount() );
-            sb.append( ", " );
-            if ( html ) {
-                sb.append( "<i>" );
-            }
-            sb.append( FORMATTER.format( getKeyDomainConfidenceDescriptiveStatistics().arithmeticMean() ) );
-            if ( html ) {
-                sb.append( "</i>" );
-            }
             if ( !getCombinableDomainIdToCountsMap().isEmpty() ) {
                 sb.append( ":" );
             }
@@ -135,9 +115,6 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
             if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
                 sb.append( ":" );
                 sb.append( getCombinableDomainIdToCountsMap().get( domain_id ) );
-            }
-            if ( i < ( ids.size() - 1 ) ) {
-                sb.append( "," );
             }
         }
         return sb;

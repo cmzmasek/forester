@@ -47,7 +47,7 @@ public interface DomainSimilarity extends Comparable<DomainSimilarity> {
         MIN, MAX, SD, MEAN, ABS_MAX_COUNTS_DIFFERENCE, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, SPECIES_COUNT, DOMAIN_ID,
     }
 
-    public SortedSet<String> getCombinableDomainIds( final Species species_of_combinable_domain );;
+    public SortedSet<String> getCombinableDomainIds( final Species species_of_combinable_domain );
 
     public String getDomainId();
 

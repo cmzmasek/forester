@@ -451,10 +451,6 @@ public final class SurfacingUtil {
                     out.write( species + "\t" );
                 }
                 out.write( ForesterUtil.LINE_SEPARATOR );
-                // DescriptiveStatistics stats_for_domain = domain_lengths
-                //         .calculateMeanBasedStatistics();
-                //AsciiHistogram histo = new AsciiHistogram( stats_for_domain );
-                //System.out.println( histo.toStringBuffer( 40, '=', 60, 4 ).toString() );
             }
         }
         out.write( ForesterUtil.LINE_SEPARATOR );
@@ -488,16 +484,6 @@ public final class SurfacingUtil {
             }
         }
         out.close();
-        //        final List<HistogramData> histogram_datas = new ArrayList<HistogramData>();
-        //        for( int i = 0; i < number_of_genomes; ++i ) {
-        //            final Species species = new BasicSpecies( input_file_properties[ i ][ 0 ] );
-        //            histogram_datas
-        //                    .add( new HistogramData( species.toString(), domain_lengths_table
-        //                            .calculateMeanBasedStatisticsForSpecies( species )
-        //                            .getDataAsDoubleArray(), 5, 600, null, 60 ) );
-        //        }
-        //        final HistogramsFrame hf = new HistogramsFrame( histogram_datas );
-        //        hf.setVisible( true );
         System.gc();
     }
 
@@ -1668,100 +1654,27 @@ public final class SurfacingUtil {
                                                                        final boolean treat_as_binary,
                                                                        final List<Species> species_order,
                                                                        final PrintableDomainSimilarity.PRINT_OPTION print_option,
-                                                                       final DomainSimilarity.DomainSimilaritySortField sort_field,
                                                                        final DomainSimilarity.DomainSimilarityScoring scoring,
                                                                        final boolean verbose,
-                                                                       final Map<String, Integer> tax_code_to_id_map )
+                                                                       final Map<String, Integer> tax_code_to_id_map,
+                                                                       final boolean print_some_stats )
             throws IOException {
-        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        String histogram_title = null;
-        switch ( sort_field ) {
-            case ABS_MAX_COUNTS_DIFFERENCE:
-                if ( treat_as_binary ) {
-                    histogram_title = "absolute counts difference:";
-                }
-                else {
-                    histogram_title = "absolute (maximal) counts difference:";
-                }
-                break;
-            case MAX_COUNTS_DIFFERENCE:
-                if ( treat_as_binary ) {
-                    histogram_title = "counts difference:";
-                }
-                else {
-                    histogram_title = "(maximal) counts difference:";
-                }
-                break;
-            case DOMAIN_ID:
-                histogram_title = "score mean:";
-                break;
-            case MIN:
-                histogram_title = "score minimum:";
-                break;
-            case MAX:
-                histogram_title = "score maximum:";
-                break;
-            case MAX_DIFFERENCE:
-                if ( treat_as_binary ) {
-                    histogram_title = "difference:";
-                }
-                else {
-                    histogram_title = "(maximal) difference:";
-                }
-                break;
-            case MEAN:
-                histogram_title = "score mean:";
-                break;
-            case SD:
-                histogram_title = "score standard deviation:";
-                break;
-            case SPECIES_COUNT:
-                histogram_title = "species number:";
-                break;
-            default:
-                throw new AssertionError( "Unknown sort field: " + sort_field );
-        }
-        for( final DomainSimilarity similarity : similarities ) {
-            switch ( sort_field ) {
-                case ABS_MAX_COUNTS_DIFFERENCE:
-                    stats.addValue( Math.abs( similarity.getMaximalDifferenceInCounts() ) );
-                    break;
-                case MAX_COUNTS_DIFFERENCE:
-                    stats.addValue( similarity.getMaximalDifferenceInCounts() );
-                    break;
-                case DOMAIN_ID:
-                    stats.addValue( similarity.getMeanSimilarityScore() );
-                    break;
-                case MIN:
-                    stats.addValue( similarity.getMinimalSimilarityScore() );
-                    break;
-                case MAX:
-                    stats.addValue( similarity.getMaximalSimilarityScore() );
-                    break;
-                case MAX_DIFFERENCE:
-                    stats.addValue( similarity.getMaximalDifference() );
-                    break;
-                case MEAN:
-                    stats.addValue( similarity.getMeanSimilarityScore() );
-                    break;
-                case SD:
-                    stats.addValue( similarity.getStandardDeviationOfSimilarityScore() );
-                    break;
-                case SPECIES_COUNT:
-                    stats.addValue( similarity.getSpecies().size() );
-                    break;
-                default:
-                    throw new AssertionError( "Unknown sort field: " + sort_field );
-            }
-        }
+        DescriptiveStatistics stats = null;
         AsciiHistogram histo = null;
-        try {
-            if ( stats.getMin() < stats.getMax() ) {
-                histo = new AsciiHistogram( stats, histogram_title );
+        if ( print_some_stats ) {
+            stats = new BasicDescriptiveStatistics();
+            final String histogram_title = "score mean distribution:";
+            for( final DomainSimilarity similarity : similarities ) {
+                stats.addValue( similarity.getMeanSimilarityScore() );
             }
-        }
-        catch ( Exception e ) {
-            histo = null;
+            try {
+                if ( stats.getMin() < stats.getMax() ) {
+                    histo = new AsciiHistogram( stats, histogram_title );
+                }
+            }
+            catch ( final Exception e ) {
+                histo = null;
+            }
         }
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
@@ -1776,61 +1689,29 @@ public final class SurfacingUtil {
                     w.write( "<html>" );
                     w.write( SurfacingConstants.NL );
                     if ( key != '_' ) {
-                        addHtmlHead( w, "DCs (" + html_title + ") " + key.toString().toUpperCase() );
+                        addHtmlHead( w, "DC analysis (" + html_title + ") " + key.toString().toUpperCase() );
                     }
                     else {
-                        addHtmlHead( w, "DCs (" + html_title + ")" );
+                        addHtmlHead( w, "DC analysis (" + html_title + ")" );
                     }
                     w.write( SurfacingConstants.NL );
                     w.write( "<body>" );
                     w.write( SurfacingConstants.NL );
                     w.write( html_desc.toString() );
                     w.write( SurfacingConstants.NL );
-                    w.write( "<hr>" );
-                    w.write( "<br>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tt><pre>" );
-                    w.write( SurfacingConstants.NL );
-                    if ( histo != null ) {
-                        w.write( histo.toStringBuffer( 20, '|', 40, 5 ).toString() );
-                        w.write( SurfacingConstants.NL );
+                    if ( print_some_stats ) {
+                        printSomeStats( stats, histo, w );
                     }
-                    w.write( "</pre></tt>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<table>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tr><td>N: </td><td>" + stats.getN() + "</td></tr>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tr><td>Min: </td><td>" + stats.getMin() + "</td></tr>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tr><td>Max: </td><td>" + stats.getMax() + "</td></tr>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tr><td>Mean: </td><td>" + stats.arithmeticMean() + "</td></tr>" );
-                    w.write( SurfacingConstants.NL );
-                    if ( stats.getN() > 1 ) {
-                        w.write( "<tr><td>SD: </td><td>" + stats.sampleStandardDeviation() + "</td></tr>" );
-                    }
-                    else {
-                        w.write( "<tr><td>SD: </td><td>n/a</td></tr>" );
-                    }
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<tr><td>Median: </td><td>" + stats.median() + "</td></tr>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "</table>" );
-                    w.write( SurfacingConstants.NL );
-                    w.write( "<br>" );
-                    w.write( SurfacingConstants.NL );
                     w.write( "<hr>" );
                     w.write( SurfacingConstants.NL );
                     w.write( "<br>" );
                     w.write( SurfacingConstants.NL );
                     w.write( "<table>" );
+                    w.write( SurfacingConstants.NL );
+                    w.write( "<tr><td><b>Domains:</b></td></tr>" );
                     w.write( SurfacingConstants.NL );
                 }
                 break;
-        }
-        for( final Writer w : split_writers.values() ) {
-            w.write( SurfacingConstants.NL );
         }
         //
         for( final DomainSimilarity similarity : similarities ) {
@@ -1838,8 +1719,8 @@ public final class SurfacingUtil {
                 ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
             }
             if ( single_writer != null ) {
-                single_writer.write( "<a href=\"#" + similarity.getDomainId() + "\">" + similarity.getDomainId()
-                        + "</a><br>" );
+                single_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
+                        + similarity.getDomainId() + "</a></b></td></tr>" );
                 single_writer.write( SurfacingConstants.NL );
             }
             else {
@@ -1848,13 +1729,19 @@ public final class SurfacingUtil {
                 if ( local_writer == null ) {
                     local_writer = split_writers.get( '0' );
                 }
-                local_writer.write( "<a href=\"#" + similarity.getDomainId() + "\">" + similarity.getDomainId()
-                        + "</a><br>" );
+                local_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
+                        + similarity.getDomainId() + "</a></b></td></tr>" );
                 local_writer.write( SurfacingConstants.NL );
             }
         }
-        // w.write( "<hr>" );
-        // w.write( SurfacingConstants.NL );
+        for( final Writer w : split_writers.values() ) {
+            w.write( "</table>" );
+            w.write( SurfacingConstants.NL );
+            w.write( "<hr>" );
+            w.write( SurfacingConstants.NL );
+            w.write( "<table>" );
+            w.write( SurfacingConstants.NL );
+        }
         //
         for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
@@ -1893,6 +1780,42 @@ public final class SurfacingUtil {
             w.close();
         }
         return stats;
+    }
+
+    private static void printSomeStats( final DescriptiveStatistics stats, final AsciiHistogram histo, final Writer w )
+            throws IOException {
+        w.write( "<hr>" );
+        w.write( "<br>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<tt><pre>" );
+        w.write( SurfacingConstants.NL );
+        if ( histo != null ) {
+            w.write( histo.toStringBuffer( 20, '|', 40, 5 ).toString() );
+            w.write( SurfacingConstants.NL );
+        }
+        w.write( "</pre></tt>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<table>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<tr><td>N: </td><td>" + stats.getN() + "</td></tr>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<tr><td>Min: </td><td>" + stats.getMin() + "</td></tr>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<tr><td>Max: </td><td>" + stats.getMax() + "</td></tr>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<tr><td>Mean: </td><td>" + stats.arithmeticMean() + "</td></tr>" );
+        w.write( SurfacingConstants.NL );
+        if ( stats.getN() > 1 ) {
+            w.write( "<tr><td>SD: </td><td>" + stats.sampleStandardDeviation() + "</td></tr>" );
+        }
+        else {
+            w.write( "<tr><td>SD: </td><td>n/a</td></tr>" );
+        }
+        w.write( SurfacingConstants.NL );
+        w.write( "</table>" );
+        w.write( SurfacingConstants.NL );
+        w.write( "<br>" );
+        w.write( SurfacingConstants.NL );
     }
 
     public static void writeMatrixToFile( final CharacterStateMatrix<?> matrix,

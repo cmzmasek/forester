@@ -138,7 +138,6 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                   0,
                                                   0,
                                                   species_data,
-                                                  getSort(),
                                                   isSortBySpeciesCountFirst(),
                                                   isTreatAsBinaryComparison() );
         }
@@ -198,7 +197,6 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                         max_difference_in_counts,
                                                         max_difference,
                                                         species_data,
-                                                        getSort(),
                                                         isSortBySpeciesCountFirst(),
                                                         isTreatAsBinaryComparison() );
         }
@@ -213,15 +211,10 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                         max_difference_in_counts,
                                                         max_difference,
                                                         species_data,
-                                                        getSort(),
                                                         isSortBySpeciesCountFirst(),
                                                         isTreatAsBinaryComparison() );
         }
         return similarity;
-    }
-
-    private DomainSimilarity.DomainSimilaritySortField getSort() {
-        return _sort;
     }
 
     private boolean isSortBySpeciesCountFirst() {
@@ -235,8 +228,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
     private static SpeciesSpecificDomainSimilariyData createSpeciesSpecificDomainSimilariyData( final CombinableDomains cd ) {
         final SpeciesSpecificDomainSimilariyData sd = new PrintableSpeciesSpecificDomainSimilariyData( cd.getKeyDomainProteinsCount(),
                                                                                                        cd.getKeyDomainCount(),
-                                                                                                       cd.getNumberOfCombinableDomains(),
-                                                                                                       cd.getKeyDomainConfidenceDescriptiveStatistics() );
+                                                                                                       cd.getNumberOfCombinableDomains() );
         for( final String domain : cd.getCombinableDomains() ) {
             sd.addProteinsExhibitingCombinationCount( domain, cd.getNumberOfProteinsExhibitingCombination( domain ) );
         }
