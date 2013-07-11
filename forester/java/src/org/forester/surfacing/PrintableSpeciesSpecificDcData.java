@@ -29,19 +29,21 @@ package org.forester.surfacing;
 
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
-class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDomainSimilariyData {
+import org.forester.util.ForesterUtil;
+
+class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
 
     final SortedMap<String, Integer> _combinable_domain_id_to_count_map;
-    final private int                _key_domain_proteins_count;
+    final SortedSet<String>          _key_domain_proteins;
     final private int                _key_domain_domains_count;
     final private int                _combinable_domains_count;
 
-    public PrintableSpeciesSpecificDomainSimilariyData( final int key_domain_proteins_count,
-                                                        final int key_domain_domains_count,
-                                                        final int combinable_domains ) {
-        _key_domain_proteins_count = key_domain_proteins_count;
+    public PrintableSpeciesSpecificDcData( final int key_domain_domains_count, final int combinable_domains ) {
+        _key_domain_proteins = new TreeSet<String>();
         _key_domain_domains_count = key_domain_domains_count;
         _combinable_domains_count = combinable_domains;
         _combinable_domain_id_to_count_map = new TreeMap<String, Integer>();
@@ -69,7 +71,7 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
     }
 
     private int getKeyDomainProteinsCount() {
-        return _key_domain_proteins_count;
+        return _key_domain_proteins.size();
     }
 
     @Override
@@ -78,6 +80,22 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
             throw new IllegalArgumentException( "Domain with id " + domain_id + " not found" );
         }
         return getCombinableDomainIdToCountsMap().get( domain_id );
+    }
+
+    @Override
+    public void addKeyDomainProtein( final String protein ) {
+        if ( ForesterUtil.isEmpty( protein ) ) {
+            throw new IllegalArgumentException( "attempt to add null or empty protein" );
+        }
+        if ( getKeyDomainProteins().contains( protein ) ) {
+            throw new IllegalArgumentException( "protein \"" + protein + "\" is not unique" );
+        }
+        getKeyDomainProteins().add( protein );
+    }
+
+    @Override
+    public SortedSet<String> getKeyDomainProteins() {
+        return _key_domain_proteins;
     }
 
     @Override
@@ -117,6 +135,26 @@ class PrintableSpeciesSpecificDomainSimilariyData implements SpeciesSpecificDoma
                 sb.append( getCombinableDomainIdToCountsMap().get( domain_id ) );
             }
         }
+        sb.append( " [" );
+        boolean first = true;
+        for( final String p : getKeyDomainProteins() ) {
+            String link = null;
+            final String up_id = ForesterUtil.extractUniProtKbProteinSeqIdentifier( p );
+            if ( !ForesterUtil.isEmpty( up_id ) ) {
+                link = "<a href=\"" + ForesterUtil.UNIPROT_KB + up_id + "\" target=\"_up_window\">" + up_id + "</a>";
+            }
+            else {
+                link = "<a href=\"" + "http://www.google.com/search?q=" + p + "\" target=\"_g_window\">" + p + "</a>";
+            }
+            if ( first ) {
+                first = false;
+            }
+            else {
+                sb.append( ", " );
+            }
+            sb.append( p );
+        }
+        sb.append( "]" );
         return sb;
     }
 }

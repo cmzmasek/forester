@@ -27,29 +27,31 @@
 package org.forester.surfacing;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.species.Species;
-import org.forester.util.DescriptiveStatistics;
+import org.forester.util.ForesterUtil;
 
 public class BasicCombinableDomains implements CombinableDomains {
 
     final private String                   _key_domain;
     private int                            _key_domain_count;
-    private int                            _key_domain_proteins_count;
     final private Species                  _species;
     final private TreeMap<String, Integer> _combining_domains;
-    private DescriptiveStatistics          _key_domain_confidence_statistics;
+    final private Set<String>              _proteins_with_key_domain;
 
     public BasicCombinableDomains( final String key_domain, final Species species ) {
         _key_domain = key_domain;
         _species = species;
         _combining_domains = new TreeMap<String, Integer>();
-        init();
+        _proteins_with_key_domain = new HashSet<String>();
+        _key_domain_count = 0;
     }
 
     @Override
@@ -60,6 +62,14 @@ public class BasicCombinableDomains implements CombinableDomains {
         else {
             getCombiningDomains().put( protein_domain, 1 );
         }
+    }
+
+    @Override
+    public void addKeyDomainProtein( final String protein ) {
+        if ( ForesterUtil.isEmpty( protein ) ) {
+            throw new IllegalArgumentException( "attempt to add null or empty protein" );
+        }
+        getKeyDomainProteins().add( protein );
     }
 
     @Override
@@ -117,18 +127,13 @@ public class BasicCombinableDomains implements CombinableDomains {
     }
 
     @Override
-    public DescriptiveStatistics getKeyDomainConfidenceDescriptiveStatistics() {
-        return _key_domain_confidence_statistics;
-    }
-
-    @Override
     public int getKeyDomainCount() {
         return _key_domain_count;
     }
 
     @Override
     public int getKeyDomainProteinsCount() {
-        return _key_domain_proteins_count;
+        return getKeyDomainProteins().size();
     }
 
     @Override
@@ -151,30 +156,14 @@ public class BasicCombinableDomains implements CombinableDomains {
         return _species;
     }
 
-    private void init() {
-        _key_domain_count = 0;
-        _key_domain_proteins_count = 0;
-        _key_domain_confidence_statistics = null;
-    }
-
     @Override
     public boolean isCombinable( final String protein_domain ) {
         return getCombiningDomains().containsKey( protein_domain );
     }
 
     @Override
-    public void setKeyDomainConfidenceDescriptiveStatistics( final DescriptiveStatistics key_domain_confidence_statistics ) {
-        _key_domain_confidence_statistics = key_domain_confidence_statistics;
-    }
-
-    @Override
     public void setKeyDomainCount( final int key_domain_count ) {
         _key_domain_count = key_domain_count;
-    }
-
-    @Override
-    public void setKeyDomainProteinsCount( final int key_domain_proteins_count ) {
-        _key_domain_proteins_count = key_domain_proteins_count;
     }
 
     @Override
@@ -199,5 +188,10 @@ public class BasicCombinableDomains implements CombinableDomains {
         sb.append( "]: " );
         sb.append( getCombiningDomainIdsAsStringBuilder() );
         return sb.toString();
+    }
+
+    @Override
+    public Set<String> getKeyDomainProteins() {
+        return _proteins_with_key_domain;
     }
 }

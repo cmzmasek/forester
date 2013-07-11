@@ -165,6 +165,21 @@ public final class ForesterUtil {
         return v;
     }
 
+    public static String extractUniProtKbProteinSeqIdentifier( final String str ) {
+        String upkb = null;
+        Matcher m = UNIPROT_KB_PATTERN_1.matcher( str );
+        if ( m.find() ) {
+            upkb = m.group( 1 );
+        }
+        else {
+            m = UNIPROT_KB_PATTERN_2.matcher( str );
+            if ( m.find() ) {
+                upkb = m.group();
+            }
+        }
+        return upkb;
+    }
+
     public static String extractUniProtKbProteinSeqIdentifier( final PhylogenyNode node ) {
         String upkb = null;
         if ( node.getNodeData().isHasSequence() ) {

@@ -32,8 +32,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +58,6 @@ import org.forester.util.ForesterUtil;
  */
 public final class DomainCountsDifferenceUtil {
 
-    private final static NumberFormat          FORMATTER                                   = new DecimalFormat( "0.0E0" );
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_TARGET_SPECIES = COPY_CALCULATION_MODE.MIN;
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_BASE_SPECIES   = COPY_CALCULATION_MODE.MIN;
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_LOW_COPY_SPECIES         = COPY_CALCULATION_MODE.MAX;
@@ -457,9 +454,6 @@ public final class DomainCountsDifferenceUtil {
     private static String combinableDomaindToString( final CombinableDomains cd ) {
         final StringBuilder sb = new StringBuilder();
         sb.append( cd.getKeyDomainProteinsCount() );
-        sb.append( "\t[" );
-        sb.append( FORMATTER.format( cd.getKeyDomainConfidenceDescriptiveStatistics().median() ) );
-        sb.append( "]" );
         return sb.toString();
     }
 
@@ -471,8 +465,6 @@ public final class DomainCountsDifferenceUtil {
         sb.append( cd.getKeyDomainProteinsCount() );
         sb.append( "</b>, " );
         sb.append( cd.getNumberOfCombinableDomains() );
-        sb.append( "]</td><td>[" );
-        sb.append( FORMATTER.format( cd.getKeyDomainConfidenceDescriptiveStatistics().median() ) );
         sb.append( "]</td><td>" );
         sb.append( cd.getCombiningDomainIdsAsStringBuilder() );
         return sb.toString();

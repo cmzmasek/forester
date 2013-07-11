@@ -1,8 +1,6 @@
 
 package org.forester.surfacing;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,7 +26,6 @@ import org.forester.util.ForesterUtil;
 
 public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDomains {
 
-    private final static NumberFormat                  FORMATTER                                  = new DecimalFormat( "0.0E0" );
     private static final Comparator<CombinableDomains> DESCENDING_KEY_DOMAIN_COUNT_ORDER          = new Comparator<CombinableDomains>() {
 
                                                                                                       @Override
@@ -193,7 +190,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     }
 
     // Produces something like: 
-    // 2-oxoacid_dh      5       5       2       4.8E-67   Biotin_lipoyl [4], E3_binding [3]
+    // 2-oxoacid_dh      5       5       2      Biotin_lipoyl [4], E3_binding [3]
     @Override
     public StringBuilder toStringBuilder( final GenomeWideCombinableDomainsSortOrder sort_order ) {
         final StringBuilder sb = new StringBuilder();
@@ -217,12 +214,6 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getKeyDomainCount() ), 8, ' ', false ) );
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getKeyDomainProteinsCount() ), 8, ' ', false ) );
             sb.append( ForesterUtil.pad( new StringBuffer( "" + cb.getNumberOfCombinableDomains() ), 8, ' ', false ) );
-            sb.append( ForesterUtil.pad( new StringBuffer( ""
-                                                 + FORMATTER.format( cb.getKeyDomainConfidenceDescriptiveStatistics()
-                                                         .median() ) ),
-                                         10,
-                                         ' ',
-                                         false ) );
             sb.append( cb.getCombiningDomainIdsAsStringBuilder() );
             sb.append( ForesterUtil.getLineSeparator() );
         }
@@ -230,23 +221,14 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
     }
 
     private static void countDomains( final Map<String, Integer> domain_counts,
-                                      final Map<String, Integer> domain_protein_counts,
-                                      final Map<String, DescriptiveStatistics> stats,
                                       final Set<String> saw_c,
-                                      final String id_i,
-                                      final double support ) {
+                                      final String id_i ) {
         if ( domain_counts.containsKey( id_i ) ) {
             domain_counts.put( id_i, 1 + domain_counts.get( ( id_i ) ) );
-            if ( !saw_c.contains( id_i ) ) {
-                domain_protein_counts.put( id_i, 1 + domain_protein_counts.get( ( id_i ) ) );
-            }
         }
         else {
-            stats.put( id_i, new BasicDescriptiveStatistics() );
             domain_counts.put( id_i, 1 );
-            domain_protein_counts.put( id_i, 1 );
         }
-        stats.get( id_i ).addValue( support );
         saw_c.add( id_i );
     }
 
@@ -278,8 +260,6 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                                                                    final Map<String, DescriptiveStatistics> domain_number_stats_by_dc ) {
         final BasicGenomeWideCombinableDomains instance = new BasicGenomeWideCombinableDomains( species, dc_type );
         final Map<String, Integer> domain_counts = new HashMap<String, Integer>();
-        final Map<String, Integer> domain_protein_counts = new HashMap<String, Integer>();
-        final Map<String, DescriptiveStatistics> stats = new HashMap<String, DescriptiveStatistics>();
         for( final Protein protein : protein_list ) {
             if ( !protein.getSpecies().equals( species ) ) {
                 throw new IllegalArgumentException( "species (" + protein.getSpecies()
@@ -291,12 +271,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                 final Domain pd_i = protein.getProteinDomain( i );
                 final String id_i = pd_i.getDomainId();
                 final int current_start = pd_i.getFrom();
-                BasicGenomeWideCombinableDomains.countDomains( domain_counts,
-                                                               domain_protein_counts,
-                                                               stats,
-                                                               saw_c,
-                                                               id_i,
-                                                               pd_i.getPerSequenceEvalue() );
+                BasicGenomeWideCombinableDomains.countDomains( domain_counts, saw_c, id_i );
                 if ( !saw_i.contains( id_i ) ) {
                     if ( dc_type == DomainCombinationType.BASIC ) {
                         saw_i.add( id_i );
@@ -317,6 +292,7 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                         }
                         instance.add( id_i, domain_combination );
                     }
+                    domain_combination.addKeyDomainProtein( protein.getProteinId().getId() );//^^^^^^^^^^^^^^
                     final Set<String> saw_j = new HashSet<String>();
                     if ( ignore_combination_with_same_domain ) {
                         saw_j.add( id_i );
@@ -371,14 +347,11 @@ public class BasicGenomeWideCombinableDomains implements GenomeWideCombinableDom
                             domain_number_stats_by_dc.get( dc_str ).addValue( protein.getNumberOfProteinDomains() );
                         }
                     }
-                    //
                 }
             }
         }
         for( final String key_id : domain_counts.keySet() ) {
             instance.get( key_id ).setKeyDomainCount( domain_counts.get( key_id ) );
-            instance.get( key_id ).setKeyDomainProteinsCount( domain_protein_counts.get( key_id ) );
-            instance.get( key_id ).setKeyDomainConfidenceDescriptiveStatistics( stats.get( key_id ) );
         }
         return instance;
     }

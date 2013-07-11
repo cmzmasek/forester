@@ -39,22 +39,22 @@ import org.forester.util.ForesterUtil;
 
 public class PrintableDomainSimilarity implements DomainSimilarity {
 
-    final public static String                                           SPECIES_SEPARATOR = "  ";
-    final private static int                                             EQUAL             = 0;
-    final private static String                                          NO_SPECIES        = "     ";
-    private static final boolean                                         PRINT_MORE_INFO   = false;
-    final private double                                                 _min;
-    final private double                                                 _max;
-    final private double                                                 _mean;
-    final private double                                                 _sd;
-    final private int                                                    _n;
-    private final int                                                    _max_difference_in_counts;
-    private final int                                                    _max_difference;
-    final private CombinableDomains                                      _combinable_domains;
-    final private SortedMap<Species, SpeciesSpecificDomainSimilariyData> _species_data;
-    private List<Species>                                                _species_order;
-    private DomainSimilarityCalculator.Detailedness                      _detailedness;
-    private final boolean                                                _treat_as_binary_comparison;
+    final public static String                              SPECIES_SEPARATOR = "  ";
+    final private static int                                EQUAL             = 0;
+    final private static String                             NO_SPECIES        = "     ";
+    private static final boolean                            PRINT_MORE_INFO   = false;
+    final private double                                    _min;
+    final private double                                    _max;
+    final private double                                    _mean;
+    final private double                                    _sd;
+    final private int                                       _n;
+    private final int                                       _max_difference_in_counts;
+    private final int                                       _max_difference;
+    final private CombinableDomains                         _combinable_domains;
+    final private SortedMap<Species, SpeciesSpecificDcData> _species_data;
+    private List<Species>                                   _species_order;
+    private DomainSimilarityCalculator.Detailedness         _detailedness;
+    private final boolean                                   _treat_as_binary_comparison;
 
     public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
                                       final double min,
@@ -65,7 +65,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                       final int n,
                                       final int max_difference_in_counts,
                                       final int max_difference,
-                                      final SortedMap<Species, SpeciesSpecificDomainSimilariyData> species_data,
+                                      final SortedMap<Species, SpeciesSpecificDcData> species_data,
                                       final boolean sort_by_species_count_first,
                                       final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
@@ -240,7 +240,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     }
 
     @Override
-    public SortedMap<Species, SpeciesSpecificDomainSimilariyData> getSpeciesData() {
+    public SortedMap<Species, SpeciesSpecificDcData> getSpeciesData() {
         return _species_data;
     }
 

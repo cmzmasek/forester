@@ -27,11 +27,11 @@
 package org.forester.surfacing;
 
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.species.Species;
-import org.forester.util.DescriptiveStatistics;
 
 public interface CombinableDomains {
 
@@ -73,15 +73,6 @@ public interface CombinableDomains {
     public String getKeyDomain();
 
     /**
-     * Gets descriptive statistics for the confidence (i.e. E-values) of the key
-     * domain.
-     * 
-     * 
-     * @return descriptive statistics for the confidence of the key domain
-     */
-    public DescriptiveStatistics getKeyDomainConfidenceDescriptiveStatistics();
-
-    /**
      * Returns how many times the key domain is present in a given species
      * genome.
      * 
@@ -97,6 +88,8 @@ public interface CombinableDomains {
      */
     public int getKeyDomainProteinsCount();
 
+    public Set<String> getKeyDomainProteins();
+
     public int getNumberOfCombinableDomains();
 
     public int getNumberOfProteinsExhibitingCombination( final String protein_domain );
@@ -111,15 +104,6 @@ public interface CombinableDomains {
     public boolean isCombinable( final String protein_domain );
 
     /**
-     * This is to set descriptive statistics for the confidence (i.e. E-values)
-     * of the key domain.
-     * 
-     * 
-     * @param statistics
-     */
-    void setKeyDomainConfidenceDescriptiveStatistics( final DescriptiveStatistics statistics );
-
-    /**
      * Sets how many times the key domain is present in a given species genome.
      * 
      * @param key_domain_count
@@ -127,14 +111,7 @@ public interface CombinableDomains {
      */
     void setKeyDomainCount( final int key_domain_count );
 
-    /**
-     * Sets how many proteins with the key domain are present in a given species
-     * genome.
-     * 
-     * @param key_domain_proteins_count
-     *            key domain protein count in species
-     */
-    void setKeyDomainProteinsCount( final int key_domain_proteins_count );
-
     public List<BinaryDomainCombination> toBinaryDomainCombinations();
+
+    void addKeyDomainProtein( String protein );
 }

@@ -97,7 +97,7 @@ public interface DomainSimilarity extends Comparable<DomainSimilarity> {
      * 
      * @return SortedMap<String, SpeciesSpecificDomainSimilariyData>
      */
-    public SortedMap<Species, SpeciesSpecificDomainSimilariyData> getSpeciesData();
+    public SortedMap<Species, SpeciesSpecificDcData> getSpeciesData();
 
     public double getStandardDeviationOfSimilarityScore();
 

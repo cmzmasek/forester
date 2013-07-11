@@ -125,7 +125,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
             // ~~~OLD:
             //throw new IllegalArgumentException( "attempt to calculate multiple combinable domains similarity for less than two combinable domains" );
             // ~~~new: 
-            final SortedMap<Species, SpeciesSpecificDomainSimilariyData> species_data = new TreeMap<Species, SpeciesSpecificDomainSimilariyData>();
+            final SortedMap<Species, SpeciesSpecificDcData> species_data = new TreeMap<Species, SpeciesSpecificDcData>();
             species_data.put( domains_list.get( 0 ).getSpecies(),
                               createSpeciesSpecificDomainSimilariyData( domains_list.get( 0 ) ) );
             return new PrintableDomainSimilarity( domains_list.get( 0 ),
@@ -142,7 +142,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                   isTreatAsBinaryComparison() );
         }
         final DescriptiveStatistics stat = new BasicDescriptiveStatistics();
-        final SortedMap<Species, SpeciesSpecificDomainSimilariyData> species_data = new TreeMap<Species, SpeciesSpecificDomainSimilariyData>();
+        final SortedMap<Species, SpeciesSpecificDcData> species_data = new TreeMap<Species, SpeciesSpecificDcData>();
         species_data.put( domains_list.get( 0 ).getSpecies(),
                           createSpeciesSpecificDomainSimilariyData( domains_list.get( 0 ) ) );
         int max_difference_in_counts = 0;
@@ -225,10 +225,12 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         return _treat_as_binary_comparison;
     }
 
-    private static SpeciesSpecificDomainSimilariyData createSpeciesSpecificDomainSimilariyData( final CombinableDomains cd ) {
-        final SpeciesSpecificDomainSimilariyData sd = new PrintableSpeciesSpecificDomainSimilariyData( cd.getKeyDomainProteinsCount(),
-                                                                                                       cd.getKeyDomainCount(),
-                                                                                                       cd.getNumberOfCombinableDomains() );
+    private static SpeciesSpecificDcData createSpeciesSpecificDomainSimilariyData( final CombinableDomains cd ) {
+        final SpeciesSpecificDcData sd = new PrintableSpeciesSpecificDcData( cd.getKeyDomainCount(),
+                                                                             cd.getNumberOfCombinableDomains() );
+        for( final String prot : cd.getKeyDomainProteins() ) {
+            sd.addKeyDomainProtein( prot );
+        }
         for( final String domain : cd.getCombinableDomains() ) {
             sd.addProteinsExhibitingCombinationCount( domain, cd.getNumberOfProteinsExhibitingCombination( domain ) );
         }

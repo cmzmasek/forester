@@ -28,11 +28,12 @@
 package org.forester.surfacing;
 
 import java.util.SortedMap;
+import java.util.SortedSet;
 
 /*
  * A helper class for PrintableDomainSimilarity.
  */
-interface SpeciesSpecificDomainSimilariyData {
+interface SpeciesSpecificDcData {
 
     public void addProteinsExhibitingCombinationCount( final String domain_id, final int count );
 
@@ -47,4 +48,8 @@ interface SpeciesSpecificDomainSimilariyData {
     public int getNumberOfProteinsExhibitingCombinationWith( final String domain_id );
 
     public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, boolean html );
+
+    public SortedSet<String> getKeyDomainProteins();
+
+    void addKeyDomainProtein( String protein );
 }
