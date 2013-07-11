@@ -123,6 +123,16 @@ public final class SequenceIdParser {
         }
     }
 
+    public static String parseGenbankProteinAccessor( final String query ) {
+        final Matcher m = GENBANK_PROTEIN_AC_PATTERN.matcher( query );
+        if ( m.lookingAt() ) {
+            return m.group( 1 );
+        }
+        else {
+            return null;
+        }
+    }
+
     /**
      * Returns null if no match.
      * 

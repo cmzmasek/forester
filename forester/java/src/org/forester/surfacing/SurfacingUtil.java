@@ -151,6 +151,25 @@ public final class SurfacingUtil {
         w.write( SurfacingConstants.NL );
         w.write( "a:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; }" );
         w.write( SurfacingConstants.NL );
+        //
+        w.write( "a.pl:visited { color : #505050; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.pl:link { color : #505050; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.pl:active { color : #505050; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.pl:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        //
+        w.write( "a.ps:visited { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:link { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:active { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; font-size: 7pt;}" );
+        w.write( SurfacingConstants.NL );
+        //
         w.write( "td { text-align: left; vertical-align: top; font-family: Verdana, Arial, Helvetica; font-size: 8pt}" );
         w.write( SurfacingConstants.NL );
         w.write( "h1 { color : #0000FF; font-family: Verdana, Arial, Helvetica; font-size: 18pt; font-weight: bold }" );
