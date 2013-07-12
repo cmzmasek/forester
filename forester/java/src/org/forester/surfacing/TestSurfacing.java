@@ -327,7 +327,8 @@ public class TestSurfacing {
                                                                            new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
-                                                                                         false );
+                                                                                         false,
+                                                                                         true );
             final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
@@ -477,7 +478,8 @@ public class TestSurfacing {
                                                                             new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc2 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           false,
-                                                                                          false );
+                                                                                          false,
+                                                                                          true );
             final SortedSet<DomainSimilarity> sims2 = calc2
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list2,
@@ -564,7 +566,8 @@ public class TestSurfacing {
                                                                             new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc3 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           false,
-                                                                                          false );
+                                                                                          false,
+                                                                                          true );
             final SortedSet<DomainSimilarity> sims3 = calc3
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list3,
@@ -607,7 +610,8 @@ public class TestSurfacing {
                                                                             new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc4 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           true,
-                                                                                          false );
+                                                                                          false,
+                                                                                          true );
             final SortedSet<DomainSimilarity> sims4 = calc4
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list4,
@@ -1038,7 +1042,8 @@ public class TestSurfacing {
                                                                            new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
-                                                                                         false );
+                                                                                         false,
+                                                                                         true );
             final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
@@ -1146,7 +1151,8 @@ public class TestSurfacing {
                                                                            new BasicSpecies( "nemve" ) ) );
             final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
-                                                                                         false );
+                                                                                         false,
+                                                                                         true );
             final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,

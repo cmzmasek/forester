@@ -35,8 +35,13 @@ public class ProteinCountsBasedPairwiseDomainSimilarityCalculator implements Pai
         if ( !domains_1.getKeyDomain().equals( domains_2.getKeyDomain() ) ) {
             throw new IllegalArgumentException( "attempt to calculate similarity between domain collection with different keys" );
         }
-        final int pc1 = domains_1.getKeyDomainProteinsCount();
-        final int pc2 = domains_2.getKeyDomainProteinsCount();
-        return new CountsBasedPairwiseDomainSimilarity( pc1 - pc2, pc1 + pc2 );
+        if ( ( domains_1.getKeyDomainProteinsCount() > Short.MAX_VALUE )
+                || ( domains_2.getKeyDomainProteinsCount() > Short.MAX_VALUE )
+                || ( ( domains_1.getKeyDomainProteinsCount() + domains_2.getKeyDomainCount() ) > Short.MAX_VALUE ) ) {
+            throw new IllegalArgumentException( "too large for short!" );
+        }
+        final short pc1 = ( short ) domains_1.getKeyDomainProteinsCount();
+        final short pc2 = ( short ) domains_2.getKeyDomainProteinsCount();
+        return new CountsBasedPairwiseDomainSimilarity( ( short ) ( pc1 - pc2 ), ( short ) ( pc1 + pc2 ) );
     }
 }

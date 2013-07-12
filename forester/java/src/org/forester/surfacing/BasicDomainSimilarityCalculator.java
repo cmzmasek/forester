@@ -27,6 +27,7 @@
 
 package org.forester.surfacing;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -37,19 +38,27 @@ import java.util.TreeSet;
 import org.forester.species.Species;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
+import org.forester.util.ForesterUtil;
 
 public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculator {
 
     final DomainSimilarity.DomainSimilaritySortField _sort;
     private final boolean                            _sort_by_species_count_first;
     private final boolean                            _treat_as_binary_comparison;
+    private final boolean                            _calc_similarity_score;
 
     public BasicDomainSimilarityCalculator( final DomainSimilarity.DomainSimilaritySortField sort,
                                             final boolean sort_by_species_count_first,
-                                            final boolean treat_as_binary_comparison ) {
+                                            final boolean treat_as_binary_comparison,
+                                            final boolean calc_similarity_score ) {
         _sort = sort;
         _sort_by_species_count_first = sort_by_species_count_first;
         _treat_as_binary_comparison = treat_as_binary_comparison;
+        _calc_similarity_score = calc_similarity_score;
+    }
+
+    public boolean isCalcSimilarityScore() {
+        return _calc_similarity_score;
     }
 
     @Override
@@ -65,7 +74,12 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         for( final GenomeWideCombinableDomains cdc : cdc_list ) {
             keys.addAll( ( cdc ).getAllCombinableDomainsIds().keySet() );
         }
+        final DecimalFormat pf = new java.text.DecimalFormat( "000000" );
+        int counter = 1;
+        System.out.println( keys.size() );
         for( final String key : keys ) {
+            ForesterUtil.updateProgress( counter, pf );
+            counter++;
             final List<CombinableDomains> same_id_cd_list = new ArrayList<CombinableDomains>( cdc_list.size() );
             final List<Species> species_with_key_id_domain = new ArrayList<Species>();
             for( final GenomeWideCombinableDomains cdc : cdc_list ) {
@@ -86,9 +100,6 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                     continue;
                 }
             }
-            // BIG CHANGE IN LOGIC: Tuesday July 08, 0;55
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // OLD: if ( same_id_cd_list.size() > 1 ) {
             if ( same_id_cd_list.size() > 0 ) {
                 if ( !ignore_domains_specific_to_one_genome || ( same_id_cd_list.size() > 1 ) ) {
                     final DomainSimilarity s = calculateSimilarity( pairwise_calculator, same_id_cd_list );
@@ -100,48 +111,47 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                     }
                 }
             }
-            // ~~~ NEW:
             else {
                 throw new RuntimeException( "this should not have happened" );
             }
-            // ~~~ OLD:
-            // else if ( same_id_cd_list.size() == 1 ) {
-            // TODO need to go in file
-            // System.out.println( "only in one species [" +
-            // species_with_key_id_domain.get( 0 ) + "]: " + key_id );
-            //}
-            //else {
-            //    throw new RuntimeException( "this should not have happened" );
-            // }
         }
+        System.out.println();
         return similarities;
     }
 
     private DomainSimilarity calculateSimilarity( final PairwiseDomainSimilarityCalculator pairwise_calculator,
                                                   final List<CombinableDomains> domains_list ) {
         if ( domains_list.size() == 1 ) {
-            // BIG CHANGE IN LOGIC: Tuesday July 08, 0;55
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // ~~~OLD:
-            //throw new IllegalArgumentException( "attempt to calculate multiple combinable domains similarity for less than two combinable domains" );
-            // ~~~new: 
             final SortedMap<Species, SpeciesSpecificDcData> species_data = new TreeMap<Species, SpeciesSpecificDcData>();
             species_data.put( domains_list.get( 0 ).getSpecies(),
                               createSpeciesSpecificDomainSimilariyData( domains_list.get( 0 ) ) );
-            return new PrintableDomainSimilarity( domains_list.get( 0 ),
-                                                  1.0,
-                                                  1.0,
-                                                  1.0,
-                                                  1.0,
-                                                  0.0,
-                                                  0,
-                                                  0,
-                                                  0,
-                                                  species_data,
-                                                  isSortBySpeciesCountFirst(),
-                                                  isTreatAsBinaryComparison() );
+            if ( !isCalcSimilarityScore() ) {
+                return new PrintableDomainSimilarity( domains_list.get( 0 ),
+                                                      0,
+                                                      0,
+                                                      species_data,
+                                                      isSortBySpeciesCountFirst(),
+                                                      isTreatAsBinaryComparison() );
+            }
+            else {
+                return new PrintableDomainSimilarity( domains_list.get( 0 ),
+                                                      1.0,
+                                                      1.0,
+                                                      1.0,
+                                                      1.0,
+                                                      0.0,
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      species_data,
+                                                      isSortBySpeciesCountFirst(),
+                                                      isTreatAsBinaryComparison() );
+            }
         }
-        final DescriptiveStatistics stat = new BasicDescriptiveStatistics();
+        DescriptiveStatistics stat = null;
+        if ( isCalcSimilarityScore() ) {
+            stat = new BasicDescriptiveStatistics();
+        }
         final SortedMap<Species, SpeciesSpecificDcData> species_data = new TreeMap<Species, SpeciesSpecificDcData>();
         species_data.put( domains_list.get( 0 ).getSpecies(),
                           createSpeciesSpecificDomainSimilariyData( domains_list.get( 0 ) ) );
@@ -170,30 +180,28 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                 if ( Math.abs( difference ) > Math.abs( max_difference ) ) {
                     max_difference = difference;
                 }
-                stat.addValue( pairwise_similarity.getSimilarityScore() );
+                if ( isCalcSimilarityScore() ) {
+                    stat.addValue( pairwise_similarity.getSimilarityScore() );
+                }
             }
         }
-        if ( stat.getN() < 1 ) {
-            throw new AssertionError( "empty descriptive statistics: this should not have happened" );
+        if ( isCalcSimilarityScore() ) {
+            if ( stat.getN() < 1 ) {
+                throw new RuntimeException( "empty descriptive statistics: this should not have happened" );
+            }
+            if ( ( stat.getN() != 1 ) && isTreatAsBinaryComparison() ) {
+                throw new IllegalArgumentException( "attmpt to treat similarity with N not equal to one as binary comparison" );
+            }
         }
-        if ( ( stat.getN() != 1 ) && isTreatAsBinaryComparison() ) {
-            throw new IllegalArgumentException( "attmpt to treat similarity with N not equal to one as binary comparison" );
-        }
-        if ( ( /*stat.getN() != 1 ||*/!isTreatAsBinaryComparison() ) && ( max_difference_in_counts < 0 ) ) {
+        if ( !isTreatAsBinaryComparison() && ( max_difference_in_counts < 0 ) ) {
             max_difference_in_counts = Math.abs( max_difference_in_counts );
             if ( !is_domain_combination_based ) {
-                max_difference = Math.abs( max_difference ); //=max_difference_in_counts for !is_domain_combination_based.
+                max_difference = Math.abs( max_difference );
             }
         }
         DomainSimilarity similarity = null;
-        if ( stat.getN() == 1 ) {
+        if ( !isCalcSimilarityScore() ) {
             similarity = new PrintableDomainSimilarity( domains_list.get( 0 ),
-                                                        stat.getMin(),
-                                                        stat.getMax(),
-                                                        stat.arithmeticMean(),
-                                                        stat.median(),
-                                                        0.0,
-                                                        stat.getN(),
                                                         max_difference_in_counts,
                                                         max_difference,
                                                         species_data,
@@ -201,18 +209,34 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                                                         isTreatAsBinaryComparison() );
         }
         else {
-            similarity = new PrintableDomainSimilarity( domains_list.get( 0 ),
-                                                        stat.getMin(),
-                                                        stat.getMax(),
-                                                        stat.arithmeticMean(),
-                                                        stat.median(),
-                                                        stat.sampleStandardDeviation(),
-                                                        stat.getN(),
-                                                        max_difference_in_counts,
-                                                        max_difference,
-                                                        species_data,
-                                                        isSortBySpeciesCountFirst(),
-                                                        isTreatAsBinaryComparison() );
+            if ( stat.getN() == 1 ) {
+                similarity = new PrintableDomainSimilarity( domains_list.get( 0 ),
+                                                            stat.getMin(),
+                                                            stat.getMax(),
+                                                            stat.arithmeticMean(),
+                                                            stat.median(),
+                                                            0.0,
+                                                            stat.getN(),
+                                                            max_difference_in_counts,
+                                                            max_difference,
+                                                            species_data,
+                                                            isSortBySpeciesCountFirst(),
+                                                            isTreatAsBinaryComparison() );
+            }
+            else {
+                similarity = new PrintableDomainSimilarity( domains_list.get( 0 ),
+                                                            stat.getMin(),
+                                                            stat.getMax(),
+                                                            stat.arithmeticMean(),
+                                                            stat.median(),
+                                                            stat.sampleStandardDeviation(),
+                                                            stat.getN(),
+                                                            max_difference_in_counts,
+                                                            max_difference,
+                                                            species_data,
+                                                            isSortBySpeciesCountFirst(),
+                                                            isTreatAsBinaryComparison() );
+            }
         }
         return similarity;
     }

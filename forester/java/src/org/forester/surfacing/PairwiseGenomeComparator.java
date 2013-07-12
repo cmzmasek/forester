@@ -54,7 +54,6 @@ public class PairwiseGenomeComparator {
     private List<DistanceMatrix> _shared_domains_based_distances;
     private List<DistanceMatrix> _shared_binary_combinations_based_distances;
 
-    //private List<HistogramData>  _histogram_datas;
     public PairwiseGenomeComparator() {
         init();
     }
@@ -63,9 +62,6 @@ public class PairwiseGenomeComparator {
         return _domain_distance_scores_means;
     }
 
-    //public List<HistogramData> getHistogramDatas() {
-    //    return _histogram_datas;
-    //}
     public List<DistanceMatrix> getSharedBinaryCombinationsBasedDistances() {
         return _shared_binary_combinations_based_distances;
     }
@@ -75,7 +71,6 @@ public class PairwiseGenomeComparator {
     }
 
     private void init() {
-        //_histogram_datas = new ArrayList<HistogramData>();
         _domain_distance_scores_means = new ArrayList<DistanceMatrix>();
         _shared_domains_based_distances = new ArrayList<DistanceMatrix>();
         _shared_binary_combinations_based_distances = new ArrayList<DistanceMatrix>();
@@ -102,7 +97,8 @@ public class PairwiseGenomeComparator {
                                             final String command_line_prg_name,
                                             final File out_dir,
                                             final boolean write_pairwise_comparisons,
-                                            final Map<String, Integer> tax_code_to_id_map ) {
+                                            final Map<String, Integer> tax_code_to_id_map,
+                                            final boolean calc_similarity_scores ) {
         init();
         final BasicSymmetricalDistanceMatrix domain_distance_scores_means = new BasicSymmetricalDistanceMatrix( number_of_genomes );
         final BasicSymmetricalDistanceMatrix shared_domains_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );
@@ -146,7 +142,8 @@ public class PairwiseGenomeComparator {
                 }
                 final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( domain_similarity_sort_field,
                                                                                              sort_by_species_count_first,
-                                                                                             true );
+                                                                                             true,
+                                                                                             calc_similarity_scores );
                 final SortedSet<DomainSimilarity> similarities = calc
                         .calculateSimilarities( pw_calc,
                                                 genome_pair,
@@ -203,37 +200,25 @@ public class PairwiseGenomeComparator {
                         }
                         break;
                 }
-                DescriptiveStatistics pw_stats = null;
                 if ( write_pairwise_comparisons ) {
                     try {
                         final Writer writer = new BufferedWriter( new FileWriter( out_dir == null ? pairwise_similarities_output_file_str
                                 : out_dir + ForesterUtil.FILE_SEPARATOR + pairwise_similarities_output_file_str ) );
-                        pw_stats = SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
-                                                                                new StringBuilder( species_i + "-"
-                                                                                        + species_j ),
-                                                                                writer,
-                                                                                null,
-                                                                                similarities,
-                                                                                true,
-                                                                                null,
-                                                                                domain_similarity_print_option,
-                                                                                scoring,
-                                                                                false,
-                                                                                tax_code_to_id_map,
-                                                                                false );
+                        SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
+                                                                     new StringBuilder( species_i + "-" + species_j ),
+                                                                     writer,
+                                                                     null,
+                                                                     similarities,
+                                                                     true,
+                                                                     null,
+                                                                     domain_similarity_print_option,
+                                                                     scoring,
+                                                                     false,
+                                                                     tax_code_to_id_map );
                     }
                     catch ( final IOException e ) {
                         ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""
                                 + pairwise_similarities_output_file_str + "\" [" + e.getMessage() + "]" );
-                    }
-                }
-                if ( pw_stats != null ) {
-                    if ( pw_stats.getMin() >= pw_stats.getMax() ) {
-                        ForesterUtil
-                                .printWarningMessage( command_line_prg_name, "for [" + species_i + "-" + species_j
-                                        + "] score minimum is [" + pw_stats.getMin() + "] while score maximum is ["
-                                        + pw_stats.getMax()
-                                        + "], possibly indicating that a genome is compared to itself" );
                     }
                 }
             }

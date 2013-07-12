@@ -42,7 +42,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     final public static String                              SPECIES_SEPARATOR = "  ";
     final private static int                                EQUAL             = 0;
     final private static String                             NO_SPECIES        = "     ";
-    private static final boolean                            PRINT_MORE_INFO   = false;
     final private double                                    _min;
     final private double                                    _max;
     final private double                                    _mean;
@@ -105,6 +104,43 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             throw new IllegalArgumentException( "illegal species count and n: species count:" + s + ", n:" + _n
                     + " for domain " + combinable_domains.getKeyDomain() );
         }
+        if ( s > 2 ) {
+            if ( getMaximalDifferenceInCounts() < 0 ) {
+                throw new IllegalArgumentException( "attempt to use negative max difference in counts with more than two species" );
+            }
+            if ( getMaximalDifference() < 0 ) {
+                throw new IllegalArgumentException( "attempt to use negative max difference with more than two species" );
+            }
+        }
+    }
+
+    public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
+                                      final int max_difference_in_counts,
+                                      final int max_difference,
+                                      final SortedMap<Species, SpeciesSpecificDcData> species_data,
+                                      final boolean sort_by_species_count_first,
+                                      final boolean treat_as_binary_comparison ) {
+        if ( combinable_domains == null ) {
+            throw new IllegalArgumentException( "attempt to use null combinable domains" );
+        }
+        if ( species_data == null ) {
+            throw new IllegalArgumentException( "attempt to use null species data" );
+        }
+        if ( species_data.size() < 1 ) {
+            throw new IllegalArgumentException( "attempt to use empty species data" );
+        }
+        init();
+        _combinable_domains = combinable_domains;
+        _min = -1;
+        _max = -1;
+        _mean = -1;
+        _sd = -1;
+        _n = -1;
+        _max_difference_in_counts = max_difference_in_counts;
+        _max_difference = max_difference;
+        _species_data = species_data;
+        _treat_as_binary_comparison = treat_as_binary_comparison;
+        final int s = species_data.size();
         if ( s > 2 ) {
             if ( getMaximalDifferenceInCounts() < 0 ) {
                 throw new IllegalArgumentException( "attempt to use negative max difference in counts with more than two species" );
@@ -341,23 +377,25 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( "<a href=\"" + SurfacingConstants.GOOGLE_SCHOLAR_SEARCH + getDomainId()
                 + "\" target=\"gs_window\">gs</a>" );
         sb.append( "</td>" );
-        sb.append( "<td>" );
-        sb.append( ForesterUtil.round( getMeanSimilarityScore(), 3 ) );
-        sb.append( "</td>" );
-        if ( PRINT_MORE_INFO ) {
-            if ( !isTreatAsBinaryComparison() ) {
-                sb.append( "<td>" );
-                sb.append( "(" );
-                sb.append( ForesterUtil.round( getStandardDeviationOfSimilarityScore(), 3 ) );
-                sb.append( ")" );
-                sb.append( "</td>" );
-                sb.append( "<td>" );
-                sb.append( "[" );
-                sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
-                sb.append( "-" );
-                sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
-                sb.append( "]" );
-                sb.append( "</td>" );
+        if ( getMaximalSimilarityScore() > 0 ) {
+            sb.append( "<td>" );
+            sb.append( ForesterUtil.round( getMeanSimilarityScore(), 3 ) );
+            sb.append( "</td>" );
+            if ( SurfacingConstants.PRINT_MORE_DOM_SIMILARITY_INFO ) {
+                if ( !isTreatAsBinaryComparison() ) {
+                    sb.append( "<td>" );
+                    sb.append( "(" );
+                    sb.append( ForesterUtil.round( getStandardDeviationOfSimilarityScore(), 3 ) );
+                    sb.append( ")" );
+                    sb.append( "</td>" );
+                    sb.append( "<td>" );
+                    sb.append( "[" );
+                    sb.append( ForesterUtil.round( getMinimalSimilarityScore(), 3 ) );
+                    sb.append( "-" );
+                    sb.append( ForesterUtil.round( getMaximalSimilarityScore(), 3 ) );
+                    sb.append( "]" );
+                    sb.append( "</td>" );
+                }
             }
         }
         sb.append( "<td>" );

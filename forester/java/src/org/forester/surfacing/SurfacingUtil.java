@@ -1665,36 +1665,18 @@ public final class SurfacingUtil {
         }
     }
 
-    public static DescriptiveStatistics writeDomainSimilaritiesToFile( final StringBuilder html_desc,
-                                                                       final StringBuilder html_title,
-                                                                       final Writer single_writer,
-                                                                       Map<Character, Writer> split_writers,
-                                                                       final SortedSet<DomainSimilarity> similarities,
-                                                                       final boolean treat_as_binary,
-                                                                       final List<Species> species_order,
-                                                                       final PrintableDomainSimilarity.PRINT_OPTION print_option,
-                                                                       final DomainSimilarity.DomainSimilarityScoring scoring,
-                                                                       final boolean verbose,
-                                                                       final Map<String, Integer> tax_code_to_id_map,
-                                                                       final boolean print_some_stats )
+    public static void writeDomainSimilaritiesToFile( final StringBuilder html_desc,
+                                                      final StringBuilder html_title,
+                                                      final Writer single_writer,
+                                                      Map<Character, Writer> split_writers,
+                                                      final SortedSet<DomainSimilarity> similarities,
+                                                      final boolean treat_as_binary,
+                                                      final List<Species> species_order,
+                                                      final PrintableDomainSimilarity.PRINT_OPTION print_option,
+                                                      final DomainSimilarity.DomainSimilarityScoring scoring,
+                                                      final boolean verbose,
+                                                      final Map<String, Integer> tax_code_to_id_map )
             throws IOException {
-        DescriptiveStatistics stats = null;
-        AsciiHistogram histo = null;
-        if ( print_some_stats ) {
-            stats = new BasicDescriptiveStatistics();
-            final String histogram_title = "score mean distribution:";
-            for( final DomainSimilarity similarity : similarities ) {
-                stats.addValue( similarity.getMeanSimilarityScore() );
-            }
-            try {
-                if ( stats.getMin() < stats.getMax() ) {
-                    histo = new AsciiHistogram( stats, histogram_title );
-                }
-            }
-            catch ( final Exception e ) {
-                histo = null;
-            }
-        }
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );
@@ -1718,9 +1700,6 @@ public final class SurfacingUtil {
                     w.write( SurfacingConstants.NL );
                     w.write( html_desc.toString() );
                     w.write( SurfacingConstants.NL );
-                    if ( print_some_stats ) {
-                        printSomeStats( stats, histo, w );
-                    }
                     w.write( "<hr>" );
                     w.write( SurfacingConstants.NL );
                     w.write( "<br>" );
@@ -1798,7 +1777,6 @@ public final class SurfacingUtil {
         for( final Writer w : split_writers.values() ) {
             w.close();
         }
-        return stats;
     }
 
     private static void printSomeStats( final DescriptiveStatistics stats, final AsciiHistogram histo, final Writer w )

@@ -225,8 +225,8 @@ public class surfacing {
     final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.300";
-    final static private String                               PRG_DATE                                                                      = "130711";
+    final static private String                               PRG_VERSION                                                                   = "2.301";
+    final static private String                               PRG_DATE                                                                      = "130712";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -278,6 +278,7 @@ public class surfacing {
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
     public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
+    private static final boolean                              CALC_SIMILARITY_SCORES                                                        = false;
 
     private static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                  final String[][] input_file_properties,
@@ -1631,7 +1632,7 @@ public class surfacing {
             all_bin_domain_combinations_gained_fitch = new ArrayList<BinaryDomainCombination>();
             all_bin_domain_combinations_lost_fitch = new ArrayList<BinaryDomainCombination>();
         }
-        final DomainLengthsTable domain_lengths_table = new DomainLengthsTable();
+        DomainLengthsTable domain_lengths_table = new DomainLengthsTable();
         final File per_genome_domain_promiscuity_statistics_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR
                 + output_file + D_PROMISCUITY_FILE_SUFFIX );
         BufferedWriter per_genome_domain_promiscuity_statistics_writer = null;
@@ -2009,12 +2010,13 @@ public class surfacing {
             ForesterUtil.programMessage( PRG_NAME, "Wrote domain length data to: " + domain_lengths_analysis_outfile );
             System.out.println();
         }
+        domain_lengths_table = null;
         final long analysis_start_time = new Date().getTime();
         PairwiseDomainSimilarityCalculator pw_calc = null;
-        // double[] values_for_all_scores_histogram = null;
         final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( domain_similarity_sort_field,
                                                                                      sort_by_species_count_first,
-                                                                                     number_of_genomes == 2 );
+                                                                                     number_of_genomes == 2,
+                                                                                     CALC_SIMILARITY_SCORES );
         switch ( scoring ) {
             case COMBINATIONS:
                 pw_calc = new CombinationsBasedPairwiseDomainSimilarityCalculator();
@@ -2069,19 +2071,17 @@ public class surfacing {
                     + new java.text.SimpleDateFormat( "yyyy.MM.dd HH:mm:ss" ).format( new java.util.Date() )
                     + "</td></tr>" + nl );
             html_desc.append( "</table>" + nl );
-            final DescriptiveStatistics pw_stats = SurfacingUtil
-                    .writeDomainSimilaritiesToFile( html_desc,
-                                                    new StringBuilder( number_of_genomes + " genomes" ),
-                                                    writer,
-                                                    split_writers,
-                                                    similarities,
-                                                    number_of_genomes == 2,
-                                                    species_order,
-                                                    domain_similarity_print_option,
-                                                    scoring,
-                                                    true,
-                                                    tax_code_to_id_map,
-                                                    false );
+            SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
+                                                         new StringBuilder( number_of_genomes + " genomes" ),
+                                                         writer,
+                                                         split_writers,
+                                                         similarities,
+                                                         number_of_genomes == 2,
+                                                         species_order,
+                                                         domain_similarity_print_option,
+                                                         scoring,
+                                                         true,
+                                                         tax_code_to_id_map );
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
         }
@@ -2118,7 +2118,8 @@ public class surfacing {
                                              surfacing.PRG_NAME,
                                              out_dir,
                                              write_pwc_files,
-                                             tax_code_to_id_map );
+                                             tax_code_to_id_map,
+                                             CALC_SIMILARITY_SCORES );
             String matrix_output_file = new String( output_file.toString() );
             if ( matrix_output_file.indexOf( '.' ) > 1 ) {
                 matrix_output_file = matrix_output_file.substring( 0, matrix_output_file.indexOf( '.' ) );

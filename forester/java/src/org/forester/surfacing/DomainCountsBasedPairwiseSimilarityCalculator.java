@@ -35,8 +35,12 @@ public class DomainCountsBasedPairwiseSimilarityCalculator implements PairwiseDo
         if ( !domains_1.getKeyDomain().equals( domains_2.getKeyDomain() ) ) {
             throw new IllegalArgumentException( "attempt to calculate similarity between domain collection with different keys" );
         }
-        final int dc1 = domains_1.getKeyDomainCount();
-        final int dc2 = domains_2.getKeyDomainCount();
-        return new CountsBasedPairwiseDomainSimilarity( dc1 - dc2, dc1 + dc2 );
+        if ( ( domains_1.getKeyDomainCount() > Short.MAX_VALUE ) || ( domains_2.getKeyDomainCount() > Short.MAX_VALUE )
+                || ( ( domains_1.getKeyDomainCount() + domains_2.getKeyDomainCount() ) > Short.MAX_VALUE ) ) {
+            throw new IllegalArgumentException( "too large for short!" );
+        }
+        final short dc1 = ( short ) domains_1.getKeyDomainCount();
+        final short dc2 = ( short ) domains_2.getKeyDomainCount();
+        return new CountsBasedPairwiseDomainSimilarity( ( short ) ( dc1 - dc2 ), ( short ) ( dc1 + dc2 ) );
     }
 }

@@ -29,8 +29,8 @@ package org.forester.surfacing;
 
 public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimilarity {
 
-    private final double _score;
-    private final int    _copy_number_difference;
+    private final short _copy_number_difference;
+    private final short _counts_sum;
 
     /**
      * counts_difference: (counts for domain 1) minus (counts for domain 2).
@@ -39,16 +39,15 @@ public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimila
      * @param counts_difference value of domain_1 minus value of domain_2
      * @param counts_sum
      */
-    public CountsBasedPairwiseDomainSimilarity( final int counts_difference, final int counts_sum ) {
+    public CountsBasedPairwiseDomainSimilarity( final short counts_difference, final short counts_sum ) {
         if ( counts_sum <= 0 ) {
             throw new IllegalArgumentException( "attempt to use copy sum of less than or equal to 0: " + counts_sum );
         }
-        _copy_number_difference = counts_difference;
-        final int abs_copy_number_difference = Math.abs( counts_difference );
-        if ( abs_copy_number_difference > counts_sum ) {
+        if ( Math.abs( counts_difference ) > counts_sum ) {
             throw new IllegalArgumentException( "attempt to use absolute copy number difference larger than copy number sum" );
         }
-        _score = 1.0 - ( ( double ) abs_copy_number_difference / counts_sum );
+        _copy_number_difference = counts_difference;
+        _counts_sum = counts_sum;
     }
 
     /**
@@ -62,6 +61,6 @@ public class CountsBasedPairwiseDomainSimilarity implements PairwiseDomainSimila
 
     @Override
     public double getSimilarityScore() {
-        return _score;
+        return ( 1.0 - ( ( double ) Math.abs( _copy_number_difference ) / _counts_sum ) );
     }
 }
