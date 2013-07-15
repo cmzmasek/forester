@@ -97,46 +97,60 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
     public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, final boolean html ) {
         final StringBuffer sb = new StringBuffer();
         if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
-            sb.append( " " );
-            sb.append( getKeyDomainDomainsCount() );
-            sb.append( ", " );
-            sb.append( getKeyDomainProteinsCount() );
-            sb.append( ", " );
-            sb.append( getCombinableDomainsCount() );
-            if ( !getCombinableDomainIdToCountsMap().isEmpty() ) {
-                sb.append( ":" );
-            }
-        }
-        final Set<String> ids = getCombinableDomainIdToCountsMap().keySet();
-        int i = 0;
-        for( final String domain_id : ids ) {
-            ++i;
-            sb.append( " " );
             if ( html ) {
-                sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
-                        + "</a>" );
+                sb.append( " " );
             }
-            else {
-                sb.append( domain_id );
-            }
-            if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
-                sb.append( ":" );
-                sb.append( getCombinableDomainIdToCountsMap().get( domain_id ) );
-            }
-        }
-        sb.append( " [" );
-        boolean first = true;
-        for( final String p : getKeyDomainProteins() ) {
-            final String link = obtainSeqLink( p );
-            if ( first ) {
-                first = false;
-            }
-            else {
+            sb.append( getKeyDomainDomainsCount() );
+            if ( html ) {
                 sb.append( ", " );
             }
-            sb.append( link );
+            else {
+                sb.append( "\t" );
+            }
+            sb.append( getKeyDomainProteinsCount() );
+            if ( html ) {
+                sb.append( ", " );
+            }
+            else {
+                sb.append( "\t" );
+            }
+            sb.append( getCombinableDomainsCount() );
+            if ( html && !getCombinableDomainIdToCountsMap().isEmpty() ) {
+                sb.append( ":" );
+            }
         }
-        sb.append( "]" );
+        if ( html ) {
+            final Set<String> ids = getCombinableDomainIdToCountsMap().keySet();
+            int i = 0;
+            for( final String domain_id : ids ) {
+                ++i;
+                sb.append( " " );
+                if ( html ) {
+                    sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
+                            + "</a>" );
+                }
+                else {
+                    sb.append( domain_id );
+                }
+                if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
+                    sb.append( ":" );
+                    sb.append( getCombinableDomainIdToCountsMap().get( domain_id ) );
+                }
+            }
+            sb.append( " [" );
+            boolean first = true;
+            for( final String p : getKeyDomainProteins() ) {
+                final String link = obtainSeqLink( p );
+                if ( first ) {
+                    first = false;
+                }
+                else {
+                    sb.append( ", " );
+                }
+                sb.append( link );
+            }
+            sb.append( "]" );
+        }
         return sb;
     }
 

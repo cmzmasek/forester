@@ -162,14 +162,19 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( species.getSpeciesId() );
         }
         if ( getDetaildness() != DomainSimilarityCalculator.Detailedness.BASIC ) {
-            sb.append( ":" );
+            if ( html ) {
+                sb.append( ":" );
+            }
+            else {
+                sb.append( "\t" );
+            }
             sb.append( getSpeciesData().get( species ).toStringBuffer( getDetaildness(), html ) );
         }
         if ( html ) {
             sb.append( "<br>" );
         }
         else {
-            sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
+            sb.append( "\n\t" );
         }
     }
 
@@ -435,6 +440,9 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     private StringBuffer toStringBufferSimpleTabDelimited() {
         final StringBuffer sb = new StringBuffer();
         sb.append( getDomainId() );
+        sb.append( "\t" );
+        sb.append( getSpeciesDataInAlphabeticalOrder( false, null ) );
+        sb.append( "\n" );
         return sb;
     }
 

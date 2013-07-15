@@ -83,6 +83,7 @@ import org.forester.protein.Protein;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
+import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -1667,6 +1668,7 @@ public final class SurfacingUtil {
 
     public static void writeDomainSimilaritiesToFile( final StringBuilder html_desc,
                                                       final StringBuilder html_title,
+                                                      final Writer simple_tab_writer,
                                                       final Writer single_writer,
                                                       Map<Character, Writer> split_writers,
                                                       final SortedSet<DomainSimilarity> similarities,
@@ -1744,6 +1746,10 @@ public final class SurfacingUtil {
         for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
+            }
+            if ( simple_tab_writer != null ) {
+                simple_tab_writer.write( similarity.toStringBuffer( PRINT_OPTION.SIMPLE_TAB_DELIMITED,
+                                                                    tax_code_to_id_map ).toString() );
             }
             if ( single_writer != null ) {
                 single_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );

@@ -225,8 +225,8 @@ public class surfacing {
     final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.301";
-    final static private String                               PRG_DATE                                                                      = "130712";
+    final static private String                               PRG_VERSION                                                                   = "2.302";
+    final static private String                               PRG_DATE                                                                      = "130715";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
@@ -2071,8 +2071,11 @@ public class surfacing {
                     + new java.text.SimpleDateFormat( "yyyy.MM.dd HH:mm:ss" ).format( new java.util.Date() )
                     + "</td></tr>" + nl );
             html_desc.append( "</table>" + nl );
+            final Writer simple_tab_writer = new BufferedWriter( new FileWriter( out_dir + ForesterUtil.FILE_SEPARATOR
+                    + my_outfile + ".tsv" ) );
             SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
                                                          new StringBuilder( number_of_genomes + " genomes" ),
+                                                         simple_tab_writer,
                                                          writer,
                                                          split_writers,
                                                          similarities,
@@ -2082,6 +2085,7 @@ public class surfacing {
                                                          scoring,
                                                          true,
                                                          tax_code_to_id_map );
+            simple_tab_writer.close();
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
         }

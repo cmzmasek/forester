@@ -206,6 +206,7 @@ public class PairwiseGenomeComparator {
                                 : out_dir + ForesterUtil.FILE_SEPARATOR + pairwise_similarities_output_file_str ) );
                         SurfacingUtil.writeDomainSimilaritiesToFile( html_desc,
                                                                      new StringBuilder( species_i + "-" + species_j ),
+                                                                     null,
                                                                      writer,
                                                                      null,
                                                                      similarities,
