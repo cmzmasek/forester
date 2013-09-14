@@ -4,9 +4,9 @@ package org.forester.application;
 import java.io.File;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
-import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -32,15 +32,16 @@ public class simple_node_processor {
             final PhyloXmlParser xml_parser = new PhyloXmlParser();
             final Phylogeny[] phylogenies_0 = factory.create( in, xml_parser );
             final Phylogeny phylogeny_0 = phylogenies_0[ 0 ];
-            final PhylogenyNodeIterator it = phylogeny_0.iteratorPostorder();
+            // final PhylogenyNodeIterator it = phylogeny_0.iteratorPostorder();
+            final PhylogenyNodeIterator it = phylogeny_0.iteratorExternalForward();
             int i = 0;
             while ( it.hasNext() ) {
                 final PhylogenyNode node = it.next();
-                processNode( node, i );
+                processNode( node, i, out.toString() );
                 i++;
             }
-            final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( out, phylogeny_0, 0 );
+            //   final PhylogenyWriter writer = new PhylogenyWriter();
+            //   writer.toPhyloXML( out, phylogeny_0, 0 );
         }
         catch ( final Exception e ) {
             System.out.println( e.getLocalizedMessage() );
@@ -57,7 +58,7 @@ public class simple_node_processor {
     //            }
     //        }
     //    }
-    private static void processNode( final PhylogenyNode node, final int i ) {
+    private static void processNode( final PhylogenyNode node, final int i, String label ) {
         //if ( node.isExternal() ) {
         //    final String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
         //    final String s = node.getNodeData().getTaxonomy().getScientificName();
@@ -85,10 +86,13 @@ public class simple_node_processor {
                 //        node.setName( "" );
                 //    }
                 //}
-                node.setName( "" );
+                // node.setName( "" );
+                Taxonomy t = node.getNodeData().getTaxonomy();
+                System.out.println( t.getTaxonomyCode() + "\t" + t.getScientificName() + "\t" + t.getCommonName()
+                        + "\t" + label );
             }
             else {
-                System.out.println( "node " + node + " has not tax" );
+                //System.out.println( "node " + node + " has not tax" );
             }
         }
     }
