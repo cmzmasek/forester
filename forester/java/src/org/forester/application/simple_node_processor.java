@@ -58,7 +58,7 @@ public class simple_node_processor {
     //            }
     //        }
     //    }
-    private static void processNode( final PhylogenyNode node, final int i, String label ) {
+    private static void processNode( final PhylogenyNode node, final int i, final String label ) {
         //if ( node.isExternal() ) {
         //    final String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
         //    final String s = node.getNodeData().getTaxonomy().getScientificName();
@@ -87,7 +87,7 @@ public class simple_node_processor {
                 //    }
                 //}
                 // node.setName( "" );
-                Taxonomy t = node.getNodeData().getTaxonomy();
+                final Taxonomy t = node.getNodeData().getTaxonomy();
                 System.out.println( t.getTaxonomyCode() + "\t" + t.getScientificName() + "\t" + t.getCommonName()
                         + "\t" + label );
             }

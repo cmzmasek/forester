@@ -1758,6 +1758,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     case TAXONOMY_CODE:
                         s = "Taxonomy Codes";
                         break;
+                    case TAXONOMY_COMM0N_NAME:
+                        s = "Taxonomy Common Names";
+                        break;
                     case TAXONOMY_SCIENTIFIC_NAME:
                         s = "Scientific Names";
                         break;

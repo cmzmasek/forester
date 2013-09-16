@@ -1441,6 +1441,9 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "taxonomy_code" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_CODE );
             }
+            else if ( s.equalsIgnoreCase( "taxonomy_common_name" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.TAXONOMY_COMM0N_NAME );
+            }
             else if ( s.equalsIgnoreCase( "user_selected" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.UNKNOWN );
             }

@@ -344,6 +344,10 @@ public final class AptxUtil {
                 && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) {
             showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getScientificName(), sb );
         }
+        if ( cp.isShowTaxonomyCommonNames() && node.getNodeData().isHasTaxonomy()
+                && !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) {
+            showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(), sb );
+        }
         if ( ( cp.isShowGeneNames() || cp.isShowGeneSymbols() || cp.isShowSequenceAcc() )
                 && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
@@ -784,6 +788,9 @@ public final class AptxUtil {
             if ( taxs != null ) {
                 desc.append( "Distinct external taxonomies: " );
                 desc.append( taxs.size() );
+            }
+            for( final Taxonomy t : taxs ) {
+                System.out.println( t.toString() );
             }
             desc.append( "\n" );
             final DescriptiveStatistics bs = PhylogenyMethods.calculatBranchLengthStatistics( phy );

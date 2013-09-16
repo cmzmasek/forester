@@ -3243,6 +3243,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 return "Scientific Names";
             case TAXONOMY_CODE:
                 return "Taxonomy Codes";
+            case TAXONOMY_COMM0N_NAME:
+                return "Taxonomy Common Names";
             case UNKNOWN:
                 return "User Selected Data";
             default:
@@ -5117,6 +5119,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( n.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                         data.add( n.getNodeData().getTaxonomy().getScientificName() );
+                    }
+                    break;
+                case TAXONOMY_COMM0N_NAME:
+                    if ( n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) ) {
+                        data.add( n.getNodeData().getTaxonomy().getCommonName() );
                     }
                     break;
                 case TAXONOMY_CODE:
