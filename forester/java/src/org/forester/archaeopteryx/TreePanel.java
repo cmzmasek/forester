@@ -76,8 +76,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
@@ -5098,14 +5101,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     final StringBuilder sb = new StringBuilder();
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getMolecularSequence() ) ) {
+                        final StringBuilder ann = new StringBuilder();
+                        if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                            ann.append( n.getName() );
+                            ann.append( "|" );
+                        }
+                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
+                            ann.append( "SYM=" );
+                            ann.append( n.getNodeData().getSequence().getSymbol() );
+                            ann.append( "|" );
+                        }
                         if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
-                            sb.append( SequenceWriter.toFasta( n.getNodeData().getSequence().getName(), n.getNodeData()
-                                    .getSequence().getMolecularSequence(), 60 ) );
+                            ann.append( "NAME=" );
+                            ann.append( n.getNodeData().getSequence().getName() );
+                            ann.append( "|" );
                         }
-                        else {
-                            sb.append( SequenceWriter.toFasta( n.getName(), n.getNodeData().getSequence()
-                                    .getMolecularSequence(), 60 ) );
+                        if ( n.getNodeData().getSequence().getAccession() != null ) {
+                            ann.append( "ACC=" );
+                            ann.append( n.getNodeData().getSequence().getAccession().asText() );
+                            ann.append( "|" );
                         }
+                        if ( n.getNodeData().isHasTaxonomy() ) {
+                            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) {
+                                ann.append( "TAXID=" );
+                                ann.append( n.getNodeData().getTaxonomy().getTaxonomyCode() );
+                                ann.append( "|" );
+                            }
+                            if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                                ann.append( "SN=" );
+                                ann.append( n.getNodeData().getTaxonomy().getScientificName() );
+                                ann.append( "|" );
+                            }
+                        }
+                        String ann_str = ann.toString().trim();
+                        if ( ann_str.endsWith( "|" ) ) {
+                            ann_str = ann_str.substring( 0, ann_str.length() - 1 );
+                        }
+                        sb.append( SequenceWriter.toFasta( ann_str, n.getNodeData().getSequence()
+                                .getMolecularSequence(), 60 ) );
                         data.add( sb.toString() );
                     }
                     break;
@@ -5141,17 +5174,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             + getOptions().getExtDescNodeDataToReturn() );
             }
         } // for loop
+        final StringBuilder sb = new StringBuilder();
+        final int size = makeSB( data, getOptions(), sb );
         if ( ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE )
                 || ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.BUFFER_ONLY ) ) {
-            final StringBuilder sb = new StringBuilder();
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
-                        System.out.println( d );
-                    }
-                    sb.append( d );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
+            if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.CONSOLE ) {
+                System.out.println( sb );
             }
             if ( sb.length() < 1 ) {
                 clearCurrentExternalNodesDataBuffer();
@@ -5161,13 +5189,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
-            final StringBuilder sb = new StringBuilder();
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    sb.append( d );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
             if ( sb.length() < 1 ) {
                 AptxUtil.showInformationMessage( this,
                                                  "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
@@ -5176,10 +5197,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             else {
                 setCurrentExternalNodesDataBuffer( sb );
-                final String title = "External Descendants "
-                        + ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.UNKNOWN ? "Data"
-                                : obtainTitleForExtDescNodeData() ) + " (" + data.size() + "/"
-                        + node.getNumberOfExternalNodes() + ") For Node " + node;
+                final String title = ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.UNKNOWN ? "Data"
+                        : obtainTitleForExtDescNodeData() )
+                        + " for "
+                        + data.size()
+                        + "/"
+                        + node.getNumberOfExternalNodes()
+                        + " external descendats of node "
+                        + node
+                        + ", unique entries: " + size;
                 final String s = sb.toString().trim();
                 if ( getMainPanel().getMainFrame() == null ) {
                     // Must be "E" applet version.
@@ -5191,6 +5217,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
+    }
+
+    private int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
+        final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    if ( map.containsKey( d ) ) {
+                        map.put( d, map.get( d ) + 1 );
+                    }
+                    else {
+                        map.put( d, 1 );
+                    }
+                }
+            }
+        }
+        int size = 0;
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final Entry<String, Integer> e : map.entrySet() ) {
+                final String v = e.getKey();
+                final Object c = e.getValue();
+                sb.append( v );
+                sb.append( "\t" );
+                sb.append( c );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            size = map.size();
+        }
+        else {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    sb.append( d );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            size = data.size();
+        }
+        return size;
     }
 
     final private void showNodeDataPopup( final MouseEvent e, final PhylogenyNode node ) {
