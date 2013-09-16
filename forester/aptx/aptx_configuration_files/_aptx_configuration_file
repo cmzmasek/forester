@@ -80,6 +80,7 @@ native_ui: ?
 #                      sequence_symbol
 #                      taxonomy_scientific_name
 #                      taxonomy_code
+#                      taxonomy_common_name
 #                      user_selected
 #
 #  To determine where to return data selected by user clicking on "Return ...": 'ext_descendents_data_to_return_on'
@@ -166,7 +167,7 @@ confidence_value_digits:                   3
 background_gradient:                       no
 allow_editing:                             yes
 ext_descendents_data_to_return_on:         window
-ext_descendents_data_to_return:            sequence_mol_seq_fasta
+ext_descendents_data_to_return:            user_selected
 #label_for_get_ext_descendents_data:        Get_Node_Data         
 #  NH/NHX/Nexus file parsing:
 internal_labels_are_confidence_values:     no
