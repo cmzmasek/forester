@@ -329,6 +329,7 @@ species_color: CIOSA        0xFF2CAE
 species_color: BOVIN        0x5C3317
 species_color: CANFA        0x8B2323
 species_color: HUMAN        0xFF2400
+species_color: Homo_sapiens 0xFF2400
 species_color: PANTR        0xCC2400
 species_color: MOUSE        0xFF7F00
 species_color: RAT          0xFFEF00
