@@ -254,7 +254,7 @@ module Evoruby
       puts()
       puts( "  " + PRG_NAME + ".rb [options] <domain> <hmmscan outputfile> <file containing complete sequences in fasta format> <outputfile>" )
       puts()
-      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f>: E-value threshold, default is no threshold" )
+      puts( "  options: -" + E_VALUE_THRESHOLD_OPTION  + "=<f>: iE-value threshold, default is no threshold" )
       puts( "           -" + LENGTH_THRESHOLD_OPTION   + "=<i>: length threshold, default is no threshold" )
       puts( "           -" + ADD_POSITION_OPTION  + ": to add positions (rel to complete seq) to extracted domains" )
       puts( "           -" + ADD_DOMAIN_NUMBER_OPTION  + ": to add numbers to extracted domains (in case of more than one domain per complete seq) (example \"domain~2-3\")" )
