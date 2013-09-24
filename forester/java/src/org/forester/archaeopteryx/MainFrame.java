@@ -111,6 +111,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         FONT_SIZE_MENU_LABEL                    = "Font Size";
     static final String         NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
     static final String         SHOW_DOMAIN_LABELS_LABEL                = "Show Domain Labels";
+    static final String         SHOW_ANN_REF_SOURCE_LABEL               = "Show Seq Annotation Ref Sources";
     static final String         COLOR_LABELS_TIP                        = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String         ABBREV_SN_LABEL                         = "Abbreviate Scientific Taxonomic Names";
     static final String         TAXONOMY_COLORIZE_NODE_SHAPES_LABEL     = "Colorize Node Shapes According to Taxonomy";
@@ -179,6 +180,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JCheckBoxMenuItem           _show_scale_cbmi;                                                                                                                                                                                             //TODO fix me
     JCheckBoxMenuItem           _show_overview_cbmi;
     JCheckBoxMenuItem           _show_domain_labels;
+    JCheckBoxMenuItem           _show_annotation_ref_source;
     JCheckBoxMenuItem           _abbreviate_scientific_names;
     JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
     JMenuItem                   _overview_placment_mi;
@@ -386,6 +388,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_domain_labels ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _show_annotation_ref_source ) {
             updateOptions( getOptions() );
         }
         else if ( o == _abbreviate_scientific_names ) {
@@ -1260,6 +1265,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setBackgroundColorGradient( ( _background_gradient_cbmi != null )
                 && _background_gradient_cbmi.isSelected() );
         options.setShowDomainLabels( ( _show_domain_labels != null ) && _show_domain_labels.isSelected() );
+        options.setShowAnnotationRefSource( ( _show_annotation_ref_source != null )
+                && _show_annotation_ref_source.isSelected() );
         options.setAbbreviateScientificTaxonNames( ( _abbreviate_scientific_names != null )
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )

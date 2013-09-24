@@ -621,7 +621,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         && ( node.getNodeData().getSequence().getAnnotations() != null )
                         && !node.getNodeData().getSequence().getAnnotations().isEmpty() ) {
                     sum += getTreeFontSet()._fm_large.stringWidth( AptxUtil.createAnnotationString( node.getNodeData()
-                            .getSequence().getAnnotations() )
+                            .getSequence().getAnnotations(), getOptions().isShowAnnotationRefSource() )
                             + " " );
                 }
                 if ( getControlPanel().isShowDomainArchitectures()
@@ -4095,7 +4095,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
-            final String ann_str = AptxUtil.createAnnotationString( ann );
+            final String ann_str = AptxUtil.createAnnotationString( ann, getOptions().isShowAnnotationRefSource() );
             TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
             _sb.setLength( 0 );
@@ -4483,6 +4483,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                 && ( node.getNodeData().getSequence().getAccession() != null ) ) {
                             x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence()
                                     .getAccession().toString()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowAnnotation()
+                                && ( node.getNodeData().getSequence().getAnnotations() != null )
+                                && ( !node.getNodeData().getSequence().getAnnotations().isEmpty() ) ) {
+                            x += getTreeFontSet()._fm_large.stringWidth( AptxUtil.createAnnotationString( node
+                                    .getNodeData().getSequence().getAnnotations(), getOptions()
+                                    .isShowAnnotationRefSource() )
                                     + " " );
                         }
                     }

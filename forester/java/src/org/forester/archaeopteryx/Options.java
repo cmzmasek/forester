@@ -72,6 +72,7 @@ final public class Options {
     private boolean                           _editable;
     private boolean                           _background_color_gradient;
     private boolean                           _show_domain_labels;
+    private boolean                           _show_annotation_ref_source;
     private boolean                           _color_labels_same_as_parent_branch;
     private boolean                           _abbreviate_scientific_names;
     private NodeVisualization.NodeShape       _default_node_shape;
@@ -94,6 +95,14 @@ final public class Options {
 
     public final boolean isShowDomainLabels() {
         return _show_domain_labels;
+    }
+
+    public final boolean isShowAnnotationRefSource() {
+        return _show_annotation_ref_source;
+    }
+
+    public final void setShowAnnotationRefSource( final boolean show_annotation_ref_source ) {
+        _show_annotation_ref_source = show_annotation_ref_source;
     }
 
     public void setBackgroundColorGradient( final boolean background_color_gradient ) {
@@ -461,6 +470,7 @@ final public class Options {
         _taxonomy_extraction = TAXONOMY_EXTRACTION.NO;
         _cladogram_type = Constants.CLADOGRAM_TYPE_DEFAULT;
         _show_domain_labels = true;
+        _show_annotation_ref_source = true;
         setAbbreviateScientificTaxonNames( false );
         _color_labels_same_as_parent_branch = false;
         _show_confidence_stddev = true;
@@ -503,6 +513,7 @@ final public class Options {
             instance.setEditable( configuration.isEditable() );
             instance.setColorLabelsSameAsParentBranch( configuration.isColorLabelsSameAsParentBranch() );
             instance.setShowDomainLabels( configuration.isShowDomainLabels() );
+            instance.setShowAnnotationRefSource( configuration.isShowAnnotationRefSource() );
             instance.setAbbreviateScientificTaxonNames( configuration.isAbbreviateScientificTaxonNames() );
             if ( configuration.getMinConfidenceValue() != MIN_CONFIDENCE_DEFAULT ) {
                 instance.setMinConfidenceValue( configuration.getMinConfidenceValue() );

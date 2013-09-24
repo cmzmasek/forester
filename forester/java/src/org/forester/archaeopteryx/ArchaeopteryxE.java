@@ -97,6 +97,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _aptx_ref_item;
     private JMenuItem                   _remove_branch_color_item;
     private JCheckBoxMenuItem           _show_domain_labels;
+    private JCheckBoxMenuItem           _show_annotation_ref_source;
     private JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
     private JCheckBoxMenuItem           _abbreviate_scientific_names;
     private JCheckBoxMenuItem           _screen_antialias_cbmi;
@@ -745,6 +746,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
         customizeCheckBoxMenuItem( _show_domain_labels, getOptions().isShowDomainLabels() );
+        customizeCheckBoxMenuItem( _show_annotation_ref_source, getOptions().isShowAnnotationRefSource() );
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_external_cbmi, getOptions()
                 .isShowDefaultNodeShapesExternal() );
@@ -1280,6 +1282,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         options.setBackgroundColorGradient( ( _background_gradient_cbmi != null )
                 && _background_gradient_cbmi.isSelected() );
         options.setShowDomainLabels( ( _show_domain_labels != null ) && _show_domain_labels.isSelected() );
+        options.setShowAnnotationRefSource( ( _show_annotation_ref_source != null )
+                && _show_annotation_ref_source.isSelected() );
         options.setAbbreviateScientificTaxonNames( ( _abbreviate_scientific_names != null )
                 && _abbreviate_scientific_names.isSelected() );
         options.setColorLabelsSameAsParentBranch( ( _color_labels_same_as_parent_branch != null )

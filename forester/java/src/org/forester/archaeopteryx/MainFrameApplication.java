@@ -912,6 +912,7 @@ public final class MainFrameApplication extends MainFrame {
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( SHOW_DOMAIN_LABELS_LABEL ) );
         }
+        _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _choose_minimal_confidence_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _overview_placment_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _switch_colors_mi = new JMenuItem( "" ) );
@@ -984,6 +985,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
         customizeCheckBoxMenuItem( _show_domain_labels, getOptions().isShowDomainLabels() );
+        customizeCheckBoxMenuItem( _show_annotation_ref_source, getOptions().isShowAnnotationRefSource() );
         customizeCheckBoxMenuItem( _abbreviate_scientific_names, getOptions().isAbbreviateScientificTaxonNames() );
         customizeCheckBoxMenuItem( _search_case_senstive_cbmi, getOptions().isSearchCaseSensitive() );
         customizeCheckBoxMenuItem( _show_scale_cbmi, getOptions().isShowScale() );

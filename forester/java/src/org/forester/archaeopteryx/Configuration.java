@@ -89,6 +89,7 @@ public final class Configuration {
     private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
     private boolean                         _background_color_gradient                             = false;
     private boolean                         _show_domain_labels                                    = true;
+    private boolean                         _show_annotation_ref_source                            = true;
     private boolean                         _abbreviate_scientific_names                           = false;
     private boolean                         _color_labels_same_as_parent_branch                    = false;
     private boolean                         _show_default_node_shapes_internal                     = false;
@@ -1193,6 +1194,9 @@ public final class Configuration {
         else if ( key.equals( "show_domain_labels" ) ) {
             setShowDomainLabels( parseBoolean( ( String ) st.nextElement() ) );
         }
+        else if ( key.equals( "show_seq_annotation_ref_sources" ) ) {
+            setShowAnnotationRefSource( parseBoolean( ( String ) st.nextElement() ) );
+        }
         else if ( key.equals( "abbreviate_scientific_names" ) ) {
             setAbbreviateScientificTaxonNames( parseBoolean( ( String ) st.nextElement() ) );
         }
@@ -1653,6 +1657,10 @@ public final class Configuration {
         }
     }
 
+    private void setShowAnnotationRefSource( final boolean b ) {
+        _show_annotation_ref_source = b;
+    }
+
     private void setLabelForGetExtDescendentsData( final String label_for_get_ext_descendents_data ) {
         _label_for_get_ext_descendents_data = label_for_get_ext_descendents_data;
     }
@@ -1711,5 +1719,9 @@ public final class Configuration {
 
     public void setMidpointReroot( final boolean midpoint_root ) {
         _midpoint_root = midpoint_root;
+    }
+
+    public boolean isShowAnnotationRefSource() {
+        return _show_annotation_ref_source;
     }
 }

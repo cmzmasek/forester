@@ -566,22 +566,16 @@ public final class AptxUtil {
                 }
             }
             else if ( my_str.length() > 2 ) {
-                third = ( char ) ( Math.abs( str.hashCode() / 16909320 ) );
-                System.out.println( str.hashCode() );
+                third = my_str.charAt( ( my_str.length() - 1 ) / 2 );
             }
         }
         first = AptxUtil.normalizeCharForRGB( first );
         second = AptxUtil.normalizeCharForRGB( second );
-        if ( is_taxonomy ) {
-            third = AptxUtil.normalizeCharForRGB( third );
-        }
-        else {
-            third = third > 255 ? 255 : third;
-        }
+        third = AptxUtil.normalizeCharForRGB( third );
         if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
             first = 0;
         }
-        else if ( ( first < 80 ) && ( second < 80 ) && ( third < 80 ) ) {
+        else if ( ( first < 60 ) && ( second < 60 ) && ( third < 60 ) ) {
             second = 255;
         }
         return new Color( first, second, third );
@@ -750,7 +744,7 @@ public final class AptxUtil {
         return colorizations;
     }
 
-    final static String createAnnotationString( final SortedSet<Annotation> annotations ) {
+    final static String createAnnotationString( final SortedSet<Annotation> annotations, final boolean show_ref_sources ) {
         final SortedMap<String, List<Annotation>> m = new TreeMap<String, List<Annotation>>();
         for( final Annotation an : annotations ) {
             final String ref_source = ForesterUtil.isEmpty( an.getRefSource() ) ? "?" : an.getRefSource();
@@ -766,7 +760,7 @@ public final class AptxUtil {
             if ( m.size() > 1 ) {
                 sb.append( "[" );
             }
-            if ( !ref_source.equals( "?" ) ) {
+            if ( show_ref_sources && !ref_source.equals( "?" ) ) {
                 sb.append( ref_source );
                 sb.append( ": " );
             }
