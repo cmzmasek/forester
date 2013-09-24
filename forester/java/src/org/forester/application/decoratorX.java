@@ -1,6 +1,6 @@
 // java -Xmx2048m -cp
 // ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
-// org.forester.application.decorator2
+// org.forester.application.decoratorX
 // RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_with_seqs_2.phylo.xml
 // nature12311-s3_cz_4.txt x
 
@@ -43,15 +43,18 @@ public class decoratorX {
             final PhyloXmlParser xml_parser = new PhyloXmlParser();
             final Phylogeny phy = factory.create( intree, xml_parser )[ 0 ];
             final BasicTable<String> t = BasicTableParser.parse( intable, '\t' );
-            System.out.println( t.toString() );
-            final PhylogenyNodeIterator it = phy.iteratorPostorder();
+            //  System.out.println( t.toString() );
+            final PhylogenyNodeIterator it = phy.iteratorExternalForward();
             int i = 0;
             while ( it.hasNext() ) {
                 final PhylogenyNode node = it.next();
-                if ( node.isExternal() ) {
-                    processNode( node, t );
-                }
+                processNode( node, t );
                 i++;
+            }
+            final PhylogenyNodeIterator it2 = phy.iteratorExternalForward();
+            while ( it2.hasNext() ) {
+                final PhylogenyNode node = it2.next();
+                processNode2( node, phy );
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
             writer.toPhyloXML( outtree, phy, 0 );
@@ -63,17 +66,17 @@ public class decoratorX {
         }
     }
 
-    private static void processNode( final PhylogenyNode node, BasicTable<String> t ) throws Exception {
-        String node_seq = node.getNodeData().getSequence().getMolecularSequence().toUpperCase();
+    private static void processNode( final PhylogenyNode node, final BasicTable<String> t ) throws Exception {
+        final String node_seq = node.getNodeData().getSequence().getMolecularSequence().toUpperCase();
         boolean found = false;
         for( int col = 0; col < t.getNumberOfRows(); ++col ) {
-            String table_seq = t.getValueAsString( SEQ_COLUMN, col ).toUpperCase();
+            final String table_seq = t.getValueAsString( SEQ_COLUMN, col ).toUpperCase();
             if ( table_seq.contains( node_seq ) ) {
                 if ( found ) {
-                    throw new Exception( "Sequence from node " + node + " is not unique: " + node_seq );
+                    // throw new Exception( "Sequence from node " + node + " is not unique: " + node_seq );
                 }
                 found = true;
-                Annotation annotation = new Annotation( "target:" + t.getValueAsString( TARGET_COLUMN, col ) );
+                final Annotation annotation = new Annotation( "target", t.getValueAsString( TARGET_COLUMN, col ) );
                 node.getNodeData().getSequence().addAnnotation( annotation );
                 System.out.println( node + "->" + annotation );
             }
@@ -81,5 +84,12 @@ public class decoratorX {
         // if ( !found ) {
         //     throw new Exception( "Sequence from node " + node + " not found: " + node_seq );
         // }
+    }
+
+    private static void processNode2( final PhylogenyNode node, final Phylogeny t ) {
+        if ( ( node.getNodeData().getSequence().getAnnotations() == null )
+                || node.getNodeData().getSequence().getAnnotations().isEmpty() ) {
+            t.deleteSubtree( node, true );
+        }
     }
 }

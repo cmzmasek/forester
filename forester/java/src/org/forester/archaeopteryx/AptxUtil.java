@@ -43,6 +43,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,8 +51,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,6 +82,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
@@ -93,14 +98,25 @@ import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public final class AptxUtil {
 
+    private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                                                         .getAvailableFontFamilyNames();
     private final static Pattern  seq_identifier_pattern_1       = Pattern
                                                                          .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})\\s*$" );
     private final static Pattern  seq_identifier_pattern_2       = Pattern
                                                                          .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})[|,; ].*$" );
-    private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                                         .getAvailableFontFamilyNames();
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
+    }
+
+    public static MaskFormatter createMaskFormatter( final String s ) {
+        MaskFormatter formatter = null;
+        try {
+            formatter = new MaskFormatter( s );
+        }
+        catch ( final ParseException e ) {
+            throw new IllegalArgumentException( e );
+        }
+        return formatter;
     }
 
     public final static String createUriForSeqWeb( final PhylogenyNode node,
@@ -164,17 +180,6 @@ public final class AptxUtil {
             }
         }
         return uri_str;
-    }
-
-    public static MaskFormatter createMaskFormatter( final String s ) {
-        MaskFormatter formatter = null;
-        try {
-            formatter = new MaskFormatter( s );
-        }
-        catch ( final ParseException e ) {
-            throw new IllegalArgumentException( e );
-        }
-        return formatter;
     }
 
     final static public boolean isHasAtLeastNodeWithEvent( final Phylogeny phy ) {
@@ -538,25 +543,41 @@ public final class AptxUtil {
         lookAtSomeTreePropertiesForAptxControlSettings( phy, main_panel.getControlPanel(), configuration );
     }
 
-    final static Color calculateColorFromString( final String str ) {
-        final String species_uc = str.toUpperCase();
-        char first = species_uc.charAt( 0 );
+    final static Color calculateColorFromString( final String str, final boolean is_taxonomy ) {
+        final String my_str = str.toUpperCase();
+        char first = my_str.charAt( 0 );
         char second = ' ';
         char third = ' ';
-        if ( species_uc.length() > 1 ) {
-            second = species_uc.charAt( 1 );
-            if ( species_uc.length() > 2 ) {
-                if ( species_uc.indexOf( " " ) > 0 ) {
-                    third = species_uc.charAt( species_uc.indexOf( " " ) + 1 );
+        if ( my_str.length() > 1 ) {
+            if ( is_taxonomy ) {
+                second = my_str.charAt( 1 );
+            }
+            else {
+                second = my_str.charAt( my_str.length() - 1 );
+            }
+            if ( is_taxonomy ) {
+                if ( my_str.length() > 2 ) {
+                    if ( my_str.indexOf( " " ) > 0 ) {
+                        third = my_str.charAt( my_str.indexOf( " " ) + 1 );
+                    }
+                    else {
+                        third = my_str.charAt( 2 );
+                    }
                 }
-                else {
-                    third = species_uc.charAt( 2 );
-                }
+            }
+            else if ( my_str.length() > 2 ) {
+                third = ( char ) ( Math.abs( str.hashCode() / 16909320 ) );
+                System.out.println( str.hashCode() );
             }
         }
         first = AptxUtil.normalizeCharForRGB( first );
         second = AptxUtil.normalizeCharForRGB( second );
-        third = AptxUtil.normalizeCharForRGB( third );
+        if ( is_taxonomy ) {
+            third = AptxUtil.normalizeCharForRGB( third );
+        }
+        else {
+            third = third > 255 ? 255 : third;
+        }
         if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
             first = 0;
         }
@@ -727,6 +748,49 @@ public final class AptxUtil {
             }
         }
         return colorizations;
+    }
+
+    final static String createAnnotationString( final SortedSet<Annotation> annotations ) {
+        final SortedMap<String, List<Annotation>> m = new TreeMap<String, List<Annotation>>();
+        for( final Annotation an : annotations ) {
+            final String ref_source = ForesterUtil.isEmpty( an.getRefSource() ) ? "?" : an.getRefSource();
+            if ( !m.containsKey( ref_source ) ) {
+                m.put( ref_source, new ArrayList<Annotation>() );
+            }
+            m.get( ref_source ).add( an );
+        }
+        final StringBuilder sb = new StringBuilder();
+        for( final Entry<String, List<Annotation>> e : m.entrySet() ) {
+            final String ref_source = e.getKey();
+            final List<Annotation> ans = e.getValue();
+            if ( m.size() > 1 ) {
+                sb.append( "[" );
+            }
+            if ( !ref_source.equals( "?" ) ) {
+                sb.append( ref_source );
+                sb.append( ": " );
+            }
+            for( int i = 0; i < ans.size(); ++i ) {
+                final Annotation an = ans.get( i );
+                if ( !ForesterUtil.isEmpty( an.getRefValue() ) ) {
+                    sb.append( an.getRefValue() );
+                    sb.append( " " );
+                }
+                if ( !ForesterUtil.isEmpty( an.getDesc() ) ) {
+                    sb.append( an.getDesc() );
+                }
+                if ( sb.charAt( sb.length() - 1 ) == ' ' ) {
+                    sb.deleteCharAt( sb.length() - 1 );
+                }
+                if ( i < ans.size() - 1 ) {
+                    sb.append( ", " );
+                }
+            }
+            if ( m.size() > 1 ) {
+                sb.append( "] " );
+            }
+        }
+        return sb.toString();
     }
 
     final static String createBasicInformation( final Phylogeny phy ) {
@@ -1329,7 +1393,7 @@ public final class AptxUtil {
     // br.close();
     // }
     public static enum GraphicsExportType {
-        GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" ), BMP( "bmp" );
+        BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
 
         private final String _suffix;
 

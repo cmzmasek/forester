@@ -620,8 +620,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getControlPanel().isShowAnnotation()
                         && ( node.getNodeData().getSequence().getAnnotations() != null )
                         && !node.getNodeData().getSequence().getAnnotations().isEmpty() ) {
-                    sum += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getAnnotation( 0 )
-                            .asSimpleText()
+                    sum += getTreeFontSet()._fm_large.stringWidth( AptxUtil.createAnnotationString( node.getNodeData()
+                            .getSequence().getAnnotations() )
                             + " " );
                 }
                 if ( getControlPanel().isShowDomainArchitectures()
@@ -711,11 +711,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( c == null ) {
             if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-                c = AptxUtil.calculateColorFromString( tax.getTaxonomyCode() );
+                c = AptxUtil.calculateColorFromString( tax.getTaxonomyCode(), true );
                 getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
             }
             else {
-                c = AptxUtil.calculateColorFromString( tax.getScientificName() );
+                c = AptxUtil.calculateColorFromString( tax.getScientificName(), true );
                 getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
             }
         }
@@ -2334,13 +2334,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getControlPanel().isColorAccordingToAnnotation() && ( getControlPanel().getAnnotationColors() != null ) ) {
             final StringBuilder sb = new StringBuilder();
             for( final Annotation a : ann ) {
-                sb.append( !ForesterUtil.isEmpty( a.getRef() ) ? a.getRef() : a.getDesc() );
+                sb.append( !ForesterUtil.isEmpty( a.getRefValue() ) ? a.getRefValue() : a.getDesc() );
             }
             final String ann_str = sb.toString();
             if ( !ForesterUtil.isEmpty( ann_str ) ) {
                 c = getControlPanel().getAnnotationColors().get( ann_str );
                 if ( c == null ) {
-                    c = AptxUtil.calculateColorFromString( ann_str );
+                    c = AptxUtil.calculateColorFromString( ann_str, false );
                     getControlPanel().getAnnotationColors().put( ann_str, c );
                 }
                 if ( c == null ) {
@@ -2427,22 +2427,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         node_ids.add( node.getId() );
         setCopiedAndPastedNodes( node_ids );
         repaint();
-    }
-
-    private String createAnnotationString( final SortedSet<Annotation> ann ) {
-        final StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for( final Annotation a : ann ) {
-            if ( !first ) {
-                sb.append( "+" );
-            }
-            else {
-                first = false;
-            }
-            sb.append( a.asSimpleText() );
-        }
-        final String ann_str = sb.toString();
-        return ann_str;
     }
 
     final private String createASimpleTextRepresentationOfANode( final PhylogenyNode node ) {
@@ -4111,7 +4095,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
-            final String ann_str = createAnnotationString( ann );
+            final String ann_str = AptxUtil.createAnnotationString( ann );
             TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
             _sb.setLength( 0 );

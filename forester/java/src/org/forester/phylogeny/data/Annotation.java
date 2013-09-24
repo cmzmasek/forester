@@ -36,29 +36,50 @@ import org.forester.util.ForesterUtil;
 
 public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annotation> {
 
-    private String        _desc;
-    private String        _type;
-    private String        _source;
-    private final String  _ref;
-    private String        _evidence;
     private Confidence    _confidence;
+    private String        _desc;
+    private String        _evidence;
     private PropertiesMap _properties;
+    private final String  _ref_source;
+    private final String  _ref_value;
+    private String        _source;
+    private String        _type;
     private List<Uri>     _uris;
+
+    public Annotation() {
+        _ref_value = "";
+        _ref_source = "";
+        init();
+    }
 
     public Annotation( final String ref ) {
         if ( ForesterUtil.isEmpty( ref ) ) {
             throw new IllegalArgumentException( "annotation reference is empty or null" );
         }
-        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ref.length() - 2 ) || ( ref.length() < 3 ) ) {
+        final String s[] = ref.split( ":" );
+        if ( ( s.length != 2 ) || ForesterUtil.isEmpty( s[ 0 ] ) || ForesterUtil.isEmpty( s[ 1 ] ) ) {
             throw new IllegalArgumentException( "illegal format for annotation reference: [" + ref + "]" );
         }
-        _ref = ref;
+        _ref_source = s[ 0 ];
+        _ref_value = s[ 1 ];
         init();
     }
 
-    public Annotation() {
-        _ref = "";
+    public Annotation( final String ref_source, final String ref_value ) {
+        if ( ForesterUtil.isEmpty( ref_source ) || ForesterUtil.isEmpty( ref_value ) ) {
+            throw new IllegalArgumentException( "illegal format for annotation reference" );
+        }
+        _ref_source = ref_source;
+        _ref_value = ref_value;
         init();
+    }
+
+    @Override
+    public void addUri( final Uri uri ) {
+        if ( getUris() == null ) {
+            setUris( new ArrayList<Uri>() );
+        }
+        getUris().add( uri );
     }
 
     @Override
@@ -72,17 +93,28 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
     }
 
     @Override
+    public int compareTo( final Annotation o ) {
+        if ( equals( o ) ) {
+            return 0;
+        }
+        if ( getRef().equals( o.getRef() ) ) {
+            return getDesc().compareTo( o.getDesc() );
+        }
+        return getRef().compareTo( o.getRef() );
+    }
+
+    @Override
     public PhylogenyData copy() {
-        final Annotation ann = new Annotation( new String( getRef() ) );
+        final Annotation ann = new Annotation( getRefSource(), getRefValue() );
         if ( getConfidence() != null ) {
             ann.setConfidence( ( Confidence ) getConfidence().copy() );
         }
         else {
             ann.setConfidence( null );
         }
-        ann.setType( new String( getType() ) );
-        ann.setDesc( new String( getDesc() ) );
-        ann.setEvidence( new String( getEvidence() ) );
+        ann.setType( getType() );
+        ann.setDesc( getDesc() );
+        ann.setEvidence( getEvidence() );
         ann.setSource( new String( getSource() ) );
         if ( getProperties() != null ) {
             ann.setProperties( ( PropertiesMap ) getProperties().copy() );
@@ -99,6 +131,23 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
             }
         }
         return ann;
+    }
+
+    @Override
+    public boolean equals( final Object o ) {
+        if ( this == o ) {
+            return true;
+        }
+        else if ( o == null ) {
+            return false;
+        }
+        else if ( o.getClass() != this.getClass() ) {
+            throw new IllegalArgumentException( "attempt to check [" + this.getClass() + "] equality to " + o + " ["
+                    + o.getClass() + "]" );
+        }
+        else {
+            return isEqual( ( Annotation ) o );
+        }
     }
 
     public Confidence getConfidence() {
@@ -118,7 +167,22 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
     }
 
     public String getRef() {
-        return _ref;
+        if ( ForesterUtil.isEmpty( _ref_source ) ) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        sb.append( _ref_source );
+        sb.append( ':' );
+        sb.append( _ref_value );
+        return sb.toString();
+    }
+
+    public final String getRefSource() {
+        return _ref_source;
+    }
+
+    public final String getRefValue() {
+        return _ref_value;
     }
 
     public String getSource() {
@@ -129,14 +193,14 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         return _type;
     }
 
-    private void init() {
-        _desc = "";
-        _type = "";
-        _source = "";
-        _evidence = "";
-        _confidence = null;
-        _properties = null;
-        setUris( null );
+    @Override
+    public Uri getUri( final int index ) {
+        return getUris().get( index );
+    }
+
+    @Override
+    public List<Uri> getUris() {
+        return _uris;
     }
 
     @Override
@@ -171,6 +235,11 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
 
     public void setType( final String type ) {
         _type = type;
+    }
+
+    @Override
+    public void setUris( final List<Uri> uris ) {
+        _uris = uris;
     }
 
     @Override
@@ -234,54 +303,13 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
         return asText().toString();
     }
 
-    @Override
-    public void addUri( final Uri uri ) {
-        if ( getUris() == null ) {
-            setUris( new ArrayList<Uri>() );
-        }
-        getUris().add( uri );
-    }
-
-    @Override
-    public Uri getUri( final int index ) {
-        return getUris().get( index );
-    }
-
-    @Override
-    public List<Uri> getUris() {
-        return _uris;
-    }
-
-    @Override
-    public void setUris( final List<Uri> uris ) {
-        _uris = uris;
-    }
-
-    @Override
-    public boolean equals( final Object o ) {
-        if ( this == o ) {
-            return true;
-        }
-        else if ( o == null ) {
-            return false;
-        }
-        else if ( o.getClass() != this.getClass() ) {
-            throw new IllegalArgumentException( "attempt to check [" + this.getClass() + "] equality to " + o + " ["
-                    + o.getClass() + "]" );
-        }
-        else {
-            return isEqual( ( Annotation ) o );
-        }
-    }
-
-    @Override
-    public int compareTo( final Annotation o ) {
-        if ( equals( o ) ) {
-            return 0;
-        }
-        if ( getRef().equals( o.getRef() ) ) {
-            return getDesc().compareTo( o.getDesc() );
-        }
-        return getRef().compareTo( o.getRef() );
+    private void init() {
+        _desc = "";
+        _type = "";
+        _source = "";
+        _evidence = "";
+        _confidence = null;
+        _properties = null;
+        setUris( null );
     }
 }

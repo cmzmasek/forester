@@ -267,7 +267,7 @@ public final class PhylogenyDecorator {
                                 if ( !node.getNodeData().isHasSequence() ) {
                                     node.getNodeData().setSequence( new Sequence() );
                                 }
-                                final Annotation annotation = new Annotation( "?" );
+                                final Annotation annotation = new Annotation();
                                 annotation.setDesc( new_value );
                                 node.getNodeData().getSequence().addAnnotation( annotation );
                                 break;
