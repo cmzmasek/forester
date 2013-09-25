@@ -24,6 +24,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
+import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -34,6 +35,46 @@ import org.forester.util.SequenceIdParser;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public class TreePanelUtil {
+
+    static int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
+        final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    if ( map.containsKey( d ) ) {
+                        map.put( d, map.get( d ) + 1 );
+                    }
+                    else {
+                        map.put( d, 1 );
+                    }
+                }
+            }
+        }
+        int size = 0;
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final Entry<String, Integer> e : map.entrySet() ) {
+                final String v = e.getKey();
+                final Object c = e.getValue();
+                sb.append( v );
+                sb.append( "\t" );
+                sb.append( c );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            size = map.size();
+        }
+        else {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    sb.append( d );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            size = data.size();
+        }
+        return size;
+    }
 
     public final static String createUriForSeqWeb( final PhylogenyNode node,
                                                    final Configuration conf,
