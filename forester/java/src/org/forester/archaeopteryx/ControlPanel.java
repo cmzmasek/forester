@@ -1728,6 +1728,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+        if ( _configuration.doDisplayClickToOption( Configuration.select_nodes ) ) {
+            _select_nodes_item = cb_index;
+            addClickToOption( Configuration.select_nodes, _configuration.getClickToTitle( Configuration.select_nodes ) );
+            if ( default_option == Configuration.select_nodes ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
         if ( _configuration.doDisplayClickToOption( Configuration.get_ext_desc_data ) ) {
             _get_ext_desc_data = cb_index;
             if ( !ForesterUtil.isEmpty( getConfiguration().getLabelForGetExtDescendentsData() ) ) {
@@ -1826,15 +1834,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addClickToOption( Configuration.edit_node_data,
                                   _configuration.getClickToTitle( Configuration.edit_node_data ) );
                 if ( default_option == Configuration.edit_node_data ) {
-                    selected_index = cb_index;
-                }
-                cb_index++;
-            }
-            if ( _configuration.doDisplayClickToOption( Configuration.select_nodes ) ) {
-                _select_nodes_item = cb_index;
-                addClickToOption( Configuration.select_nodes,
-                                  _configuration.getClickToTitle( Configuration.select_nodes ) );
-                if ( default_option == Configuration.select_nodes ) {
                     selected_index = cb_index;
                 }
                 cb_index++;
