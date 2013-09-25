@@ -15,23 +15,31 @@ native_ui: ?
 #  Minimal confidence value to be displayed: 'min_confidence_value':
 #     Example: 'min_confidence_value: 50.0' (a commonly used 
 #     value for bootstrap support)
+#
 #  Font family name: 'font_family':
 #     Example: 'font_family: Arial,Calibri,Helvetica'
 #     It is advisable to use more than one value for font_family (in
 #     decreasing order of preference). Font family names have to be
 #     comma separated (no spaces). Spaces in font names have to be
 #     replaced by underscores (e.g. 'Times_New_Roman').
+#
 #  Font size: 'font_size':
 #     Example: 'font_size: 10'
+#
 #  Screen antialias: 'antialias_screen': values: 'yes'/'no'
+#
 #  Show Scale: 'show_scale': values: 'yes'/'no'
+#
 #  Show branch length branch values: 'show_branch_length_values': values: 'yes'/'no'
+#
 #  Do/do not line up cladogram display: 'non_lined_up_cladogram': values: 'yes'/'no'
+#
 #  Cladogram display type: 'cladogram_type'
 #     Example: 'cladogram_type: ext_node_sum_dep'
 #     The three possible values are: non_lined_up
 #                                    ext_node_sum_dep
 #                                    total_node_sum_dep (for "uniform" branch lengths)
+#
 #  Default size for graphics export and printing: 'graphics_export_x' and 'graphics_export_y':
 #     (Archaeopteryx tries to guess the locale, so setting these is not always necessary)
 #     Example: For A4 (portrait):
@@ -40,9 +48,12 @@ native_ui: ?
 #             For US Letter (portrait):
 #               'graphics_export_x: 612'
 #               'graphics_export_y: 792'
+#
 #  Default line width for PDF export: 'pdf_export_line_wdith':
 #     Example: 'pdf_export_line_width: 0.5'
+#
 #  Show overview: 'show_overview': values: 'yes'/'no'
+#
 #  Phylogeny graphics type: 'phylogeny_graphics_type':
 #     Example: 'phylogeny_graphics_type: euro_style'
 #     The eight possible values are: rectangular
@@ -53,18 +64,24 @@ native_ui: ?
 #                                    convex
 #                                    unrooted
 #                                    circular
+#
 #  Node label direction for circular and unrooted type: 'node_label_direction':
 #     Example: 'node_label_direction: horizontal'
 #     The two possible values are: horizontal
 #                                  radial
+#
 #  Show default node shape for internal nodes: 'show_default_node_shapes_internal': values: 'yes'/'no'
+#
 #  Show default node shape for external nodes: 'show_default_node_shapes_external': values: 'yes'/'no'
+#
 #  Default node shape size: 'default_node_size'
 #     Example: 'default_node_size: 6'
+#
 #  Default node shape type: 'default_node_shape'
 #     Example: 'default_node_shape: '
 #     Possible values: circle
 #                      rectangle
+#
 #  Default node shape fill: 'default_node_fill'
 #     Example: 'default_node_fill: '
 #     Possible values: solid
@@ -94,12 +111,20 @@ native_ui: ?
 #     Example: 'label_for_get_ext_descendents_data: Get_Node_Data'
 # 
 #  Taxonomy colorization of nodes (shapes) instead of labels: 'taxonomy_colorize_node_shapes': values: 'yes'/'no'
+#
 #  Do/not color labels same as branch length values: 'color_labels_same_as_branch_length_values': values: 'yes'/'no'
+#
 #  Do/not show domain labels: 'show_domain_labels': values: 'yes'/'no'
+#
+#  Do/not show reference sources for sequence annotation: 'show_seq_annotation_ref_sources': values: 'yes'/'no'
+#
 #  Number of fraction digits for branch length values: 'branch_length_value_digits'
+#
 #  Number of fraction digits for confidence values: 'confidence_value_digits'
+#
 #  To turn on/off background color gradient: background_gradient
 #     Example: 'background_gradient: yes'
+#
 #  To allow/not allow editing (cut, copy, and paste): allow_editing
 #     Example: 'allow_editing: yes'
 #
@@ -118,9 +143,7 @@ native_ui: ?
 #
 #  Internal node labels are confidence values during NH/NHX/Nexus file parsing:
 #     'internal_labels_are_confidence_values', possible values are 'yes', 'no'
-
-
-
+#
 #  phyloXML parsing
 #  ----------------
 #  To ensure compatibility with all current and future 
@@ -130,9 +153,6 @@ native_ui: ?
 #  against the XSD Schema (see: http://www.phyloxml.org/),
 #  with:
 #  'validate_against_phyloxml_xsd_schema: true'
-
-validate_against_phyloxml_xsd_schema: true
-
 
 
 min_confidence_value:                      0.0
@@ -162,17 +182,19 @@ overview_placement_type:                   upper_left
 color_labels_same_as_branch_length_values: no
 display_sequence_relations:                no
 show_domain_labels:                        yes
+show_seq_annotation_ref_sources:           yes
 branch_length_value_digits:                3
 confidence_value_digits:                   3
 background_gradient:                       no
 allow_editing:                             yes
 ext_descendents_data_to_return_on:         window
 ext_descendents_data_to_return:            user_selected
-#label_for_get_ext_descendents_data:        Get_Node_Data         
+#label_for_get_ext_descendents_data:        Return_Node_Data         
 #  NH/NHX/Nexus file parsing:
 internal_labels_are_confidence_values:     no
 replace_underscores_in_nh_parsing:         no
 taxonomy_extraction_in_nh_parsing:         no
+validate_against_phyloxml_xsd_schema:      true
 
 
 #  Checkbox Display Selection
