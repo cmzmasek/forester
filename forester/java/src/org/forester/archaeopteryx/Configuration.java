@@ -160,7 +160,7 @@ public final class Configuration {
     String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-            { "Annotation", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
+            { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Taxonomy Colorize", "display", "yes" },
             { "Colorize Branches", "display", "no" }, { "Use Branch-Widths", "display", "no" },
             { "Show Custom Nodes", "display", "yes" }, { "Domains", "nodisplay", "no" },

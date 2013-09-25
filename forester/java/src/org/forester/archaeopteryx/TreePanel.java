@@ -620,8 +620,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getControlPanel().isShowAnnotation()
                         && ( node.getNodeData().getSequence().getAnnotations() != null )
                         && !node.getNodeData().getSequence().getAnnotations().isEmpty() ) {
-                    sum += getTreeFontSet()._fm_large.stringWidth( AptxUtil.createAnnotationString( node.getNodeData()
-                            .getSequence().getAnnotations(), getOptions().isShowAnnotationRefSource() )
+                    sum += getTreeFontSet()._fm_large.stringWidth( TreePanelUtil.createAnnotationString( node
+                            .getNodeData().getSequence().getAnnotations(), getOptions().isShowAnnotationRefSource() )
                             + " " );
                 }
                 if ( getControlPanel().isShowDomainArchitectures()
@@ -711,11 +711,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( c == null ) {
             if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-                c = AptxUtil.calculateColorFromString( tax.getTaxonomyCode(), true );
+                c = TreePanelUtil.calculateColorFromString( tax.getTaxonomyCode(), true );
                 getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
             }
             else {
-                c = AptxUtil.calculateColorFromString( tax.getScientificName(), true );
+                c = TreePanelUtil.calculateColorFromString( tax.getScientificName(), true );
                 getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
             }
         }
@@ -801,7 +801,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( !node.isExternal() && !node.isRoot() ) {
             final boolean collapse = !node.isCollapse();
-            AptxUtil.collapseSubtree( node, collapse );
+            TreePanelUtil.collapseSubtree( node, collapse );
             updateSetOfCollapsedExternalNodes();
             _phylogeny.recalculateNumberOfExternalDescendants( true );
             resetNodeIdToDistToLeafMap();
@@ -820,7 +820,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        AptxUtil.collapseSpeciesSpecificSubtrees( _phylogeny );
+        TreePanelUtil.collapseSpeciesSpecificSubtrees( _phylogeny );
         updateSetOfCollapsedExternalNodes();
         _phylogeny.recalculateNumberOfExternalDescendants( true );
         resetNodeIdToDistToLeafMap();
@@ -838,7 +838,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setWaitCursor();
         AptxUtil.removeBranchColors( _phylogeny );
-        final int colorizations = AptxUtil.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
+        final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
         if ( colorizations > 0 ) {
             _control_panel.setColorBranches( true );
             if ( _control_panel.getColorBranchesCb() != null ) {
@@ -884,7 +884,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         setWaitCursor();
         AptxUtil.removeBranchColors( _phylogeny );
-        AptxUtil.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
+        TreePanelUtil.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
             _control_panel.getColorBranchesCb().setSelected( true );
@@ -1974,7 +1974,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _sub_phylogenies[ _subtree_index ] = _phylogeny;
             _sub_phylogenies_temp_roots[ _subtree_index ] = node;
             ++_subtree_index;
-            _phylogeny = subTree( node, _phylogeny );
+            _phylogeny = TreePanelUtil.subTree( node, _phylogeny );
             updateSubSuperTreeButton();
         }
         else if ( node.isRoot() && isCurrentTreeIsSubtree() ) {
@@ -2024,7 +2024,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         setWaitCursor();
-        AptxUtil.colorPhylogenyAccordingToExternalTaxonomy( _phylogeny, this );
+        TreePanelUtil.colorPhylogenyAccordingToExternalTaxonomy( _phylogeny, this );
         _control_panel.setColorBranches( true );
         if ( _control_panel.getColorBranchesCb() != null ) {
             _control_panel.getColorBranchesCb().setSelected( true );
@@ -2340,7 +2340,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( !ForesterUtil.isEmpty( ann_str ) ) {
                 c = getControlPanel().getAnnotationColors().get( ann_str );
                 if ( c == null ) {
-                    c = AptxUtil.calculateColorFromString( ann_str, false );
+                    c = TreePanelUtil.calculateColorFromString( ann_str, false );
                     getControlPanel().getAnnotationColors().put( ann_str, c );
                 }
                 if ( c == null ) {
@@ -2373,7 +2373,27 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                        JOptionPane.WARNING_MESSAGE );
     }
 
-    final private void colorizeSubtree( final Color c, final PhylogenyNode node ) {
+    final private void colorizeSubtree( final Color c,
+                                        final PhylogenyNode node,
+                                        final List<PhylogenyNode> additional_nodes ) {
+        _control_panel.setColorBranches( true );
+        if ( _control_panel.getColorBranchesCb() != null ) {
+            _control_panel.getColorBranchesCb().setSelected( true );
+        }
+        if ( node != null ) {
+            for( final PreorderTreeIterator it = new PreorderTreeIterator( node ); it.hasNext(); ) {
+                it.next().getBranchData().setBranchColor( new BranchColor( c ) );
+            }
+        }
+        if ( additional_nodes != null ) {
+            for( final PhylogenyNode n : additional_nodes ) {
+                n.getBranchData().setBranchColor( new BranchColor( c ) );
+            }
+        }
+        repaint();
+    }
+
+    final private void colorSubtree( final PhylogenyNode node ) {
         if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
             JOptionPane.showMessageDialog( this,
                                            "Cannot colorize subtree in unrooted display type",
@@ -2381,34 +2401,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                            JOptionPane.WARNING_MESSAGE );
             return;
         }
-        _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
-        }
-        for( final PreorderTreeIterator it = new PreorderTreeIterator( node ); it.hasNext(); ) {
-            it.next().getBranchData().setBranchColor( new BranchColor( c ) );
-        }
-        repaint();
-    }
-
-    final private void colorSubtree( final PhylogenyNode node ) {
-        Color intitial_color = null;
-        if ( getControlPanel().isColorBranches() && ( PhylogenyMethods.getBranchColorValue( node ) != null )
-                && ( ( ( !node.isRoot() && ( node.getParent().getNumberOfDescendants() < 3 ) ) ) || ( node.isRoot() ) ) ) {
-            intitial_color = PhylogenyMethods.getBranchColorValue( node );
+        _color_chooser.setPreviewPanel( new JPanel() );
+        SubtreeColorizationActionListener al;
+        if ( ( getFoundNodes() != null ) && !getFoundNodes().isEmpty() ) {
+            final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
+            for( final Long id : getFoundNodes() ) {
+                additional_nodes.add( _phylogeny.getNode( id ) );
+            }
+            al = new SubtreeColorizationActionListener( _color_chooser, node, additional_nodes );
         }
         else {
-            intitial_color = getTreeColorSet().getBranchColor();
+            al = new SubtreeColorizationActionListener( _color_chooser, node );
         }
-        _color_chooser.setColor( intitial_color );
-        _color_chooser.setPreviewPanel( new JPanel() );
         final JDialog dialog = JColorChooser
-                .createDialog( this,
-                               "Subtree colorization",
-                               true,
-                               _color_chooser,
-                               new SubtreeColorizationActionListener( _color_chooser, node ),
-                               null );
+                .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
         dialog.setVisible( true );
     }
 
@@ -3245,7 +3251,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             cannotOpenBrowserWarningMessage( "sequence" );
             return;
         }
-        final String uri_str = AptxUtil.createUriForSeqWeb( node, getConfiguration(), this );
+        final String uri_str = TreePanelUtil.createUriForSeqWeb( node, getConfiguration(), this );
         if ( !ForesterUtil.isEmpty( uri_str ) ) {
             try {
                 AptxUtil.launchWebBrowser( new URI( uri_str ),
@@ -3812,7 +3818,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 outline_color = Color.BLACK;
             }
-            else if ( getControlPanel().isEvents() && AptxUtil.isHasAssignedEvent( node ) ) {
+            else if ( getControlPanel().isEvents() && TreePanelUtil.isHasAssignedEvent( node ) ) {
                 final Event event = node.getNodeData().getEvent();
                 if ( event.isDuplication() ) {
                     outline_color = getTreeColorSet().getDuplicationBoxColor();
@@ -4095,7 +4101,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else if ( getControlPanel().isColorAccordingToAnnotation() ) {
                 g.setColor( calculateColorForAnnotation( ann ) );
             }
-            final String ann_str = AptxUtil.createAnnotationString( ann, getOptions().isShowAnnotationRefSource() );
+            final String ann_str = TreePanelUtil.createAnnotationString( ann, getOptions().isShowAnnotationRefSource() );
             TreePanel.drawString( ann_str, node.getXcoord() + x + 3 + half_box_size, node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ), g );
             _sb.setLength( 0 );
@@ -4488,7 +4494,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if ( getControlPanel().isShowAnnotation()
                                 && ( node.getNodeData().getSequence().getAnnotations() != null )
                                 && ( !node.getNodeData().getSequence().getAnnotations().isEmpty() ) ) {
-                            x += getTreeFontSet()._fm_large.stringWidth( AptxUtil.createAnnotationString( node
+                            x += getTreeFontSet()._fm_large.stringWidth( TreePanelUtil.createAnnotationString( node
                                     .getNodeData().getSequence().getAnnotations(), getOptions()
                                     .isShowAnnotationRefSource() )
                                     + " " );
@@ -4950,11 +4956,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sb.append( " " );
             }
             final Property p = properties.getProperty( ref );
-            sb.append( getPartAfterColon( p.getRef() ) );
+            sb.append( TreePanelUtil.getPartAfterColon( p.getRef() ) );
             sb.append( "=" );
             sb.append( p.getValue() );
             if ( !ForesterUtil.isEmpty( p.getUnit() ) ) {
-                sb.append( getPartAfterColon( p.getUnit() ) );
+                sb.append( TreePanelUtil.getPartAfterColon( p.getUnit() ) );
             }
         }
         return sb;
@@ -5159,7 +5165,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                     break;
                 case UNKNOWN:
-                    AptxUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
+                    TreePanelUtil.showExtDescNodeDataUserSelectedHelper( getControlPanel(), n, data );
                     break;
                 default:
                     throw new IllegalArgumentException( "unknown data element: "
@@ -5182,9 +5188,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( getConfiguration().getExtNodeDataReturnOn() == EXT_NODE_DATA_RETURN_ON.WINODW ) {
             if ( sb.length() < 1 ) {
-                AptxUtil.showInformationMessage( this,
-                                                 "No Appropriate Data (" + obtainTitleForExtDescNodeData() + ")",
-                                                 "Descendants of selected node do not contain selected data" );
+                TreePanelUtil.showInformationMessage( this, "No Appropriate Data (" + obtainTitleForExtDescNodeData()
+                        + ")", "Descendants of selected node do not contain selected data" );
                 clearCurrentExternalNodesDataBuffer();
             }
             else {
@@ -5254,17 +5259,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     final private void showNodeDataPopup( final MouseEvent e, final PhylogenyNode node ) {
         try {
             if ( ( node.getName().length() > 0 )
-                    || ( node.getNodeData().isHasTaxonomy() && !isTaxonomyEmpty( node.getNodeData().getTaxonomy() ) )
-                    || ( node.getNodeData().isHasSequence() && !isSequenceEmpty( node.getNodeData().getSequence() ) )
-                    || ( node.getNodeData().isHasDate() ) || ( node.getNodeData().isHasDistribution() )
-                    || node.getBranchData().isHasConfidences() ) {
+                    || ( node.getNodeData().isHasTaxonomy() && !TreePanelUtil.isTaxonomyEmpty( node.getNodeData()
+                            .getTaxonomy() ) )
+                    || ( node.getNodeData().isHasSequence() && !TreePanelUtil.isSequenceEmpty( node.getNodeData()
+                            .getSequence() ) ) || ( node.getNodeData().isHasDate() )
+                    || ( node.getNodeData().isHasDistribution() ) || node.getBranchData().isHasConfidences() ) {
                 _popup_buffer.setLength( 0 );
                 short lines = 0;
                 if ( node.getName().length() > 0 ) {
                     lines++;
                     _popup_buffer.append( node.getName() );
                 }
-                if ( node.getNodeData().isHasTaxonomy() && !isTaxonomyEmpty( node.getNodeData().getTaxonomy() ) ) {
+                if ( node.getNodeData().isHasTaxonomy()
+                        && !TreePanelUtil.isTaxonomyEmpty( node.getNodeData().getTaxonomy() ) ) {
                     lines++;
                     boolean enc_data = false;
                     final Taxonomy tax = node.getNodeData().getTaxonomy();
@@ -5346,7 +5353,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                 }
-                if ( node.getNodeData().isHasSequence() && !isSequenceEmpty( node.getNodeData().getSequence() ) ) {
+                if ( node.getNodeData().isHasSequence()
+                        && !TreePanelUtil.isSequenceEmpty( node.getNodeData().getSequence() ) ) {
                     lines++;
                     boolean enc_data = false;
                     if ( _popup_buffer.length() > 0 ) {
@@ -5425,11 +5433,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     for( final String ref : properties.getPropertyRefs() ) {
                         _popup_buffer.append( "\n" );
                         final Property p = properties.getProperty( ref );
-                        _popup_buffer.append( getPartAfterColon( p.getRef() ) );
+                        _popup_buffer.append( TreePanelUtil.getPartAfterColon( p.getRef() ) );
                         _popup_buffer.append( "=" );
                         _popup_buffer.append( p.getValue() );
                         if ( !ForesterUtil.isEmpty( p.getUnit() ) ) {
-                            _popup_buffer.append( getPartAfterColon( p.getUnit() ) );
+                            _popup_buffer.append( TreePanelUtil.getPartAfterColon( p.getUnit() ) );
                         }
                     }
                 }
@@ -5549,31 +5557,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private static void drawString( final int i, final double x, final double y, final Graphics2D g ) {
-        g.drawString( String.valueOf( i ), ( int ) ( x + 0.5 ), ( int ) ( y + 0.5 ) );
-    }
-
     final private static void drawString( final String str, final double x, final double y, final Graphics2D g ) {
         g.drawString( str, ( int ) ( x + 0.5 ), ( int ) ( y + 0.5 ) );
-    }
-
-    final private static String getPartAfterColon( final String s ) {
-        final int i = s.indexOf( ':' );
-        if ( ( i < 1 ) || ( i == ( s.length() - 1 ) ) ) {
-            return s;
-        }
-        return s.substring( i + 1, s.length() );
-    }
-
-    final private static boolean isSequenceEmpty( final Sequence seq ) {
-        return ( seq.getAccession() == null ) && ForesterUtil.isEmpty( seq.getName() )
-                && ForesterUtil.isEmpty( seq.getSymbol() );
-    }
-
-    final private static boolean isTaxonomyEmpty( final Taxonomy tax ) {
-        return ( ( tax.getIdentifier() == null ) && ForesterUtil.isEmpty( tax.getTaxonomyCode() )
-                && ForesterUtil.isEmpty( tax.getCommonName() ) && ForesterUtil.isEmpty( tax.getScientificName() ) && tax
-                .getSynonyms().isEmpty() );
     }
 
     final private static boolean plusPressed( final int key_code ) {
@@ -5581,38 +5566,30 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 || ( key_code == KeyEvent.VK_EQUALS ) || ( key_code == KeyEvent.VK_SEMICOLON ) || ( key_code == KeyEvent.VK_1 ) );
     }
 
-    final private static Phylogeny subTree( final PhylogenyNode new_root, final Phylogeny source_phy ) {
-        final Phylogeny new_phy = new Phylogeny();
-        new_phy.setRooted( true );
-        new_phy.setName( source_phy.getName() );
-        new_phy.setDescription( source_phy.getDescription() );
-        new_phy.setType( source_phy.getType() );
-        new_phy.setDistanceUnit( source_phy.getDistanceUnit() );
-        new_phy.setConfidence( source_phy.getConfidence() );
-        new_phy.setIdentifier( source_phy.getIdentifier() );
-        new_phy.setRoot( new_root.copyNodeDataShallow() );
-        int i = 0;
-        for( final PhylogenyNode n : new_root.getDescendants() ) {
-            new_phy.getRoot().setChildNode( i++, n );
-        }
-        return new_phy;
-    }
-
     final private class SubtreeColorizationActionListener implements ActionListener {
 
-        JColorChooser _chooser;
-        PhylogenyNode _node;
+        JColorChooser       _chooser          = null;
+        PhylogenyNode       _node             = null;
+        List<PhylogenyNode> _additional_nodes = null;
 
         SubtreeColorizationActionListener( final JColorChooser chooser, final PhylogenyNode node ) {
             _chooser = chooser;
             _node = node;
         }
 
+        SubtreeColorizationActionListener( final JColorChooser chooser,
+                                           final PhylogenyNode node,
+                                           final List<PhylogenyNode> additional_nodes ) {
+            _chooser = chooser;
+            _node = node;
+            _additional_nodes = additional_nodes;
+        }
+
         @Override
         public void actionPerformed( final ActionEvent e ) {
             final Color c = _chooser.getColor();
             if ( c != null ) {
-                colorizeSubtree( c, _node );
+                colorizeSubtree( c, _node, _additional_nodes );
             }
         }
     }

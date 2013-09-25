@@ -38,7 +38,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.forester.application.support_transfer;
-import org.forester.archaeopteryx.AptxUtil;
+import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -2448,46 +2448,46 @@ public final class Test {
         try {
             final PhylogenyNode n = new PhylogenyNode();
             n.setName( "tr|B3RJ64" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B3RJ64" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "B0LM41_HUMAN" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B0LM41_HUMAN" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "B0LM41_HUMAN" ) ) {
                 return false;
             }
             n.setName( "NP_001025424" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "NP_001025424" ) ) {
                 return false;
             }
             n.setName( "_NM_001030253-" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "NM_001030253" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "NM_001030253" ) ) {
                 return false;
             }
             n.setName( "XM_002122186" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "XM_002122186" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_NUCCORE + "XM_002122186" ) ) {
                 return false;
             }
             n.setName( "dgh_AAA34956_gdg" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
                 return false;
             }
             n.setName( "j40f4_Q06891.1_fndn2 fnr3" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891.1" ) ) {
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891.1" ) ) {
                 return false;
             }
             n.setName( "GI:394892" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
                 return false;
             }
             n.setName( "gi_394892" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
                 return false;
             }
             n.setName( "gi6335_gi_394892_56635_Gi_43" );
-            if ( !AptxUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
-                System.out.println( AptxUtil.createUriForSeqWeb( n, null, null ) );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
                 return false;
             }
         }
