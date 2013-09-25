@@ -4,7 +4,7 @@
 
 Various simple Ruby examples.
 
-Author: [http://www.cmzmasek.net/ Christian M Zmasek], Sanford-Burnham Medical Research Institute
+Author: [https://sites.google.com/site/cmzmasek/ Christian Zmasek], Sanford-Burnham Medical Research Institute
 
  
 Copyright (C) 2011 Christian M Zmasek. All rights reserved.
