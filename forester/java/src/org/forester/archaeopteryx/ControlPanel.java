@@ -433,9 +433,15 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void showAnnotations() {
-        _show_annotation.setSelected( true );
-        _color_according_to_annotation.setSelected( true );
-        _color_acc_species.setSelected( false );
+        if ( _show_annotation != null ) {
+            _show_annotation.setSelected( true );
+        }
+        if ( _color_according_to_annotation != null ) {
+            _color_according_to_annotation.setSelected( true );
+        }
+        if ( _color_acc_species != null ) {
+            _color_acc_species.setSelected( false );
+        }
         _mainpanel.getCurrentTreePanel().repaint();
     }
 
