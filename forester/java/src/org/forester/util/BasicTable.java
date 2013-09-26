@@ -31,12 +31,26 @@ import java.util.Map;
 
 public class BasicTable<E> {
 
-    private Map<String, Map<String, E>> _rows;
-    private int                         _max_row;
     private int                         _max_col;
+    private int                         _max_row;
+    private Map<String, Map<String, E>> _rows;
 
     public BasicTable() {
         init();
+    }
+
+    // Returns -1 if not found, IllegalArgumentException if not unique.
+    public int findRow( final String first_col_value ) throws IllegalArgumentException {
+        int result = -1;
+        for( int i = 0; i < this.getNumberOfRows(); ++i ) {
+            if ( getValueAsString( 0, i ).equals( first_col_value ) ) {
+                if ( result >= 0 ) {
+                    throw new IllegalArgumentException( "\"" + first_col_value + "\" is not unique" );
+                }
+                result = i;
+            }
+        }
+        return result;
     }
 
     public Map<String, E> getColumnsAsMap( final int key_col, final int value_col ) throws IllegalArgumentException {
@@ -76,20 +90,6 @@ public class BasicTable<E> {
         return map;
     }
 
-    // Returns -1 if not found, IllegalArgumentException if not unique.
-    public int findRow( final String first_col_value ) throws IllegalArgumentException {
-        int result = -1;
-        for( int i = 0; i < this.getNumberOfRows(); ++i ) {
-            if ( getValueAsString( 0, i ).equals( first_col_value ) ) {
-                if ( result >= 0 ) {
-                    throw new IllegalArgumentException( "\"" + first_col_value + "\" is not unique" );
-                }
-                result = i;
-            }
-        }
-        return result;
-    }
-
     public int getNumberOfColumns() {
         return _max_col + 1;
     }
@@ -98,12 +98,15 @@ public class BasicTable<E> {
         return _max_row + 1;
     }
 
-    private Map<String, E> getRow( final int row ) {
-        return getRows().get( "" + row );
-    }
-
-    private Map<String, Map<String, E>> getRows() {
-        return _rows;
+    public final String getRowAsString( final int row, final String separator ) {
+        final StringBuilder sb = new StringBuilder();
+        for( int col = 0; col < getNumberOfColumns(); ++col ) {
+            sb.append( getValue( col, row ).toString() );
+            if ( col < ( getNumberOfColumns() - 1 ) ) {
+                sb.append( separator );
+            }
+        }
+        return sb.toString();
     }
 
     public E getValue( final int col, final int row ) throws IllegalArgumentException {
@@ -129,22 +132,8 @@ public class BasicTable<E> {
         return null;
     }
 
-    private void init() {
-        _rows = new HashMap<String, Map<String, E>>();
-        setMaxCol( -1 );
-        setMaxRow( -1 );
-    }
-
     public boolean isEmpty() {
         return getNumberOfRows() <= 0;
-    }
-
-    private void setMaxCol( final int max_col ) {
-        _max_col = max_col;
-    }
-
-    private void setMaxRow( final int max_row ) {
-        _max_row = max_row;
     }
 
     public void setValue( final int col, final int row, final E value ) {
@@ -171,7 +160,7 @@ public class BasicTable<E> {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         for( int row = 0; row < getNumberOfRows(); ++row ) {
             for( int col = 0; col < getNumberOfColumns(); ++col ) {
                 sb.append( getValue( col, row ) );
@@ -184,5 +173,27 @@ public class BasicTable<E> {
             }
         }
         return sb.toString();
+    }
+
+    private Map<String, E> getRow( final int row ) {
+        return getRows().get( "" + row );
+    }
+
+    private Map<String, Map<String, E>> getRows() {
+        return _rows;
+    }
+
+    private void init() {
+        _rows = new HashMap<String, Map<String, E>>();
+        setMaxCol( -1 );
+        setMaxRow( -1 );
+    }
+
+    private void setMaxCol( final int max_col ) {
+        _max_col = max_col;
+    }
+
+    private void setMaxRow( final int max_row ) {
+        _max_row = max_row;
     }
 }
