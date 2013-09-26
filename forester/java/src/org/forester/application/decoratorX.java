@@ -2,7 +2,7 @@
 // ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
 // org.forester.application.decoratorX
 // RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_with_seqs_2.phylo.xml
-// nature12311-s3_cz_4.txt x
+// nature12311-s3_cz_4.txt x1 x2
 
 package org.forester.application;
 
@@ -51,7 +51,6 @@ public class decoratorX {
             final PhyloXmlParser xml_parser = new PhyloXmlParser();
             final Phylogeny phy = factory.create( intree, xml_parser )[ 0 ];
             final BasicTable<String> t = BasicTableParser.parse( intable, '\t' );
-            //  System.out.println( t.toString() );
             final PhylogenyNodeIterator it = phy.iteratorExternalForward();
             int i = 0;
             while ( it.hasNext() ) {
@@ -102,9 +101,6 @@ public class decoratorX {
                 System.out.println( node + "->" + annotation );
             }
         }
-        // if ( !found ) {
-        //     throw new Exception( "Sequence from node " + node + " not found: " + node_seq );
-        // }
     }
 
     private static void processNode2( final PhylogenyNode node, final Phylogeny t ) {
