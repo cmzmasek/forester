@@ -136,7 +136,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _gsdi_item;
     JMenuItem                   _gsdir_item;
     JMenuItem                   _lineage_inference;
-    JMenuItem                   _function_analysis;
     // file menu:
     JMenuItem                   _open_item;
     JMenuItem                   _open_url_item;

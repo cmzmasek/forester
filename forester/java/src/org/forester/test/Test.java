@@ -10818,6 +10818,12 @@ public final class Test {
             if ( !entry.getSequenceName().equals( "Aspartate aminotransferase, mitochondrial" ) ) {
                 return false;
             }
+            if ( !entry.getSequenceSymbol().equals( "mAspAT" ) ) {
+                return false;
+            }
+            if ( !entry.getGeneName().equals( "GOT2" ) ) {
+                return false;
+            }
             if ( !entry.getTaxonomyIdentifier().equals( "9986" ) ) {
                 return false;
             }

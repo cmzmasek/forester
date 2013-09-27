@@ -66,7 +66,6 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
-import org.forester.archaeopteryx.tools.GoAnnotation;
 import org.forester.archaeopteryx.tools.InferenceManager;
 import org.forester.archaeopteryx.tools.PhyloInferenceDialog;
 import org.forester.archaeopteryx.tools.PhylogeneticInferenceOptions;
@@ -465,9 +464,6 @@ public final class MainFrameApplication extends MainFrame {
                     return;
                 }
                 executeLineageInference();
-            }
-            else if ( o == _function_analysis ) {
-                executeFunctionAnalysis();
             }
             else if ( o == _obtain_detailed_taxonomic_information_jmi ) {
                 if ( isSubtreeDisplayed() ) {
@@ -1087,6 +1083,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _move_node_names_to_seq_names_jmi );
         _move_node_names_to_seq_names_jmi.setToolTipText( "To interpret node names as sequence (protein, gene) names" );
         _tools_menu.addSeparator();
+        _tools_menu.add( _obtain_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
+        customizeJMenuItem( _obtain_seq_information_jmi );
+        _obtain_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu
                 .add( _obtain_detailed_taxonomic_information_jmi = new JMenuItem( OBTAIN_DETAILED_TAXONOMIC_INFORMATION ) );
         customizeJMenuItem( _obtain_detailed_taxonomic_information_jmi );
@@ -1097,17 +1096,7 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _obtain_detailed_taxonomic_information_deleting_jmi );
         _obtain_detailed_taxonomic_information_deleting_jmi
                 .setToolTipText( "To add additional taxonomic information, deletes nodes for which taxonomy cannot found (from UniProt Taxonomy)" );
-        _tools_menu.add( _obtain_seq_information_jmi = new JMenuItem( "Obtain Sequence Information" ) );
-        customizeJMenuItem( _obtain_seq_information_jmi );
-        _obtain_seq_information_jmi.setToolTipText( "To add additional sequence information" );
         _tools_menu.addSeparator();
-        if ( !Constants.__RELEASE ) {
-            _tools_menu.add( _function_analysis = new JMenuItem( "Add UniProtKB Annotations" ) );
-            customizeJMenuItem( _function_analysis );
-            _function_analysis
-                    .setToolTipText( "To add UniProtKB annotations for sequences with appropriate identifiers" );
-            _tools_menu.addSeparator();
-        }
         _tools_menu.add( _read_values_jmi = new JMenuItem( "Attach Vector/Expression Values" ) );
         customizeJMenuItem( _read_values_jmi );
         _read_values_jmi.setToolTipText( "To attach vector (e.g. gene expression) values to tree nodes (beta)" );
@@ -1131,16 +1120,6 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         exit();
-    }
-
-    void executeFunctionAnalysis() {
-        if ( ( _mainpanel.getCurrentPhylogeny() == null ) || ( _mainpanel.getCurrentPhylogeny().isEmpty() ) ) {
-            return;
-        }
-        final GoAnnotation a = new GoAnnotation( this,
-                                                 _mainpanel.getCurrentTreePanel(),
-                                                 _mainpanel.getCurrentPhylogeny() );
-        new Thread( a ).start();
     }
 
     void executeLineageInference() {

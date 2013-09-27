@@ -37,9 +37,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
@@ -237,8 +239,16 @@ public final class SequenceDbWsTools {
                 if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
                     seq.setName( db_entry.getSequenceName() );
                 }
-                if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
-                    seq.setSymbol( db_entry.getSequenceSymbol() );
+                if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
+                    try {
+                        seq.setSymbol( db_entry.getGeneName() );
+                    }
+                    catch ( PhyloXmlDataFormatException e ) {
+                        // Eat this exception.
+                    }
+                }
+                if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
+                    seq.addAnnotation( new Annotation( "GN", db_entry.getGeneName() ) );
                 }
                 final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
                         : new Taxonomy();

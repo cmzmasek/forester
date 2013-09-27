@@ -81,15 +81,8 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 e.setPA( DatabaseTools.extract( line, "PA" ) );
             }
             else if ( line.startsWith( "DE" ) ) {
-                // if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
                 e.setDe( DatabaseTools.extract( line, "DE" ) );
-                //}
             }
-            //  else if ( line.startsWith( "GN" ) ) {
-            //      if ( ( line.indexOf( "Name=" ) > 0 ) ) {
-            //          e.setSymbol( extract( line, "Name=", ";" ) );
-            //      }
-            //  }
             else if ( line.startsWith( "OS" ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
                     e.setOs( DatabaseTools.extract( line, "OS", "(" ) );
@@ -156,12 +149,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return _symbol;
     }
 
-    private void setSymbol( final String symbol ) {
-        if ( _symbol == null ) {
-            _symbol = symbol;
-        }
-    }
-
     @Override
     public boolean isEmpty() {
         return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
@@ -176,5 +163,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     public void setProvider( final String provider ) {
         _provider = provider;
+    }
+
+    @Override
+    public String getGeneName() {
+        return null;
     }
 }

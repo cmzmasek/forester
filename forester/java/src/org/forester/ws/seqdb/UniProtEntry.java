@@ -33,6 +33,8 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private String _ac;
     private String _name;
+    private String _symbol;
+    private String _gene_name;
     private String _os_scientific_name;
     private String _tax_id;
 
@@ -47,6 +49,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
         for( final String line : lines ) {
+            System.out.println( line );
             if ( line.startsWith( "AC" ) ) {
                 e.setAc( DatabaseTools.extract( line, "AC", ";" ) );
             }
@@ -56,6 +59,16 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 }
                 else if ( ( line.indexOf( "SubName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
                     e.setSequenceName( DatabaseTools.extract( line, "Full=", ";" ) );
+                }
+            }
+            else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceSymbol() ) ) {
+                if ( line.indexOf( "Short=" ) > 0 ) {
+                    e.setSequenceSymbol( DatabaseTools.extract( line, "Short=", ";" ) );
+                }
+            }
+            else if ( line.startsWith( "GN" ) && ForesterUtil.isEmpty( e.getGeneName() ) ) {
+                if ( line.indexOf( "Name=" ) > 0 ) {
+                    e.setGeneName( DatabaseTools.extract( line, "Name=", ";" ) );
                 }
             }
             else if ( line.startsWith( "OS" ) ) {
@@ -73,6 +86,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
         }
         return e;
+    }
+
+    private void setSequenceSymbol( String symbol ) {
+        _symbol = symbol;
     }
 
     @Override
@@ -119,20 +136,32 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         }
     }
 
+    private void setGeneName( final String gene_name ) {
+        if ( _gene_name == null ) {
+            _gene_name = gene_name;
+        }
+    }
+
     @Override
     public String getSequenceSymbol() {
-        return "";
+        return _symbol;
     }
 
     @Override
     public boolean isEmpty() {
         return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
-                && ForesterUtil.isEmpty( getTaxonomyScientificName() )
-                && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
+                && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
+                && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil
+                .isEmpty( getSequenceSymbol() ) );
     }
 
     @Override
     public String getProvider() {
         return "uniprot";
+    }
+
+    @Override
+    public String getGeneName() {
+        return _gene_name;
     }
 }

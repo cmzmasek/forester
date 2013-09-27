@@ -27,6 +27,8 @@ package org.forester.ws.seqdb;
 
 public interface SequenceDatabaseEntry {
 
+    public String getGeneName();
+
     public boolean isEmpty();
 
     public String getAccession();
