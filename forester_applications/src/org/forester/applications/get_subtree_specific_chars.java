@@ -65,7 +65,7 @@ public class get_subtree_specific_chars {
             System.err.println( e + "\nCould not read " + infile + "\n" );
             System.exit( -1 );
         }
-        final SortedSet<Integer> all_external_ids = getAllExternalDescendantsNodeIds( phy.getRoot() );
+        final SortedSet<Long> all_external_ids = getAllExternalDescendantsNodeIds( phy.getRoot() );
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
         System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         System.out.println();
@@ -85,11 +85,11 @@ public class get_subtree_specific_chars {
                 }
                 // System.out.println( ":" );
                 System.out.print( "\t" );
-                final SortedSet<Integer> external_ids = getAllExternalDescendantsNodeIds( node );
-                final SortedSet<Integer> not_external_ids = copy( all_external_ids );
+                final SortedSet<Long> external_ids = getAllExternalDescendantsNodeIds( node );
+                final SortedSet<Long> not_external_ids = copy( all_external_ids );
                 not_external_ids.removeAll( external_ids );
                 final SortedSet<String> not_node_chars = new TreeSet<String>();
-                for( final Integer id : not_external_ids ) {
+                for( final Long id : not_external_ids ) {
                     not_node_chars.addAll( getAllExternalPresentAndGainedCharacters( phy.getNode( id ) ) );
                 }
                 final SortedSet<String> node_chars = getAllExternalPresentAndGainedCharacters( node );
@@ -101,7 +101,7 @@ public class get_subtree_specific_chars {
                         }
                         else {
                             boolean found = true;
-                            for( final int external_id : external_ids ) {
+                            for( final Long external_id : external_ids ) {
                                 if ( !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
                                         .getGainedCharacters().contains( node_char )
                                         && !phy.getNode( external_id ).getNodeData().getBinaryCharacters()
@@ -133,16 +133,16 @@ public class get_subtree_specific_chars {
         }
     }
 
-    private static SortedSet<Integer> copy( final SortedSet<Integer> set ) {
-        final SortedSet<Integer> copy = new TreeSet<Integer>();
-        for( final Integer i : set ) {
+    private static SortedSet<Long> copy( final SortedSet<Long> set ) {
+        final SortedSet<Long> copy = new TreeSet<Long>();
+        for( final Long i : set ) {
             copy.add( i );
         }
         return copy;
     }
 
-    private static SortedSet<Integer> getAllExternalDescendantsNodeIds( final PhylogenyNode node ) {
-        final SortedSet<Integer> ids = new TreeSet<Integer>();
+    private static SortedSet<Long> getAllExternalDescendantsNodeIds( final PhylogenyNode node ) {
+        final SortedSet<Long> ids = new TreeSet<Long>();
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
         for( final PhylogenyNode desc : descs ) {
             ids.add( desc.getId() );

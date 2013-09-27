@@ -63,7 +63,7 @@ public class get_shared_chars {
             System.err.println( e + "\nCould not read " + infile + "\n" );
             System.exit( -1 );
         }
-        final SortedSet<Integer> outside_external_ids = getAllExternalDescendantsNodeIds( phy.getRoot() );
+        final SortedSet<Long> outside_external_ids = getAllExternalDescendantsNodeIds( phy.getRoot() );
         final SortedSet<String> all_chars = getAllExternalPresentAndGainedCharacters( phy.getRoot() );
         System.out.println( "Sum of all external characters:\t" + all_chars.size() );
         final SortedSet<String> all_shared_chars = new TreeSet<String>();
@@ -84,7 +84,7 @@ public class get_shared_chars {
         }
         final SortedSet<String> outside_chars = new TreeSet<String>();
         System.out.println( "All shared characters\t" + all_shared_chars.size() );
-        for( final Integer id : outside_external_ids ) {
+        for( final Long id : outside_external_ids ) {
             outside_chars.addAll( getAllExternalPresentAndGainedCharacters( phy.getNode( id ) ) );
         }
         final SortedSet<String> unique_shared_chars = copy( all_shared_chars );
@@ -105,8 +105,8 @@ public class get_shared_chars {
         return copy;
     }
 
-    private static SortedSet<Integer> getAllExternalDescendantsNodeIds( final PhylogenyNode node ) {
-        final SortedSet<Integer> ids = new TreeSet<Integer>();
+    private static SortedSet<Long> getAllExternalDescendantsNodeIds( final PhylogenyNode node ) {
+        final SortedSet<Long> ids = new TreeSet<Long>();
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
         for( final PhylogenyNode desc : descs ) {
             ids.add( desc.getId() );

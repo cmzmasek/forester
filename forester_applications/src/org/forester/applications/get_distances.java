@@ -73,8 +73,8 @@ public class get_distances {
                 if ( st.countTokens() < 2 ) {
                     continue;
                 }
-                final double d = PhylogenyMethods.getInstance().calculateDistance( p.getNode( st.nextToken() ),
-                                                                                   p.getNode( st.nextToken() ) );
+                final double d = PhylogenyMethods.calculateDistance( p.getNode( st.nextToken() ),
+                                                                     p.getNode( st.nextToken() ) );
                 out.write( line + " " + d );
                 out.newLine();
             }
