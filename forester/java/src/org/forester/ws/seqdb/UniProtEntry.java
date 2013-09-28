@@ -26,17 +26,22 @@
 package org.forester.ws.seqdb;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.forester.go.BasicGoTerm;
+import org.forester.go.GoTerm;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
-    private String _ac;
-    private String _name;
-    private String _symbol;
-    private String _gene_name;
-    private String _os_scientific_name;
-    private String _tax_id;
+    public final static Pattern GO_PATTERN = Pattern.compile( "GO;\\s+GO:(\\d+);\\s+([PF]):([^;]+);" );
+    private String              _ac;
+    private String              _name;
+    private String              _symbol;
+    private String              _gene_name;
+    private String              _os_scientific_name;
+    private String              _tax_id;
 
     private UniProtEntry() {
     }
@@ -49,7 +54,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
         final UniProtEntry e = new UniProtEntry();
         for( final String line : lines ) {
-            System.out.println( line );
+            //System.out.println( line );
             if ( line.startsWith( "AC" ) ) {
                 e.setAc( DatabaseTools.extract( line, "AC", ";" ) );
             }
@@ -69,6 +74,21 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             else if ( line.startsWith( "GN" ) && ForesterUtil.isEmpty( e.getGeneName() ) ) {
                 if ( line.indexOf( "Name=" ) > 0 ) {
                     e.setGeneName( DatabaseTools.extract( line, "Name=", ";" ) );
+                }
+            }
+            else if ( line.startsWith( "DR" ) ) {
+                if ( line.indexOf( "GO;" ) > 0 ) {
+                    Matcher m = GO_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        String n = m.group( 1 );
+                        String ns_str = m.group( 2 );
+                        String desc = m.group( 3 );
+                        if ( ns_str.equals( "F" ) ) { 
+                        
+                        System.out.println( "GO:" + n + " " + desc + " " + ns );
+                        GoTerm go = new BasicGoTerm( n, desc, ns, false );
+                        //  e.setGeneName( DatabaseTools.extract( line, "Name=", ";" ) );
+                    }
                 }
             }
             else if ( line.startsWith( "OS" ) ) {
