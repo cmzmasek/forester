@@ -20,7 +20,7 @@ module Evoruby
 
   class HmmscanDomainExtractor
 
-    ADD_TO_CLOSE_PAIRS = 20
+    ADD_TO_CLOSE_PAIRS = 0
 
     def initialize
     end
