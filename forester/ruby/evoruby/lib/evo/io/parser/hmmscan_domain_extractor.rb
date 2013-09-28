@@ -399,7 +399,7 @@ module Evoruby
                 index.to_s  + "+" + ( index + 1 ).to_s,
                 actual_out_of,
                 from,
-                hmmscan_data.env_to,
+                to,
                 in_msa,
                 out_msa_pairs,
                 add_position,
