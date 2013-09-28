@@ -388,8 +388,10 @@ module Evoruby
                   from = 1
                 end
                 to = to + ADD_TO_CLOSE_PAIRS
-                if to > in_msa.get_length
-                  to = in_msa.get_length
+                temp_seqs = in_msa.find_by_name_start( seq_name, true )
+                temp_seq = in_msa.get_sequence( temp_seqs[ 0 ] )
+                if to >  temp_seq.get_length
+                  to =  temp_seq.get_length
                 end
               end
 
