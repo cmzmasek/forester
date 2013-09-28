@@ -20,6 +20,8 @@ module Evoruby
 
   class HmmscanDomainExtractor
 
+    ADD_TO_CLOSE_PAIRS = 20
+
     def initialize
     end
 
@@ -376,10 +378,25 @@ module Evoruby
               saw_isolated = true
 
             elsif !first
+
+              from = hmmscan_datas[ index - 1 ].env_from
+              to = hmmscan_data.env_to
+
+              if ADD_TO_CLOSE_PAIRS > 0
+                from = from - ADD_TO_CLOSE_PAIRS
+                if from < 1
+                  from = 1
+                end
+                to = to + ADD_TO_CLOSE_PAIRS
+                if to > in_msa.get_length
+                  to = in_msa.get_length
+                end
+              end
+
               extract_domain( seq_name,
                 index.to_s  + "+" + ( index + 1 ).to_s,
                 actual_out_of,
-                hmmscan_datas[ index - 1 ].env_from,
+                from,
                 hmmscan_data.env_to,
                 in_msa,
                 out_msa_pairs,
@@ -446,12 +463,12 @@ module Evoruby
         add_position,
         add_domain_number,
         add_species )
-      if  number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
-        error_msg = "impossible: number=" + number.to_s + ", out of=" + out_of.to_s
+      if number.is_a?( Fixnum ) && ( number < 1 || out_of < 1 || number > out_of )
+        error_msg = "number=" + number.to_s + ", out of=" + out_of.to_s
         raise StandardError, error_msg
       end
-      if  seq_from < 1 || seq_to < 1 || seq_from >= seq_to
-        error_msg = "impossible: seq-f=" + seq_from.to_s + ", seq-t=" + seq_to.to_s
+      if seq_from < 1 || seq_to < 1 || seq_from >= seq_to
+        error_msg = "impossible: seq-from=" + seq_from.to_s + ", seq-to=" + seq_to.to_s
         raise StandardError, error_msg
       end
       seqs = in_msa.find_by_name_start( sequence, true )
