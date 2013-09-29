@@ -25,23 +25,26 @@
 
 package org.forester.ws.seqdb;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.go.BasicGoTerm;
+import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
-    public final static Pattern GO_PATTERN = Pattern.compile( "GO;\\s+GO:(\\d+);\\s+([PF]):([^;]+);" );
+    public final static Pattern GO_PATTERN = Pattern.compile( "GO;\\s+(GO:\\d+);\\s+([PF]):([^;]+);" );
     private String              _ac;
     private String              _name;
     private String              _symbol;
     private String              _gene_name;
     private String              _os_scientific_name;
     private String              _tax_id;
+    private List<GoTerm> _go_terms;
 
     private UniProtEntry() {
     }
@@ -80,14 +83,17 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                 if ( line.indexOf( "GO;" ) > 0 ) {
                     Matcher m = GO_PATTERN.matcher( line );
                     if ( m.find() ) {
-                        String n = m.group( 1 );
+                        String id = m.group( 1 );
                         String ns_str = m.group( 2 );
                         String desc = m.group( 3 );
+                        String gns = GoNameSpace.BIOLOGICAL_PROCESS_STR;
                         if ( ns_str.equals( "F" ) ) { 
+                            gns =  GoNameSpace.MOLECULAR_FUNCTION_STR;
+                        }    
                         
-                        System.out.println( "GO:" + n + " " + desc + " " + ns );
-                        GoTerm go = new BasicGoTerm( n, desc, ns, false );
-                        //  e.setGeneName( DatabaseTools.extract( line, "Name=", ";" ) );
+                        System.out.println( "GO:" + id + " " + desc + " " + ns_str );
+                      
+                        e.addGoTerm( new BasicGoTerm( id, desc, gns, false ) ); 
                     }
                 }
             }
@@ -106,6 +112,14 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
         }
         return e;
+    }
+
+    private void addGoTerm( BasicGoTerm g ) {
+        if ( _go_terms == null ) {
+            _go_terms = new ArrayList<GoTerm>();
+        }
+        _go_terms.add( g );
+        
     }
 
     private void setSequenceSymbol( String symbol ) {
@@ -161,6 +175,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             _gene_name = gene_name;
         }
     }
+    
+    @Override
+    public List<GoTerm> getGoTerms() {
+        return _go_terms;
+    }
+    
 
     @Override
     public String getSequenceSymbol() {
@@ -172,7 +192,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
                 && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
                 && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil
-                .isEmpty( getSequenceSymbol() ) );
+                .isEmpty( getSequenceSymbol() ) && ( getGoTerms() == null || getGoTerms().isEmpty() ) );
     }
 
     @Override

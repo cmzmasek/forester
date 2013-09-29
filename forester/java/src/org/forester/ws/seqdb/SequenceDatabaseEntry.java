@@ -25,6 +25,10 @@
 
 package org.forester.ws.seqdb;
 
+import java.util.List;
+
+import org.forester.go.GoTerm;
+
 public interface SequenceDatabaseEntry {
 
     public String getGeneName();
@@ -42,4 +46,6 @@ public interface SequenceDatabaseEntry {
     public String getTaxonomyIdentifier();
 
     public String getSequenceSymbol();
+
+    public List<GoTerm> getGoTerms();
 }

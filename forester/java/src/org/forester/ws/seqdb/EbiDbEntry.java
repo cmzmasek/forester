@@ -27,6 +27,7 @@ package org.forester.ws.seqdb;
 
 import java.util.List;
 
+import org.forester.go.GoTerm;
 import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
@@ -167,6 +168,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     @Override
     public String getGeneName() {
+        return null;
+    }
+
+    @Override
+    public List<GoTerm> getGoTerms() {
         return null;
     }
 }

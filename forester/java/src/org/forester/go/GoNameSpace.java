@@ -27,10 +27,10 @@ package org.forester.go;
 
 public class GoNameSpace {
 
-    public final String           MOLECULAR_FUNCTION_STR = "molecular_function";
-    public final String           BIOLOGICAL_PROCESS_STR = "biological_process";
-    public final String           CELLULAR_COMPONENT_STR = "cellular_component";
-    public final String           UNASSIGNED_STR         = "unassigned";
+    public final static String           MOLECULAR_FUNCTION_STR = "molecular_function";
+    public final static String           BIOLOGICAL_PROCESS_STR = "biological_process";
+    public final static String           CELLULAR_COMPONENT_STR = "cellular_component";
+    public final static  String           UNASSIGNED_STR         = "unassigned";
     private final GoNamespaceType _type;
 
     public GoNameSpace( final GoNamespaceType type ) {

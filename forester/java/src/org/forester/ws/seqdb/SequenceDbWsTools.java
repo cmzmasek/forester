@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.go.GoTerm;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
@@ -248,8 +249,14 @@ public final class SequenceDbWsTools {
                     }
                 }
                 if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
-                    seq.addAnnotation( new Annotation( "GN", db_entry.getGeneName() ) );
+                  //  seq.addAnnotation( new Annotation( "GN", db_entry.getGeneName() ) );
                 }
+                if ( db_entry.getGoTerms() != null &&  !db_entry.getGoTerms().isEmpty() ) {
+                    for( final GoTerm go : db_entry.getGoTerms() ) {
+                        seq.addAnnotation( new Annotation( go.getGoId().getId(), go.getName() ) );
+                    }
+                }
+                
                 final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
                         : new Taxonomy();
                 if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
