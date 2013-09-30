@@ -46,7 +46,6 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Confidence;
-import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
@@ -595,13 +594,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                             node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
                         }
                         node_to_annotate.getNodeData().getTaxonomy().setIdentifier( new Identifier( s.substring( 2 ) ) );
-                    }
-                    else if ( s.startsWith( NHXtags.DOMAIN_STRUCTURE ) ) {
-                        if ( !node_to_annotate.getNodeData().isHasSequence() ) {
-                            node_to_annotate.getNodeData().setSequence( new Sequence() );
-                        }
-                        node_to_annotate.getNodeData().getSequence()
-                                .setDomainArchitecture( new DomainArchitecture( s.substring( 3 ) ) );
                     }
                     else if ( s.startsWith( NHXtags.SEQUENCE_ACCESSION ) ) {
                         if ( !node_to_annotate.getNodeData().isHasSequence() ) {

@@ -1209,12 +1209,12 @@ public final class Test {
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getLocation().equals( "12p13-p12" ) ) ) {
                 return false;
             }
-            SortedSet<Accession> x =  t3.getNode( "root node" ).getNodeData().getSequence().getCrossReferences();
+            final SortedSet<Accession> x = t3.getNode( "root node" ).getNodeData().getSequence().getCrossReferences();
             if ( x.size() != 4 ) {
                 return false;
             }
             int c = 0;
-            for( Accession acc : x ) {
+            for( final Accession acc : x ) {
                 if ( c == 0 ) {
                     if ( !acc.getSource().equals( "KEGG" ) ) {
                         return false;
@@ -1504,7 +1504,6 @@ public final class Test {
             }
             if ( ( ( BinaryCharacters ) t3_rt.getNode( "node bb" ).getNodeData().getBinaryCharacters().copy() )
                     .getLostCount() != BinaryCharacters.COUNT_DEFAULT ) {
-                
                 return false;
             }
             if ( t3_rt.getNode( "node b" ).getNodeData().getBinaryCharacters().getGainedCount() != 1 ) {
@@ -1553,12 +1552,13 @@ public final class Test {
                     .equalsIgnoreCase( "433" ) ) {
                 return false;
             }
-            SortedSet<Accession> x =  t3_rt.getNode( "root node" ).getNodeData().getSequence().getCrossReferences();
+            final SortedSet<Accession> x = t3_rt.getNode( "root node" ).getNodeData().getSequence()
+                    .getCrossReferences();
             if ( x.size() != 4 ) {
                 return false;
             }
             int c = 0;
-            for( Accession acc : x ) {
+            for( final Accession acc : x ) {
                 if ( c == 0 ) {
                     if ( !acc.getSource().equals( "KEGG" ) ) {
                         return false;

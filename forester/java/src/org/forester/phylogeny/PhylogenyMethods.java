@@ -44,6 +44,8 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.util.PhylogenyParserException;
+import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -918,6 +920,10 @@ public class PhylogenyMethods {
                 match = true;
             }
             if ( !match && node.getNodeData().isHasSequence()
+                    && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial ) ) {
+                match = true;
+            }
+            if ( !match && node.getNodeData().isHasSequence()
                     && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
                 match = true;
             }
@@ -940,6 +946,38 @@ public class PhylogenyMethods {
                     }
                 }
             }
+            //
+            if ( !match && node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getAnnotations() != null ) ) {
+                for( final Annotation ann : node.getNodeData().getSequence().getAnnotations() ) {
+                    if ( match( ann.getDesc(), query, case_sensitive, partial ) ) {
+                        match = true;
+                        break;
+                    }
+                    if ( match( ann.getRef(), query, case_sensitive, partial ) ) {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            if ( !match && node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getCrossReferences() != null ) ) {
+                for( final Accession x : node.getNodeData().getSequence().getCrossReferences() ) {
+                    if ( match( x.getComment(), query, case_sensitive, partial ) ) {
+                        match = true;
+                        break;
+                    }
+                    if ( match( x.getSource(), query, case_sensitive, partial ) ) {
+                        match = true;
+                        break;
+                    }
+                    if ( match( x.getValue(), query, case_sensitive, partial ) ) {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            //
             if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
                 Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
                 I: while ( it.hasNext() ) {
@@ -1018,6 +1056,10 @@ public class PhylogenyMethods {
                     match = true;
                 }
                 if ( !match && node.getNodeData().isHasSequence()
+                        && match( node.getNodeData().getSequence().getGeneName(), query, case_sensitive, partial ) ) {
+                    match = true;
+                }
+                if ( !match && node.getNodeData().isHasSequence()
                         && match( node.getNodeData().getSequence().getSymbol(), query, case_sensitive, partial ) ) {
                     match = true;
                 }
@@ -1040,6 +1082,38 @@ public class PhylogenyMethods {
                         }
                     }
                 }
+                //
+                if ( !match && node.getNodeData().isHasSequence()
+                        && ( node.getNodeData().getSequence().getAnnotations() != null ) ) {
+                    for( final Annotation ann : node.getNodeData().getSequence().getAnnotations() ) {
+                        if ( match( ann.getDesc(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break;
+                        }
+                        if ( match( ann.getRef(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                if ( !match && node.getNodeData().isHasSequence()
+                        && ( node.getNodeData().getSequence().getCrossReferences() != null ) ) {
+                    for( final Accession x : node.getNodeData().getSequence().getCrossReferences() ) {
+                        if ( match( x.getComment(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break;
+                        }
+                        if ( match( x.getSource(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break;
+                        }
+                        if ( match( x.getValue(), query, case_sensitive, partial ) ) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                //
                 if ( !match && ( node.getNodeData().getBinaryCharacters() != null ) ) {
                     Iterator<String> it = node.getNodeData().getBinaryCharacters().getPresentCharacters().iterator();
                     I: while ( it.hasNext() ) {

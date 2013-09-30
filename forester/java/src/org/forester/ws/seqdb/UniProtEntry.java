@@ -33,18 +33,30 @@ import java.util.regex.Pattern;
 import org.forester.go.BasicGoTerm;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
+import org.forester.phylogeny.data.Accession;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
 
-    public final static Pattern GO_PATTERN = Pattern.compile( "GO;\\s+(GO:\\d+);\\s+([PF]):([^;]+);" );
-    private String              _ac;
-    private String              _name;
-    private String              _symbol;
-    private String              _gene_name;
-    private String              _os_scientific_name;
-    private String              _tax_id;
-    private List<GoTerm> _go_terms;
+    public final static Pattern  BindingDB_PATTERN = Pattern.compile( "BindingDB;\\s+([0-9A-Z]+);" );
+    public final static Pattern  CTD_PATTERN       = Pattern.compile( "CTD;\\s+(\\d+);" );
+    public final static Pattern  DrugBank_PATTERN  = Pattern.compile( "DrugBank;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
+    public final static Pattern  GO_PATTERN        = Pattern.compile( "GO;\\s+(GO:\\d+);\\s+([PFC]):([^;]+);" );
+    public final static Pattern  KEGG_PATTERN      = Pattern.compile( "KEGG;\\s+([a-z]+:[0-9]+);" );
+    public final static Pattern  MIM_PATTERN       = Pattern.compile( "MIM;\\s+(\\d+);" );
+    public final static Pattern  NextBio_PATTERN   = Pattern.compile( "NextBio;\\s+(\\d+);" );
+    public final static Pattern  Orphanet_PATTERN  = Pattern.compile( "Orphanet;\\s+(\\d+);\\s+([^\\.]+)" );
+    public final static Pattern  PDB_PATTERN       = Pattern.compile( "PDB;\\s+([0-9A-Z]{4});\\s+([^;]+)" );
+    public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
+    public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
+    private String               _ac;
+    private ArrayList<Accession> _cross_references;
+    private String               _gene_name;
+    private List<GoTerm>         _go_terms;
+    private String               _name;
+    private String               _os_scientific_name;
+    private String               _symbol;
+    private String               _tax_id;
 
     private UniProtEntry() {
     }
@@ -52,6 +64,110 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
+    }
+
+    @Override
+    public String getAccession() {
+        return _ac;
+    }
+
+    @Override
+    public List<Accession> getCrossReferences() {
+        return _cross_references;
+    }
+
+    @Override
+    public String getGeneName() {
+        return _gene_name;
+    }
+
+    @Override
+    public List<GoTerm> getGoTerms() {
+        return _go_terms;
+    }
+
+    @Override
+    public String getProvider() {
+        return "uniprot";
+    }
+
+    @Override
+    public String getSequenceName() {
+        return _name;
+    }
+
+    @Override
+    public String getSequenceSymbol() {
+        return _symbol;
+    }
+
+    @Override
+    public String getTaxonomyIdentifier() {
+        return _tax_id;
+    }
+
+    @Override
+    public String getTaxonomyScientificName() {
+        return _os_scientific_name;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
+                && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
+                && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() )
+                && ForesterUtil.isEmpty( getSequenceSymbol() ) && ( ( getGoTerms() == null ) || getGoTerms().isEmpty() ) && ( ( getCrossReferences() == null ) || getCrossReferences()
+                .isEmpty() ) );
+    }
+
+    private void addCrossReference( final Accession accession ) {
+        if ( _cross_references == null ) {
+            _cross_references = new ArrayList<Accession>();
+        }
+        System.out.println( "XREF ADDED: " + accession );
+        _cross_references.add( accession );
+    }
+
+    private void addGoTerm( final BasicGoTerm g ) {
+        if ( _go_terms == null ) {
+            _go_terms = new ArrayList<GoTerm>();
+        }
+        System.out.println( "GOTERM ADDED: " + g );
+        _go_terms.add( g );
+    }
+
+    private void setAc( final String ac ) {
+        if ( _ac == null ) {
+            _ac = ac;
+        }
+    }
+
+    private void setGeneName( final String gene_name ) {
+        if ( _gene_name == null ) {
+            _gene_name = gene_name;
+        }
+    }
+
+    private void setOsScientificName( final String os_scientific_name ) {
+        if ( _os_scientific_name == null ) {
+            _os_scientific_name = os_scientific_name;
+        }
+    }
+
+    private void setSequenceName( final String name ) {
+        if ( _name == null ) {
+            _name = name;
+        }
+    }
+
+    private void setSequenceSymbol( final String symbol ) {
+        _symbol = symbol;
+    }
+
+    private void setTaxId( final String tax_id ) {
+        if ( _tax_id == null ) {
+            _tax_id = tax_id;
+        }
     }
 
     public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
@@ -81,19 +197,80 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "DR" ) ) {
                 if ( line.indexOf( "GO;" ) > 0 ) {
-                    Matcher m = GO_PATTERN.matcher( line );
+                    final Matcher m = GO_PATTERN.matcher( line );
                     if ( m.find() ) {
-                        String id = m.group( 1 );
-                        String ns_str = m.group( 2 );
-                        String desc = m.group( 3 );
+                        final String id = m.group( 1 );
+                        final String ns_str = m.group( 2 );
+                        final String desc = m.group( 3 );
                         String gns = GoNameSpace.BIOLOGICAL_PROCESS_STR;
-                        if ( ns_str.equals( "F" ) ) { 
-                            gns =  GoNameSpace.MOLECULAR_FUNCTION_STR;
-                        }    
-                        
+                        if ( ns_str.equals( "F" ) ) {
+                            gns = GoNameSpace.MOLECULAR_FUNCTION_STR;
+                        }
+                        else if ( ns_str.equals( "C" ) ) {
+                            gns = GoNameSpace.CELLULAR_COMPONENT_STR;
+                        }
                         System.out.println( "GO:" + id + " " + desc + " " + ns_str );
-                      
-                        e.addGoTerm( new BasicGoTerm( id, desc, gns, false ) ); 
+                        e.addGoTerm( new BasicGoTerm( id, desc, gns, false ) );
+                    }
+                }
+                else if ( line.indexOf( "PDB;" ) > 0 ) {
+                    final Matcher m = PDB_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "PDB", m.group( 2 ) ) );
+                    }
+                }
+                else if ( line.indexOf( "KEGG;" ) > 0 ) {
+                    final Matcher m = KEGG_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "KEGG" ) );
+                    }
+                }
+                else if ( line.indexOf( "CTD;" ) > 0 ) {
+                    final Matcher m = CTD_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "CTD" ) );
+                    }
+                }
+                else if ( line.indexOf( "MIM;" ) > 0 ) {
+                    final Matcher m = MIM_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "MIM" ) );
+                    }
+                }
+                else if ( line.indexOf( "Orphanet;" ) > 0 ) {
+                    final Matcher m = Orphanet_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "Orphanet", m.group( 2 ) ) );
+                    }
+                }
+                else if ( line.indexOf( "PharmGKB;" ) > 0 ) {
+                    final Matcher m = PharmGKB_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "PharmGKB" ) );
+                    }
+                }
+                else if ( line.indexOf( "BindingDB;" ) > 0 ) {
+                    final Matcher m = BindingDB_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "BindingDB" ) );
+                    }
+                }
+                else if ( line.indexOf( "DrugBank;" ) > 0 ) {
+                    final Matcher m = DrugBank_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "DrugBank", m.group( 2 ) ) );
+                    }
+                }
+                else if ( line.indexOf( "NextBio;" ) > 0 ) {
+                    final Matcher m = NextBio_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "NextBio" ) );
+                    }
+                }
+                else if ( line.indexOf( "Reactome;" ) > 0 ) {
+                    final Matcher m = Reactome_PATTERN.matcher( line );
+                    if ( m.find() ) {
+                        e.addCrossReference( new Accession( m.group( 1 ), "Reactome", m.group( 2 ) ) );
                     }
                 }
             }
@@ -112,96 +289,5 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
         }
         return e;
-    }
-
-    private void addGoTerm( BasicGoTerm g ) {
-        if ( _go_terms == null ) {
-            _go_terms = new ArrayList<GoTerm>();
-        }
-        _go_terms.add( g );
-        
-    }
-
-    private void setSequenceSymbol( String symbol ) {
-        _symbol = symbol;
-    }
-
-    @Override
-    public String getAccession() {
-        return _ac;
-    }
-
-    private void setAc( final String ac ) {
-        if ( _ac == null ) {
-            _ac = ac;
-        }
-    }
-
-    @Override
-    public String getSequenceName() {
-        return _name;
-    }
-
-    private void setSequenceName( final String name ) {
-        if ( _name == null ) {
-            _name = name;
-        }
-    }
-
-    @Override
-    public String getTaxonomyScientificName() {
-        return _os_scientific_name;
-    }
-
-    private void setOsScientificName( final String os_scientific_name ) {
-        if ( _os_scientific_name == null ) {
-            _os_scientific_name = os_scientific_name;
-        }
-    }
-
-    @Override
-    public String getTaxonomyIdentifier() {
-        return _tax_id;
-    }
-
-    private void setTaxId( final String tax_id ) {
-        if ( _tax_id == null ) {
-            _tax_id = tax_id;
-        }
-    }
-
-    private void setGeneName( final String gene_name ) {
-        if ( _gene_name == null ) {
-            _gene_name = gene_name;
-        }
-    }
-    
-    @Override
-    public List<GoTerm> getGoTerms() {
-        return _go_terms;
-    }
-    
-
-    @Override
-    public String getSequenceSymbol() {
-        return _symbol;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return ( ForesterUtil.isEmpty( getAccession() ) && ForesterUtil.isEmpty( getSequenceName() )
-                && ForesterUtil.isEmpty( getTaxonomyScientificName() ) && ForesterUtil.isEmpty( getSequenceSymbol() )
-                && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil
-                .isEmpty( getSequenceSymbol() ) && ( getGoTerms() == null || getGoTerms().isEmpty() ) );
-    }
-
-    @Override
-    public String getProvider() {
-        return "uniprot";
-    }
-
-    @Override
-    public String getGeneName() {
-        return _gene_name;
     }
 }

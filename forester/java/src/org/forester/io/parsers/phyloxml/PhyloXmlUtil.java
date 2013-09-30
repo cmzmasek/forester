@@ -37,7 +37,7 @@ public final class PhyloXmlUtil {
 
     public static final String       OTHER                                      = "other";
     public static final String       UNKNOWN                                    = "unknown";
-    public final static Pattern      SEQUENCE_SYMBOL_PATTERN                    = Pattern.compile( "\\S{1,30}" );
+    public final static Pattern      SEQUENCE_SYMBOL_PATTERN                    = Pattern.compile( "\\S{1,20}" );
     public final static Pattern      TAXOMONY_CODE_PATTERN                      = Pattern
                                                                                         .compile( ParserUtils.TAX_CODE );
     public final static Pattern      LIT_REF_DOI_PATTERN                        = Pattern

@@ -48,9 +48,20 @@ public class AccessionParser implements PhylogenyDataPhyloXmlParser {
 
     @Override
     public PhylogenyData parse( final XmlElement element ) throws PhyloXmlDataFormatException {
-        if ( element.isHasAttribute( PhyloXmlMapping.ACCESSION_SOURCE_ATTR ) ) {
+        if ( element.isHasAttribute( PhyloXmlMapping.ACCESSION_SOURCE_ATTR )
+                && element.isHasAttribute( PhyloXmlMapping.ACCESSION_COMMENT_ATTR ) ) {
+            return new Accession( element.getValueAsString(),
+                                  element.getAttribute( PhyloXmlMapping.ACCESSION_SOURCE_ATTR ),
+                                  element.getAttribute( PhyloXmlMapping.ACCESSION_COMMENT_ATTR ) );
+        }
+        else if ( element.isHasAttribute( PhyloXmlMapping.ACCESSION_SOURCE_ATTR ) ) {
             return new Accession( element.getValueAsString(),
                                   element.getAttribute( PhyloXmlMapping.ACCESSION_SOURCE_ATTR ) );
+        }
+        else if ( element.isHasAttribute( PhyloXmlMapping.ACCESSION_COMMENT_ATTR ) ) {
+            return new Accession( element.getValueAsString(),
+                                  "?",
+                                  element.getAttribute( PhyloXmlMapping.ACCESSION_COMMENT_ATTR ) );
         }
         else {
             return new Accession( element.getValueAsString(), "?" );

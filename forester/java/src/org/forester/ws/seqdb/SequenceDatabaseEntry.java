@@ -28,24 +28,27 @@ package org.forester.ws.seqdb;
 import java.util.List;
 
 import org.forester.go.GoTerm;
+import org.forester.phylogeny.data.Accession;
 
 public interface SequenceDatabaseEntry {
 
+    public String getAccession();
+
     public String getGeneName();
 
-    public boolean isEmpty();
-
-    public String getAccession();
+    public List<GoTerm> getGoTerms();
 
     public String getProvider();
 
     public String getSequenceName();
 
-    public String getTaxonomyScientificName();
+    public String getSequenceSymbol();
 
     public String getTaxonomyIdentifier();
 
-    public String getSequenceSymbol();
+    public String getTaxonomyScientificName();
 
-    public List<GoTerm> getGoTerms();
+    public boolean isEmpty();
+
+    public List<Accession> getCrossReferences();
 }

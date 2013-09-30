@@ -89,7 +89,20 @@ public class Annotation implements PhylogenyData, MultipleUris, Comparable<Annot
 
     @Override
     public StringBuffer asText() {
-        return asSimpleText();
+        final StringBuffer sb = new StringBuffer();
+        if ( !ForesterUtil.isEmpty( getDesc() ) && !ForesterUtil.isEmpty( getRef() ) ) {
+            sb.append( getDesc() );
+            sb.append( " (" );
+            sb.append( getRef() );
+            sb.append( ")" );
+        }
+        else if ( !ForesterUtil.isEmpty( getDesc() ) ) {
+            sb.append( getDesc() );
+        }
+        else if ( !ForesterUtil.isEmpty( getRef() ) ) {
+            sb.append( getRef() );
+        }
+        return sb;
     }
 
     @Override

@@ -28,6 +28,7 @@ package org.forester.ws.seqdb;
 import java.util.List;
 
 import org.forester.go.GoTerm;
+import org.forester.phylogeny.data.Accession;
 import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
@@ -173,6 +174,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     @Override
     public List<GoTerm> getGoTerms() {
+        return null;
+    }
+
+    @Override
+    public List<Accession> getCrossReferences() {
         return null;
     }
 }

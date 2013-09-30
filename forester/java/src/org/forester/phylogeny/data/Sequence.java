@@ -44,6 +44,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
     private String                 _mol_sequence;
     private boolean                _mol_sequence_is_aligned;
     private String                 _name;
+    private String                 _gene_name;
     private String                 _source_id;
     private Accession              _accession;
     private String                 _symbol;
@@ -65,25 +66,25 @@ public class Sequence implements PhylogenyData, MultipleUris {
                 && ForesterUtil.isEmpty( getSourceId() ) && ForesterUtil.isEmpty( getMolecularSequence() )
                 && ( getDomainArchitecture() == null ) && ForesterUtil.isEmpty( _annotations )
                 && ForesterUtil.isEmpty( _uris ) && ForesterUtil.isEmpty( _seq_relations )
-                && ( getCrossReferences() == null || getCrossReferences().isEmpty() );
+                && ( ( getCrossReferences() == null ) || getCrossReferences().isEmpty() );
     }
 
     public void addAnnotation( final Annotation annotation ) {
         getAnnotations().add( annotation );
     }
-    
-    public void addCrossReference( Accession cross_reference ) {
+
+    public void addCrossReference( final Accession cross_reference ) {
         if ( getCrossReferences() == null ) {
             setCrossReferences( new TreeSet<Accession>() );
         }
-        getCrossReferences().add( cross_reference  );
+        getCrossReferences().add( cross_reference );
     }
-    
+
     public SortedSet<Accession> getCrossReferences() {
         return _xrefs;
     }
-    
-    private void setCrossReferences( TreeSet<Accession> cross_references ) {
+
+    private void setCrossReferences( final TreeSet<Accession> cross_references ) {
         _xrefs = cross_references;
     }
 
@@ -131,6 +132,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
         final Sequence seq = new Sequence();
         seq.setAnnotations( getAnnotations() );
         seq.setName( getName() );
+        seq.setGeneName( getGeneName() );
         try {
             seq.setSymbol( getSymbol() );
         }
@@ -170,7 +172,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
             seq.setCrossReferences( new TreeSet<Accession>() );
             for( final Accession x : getCrossReferences() ) {
                 if ( x != null ) {
-                    seq.getCrossReferences().add( x);
+                    seq.getCrossReferences().add( x );
                 }
             }
         }
@@ -229,6 +231,10 @@ public class Sequence implements PhylogenyData, MultipleUris {
         return _name;
     }
 
+    public String getGeneName() {
+        return _gene_name;
+    }
+
     public List<SequenceRelation> getSequenceRelations() {
         if ( _seq_relations == null ) {
             _seq_relations = new ArrayList<SequenceRelation>();
@@ -282,8 +288,8 @@ public class Sequence implements PhylogenyData, MultipleUris {
     }
 
     public void init() {
-        setAnnotations( null );
         setName( "" );
+        setGeneName( "" );
         setMolecularSequence( "" );
         setMolecularSequenceAligned( false );
         setLocation( "" );
@@ -304,7 +310,8 @@ public class Sequence implements PhylogenyData, MultipleUris {
         setUris( null );
         setSequenceRelations( null );
         setSourceId( null );
-        setCrossReferences(null);
+        setCrossReferences( null );
+        setAnnotations( null );
     }
 
     @Override
@@ -317,7 +324,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
             return getAccession().isEqual( s.getAccession() );
         }
         return s.getMolecularSequence().equals( getMolecularSequence() ) && s.getName().equals( getName() )
-                && s.getSymbol().equals( getSymbol() );
+                && s.getSymbol().equals( getSymbol() ) && s.getGeneName().equals( getGeneName() );
     }
 
     public void setAccession( final Accession accession ) {
@@ -346,6 +353,10 @@ public class Sequence implements PhylogenyData, MultipleUris {
 
     public void setName( final String name ) {
         _name = name;
+    }
+
+    public void setGeneName( final String gene_name ) {
+        _gene_name = gene_name;
     }
 
     public void setSourceId( final String source_id ) {
@@ -382,9 +393,6 @@ public class Sequence implements PhylogenyData, MultipleUris {
         if ( getAccession() != null ) {
             getAccession().toNHX();
         }
-        if ( getDomainArchitecture() != null ) {
-            sb.append( getDomainArchitecture().toNHX() );
-        }
         return sb;
     }
 
@@ -406,6 +414,9 @@ public class Sequence implements PhylogenyData, MultipleUris {
         if ( !ForesterUtil.isEmpty( getName() ) ) {
             PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.SEQUENCE_NAME, getName(), indentation );
         }
+        if ( !ForesterUtil.isEmpty( getGeneName() ) ) {
+            PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.SEQUENCE_GENE_NAME, getGeneName(), indentation );
+        }
         if ( !ForesterUtil.isEmpty( getLocation() ) ) {
             PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.SEQUENCE_LOCATION, getLocation(), indentation );
         }
@@ -417,14 +428,14 @@ public class Sequence implements PhylogenyData, MultipleUris {
                                              String.valueOf( isMolecularSequenceAligned() ),
                                              indentation );
         }
-        if ( getUris() != null && !getUris().isEmpty() ) {
+        if ( ( getUris() != null ) && !getUris().isEmpty() ) {
             for( final Uri uri : getUris() ) {
                 if ( uri != null ) {
                     uri.toPhyloXML( writer, level, indentation );
                 }
             }
         }
-        if ( getAnnotations() != null && !getAnnotations().isEmpty() ) {
+        if ( ( getAnnotations() != null ) && !getAnnotations().isEmpty() ) {
             for( final PhylogenyData annotation : getAnnotations() ) {
                 annotation.toPhyloXML( writer, level, my_ind );
             }
@@ -432,7 +443,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
         if ( getDomainArchitecture() != null ) {
             getDomainArchitecture().toPhyloXML( writer, level, my_ind );
         }
-        if ( getCrossReferences() != null && !getCrossReferences().isEmpty() ) {
+        if ( ( getCrossReferences() != null ) && !getCrossReferences().isEmpty() ) {
             writer.write( ForesterUtil.LINE_SEPARATOR );
             writer.write( my_ind );
             PhylogenyDataUtil.appendOpen( writer, PhyloXmlMapping.SEQUENCE_X_REFS );
@@ -442,7 +453,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
             writer.write( ForesterUtil.LINE_SEPARATOR );
             writer.write( my_ind );
             PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.SEQUENCE_X_REFS );
-        } 
+        }
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );
         PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.SEQUENCE );

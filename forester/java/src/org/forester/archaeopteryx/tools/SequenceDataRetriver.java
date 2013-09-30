@@ -38,7 +38,7 @@ import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
 
-    private final static int           DEFAULT_LINES_TO_RETURN = 50;
+    private final static int           DEFAULT_LINES_TO_RETURN = 4000;
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;

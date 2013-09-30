@@ -34,13 +34,27 @@ import org.forester.util.ForesterUtil;
 
 public final class Accession implements PhylogenyData, Comparable<Accession> {
 
-    final private String _value;
+    final private String _comment;
     final private String _source;
     final private String _source_value;
+    final private String _value;
 
     public Accession( final String value, final String source ) {
         _value = value;
         _source = source;
+        _comment = "";
+        if ( source != null ) {
+            _source_value = source + value;
+        }
+        else {
+            _source_value = value;
+        }
+    }
+
+    public Accession( final String value, final String source, final String comment ) {
+        _value = value;
+        _source = source;
+        _comment = comment;
         if ( source != null ) {
             _source_value = source + value;
         }
@@ -58,12 +72,24 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
     public StringBuffer asText() {
         final StringBuffer sb = new StringBuffer();
         if ( !ForesterUtil.isEmpty( getSource() ) ) {
-            sb.append( "[" );
             sb.append( getSource() );
-            sb.append( "] " );
+            sb.append( ": " );
         }
         sb.append( getValue() );
+        if ( !ForesterUtil.isEmpty( getComment() ) ) {
+            sb.append( " (" );
+            sb.append( getComment() );
+            sb.append( ")" );
+        }
         return sb;
+    }
+
+    @Override
+    public int compareTo( final Accession o ) {
+        if ( equals( o ) ) {
+            return 0;
+        }
+        return _source_value.compareTo( o._source_value );
     }
 
     @Override
@@ -88,6 +114,10 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
         }
     }
 
+    public String getComment() {
+        return _comment;
+    }
+
     public String getSource() {
         return _source;
     }
@@ -98,7 +128,6 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
 
     @Override
     public int hashCode() {
-      
         return _source_value.hashCode();
     }
 
@@ -129,33 +158,49 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
     @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         if ( ForesterUtil.isEmpty( getSource() ) ) {
-            PhylogenyDataUtil.appendElement( writer,
-                                             PhyloXmlMapping.ACCESSION,
-                                             getValue(),
-                                             PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
-                                             "unknown",
-                                             indentation );
+            if ( ForesterUtil.isEmpty( getComment() ) ) {
+                PhylogenyDataUtil.appendElement( writer,
+                                                 PhyloXmlMapping.ACCESSION,
+                                                 getValue(),
+                                                 PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
+                                                 "unknown",
+                                                 indentation );
+            }
+            else {
+                PhylogenyDataUtil.appendElement( writer,
+                                                 PhyloXmlMapping.ACCESSION,
+                                                 getValue(),
+                                                 PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
+                                                 "unknown",
+                                                 PhyloXmlMapping.ACCESSION_COMMENT_ATTR,
+                                                 getComment(),
+                                                 indentation );
+            }
         }
         else {
-            PhylogenyDataUtil.appendElement( writer,
-                                             PhyloXmlMapping.ACCESSION,
-                                             getValue(),
-                                             PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
-                                             getSource(),
-                                             indentation );
+            if ( ForesterUtil.isEmpty( getComment() ) ) {
+                PhylogenyDataUtil.appendElement( writer,
+                                                 PhyloXmlMapping.ACCESSION,
+                                                 getValue(),
+                                                 PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
+                                                 getSource(),
+                                                 indentation );
+            }
+            else {
+                PhylogenyDataUtil.appendElement( writer,
+                                                 PhyloXmlMapping.ACCESSION,
+                                                 getValue(),
+                                                 PhyloXmlMapping.ACCESSION_SOURCE_ATTR,
+                                                 getSource(),
+                                                 PhyloXmlMapping.ACCESSION_COMMENT_ATTR,
+                                                 getComment(),
+                                                 indentation );
+            }
         }
     }
 
     @Override
     public String toString() {
         return asText().toString();
-    }
-
-    @Override
-    public int compareTo( Accession o ) {
-        if ( equals( o ) ) {
-            return 0;
-        }
-        return  _source_value.compareTo( o._source_value );
     }
 }

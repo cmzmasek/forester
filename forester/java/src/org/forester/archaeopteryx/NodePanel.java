@@ -43,6 +43,7 @@ import javax.swing.tree.TreePath;
 
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchWidth;
@@ -62,56 +63,57 @@ import org.forester.util.ForesterUtil;
 
 class NodePanel extends JPanel implements TreeSelectionListener {
 
-    static final String       DIST_ALTITUDE            = "Altitude";
-    static final String       DIST_ALT_UNIT            = "Altitude unit";
-    static final String       DIST_LONGITUDE           = "Longitude";
-    static final String       DIST_LATITUDE            = "Latitude";
-    static final String       DIST_GEODETIC_DATUM      = "Geodetic datum";
-    static final String       DIST_DESCRIPTION         = "Description";
-    static final String       DATE_UNIT                = "Unit";
-    static final String       DATE_MAX                 = "Max";
-    static final String       DATE_MIN                 = "Min";
-    static final String       DATE_VALUE               = "Value";
-    static final String       DATE_DESCRIPTION         = "Description";
-    static final String       TAXONOMY_IDENTIFIER      = "Identifier";
-    static final String       SEQ_ACCESSION            = "Accession";
-    static final String       CONFIDENCE               = "Confidence";
-    static final String       PROP                     = "Properties";
-    static final String       BINARY_CHARACTERS        = "Binary characters";
-    static final String       REFERENCE                = "Reference";
-    static final String       LIT_REFERENCE            = "Reference";
-    static final String       LIT_REFERENCE_DESC       = "Description";
-    static final String       LIT_REFERENCE_DOI        = "DOI";
-    static final String       DISTRIBUTION             = "Distribution";
-    static final String       DATE                     = "Date";
-    static final String       EVENTS                   = "Events";
-    static final String       SEQUENCE                 = "Sequence";
-    static final String       TAXONOMY                 = "Taxonomy";
-    static final String       BASIC                    = "Basic";
-    static final String       TAXONOMY_SCIENTIFIC_NAME = "Scientific name";
-    static final String       SEQ_MOL_SEQ              = "Mol seq";
-    static final String       SEQ_TYPE                 = "Type";
-    static final String       SEQ_LOCATION             = "Location";
-    static final String       SEQ_SYMBOL               = "Symbol";
-    static final String       SEQ_URI                  = "URI";
-    static final String       NODE_BRANCH_LENGTH       = "Branch length";
-    static final String       NODE_BRANCH_WIDTH        = "Branch width";
-    static final String       NODE_BRANCH_COLOR        = "Branch color";
-    static final String       NODE_NAME                = "Name";
-    static final String       TAXONOMY_URI             = "URI";
-    static final String       TAXONOMY_RANK            = "Rank";
-    static final String       TAXONOMY_SYNONYM         = "Synonym";
-    static final String       TAXONOMY_COMMON_NAME     = "Common name";
-    static final String       TAXONOMY_AUTHORITY       = "Authority";
-    static final String       TAXONOMY_CODE            = "Code";
-    static final String       SEQ_NAME                 = "Name";
-    static final String       EVENTS_GENE_LOSSES       = "Gene losses";
-    static final String       EVENTS_SPECIATIONS       = "Speciations";
-    static final String       EVENTS_DUPLICATIONS      = "Duplications";
-    private static final long serialVersionUID         = 5120159904388100771L;
-    static final String       CONFIDENCE_TYPE          = "type";
-    private final JTree       _tree;
-    private final JEditorPane _pane;
+    static final String         BASIC                    = "Basic";
+    static final String         BINARY_CHARACTERS        = "Binary characters";
+    static final String         CONFIDENCE               = "Confidence";
+    static final String         CONFIDENCE_TYPE          = "type";
+    static final String         DATE                     = "Date";
+    static final String         DATE_DESCRIPTION         = "Description";
+    static final String         DATE_MAX                 = "Max";
+    static final String         DATE_MIN                 = "Min";
+    static final String         DATE_UNIT                = "Unit";
+    static final String         DATE_VALUE               = "Value";
+    static final String         DIST_ALT_UNIT            = "Altitude unit";
+    static final String         DIST_ALTITUDE            = "Altitude";
+    static final String         DIST_DESCRIPTION         = "Description";
+    static final String         DIST_GEODETIC_DATUM      = "Geodetic datum";
+    static final String         DIST_LATITUDE            = "Latitude";
+    static final String         DIST_LONGITUDE           = "Longitude";
+    static final String         DISTRIBUTION             = "Distribution";
+    static final String         EVENTS                   = "Events";
+    static final String         EVENTS_DUPLICATIONS      = "Duplications";
+    static final String         EVENTS_GENE_LOSSES       = "Gene losses";
+    static final String         EVENTS_SPECIATIONS       = "Speciations";
+    static final String         LIT_REFERENCE            = "Reference";
+    static final String         LIT_REFERENCE_DESC       = "Description";
+    static final String         LIT_REFERENCE_DOI        = "DOI";
+    static final String         NODE_BRANCH_COLOR        = "Branch color";
+    static final String         NODE_BRANCH_LENGTH       = "Branch length";
+    static final String         NODE_BRANCH_WIDTH        = "Branch width";
+    static final String         NODE_NAME                = "Name";
+    static final String         PROP                     = "Properties";
+    static final String         REFERENCE                = "Reference";
+    static final String         SEQ_ACCESSION            = "Accession";
+    static final String         SEQ_LOCATION             = "Location";
+    static final String         SEQ_MOL_SEQ              = "Mol seq";
+    static final String         SEQ_NAME                 = "Name";
+    static final String         SEQ_SYMBOL               = "Symbol";
+    static final String         SEQ_TYPE                 = "Type";
+    static final String         SEQ_URI                  = "URI";
+    static final String         SEQUENCE                 = "Sequence";
+    static final String         TAXONOMY                 = "Taxonomy";
+    static final String         TAXONOMY_AUTHORITY       = "Authority";
+    static final String         TAXONOMY_CODE            = "Code";
+    static final String         TAXONOMY_COMMON_NAME     = "Common name";
+    static final String         TAXONOMY_IDENTIFIER      = "Identifier";
+    static final String         TAXONOMY_RANK            = "Rank";
+    static final String         TAXONOMY_SCIENTIFIC_NAME = "Scientific name";
+    static final String         TAXONOMY_SYNONYM         = "Synonym";
+    static final String         TAXONOMY_URI             = "URI";
+    private static final String SEQ_GENE_NAME            = "Gene name";
+    private static final long   serialVersionUID         = 5120159904388100771L;
+    private final JEditorPane   _pane;
+    private final JTree         _tree;
 
     public NodePanel( final PhylogenyNode phylogeny_node ) {
         String node_name = "";
@@ -141,6 +143,11 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         add( split_pane );
     }
 
+    @Override
+    public void valueChanged( final TreeSelectionEvent e ) {
+        // Do nothing.
+    }
+
     private void expandPath( final String name ) {
         final TreePath tp = getJTree().getNextMatch( name, 0, Position.Bias.Forward );
         if ( tp != null ) {
@@ -152,17 +159,10 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         return _tree;
     }
 
-    @Override
-    public void valueChanged( final TreeSelectionEvent e ) {
-        // Do nothing.
-    }
-
     private static void addAnnotation( final DefaultMutableTreeNode top, final Annotation ann, final String name ) {
         DefaultMutableTreeNode category;
         category = new DefaultMutableTreeNode( name );
         top.add( category );
-        addSubelement( category, REFERENCE, ann.getRef() );
-        addSubelement( category, "Description", ann.getDesc() );
         addSubelement( category, "Source", ann.getSource() );
         addSubelement( category, "Type", ann.getType() );
         addSubelement( category, "Evidence", ann.getEvidence() );
@@ -174,60 +174,14 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
     }
 
-    private static void addUri( final DefaultMutableTreeNode top, final Uri uri, final String name ) {
-        DefaultMutableTreeNode category;
-        category = new DefaultMutableTreeNode( name );
-        top.add( category );
-        addSubelement( category, "Description", uri.getDescription() );
-        addSubelement( category, "Type", uri.getType() );
-        addSubelement( category, "URI", uri.getValue().toString() );
-    }
-
     private static void addAnnotations( final DefaultMutableTreeNode top,
                                         final SortedSet<Annotation> annotations,
                                         final DefaultMutableTreeNode category ) {
         if ( ( annotations != null ) && ( annotations.size() > 0 ) ) {
             category.add( new DefaultMutableTreeNode( "Annotations" ) );
             final DefaultMutableTreeNode last = top.getLastLeaf();
-            int i = 0;
-            for( final PhylogenyData ann : annotations ) {
-                addAnnotation( last, ( Annotation ) ann, "Annotation " + ( i++ ) );
-            }
-        }
-    }
-
-    private static void addUris( final DefaultMutableTreeNode top,
-                                 final List<Uri> uris,
-                                 final DefaultMutableTreeNode category ) {
-        if ( ( uris != null ) && ( uris.size() > 0 ) ) {
-            category.add( new DefaultMutableTreeNode( "URIs" ) );
-            final DefaultMutableTreeNode last = top.getLastLeaf();
-            int i = 0;
-            for( final Uri uri : uris ) {
-                if ( uri != null ) {
-                    addUri( last, uri, "URI " + ( i++ ) );
-                }
-            }
-        }
-    }
-
-    private static void addLineage( final DefaultMutableTreeNode top,
-                                    final List<String> lineage,
-                                    final DefaultMutableTreeNode category ) {
-        if ( ( lineage != null ) && ( lineage.size() > 0 ) ) {
-            final StringBuilder sb = new StringBuilder();
-            for( final String lin : lineage ) {
-                if ( !ForesterUtil.isEmpty( lin ) ) {
-                    sb.append( lin );
-                    sb.append( " > " );
-                }
-            }
-            String str = null;
-            if ( sb.length() > 1 ) {
-                str = sb.substring( 0, sb.length() - 3 );
-            }
-            if ( !ForesterUtil.isEmpty( str ) ) {
-                addSubelement( category, "Lineage", str );
+            for( final Annotation ann : annotations ) {
+                addAnnotation( last, ann, ann.asText().toString() );
             }
         }
     }
@@ -299,6 +253,24 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         addSubelement( chars, "Present", bc.getPresentCharactersAsStringBuffer().toString() );
     }
 
+    private static void addCrossReference( final DefaultMutableTreeNode top, final Accession x, final String name ) {
+        DefaultMutableTreeNode category;
+        category = new DefaultMutableTreeNode( name );
+        top.add( category );
+    }
+
+    private static void addCrossReferences( final DefaultMutableTreeNode top,
+                                            final SortedSet<Accession> xs,
+                                            final DefaultMutableTreeNode category ) {
+        if ( ( xs != null ) && ( xs.size() > 0 ) ) {
+            category.add( new DefaultMutableTreeNode( "Cross references" ) );
+            final DefaultMutableTreeNode last = top.getLastLeaf();
+            for( final Accession x : xs ) {
+                addCrossReference( last, x, x.asText().toString() );
+            }
+        }
+    }
+
     private static void addDate( final DefaultMutableTreeNode top, final Date date, final String name ) {
         DefaultMutableTreeNode category;
         category = new DefaultMutableTreeNode( name );
@@ -349,6 +321,27 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
     }
 
+    private static void addLineage( final DefaultMutableTreeNode top,
+                                    final List<String> lineage,
+                                    final DefaultMutableTreeNode category ) {
+        if ( ( lineage != null ) && ( lineage.size() > 0 ) ) {
+            final StringBuilder sb = new StringBuilder();
+            for( final String lin : lineage ) {
+                if ( !ForesterUtil.isEmpty( lin ) ) {
+                    sb.append( lin );
+                    sb.append( " > " );
+                }
+            }
+            String str = null;
+            if ( sb.length() > 1 ) {
+                str = sb.substring( 0, sb.length() - 3 );
+            }
+            if ( !ForesterUtil.isEmpty( str ) ) {
+                addSubelement( category, "Lineage", str );
+            }
+        }
+    }
+
     private static void addProperties( final DefaultMutableTreeNode top,
                                        final PropertiesMap properties,
                                        final String string ) {
@@ -374,16 +367,22 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         top.add( category );
         addSubelement( category, SEQ_NAME, seq.getName() );
         addSubelement( category, SEQ_SYMBOL, seq.getSymbol() );
+        addSubelement( category, SEQ_GENE_NAME, seq.getGeneName() );
         if ( seq.getAccession() != null ) {
             addSubelement( category, SEQ_ACCESSION, seq.getAccession().asText().toString() );
         }
         addSubelement( category, SEQ_LOCATION, seq.getLocation() );
         addSubelement( category, SEQ_TYPE, seq.getType() );
         addSubelement( category, SEQ_MOL_SEQ, seq.getMolecularSequence() );
+        if ( ( seq.getAnnotations() != null ) && !seq.getAnnotations().isEmpty() ) {
+            addAnnotations( top, seq.getAnnotations(), category );
+        }
+        if ( ( seq.getCrossReferences() != null ) && !seq.getCrossReferences().isEmpty() ) {
+            addCrossReferences( top, seq.getCrossReferences(), category );
+        }
         if ( ( seq.getUris() != null ) && !seq.getUris().isEmpty() ) {
             addUris( top, seq.getUris(), category );
         }
-        addAnnotations( top, seq.getAnnotations(), category );
     }
 
     private static void addSubelement( final DefaultMutableTreeNode node, final String name, final String value ) {
@@ -411,6 +410,30 @@ class NodePanel extends JPanel implements TreeSelectionListener {
         }
         if ( ( tax.getLineage() != null ) && !tax.getLineage().isEmpty() ) {
             addLineage( top, tax.getLineage(), category );
+        }
+    }
+
+    private static void addUri( final DefaultMutableTreeNode top, final Uri uri, final String name ) {
+        DefaultMutableTreeNode category;
+        category = new DefaultMutableTreeNode( name );
+        top.add( category );
+        addSubelement( category, "Description", uri.getDescription() );
+        addSubelement( category, "Type", uri.getType() );
+        addSubelement( category, "URI", uri.getValue().toString() );
+    }
+
+    private static void addUris( final DefaultMutableTreeNode top,
+                                 final List<Uri> uris,
+                                 final DefaultMutableTreeNode category ) {
+        if ( ( uris != null ) && ( uris.size() > 0 ) ) {
+            category.add( new DefaultMutableTreeNode( "URIs" ) );
+            final DefaultMutableTreeNode last = top.getLastLeaf();
+            int i = 0;
+            for( final Uri uri : uris ) {
+                if ( uri != null ) {
+                    addUri( last, uri, "URI " + ( i++ ) );
+                }
+            }
         }
     }
 

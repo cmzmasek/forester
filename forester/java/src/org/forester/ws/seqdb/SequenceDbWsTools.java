@@ -241,23 +241,28 @@ public final class SequenceDbWsTools {
                     seq.setName( db_entry.getSequenceName() );
                 }
                 if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
-                    final String gn = db_entry.getGeneName().replace( ' ', '_' );
+                    seq.setGeneName( db_entry.getGeneName() );
+                }
+                if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
                     try {
-                        seq.setSymbol( gn );
+                        seq.setSymbol( db_entry.getSequenceSymbol() );
                     }
-                    catch ( PhyloXmlDataFormatException e ) {
+                    catch ( final PhyloXmlDataFormatException e ) {
                         // Eat this exception.
                     }
                 }
-                if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
-                  //  seq.addAnnotation( new Annotation( "GN", db_entry.getGeneName() ) );
-                }
-                if ( db_entry.getGoTerms() != null &&  !db_entry.getGoTerms().isEmpty() ) {
+                if ( ( db_entry.getGoTerms() != null ) && !db_entry.getGoTerms().isEmpty() ) {
                     for( final GoTerm go : db_entry.getGoTerms() ) {
-                        seq.addAnnotation( new Annotation( go.getGoId().getId(), go.getName() ) );
+                        final Annotation ann = new Annotation( go.getGoId().getId() );
+                        ann.setDesc( go.getName() );
+                        seq.addAnnotation( ann );
                     }
                 }
-                
+                if ( ( db_entry.getCrossReferences() != null ) && !db_entry.getCrossReferences().isEmpty() ) {
+                    for( final Accession x : db_entry.getCrossReferences() ) {
+                        seq.addCrossReference( x );
+                    }
+                }
                 final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
                         : new Taxonomy();
                 if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
