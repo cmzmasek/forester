@@ -12,11 +12,11 @@
 <!--          or Ruby's License.                                 -->
 <!--          see: http://www.ruby-lang.org/en/about/license.txt -->
 <!--                                                             -->
-<!-- Copyright (c) 2008-2012 Christian M Zmasek                  -->
+<!-- Copyright (c) 2008-2013 Christian Zmasek                    -->
 <!--                                                             -->
 <!-- www.phyloxml.org                                            -->
-<!-- Version: 1.15                                               -->
-<!-- Last modified: 2012.06.26 by Christian M Zmasek             -->
+<!-- Version: 1.16                                               -->
+<!-- Last modified: 2013.09.29 by Christian M Zmasek             -->
 <!--                                                             -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:phy="http://www.phyloxml.org"
    targetNamespace="http://www.phyloxml.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
@@ -192,7 +192,7 @@
    <xs:complexType name="Sequence">
       <xs:annotation>
          <xs:documentation> Element Sequence is used to represent a molecular sequence (Protein, DNA, RNA) associated
-            with a node. 'symbol' is a short (maximal ten characters) symbol of the sequence (e.g. 'ACTM') whereas
+            with a node. 'symbol' is a short (maximal 30 characters) symbol of the sequence (e.g. 'ACTM') whereas
             'name' is used for the full name (e.g. 'muscle Actin'). 'location' is used for the location of a sequence on
             a genome/chromosome. The actual sequence can be stored with the 'mol_seq' element. Attribute 'type' is used
             to indicate the type of sequence ('dna', 'rna', or 'protein'). One intended use for 'id_ref' is to link a
@@ -207,6 +207,7 @@
          <xs:element name="mol_seq" type="phy:MolSeq" minOccurs="0"/>
          <xs:element name="uri" type="phy:Uri" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="annotation" type="phy:Annotation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element name="cross_references" type="phy:CrossReferences" minOccurs="0"/>
          <xs:element name="domain_architecture" type="phy:DomainArchitecture" minOccurs="0"/>
          <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" namespace="##other"/>
       </xs:sequence>
@@ -216,7 +217,7 @@
    </xs:complexType>
    <xs:simpleType name="SequenceSymbol">
       <xs:restriction base="xs:token">
-         <xs:pattern value="\S{1,20}"/>
+         <xs:pattern value="\S{1,30}"/>
       </xs:restriction>
    </xs:simpleType>
    <xs:complexType name="MolSeq">
@@ -251,6 +252,15 @@
          </xs:extension>
       </xs:simpleContent>
    </xs:complexType>
+   <!-- CrossReferences: -->
+   <xs:complexType name="CrossReferences">
+      <xs:annotation>
+         <xs:documentation> Used to store accessions to additional resources. </xs:documentation>
+      </xs:annotation> 
+      <xs:sequence>
+         <xs:element name="accession" type="phy:Accession" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType> 
    <!-- DomainArchitecture: -->
    <xs:complexType name="DomainArchitecture">
       <xs:annotation>
