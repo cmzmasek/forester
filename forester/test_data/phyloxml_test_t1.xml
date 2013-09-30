@@ -75,6 +75,12 @@
                <property datatype="xsd:double" applies_to="annotation" ref="AFFY:expression" unit="AFFY:x">0.2</property>
                <property datatype="xsd:string" applies_to="annotation" ref="MED:disease">lymphoma</property>
             </annotation>
+            <cross_references>
+               <accession source="UNIPROTKB">383</accession>
+               <accession source="PDB">1G5M</accession>
+               <accession source="KEGG">hsa:596</accession>
+               <accession source="PDB">2G5M</accession>
+            </cross_references>
          </sequence>
          <events>
             <type>mixed</type>
