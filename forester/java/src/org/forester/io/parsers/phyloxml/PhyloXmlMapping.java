@@ -84,6 +84,7 @@ public final class PhyloXmlMapping {
     public final static String SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_FROM       = "from";
     public final static String SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_TO         = "to";
     public final static String SEQUENCE_DOMAIN_ARCHITECTURE_PROT_DOMAIN_CONFIDENCE = "confidence";
+    public final static String SEQUENCE_X_REFS                                     = "cross_references";
     // public final static String NODE_IDENTIFIER                                     = "node_id";
     public final static String IDENTIFIER                                          = "id";
     public final static String IDENTIFIER_PROVIDER_ATTR                            = "provider";
@@ -130,6 +131,7 @@ public final class PhyloXmlMapping {
     public final static String SEQUENCE_RELATION_DISTANCE                          = "distance";
     public final static String SEQUENCE_SOURCE_ID                                  = "id_source";
     public final static String POLYGON                                             = "polygon";
+  
 
     private PhyloXmlMapping() {
     }

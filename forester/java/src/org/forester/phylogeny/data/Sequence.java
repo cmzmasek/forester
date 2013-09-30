@@ -53,6 +53,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
     private DomainArchitecture     _da;
     private List<Uri>              _uris;
     private List<SequenceRelation> _seq_relations;
+    private SortedSet<Accession>   _xrefs;
 
     public Sequence() {
         init();
@@ -63,11 +64,27 @@ public class Sequence implements PhylogenyData, MultipleUris {
                 && ForesterUtil.isEmpty( getType() ) && ForesterUtil.isEmpty( getLocation() )
                 && ForesterUtil.isEmpty( getSourceId() ) && ForesterUtil.isEmpty( getMolecularSequence() )
                 && ( getDomainArchitecture() == null ) && ForesterUtil.isEmpty( _annotations )
-                && ForesterUtil.isEmpty( _uris ) && ForesterUtil.isEmpty( _seq_relations );
+                && ForesterUtil.isEmpty( _uris ) && ForesterUtil.isEmpty( _seq_relations )
+                && ( getCrossReferences() == null || getCrossReferences().isEmpty() );
     }
 
     public void addAnnotation( final Annotation annotation ) {
         getAnnotations().add( annotation );
+    }
+    
+    public void addCrossReference( Accession cross_reference ) {
+        if ( getCrossReferences() == null ) {
+            setCrossReferences( new TreeSet<Accession>() );
+        }
+        getCrossReferences().add( cross_reference  );
+    }
+    
+    public SortedSet<Accession> getCrossReferences() {
+        return _xrefs;
+    }
+    
+    private void setCrossReferences( TreeSet<Accession> cross_references ) {
+        _xrefs = cross_references;
     }
 
     @Override
@@ -148,6 +165,14 @@ public class Sequence implements PhylogenyData, MultipleUris {
         }
         else {
             seq.setDomainArchitecture( null );
+        }
+        if ( getCrossReferences() != null ) {
+            seq.setCrossReferences( new TreeSet<Accession>() );
+            for( final Accession x : getCrossReferences() ) {
+                if ( x != null ) {
+                    seq.getCrossReferences().add( x);
+                }
+            }
         }
         return seq;
     }
@@ -279,6 +304,7 @@ public class Sequence implements PhylogenyData, MultipleUris {
         setUris( null );
         setSequenceRelations( null );
         setSourceId( null );
+        setCrossReferences(null);
     }
 
     @Override
@@ -391,14 +417,14 @@ public class Sequence implements PhylogenyData, MultipleUris {
                                              String.valueOf( isMolecularSequenceAligned() ),
                                              indentation );
         }
-        if ( getUris() != null ) {
+        if ( getUris() != null && !getUris().isEmpty() ) {
             for( final Uri uri : getUris() ) {
                 if ( uri != null ) {
                     uri.toPhyloXML( writer, level, indentation );
                 }
             }
         }
-        if ( _annotations != null ) {
+        if ( getAnnotations() != null && !getAnnotations().isEmpty() ) {
             for( final PhylogenyData annotation : getAnnotations() ) {
                 annotation.toPhyloXML( writer, level, my_ind );
             }
@@ -406,6 +432,17 @@ public class Sequence implements PhylogenyData, MultipleUris {
         if ( getDomainArchitecture() != null ) {
             getDomainArchitecture().toPhyloXML( writer, level, my_ind );
         }
+        if ( getCrossReferences() != null && !getCrossReferences().isEmpty() ) {
+            writer.write( ForesterUtil.LINE_SEPARATOR );
+            writer.write( my_ind );
+            PhylogenyDataUtil.appendOpen( writer, PhyloXmlMapping.SEQUENCE_X_REFS );
+            for( final PhylogenyData x : getCrossReferences() ) {
+                x.toPhyloXML( writer, level, my_ind );
+            }
+            writer.write( ForesterUtil.LINE_SEPARATOR );
+            writer.write( my_ind );
+            PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.SEQUENCE_X_REFS );
+        } 
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );
         PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.SEQUENCE );

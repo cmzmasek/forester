@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.TreePanelUtil;
@@ -1208,6 +1209,22 @@ public final class Test {
             if ( !( t3.getNode( "root node" ).getNodeData().getSequence().getLocation().equals( "12p13-p12" ) ) ) {
                 return false;
             }
+            SortedSet<Accession> x =  t3.getNode( "root node" ).getNodeData().getSequence().getCrossReferences();
+            if ( x.size() != 4 ) {
+                return false;
+            }
+            int c = 0;
+            for( Accession acc : x ) {
+                if ( c == 0 ) {
+                    if ( !acc.getSource().equals( "KEGG" ) ) {
+                        return false;
+                    }
+                    if ( !acc.getValue().equals( "hsa:596" ) ) {
+                        return false;
+                    }
+                }
+                c++;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -1487,7 +1504,7 @@ public final class Test {
             }
             if ( ( ( BinaryCharacters ) t3_rt.getNode( "node bb" ).getNodeData().getBinaryCharacters().copy() )
                     .getLostCount() != BinaryCharacters.COUNT_DEFAULT ) {
-                ;
+                
                 return false;
             }
             if ( t3_rt.getNode( "node b" ).getNodeData().getBinaryCharacters().getGainedCount() != 1 ) {
@@ -1535,6 +1552,22 @@ public final class Test {
             if ( !t3_rt.getNode( "node bc" ).getNodeData().getDate().getValue().toPlainString()
                     .equalsIgnoreCase( "433" ) ) {
                 return false;
+            }
+            SortedSet<Accession> x =  t3_rt.getNode( "root node" ).getNodeData().getSequence().getCrossReferences();
+            if ( x.size() != 4 ) {
+                return false;
+            }
+            int c = 0;
+            for( Accession acc : x ) {
+                if ( c == 0 ) {
+                    if ( !acc.getSource().equals( "KEGG" ) ) {
+                        return false;
+                    }
+                    if ( !acc.getValue().equals( "hsa:596" ) ) {
+                        return false;
+                    }
+                }
+                c++;
             }
         }
         catch ( final Exception e ) {

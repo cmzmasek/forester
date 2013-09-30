@@ -89,6 +89,13 @@ public class SequenceParser implements PhylogenyDataPhyloXmlParser {
             else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.URI ) ) {
                 sequence.addUri( ( Uri ) UriParser.getInstance().parse( child_element ) );
             }
+            else if ( child_element.getQualifiedName().equals( PhyloXmlMapping.SEQUENCE_X_REFS ) ) {
+                for( int j = 0; j < child_element.getNumberOfChildElements(); ++j ) {
+                //    final XmlElement c = child_element.getChildElement( j );
+                    sequence.addCrossReference( ( Accession ) AccessionParser.getInstance().parse( child_element.getChildElement( j ) ) );
+                }
+                //sequence.addUri( ( Uri ) UriParser.getInstance().parse( child_element ) );
+            }
         }
         return sequence;
     }

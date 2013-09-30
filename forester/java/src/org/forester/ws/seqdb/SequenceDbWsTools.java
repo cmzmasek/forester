@@ -241,8 +241,9 @@ public final class SequenceDbWsTools {
                     seq.setName( db_entry.getSequenceName() );
                 }
                 if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
+                    final String gn = db_entry.getGeneName().replace( ' ', '_' );
                     try {
-                        seq.setSymbol( db_entry.getGeneName() );
+                        seq.setSymbol( gn );
                     }
                     catch ( PhyloXmlDataFormatException e ) {
                         // Eat this exception.
