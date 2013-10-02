@@ -607,12 +607,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             .getValue()
                             + " " );
                 }
-                if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+                if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
                     sum += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName() + " " );
                 }
-                if ( getControlPanel().isShowGeneSymbols()
+                if ( getControlPanel().isShowSeqSymbols()
                         && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
                     sum += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getSymbol() + " " );
+                }
+                if ( getControlPanel().isShowGeneNames()
+                        && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
+                    sum += getTreeFontSet()._fm_large
+                            .stringWidth( node.getNodeData().getSequence().getGeneName() + " " );
                 }
                 if ( getControlPanel().isShowAnnotation()
                         && ( node.getNodeData().getSequence().getAnnotations() != null )
@@ -1925,8 +1930,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
             if ( ( !getControlPanel().isShowTaxonomyScientificNames() && !getControlPanel().isShowTaxonomyCode() && !getControlPanel()
                     .isShowTaxonomyCommonNames() ) ) {
-                if ( ( getControlPanel().isShowSequenceAcc() || getControlPanel().isShowGeneNames() || getControlPanel()
-                        .isShowGeneSymbols() ) ) {
+                if ( ( getControlPanel().isShowSequenceAcc() || getControlPanel().isShowSeqNames() || getControlPanel()
+                        .isShowSeqSymbols() ) ) {
                     pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
                 }
                 else if ( getControlPanel().isShowNodeNames() ) {
@@ -3224,6 +3229,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         switch ( getOptions().getExtDescNodeDataToReturn() ) {
             case NODE_NAME:
                 return "Node Names";
+            case GENE_NAME:
+                return "Gene Names";
             case SEQUENCE_NAME:
                 return "Sequence Names";
             case SEQUENCE_SYMBOL:
@@ -3984,13 +3991,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             _sb.append( node.getName() );
         }
         if ( node.getNodeData().isHasSequence() ) {
-            if ( getControlPanel().isShowGeneSymbols() && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
+            if ( getControlPanel().isShowSeqSymbols() && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
                 if ( _sb.length() > 0 ) {
                     _sb.append( " " );
                 }
                 _sb.append( node.getNodeData().getSequence().getSymbol() );
             }
-            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
+                if ( _sb.length() > 0 ) {
+                    _sb.append( " " );
+                }
+                _sb.append( node.getNodeData().getSequence().getGeneName() );
+            }
+            if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
                 if ( _sb.length() > 0 ) {
                     _sb.append( " " );
                 }
@@ -4234,7 +4247,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 _sb.append( node.getNodeData().getSequence().getAccession().getValue() );
             }
-            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+            if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
                 if ( _sb.length() > 0 ) {
                     _sb.append( " " );
                 }
@@ -4477,14 +4490,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                     if ( node.getNodeData().isHasSequence() ) {
-                        if ( getControlPanel().isShowGeneNames()
+                        if ( getControlPanel().isShowSeqNames()
                                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) ) {
                             x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getName()
                                     + " " );
                         }
-                        if ( getControlPanel().isShowGeneSymbols()
+                        if ( getControlPanel().isShowSeqSymbols()
                                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) ) {
                             x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getSymbol()
+                                    + " " );
+                        }
+                        if ( getControlPanel().isShowGeneNames()
+                                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) ) {
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getSequence().getGeneName()
                                     + " " );
                         }
                         if ( getControlPanel().isShowSequenceAcc()
@@ -5093,6 +5111,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         data.add( n.getNodeData().getSequence().getName() );
                     }
                     break;
+                case GENE_NAME:
+                    if ( n.getNodeData().isHasSequence()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getGeneName() ) ) {
+                        data.add( n.getNodeData().getSequence().getGeneName() );
+                    }
+                    break;
                 case SEQUENCE_SYMBOL:
                     if ( n.getNodeData().isHasSequence()
                             && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
@@ -5122,6 +5146,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getName() ) ) {
                             ann.append( "NAME=" );
                             ann.append( n.getNodeData().getSequence().getName() );
+                            ann.append( "|" );
+                        }
+                        if ( !ForesterUtil.isEmpty( n.getNodeData().getSequence().getGeneName() ) ) {
+                            ann.append( "GN=" );
+                            ann.append( n.getNodeData().getSequence().getGeneName() );
                             ann.append( "|" );
                         }
                         if ( n.getNodeData().getSequence().getAccession() != null ) {
@@ -5363,6 +5392,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                             _popup_buffer.append( "[" );
                         }
                         _popup_buffer.append( seq.getSymbol() );
+                        _popup_buffer.append( "]" );
+                        enc_data = true;
+                    }
+                    if ( !ForesterUtil.isEmpty( seq.getGeneName() ) ) {
+                        if ( enc_data ) {
+                            _popup_buffer.append( " [" );
+                        }
+                        else {
+                            _popup_buffer.append( "[" );
+                        }
+                        _popup_buffer.append( seq.getGeneName() );
                         _popup_buffer.append( "]" );
                         enc_data = true;
                     }

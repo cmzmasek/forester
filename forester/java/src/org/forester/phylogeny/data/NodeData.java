@@ -42,6 +42,7 @@ public class NodeData implements PhylogenyData {
         NODE_NAME,
         EVENT,
         SEQUENCE_NAME,
+        GENE_NAME,
         SEQUENCE_SYMBOL,
         SEQUENCE_MOL_SEQ,
         SEQUENCE_MOL_SEQ_FASTA,

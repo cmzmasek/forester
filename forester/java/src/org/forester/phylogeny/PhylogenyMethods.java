@@ -1245,6 +1245,11 @@ public class PhylogenyMethods {
                         return n1.getNodeData().getSequence().getSymbol()
                                 .compareTo( n2.getNodeData().getSequence().getSymbol() );
                     }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getGeneName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getGeneName() ) ) ) {
+                        return n1.getNodeData().getSequence().getGeneName()
+                                .compareTo( n2.getNodeData().getSequence().getGeneName() );
+                    }
                     if ( ( n1.getNodeData().getSequence().getAccession() != null )
                             && ( n2.getNodeData().getSequence().getAccession() != null )
                             && !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getAccession().getValue() )
@@ -1273,6 +1278,11 @@ public class PhylogenyMethods {
                             && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getSymbol() ) ) ) {
                         return n1.getNodeData().getSequence().getSymbol()
                                 .compareTo( n2.getNodeData().getSequence().getSymbol() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getGeneName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getGeneName() ) ) ) {
+                        return n1.getNodeData().getSequence().getGeneName()
+                                .compareTo( n2.getNodeData().getSequence().getGeneName() );
                     }
                     if ( ( n1.getNodeData().getSequence().getAccession() != null )
                             && ( n2.getNodeData().getSequence().getAccession() != null )
@@ -1339,6 +1349,11 @@ public class PhylogenyMethods {
                             && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getSymbol() ) ) ) {
                         return n1.getNodeData().getSequence().getSymbol()
                                 .compareTo( n2.getNodeData().getSequence().getSymbol() );
+                    }
+                    if ( ( !ForesterUtil.isEmpty( n1.getNodeData().getSequence().getGeneName() ) )
+                            && ( !ForesterUtil.isEmpty( n2.getNodeData().getSequence().getGeneName() ) ) ) {
+                        return n1.getNodeData().getSequence().getGeneName()
+                                .compareTo( n2.getNodeData().getSequence().getGeneName() );
                     }
                     if ( ( n1.getNodeData().getSequence().getAccession() != null )
                             && ( n2.getNodeData().getSequence().getAccession() != null )

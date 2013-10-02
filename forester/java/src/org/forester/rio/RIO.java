@@ -881,6 +881,10 @@ public final class RIO {
         else if ( n.getNodeData().isHasSequence() && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getSymbol() ) ) {
             label = n.getNodeData().getSequence().getSymbol();
         }
+        else if ( n.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getGeneName() ) ) {
+            label = n.getNodeData().getSequence().getGeneName();
+        }
         else if ( !ForesterUtil.isEmpty( n.getName() ) ) {
             label = n.getName();
         }

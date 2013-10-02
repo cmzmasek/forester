@@ -97,8 +97,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _show_annotation;
     private JCheckBox            _show_binary_characters;
     private JCheckBox            _show_binary_character_counts;
+    private JCheckBox            _show_seq_names;
+    private JCheckBox            _show_seq_symbols;
     private JCheckBox            _show_gene_names;
-    private JCheckBox            _show_gene_symbols;
     private JCheckBox            _show_sequence_acc;
     private JCheckBox            _node_desc_popup_cb;
     private JCheckBox            _dynamically_hide_data;
@@ -237,7 +238,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 else if ( e.getSource() == _order ) {
                     DESCENDANT_SORT_PRIORITY pri = DESCENDANT_SORT_PRIORITY.TAXONOMY;
                     if ( ( !isShowTaxonomyScientificNames() && !isShowTaxonomyCode() && !isShowTaxonomyCommonNames() ) ) {
-                        if ( ( isShowSequenceAcc() || isShowGeneNames() || isShowGeneSymbols() ) ) {
+                        if ( ( isShowSequenceAcc() || isShowSeqNames() || isShowSeqSymbols() ) ) {
                             pri = DESCENDANT_SORT_PRIORITY.SEQUENCE;
                         }
                         else if ( isShowNodeNames() ) {
@@ -610,14 +611,19 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( _show_domain_architectures, ch_panel );
                 add( ch_panel );
                 break;
+            case Configuration.show_seq_names:
+                _show_seq_names = new JCheckBox( title );
+                addJCheckBox( _show_seq_names, ch_panel );
+                add( ch_panel );
+                break;
             case Configuration.show_gene_names:
                 _show_gene_names = new JCheckBox( title );
                 addJCheckBox( _show_gene_names, ch_panel );
                 add( ch_panel );
                 break;
-            case Configuration.show_gene_symbols:
-                _show_gene_symbols = new JCheckBox( title );
-                addJCheckBox( _show_gene_symbols, ch_panel );
+            case Configuration.show_seq_symbols:
+                _show_seq_symbols = new JCheckBox( title );
+                addJCheckBox( _show_seq_symbols, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.show_sequence_acc:
@@ -817,12 +823,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _show_domain_architectures != null ) && _show_domain_architectures.isSelected() );
     }
 
-    boolean isShowGeneNames() {
-        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
+    boolean isShowSeqNames() {
+        return ( ( _show_seq_names != null ) && _show_seq_names.isSelected() );
     }
 
-    boolean isShowGeneSymbols() {
-        return ( ( _show_gene_symbols != null ) && _show_gene_symbols.isSelected() );
+    boolean isShowSeqSymbols() {
+        return ( ( _show_seq_symbols != null ) && _show_seq_symbols.isSelected() );
     }
 
     boolean isShowInternalData() {
@@ -835,6 +841,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isShowSequenceAcc() {
         return ( ( _show_sequence_acc != null ) && _show_sequence_acc.isSelected() );
+    }
+
+    boolean isShowGeneNames() {
+        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
     }
 
     boolean isShowSequenceRelationConfidence() {
@@ -991,14 +1001,19 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _show_domain_architectures.setSelected( state );
                 }
                 break;
+            case Configuration.show_seq_names:
+                if ( _show_seq_names != null ) {
+                    _show_seq_names.setSelected( state );
+                }
+                break;
             case Configuration.show_gene_names:
                 if ( _show_gene_names != null ) {
                     _show_gene_names.setSelected( state );
                 }
                 break;
-            case Configuration.show_gene_symbols:
-                if ( _show_gene_symbols != null ) {
-                    _show_gene_symbols.setSelected( state );
+            case Configuration.show_seq_symbols:
+                if ( _show_seq_symbols != null ) {
+                    _show_seq_symbols.setSelected( state );
                 }
                 break;
             case Configuration.show_vector_data:
@@ -1766,6 +1781,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     case SEQUENCE_NAME:
                         s = "Sequence Names";
                         break;
+                    case GENE_NAME:
+                        s = "Gene Names";
+                        break;
                     case SEQUENCE_SYMBOL:
                         s = "Sequence Symbols";
                         break;
@@ -1919,21 +1937,18 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.show_taxonomy_common_names,
                          _configuration.doCheckOption( Configuration.show_taxonomy_common_names ) );
         }
-        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
-            addCheckbox( Configuration.show_taxonomy_images,
-                         _configuration.getDisplayTitle( Configuration.show_taxonomy_images ) );
-            setCheckbox( Configuration.show_taxonomy_images,
-                         _configuration.doCheckOption( Configuration.show_taxonomy_images ) );
-        }
-        if ( _configuration.doDisplayOption( Configuration.show_gene_symbols ) ) {
-            addCheckbox( Configuration.show_gene_symbols,
-                         _configuration.getDisplayTitle( Configuration.show_gene_symbols ) );
-            setCheckbox( Configuration.show_gene_symbols,
-                         _configuration.doCheckOption( Configuration.show_gene_symbols ) );
+        if ( _configuration.doDisplayOption( Configuration.show_seq_names ) ) {
+            addCheckbox( Configuration.show_seq_names, _configuration.getDisplayTitle( Configuration.show_seq_names ) );
+            setCheckbox( Configuration.show_seq_names, _configuration.doCheckOption( Configuration.show_seq_names ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_gene_names ) ) {
             addCheckbox( Configuration.show_gene_names, _configuration.getDisplayTitle( Configuration.show_gene_names ) );
             setCheckbox( Configuration.show_gene_names, _configuration.doCheckOption( Configuration.show_gene_names ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_seq_symbols ) ) {
+            addCheckbox( Configuration.show_seq_symbols,
+                         _configuration.getDisplayTitle( Configuration.show_seq_symbols ) );
+            setCheckbox( Configuration.show_seq_symbols, _configuration.doCheckOption( Configuration.show_seq_symbols ) );
         }
         if ( _configuration.doDisplayOption( Configuration.show_sequence_acc ) ) {
             addCheckbox( Configuration.show_sequence_acc,
@@ -1981,6 +1996,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( _configuration.doDisplayOption( Configuration.show_properties ) ) {
             addCheckbox( Configuration.show_properties, _configuration.getDisplayTitle( Configuration.show_properties ) );
             setCheckbox( Configuration.show_properties, _configuration.doCheckOption( Configuration.show_properties ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.show_taxonomy_images ) ) {
+            addCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.getDisplayTitle( Configuration.show_taxonomy_images ) );
+            setCheckbox( Configuration.show_taxonomy_images,
+                         _configuration.doCheckOption( Configuration.show_taxonomy_images ) );
         }
     }
 

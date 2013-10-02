@@ -162,10 +162,19 @@ public final class SequenceDbWsTools {
             String query = null;
             Identifier id = null;
             Db db = Db.NONE;
-            if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+            if ( node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-                    && node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "uniprot" ) ) {
+                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase()
+                            .startsWith( "uniprot" )
+                            || node.getNodeData().getSequence().getAccession().getValue().toLowerCase()
+                                    .startsWith( "swissprot" )
+                            || node.getNodeData().getSequence().getAccession().getValue().toLowerCase()
+                                    .startsWith( "trembl" )
+                            || node.getNodeData().getSequence().getAccession().getValue().toLowerCase()
+                                    .startsWith( "sp" ) || node.getNodeData().getSequence().getAccession().getValue()
+                            .toLowerCase().startsWith( "uniprotkb" ) ) ) {
                 query = node.getNodeData().getSequence().getAccession().getValue();
                 db = Db.UNIPROT;
             }
@@ -178,21 +187,63 @@ public final class SequenceDbWsTools {
                 query = node.getNodeData().getSequence().getAccession().getValue();
                 db = Db.EMBL;
             }
-            else if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+            else if ( node.getNodeData().isHasSequence()
+                    && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "ncbi" ) || node
+                            .getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "genbank" ) ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                // db = Db.NCBI;
+            }
+            else if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
+                    && node.getNodeData().getSequence().getAccession().getValue().toLowerCase().startsWith( "refseq" ) ) {
+                query = node.getNodeData().getSequence().getAccession().getValue();
+                db = Db.REFSEQ;
+            }
+            else {
                 if ( ( query = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node ) ) != null ) {
                     db = Db.UNIPROT;
                 }
-                else if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
-                    if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
-                        db = Db.NCBI;
+                else if ( node.getNodeData().isHasSequence() ) {
+                    if ( ( id = SequenceIdParser.parse( node.getName() ) ) != null ) {
+                        if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                            //  db = Db.NCBI;
+                        }
+                        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                            db = Db.REFSEQ;
+                        }
                     }
-                    else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
-                        db = Db.REFSEQ;
+                    else if ( ( id = SequenceIdParser.parse( node.getNodeData().getSequence().getName() ) ) != null ) {
+                        if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                            // = Db.NCBI;
+                        }
+                        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                            db = Db.REFSEQ;
+                        }
+                    }
+                    else if ( ( id = SequenceIdParser.parse( node.getNodeData().getSequence().getGeneName() ) ) != null ) {
+                        if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                            // db = Db.NCBI;
+                        }
+                        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                            db = Db.REFSEQ;
+                        }
+                    }
+                    else if ( ( id = SequenceIdParser.parse( node.getNodeData().getSequence().getSymbol() ) ) != null ) {
+                        if ( id.getProvider().equalsIgnoreCase( Identifier.NCBI ) ) {
+                            // db = Db.NCBI;
+                        }
+                        else if ( id.getProvider().equalsIgnoreCase( Identifier.REFSEQ ) ) {
+                            db = Db.REFSEQ;
+                        }
                     }
                 }
             }
             if ( db == Db.NONE ) {
-                not_found.add( node.getName() );
+                not_found.add( node.toString() );
             }
             SequenceDatabaseEntry db_entry = null;
             if ( !ForesterUtil.isEmpty( query ) ) {
@@ -202,22 +253,31 @@ public final class SequenceDbWsTools {
                     }
                     db_entry = obtainUniProtEntry( query, lines_to_return );
                 }
-                if ( ( db == Db.EMBL ) || ( ( db == Db.UNIPROT ) && ( db_entry == null ) ) ) {
+                else if ( db == Db.EMBL ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
                     db_entry = obtainEmblEntry( new Identifier( query ), lines_to_return );
-                    if ( ( db == Db.UNIPROT ) && ( db_entry != null ) ) {
-                        db = Db.EMBL;
-                    }
                 }
+                else if ( db == Db.REFSEQ ) {
+                    if ( DEBUG ) {
+                        System.out.println( "refseq: " + query );
+                    }
+                    db_entry = obtainRefSeqEntryFromEmbl( new Identifier( query ), lines_to_return );
+                }
+                //   else if ( db == Db.NCBI ) {
+                //       if ( DEBUG ) {
+                //           System.out.println( "ncbi: " + query );
+                //       }
+                //       db_entry = obtainNcbiEntry( new Identifier( query ), lines_to_return );
+                //  }
             }
             else if ( ( db == Db.REFSEQ ) && ( id != null ) ) {
                 db_entry = obtainRefSeqEntryFromEmbl( id, lines_to_return );
             }
-            else if ( ( db == Db.NCBI ) && ( id != null ) ) {
-                db_entry = obtainEmblEntry( id, lines_to_return ); //TODO ?
-            }
+            //else if ( ( db == Db.NCBI ) && ( id != null ) ) {
+            //    db_entry = obtainNcbiEntry( id, lines_to_return );
+            //}
             if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                 final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
                         : new Sequence();
@@ -229,9 +289,9 @@ public final class SequenceDbWsTools {
                     else if ( db == Db.UNIPROT ) {
                         type = "uniprot";
                     }
-                    else if ( db == Db.NCBI ) {
-                        type = "ncbi";
-                    }
+                    //   else if ( db == Db.NCBI ) {
+                    //       type = "ncbi";
+                    //   }
                     else if ( db == Db.REFSEQ ) {
                         type = "refseq";
                     }

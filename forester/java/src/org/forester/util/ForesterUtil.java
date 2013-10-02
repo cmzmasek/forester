@@ -112,6 +112,9 @@ public final class ForesterUtil {
             if ( !isEmpty( seq.getSymbol() ) ) {
                 v = SequenceIdParser.parseRefSeqAccessor( seq.getSymbol() );
             }
+            if ( !isEmpty( seq.getGeneName() ) ) {
+                v = SequenceIdParser.parseRefSeqAccessor( seq.getGeneName() );
+            }
             if ( isEmpty( v ) && !isEmpty( seq.getName() ) ) {
                 v = SequenceIdParser.parseRefSeqAccessor( seq.getName() );
             }
@@ -132,6 +135,9 @@ public final class ForesterUtil {
             final Sequence seq = node.getNodeData().getSequence();
             if ( !isEmpty( seq.getSymbol() ) ) {
                 v = SequenceIdParser.parseGenbankAccessor( seq.getSymbol() );
+            }
+            if ( !isEmpty( seq.getGeneName() ) ) {
+                v = SequenceIdParser.parseGenbankAccessor( seq.getGeneName() );
             }
             if ( isEmpty( v ) && !isEmpty( seq.getName() ) ) {
                 v = SequenceIdParser.parseGenbankAccessor( seq.getName() );
@@ -204,6 +210,18 @@ public final class ForesterUtil {
                 }
                 else {
                     m = UNIPROT_KB_PATTERN_2.matcher( seq.getName() );
+                    if ( m.find() ) {
+                        upkb = m.group();
+                    }
+                }
+            }
+            if ( isEmpty( upkb ) && !isEmpty( seq.getGeneName() ) ) {
+                m = UNIPROT_KB_PATTERN_1.matcher( seq.getGeneName() );
+                if ( m.find() ) {
+                    upkb = m.group( 1 );
+                }
+                else {
+                    m = UNIPROT_KB_PATTERN_2.matcher( seq.getGeneName() );
                     if ( m.find() ) {
                         upkb = m.group();
                     }

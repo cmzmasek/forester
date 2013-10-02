@@ -165,14 +165,19 @@ public class TreePanelUtil {
         if ( cp.isShowNodeNames() && !ForesterUtil.isEmpty( node.getName() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getName(), sb );
         }
-        if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
+        if ( cp.isShowSeqNames() && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getName(), sb );
         }
-        if ( cp.isShowGeneSymbols() && node.getNodeData().isHasSequence()
+        if ( cp.isShowSeqSymbols() && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
             TreePanelUtil
                     .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getSymbol(), sb );
+        }
+        if ( cp.isShowGeneNames() && node.getNodeData().isHasSequence()
+                && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
+            TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence().getGeneName(),
+                                                                       sb );
         }
         if ( cp.isShowSequenceAcc() && node.getNodeData().isHasSequence()
                 && ( node.getNodeData().getSequence().getAccession() != null )
@@ -195,7 +200,7 @@ public class TreePanelUtil {
             TreePanelUtil
                     .showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getTaxonomy().getCommonName(), sb );
         }
-        if ( ( cp.isShowGeneNames() || cp.isShowGeneSymbols() || cp.isShowSequenceAcc() )
+        if ( ( cp.isShowSeqNames() || cp.isShowSeqSymbols() || cp.isShowSequenceAcc() )
                 && node.getNodeData().isHasSequence()
                 && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) {
             TreePanelUtil.showExtDescNodeDataUserSelectedHelperHelper( node.getNodeData().getSequence()
@@ -485,7 +490,7 @@ public class TreePanelUtil {
 
     final static boolean isSequenceEmpty( final Sequence seq ) {
         return ( seq.getAccession() == null ) && ForesterUtil.isEmpty( seq.getName() )
-                && ForesterUtil.isEmpty( seq.getSymbol() );
+                && ForesterUtil.isEmpty( seq.getGeneName() ) && ForesterUtil.isEmpty( seq.getSymbol() );
     }
 
     final static boolean isTaxonomyEmpty( final Taxonomy tax ) {

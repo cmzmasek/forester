@@ -99,6 +99,13 @@ public final class Blast {
                     query = id.getValue();
                 }
             }
+            if ( ForesterUtil.isEmpty( query )
+                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
+                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getGeneName() );
+                if ( id != null ) {
+                    query = id.getValue();
+                }
+            }
         }
         if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getName() ) ) {
             final Identifier id = SequenceIdParser.parse( node.getName() );

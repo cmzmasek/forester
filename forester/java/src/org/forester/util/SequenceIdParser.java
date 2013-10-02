@@ -70,17 +70,19 @@ public final class SequenceIdParser {
      * 
      */
     public final static Identifier parse( final String s ) {
-        String v = parseGenbankAccessor( s );
-        if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, Identifier.NCBI );
-        }
-        v = parseRefSeqAccessor( s );
-        if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, Identifier.REFSEQ );
-        }
-        v = parseTrEMBLAccessor( s );
-        if ( !ForesterUtil.isEmpty( v ) ) {
-            return new Identifier( v, Identifier.SP );
+        if ( !ForesterUtil.isEmpty( s ) ) {
+            String v = parseGenbankAccessor( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Identifier( v, Identifier.NCBI );
+            }
+            v = parseRefSeqAccessor( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Identifier( v, Identifier.REFSEQ );
+            }
+            v = parseTrEMBLAccessor( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Identifier( v, Identifier.SP );
+            }
         }
         return null;
     }

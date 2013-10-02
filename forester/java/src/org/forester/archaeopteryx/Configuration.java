@@ -115,19 +115,20 @@ public final class Configuration {
     final static int                        show_domain_architectures                              = 10;
     final static int                        show_binary_characters                                 = 11;
     final static int                        show_binary_character_counts                           = 12;
-    final static int                        show_gene_names                                        = 13;
+    final static int                        show_seq_names                                         = 13;
     final static int                        show_sequence_acc                                      = 14;
     final static int                        display_internal_data                                  = 15;
     final static int                        dynamically_hide_data                                  = 16;
     final static int                        show_taxonomy_scientific_names                         = 17;
     final static int                        show_taxonomy_common_names                             = 18;
     final static int                        color_according_to_annotation                          = 19;
-    final static int                        show_gene_symbols                                      = 20;
+    final static int                        show_seq_symbols                                       = 20;
     final static int                        node_data_popup                                        = 21;
     final static int                        show_relation_confidence                               = 22;
     final static int                        show_vector_data                                       = 23;
     final static int                        show_taxonomy_images                                   = 24;
     final static int                        show_properties                                        = 25;
+    final static int                        show_gene_names                                        = 26;
     // ------------------
     // Click-to options
     // ------------------
@@ -165,13 +166,13 @@ public final class Configuration {
             { "Use Branch Colors", "display", "no" }, { "Use Branch Widths", "display", "no" },
             { "Show Custom Nodes", "display", "yes" }, { "Protein Domains", "nodisplay", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
-            { "Seq Name", "display", "yes" }, { "Seq Acc", "display", "no" },
+            { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
             { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
             { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
             { "Colorize by Annotation", "nodisplay", "no" }, { "Seq Symbol", "display", "yes" },
             { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
             { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
-            { "Properties", "nodisplay", "no" }                                                   };
+            { "Properties", "nodisplay", "no" }, { "Gene Name", "display", "yes" }                };
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" },
@@ -458,7 +459,7 @@ public final class Configuration {
     }
 
     public void setDisplaySequenceNames( final boolean b ) {
-        display_options[ show_gene_names ][ 2 ] = b ? "yes" : "no";
+        display_options[ show_seq_names ][ 2 ] = b ? "yes" : "no";
     }
 
     public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
@@ -466,7 +467,7 @@ public final class Configuration {
     }
 
     public void setDisplaySequenceSymbols( final boolean b ) {
-        display_options[ show_gene_symbols ][ 2 ] = b ? "yes" : "no";
+        display_options[ show_seq_symbols ][ 2 ] = b ? "yes" : "no";
     }
 
     public void setDisplayTaxonomyCode( final boolean b ) {
@@ -1437,6 +1438,9 @@ public final class Configuration {
             else if ( s.equalsIgnoreCase( "sequence_name" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_NAME );
             }
+            else if ( s.equalsIgnoreCase( "gene_name" ) ) {
+                setExtDescNodeDataToReturn( NODE_DATA.GENE_NAME );
+            }
             else if ( s.equalsIgnoreCase( "sequence_symbol" ) ) {
                 setExtDescNodeDataToReturn( NODE_DATA.SEQUENCE_SYMBOL );
             }
@@ -1486,13 +1490,8 @@ public final class Configuration {
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
-            if ( key.equals( "use_real_br_lengths" ) || key.equals( "phylogram" ) ) {
+            if ( key.equals( "phylogram" ) ) {
                 key_index = Configuration.display_as_phylogram;
-                if ( key.equals( "use_real_br_lengths" ) ) {
-                    ForesterUtil
-                            .printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [use_real_br_lengths] is deprecated, use [phylogram] instead" );
-                }
             }
             else if ( key.equals( "rollover" ) ) {
                 key_index = Configuration.node_data_popup;
@@ -1503,45 +1502,20 @@ public final class Configuration {
             else if ( key.equals( "show_node_names" ) ) {
                 key_index = Configuration.show_node_names;
             }
-            else if ( key.equals( "show_taxonomy" ) || key.equals( "show_taxonomy_code" ) ) {
+            else if ( key.equals( "show_taxonomy_code" ) ) {
                 key_index = Configuration.show_tax_code;
-                if ( key.equals( "show_taxonomy" ) ) {
-                    ForesterUtil
-                            .printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [show_taxonomy] is deprecated, use [show_taxonomy_code] instead" );
-                }
             }
-            else if ( key.equals( "write_br_length_values" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [write_br_length_values] is deprecated" );
-                key_index = DEPRECATED;
-            }
-            else if ( key.equals( "write_bootstrap_values" ) || key.equals( "write_confidence_values" ) ) {
+            else if ( key.equals( "write_confidence_values" ) ) {
                 key_index = Configuration.write_confidence_values;
-                if ( key.equals( "write_bootstrap_values" ) ) {
-                    ForesterUtil
-                            .printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [write_bootstrap_values] is deprecated, use [write_confidence_values] instead" );
-                }
             }
-            else if ( key.equals( "write_events" ) || key.equals( "write_dup_spec" ) ) {
+            else if ( key.equals( "write_events" ) ) {
                 key_index = Configuration.write_events;
-                if ( key.equals( "write_dup_spec" ) ) {
-                    ForesterUtil
-                            .printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [write_dup_spec] is deprecated, use [write_events] instead" );
-                }
             }
             else if ( key.equals( "color_branches" ) ) {
                 key_index = Configuration.color_branches;
             }
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;
-            }
-            else if ( key.equals( "mark_nodes_with_box" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [mark_nodes_with_box] is deprecated" );
-                key_index = DEPRECATED;
             }
             else if ( key.equals( "show_domain_architectures" ) ) {
                 key_index = Configuration.show_domain_architectures;
@@ -1555,30 +1529,23 @@ public final class Configuration {
             else if ( key.equals( "show_binary_character_counts" ) ) {
                 key_index = Configuration.show_binary_character_counts;
             }
+            else if ( key.equals( "show_seq_names" ) ) {
+                key_index = Configuration.show_seq_names;
+            }
             else if ( key.equals( "show_gene_names" ) ) {
                 key_index = Configuration.show_gene_names;
             }
-            else if ( key.equals( "show_gene_symbols" ) ) {
-                key_index = Configuration.show_gene_symbols;
+            else if ( key.equals( "show_seq_symbols" ) ) {
+                key_index = Configuration.show_seq_symbols;
             }
-            else if ( key.equals( "show_sequence_acc" ) ) {
+            else if ( key.equals( "show_seq_acc" ) ) {
                 key_index = Configuration.show_sequence_acc;
-            }
-            else if ( key.equals( "show_node_ids" ) ) {
-                ForesterUtil
-                        .printWarningMessage( Constants.PRG_NAME, "configuration key [show_node_ids] is deprecated" );
-                key_index = DEPRECATED;
             }
             else if ( key.equals( "display_internal_data" ) ) {
                 key_index = Configuration.display_internal_data;
             }
             else if ( key.equals( "dynamically_hide_data" ) ) {
                 key_index = Configuration.dynamically_hide_data;
-            }
-            else if ( key.equals( "show_taxonomy_names" ) ) {
-                ForesterUtil.printWarningMessage( Constants.PRG_NAME,
-                                                  "configuration key [show_taxonomy_names] is deprecated" );
-                key_index = DEPRECATED;
             }
             else if ( key.equals( "show_taxonomy_scientific_names" ) ) {
                 key_index = Configuration.show_taxonomy_scientific_names;

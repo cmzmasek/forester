@@ -39,34 +39,25 @@ import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.util.ForesterUtil;
 
-public class Sequence implements PhylogenyData, MultipleUris {
+public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequence> {
 
+    private Accession              _accession;
+    private SortedSet<Annotation>  _annotations;
+    private DomainArchitecture     _da;
+    private String                 _gene_name;
+    private String                 _location;
     private String                 _mol_sequence;
     private boolean                _mol_sequence_is_aligned;
     private String                 _name;
-    private String                 _gene_name;
-    private String                 _source_id;
-    private Accession              _accession;
-    private String                 _symbol;
-    private String                 _location;
-    private String                 _type;
-    private SortedSet<Annotation>  _annotations;
-    private DomainArchitecture     _da;
-    private List<Uri>              _uris;
     private List<SequenceRelation> _seq_relations;
+    private String                 _source_id;
+    private String                 _symbol;
+    private String                 _type;
+    private List<Uri>              _uris;
     private SortedSet<Accession>   _xrefs;
 
     public Sequence() {
         init();
-    }
-
-    public boolean isEmpty() {
-        return ( getAccession() == null ) && ForesterUtil.isEmpty( getName() ) && ForesterUtil.isEmpty( getSymbol() )
-                && ForesterUtil.isEmpty( getType() ) && ForesterUtil.isEmpty( getLocation() )
-                && ForesterUtil.isEmpty( getSourceId() ) && ForesterUtil.isEmpty( getMolecularSequence() )
-                && ( getDomainArchitecture() == null ) && ForesterUtil.isEmpty( _annotations )
-                && ForesterUtil.isEmpty( _uris ) && ForesterUtil.isEmpty( _seq_relations )
-                && ( ( getCrossReferences() == null ) || getCrossReferences().isEmpty() );
     }
 
     public void addAnnotation( final Annotation annotation ) {
@@ -80,12 +71,8 @@ public class Sequence implements PhylogenyData, MultipleUris {
         getCrossReferences().add( cross_reference );
     }
 
-    public SortedSet<Accession> getCrossReferences() {
-        return _xrefs;
-    }
-
-    private void setCrossReferences( final TreeSet<Accession> cross_references ) {
-        _xrefs = cross_references;
+    public void addSequenceRelation( final SequenceRelation sr ) {
+        getSequenceRelations().add( sr );
     }
 
     @Override
@@ -94,10 +81,6 @@ public class Sequence implements PhylogenyData, MultipleUris {
             setUris( new ArrayList<Uri>() );
         }
         getUris().add( uri );
-    }
-
-    public void addSequenceRelation( final SequenceRelation sr ) {
-        _seq_relations.add( sr );
     }
 
     @Override
@@ -121,6 +104,29 @@ public class Sequence implements PhylogenyData, MultipleUris {
     @Override
     public StringBuffer asText() {
         return asSimpleText();
+    }
+
+    @Override
+    public int compareTo( final Sequence o ) {
+        if ( ( !ForesterUtil.isEmpty( getName() ) ) && ( !ForesterUtil.isEmpty( o.getName() ) ) ) {
+            return getName().compareTo( o.getName() );
+        }
+        if ( ( !ForesterUtil.isEmpty( getSymbol() ) ) && ( !ForesterUtil.isEmpty( o.getSymbol() ) ) ) {
+            return getSymbol().compareTo( o.getSymbol() );
+        }
+        if ( ( !ForesterUtil.isEmpty( getGeneName() ) ) && ( !ForesterUtil.isEmpty( o.getGeneName() ) ) ) {
+            return getGeneName().compareTo( o.getGeneName() );
+        }
+        if ( ( getAccession() != null ) && ( o.getAccession() != null )
+                && !ForesterUtil.isEmpty( getAccession().getValue() )
+                && !ForesterUtil.isEmpty( o.getAccession().getValue() ) ) {
+            return getAccession().getValue().compareTo( o.getAccession().getValue() );
+        }
+        if ( ( !ForesterUtil.isEmpty( getMolecularSequence() ) )
+                && ( !ForesterUtil.isEmpty( o.getMolecularSequence() ) ) ) {
+            return getMolecularSequence().compareTo( o.getMolecularSequence() );
+        }
+        return 0;
     }
 
     /**
@@ -211,8 +217,16 @@ public class Sequence implements PhylogenyData, MultipleUris {
         return _annotations;
     }
 
+    public SortedSet<Accession> getCrossReferences() {
+        return _xrefs;
+    }
+
     public DomainArchitecture getDomainArchitecture() {
         return _da;
+    }
+
+    public String getGeneName() {
+        return _gene_name;
     }
 
     public String getLocation() {
@@ -223,16 +237,8 @@ public class Sequence implements PhylogenyData, MultipleUris {
         return _mol_sequence;
     }
 
-    public boolean isMolecularSequenceAligned() {
-        return _mol_sequence_is_aligned;
-    }
-
     public String getName() {
         return _name;
-    }
-
-    public String getGeneName() {
-        return _gene_name;
     }
 
     public List<SequenceRelation> getSequenceRelations() {
@@ -240,10 +246,6 @@ public class Sequence implements PhylogenyData, MultipleUris {
             _seq_relations = new ArrayList<SequenceRelation>();
         }
         return _seq_relations;
-    }
-
-    private void setSequenceRelations( final List<SequenceRelation> seq_relations ) {
-        _seq_relations = seq_relations;
     }
 
     public String getSourceId() {
@@ -259,13 +261,13 @@ public class Sequence implements PhylogenyData, MultipleUris {
     }
 
     @Override
-    public List<Uri> getUris() {
-        return _uris;
+    public Uri getUri( final int index ) {
+        return getUris().get( index );
     }
 
     @Override
-    public Uri getUri( final int index ) {
-        return getUris().get( index );
+    public List<Uri> getUris() {
+        return _uris;
     }
 
     @Override
@@ -273,9 +275,12 @@ public class Sequence implements PhylogenyData, MultipleUris {
         if ( getAccession() != null ) {
             return getAccession().hashCode();
         }
-        int result = getSymbol().hashCode();
-        if ( getName().length() > 0 ) {
+        int result = getName().hashCode();
+        if ( getSymbol().length() > 0 ) {
             result ^= getName().hashCode();
+        }
+        if ( getGeneName().length() > 0 ) {
+            result ^= getGeneName().hashCode();
         }
         if ( getMolecularSequence().length() > 0 ) {
             result ^= getMolecularSequence().hashCode();
@@ -314,6 +319,16 @@ public class Sequence implements PhylogenyData, MultipleUris {
         setAnnotations( null );
     }
 
+    public boolean isEmpty() {
+        return ( getAccession() == null ) && ForesterUtil.isEmpty( getName() ) && ForesterUtil.isEmpty( getSymbol() )
+                && ForesterUtil.isEmpty( getGeneName() ) && ForesterUtil.isEmpty( getType() )
+                && ForesterUtil.isEmpty( getLocation() ) && ForesterUtil.isEmpty( getSourceId() )
+                && ForesterUtil.isEmpty( getMolecularSequence() ) && ( getDomainArchitecture() == null )
+                && ForesterUtil.isEmpty( _annotations ) && ForesterUtil.isEmpty( _uris )
+                && ForesterUtil.isEmpty( _seq_relations )
+                && ( ( getCrossReferences() == null ) || getCrossReferences().isEmpty() );
+    }
+
     @Override
     public boolean isEqual( final PhylogenyData data ) {
         if ( this == data ) {
@@ -327,16 +342,20 @@ public class Sequence implements PhylogenyData, MultipleUris {
                 && s.getSymbol().equals( getSymbol() ) && s.getGeneName().equals( getGeneName() );
     }
 
+    public boolean isMolecularSequenceAligned() {
+        return _mol_sequence_is_aligned;
+    }
+
     public void setAccession( final Accession accession ) {
         _accession = accession;
     }
 
-    private void setAnnotations( final SortedSet<Annotation> annotations ) {
-        _annotations = annotations;
-    }
-
     public void setDomainArchitecture( final DomainArchitecture ds ) {
         _da = ds;
+    }
+
+    public void setGeneName( final String gene_name ) {
+        _gene_name = gene_name;
     }
 
     public void setLocation( final String description ) {
@@ -353,10 +372,6 @@ public class Sequence implements PhylogenyData, MultipleUris {
 
     public void setName( final String name ) {
         _name = name;
-    }
-
-    public void setGeneName( final String gene_name ) {
-        _gene_name = gene_name;
     }
 
     public void setSourceId( final String source_id ) {
@@ -462,5 +477,17 @@ public class Sequence implements PhylogenyData, MultipleUris {
     @Override
     public String toString() {
         return asText().toString();
+    }
+
+    private void setAnnotations( final SortedSet<Annotation> annotations ) {
+        _annotations = annotations;
+    }
+
+    private void setCrossReferences( final TreeSet<Accession> cross_references ) {
+        _xrefs = cross_references;
+    }
+
+    private void setSequenceRelations( final List<SequenceRelation> seq_relations ) {
+        _seq_relations = seq_relations;
     }
 }

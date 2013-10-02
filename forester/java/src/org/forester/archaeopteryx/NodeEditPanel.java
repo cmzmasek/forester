@@ -337,6 +337,7 @@ class NodeEditPanel extends JPanel {
         }
         addSubelementEditable( category, NodePanel.SEQ_NAME, seq.getName(), PHYLOXML_TAG.SEQ_NAME );
         addSubelementEditable( category, NodePanel.SEQ_SYMBOL, seq.getSymbol(), PHYLOXML_TAG.SEQ_SYMBOL );
+        addSubelementEditable( category, NodePanel.SEQ_GENE_NAME, seq.getGeneName(), PHYLOXML_TAG.SEQ_GENE_NAME );
         addSubelementEditable( category,
                                NodePanel.SEQ_ACCESSION,
                                acc.getValue(),
@@ -841,6 +842,10 @@ class NodeEditPanel extends JPanel {
                     break;
                 }
                 break;
+            case SEQ_GENE_NAME:
+                ForesterUtil.ensurePresenceOfSequence( getMyNode() );
+                getMyNode().getNodeData().getSequence().setGeneName( value );
+                break;
             case SEQ_TYPE:
                 ForesterUtil.ensurePresenceOfSequence( getMyNode() );
                 try {
@@ -1062,6 +1067,7 @@ class NodeEditPanel extends JPanel {
         TAXONOMY_URI,
         SEQ_SYMBOL,
         SEQ_NAME,
+        SEQ_GENE_NAME,
         SEQ_LOCATION,
         SEQ_TYPE,
         SEQ_MOL_SEQ,

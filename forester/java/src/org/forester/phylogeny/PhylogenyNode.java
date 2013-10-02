@@ -1097,6 +1097,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                 sb.append( getNodeData().getSequence().getSymbol() );
                 sb.append( " " );
             }
+            if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getGeneName() ) ) {
+                sb.append( getNodeData().getSequence().getGeneName() );
+                sb.append( " " );
+            }
             if ( getNodeData().getSequence().getAccession() != null ) {
                 sb.append( getNodeData().getSequence().getAccession().toString() );
                 sb.append( " " );

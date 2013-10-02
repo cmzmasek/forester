@@ -1473,6 +1473,9 @@ public final class MainFrameApplication extends MainFrame {
                         nodes = phy.getNodesViaSequenceSymbol( seq_name );
                     }
                     if ( nodes.isEmpty() ) {
+                        nodes = phy.getNodesViaGeneName( seq_name );
+                    }
+                    if ( nodes.isEmpty() ) {
                         nodes = phy.getNodes( seq_name );
                     }
                     if ( nodes.size() > 1 ) {
