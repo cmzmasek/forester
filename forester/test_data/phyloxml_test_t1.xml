@@ -49,7 +49,6 @@
             <green>22</green>
             <blue>33</blue>
          </color>
-         <node_id>root id</node_id>
          <taxonomy>
             <id provider="ncbi">1</id>
             <code>ECDYS</code>
@@ -109,7 +108,6 @@
                <green>14</green>
                <blue>16</blue>
             </color>
-            <node_id provider="nodeid">a id</node_id>
             <taxonomy>
                <id provider="ncbi">123</id>
                <code>CAEEL</code>

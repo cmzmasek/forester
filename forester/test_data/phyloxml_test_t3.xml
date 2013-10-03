@@ -7,12 +7,10 @@
    <phylogeny rooted="true">
       <date>2008-12-12T12:12:12</date>
       <clade>
-         <node_id>a</node_id>
          <clade id_source="ab">
             <branch_length>0.2</branch_length>
             <confidence type="ml">0.99</confidence>
             <confidence type="prob">0.89</confidence>
-            <node_id>c</node_id>
             <sequence id_source="s1">
                <name>bax</name>
                <mol_seq>acgtddd</mol_seq>
@@ -26,7 +24,6 @@
          <clade>
             <name>223</name>
             <branch_length>0.1</branch_length>
-            <node_id>b</node_id>
             <taxonomy>
                <code>QWERT</code>
             </taxonomy>
