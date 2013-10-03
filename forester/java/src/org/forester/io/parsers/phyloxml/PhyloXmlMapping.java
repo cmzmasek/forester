@@ -27,10 +27,6 @@
 
 package org.forester.io.parsers.phyloxml;
 
-/*
- * @author Christian Zmasek TODO To change the template for this generated type
- * comment go to Window - Preferences - Java - Code Style - Code Templates
- */
 public final class PhyloXmlMapping {
 
     public static final String ACCESSION                                           = "accession";
@@ -74,7 +70,6 @@ public final class PhyloXmlMapping {
     public final static String EVENT_TYPE                                          = "type";
     public final static String EVENTS                                              = "events";
     public static final String ID_REF                                              = "id_ref";
-    // public final static String NODE_IDENTIFIER                                     = "node_id";
     public final static String IDENTIFIER                                          = "id";
     public final static String IDENTIFIER_PROVIDER_ATTR                            = "provider";
     public static final String NODE_COLLAPSE                                       = "collapse";

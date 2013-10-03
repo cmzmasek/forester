@@ -81,27 +81,30 @@ public final class Blast {
             }
             if ( ForesterUtil.isEmpty( query ) && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
-                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence().getAccession()
-                        .getValue() );
+                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
+                        .getAccession().getValue() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence().getName() );
+                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
+                        .getName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence().getSymbol() );
+                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
+                        .getSymbol() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
-                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence().getGeneName() );
+                final Accession id = SequenceAccessionTools.parseAccessorFromString( node.getNodeData().getSequence()
+                        .getGeneName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }

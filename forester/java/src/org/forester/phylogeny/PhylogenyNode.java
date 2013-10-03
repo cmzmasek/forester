@@ -49,23 +49,20 @@ import org.forester.util.ForesterUtil;
  */
 public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
-    public enum NH_CONVERSION_SUPPORT_VALUE_STYLE {
-        NONE, IN_SQUARE_BRACKETS, AS_INTERNAL_NODE_NAMES;
-    }
     private static long              NODE_COUNT       = 0;
-    private byte                     _indicator;
+    private BranchData               _branch_data;
+    private boolean                  _collapse;
+    private ArrayList<PhylogenyNode> _descendants;
+    private double                   _distance_parent = PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
     private long                     _id;
+    private byte                     _indicator;
+    private PhylogenyNode            _link;
+    private NodeData                 _node_data;
+    private PhylogenyNode            _parent;
     private int                      _sum_ext_nodes;
     private float                    _x;
-    private float                    _y;
-    private double                   _distance_parent = PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
-    private boolean                  _collapse;
-    private PhylogenyNode            _parent;
-    private PhylogenyNode            _link;
-    private ArrayList<PhylogenyNode> _descendants;
-    private NodeData                 _node_data;
-    private BranchData               _branch_data;
     private float                    _x_secondary;
+    private float                    _y;
     private float                    _y_secondary;
 
     /**
@@ -77,13 +74,13 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
     }
 
-    public void removeConnections() {
-        _parent = null;
-        _link = null;
-        _descendants = null;
-    }
-
-    public boolean isEmpty() {
+    private PhylogenyNode( final String nhx,
+                           final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
+                           final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
+        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
+        setId( PhylogenyNode.getNodeCount() );
+        PhylogenyNode.increaseNodeCount();
+        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
     }
 
     /**
@@ -99,16 +96,26 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         n.setParent( this );
     }
 
-    /**
-     * Adds PhylogenyNode n to the list of child nodes. But does NOT set the
-     * _parent of n to this.
-     * 
-     * @see addAsChild( PhylogenyNode n )
-     * @param n
-     *            the PhylogenyNode to add
-     */
-    final private void addChildNode( final PhylogenyNode child ) {
-        getDescendants().add( child );
+    public final int calculateDepth() {
+        PhylogenyNode n = this;
+        int steps = 0;
+        while ( n._parent != null ) {
+            steps++;
+            n = n._parent;
+        }
+        return steps;
+    }
+
+    public final double calculateDistanceToRoot() {
+        PhylogenyNode n = this;
+        double d = 0.0;
+        while ( n._parent != null ) {
+            if ( n._distance_parent > 0.0 ) {
+                d += n._distance_parent;
+            }
+            n = n._parent;
+        }
+        return d;
     }
 
     @Override
@@ -121,9 +128,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return getName().compareTo( n.getName() );
     }
 
-    // ---------------------------------------------------------
-    // Copy and delete Nodes, copy subtress
-    // ---------------------------------------------------------
     /**
      * Returns a new PhylogenyNode which has its data copied from this
      * PhylogenyNode. Links to the other Nodes in the same Phylogeny are NOT
@@ -219,9 +223,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         }
     }
 
-    // ---------------------------------------------------------
-    // Obtaining of Nodes
-    // ---------------------------------------------------------
+    final public List<PhylogenyNode> getAllDescendants() {
+        return _descendants;
+    }
+
     /**
      * Returns a List containing references to all external children of this
      * PhylogenyNode.
@@ -269,10 +274,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         if ( _branch_data == null ) {
             _branch_data = new BranchData();
         }
-        return _branch_data;
-    }
-
-    final BranchData getBranchDataDirectly() {
         return _branch_data;
     }
 
@@ -375,6 +376,13 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     }
 
     /**
+     * Returns the ID (int) of this PhylogenyNode.
+     */
+    final public long getId() {
+        return _id;
+    }
+
+    /**
      * Returns the _indicator value of this PhylogenyNode.
      */
     public final byte getIndicator() {
@@ -399,6 +407,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      */
     public final PhylogenyNode getLink() {
         return _link;
+    }
+
+    final public String getName() {
+        return getNodeData().getNodeName();
     }
 
     /**
@@ -477,28 +489,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             _node_data = new NodeData();
         }
         return _node_data;
-    }
-
-    final NodeData getNodeDataDirectly() {
-        return _node_data;
-    }
-
-    // ---------------------------------------------------------
-    // Set and get methods for Nodes
-    // ---------------------------------------------------------
-    /**
-     * Returns the ID (int) of this PhylogenyNode.
-     */
-    final public long getId() {
-        return _id;
-    }
-
-    final public String getName() {
-        return getNodeData().getNodeName();
-    }
-
-    final public List<PhylogenyNode> getAllDescendants() {
-        return _descendants;
     }
 
     final public int getNumberOfDescendants() {
@@ -596,30 +586,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return result;
     }
 
-    // final private void init() {
-    //_descendants = new ArrayList<PhylogenyNode>();
-    //  _parent = null; //TODO not needed?
-    //  _id = 0; //TODO not needed?
-    //initializeData(); //TODO not needed?
-    //}
-    /**
-     * Deletes data of this PhylogenyNode. Links to the other Nodes in the
-     * Phylogeny, the ID and the sum of external nodes are NOT deleted. Field
-     * "_link" (_link to Nodes in other Phylogeny) IS deleted.
-     * 
-     * @see #getLink() (Last modified: 12/20/03)
-     */
-    //    final private void initializeData() {
-    //        _indicator = 0;
-    //        _x = 0;
-    //        _y = 0;
-    //        //_node_name = "";
-    //        _distance_parent = PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT;
-    //        _collapse = false;
-    //        _link = null;
-    //        _branch_data = null;
-    //        _node_data = null;
-    //    }
     /**
      * Returns whether this PhylogenyNode should be drawn as collapsed.
      */
@@ -635,6 +601,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return getNodeData().isHasEvent() && getNodeData().getEvent().isDuplication();
     }
 
+    public boolean isEmpty() {
+        return ( ( _node_data == null ) || _node_data.isEmpty() );
+    }
+
     /**
      * Checks whether this PhylogenyNode is external (tip).
      * 
@@ -647,11 +617,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return ( getNumberOfDescendants() < 1 );
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
     final public boolean isFirstChildNode() {
         if ( isRoot() /* and tree is rooted TODO */) {
             throw new UnsupportedOperationException( "Cannot determine whether the root is the first child node of its _parent." );
@@ -659,11 +624,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return ( getChildNodeIndex() == 0 );
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
     final public boolean isFirstExternalNode() {
         if ( isInternal() ) {
             return false;
@@ -716,11 +676,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return ( getChildNodeIndex() == ( getParent().getNumberOfDescendants() - 1 ) );
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @return DOCUMENT ME!
-     */
     final public boolean isLastExternalNode() {
         if ( isInternal() ) {
             return false;
@@ -733,28 +688,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             node = node.getParent();
         }
         return true;
-    }
-
-    public final int calculateDepth() {
-        PhylogenyNode n = this;
-        int steps = 0;
-        while ( n._parent != null ) {
-            steps++;
-            n = n._parent;
-        }
-        return steps;
-    }
-
-    public final double calculateDistanceToRoot() {
-        PhylogenyNode n = this;
-        double d = 0.0;
-        while ( n._parent != null ) {
-            if ( n._distance_parent > 0.0 ) {
-                d += n._distance_parent;
-            }
-            n = n._parent;
-        }
-        return d;
     }
 
     /**
@@ -801,6 +734,12 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         removeChildNode( remove_me.getChildNodeIndex() );
     }
 
+    public void removeConnections() {
+        _parent = null;
+        _link = null;
+        _descendants = null;
+    }
+
     final public void setBranchData( final BranchData branch_data ) {
         _branch_data = branch_data;
     }
@@ -840,15 +779,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         }
     }
 
-    final void setChildNodeOnly( final int i, final PhylogenyNode node ) {
-        if ( getNumberOfDescendants() <= i ) {
-            addChildNode( node );
-        }
-        else {
-            getDescendants().set( i, node );
-        }
-    }
-
     /**
      * Sets whether this PhylogenyNode should be drawn as collapsed.
      */
@@ -871,19 +801,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         _indicator = i;
     }
 
-    // --------------------------------------------------------------------
-    // Adjust methods (related to Phylogeny construction and
-    // Phylogeny modification)
-    // --------------------------------------------------------------------
-    /**
-     * Sets the indicators of all the children of this PhylogenyNode to zero.
-     */
-    final void setIndicatorsToZero() {
-        for( final PreorderTreeIterator it = new PreorderTreeIterator( this ); it.hasNext(); ) {
-            it.next().setIndicator( ( byte ) 0 );
-        }
-    }
-
     /**
      * Sets the linked PhylogenyNode of this PhylogenyNode to n. Currently, this
      * method is only used for the speciation-_duplication assignment
@@ -898,18 +815,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      */
     final public void setName( final String node_name ) {
         getNodeData().setNodeName( node_name );
-    }
-
-    /**
-     * Sets the Id of this PhylogenyNode to i. In most cases, this number
-     * should not be set to values lower than getNodeCount() -- which this method
-     * does not allow.
-     */
-    synchronized final protected void setId( final long i ) {
-        if ( i < getNodeCount() ) {
-            throw new IllegalArgumentException( "attempt to set node id to a value less than total node count (thus violating the uniqueness of node ids)" );
-        }
-        _id = i;
     }
 
     /**
@@ -951,6 +856,23 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
 
     final public void setYSecondary( final float y_secondary ) {
         _y_secondary = y_secondary;
+    }
+
+    /**
+     * Swaps the the two childern of a PhylogenyNode node of this Phylogeny.
+     */
+    public final void swapChildren() throws RuntimeException {
+        if ( isExternal() ) {
+            throw new RuntimeException( "attempt to swap descendants of external node" );
+        }
+        if ( getNumberOfDescendants() != 2 ) {
+            throw new RuntimeException( "attempt to swap descendants of node with " + getNumberOfDescendants()
+                    + " descendants" );
+        }
+        final PhylogenyNode a = getChildNode( 0 );
+        final PhylogenyNode b = getChildNode( 1 );
+        setChildNode( 0, b );
+        setChildNode( 1, a );
     }
 
     // ---------------------------------------------------------
@@ -1019,23 +941,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             sb.append( "]" );
         }
         return sb.toString();
-    }
-
-    /**
-     * Swaps the the two childern of a PhylogenyNode node of this Phylogeny.
-     */
-    public final void swapChildren() throws RuntimeException {
-        if ( isExternal() ) {
-            throw new RuntimeException( "attempt to swap descendants of external node" );
-        }
-        if ( getNumberOfDescendants() != 2 ) {
-            throw new RuntimeException( "attempt to swap descendants of node with " + getNumberOfDescendants()
-                    + " descendants" );
-        }
-        final PhylogenyNode a = getChildNode( 0 );
-        final PhylogenyNode b = getChildNode( 1 );
-        setChildNode( 0, b );
-        setChildNode( 1, a );
     }
 
     /**
@@ -1122,33 +1027,53 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     }
 
     /**
-     * Decreases the total number of all Nodes created so far by one.
+     * Sets the Id of this PhylogenyNode to i. In most cases, this number
+     * should not be set to values lower than getNodeCount() -- which this method
+     * does not allow.
      */
-    final static synchronized void decreaseNodeCount() {
-        --NODE_COUNT;
+    synchronized final protected void setId( final long i ) {
+        if ( i < getNodeCount() ) {
+            throw new IllegalArgumentException( "attempt to set node id to a value less than total node count (thus violating the uniqueness of node ids)" );
+        }
+        _id = i;
+    }
+
+    final BranchData getBranchDataDirectly() {
+        return _branch_data;
+    }
+
+    final NodeData getNodeDataDirectly() {
+        return _node_data;
+    }
+
+    final void setChildNodeOnly( final int i, final PhylogenyNode node ) {
+        if ( getNumberOfDescendants() <= i ) {
+            addChildNode( node );
+        }
+        else {
+            getDescendants().set( i, node );
+        }
     }
 
     /**
-     * Returns the total number of all Nodes created so far.
+     * Sets the indicators of all the children of this PhylogenyNode to zero.
+     */
+    final void setIndicatorsToZero() {
+        for( final PreorderTreeIterator it = new PreorderTreeIterator( this ); it.hasNext(); ) {
+            it.next().setIndicator( ( byte ) 0 );
+        }
+    }
+
+    /**
+     * Adds PhylogenyNode n to the list of child nodes. But does NOT set the
+     * _parent of n to this.
      * 
-     * @return total number of Nodes (long)
+     * @see addAsChild( PhylogenyNode n )
+     * @param n
+     *            the PhylogenyNode to add
      */
-    synchronized final public static long getNodeCount() {
-        return NODE_COUNT;
-    }
-
-    /**
-     * Increases the total number of all Nodes created so far by one.
-     */
-    synchronized final private static void increaseNodeCount() {
-        ++NODE_COUNT;
-    }
-
-    /**
-     * Sets the total number of all Nodes created so far to i.
-     */
-    synchronized final static void setNodeCount( final long i ) {
-        PhylogenyNode.NODE_COUNT = i;
+    final private void addChildNode( final PhylogenyNode child ) {
+        getDescendants().add( child );
     }
 
     public static PhylogenyNode createInstanceFromNhxString( final String nhx ) throws NHXFormatException,
@@ -1169,12 +1094,37 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         return new PhylogenyNode( nhx, taxonomy_extraction, replace_underscores );
     }
 
-    private PhylogenyNode( final String nhx,
-                           final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
-                           final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
-        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores );
-        setId( PhylogenyNode.getNodeCount() );
-        PhylogenyNode.increaseNodeCount();
-        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
+    /**
+     * Returns the total number of all Nodes created so far.
+     * 
+     * @return total number of Nodes (long)
+     */
+    synchronized final public static long getNodeCount() {
+        return NODE_COUNT;
+    }
+
+    /**
+     * Decreases the total number of all Nodes created so far by one.
+     */
+    final static synchronized void decreaseNodeCount() {
+        --NODE_COUNT;
+    }
+
+    /**
+     * Sets the total number of all Nodes created so far to i.
+     */
+    synchronized final static void setNodeCount( final long i ) {
+        PhylogenyNode.NODE_COUNT = i;
+    }
+
+    /**
+     * Increases the total number of all Nodes created so far by one.
+     */
+    synchronized final private static void increaseNodeCount() {
+        ++NODE_COUNT;
+    }
+
+    public enum NH_CONVERSION_SUPPORT_VALUE_STYLE {
+        AS_INTERNAL_NODE_NAMES, IN_SQUARE_BRACKETS, NONE;
     }
 }

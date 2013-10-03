@@ -55,7 +55,6 @@ public class NodeData implements PhylogenyData {
     private String                  _node_name;
     private Event                   _event;
     private List<Sequence>          _sequences;
-    private Identifier              _node_identifier;
     private List<Taxonomy>          _taxonomies;
     private List<Distribution>      _distributions;
     private Date                    _date;
@@ -125,9 +124,6 @@ public class NodeData implements PhylogenyData {
         }
         if ( isHasEvent() ) {
             new_data.setEvent( ( Event ) getEvent().copy() );
-        }
-        if ( isHasNodeIdentifier() ) {
-            new_data.setNodeIdentifier( ( Identifier ) getNodeIdentifier().copy() );
         }
         if ( ( getTaxonomies() != null ) && ( getTaxonomies().size() > 0 ) ) {
             new_data.setTaxonomies( new ArrayList<Taxonomy>() );
@@ -202,10 +198,6 @@ public class NodeData implements PhylogenyData {
         return _event;
     }
 
-    public Identifier getNodeIdentifier() {
-        return _node_identifier;
-    }
-
     public PropertiesMap getProperties() {
         return _properties;
     }
@@ -265,11 +257,17 @@ public class NodeData implements PhylogenyData {
 
     @Override
     public boolean isEqual( final PhylogenyData data ) {
-        throw new UnsupportedOperationException();
+        throw new NoSuchMethodError();
     }
 
     public boolean isHasBinaryCharacters() {
         return getBinaryCharacters() != null;
+    }
+
+    public boolean isEmpty() {
+        return ( ForesterUtil.isEmpty( _node_name ) && !isHasSequence() && !isHasTaxonomy() && !isHasBinaryCharacters()
+                && !isHasDate() && !isHasDistribution() && !isHasEvent() && !isHasProperties() && !isHasReference() && ( ( _vector == null ) || _vector
+                .isEmpty() ) );
     }
 
     public boolean isHasDate() {
@@ -288,10 +286,6 @@ public class NodeData implements PhylogenyData {
 
     public boolean isHasEvent() {
         return getEvent() != null;
-    }
-
-    public boolean isHasNodeIdentifier() {
-        return getNodeIdentifier() != null;
     }
 
     public boolean isHasProperties() {
@@ -349,10 +343,6 @@ public class NodeData implements PhylogenyData {
 
     public void setEvent( final Event event ) {
         _event = event;
-    }
-
-    public void setNodeIdentifier( final Identifier node_identifier ) {
-        _node_identifier = node_identifier;
     }
 
     public void setProperties( final PropertiesMap custom_data ) {
@@ -457,18 +447,6 @@ public class NodeData implements PhylogenyData {
 
     @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
-        if ( isHasNodeIdentifier() ) {
-            writer.write( ForesterUtil.LINE_SEPARATOR );
-            writer.write( indentation );
-            //  if ( !org.forester.util.ForesterUtil.isEmpty( getNodeIdentifier().getProvider() ) ) {
-            //     PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.NODE_IDENTIFIER, getNodeIdentifier()
-            //             .getValue(), PhyloXmlMapping.IDENTIFIER_PROVIDER_ATTR, getNodeIdentifier().getProvider() );
-            // }
-            // else {
-            //     PhylogenyDataUtil.appendElement( writer, PhyloXmlMapping.NODE_IDENTIFIER, getNodeIdentifier()
-            //             .getValue() );
-            // }
-        }
         if ( isHasTaxonomy() ) {
             for( final Taxonomy t : getTaxonomies() ) {
                 if ( !t.isEmpty() ) {

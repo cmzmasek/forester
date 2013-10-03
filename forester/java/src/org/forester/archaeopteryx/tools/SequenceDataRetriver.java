@@ -91,11 +91,10 @@ public final class SequenceDataRetriver extends RunnableProcess {
             }
             final StringBuffer sb = new StringBuffer();
             if ( not_found.size() == 1 ) {
-                sb.append( "Data for the following sequence identifier was not found:\n" );
+                sb.append( "For the following node no data was found:\n" );
             }
             else {
-                sb.append( "Data for the following sequence identifiers was not found (total: " + not_found.size()
-                        + "):\n" );
+                sb.append( "For the following nodes no data was found: (total: " + not_found.size() + "):\n" );
             }
             int i = 0;
             for( final String string : not_found ) {

@@ -53,22 +53,13 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   BASE_UNIPROT_URL  = "http://www.uniprot.org/";
     public final static String   BASE_EMBL_DB_URL  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
+    public final static String   BASE_UNIPROT_URL  = "http://www.uniprot.org/";
     public final static String   EMBL_DBS_EMBL     = "embl";
-    public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
     public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
-    private final static String  URL_ENC           = "UTF-8";
+    public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
     private final static boolean DEBUG             = true;
-
-    private static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
-            throws IOException {
-        final List<String> result = getTaxonomyStringFromCommonName( cn, max_taxonomies_return );
-        if ( result.size() > 0 ) {
-            return parseUniProtTaxonomy( result );
-        }
-        return null;
-    }
+    private final static String  URL_ENC           = "UTF-8";
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
@@ -89,16 +80,6 @@ public final class SequenceDbWsTools {
     public static List<UniProtTaxonomy> getTaxonomiesFromId( final String id, final int max_taxonomies_return )
             throws IOException {
         final List<String> result = getTaxonomyStringFromId( id, max_taxonomies_return );
-        if ( result.size() > 0 ) {
-            return parseUniProtTaxonomy( result );
-        }
-        return null;
-    }
-
-    private static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
-                                                                          final int max_taxonomies_return )
-            throws IOException {
-        final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
         if ( result.size() > 0 ) {
             return parseUniProtTaxonomy( result );
         }
@@ -144,125 +125,44 @@ public final class SequenceDbWsTools {
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 
+    public final static Accession obtainFromSeqAccession( final PhylogenyNode node ) {
+        Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
+        if ( !isAccessionAcceptable( acc ) ) {
+            acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
+        }
+        return acc;
+    }
+
     public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession id, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryEmblDb( id, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
     }
 
-    public static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
-                                                          final boolean ext_nodes_only,
-                                                          final boolean allow_to_set_taxonomic_data,
-                                                          final int lines_to_return ) throws IOException {
+    public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
+                                                   final int lines_to_return,
+                                                   final SortedSet<String> not_found,
+                                                   final PhylogenyNode node ) throws IOException {
+        final Accession acc = obtainFromSeqAccession( node );
+        if ( !isAccessionAcceptable( acc ) ) {
+            if ( node.isExternal() || !node.isEmpty() ) {
+                not_found.add( node.toString() );
+            }
+        }
+        else {
+            addDataFromDbToNode( allow_to_set_taxonomic_data, lines_to_return, not_found, node, acc );
+        }
+    }
+
+    public final static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
+                                                                final boolean ext_nodes_only,
+                                                                final boolean allow_to_set_taxonomic_data,
+                                                                final int lines_to_return ) throws IOException {
         final SortedSet<String> not_found = new TreeSet<String>();
         for( final PhylogenyNodeIterator iter = phy.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
-            if ( ext_nodes_only && node.isInternal() ) {
-                continue;
-            }
-            Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
-            if ( ( acc == null )
-                    || ForesterUtil.isEmpty( acc.getSource() )
-                    || ForesterUtil.isEmpty( acc.getValue() )
-                    || ( ( acc.getSource() != Accession.UNIPROT ) && ( acc.getSource() != Accession.EMBL ) && ( acc
-                            .getSource() != Accession.REFSEQ ) ) ) {
-                acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
-            }
-            if ( ( acc == null )
-                    || ForesterUtil.isEmpty( acc.getSource() )
-                    || ForesterUtil.isEmpty( acc.getValue() )
-                    || ( ( acc.getSource() != Accession.UNIPROT ) && ( acc.getSource() != Accession.EMBL ) && ( acc
-                            .getSource() != Accession.REFSEQ ) ) ) {
-                not_found.add( node.toString() );
-            }
-            else {
-                SequenceDatabaseEntry db_entry = null;
-                final String query = acc.getValue();
-                if ( acc.getSource() == Accession.UNIPROT ) {
-                    if ( DEBUG ) {
-                        System.out.println( "uniprot: " + query );
-                    }
-                    try {
-                        db_entry = obtainUniProtEntry( query, lines_to_return );
-                    }
-                    catch ( FileNotFoundException e ) {
-                        // Eat this, and move to next.
-                    }
-                }
-                else if ( acc.getSource() == Accession.EMBL ) {
-                    if ( DEBUG ) {
-                        System.out.println( "embl: " + query );
-                    }
-                    try {
-                        db_entry = obtainEmblEntry( new Accession( query ), lines_to_return );
-                    }
-                    catch ( FileNotFoundException e ) {
-                        // Eat this, and move to next.
-                    }
-                }
-                else if ( acc.getSource() == Accession.REFSEQ ) {
-                    if ( DEBUG ) {
-                        System.out.println( "refseq: " + query );
-                    }
-                    try {
-                        db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
-                    }
-                    catch ( FileNotFoundException e ) {
-                        // Eat this, and move to next.
-                    }
-                }
-                if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
-                    final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
-                            : new Sequence();
-                    if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
-                        seq.setAccession( new Accession( db_entry.getAccession(), acc.getSource() ) );
-                    }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
-                        seq.setName( db_entry.getSequenceName() );
-                    }
-                    if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
-                        seq.setGeneName( db_entry.getGeneName() );
-                    }
-                    if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
-                        try {
-                            seq.setSymbol( db_entry.getSequenceSymbol() );
-                        }
-                        catch ( final PhyloXmlDataFormatException e ) {
-                            // Eat this exception.
-                        }
-                    }
-                    if ( ( db_entry.getGoTerms() != null ) && !db_entry.getGoTerms().isEmpty() ) {
-                        for( final GoTerm go : db_entry.getGoTerms() ) {
-                            final Annotation ann = new Annotation( go.getGoId().getId() );
-                            ann.setDesc( go.getName() );
-                            seq.addAnnotation( ann );
-                        }
-                    }
-                    if ( ( db_entry.getCrossReferences() != null ) && !db_entry.getCrossReferences().isEmpty() ) {
-                        for( final Accession x : db_entry.getCrossReferences() ) {
-                            seq.addCrossReference( x );
-                        }
-                    }
-                    final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy()
-                            : new Taxonomy();
-                    if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
-                        tax.setScientificName( db_entry.getTaxonomyScientificName() );
-                    }
-                    if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
-                        tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
-                    }
-                    node.getNodeData().setTaxonomy( tax );
-                    node.getNodeData().setSequence( seq );
-                }
-                else {
-                    node.i
-                    not_found.add( node.getName() );
-                }
-                try {
-                    Thread.sleep( 10 );// Sleep for 10 ms
-                }
-                catch ( final InterruptedException ie ) {
-                }
+            if ( node.isExternal() || !ext_nodes_only ) {
+                obtainSeqInformation( allow_to_set_taxonomic_data, lines_to_return, not_found, node );
             }
         }
         return not_found;
@@ -334,8 +234,120 @@ public final class SequenceDbWsTools {
         return queryDb( query, max_lines_to_return, BASE_UNIPROT_URL );
     }
 
+    private static void addDataFromDbToNode( final boolean allow_to_set_taxonomic_data,
+                                             final int lines_to_return,
+                                             final SortedSet<String> not_found,
+                                             final PhylogenyNode node,
+                                             final Accession acc ) throws IOException {
+        SequenceDatabaseEntry db_entry = null;
+        final String query = acc.getValue();
+        if ( acc.getSource() == Accession.UNIPROT ) {
+            if ( DEBUG ) {
+                System.out.println( "uniprot: " + query );
+            }
+            try {
+                db_entry = obtainUniProtEntry( query, lines_to_return );
+            }
+            catch ( final FileNotFoundException e ) {
+                // Eat this, and move to next.
+            }
+        }
+        else if ( acc.getSource() == Accession.EMBL ) {
+            if ( DEBUG ) {
+                System.out.println( "embl: " + query );
+            }
+            try {
+                db_entry = obtainEmblEntry( new Accession( query ), lines_to_return );
+            }
+            catch ( final FileNotFoundException e ) {
+                // Eat this, and move to next.
+            }
+        }
+        else if ( acc.getSource() == Accession.REFSEQ ) {
+            if ( DEBUG ) {
+                System.out.println( "refseq: " + query );
+            }
+            try {
+                db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
+            }
+            catch ( final FileNotFoundException e ) {
+                // Eat this, and move to next.
+            }
+        }
+        if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
+            final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence() : new Sequence();
+            if ( !ForesterUtil.isEmpty( db_entry.getAccession() ) ) {
+                seq.setAccession( new Accession( db_entry.getAccession(), acc.getSource() ) );
+            }
+            if ( !ForesterUtil.isEmpty( db_entry.getSequenceName() ) ) {
+                seq.setName( db_entry.getSequenceName() );
+            }
+            if ( !ForesterUtil.isEmpty( db_entry.getGeneName() ) ) {
+                seq.setGeneName( db_entry.getGeneName() );
+            }
+            if ( !ForesterUtil.isEmpty( db_entry.getSequenceSymbol() ) ) {
+                try {
+                    seq.setSymbol( db_entry.getSequenceSymbol() );
+                }
+                catch ( final PhyloXmlDataFormatException e ) {
+                    // Eat this exception.
+                }
+            }
+            if ( ( db_entry.getGoTerms() != null ) && !db_entry.getGoTerms().isEmpty() ) {
+                for( final GoTerm go : db_entry.getGoTerms() ) {
+                    final Annotation ann = new Annotation( go.getGoId().getId() );
+                    ann.setDesc( go.getName() );
+                    seq.addAnnotation( ann );
+                }
+            }
+            if ( ( db_entry.getCrossReferences() != null ) && !db_entry.getCrossReferences().isEmpty() ) {
+                for( final Accession x : db_entry.getCrossReferences() ) {
+                    seq.addCrossReference( x );
+                }
+            }
+            final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy();
+            if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
+                tax.setScientificName( db_entry.getTaxonomyScientificName() );
+            }
+            if ( allow_to_set_taxonomic_data && !ForesterUtil.isEmpty( db_entry.getTaxonomyIdentifier() ) ) {
+                tax.setIdentifier( new Identifier( db_entry.getTaxonomyIdentifier(), "uniprot" ) );
+            }
+            node.getNodeData().setTaxonomy( tax );
+            node.getNodeData().setSequence( seq );
+        }
+        else {
+            if ( node.isExternal() || !node.isEmpty() ) {
+                not_found.add( node.toString() );
+            }
+        }
+        try {
+            Thread.sleep( 10 );// Sleep for 10 ms
+        }
+        catch ( final InterruptedException ie ) {
+        }
+    }
+
     private static String encode( final String str ) throws UnsupportedEncodingException {
         return URLEncoder.encode( str.trim(), URL_ENC );
+    }
+
+    private static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
+            throws IOException {
+        final List<String> result = getTaxonomyStringFromCommonName( cn, max_taxonomies_return );
+        if ( result.size() > 0 ) {
+            return parseUniProtTaxonomy( result );
+        }
+        return null;
+    }
+
+    private static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String sn,
+                                                                          final int max_taxonomies_return )
+            throws IOException {
+        final List<String> result = getTaxonomyStringFromScientificName( sn, max_taxonomies_return );
+        if ( result.size() > 0 ) {
+            return parseUniProtTaxonomy( result );
+        }
+        return null;
     }
 
     private static List<String> getTaxonomyStringFromCommonName( final String cn, final int max_lines_to_return )
@@ -356,6 +368,11 @@ public final class SequenceDbWsTools {
     private static List<String> getTaxonomyStringFromTaxonomyCode( final String code, final int max_lines_to_return )
             throws IOException {
         return queryUniprot( "taxonomy/?query=mnemonic%3a%22" + encode( code ) + "%22&format=tab", max_lines_to_return );
+    }
+
+    private final static boolean isAccessionAcceptable( final Accession acc ) {
+        return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() ) || ( ( acc
+                .getSource() != Accession.UNIPROT ) && ( acc.getSource() != Accession.EMBL ) && ( acc.getSource() != Accession.REFSEQ ) ) ) );
     }
 
     private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {
