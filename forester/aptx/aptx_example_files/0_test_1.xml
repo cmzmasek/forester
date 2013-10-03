@@ -15,20 +15,14 @@
                         <clade>
                           <clade>
                             <name>NP_001025424.1</name>
-                            <taxonomy>
-                            </taxonomy>
                           </clade>
                           <clade>
                             <name>NM_001030253</name>
-                            <taxonomy>
-                            </taxonomy>
                           </clade>
                         </clade>
                         <clade>
                           <clade>
                             <name>BCL2_HUMAN</name>
-                            <taxonomy>
-                            </taxonomy>
                           </clade>
                           <clade>
                             <name>P10415</name>
@@ -37,20 +31,26 @@
                       </clade>
                       <clade>
                         <name>AY695820</name>
-                        <taxonomy>
-                        </taxonomy>
                       </clade>
                     </clade>
                     <clade>
-                      <taxonomy>
-                        <code>XENLA</code>
-                      </taxonomy>
+                      <clade>
+                        <name>K00650</name>
+                      </clade>
+                      <clade>
+                        <name>K00650.1</name>
+                      </clade>
                     </clade>
                   </clade>
                   <clade>
-                    <taxonomy>
-                      <code>CIOIN</code>
-                    </taxonomy>
+                    <clade>
+                      <name>AAA59452</name>
+                      <taxonomy>
+                      </taxonomy>
+                    </clade>
+                    <clade>
+                      <name>AAA59452.1</name>
+                    </clade>
                   </clade>
                 </clade>
                 <clade>
