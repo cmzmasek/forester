@@ -85,7 +85,6 @@
          <xs:element name="confidence" type="phy:Confidence" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="width" type="xs:double" minOccurs="0"/>
          <xs:element name="color" type="phy:BranchColor" minOccurs="0"/>
-         <xs:element name="node_id" type="phy:Id" minOccurs="0"/>
          <xs:element name="taxonomy" type="phy:Taxonomy" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="sequence" type="phy:Sequence" minOccurs="0" maxOccurs="unbounded"/>
          <xs:element name="events" type="phy:Events" minOccurs="0"/>
