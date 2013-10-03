@@ -114,7 +114,7 @@ import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
 import org.forester.util.GeneralTable;
-import org.forester.util.SequenceIdParser;
+import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.SequenceDatabaseEntry;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
@@ -2504,8 +2504,8 @@ public final class Test {
             if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
                 return false;
             }
-            n.setName( "j40f4_Q06891.1_fndn2 fnr3" );
-            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "Q06891.1" ) ) {
+            n.setName( "AAA34956" );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_PROTEIN + "AAA34956" ) ) {
                 return false;
             }
             n.setName( "GI:394892" );
@@ -2520,6 +2520,16 @@ public final class Test {
             }
             n.setName( "gi6335_gi_394892_56635_Gi_43" );
             if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.NCBI_GI + "394892" ) ) {
+                System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
+                return false;
+            }
+            n.setName( "P12345" );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "P12345" ) ) {
+                System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
+                return false;
+            }
+            n.setName( "gi_fdgjmn-3jk5-243 mnefmn fg023-0 P12345 4395jtmnsrg02345m1ggi92450jrg890j4t0j240" );
+            if ( !TreePanelUtil.createUriForSeqWeb( n, null, null ).equals( ForesterUtil.UNIPROT_KB + "P12345" ) ) {
                 System.out.println( TreePanelUtil.createUriForSeqWeb( n, null, null ) );
                 return false;
             }
@@ -3329,46 +3339,46 @@ public final class Test {
         //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
         //Protein:    3 letters + 5 numerals
         //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
-        if ( !SequenceIdParser.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "AY423861" ).equals( "AY423861" ) ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( ".AY423861.2" ).equals( "AY423861.2" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( ".AY423861.2" ).equals( "AY423861.2" ) ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( "345_.AY423861.24_345" ).equals( "AY423861.24" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "345_.AY423861.24_345" ).equals( "AY423861.24" ) ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "AAY423861" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "AAY423861" ) != null ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "AY4238612" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "AY4238612" ) != null ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "AAY4238612" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "AAY4238612" ) != null ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "Y423861" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "Y423861" ) != null ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( "S12345" ).equals( "S12345" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "S12345" ).equals( "S12345" ) ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( "|S12345|" ).equals( "S12345" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "|S12345|" ).equals( "S12345" ) ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "|S123456" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "|S123456" ) != null ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "ABC123456" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "ABC123456" ) != null ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( "ABC12345" ).equals( "ABC12345" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "ABC12345" ).equals( "ABC12345" ) ) {
             return false;
         }
-        if ( !SequenceIdParser.parseGenbankAccessor( "&ABC12345&" ).equals( "ABC12345" ) ) {
+        if ( !SequenceAccessionTools.parseGenbankAccessor( "&ABC12345&" ).equals( "ABC12345" ) ) {
             return false;
         }
-        if ( SequenceIdParser.parseGenbankAccessor( "ABCD12345" ) != null ) {
+        if ( SequenceAccessionTools.parseGenbankAccessor( "ABCD12345" ) != null ) {
             return false;
         }
         return true;
@@ -3662,166 +3672,166 @@ public final class Test {
         try {
             PhylogenyNode n = new PhylogenyNode();
             n.setName( "tr|B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr.B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr=B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr-B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr/B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr\\B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "tr_B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( " tr|B3RJ64 " );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "-tr|B3RJ64-" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "-tr=B3RJ64-" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "_tr=B3RJ64_" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( " tr_tr|B3RJ64_sp|123 " );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+                return false;
+            }
+            n.setName( "B3RJ64" );
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "sp|B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
-                return false;
-            }
-            n.setName( "ssp|B3RJ64" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "sp|B3RJ64C" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
                 return false;
             }
             n.setName( "sp B3RJ64" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n.setName( "sp|B3RJ6X" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
                 return false;
             }
             n.setName( "sp|B3RJ6" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
                 return false;
             }
             n.setName( "K1PYK7_CRAGI" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
                 return false;
             }
             n.setName( "K1PYK7_PEA" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PEA" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PEA" ) ) {
                 return false;
             }
             n.setName( "K1PYK7_RAT" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_RAT" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_RAT" ) ) {
                 return false;
             }
             n.setName( "K1PYK7_PIG" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
                 return false;
             }
             n.setName( "~K1PYK7_PIG~" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_PIG" ) ) {
                 return false;
             }
             n.setName( "123456_ECOLI-K1PYK7_CRAGI-sp" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
                 return false;
             }
             n.setName( "K1PYKX_CRAGI" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
                 return false;
             }
             n.setName( "XXXXX_CRAGI" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "XXXXX_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "XXXXX_CRAGI" ) ) {
                 return false;
             }
             n.setName( "tr|H3IB65|H3IB65_STRPU~2-2" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "H3IB65" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "H3IB65" ) ) {
                 return false;
             }
             n.setName( "jgi|Lacbi2|181470|Lacbi1.estExt_GeneWisePlus_human.C_10729~2-3" );
-            if ( ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
+            if ( SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ) != null ) {
                 return false;
             }
             n.setName( "sp|Q86U06|RBM23_HUMAN~2-2" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "Q86U06" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "Q86U06" ) ) {
                 return false;
             }
             n = new PhylogenyNode();
             org.forester.phylogeny.data.Sequence seq = new org.forester.phylogeny.data.Sequence();
             seq.setSymbol( "K1PYK7_CRAGI" );
             n.getNodeData().addSequence( seq );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
                 return false;
             }
             seq.setSymbol( "tr|B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n = new PhylogenyNode();
             seq = new org.forester.phylogeny.data.Sequence();
             seq.setName( "K1PYK7_CRAGI" );
             n.getNodeData().addSequence( seq );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK7_CRAGI" ) ) {
                 return false;
             }
             seq.setName( "tr|B3RJ64" );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             n = new PhylogenyNode();
             seq = new org.forester.phylogeny.data.Sequence();
             seq.setAccession( new Accession( "K1PYK8_CRAGI", "?" ) );
             n.getNodeData().addSequence( seq );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK8_CRAGI" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "K1PYK8_CRAGI" ) ) {
                 return false;
             }
             n = new PhylogenyNode();
             seq = new org.forester.phylogeny.data.Sequence();
             seq.setAccession( new Accession( "tr|B3RJ64", "?" ) );
             n.getNodeData().addSequence( seq );
-            if ( !ForesterUtil.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
+            if ( !SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( n ).equals( "B3RJ64" ) ) {
                 return false;
             }
             //
             n = new PhylogenyNode();
             n.setName( "ACP19736" );
-            if ( !ForesterUtil.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
+            if ( !SequenceAccessionTools.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
                 return false;
             }
             n = new PhylogenyNode();
             n.setName( "_ACP19736_" );
-            if ( !ForesterUtil.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
+            if ( !SequenceAccessionTools.extractGenbankAccessor( n ).equals( "ACP19736" ) ) {
                 return false;
             }
         }
@@ -9620,120 +9630,120 @@ public final class Test {
 
     private static boolean testSequenceIdParsing() {
         try {
-            Identifier id = SequenceIdParser.parse( "gb_ADF31344_segmented_worms_" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
+            Accession id = SequenceAccessionTools.parse( "gb_ADF31344_segmented_worms_" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             //
-            id = SequenceIdParser.parse( "segmented worms|gb_ADF31344" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "segmented worms|gb_ADF31344" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             //
-            id = SequenceIdParser.parse( "segmented worms gb_ADF31344 and more" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "ADF31344" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "segmented worms gb_ADF31344 and more" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "ADF31344" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "gb_AAA96518_1" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "AAA96518" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "gb_AAA96518_1" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "AAA96518" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "gb_EHB07727_1_rodents_" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "EHB07727" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "gb_EHB07727_1_rodents_" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "EHB07727" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "dbj_BAF37827_1_turtles_" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "BAF37827" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "dbj_BAF37827_1_turtles_" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "BAF37827" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "emb_CAA73223_1_primates_" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "CAA73223" ) || !id.getProvider().equals( "ncbi" ) ) {
+            id = SequenceAccessionTools.parse( "emb_CAA73223_1_primates_" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "CAA73223" ) || !id.getSource().equals( "ncbi" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "mites|ref_XP_002434188_1" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "XP_002434188" ) || !id.getProvider().equals( "refseq" ) ) {
+            id = SequenceAccessionTools.parse( "mites|ref_XP_002434188_1" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "XP_002434188" ) || !id.getSource().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "mites_ref_XP_002434188_1_bla_XP_12345" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "XP_002434188" ) || !id.getProvider().equals( "refseq" ) ) {
+            id = SequenceAccessionTools.parse( "mites_ref_XP_002434188_1_bla_XP_12345" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "XP_002434188" ) || !id.getSource().equals( "refseq" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "P4A123" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "P4A123" ) || !id.getProvider().equals( "sp" ) ) {
+            id = SequenceAccessionTools.parse( "P4A123" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "P4A123" ) || !id.getSource().equals( "uniprot" ) ) {
                 if ( id != null ) {
                     System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
+                    System.out.println( "provider=" + id.getSource() );
                 }
                 return false;
             }
             // 
-            id = SequenceIdParser.parse( "pllf[pok P4A123_osdjfosnqo035-9233332904i000490 vf tmv x45" );
-            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getProvider() )
-                    || !id.getValue().equals( "P4A123" ) || !id.getProvider().equals( "sp" ) ) {
-                if ( id != null ) {
-                    System.out.println( "value   =" + id.getValue() );
-                    System.out.println( "provider=" + id.getProvider() );
-                }
-                return false;
-            }
+            //            id = SequenceAccessionTools.parse( "pllf[pok P4A123_osdjfosnqo035-9233332904i000490 vf tmv x45" );
+            //            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+            //                    || !id.getValue().equals( "P4A123" ) || !id.getSource().equals( "sp" ) ) {
+            //                if ( id != null ) {
+            //                    System.out.println( "value   =" + id.getValue() );
+            //                    System.out.println( "provider=" + id.getSource() );
+            //                }
+            //                return false;
+            //            }
             // 
-            id = SequenceIdParser.parse( "XP_12345" );
+            id = SequenceAccessionTools.parse( "XP_12345" );
             if ( id != null ) {
                 System.out.println( "value   =" + id.getValue() );
-                System.out.println( "provider=" + id.getProvider() );
+                System.out.println( "provider=" + id.getSource() );
                 return false;
             }
             // lcl_91970_unknown_

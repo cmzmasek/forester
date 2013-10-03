@@ -106,6 +106,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
@@ -127,7 +128,7 @@ import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
-import org.forester.util.SequenceIdParser;
+import org.forester.util.SequenceAccessionTools;
 
 public final class TreePanel extends JPanel implements ActionListener, MouseWheelListener, Printable {
 
@@ -2272,7 +2273,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
                 if ( type == '?' ) {
-                    if ( SequenceIdParser.isProtein( query ) ) {
+                    if ( SequenceAccessionTools.isProtein( query ) ) {
                         type = 'p';
                     }
                     else {
@@ -2914,17 +2915,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
-        String v = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractGenbankAccessor( node );
+        final Accession a = SequenceAccessionTools.parse( node );
+        if ( a != null ) {
+            return a.getValue();
         }
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractRefSeqAccessorAccessor( node );
-        }
-        if ( ForesterUtil.isEmpty( v ) ) {
-            v = ForesterUtil.extractGInumber( node );
-        }
-        return v;
+        return null;
     }
 
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {

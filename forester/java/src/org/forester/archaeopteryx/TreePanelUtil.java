@@ -31,7 +31,7 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterConstants;
 import org.forester.util.ForesterUtil;
-import org.forester.util.SequenceIdParser;
+import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public class TreePanelUtil {
@@ -80,7 +80,7 @@ public class TreePanelUtil {
                                                    final Configuration conf,
                                                    final TreePanel tp ) {
         String uri_str = null;
-        final String upkb = ForesterUtil.extractUniProtKbProteinSeqIdentifier( node );
+        final String upkb = SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( node );
         if ( !ForesterUtil.isEmpty( upkb ) ) {
             try {
                 uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
@@ -91,10 +91,10 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = ForesterUtil.extractGenbankAccessor( node );
+            final String v = SequenceAccessionTools.extractGenbankAccessor( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
-                    if ( SequenceIdParser.isProtein( v ) ) {
+                    if ( SequenceAccessionTools.isProtein( v ) ) {
                         uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
                     }
                     else {
@@ -108,10 +108,10 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = ForesterUtil.extractRefSeqAccessorAccessor( node );
+            final String v = SequenceAccessionTools.extractRefSeqAccessor( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
-                    if ( SequenceIdParser.isProtein( v ) ) {
+                    if ( SequenceAccessionTools.isProtein( v ) ) {
                         uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
                     }
                     else {
@@ -125,7 +125,7 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = ForesterUtil.extractGInumber( node );
+            final String v = SequenceAccessionTools.extractGInumber( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
                     uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF8 );

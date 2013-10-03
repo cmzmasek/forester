@@ -38,9 +38,9 @@ import javax.swing.JApplet;
 import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.Accession;
 import org.forester.util.ForesterUtil;
-import org.forester.util.SequenceIdParser;
+import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.wabi.RestUtil;
 
 public final class Blast {
@@ -81,34 +81,34 @@ public final class Blast {
             }
             if ( ForesterUtil.isEmpty( query ) && ( node.getNodeData().getSequence().getAccession() != null )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() ) ) {
-                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getAccession()
+                final Accession id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getAccession()
                         .getValue() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
-                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getName() );
+                final Accession id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
-                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getSymbol() );
+                final Accession id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getSymbol() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
             if ( ForesterUtil.isEmpty( query )
                     && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
-                final Identifier id = SequenceIdParser.parse( node.getNodeData().getSequence().getGeneName() );
+                final Accession id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getGeneName() );
                 if ( id != null ) {
                     query = id.getValue();
                 }
             }
         }
         if ( ForesterUtil.isEmpty( query ) && !ForesterUtil.isEmpty( node.getName() ) ) {
-            final Identifier id = SequenceIdParser.parse( node.getName() );
+            final Accession id = SequenceAccessionTools.parse( node.getName() );
             if ( id != null ) {
                 query = id.getValue();
             }

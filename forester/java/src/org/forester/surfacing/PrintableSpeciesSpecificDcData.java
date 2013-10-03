@@ -34,7 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.forester.util.ForesterUtil;
-import org.forester.util.SequenceIdParser;
+import org.forester.util.SequenceAccessionTools;
 
 class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
 
@@ -168,19 +168,19 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
 
     private static String obtainSeqLink( final String p ) {
         String link;
-        final String up_id = ForesterUtil.extractUniProtKbProteinSeqIdentifier( p );
+        final String up_id = SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( p );
         if ( !ForesterUtil.isEmpty( up_id ) ) {
             link = "<a class=\"pl\" href=\"" + ForesterUtil.UNIPROT_KB + up_id + "\" target=\"_up_window\">" + up_id
                     + "</a>";
         }
         else {
-            final String gb_id = SequenceIdParser.parseGenbankProteinAccessor( p );
+            final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessor( p );
             if ( !ForesterUtil.isEmpty( gb_id ) ) {
                 link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_PROTEIN + gb_id + "\" target=\"_up_window\">"
                         + gb_id + "</a>";
             }
             else {
-                final String gi = SequenceIdParser.parseGInumber( p );
+                final String gi = SequenceAccessionTools.parseGInumber( p );
                 if ( !ForesterUtil.isEmpty( gi ) ) {
                     link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_GI + gi + "\" target=\"_up_window\">gi|" + gi
                             + "</a>";

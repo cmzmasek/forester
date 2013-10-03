@@ -34,10 +34,22 @@ import org.forester.util.ForesterUtil;
 
 public final class Accession implements PhylogenyData, Comparable<Accession> {
 
-    final private String _comment;
-    final private String _source;
-    final private String _source_value;
-    final private String _value;
+    final private String       _comment;
+    final private String       _source;
+    final private String       _source_value;
+    final private String       _value;
+    final public static String NCBI    = "ncbi";
+    final public static String REFSEQ  = "refseq";
+    final public static String UNIPROT = "uniprot";
+    final public static String GI      = "gi";
+    public static final String EMBL    = "embl";
+
+    public Accession( final String value ) {
+        _value = value;
+        _source = "";
+        _comment = "";
+        _source_value = value;
+    }
 
     public Accession( final String value, final String source ) {
         _value = value;
