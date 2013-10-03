@@ -26,6 +26,7 @@
 package org.forester.ws.seqdb;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -58,7 +59,7 @@ public final class SequenceDbWsTools {
     public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
     public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
     private final static String  URL_ENC           = "UTF-8";
-    private final static boolean DEBUG             = false;
+    private final static boolean DEBUG             = true;
 
     private static List<UniProtTaxonomy> getTaxonomiesFromCommonName( final String cn, final int max_taxonomies_return )
             throws IOException {
@@ -159,96 +160,13 @@ public final class SequenceDbWsTools {
             if ( ext_nodes_only && node.isInternal() ) {
                 continue;
             }
-            //            String query = null;
-            //            Accession id = null;
-            //            Accession acc = SequenceAccessionTools.obtain( node );
-            //            
-            //            
-            //            Db db = Db.NONE;
-            //            if ( node.getNodeData().isHasSequence()
-            //                    && ( node.getNodeData().getSequence().getAccession() != null )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-            //                    && ( node.getNodeData().getSequence().getAccession().getValue().toLowerCase()
-            //                            .startsWith( "uniprot" )
-            //                            || node.getNodeData().getSequence().getAccession().getValue()
-            //                                    .equalsIgnoreCase( "swissprot" )
-            //                            || node.getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "trembl" ) || node
-            //                            .getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "sp" ) ) ) {
-            //                query = node.getNodeData().getSequence().getAccession().getValue();
-            //                db = Db.UNIPROT;
-            //            }
-            //            else if ( node.getNodeData().isHasSequence()
-            //                    && ( node.getNodeData().getSequence().getAccession() != null )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-            //                    && ( node.getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "embl" ) || node
-            //                            .getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "ebi" ) ) ) {
-            //                query = node.getNodeData().getSequence().getAccession().getValue();
-            //                db = Db.EMBL;
-            //            }
-            //            else if ( node.getNodeData().isHasSequence()
-            //                    && ( node.getNodeData().getSequence().getAccession() != null )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-            //                    && ( node.getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "ncbi" ) || node
-            //                            .getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "genbank" ) ) ) {
-            //                query = node.getNodeData().getSequence().getAccession().getValue();
-            //                // db = Db.NCBI;
-            //            }
-            //            else if ( node.getNodeData().isHasSequence() && ( node.getNodeData().getSequence().getAccession() != null )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() )
-            //                    && !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getValue() )
-            //                    && node.getNodeData().getSequence().getAccession().getValue().equalsIgnoreCase( "refseq" ) ) {
-            //                query = node.getNodeData().getSequence().getAccession().getValue();
-            //                db = Db.REFSEQ;
-            //            }
-            //            else {
             Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
-            //                if ( ( query = SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( node ) ) != null ) {
-            //                    db = Db.UNIPROT;
-            //                }
-            //                else if ( node.getNodeData().isHasSequence() ) {
-            //                    if ( ( id = SequenceAccessionTools.parse( node.getName() ) ) != null ) {
-            //                        if ( id.getSource() == Accession.NCBI ) {
-            //                            //  db = Db.NCBI;
-            //                        }
-            //                        else if ( id.getSource() == Accession.REFSEQ ) {
-            //                            db = Db.REFSEQ;
-            //                        }
-            //                    }
-            //                    else if ( ( id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getName() ) ) != null ) {
-            //                        if ( id.getSource() == Accession.NCBI ) {
-            //                            // = Db.NCBI;
-            //                        }
-            //                        else if ( id.getSource() == Accession.REFSEQ ) {
-            //                            db = Db.REFSEQ;
-            //                        }
-            //                    }
-            //                    else if ( ( id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getGeneName() ) ) != null ) {
-            //                        if ( id.getSource() == Accession.NCBI ) {
-            //                            // db = Db.NCBI;
-            //                        }
-            //                        else if ( id.getSource() == Accession.REFSEQ ) {
-            //                            db = Db.REFSEQ;
-            //                        }
-            //                    }
-            //                    else if ( ( id = SequenceAccessionTools.parse( node.getNodeData().getSequence().getSymbol() ) ) != null ) {
-            //                        if ( id.getSource() == Accession.NCBI ) {
-            //                            // db = Db.NCBI;
-            //                        }
-            //                        else if ( id.getSource() == Accession.REFSEQ ) {
-            //                            db = Db.REFSEQ;
-            //                        }
-            //                    }
-            //                }
-            // }
             if ( ( acc == null )
                     || ForesterUtil.isEmpty( acc.getSource() )
                     || ForesterUtil.isEmpty( acc.getValue() )
                     || ( ( acc.getSource() != Accession.UNIPROT ) && ( acc.getSource() != Accession.EMBL ) && ( acc
                             .getSource() != Accession.REFSEQ ) ) ) {
-                acc = SequenceAccessionTools.parse( node );
+                acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
             }
             if ( ( acc == null )
                     || ForesterUtil.isEmpty( acc.getSource() )
@@ -264,19 +182,34 @@ public final class SequenceDbWsTools {
                     if ( DEBUG ) {
                         System.out.println( "uniprot: " + query );
                     }
-                    db_entry = obtainUniProtEntry( query, lines_to_return );
+                    try {
+                        db_entry = obtainUniProtEntry( query, lines_to_return );
+                    }
+                    catch ( FileNotFoundException e ) {
+                        // Eat this, and move to next.
+                    }
                 }
                 else if ( acc.getSource() == Accession.EMBL ) {
                     if ( DEBUG ) {
                         System.out.println( "embl: " + query );
                     }
-                    db_entry = obtainEmblEntry( new Accession( query ), lines_to_return );
+                    try {
+                        db_entry = obtainEmblEntry( new Accession( query ), lines_to_return );
+                    }
+                    catch ( FileNotFoundException e ) {
+                        // Eat this, and move to next.
+                    }
                 }
                 else if ( acc.getSource() == Accession.REFSEQ ) {
                     if ( DEBUG ) {
                         System.out.println( "refseq: " + query );
                     }
-                    db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
+                    try {
+                        db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
+                    }
+                    catch ( FileNotFoundException e ) {
+                        // Eat this, and move to next.
+                    }
                 }
                 if ( ( db_entry != null ) && !db_entry.isEmpty() ) {
                     final Sequence seq = node.getNodeData().isHasSequence() ? node.getNodeData().getSequence()
@@ -322,6 +255,7 @@ public final class SequenceDbWsTools {
                     node.getNodeData().setSequence( seq );
                 }
                 else {
+                    node.i
                     not_found.add( node.getName() );
                 }
                 try {

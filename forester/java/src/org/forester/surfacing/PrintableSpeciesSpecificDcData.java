@@ -168,19 +168,19 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
 
     private static String obtainSeqLink( final String p ) {
         String link;
-        final String up_id = SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( p );
+        final String up_id = SequenceAccessionTools.parseUniProtAccessorFromString( p );
         if ( !ForesterUtil.isEmpty( up_id ) ) {
             link = "<a class=\"pl\" href=\"" + ForesterUtil.UNIPROT_KB + up_id + "\" target=\"_up_window\">" + up_id
                     + "</a>";
         }
         else {
-            final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessor( p );
+            final String gb_id = SequenceAccessionTools.parseGenbankProteinAccessorFromString( p );
             if ( !ForesterUtil.isEmpty( gb_id ) ) {
                 link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_PROTEIN + gb_id + "\" target=\"_up_window\">"
                         + gb_id + "</a>";
             }
             else {
-                final String gi = SequenceAccessionTools.parseGInumber( p );
+                final String gi = SequenceAccessionTools.parseGInumberFromString( p );
                 if ( !ForesterUtil.isEmpty( gi ) ) {
                     link = "<a class=\"pl\" href=\"" + ForesterUtil.NCBI_GI + gi + "\" target=\"_up_window\">gi|" + gi
                             + "</a>";

@@ -2273,7 +2273,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
                 if ( type == '?' ) {
-                    if ( SequenceAccessionTools.isProtein( query ) ) {
+                    if ( SequenceAccessionTools.isProteinDbQuery( query ) ) {
                         type = 'p';
                     }
                     else {
@@ -2915,7 +2915,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final private String isCanOpenSeqWeb( final PhylogenyNode node ) {
-        final Accession a = SequenceAccessionTools.parse( node );
+        final Accession a = SequenceAccessionTools.obtainAccessorFromDataFields( node );
         if ( a != null ) {
             return a.getValue();
         }

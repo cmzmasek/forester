@@ -80,7 +80,7 @@ public class TreePanelUtil {
                                                    final Configuration conf,
                                                    final TreePanel tp ) {
         String uri_str = null;
-        final String upkb = SequenceAccessionTools.extractUniProtKbProteinSeqIdentifier( node );
+        final String upkb = SequenceAccessionTools.obtainUniProtAccessorFromDataFields( node );
         if ( !ForesterUtil.isEmpty( upkb ) ) {
             try {
                 uri_str = ForesterUtil.UNIPROT_KB + URLEncoder.encode( upkb, ForesterConstants.UTF8 );
@@ -91,10 +91,10 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = SequenceAccessionTools.extractGenbankAccessor( node );
+            final String v = SequenceAccessionTools.obtainGenbankAccessorFromDataFields( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
-                    if ( SequenceAccessionTools.isProtein( v ) ) {
+                    if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
                         uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
                     }
                     else {
@@ -108,10 +108,10 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = SequenceAccessionTools.extractRefSeqAccessor( node );
+            final String v = SequenceAccessionTools.obtainRefSeqAccessorFromDataFields( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
-                    if ( SequenceAccessionTools.isProtein( v ) ) {
+                    if ( SequenceAccessionTools.isProteinDbQuery( v ) ) {
                         uri_str = ForesterUtil.NCBI_PROTEIN + URLEncoder.encode( v, ForesterConstants.UTF8 );
                     }
                     else {
@@ -125,7 +125,7 @@ public class TreePanelUtil {
             }
         }
         if ( ForesterUtil.isEmpty( uri_str ) ) {
-            final String v = SequenceAccessionTools.extractGInumber( node );
+            final String v = SequenceAccessionTools.obtainGiNumberFromDataFields( node );
             if ( !ForesterUtil.isEmpty( v ) ) {
                 try {
                     uri_str = ForesterUtil.NCBI_GI + URLEncoder.encode( v, ForesterConstants.UTF8 );

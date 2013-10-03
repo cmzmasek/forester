@@ -83,6 +83,9 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         _descendants = null;
     }
 
+    public boolean isEmpty() {
+    }
+
     /**
      * Adds PhylogenyNode n to the list of child nodes and sets the _parent of n
      * to this.

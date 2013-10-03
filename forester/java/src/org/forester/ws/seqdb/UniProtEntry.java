@@ -132,7 +132,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         if ( _go_terms == null ) {
             _go_terms = new ArrayList<GoTerm>();
         }
-        System.out.println( "GOTERM ADDED: " + g );
         _go_terms.add( g );
     }
 
@@ -209,7 +208,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
                         else if ( ns_str.equals( "C" ) ) {
                             gns = GoNameSpace.CELLULAR_COMPONENT_STR;
                         }
-                        System.out.println( "GO:" + id + " " + desc + " " + ns_str );
                         e.addGoTerm( new BasicGoTerm( id, desc, gns, false ) );
                     }
                 }
