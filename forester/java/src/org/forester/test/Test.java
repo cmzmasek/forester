@@ -10963,12 +10963,6 @@ public final class Test {
                 return false;
             }
         }
-        //        catch ( final IOException e ) {
-        //            System.out.println();
-        //            System.out.println( "the following might be due to absence internet connection:" );
-        //            e.printStackTrace( System.out );
-        //            return true;
-        //        }
         catch ( final Exception e ) {
             return false;
         }
