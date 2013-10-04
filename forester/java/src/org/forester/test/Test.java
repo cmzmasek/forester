@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.TreePanelUtil;
@@ -128,6 +127,7 @@ import org.forester.ws.wabi.TxSearch.TAX_RANK;
 @SuppressWarnings( "unused")
 public final class Test {
 
+    private final static boolean PERFORM_DB_TESTS          = true;
     private final static double  ZERO_DIFF                 = 1.0E-9;
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
@@ -255,15 +255,17 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Sequence DB tools 2: " );
-        if ( testSequenceDbWsTools2() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-            System.exit( -1 );
+        if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Sequence DB tools 2: " );
+            if ( testSequenceDbWsTools2() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+                System.exit( -1 );
+            }
         }
         System.exit( 0 );
         System.out.print( "Hmmscan output parser: " );
@@ -836,23 +838,27 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Uniprot Entry Retrieval: " );
-        if ( Test.testUniprotEntryRetrieval() ) {
-            System.out.println( "OK." );
-            succeeded++;
+        if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Uniprot Entry Retrieval: " );
+            if ( Test.testUniprotEntryRetrieval() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
         }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "Uniprot Taxonomy Search: " );
-        if ( Test.testUniprotTaxonomySearch() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
+        if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Uniprot Taxonomy Search: " );
+            if ( Test.testUniprotTaxonomySearch() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
         }
         //----
         String path = "";
@@ -10861,104 +10867,105 @@ public final class Test {
 
     private static boolean testSequenceDbWsTools1() {
         try {
-            PhylogenyNode n = new PhylogenyNode();
+            final PhylogenyNode n = new PhylogenyNode();
             n.setName( "NP_001025424" );
             Accession acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
                     || !acc.getValue().equals( "NP_001025424" ) ) {
                 return false;
             }
             n.setName( "340 0559 -- _NP_001025424_dsfdg15 05" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
                     || !acc.getValue().equals( "NP_001025424" ) ) {
                 return false;
             }
             n.setName( "NP_001025424.1" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
                     || !acc.getValue().equals( "NP_001025424" ) ) {
                 return false;
             }
             n.setName( "NM_001030253" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
                     || !acc.getValue().equals( "NM_001030253" ) ) {
                 return false;
             }
             n.setName( "BCL2_HUMAN" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
                     || !acc.getValue().equals( "BCL2_HUMAN" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "P10415" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
                     || !acc.getValue().equals( "P10415" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( " P10415 " );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
                     || !acc.getValue().equals( "P10415" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "_P10415|" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
                     || !acc.getValue().equals( "P10415" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "AY695820" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AY695820" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "_AY695820_" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AY695820" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "AAA59452" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AAA59452" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "_AAA59452_" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AAA59452" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "AAA59452.1" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AAA59452.1" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "_AAA59452.1_" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
                     || !acc.getValue().equals( "AAA59452.1" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
             n.setName( "GI:94894583" );
             acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( acc == null || !acc.getSource().equals( Source.GI.toString() ) || !acc.getValue().equals( "94894583" ) ) {
+            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
+                    || !acc.getValue().equals( "94894583" ) ) {
                 System.out.println( acc.toString() );
                 return false;
             }
@@ -10971,24 +10978,50 @@ public final class Test {
 
     private static boolean testSequenceDbWsTools2() {
         try {
-            PhylogenyNode n1 = new PhylogenyNode();
-            n1.setName( "NP_001025424" );
-            SequenceDbWsTools.obtainSeqInformation( false, 4000, new TreeSet<String>(), n1 );
+            final PhylogenyNode n1 = new PhylogenyNode( "NP_001025424" );
+            SequenceDbWsTools.obtainSeqInformation( n1 );
             if ( !n1.getNodeData().getSequence().getName().equals( "Bcl2" ) ) {
                 return false;
             }
             if ( !n1.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
                 return false;
             }
-            PhylogenyNode n2 = new PhylogenyNode();
-            n2.setName( "NM_001030253" );
-            SequenceDbWsTools.obtainSeqInformation( false, 4000, new TreeSet<String>(), n2 );
+            if ( !n1.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n1.getNodeData().getSequence().getAccession().getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
+            SequenceDbWsTools.obtainSeqInformation( n2 );
             System.out.println( n2.toString() );
             if ( !n2.getNodeData().getSequence().getName()
                     .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
                 return false;
             }
             if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getSequence().getAccession().getValue().equals( "NM_001030253" ) ) {
+                return false;
+            }
+            final PhylogenyNode n3 = new PhylogenyNode( "NM_184234.2" );
+            SequenceDbWsTools.obtainSeqInformation( n3 );
+            System.out.println( "n=" + n3.toString() );
+            if ( !n3.getNodeData().getSequence().getName()
+                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getTaxonomy().getScientificName().equals( "Homo sapiens" ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getSequence().getAccession().getValue().equals( "NM_184234" ) ) {
                 return false;
             }
         }
@@ -10999,6 +11032,7 @@ public final class Test {
             return true;
         }
         catch ( final Exception e ) {
+            e.printStackTrace();
             return false;
         }
         return true;

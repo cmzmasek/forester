@@ -38,11 +38,10 @@ import org.forester.ws.seqdb.SequenceDbWsTools;
 
 public final class SequenceDataRetriver extends RunnableProcess {
 
-    private final static int           DEFAULT_LINES_TO_RETURN = 4000;
     private final Phylogeny            _phy;
     private final MainFrameApplication _mf;
     private final TreePanel            _treepanel;
-    public final static boolean        DEBUG                   = false;
+    public final static boolean        DEBUG = false;
 
     public SequenceDataRetriver( final MainFrameApplication mf, final TreePanel treepanel, final Phylogeny phy ) {
         _phy = phy;
@@ -59,7 +58,10 @@ public final class SequenceDataRetriver extends RunnableProcess {
         start( _mf, "sequence data" );
         SortedSet<String> not_found = null;
         try {
-            not_found = SequenceDbWsTools.obtainSeqInformation( _phy, false, true, DEFAULT_LINES_TO_RETURN );
+            not_found = SequenceDbWsTools.obtainSeqInformation( _phy,
+                                                                false,
+                                                                true,
+                                                                SequenceDbWsTools.DEFAULT_LINES_TO_RETURN );
         }
         catch ( final UnknownHostException e ) {
             JOptionPane.showMessageDialog( _mf,

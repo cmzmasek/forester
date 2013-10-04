@@ -174,24 +174,24 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         for( final String line : lines ) {
             //System.out.println( line );
             if ( line.startsWith( "AC" ) ) {
-                e.setAc( DatabaseTools.extract( line, "AC", ";" ) );
+                e.setAc( SequenceDbWsTools.extractFromTo( line, "AC", ";" ) );
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceName() ) ) {
                 if ( ( line.indexOf( "RecName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setSequenceName( DatabaseTools.extract( line, "Full=", ";" ) );
+                    e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
                 }
                 else if ( ( line.indexOf( "SubName:" ) > 0 ) && ( line.indexOf( "Full=" ) > 0 ) ) {
-                    e.setSequenceName( DatabaseTools.extract( line, "Full=", ";" ) );
+                    e.setSequenceName( SequenceDbWsTools.extractFromTo( line, "Full=", ";" ) );
                 }
             }
             else if ( line.startsWith( "DE" ) && ForesterUtil.isEmpty( e.getSequenceSymbol() ) ) {
                 if ( line.indexOf( "Short=" ) > 0 ) {
-                    e.setSequenceSymbol( DatabaseTools.extract( line, "Short=", ";" ) );
+                    e.setSequenceSymbol( SequenceDbWsTools.extractFromTo( line, "Short=", ";" ) );
                 }
             }
             else if ( line.startsWith( "GN" ) && ForesterUtil.isEmpty( e.getGeneName() ) ) {
                 if ( line.indexOf( "Name=" ) > 0 ) {
-                    e.setGeneName( DatabaseTools.extract( line, "Name=", ";" ) );
+                    e.setGeneName( SequenceDbWsTools.extractFromTo( line, "Name=", ";" ) );
                 }
             }
             else if ( line.startsWith( "DR" ) ) {
@@ -274,15 +274,15 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "OS" ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOsScientificName( DatabaseTools.extract( line, "OS", "(" ) );
+                    e.setOsScientificName( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
                 }
                 else {
-                    e.setOsScientificName( DatabaseTools.extract( line, "OS", "." ) );
+                    e.setOsScientificName( SequenceDbWsTools.extractFromTo( line, "OS", "." ) );
                 }
             }
             else if ( line.startsWith( "OX" ) ) {
                 if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
-                    e.setTaxId( DatabaseTools.extract( line, "NCBI_TaxID=", ";" ) );
+                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
                 }
             }
         }

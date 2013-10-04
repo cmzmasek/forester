@@ -54,13 +54,34 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   EMBL_REFSEQ       = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
-    public final static String   BASE_UNIPROT_URL  = "http://www.uniprot.org/";
-    public final static String   EMBL_DBS_EMBL     = "embl";
-    public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
-    public final static String   EMBL_DBS_REFSEQ_P = "refseqp";
-    private final static boolean DEBUG             = true;
-    private final static String  URL_ENC           = "UTF-8";
+    public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
+    public final static String   BASE_UNIPROT_URL        = "http://www.uniprot.org/";
+    public final static String   EMBL_DBS_EMBL           = "embl";
+    public final static String   EMBL_DBS_REFSEQ_N       = "refseqn";
+    public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
+    private final static boolean DEBUG                   = true;
+    private final static String  URL_ENC                 = "UTF-8";
+    public final static int      DEFAULT_LINES_TO_RETURN = 4000;
+
+    final static String extractFrom( final String target, final String a ) {
+        final int i_a = target.indexOf( a );
+        return target.substring( i_a + a.length() ).trim();
+    }
+
+    final static String extractFromTo( final String target, final String a, final String b ) {
+        final int i_a = target.indexOf( a );
+        final int i_b = target.indexOf( b );
+        if ( ( i_a < 0 ) || ( i_b < i_a ) ) {
+            throw new IllegalArgumentException( "attempt to extract from \"" + target + "\" between \"" + a
+                    + "\" and \"" + b + "\"" );
+        }
+        return target.substring( i_a + a.length(), i_b ).trim();
+    }
+
+    final static String extractTo( final String target, final String b ) {
+        final int i_b = target.indexOf( b );
+        return target.substring( 0, i_b ).trim();
+    }
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
@@ -153,6 +174,16 @@ public final class SequenceDbWsTools {
         else {
             addDataFromDbToNode( allow_to_set_taxonomic_data, lines_to_return, not_found, node, acc );
         }
+    }
+
+    public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
+                                                   final SortedSet<String> not_found,
+                                                   final PhylogenyNode node ) throws IOException {
+        obtainSeqInformation( allow_to_set_taxonomic_data, DEFAULT_LINES_TO_RETURN, not_found, node );
+    }
+
+    public final static void obtainSeqInformation( final PhylogenyNode node ) throws IOException {
+        obtainSeqInformation( true, DEFAULT_LINES_TO_RETURN, new TreeSet<String>(), node );
     }
 
     public final static SortedSet<String> obtainSeqInformation( final Phylogeny phy,

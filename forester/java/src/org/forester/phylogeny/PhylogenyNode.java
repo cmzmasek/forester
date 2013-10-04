@@ -74,6 +74,15 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
     }
 
+    public PhylogenyNode( final String node_name ) {
+        setId( PhylogenyNode.getNodeCount() );
+        PhylogenyNode.increaseNodeCount();
+        setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!)
+        if ( node_name != null ) {
+            getNodeData().setNodeName( node_name );
+        }
+    }
+
     private PhylogenyNode( final String nhx,
                            final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
                            final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
