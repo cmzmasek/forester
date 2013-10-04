@@ -267,7 +267,7 @@ public final class Test {
                 System.exit( -1 );
             }
         }
-        System.exit( 0 );
+        // System.exit( 0 );
         System.out.print( "Hmmscan output parser: " );
         if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
