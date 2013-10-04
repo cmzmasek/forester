@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Accession.Source;
 import org.forester.phylogeny.data.Sequence;
 
 public final class SequenceAccessionTools {
@@ -57,7 +58,8 @@ public final class SequenceAccessionTools {
     public final static Pattern  GENBANK_PROT_PATTERN  = Pattern
                                                                .compile( "(?:\\A|.*[^a-zA-Z0-9])([A-Z]{3}\\d{5}(?:\\.\\d+)?)(?:[^a-zA-Z0-9]|\\Z)" );
     public final static Pattern  GI_PATTERN            = Pattern.compile( "(?:\\b|_)(?:GI|gi)[|_=:](\\d+)(?:\\b|_)" );
-    public final static Pattern  UNIPROT_KB_PATTERN_0  = Pattern.compile( "\\b([A-Z][0-9][A-Z0-9]{3}[0-9])\\b" );
+    public final static Pattern  UNIPROT_KB_PATTERN_0  = Pattern
+                                                               .compile( "(?:\\b|_)([A-Z][0-9][A-Z0-9]{3}[0-9])(?:\\b|_)" );
     public final static Pattern  UNIPROT_KB_PATTERN_1  = Pattern
                                                                .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]([A-Z][0-9][A-Z0-9]{3}[0-9])(?:\\b|_)" );
     public final static Pattern  UNIPROT_KB_PATTERN_2  = Pattern
@@ -87,19 +89,19 @@ public final class SequenceAccessionTools {
     public final static Accession obtainAccessorFromDataFields( final PhylogenyNode n ) {
         String a = obtainUniProtAccessorFromDataFields( n );
         if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Accession.UNIPROT );
+            return new Accession( a, Source.UNIPROT );
         }
         a = obtainGenbankAccessorFromDataFields( n );
         if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Accession.NCBI );
+            return new Accession( a, Source.NCBI );
         }
         a = obtainRefSeqAccessorFromDataFields( n );
         if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Accession.REFSEQ );
+            return new Accession( a, Source.REFSEQ );
         }
         a = obtainGiNumberFromDataFields( n );
         if ( !ForesterUtil.isEmpty( a ) ) {
-            return new Accession( a, Accession.GI );
+            return new Accession( a, Source.GI );
         }
         return null;
     }
@@ -112,19 +114,19 @@ public final class SequenceAccessionTools {
             final String value = n.getNodeData().getSequence().getAccession().getValue();
             if ( ( source.startsWith( "uniprot" ) || source.equals( "swissprot" ) || source.equals( "trembl" ) || source
                     .equals( "sp" ) ) ) {
-                return new Accession( value, Accession.UNIPROT );
+                return new Accession( value, Source.UNIPROT );
             }
             else if ( source.equals( "embl" ) || source.equals( "ebi" ) ) {
-                return new Accession( value, Accession.EMBL );
+                return new Accession( value, Source.EMBL );
             }
             else if ( source.equals( "ncbi" ) || source.equals( "genbank" ) ) {
-                return new Accession( value, Accession.NCBI );
+                return new Accession( value, Source.NCBI );
             }
             else if ( source.equals( "refseq" ) ) {
-                return new Accession( value, Accession.REFSEQ );
+                return new Accession( value, Source.REFSEQ );
             }
             else if ( source.equals( "gi" ) ) {
-                return new Accession( value, Accession.GI );
+                return new Accession( value, Source.GI );
             }
         }
         return null;
@@ -227,19 +229,19 @@ public final class SequenceAccessionTools {
         if ( !ForesterUtil.isEmpty( s ) ) {
             String v = parseUniProtAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Accession.UNIPROT );
+                return new Accession( v, Source.UNIPROT );
             }
             v = parseGenbankAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Accession.NCBI );
+                return new Accession( v, Source.NCBI );
             }
             v = parseRefSeqAccessorFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Accession.REFSEQ );
+                return new Accession( v, Source.REFSEQ );
             }
             v = parseGInumberFromString( s );
             if ( !ForesterUtil.isEmpty( v ) ) {
-                return new Accession( v, Accession.GI );
+                return new Accession( v, Source.GI );
             }
         }
         return null;
@@ -294,17 +296,17 @@ public final class SequenceAccessionTools {
     }
 
     public final static String parseUniProtAccessorFromString( final String s ) {
-        Matcher m = UNIPROT_KB_PATTERN_0.matcher( s );
-        if ( m.find() ) {
-            return m.group( 1 );
-        }
-        m = UNIPROT_KB_PATTERN_1.matcher( s );
+        Matcher m = UNIPROT_KB_PATTERN_1.matcher( s );
         if ( m.find() ) {
             return m.group( 1 );
         }
         m = UNIPROT_KB_PATTERN_2.matcher( s );
         if ( m.find() ) {
             return m.group();
+        }
+        m = UNIPROT_KB_PATTERN_0.matcher( s );
+        if ( m.find() ) {
+            return m.group( 1 );
         }
         return null;
     }

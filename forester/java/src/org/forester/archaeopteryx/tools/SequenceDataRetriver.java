@@ -94,7 +94,7 @@ public final class SequenceDataRetriver extends RunnableProcess {
                 sb.append( "For the following node no data was found:\n" );
             }
             else {
-                sb.append( "For the following nodes no data was found: (total: " + not_found.size() + "):\n" );
+                sb.append( "For the following nodes no data was found (total: " + not_found.size() + "):\n" );
             }
             int i = 0;
             for( final String string : not_found ) {

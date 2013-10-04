@@ -34,15 +34,34 @@ import org.forester.util.ForesterUtil;
 
 public final class Accession implements PhylogenyData, Comparable<Accession> {
 
-    final private String       _comment;
-    final private String       _source;
-    final private String       _source_value;
-    final private String       _value;
-    final public static String NCBI    = "ncbi";
-    final public static String REFSEQ  = "refseq";
-    final public static String UNIPROT = "uniprot";
-    final public static String GI      = "gi";
-    public static final String EMBL    = "embl";
+    final private String _comment;
+    final private String _source;
+    final private String _source_value;
+    final private String _value;
+
+    public enum Source {
+        NCBI, REFSEQ, UNIPROT, GI, EMBL, UNKNOWN;
+
+        @Override
+        public String toString() {
+            switch ( this ) {
+                case NCBI:
+                    return "ncbi";
+                case REFSEQ:
+                    return "refseq";
+                case UNIPROT:
+                    return "uniprot";
+                case GI:
+                    return "gi";
+                case EMBL:
+                    return "embl";
+                case UNKNOWN:
+                    return "unknown";
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+    }
 
     public Accession( final String value ) {
         _value = value;
@@ -61,6 +80,13 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
         else {
             _source_value = value;
         }
+    }
+
+    public Accession( final String value, final Source source ) {
+        _value = value;
+        _source = source.toString();
+        _comment = "";
+        _source_value = source + value;
     }
 
     public Accession( final String value, final String source, final String comment ) {

@@ -43,6 +43,7 @@ import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Accession.Source;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
@@ -53,7 +54,7 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   BASE_EMBL_DB_URL  = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/";
+    public final static String   EMBL_REFSEQ       = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
     public final static String   BASE_UNIPROT_URL  = "http://www.uniprot.org/";
     public final static String   EMBL_DBS_EMBL     = "embl";
     public final static String   EMBL_DBS_REFSEQ_N = "refseqn";
@@ -125,7 +126,7 @@ public final class SequenceDbWsTools {
         return EbiDbEntry.createInstanceFromPlainText( lines );
     }
 
-    public final static Accession obtainFromSeqAccession( final PhylogenyNode node ) {
+    public final static Accession obtainSeqAccession( final PhylogenyNode node ) {
         Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
         if ( !isAccessionAcceptable( acc ) ) {
             acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
@@ -135,7 +136,7 @@ public final class SequenceDbWsTools {
 
     public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession id, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( id, max_lines_to_return );
+        final List<String> lines = queryEmblDbForRefSeqEntry( id, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
     }
 
@@ -143,7 +144,7 @@ public final class SequenceDbWsTools {
                                                    final int lines_to_return,
                                                    final SortedSet<String> not_found,
                                                    final PhylogenyNode node ) throws IOException {
-        final Accession acc = obtainFromSeqAccession( node );
+        final Accession acc = obtainSeqAccession( node );
         if ( !isAccessionAcceptable( acc ) ) {
             if ( node.isExternal() || !node.isEmpty() ) {
                 not_found.add( node.toString() );
@@ -210,22 +211,30 @@ public final class SequenceDbWsTools {
         return result;
     }
 
+    public static List<String> queryEmblDbForRefSeqEntry( final Accession id, final int max_lines_to_return )
+            throws IOException {
+        final StringBuilder url_sb = new StringBuilder();
+        url_sb.append( EMBL_REFSEQ );
+        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
+    }
+
     public static List<String> queryEmblDb( final Accession id, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
-        url_sb.append( BASE_EMBL_DB_URL );
-        if ( ForesterUtil.isEmpty( id.getSource() ) || ( id.getSource() == Accession.NCBI ) ) {
-            url_sb.append( SequenceDbWsTools.EMBL_DBS_EMBL );
+        //  url_sb.append( BASE_EMBL_DB_URL );
+        if ( ForesterUtil.isEmpty( id.getSource() ) || ( id.getSource().equals( Source.NCBI.toString() ) ) ) {
+            url_sb.append( EMBL_DBS_EMBL );
             url_sb.append( '/' );
         }
-        else if ( id.getSource() == Accession.REFSEQ ) {
-            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
-                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
-                url_sb.append( '/' );
-            }
-            else {
-                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
-                url_sb.append( '/' );
-            }
+        else if ( id.getSource().equals( Source.REFSEQ.toString() ) ) {
+            url_sb.append( EMBL_REFSEQ );
+            //            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
+            //                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
+            //                url_sb.append( '/' );
+            //            }
+            //            else {
+            //                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
+            //                url_sb.append( '/' );
+            //            }
         }
         return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
     }
@@ -241,7 +250,7 @@ public final class SequenceDbWsTools {
                                              final Accession acc ) throws IOException {
         SequenceDatabaseEntry db_entry = null;
         final String query = acc.getValue();
-        if ( acc.getSource() == Accession.UNIPROT ) {
+        if ( acc.getSource().equals( Source.UNIPROT.toString() ) ) {
             if ( DEBUG ) {
                 System.out.println( "uniprot: " + query );
             }
@@ -252,7 +261,7 @@ public final class SequenceDbWsTools {
                 // Eat this, and move to next.
             }
         }
-        else if ( acc.getSource() == Accession.EMBL ) {
+        else if ( acc.getSource().equals( Source.EMBL.toString() ) ) {
             if ( DEBUG ) {
                 System.out.println( "embl: " + query );
             }
@@ -263,7 +272,7 @@ public final class SequenceDbWsTools {
                 // Eat this, and move to next.
             }
         }
-        else if ( acc.getSource() == Accession.REFSEQ ) {
+        else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
             if ( DEBUG ) {
                 System.out.println( "refseq: " + query );
             }
@@ -372,7 +381,9 @@ public final class SequenceDbWsTools {
 
     private final static boolean isAccessionAcceptable( final Accession acc ) {
         return ( !( ( acc == null ) || ForesterUtil.isEmpty( acc.getSource() ) || ForesterUtil.isEmpty( acc.getValue() ) || ( ( acc
-                .getSource() != Accession.UNIPROT ) && ( acc.getSource() != Accession.EMBL ) && ( acc.getSource() != Accession.REFSEQ ) ) ) );
+                .getSource().equals( Source.UNIPROT.toString() ) )
+                && ( acc.getSource().toString().equals( Source.EMBL.toString() ) ) && ( acc.getSource().toString()
+                .equals( Source.REFSEQ.toString() ) ) ) ) );
     }
 
     private static List<UniProtTaxonomy> parseUniProtTaxonomy( final List<String> result ) throws IOException {

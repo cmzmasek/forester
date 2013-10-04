@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.TreePanelUtil;
@@ -71,6 +72,7 @@ import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Accession.Source;
 import org.forester.phylogeny.data.BinaryCharacters;
 import org.forester.phylogeny.data.BranchWidth;
 import org.forester.phylogeny.data.Confidence;
@@ -172,6 +174,15 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        System.out.print( "Basic node methods: " );
+        if ( Test.testBasicNodeMethods() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.print( "Protein id: " );
         if ( !testProteinId() ) {
             System.out.println( "failed." );
@@ -226,8 +237,8 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Hmmscan output parser: " );
-        if ( testHmmscanOutputParser() ) {
+        System.out.print( "UniProtKB id extraction: " );
+        if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -235,8 +246,28 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "Basic node methods: " );
-        if ( Test.testBasicNodeMethods() ) {
+        System.out.print( "Sequence DB tools 1: " );
+        if ( testSequenceDbWsTools1() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.out.print( "Sequence DB tools 2: " );
+        if ( testSequenceDbWsTools2() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+            System.exit( -1 );
+        }
+        System.exit( 0 );
+        System.out.print( "Hmmscan output parser: " );
+        if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -264,15 +295,6 @@ public final class Test {
         }
         System.out.print( "Taxonomy extraction (general): " );
         if ( Test.testTaxonomyExtraction() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "UniProtKB id extraction: " );
-        if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -3830,7 +3852,7 @@ public final class Test {
                 return false;
             }
             n = new PhylogenyNode();
-            n.setName( "_ACP19736_" );
+            n.setName( "|ACP19736|" );
             if ( !SequenceAccessionTools.obtainGenbankAccessorFromDataFields( n ).equals( "ACP19736" ) ) {
                 return false;
             }
@@ -9729,24 +9751,12 @@ public final class Test {
                 }
                 return false;
             }
-            // 
-            //            id = SequenceAccessionTools.parse( "pllf[pok P4A123_osdjfosnqo035-9233332904i000490 vf tmv x45" );
-            //            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
-            //                    || !id.getValue().equals( "P4A123" ) || !id.getSource().equals( "sp" ) ) {
-            //                if ( id != null ) {
-            //                    System.out.println( "value   =" + id.getValue() );
-            //                    System.out.println( "provider=" + id.getSource() );
-            //                }
-            //                return false;
-            //            }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "XP_12345" );
             if ( id != null ) {
                 System.out.println( "value   =" + id.getValue() );
                 System.out.println( "provider=" + id.getSource() );
                 return false;
             }
-            // lcl_91970_unknown_
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -10844,6 +10854,157 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testSequenceDbWsTools1() {
+        try {
+            PhylogenyNode n = new PhylogenyNode();
+            n.setName( "NP_001025424" );
+            Accession acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "340 0559 -- _NP_001025424_dsfdg15 05" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "NP_001025424.1" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "NM_001030253" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NM_001030253" ) ) {
+                return false;
+            }
+            n.setName( "BCL2_HUMAN" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "BCL2_HUMAN" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "P10415" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( " P10415 " );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_P10415|" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AY695820" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AY695820" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AY695820_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AY695820" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AAA59452" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AAA59452_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AAA59452.1" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AAA59452.1_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "GI:94894583" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( acc == null || !acc.getSource().equals( Source.GI.toString() ) || !acc.getValue().equals( "94894583" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+        }
+        //        catch ( final IOException e ) {
+        //            System.out.println();
+        //            System.out.println( "the following might be due to absence internet connection:" );
+        //            e.printStackTrace( System.out );
+        //            return true;
+        //        }
+        catch ( final Exception e ) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testSequenceDbWsTools2() {
+        try {
+            PhylogenyNode n1 = new PhylogenyNode();
+            n1.setName( "NP_001025424" );
+            SequenceDbWsTools.obtainSeqInformation( false, 4000, new TreeSet<String>(), n1 );
+            if ( !n1.getNodeData().getSequence().getName().equals( "Bcl2" ) ) {
+                return false;
+            }
+            if ( !n1.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
+                return false;
+            }
+            PhylogenyNode n2 = new PhylogenyNode();
+            n2.setName( "NM_001030253" );
+            SequenceDbWsTools.obtainSeqInformation( false, 4000, new TreeSet<String>(), n2 );
+            System.out.println( n2.toString() );
+            if ( !n2.getNodeData().getSequence().getName()
+                    .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
+                return false;
+            }
+        }
+        catch ( final IOException e ) {
+            System.out.println();
+            System.out.println( "the following might be due to absence internet connection:" );
+            e.printStackTrace( System.out );
+            return true;
+        }
+        catch ( final Exception e ) {
             return false;
         }
         return true;
