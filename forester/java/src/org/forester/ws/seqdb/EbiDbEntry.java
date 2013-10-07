@@ -25,7 +25,10 @@
 
 package org.forester.ws.seqdb;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
@@ -33,15 +36,158 @@ import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
 
+    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
+        final EbiDbEntry e = new EbiDbEntry();
+        for( final String line : lines ) {
+            if ( line.startsWith( "PA" ) ) {
+                e.setPA( SequenceDbWsTools.extractFrom( line, "PA" ) );
+            }
+            else if ( line.startsWith( "DE" ) ) {
+                e.setDe( SequenceDbWsTools.extractFrom( line, "DE" ) );
+            }
+            else if ( line.startsWith( "OS" ) ) {
+                if ( line.indexOf( "(" ) > 0 ) {
+                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
+                }
+                else {
+                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
+                }
+            }
+            else if ( line.startsWith( "OX" ) ) {
+                if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
+                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
+                }
+            }
+        }
+        return e;
+    }
+    public static SequenceDatabaseEntry createInstanceFromPlainTextForRefSeq( final List<String> lines ) {
+         final Pattern  X_PATTERN       = Pattern.compile( "^[A-Z]+" );
+         final Pattern  chromosome_PATTERN       = Pattern.compile( "\\s+/chromosome=\"(\\w+)\"" );
+         final Pattern  map_PATTERN       = Pattern.compile( "\\s+/map=\"([\\w+\\.])\"" );
+         final Pattern  gene_PATTERN       = Pattern.compile( "\\s+/gene=\"(.+)\"" );
+         final Pattern  mim_xref_PATTERN       = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
+         final Pattern  taxon_xref_PATTERN       = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
+         
+         final Pattern  interpro_PATTERN       = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
+         final Pattern  uniprot_PATTERN       = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
+         
+       
+        final EbiDbEntry e = new EbiDbEntry();
+        final StringBuilder def = new StringBuilder();
+        boolean in_def = false;
+        boolean in_features = false;
+        boolean in_source = false;
+        boolean in_gene = false;
+        boolean in_cds  = false;
+        boolean in_protein  = false;
+        for( final String line : lines ) {
+            
+            if ( line.startsWith( "ACCESSION " ) ) {
+                e.setPA( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
+                in_def = false;
+            }
+            else if ( line.startsWith( "DEFINITION " ) ) {
+                if ( line.indexOf( "[" ) > 0 ) {
+                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "[" ) );
+                }
+                else if ( line.indexOf( "." ) > 0 ) {
+                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "." ) );
+                }
+                else {
+                    def.append( SequenceDbWsTools.extractFrom( line, "DEFINITION" ) );
+                }
+                in_def = true;
+            }
+            else if ( line.startsWith( "  ORGANISM " ) ) {
+                if ( line.indexOf( "(" ) > 0 ) {
+                    e.setOs( SequenceDbWsTools.extractFromTo( line, "  ORGANISM", "(" ) );
+                }
+                else {
+                    e.setOs( SequenceDbWsTools.extractFrom( line, "  ORGANISM" ) );
+                }
+              //  in_def = false;
+            }
+            else if ( line.startsWith( " " ) && in_def ) {
+                def.append( " " );
+                if ( line.indexOf( "[" ) > 0 ) {
+                    def.append( SequenceDbWsTools.extractTo( line, "[" ) );
+                }
+                else if ( line.indexOf( "." ) > 0 ) {
+                    def.append( SequenceDbWsTools.extractTo( line, "." ) );
+                }
+                else {
+                    def.append( line.trim() );
+                }
+            }
+            else {
+                in_def = false;
+            }
+         
+           
+            if (  X_PATTERN.matcher( line ).find() ) {
+                in_features = false;
+                in_source = false;
+                in_gene = false;
+                in_cds = false;
+                in_protein  = false;
+               // in_def = false;
+            }
+            
+            
+            if ( line.startsWith( "FEATURES " ) ) {
+                in_features = true;
+              
+            }
+           
+            if ( in_features && line.startsWith( "     source " ) ) {
+                in_source = true;
+                in_gene = false;
+                
+                in_cds = false;
+                in_protein  = false;
+            }
+            if ( in_features && line.startsWith( "     gene " ) ) {
+              
+                in_source = false;
+                in_gene = true;
+               
+                in_cds = false;
+                in_protein  = false;
+            }
+            if ( in_features && line.startsWith( "     CDS " ) ) {
+                in_source = false;
+                in_gene = false;
+               
+                in_cds = true;
+                in_protein  = false;
+            }
+            if ( in_features && line.startsWith( "     Protein " ) ) {
+                in_source = false;
+                in_gene = false;
+               
+                in_cds = false;
+                in_protein  = true;
+            }
+        }
+        if ( def.length() > 0 ) {
+            e.setDe( def.toString().trim() );
+        }
+        return e;
+    }
     // FIXME actually this is NCBI entry
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
     private String _pa;
     private String _de;
     private String _os;
     private String _tax_id;
+    
+    
     private String _symbol;
     private String _provider;
-
+   
+    private ArrayList<Accession> _cross_references;
+    private String               _gene_name;
     // TODO  PUBMED   15798186
     //TODO  (FEATURES) 
     // source /db_xref="taxon:9606"
@@ -54,7 +200,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     // /db_xref="MIM:604739"
     // /db_xref="InterPro:IPR002475"
     // /product="Bcl-2"
-    // /protein_id="NP_909122.1"
+   
     // /db_xref="UniProtKB/TrEMBL:Q5J7V1" <- reparse?
     //
     // Protein
@@ -252,146 +398,12 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                      recorded"
                      /note="N-acetylalanine; propagated from
                      UniProtKB/Swiss-Prot (Q14498.2); acetylation site"
-     misc_feature    692..694
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphotyrosine; propagated from
-                     UniProtKB/Swiss-Prot (Q14498.2); phosphorylation site"
-     misc_feature    698..700
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    707..709
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    815..817
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    845..847
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphothreonine; propagated from
-                     UniProtKB/Swiss-Prot (Q14498.2); phosphorylation site"
-     misc_feature    1280..1627
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="non-experimental evidence, no additional
-                     details recorded"
-                     /note="propagated from UniProtKB/Swiss-Prot (Q14498.2);
-                     Region: Interaction with JUN (By similarity)"
-     misc_feature    1280..1474
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="non-experimental evidence, no additional
-                     details recorded"
-                     /note="propagated from UniProtKB/Swiss-Prot (Q14498.2);
-                     Region: Activating domain (By similarity)"
-     misc_feature    1409..1411
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    1418..1420
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    1430..1432
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
-                     (Q14498.2); phosphorylation site"
-     misc_feature    1472..1627
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="non-experimental evidence, no additional
-                     details recorded"
-                     /note="propagated from UniProtKB/Swiss-Prot (Q14498.2);
-                     Region: Interaction with ESR1 and ESR2 (By similarity)"
-     misc_feature    1625..1999
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="non-experimental evidence, no additional
-                     details recorded"
-                     /note="propagated from UniProtKB/Swiss-Prot (Q14498.2);
-                     Region: Interaction with NCOA6 (By similarity)"
+     
      exon            461..510
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
                      /inference="alignment:Splign:1.39.8"
-     exon            511..705
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            706..771
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            772..825
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            826..943
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            944..1096
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1097..1234
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1235..1300
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1301..1505
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1506..1583
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1584..1634
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1635..1716
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1717..1822
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
-     exon            1823..1901
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /inference="alignment:Splign:1.39.8"
+    
      exon            1902..2874
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
@@ -411,26 +423,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
                      /standard_name="REN58785"
                      /db_xref="UniSTS:383585"
-     STS             2349..2590
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /standard_name="REN58784"
-                     /db_xref="UniSTS:383584"
-     STS             2450..2669
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /standard_name="RH69003"
-                     /db_xref="UniSTS:85360"
-     STS             2579..2828
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /standard_name="REN58783"
-                     /db_xref="UniSTS:383583"
-     STS             2639..2728
-                     /gene="RBM39"
-                     /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
-                     /standard_name="RH67917"
-                     /db_xref="UniSTS:84037"
+    
      polyA_signal    2851..2856
                      /gene="RBM39"
                      /gene_synonym="CAPER; CAPERalpha; FSAP59; HCC1; RNPC2"
@@ -443,54 +436,19 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
       121 ttcagggagc ttgtcgacgc tgtcgcaggg gtggatcctg agctgccgaa gccgccgtcc
       181 tgctctcccg cgtgggcttc tctaattcca ttgttttttt tagattctct cgggcctagc
       241 cgtccttgga acccgatatt cgggctgggc ggttccgcgg cctgggccta ggggcttaac
-      301 agtagcaaca gaagcggcgg cggcggcagc agcagcagca gcagcagcaa tctcttcccg
-      361 aacacgagca ccacaggcgc ccgaaggccg gaacaggcgt ttagagaaaa tggcagacga
-      421 tattgatatt gaagcaatgc ttgaggctcc ttacaagaag gatgagaaca agttgagcag
-      481 tgccaacggc catgaagaac gtagcaaaaa gaggaaaaaa agcaagagca gaagtcgtag
-      541 tcatgaacga aagagaagca aaagtaagga acggaagcga agtagagaca gagaaaggaa
-      601 aaagagcaaa agccgtgaaa gaaagcgaag tagaagcaaa gagaggcgac ggagccgctc
-      661 aagaagtcga gatcgaagat ttagaggccg ctacagaagt ccttactccg gaccaaaatt
-      721 taacagtgcc atccgaggaa agattgggtt gcctcatagc atcaaattaa gcagacgacg
-      781 ttcccgaagc aaaagtccat tcagaaaaga caagagccct gtgagagaac ctattgataa
-      841 tttaactcct gaggaaagag atgcaaggac agtcttctgt atgcagctgg cggcaagaat
-      901 tcgaccaagg gatttggaag agtttttctc tacagtagga aaggttcgag atgtgaggat
-      961 gatttctgac agaaattcaa gacgttccaa aggaattgct tatgtggagt tcgtcgatgt
-     1021 tagctcagtg cctctagcaa taggattaac tggccaacga gttttaggcg tgccaatcat
-     1081 agtacaggca tcacaggcag aaaaaaacag agctgcagca atggcaaaca atttacaaaa
-     1141 gggaagtgct ggacctatga ggctttatgt gggctcatta cacttcaaca taactgaaga
-     1201 tatgcttcgt gggatctttg agccttttgg aagaattgaa agtatccagc tgatgatgga
-     1261 cagtgaaact ggtcgatcca agggatatgg atttattaca ttttctgact cagaatgtgc
-     1321 caaaaaggct ttggaacaac ttaatggatt tgaactagca ggaagaccaa tgaaagttgg
-     1381 tcatgttact gaacgtactg atgcttcgag tgctagttca tttttggaca gtgatgaact
-     1441 ggaaaggact ggaattgatt tgggaacaac tggtcgtctt cagttaatgg caagacttgc
-     1501 agagggtaca ggtttgcaga ttccgccagc agcacagcaa gctctacaga tgagtggctc
-     1561 tttggcattt ggtgctgtgg cagaattctc ttttgttata gatttgcaaa caagactttc
-     1621 ccagcagact gaagcttcag ctttagctgc agctgcctct gttcagccac ttgcaacaca
-     1681 atgtttccaa ctctctaaca tgtttaaccc tcaaacagaa gaagaagttg gatgggatac
-     1741 cgagattaag gatgatgtga ttgaagaatg taataaacat ggaggagtta ttcatattta
-     1801 tgttgacaaa aattcagctc agggcaatgt gtatgtgaag tgcccatcaa ttgctgcagc
-     1861 tattgctgct gtcaatgcat tgcatggcag gtggtttgct ggtaaaatga taacagcagc
-     1921 atatgtacct cttccaactt accacaacct gtttcctgat tctatgacag caacacagct
-     1981 actggttcca agtagacgat gaaggaagat atagtccctt atgtatatag ctttttttct
-     2041 ttcttgagaa ttcatcttga gttatctttt atttagataa aaataaagag gcaaggatct
-     2101 actgtcattt gtatgcaatt tcctgttacc ttgaaaaaat aaaaatgtta acaggaatgc
-     2161 agtgtgctca ttctccctaa atagtaaatc ccactgtata caaaactgtt ctcttgttct
-     2221 gccttttaaa atgttcatgt agaaaattaa tgaactatag gaatagctct aggagaacaa
-     2281 atgtgctttc tgtaaaaagg cagaccaggg atgtaatgtt tttaatgttt cagaagccta
-     2341 actttttaca cagtggttac atttcacatt tcactaatgt tgatatttgg ctgatggttg
-     2401 agcagtttct gaaatacaca tttagtgtat ggaaatacaa gacagctaaa gggctgtttg
-     2461 gttagcatct catcttgcat tctgatcaat tggcaagaaa gggagatttc aaaattatat
-     2521 ttcttgatgg tatcttttca attaatgtat ctgtaaaagt ttctttgtaa atactatgtg
-     2581 ttctggtgtg tcttaaaatt ccaaacaaaa tgatccctgc atttcctgaa gatgtttaaa
-     2641 cgtgagagtc tggtaggcaa agcagtctga gaaagaaata ggaaatgcag aaataggttt
-     2701 tgtctggttg catataatct ttgctctttt taagctctgt gagctctgaa atatattttt
-     2761 gggttacttc agtgtgtttg acaagacagc ttgatatttc tatcaaacaa atgactttca
-     2821 tattgcaaca atctttgtaa gaaccactca aataaaagtc tcttaaaaag gccaaaaaaa
-     2881 a
+    
     
     
     */
     private EbiDbEntry() {
+    }
+
+    private void addCrossReference( final Accession accession ) {
+        if ( _cross_references == null ) {
+            _cross_references = new ArrayList<Accession>();
+        }
+        System.out.println( "XREF ADDED: " + accession );
+        _cross_references.add( accession );
     }
 
     @Override
@@ -498,94 +456,29 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         throw new CloneNotSupportedException();
     }
 
-    public static SequenceDatabaseEntry createInstanceFromPlainTextForRefSeq( final List<String> lines ) {
-        final EbiDbEntry e = new EbiDbEntry();
-        final StringBuilder def = new StringBuilder();
-        boolean in_def = false;
-        for( final String line : lines ) {
-            //  System.out.println( "-" + line );
-            if ( line.startsWith( "ACCESSION" ) ) {
-                e.setPA( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
-                in_def = false;
-            }
-            else if ( line.startsWith( "DEFINITION" ) ) {
-                if ( line.indexOf( "[" ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "[" ) );
-                }
-                else if ( line.indexOf( "." ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "." ) );
-                }
-                else {
-                    def.append( SequenceDbWsTools.extractFrom( line, "DEFINITION" ) );
-                }
-                in_def = true;
-            }
-            else if ( line.startsWith( "SOURCE" ) ) {
-                if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOs( SequenceDbWsTools.extractFromTo( line, "SOURCE", "(" ) );
-                }
-                else {
-                    e.setOs( SequenceDbWsTools.extractFrom( line, "SOURCE" ) );
-                }
-                in_def = false;
-            }
-            else if ( line.startsWith( " " ) && in_def ) {
-                def.append( " " );
-                if ( line.indexOf( "[" ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractTo( line, "[" ) );
-                }
-                else if ( line.indexOf( "." ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractTo( line, "." ) );
-                }
-                else {
-                    def.append( line.trim() );
-                }
-            }
-            else {
-                in_def = false;
-            }
-        }
-        if ( def.length() > 0 ) {
-            e.setDe( def.toString().trim() );
-        }
-        return e;
-    }
-
-    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
-        final EbiDbEntry e = new EbiDbEntry();
-        for( final String line : lines ) {
-            if ( line.startsWith( "PA" ) ) {
-                e.setPA( SequenceDbWsTools.extractFrom( line, "PA" ) );
-            }
-            else if ( line.startsWith( "DE" ) ) {
-                e.setDe( SequenceDbWsTools.extractFrom( line, "DE" ) );
-            }
-            else if ( line.startsWith( "OS" ) ) {
-                if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
-                }
-                else {
-                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
-                }
-            }
-            else if ( line.startsWith( "OX" ) ) {
-                if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
-                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
-                }
-            }
-        }
-        return e;
-    }
-
     @Override
     public String getAccession() {
         return _pa;
     }
 
-    private void setPA( final String pa ) {
-        if ( _pa == null ) {
-            _pa = pa;
-        }
+    @Override
+    public List<Accession> getCrossReferences() {
+        return _cross_references;
+    }
+
+    @Override
+    public String getGeneName() {
+        return _gene_name;
+    }
+
+    @Override
+    public List<GoTerm> getGoTerms() {
+        return null;
+    }
+
+    @Override
+    public String getProvider() {
+        return _provider;
     }
 
     @Override
@@ -593,21 +486,9 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return _de;
     }
 
-    private void setDe( final String rec_name ) {
-        if ( _de == null ) {
-            _de = rec_name;
-        }
-    }
-
     @Override
-    public String getTaxonomyScientificName() {
-        return _os;
-    }
-
-    private void setOs( final String os ) {
-        if ( _os == null ) {
-            _os = os;
-        }
+    public String getSequenceSymbol() {
+        return _symbol;
     }
 
     @Override
@@ -615,15 +496,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return _tax_id;
     }
 
-    private void setTaxId( final String tax_id ) {
-        if ( _tax_id == null ) {
-            _tax_id = tax_id;
-        }
-    }
+  
 
     @Override
-    public String getSequenceSymbol() {
-        return _symbol;
+    public String getTaxonomyScientificName() {
+        return _os;
     }
 
     @Override
@@ -633,27 +510,37 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
     }
 
-    @Override
-    public String getProvider() {
-        return _provider;
+    private void setDe( final String rec_name ) {
+        if ( _de == null ) {
+            _de = rec_name;
+        }
+    }
+
+    private void setGeneName( final String gene_name ) {
+        if ( _gene_name == null ) {
+            _gene_name = gene_name;
+        }
+    }
+
+    private void setOs( final String os ) {
+        if ( _os == null ) {
+            _os = os;
+        }
+    }
+
+    private void setPA( final String pa ) {
+        if ( _pa == null ) {
+            _pa = pa;
+        }
     }
 
     public void setProvider( final String provider ) {
         _provider = provider;
     }
 
-    @Override
-    public String getGeneName() {
-        return null;
-    }
-
-    @Override
-    public List<GoTerm> getGoTerms() {
-        return null;
-    }
-
-    @Override
-    public List<Accession> getCrossReferences() {
-        return null;
+    private void setTaxId( final String tax_id ) {
+        if ( _tax_id == null ) {
+            _tax_id = tax_id;
+        }
     }
 }
