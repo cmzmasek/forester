@@ -28,8 +28,10 @@ package org.forester.application;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
@@ -303,7 +305,20 @@ public final class decorator {
             if ( ( value_column < 0 ) || ( value_column >= mapping_table.getNumberOfColumns() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for value column" );
             }
+            if ( mapping_table.isEmpty() || mapping_table.getNumberOfColumns() < 1 ) {
+                ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table is empty" );
+            }
+            if ( mapping_table.getNumberOfColumns() == 1 ) {
+                ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table has only one column" );
+            }
             map = mapping_table.getColumnsAsMap( key_column, value_column );
+            Iterator<Entry<String, String>> iter = map.entrySet().iterator();
+            System.out.println();
+            while ( iter.hasNext() ) {
+                Entry<String, String> e = iter.next();
+                System.out.println( e.getKey() + " => " + e.getValue() );
+            }
+            System.out.println();
         }
         if ( !ForesterUtil.isEmpty( tree_name ) || !ForesterUtil.isEmpty( tree_id )
                 || !ForesterUtil.isEmpty( tree_desc ) ) {
