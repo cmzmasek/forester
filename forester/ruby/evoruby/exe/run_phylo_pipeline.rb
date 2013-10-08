@@ -14,7 +14,7 @@ module Evoruby
 
   class RunPhyloPipeline
 
-    PFAM      = "/home/czmasek/DATA/PFAM/PFAM260X/"
+    PFAM      = "/home/czmasek/DATA/PFAM/PFAM270X/"
     HMMSCAN  = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
     HSP       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
     D2F       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
