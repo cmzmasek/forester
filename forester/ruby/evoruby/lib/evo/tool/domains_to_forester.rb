@@ -124,7 +124,7 @@ module Evoruby
         protein_name     = d[ 0 ]
         domain_structure = d[ 1 ]
         out.print( protein_name.to_s )
-        out.print( ": " )
+        out.print( "\t" )
         out.print( domain_structure.to_NHX )
         out.print( Constants::LINE_DELIMITER  )
       end
