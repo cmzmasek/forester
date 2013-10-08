@@ -109,8 +109,8 @@ public class simple_node_processor {
         //        }
         if ( node.isExternal() ) {
             if ( node.getNodeData().isHasTaxonomy() ) {
-                Taxonomy t = node.getNodeData().getTaxonomy();
-                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && t.getTaxonomyCode().length() == 5 ) {
+                final Taxonomy t = node.getNodeData().getTaxonomy();
+                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
                     if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
                         node.setName( "" );
                     }

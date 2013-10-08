@@ -184,7 +184,7 @@ public class tax_code_cleaner {
                         t.setTaxonomyCode( "" );
                     }
                     else if ( tc.length() == 6 ) {
-                        Pattern p = Pattern.compile( "[A-Z9][A-Z]{2}[A-Z0-9]{2}\\d" );
+                        final Pattern p = Pattern.compile( "[A-Z9][A-Z]{2}[A-Z0-9]{2}\\d" );
                         if ( p.matcher( tc ).matches() ) {
                             t.setTaxonomyCode( tc.substring( 0, 5 ) );
                         }

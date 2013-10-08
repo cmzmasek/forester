@@ -130,7 +130,7 @@ public class genome_counts_for_once_appearing_dcs {
             System.out.println( i );
         }
         System.out.println();
-        for( String dc : appearing_once_dcs ) {
+        for( final String dc : appearing_once_dcs ) {
             System.out.println( "1\t" + dc );
         }
     }
