@@ -31,6 +31,7 @@
 package org.forester.applications;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
@@ -207,6 +208,14 @@ public class tax_code_cleaner {
                         t.setScientificName( "Xanthoria parietina 46-1" );
                         t.setTaxonomyCode( "" );
                     }
+                    else if ( tc.length() == 6 ) {
+                        Pattern p = Pattern
+                                .compile( "[A-Z9][A-Z]{2}[A-Z0-9]{2}\\d" );
+                        if ( p.matcher( tc ).matches() ) {
+                            t.setTaxonomyCode( tc.substring( 0, 5 ) );
+                        }
+                    }
+                   
                 }
             }
         }
