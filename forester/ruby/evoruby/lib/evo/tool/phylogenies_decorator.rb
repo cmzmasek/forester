@@ -308,7 +308,7 @@ module Evoruby
       puts( "  " + PRG_NAME + ".rb [options] <suffix of intrees to be decorated> <suffix for decorated outtrees> " )
       puts()
       puts( "  options: -" + IDS_ONLY_OPTION + ": decorate with sequence/species names only" )
-      puts( "           -" + DOMAINS_ONLY_OPTION + ": decorate with domain structures" )
+      puts( "           -" + DOMAINS_ONLY_OPTION + ": decorate with domain structures only" )
       puts()
     end
   end # class PhylogenyiesDecorator
