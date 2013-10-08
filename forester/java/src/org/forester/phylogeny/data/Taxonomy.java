@@ -326,12 +326,10 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     }
 
     public void setTaxonomyCode( final String taxonomy_code ) throws PhyloXmlDataFormatException {
-      //  if ( !ForesterUtil.isEmpty( taxonomy_code )
-      //          && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
-      //      throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
-      //  } 
-        //TODO
-        //FIXME
+        if ( !ForesterUtil.isEmpty( taxonomy_code )
+                && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
+            throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
+        }
         _taxonomy_code = taxonomy_code;
     }
 

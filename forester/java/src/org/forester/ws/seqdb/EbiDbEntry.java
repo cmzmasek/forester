@@ -27,7 +27,6 @@ package org.forester.ws.seqdb;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.go.GoTerm;
@@ -61,28 +60,25 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         }
         return e;
     }
+
     public static SequenceDatabaseEntry createInstanceFromPlainTextForRefSeq( final List<String> lines ) {
-         final Pattern  X_PATTERN       = Pattern.compile( "^[A-Z]+" );
-         final Pattern  chromosome_PATTERN       = Pattern.compile( "\\s+/chromosome=\"(\\w+)\"" );
-         final Pattern  map_PATTERN       = Pattern.compile( "\\s+/map=\"([\\w+\\.])\"" );
-         final Pattern  gene_PATTERN       = Pattern.compile( "\\s+/gene=\"(.+)\"" );
-         final Pattern  mim_xref_PATTERN       = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
-         final Pattern  taxon_xref_PATTERN       = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
-         
-         final Pattern  interpro_PATTERN       = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
-         final Pattern  uniprot_PATTERN       = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
-         
-       
+        final Pattern X_PATTERN = Pattern.compile( "^[A-Z]+" );
+        final Pattern chromosome_PATTERN = Pattern.compile( "\\s+/chromosome=\"(\\w+)\"" );
+        final Pattern map_PATTERN = Pattern.compile( "\\s+/map=\"([\\w+\\.])\"" );
+        final Pattern gene_PATTERN = Pattern.compile( "\\s+/gene=\"(.+)\"" );
+        final Pattern mim_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
+        final Pattern taxon_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
+        final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
+        final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
         final EbiDbEntry e = new EbiDbEntry();
         final StringBuilder def = new StringBuilder();
         boolean in_def = false;
         boolean in_features = false;
         boolean in_source = false;
         boolean in_gene = false;
-        boolean in_cds  = false;
-        boolean in_protein  = false;
+        boolean in_cds = false;
+        boolean in_protein = false;
         for( final String line : lines ) {
-            
             if ( line.startsWith( "ACCESSION " ) ) {
                 e.setPA( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
                 in_def = false;
@@ -106,7 +102,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 else {
                     e.setOs( SequenceDbWsTools.extractFrom( line, "  ORGANISM" ) );
                 }
-              //  in_def = false;
+                //  in_def = false;
             }
             else if ( line.startsWith( " " ) && in_def ) {
                 def.append( " " );
@@ -123,51 +119,40 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             else {
                 in_def = false;
             }
-         
-           
-            if (  X_PATTERN.matcher( line ).find() ) {
+            if ( X_PATTERN.matcher( line ).find() ) {
                 in_features = false;
                 in_source = false;
                 in_gene = false;
                 in_cds = false;
-                in_protein  = false;
-               // in_def = false;
+                in_protein = false;
+                // in_def = false;
             }
-            
-            
             if ( line.startsWith( "FEATURES " ) ) {
                 in_features = true;
-              
             }
-           
             if ( in_features && line.startsWith( "     source " ) ) {
                 in_source = true;
                 in_gene = false;
-                
                 in_cds = false;
-                in_protein  = false;
+                in_protein = false;
             }
             if ( in_features && line.startsWith( "     gene " ) ) {
-              
                 in_source = false;
                 in_gene = true;
-               
                 in_cds = false;
-                in_protein  = false;
+                in_protein = false;
             }
             if ( in_features && line.startsWith( "     CDS " ) ) {
                 in_source = false;
                 in_gene = false;
-               
                 in_cds = true;
-                in_protein  = false;
+                in_protein = false;
             }
             if ( in_features && line.startsWith( "     Protein " ) ) {
                 in_source = false;
                 in_gene = false;
-               
                 in_cds = false;
-                in_protein  = true;
+                in_protein = true;
             }
         }
         if ( def.length() > 0 ) {
@@ -177,17 +162,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
     // FIXME actually this is NCBI entry
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
-    private String _pa;
-    private String _de;
-    private String _os;
-    private String _tax_id;
-    
-    
-    private String _symbol;
-    private String _provider;
-   
+    private String               _pa;
+    private String               _de;
+    private String               _os;
+    private String               _tax_id;
+    private String               _symbol;
+    private String               _provider;
     private ArrayList<Accession> _cross_references;
     private String               _gene_name;
+
     // TODO  PUBMED   15798186
     //TODO  (FEATURES) 
     // source /db_xref="taxon:9606"
@@ -200,7 +183,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     // /db_xref="MIM:604739"
     // /db_xref="InterPro:IPR002475"
     // /product="Bcl-2"
-   
     // /db_xref="UniProtKB/TrEMBL:Q5J7V1" <- reparse?
     //
     // Protein
@@ -495,8 +477,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     public String getTaxonomyIdentifier() {
         return _tax_id;
     }
-
-  
 
     @Override
     public String getTaxonomyScientificName() {
