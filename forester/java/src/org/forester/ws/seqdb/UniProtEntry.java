@@ -34,6 +34,7 @@ import org.forester.go.BasicGoTerm;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.util.ForesterUtil;
 
 public final class UniProtEntry implements SequenceDatabaseEntry {
@@ -124,7 +125,6 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
         if ( _cross_references == null ) {
             _cross_references = new ArrayList<Accession>();
         }
-        System.out.println( "XREF ADDED: " + accession );
         _cross_references.add( accession );
     }
 
@@ -287,5 +287,10 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
             }
         }
         return e;
+    }
+
+    @Override
+    public List<Annotation> getAnnotations() {
+        return null;
     }
 }

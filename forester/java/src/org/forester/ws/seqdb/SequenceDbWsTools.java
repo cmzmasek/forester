@@ -55,8 +55,9 @@ import org.forester.util.SequenceAccessionTools;
 public final class SequenceDbWsTools {
 
     public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
+    public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
     public final static String   BASE_UNIPROT_URL        = "http://www.uniprot.org/";
-    public final static String   EMBL_DBS_EMBL           = "embl";
+    //public final static String   EMBL_DBS_EMBL           = "embl";
     public final static String   EMBL_DBS_REFSEQ_N       = "refseqn";
     public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
     private final static boolean DEBUG                   = true;
@@ -141,10 +142,14 @@ public final class SequenceDbWsTools {
         return null;
     }
 
-    public static SequenceDatabaseEntry obtainEmblEntry( final Accession id, final int max_lines_to_return )
+    public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDb( id, max_lines_to_return );
-        return EbiDbEntry.createInstanceFromPlainText( lines );
+        final List<String> lines = queryEmblDb( acc, max_lines_to_return );
+        return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
+    }
+
+    public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc ) throws IOException {
+        return obtainEmblEntry( acc, DEFAULT_LINES_TO_RETURN );
     }
 
     public final static Accession obtainSeqAccession( final PhylogenyNode node ) {
@@ -155,10 +160,14 @@ public final class SequenceDbWsTools {
         return acc;
     }
 
-    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession id, final int max_lines_to_return )
+    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc, final int max_lines_to_return )
             throws IOException {
-        final List<String> lines = queryEmblDbForRefSeqEntry( id, max_lines_to_return );
+        final List<String> lines = queryEmblDbForRefSeqEntry( acc, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
+    }
+
+    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc ) throws IOException {
+        return obtainRefSeqEntryFromEmbl( acc, DEFAULT_LINES_TO_RETURN );
     }
 
     public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
@@ -204,6 +213,10 @@ public final class SequenceDbWsTools {
             throws IOException {
         final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
         return UniProtEntry.createInstanceFromPlainText( lines );
+    }
+
+    public static SequenceDatabaseEntry obtainUniProtEntry( final String query ) throws IOException {
+        return obtainUniProtEntry( query, DEFAULT_LINES_TO_RETURN );
     }
 
     public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
@@ -252,9 +265,9 @@ public final class SequenceDbWsTools {
     public static List<String> queryEmblDb( final Accession id, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
         //  url_sb.append( BASE_EMBL_DB_URL );
-        if ( ForesterUtil.isEmpty( id.getSource() ) || ( id.getSource().equals( Source.NCBI.toString() ) ) ) {
-            url_sb.append( EMBL_DBS_EMBL );
-            url_sb.append( '/' );
+        if ( id.getSource().equals( Source.NCBI.toString() ) ) {
+            url_sb.append( EMBL_GENBANK );
+            //url_sb.append( '/' );
         }
         else if ( id.getSource().equals( Source.REFSEQ.toString() ) ) {
             url_sb.append( EMBL_REFSEQ );
@@ -266,6 +279,9 @@ public final class SequenceDbWsTools {
             //                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
             //                url_sb.append( '/' );
             //            }
+        }
+        else {
+            throw new IllegalArgumentException( "unable to handle source: " + id.getSource() );
         }
         return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
     }

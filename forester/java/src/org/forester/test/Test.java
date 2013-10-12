@@ -237,6 +237,18 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Ebi Entry Retrieval: " );
+            if ( Test.testEbiEntryRetrieval() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+        }
+        System.exit( 0 );
         System.out.print( "UniProtKB id extraction: " );
         if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
@@ -267,7 +279,6 @@ public final class Test {
                 System.exit( -1 );
             }
         }
-        // System.exit( 0 );
         System.out.print( "Hmmscan output parser: " );
         if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
@@ -829,8 +840,8 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "EMBL Entry Retrieval: " );
-        if ( Test.testEmblEntryRetrieval() ) {
+        System.out.print( "Genbank accessor parsing: " );
+        if ( Test.testGenbankAccessorParsing() ) {
             System.out.println( "OK." );
             succeeded++;
         }
@@ -3362,7 +3373,7 @@ public final class Test {
         return true;
     }
 
-    private static boolean testEmblEntryRetrieval() {
+    private static boolean testGenbankAccessorParsing() {
         //The format for GenBank Accession numbers are:
         //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
         //Protein:    3 letters + 5 numerals
@@ -11022,6 +11033,49 @@ public final class Test {
                 return false;
             }
             if ( !n3.getNodeData().getSequence().getAccession().getValue().equals( "NM_184234" ) ) {
+                return false;
+            }
+        }
+        catch ( final IOException e ) {
+            System.out.println();
+            System.out.println( "the following might be due to absence internet connection:" );
+            e.printStackTrace( System.out );
+            return true;
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testEbiEntryRetrieval() {
+        try {
+            final SequenceDatabaseEntry entry = SequenceDbWsTools
+                    .obtainEmblEntry( new Accession( "AAK41263", Accession.Source.NCBI ) );
+            if ( !entry.getAccession().equals( "AAK41263" ) ) {
+                System.out.println( entry.getAccession() );
+                return false;
+            }
+            if ( !entry.getTaxonomyScientificName().equals( "Sulfolobus solfataricus P2" ) ) {
+                System.out.println( entry.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry.getSequenceName()
+                    .equals( "Sulfolobus solfataricus P2 Glycogen debranching enzyme, hypothetical (treX-like)" ) ) {
+                System.out.println( entry.getSequenceName() );
+                return false;
+            }
+            // if ( !entry.getSequenceSymbol().equals( "mAspAT" ) ) {
+            //     System.out.println( entry.getSequenceSymbol() );
+            //     return false;
+            // }
+            if ( !entry.getGeneName().equals( "treX-like" ) ) {
+                System.out.println( entry.getGeneName() );
+                return false;
+            }
+            if ( !entry.getTaxonomyIdentifier().equals( "273057" ) ) {
+                System.out.println( entry.getTaxonomyIdentifier() );
                 return false;
             }
         }

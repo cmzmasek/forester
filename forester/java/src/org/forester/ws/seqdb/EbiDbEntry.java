@@ -27,10 +27,12 @@ package org.forester.ws.seqdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
@@ -70,9 +72,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final Pattern taxon_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
         final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
         final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
+        final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"[\\.\\-\\d]+\"" );
         final EbiDbEntry e = new EbiDbEntry();
         final StringBuilder def = new StringBuilder();
-        boolean in_def = false;
+        boolean in_definition = false;
         boolean in_features = false;
         boolean in_source = false;
         boolean in_gene = false;
@@ -81,19 +84,44 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         for( final String line : lines ) {
             if ( line.startsWith( "ACCESSION " ) ) {
                 e.setPA( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
-                in_def = false;
+                in_definition = false;
             }
-            else if ( line.startsWith( "DEFINITION " ) ) {
+            else if ( line.startsWith( "ID " ) ) {
+                e.setPA( SequenceDbWsTools.extractFromTo( line, "ID", ";" ) );
+                in_definition = false;
+            }
+            else if ( line.startsWith( "DEFINITION " ) || ( line.startsWith( "DE " ) ) ) {
+                boolean definiton = false;
+                if ( line.startsWith( "DEFINITION " ) ) {
+                    definiton = true;
+                }
                 if ( line.indexOf( "[" ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "[" ) );
+                    if ( definiton ) {
+                        x( def, ( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "[" ) ) );
+                    }
+                    else {
+                        x( def, ( SequenceDbWsTools.extractFromTo( line, "DE", "[" ) ) );
+                    }
                 }
                 else if ( line.indexOf( "." ) > 0 ) {
-                    def.append( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "." ) );
+                    if ( definiton ) {
+                        x( def, ( SequenceDbWsTools.extractFromTo( line, "DEFINITION", "." ) ) );
+                    }
+                    else {
+                        x( def, ( SequenceDbWsTools.extractFromTo( line, "DE", "." ) ) );
+                    }
                 }
                 else {
-                    def.append( SequenceDbWsTools.extractFrom( line, "DEFINITION" ) );
+                    if ( definiton ) {
+                        x( def, ( SequenceDbWsTools.extractFrom( line, "DEFINITION" ) ) );
+                    }
+                    else {
+                        x( def, ( SequenceDbWsTools.extractFrom( line, "DE" ) ) );
+                    }
                 }
-                in_def = true;
+                if ( definiton ) {
+                    in_definition = true;
+                }
             }
             else if ( line.startsWith( "  ORGANISM " ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
@@ -104,7 +132,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 }
                 //  in_def = false;
             }
-            else if ( line.startsWith( " " ) && in_def ) {
+            else if ( line.startsWith( "OS " ) ) {
+                if ( line.indexOf( "(" ) > 0 ) {
+                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
+                }
+                else {
+                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
+                }
+            }
+            else if ( line.startsWith( " " ) && in_definition ) {
                 def.append( " " );
                 if ( line.indexOf( "[" ) > 0 ) {
                     def.append( SequenceDbWsTools.extractTo( line, "[" ) );
@@ -117,7 +153,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 }
             }
             else {
-                in_def = false;
+                in_definition = false;
             }
             if ( X_PATTERN.matcher( line ).find() ) {
                 in_features = false;
@@ -154,22 +190,36 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 in_cds = false;
                 in_protein = true;
             }
+            if ( in_protein || in_cds ) {
+                final Matcher m = ec_PATTERN.matcher( line );
+                if ( m.find() ) {
+                    e.addAnnotation( new Annotation( "EC", m.group( 1 ) ) );
+                }
+            }
         }
         if ( def.length() > 0 ) {
             e.setDe( def.toString().trim() );
         }
         return e;
     }
+
+    private static void x( final StringBuilder sb, final String s ) {
+        if ( sb.length() > 0 ) {
+            sb.append( " " );
+        }
+        sb.append( s.trim() );
+    }
     // FIXME actually this is NCBI entry
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
-    private String               _pa;
-    private String               _de;
-    private String               _os;
-    private String               _tax_id;
-    private String               _symbol;
-    private String               _provider;
-    private ArrayList<Accession> _cross_references;
-    private String               _gene_name;
+    private String           _pa;
+    private String           _de;
+    private String           _os;
+    private String           _tax_id;
+    private String           _symbol;
+    private String           _provider;
+    private List<Accession>  _cross_references;
+    private List<Annotation> _annotations;
+    private String           _gene_name;
 
     // TODO  PUBMED   15798186
     //TODO  (FEATURES) 
@@ -522,5 +572,17 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         if ( _tax_id == null ) {
             _tax_id = tax_id;
         }
+    }
+
+    @Override
+    public List<Annotation> getAnnotations() {
+        return _annotations;
+    }
+
+    private void addAnnotation( final Annotation annotation ) {
+        if ( _annotations == null ) {
+            _annotations = new ArrayList<Annotation>();
+        }
+        _annotations.add( annotation );
     }
 }

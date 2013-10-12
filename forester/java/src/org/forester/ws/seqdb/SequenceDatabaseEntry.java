@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
+import org.forester.phylogeny.data.Annotation;
 
 public interface SequenceDatabaseEntry {
 
@@ -37,6 +38,8 @@ public interface SequenceDatabaseEntry {
     public String getGeneName();
 
     public List<GoTerm> getGoTerms();
+
+    public List<Annotation> getAnnotations();
 
     public String getProvider();
 
