@@ -37,32 +37,31 @@ import org.forester.util.ForesterUtil;
 
 public final class EbiDbEntry implements SequenceDatabaseEntry {
 
-    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
-        final EbiDbEntry e = new EbiDbEntry();
-        for( final String line : lines ) {
-            if ( line.startsWith( "PA" ) ) {
-                e.setPA( SequenceDbWsTools.extractFrom( line, "PA" ) );
-            }
-            else if ( line.startsWith( "DE" ) ) {
-                e.setDe( SequenceDbWsTools.extractFrom( line, "DE" ) );
-            }
-            else if ( line.startsWith( "OS" ) ) {
-                if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
-                }
-                else {
-                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
-                }
-            }
-            else if ( line.startsWith( "OX" ) ) {
-                if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
-                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
-                }
-            }
-        }
-        return e;
-    }
-
+    //    public static SequenceDatabaseEntry createInstanceFromPlainText( final List<String> lines ) {
+    //        final EbiDbEntry e = new EbiDbEntry();
+    //        for( final String line : lines ) {
+    //            if ( line.startsWith( "PA" ) ) {
+    //                e.setPA( SequenceDbWsTools.extractFrom( line, "PA" ) );
+    //            }
+    //            else if ( line.startsWith( "DE" ) ) {
+    //                e.setDe( SequenceDbWsTools.extractFrom( line, "DE" ) );
+    //            }
+    //            else if ( line.startsWith( "OS" ) ) {
+    //                if ( line.indexOf( "(" ) > 0 ) {
+    //                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
+    //                }
+    //                else {
+    //                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
+    //                }
+    //            }
+    //            else if ( line.startsWith( "OX" ) ) {
+    //                if ( line.indexOf( "NCBI_TaxID=" ) > 0 ) {
+    //                    e.setTaxId( SequenceDbWsTools.extractFromTo( line, "NCBI_TaxID=", ";" ) );
+    //                }
+    //            }
+    //        }
+    //        return e;
+    //    }
     public static SequenceDatabaseEntry createInstanceFromPlainTextForRefSeq( final List<String> lines ) {
         final Pattern X_PATTERN = Pattern.compile( "^[A-Z]+" );
         final Pattern chromosome_PATTERN = Pattern.compile( "\\s+/chromosome=\"(\\w+)\"" );
@@ -72,7 +71,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final Pattern taxon_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
         final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
         final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
-        final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"[\\.\\-\\d]+\"" );
+        final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"([\\.\\-\\d]+)\"" );
         final EbiDbEntry e = new EbiDbEntry();
         final StringBuilder def = new StringBuilder();
         boolean in_definition = false;
@@ -83,11 +82,11 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         boolean in_protein = false;
         for( final String line : lines ) {
             if ( line.startsWith( "ACCESSION " ) ) {
-                e.setPA( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
+                e.setAccession( SequenceDbWsTools.extractFrom( line, "ACCESSION" ) );
                 in_definition = false;
             }
             else if ( line.startsWith( "ID " ) ) {
-                e.setPA( SequenceDbWsTools.extractFromTo( line, "ID", ";" ) );
+                e.setAccession( SequenceDbWsTools.extractFromTo( line, "ID", ";" ) );
                 in_definition = false;
             }
             else if ( line.startsWith( "DEFINITION " ) || ( line.startsWith( "DE " ) ) ) {
@@ -125,19 +124,19 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             }
             else if ( line.startsWith( "  ORGANISM " ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOs( SequenceDbWsTools.extractFromTo( line, "  ORGANISM", "(" ) );
+                    e.setTaxonomyScientificName( SequenceDbWsTools.extractFromTo( line, "  ORGANISM", "(" ) );
                 }
                 else {
-                    e.setOs( SequenceDbWsTools.extractFrom( line, "  ORGANISM" ) );
+                    e.setTaxonomyScientificName( SequenceDbWsTools.extractFrom( line, "  ORGANISM" ) );
                 }
                 //  in_def = false;
             }
             else if ( line.startsWith( "OS " ) ) {
                 if ( line.indexOf( "(" ) > 0 ) {
-                    e.setOs( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
+                    e.setTaxonomyScientificName( SequenceDbWsTools.extractFromTo( line, "OS", "(" ) );
                 }
                 else {
-                    e.setOs( SequenceDbWsTools.extractFrom( line, "OS" ) );
+                    e.setTaxonomyScientificName( SequenceDbWsTools.extractFrom( line, "OS" ) );
                 }
             }
             else if ( line.startsWith( " " ) && in_definition ) {
@@ -155,7 +154,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
             else {
                 in_definition = false;
             }
-            if ( X_PATTERN.matcher( line ).find() ) {
+            if ( !line.startsWith( "FT " ) && X_PATTERN.matcher( line ).find() ) {
                 in_features = false;
                 in_source = false;
                 in_gene = false;
@@ -163,32 +162,38 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 in_protein = false;
                 // in_def = false;
             }
-            if ( line.startsWith( "FEATURES " ) ) {
+            if ( line.startsWith( "FEATURES " ) || line.startsWith( "FT " ) ) {
                 in_features = true;
             }
-            if ( in_features && line.startsWith( "     source " ) ) {
+            if ( in_features && ( line.startsWith( "     source " ) || line.startsWith( "FT   source " ) ) ) {
                 in_source = true;
                 in_gene = false;
                 in_cds = false;
                 in_protein = false;
             }
-            if ( in_features && line.startsWith( "     gene " ) ) {
+            if ( in_features && ( line.startsWith( "     gene " ) || line.startsWith( "FT   gene " ) ) ) {
                 in_source = false;
                 in_gene = true;
                 in_cds = false;
                 in_protein = false;
             }
-            if ( in_features && line.startsWith( "     CDS " ) ) {
+            if ( in_features && ( line.startsWith( "     CDS " ) || line.startsWith( "FT   CDS " ) ) ) {
                 in_source = false;
                 in_gene = false;
                 in_cds = true;
                 in_protein = false;
             }
-            if ( in_features && line.startsWith( "     Protein " ) ) {
+            if ( in_features && ( line.startsWith( "     Protein " ) || line.startsWith( "FT   Protein " ) ) ) {
                 in_source = false;
                 in_gene = false;
                 in_cds = false;
                 in_protein = true;
+            }
+            if ( in_source ) {
+                final Matcher m = taxon_xref_PATTERN.matcher( line );
+                if ( m.find() ) {
+                    e.setTaxId( m.group( 1 ) );
+                }
             }
             if ( in_protein || in_cds ) {
                 final Matcher m = ec_PATTERN.matcher( line );
@@ -196,9 +201,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                     e.addAnnotation( new Annotation( "EC", m.group( 1 ) ) );
                 }
             }
+            if ( in_protein || in_cds || in_gene ) {
+                final Matcher m = gene_PATTERN.matcher( line );
+                if ( m.find() ) {
+                    e.setGeneName( m.group( 1 ) );
+                }
+            }
         }
         if ( def.length() > 0 ) {
-            e.setDe( def.toString().trim() );
+            e.setSequenceName( def.toString().trim() );
         }
         return e;
     }
@@ -540,7 +551,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 && ForesterUtil.isEmpty( getTaxonomyIdentifier() ) && ForesterUtil.isEmpty( getSequenceSymbol() ) );
     }
 
-    private void setDe( final String rec_name ) {
+    private void setSequenceName( final String rec_name ) {
         if ( _de == null ) {
             _de = rec_name;
         }
@@ -552,13 +563,13 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         }
     }
 
-    private void setOs( final String os ) {
+    private void setTaxonomyScientificName( final String os ) {
         if ( _os == null ) {
             _os = os;
         }
     }
 
-    private void setPA( final String pa ) {
+    private void setAccession( final String pa ) {
         if ( _pa == null ) {
             _pa = pa;
         }

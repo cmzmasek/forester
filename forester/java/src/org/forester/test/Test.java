@@ -11066,7 +11066,7 @@ public final class Test {
                 System.out.println( entry.getSequenceName() );
                 return false;
             }
-            // if ( !entry.getSequenceSymbol().equals( "mAspAT" ) ) {
+            // if ( !entry.getSequenceSymbol().equals( "" ) ) {
             //     System.out.println( entry.getSequenceSymbol() );
             //     return false;
             // }
@@ -11076,6 +11076,14 @@ public final class Test {
             }
             if ( !entry.getTaxonomyIdentifier().equals( "273057" ) ) {
                 System.out.println( entry.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry.getAnnotations().get( 0 ).getRefValue().equals( "3.2.1.33" ) ) {
+                System.out.println( entry.getAnnotations().get( 0 ).getRefValue() );
+                return false;
+            }
+            if ( !entry.getAnnotations().get( 0 ).getRefSource().equals( "EC" ) ) {
+                System.out.println( entry.getAnnotations().get( 0 ).getRefSource() );
                 return false;
             }
         }
