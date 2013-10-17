@@ -1231,92 +1231,152 @@
                               <id provider="uniprot">1206794</id>
                               <scientific_name>Ecdysozoa</scientific_name>
                             </taxonomy>
+                            <reference doi="10.1098/rstb.2007.2243">
+                              <desc>The evolution of the Ecdysozoa</desc>
+                            </reference>
                             <clade>
                               <taxonomy>
-                                <id provider="uniprot">6656</id>
-                                <scientific_name>Arthropoda</scientific_name>
-                                <rank>phylum</rank>
+                                <id provider="uniprot">88770</id>
+                                <scientific_name>Panarthropoda</scientific_name>
                               </taxonomy>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">197563</id>
-                                  <scientific_name>Mandibulata</scientific_name>
+                                  <id provider="uniprot">6656</id>
+                                  <scientific_name>Arthropoda</scientific_name>
+                                  <rank>phylum</rank>
                                 </taxonomy>
+                                <reference doi="10.1098/rspb.2010.0590">
+                                  <desc>A congruent solution to arthropod phylogeny: phylogenomics, microRNAs and morphology support monophyletic Mandibulata</desc>
+                                </reference>
                                 <clade>
                                   <taxonomy>
-                                    <id provider="uniprot">197562</id>
-                                    <scientific_name>Pancrustacea</scientific_name>
+                                    <id provider="uniprot">197563</id>
+                                    <scientific_name>Mandibulata</scientific_name>
                                   </taxonomy>
+                                  <reference doi="doi:10.1038/ncomms3485">
+                                    <desc>Arthropod fossil data increase congruence of morphological and molecular phylogenies</desc>
+                                  </reference>
+                                  <reference>
+                                  </reference>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">33340</id>
-                                      <scientific_name>Neoptera</scientific_name>
-                                      <rank>subclass</rank>
+                                      <id provider="uniprot">197562</id>
+                                      <scientific_name>Pancrustacea</scientific_name>
                                     </taxonomy>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">33392</id>
-                                        <scientific_name>Endopterygota</scientific_name>
-                                        <rank>infraclass</rank>
+                                        <id provider="uniprot">6960</id>
+                                        <scientific_name>Hexapoda</scientific_name>
+                                        <rank>superclass</rank>
                                       </taxonomy>
                                       <clade>
-                                        <name>Hymenoptera &amp; Lepidoptera &amp; Diptera</name>
+                                        <taxonomy>
+                                          <id provider="uniprot">50557</id>
+                                          <scientific_name>Insecta</scientific_name>
+                                          <common_name>true insects</common_name>
+                                          <rank>class</rank>
+                                        </taxonomy>
                                         <clade>
-                                          <name>Lepidoptera &amp; Diptera</name>
+                                          <taxonomy>
+                                            <id provider="uniprot">33340</id>
+                                            <scientific_name>Neoptera</scientific_name>
+                                            <rank>subclass</rank>
+                                          </taxonomy>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">7147</id>
-                                              <scientific_name>Diptera</scientific_name>
-                                              <rank>order</rank>
+                                              <id provider="uniprot">33392</id>
+                                              <scientific_name>Endopterygota</scientific_name>
+                                              <rank>infraclass</rank>
                                             </taxonomy>
                                             <clade>
-                                              <taxonomy>
-                                                <id provider="uniprot">7215</id>
-                                                <scientific_name>Drosophila</scientific_name>
-                                                <common_name>fruit flies</common_name>
-                                                <rank>genus</rank>
-                                              </taxonomy>
-                                              <reference doi="10.1534/genetics.111.126540">
-                                                <desc>The 19 Genomes of Drosophila: A BAC Library Resource for Genus-Wide and Genome-Scale Comparative Evolutionary Research</desc>
-                                              </reference>
+                                              <name>Hymenoptera &amp; Lepidoptera &amp; Diptera</name>
                                               <clade>
-                                                <taxonomy>
-                                                  <id provider="uniprot">32341</id>
-                                                  <scientific_name>Sophophora</scientific_name>
-                                                  <rank>subgenus</rank>
-                                                </taxonomy>
+                                                <name>Lepidoptera &amp; Diptera</name>
                                                 <clade>
-                                                  <name>melanogaster &amp; pseudoobscura subgroups</name>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">7147</id>
+                                                    <scientific_name>Diptera</scientific_name>
+                                                    <rank>order</rank>
+                                                  </taxonomy>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">32346</id>
-                                                      <scientific_name>melanogaster group</scientific_name>
+                                                      <id provider="uniprot">7215</id>
+                                                      <scientific_name>Drosophila</scientific_name>
+                                                      <common_name>fruit flies</common_name>
+                                                      <rank>genus</rank>
                                                     </taxonomy>
+                                                    <reference doi="10.1534/genetics.111.126540">
+                                                      <desc>The 19 Genomes of Drosophila: A BAC Library Resource for Genus-Wide and Genome-Scale Comparative Evolutionary Research</desc>
+                                                    </reference>
                                                     <clade>
                                                       <taxonomy>
-                                                        <id provider="uniprot">32351</id>
-                                                        <scientific_name>melanogaster subgroup</scientific_name>
+                                                        <id provider="uniprot">32341</id>
+                                                        <scientific_name>Sophophora</scientific_name>
+                                                        <rank>subgenus</rank>
                                                       </taxonomy>
                                                       <clade>
-                                                        <name>DROSE &amp; DROSI &amp; DROME &amp; DROYA</name>
+                                                        <name>melanogaster &amp; pseudoobscura subgroups</name>
                                                         <clade>
-                                                          <name>DROSE &amp; DROSI &amp; DROME</name>
+                                                          <taxonomy>
+                                                            <id provider="uniprot">32346</id>
+                                                            <scientific_name>melanogaster group</scientific_name>
+                                                          </taxonomy>
                                                           <clade>
-                                                            <name>DROSE &amp; DROSI</name>
+                                                            <taxonomy>
+                                                              <id provider="uniprot">32351</id>
+                                                              <scientific_name>melanogaster subgroup</scientific_name>
+                                                            </taxonomy>
                                                             <clade>
-                                                              <taxonomy>
-                                                                <id provider="uniprot">7238</id>
-                                                                <code>DROSE</code>
-                                                                <scientific_name>Drosophila sechellia</scientific_name>
-                                                                <common_name>Fruit fly</common_name>
-                                                                <rank>species</rank>
-                                                              </taxonomy>
+                                                              <name>DROSE &amp; DROSI &amp; DROME &amp; DROYA</name>
+                                                              <clade>
+                                                                <name>DROSE &amp; DROSI &amp; DROME</name>
+                                                                <clade>
+                                                                  <name>DROSE &amp; DROSI</name>
+                                                                  <clade>
+                                                                    <taxonomy>
+                                                                      <id provider="uniprot">7238</id>
+                                                                      <code>DROSE</code>
+                                                                      <scientific_name>Drosophila sechellia</scientific_name>
+                                                                      <common_name>Fruit fly</common_name>
+                                                                      <rank>species</rank>
+                                                                    </taxonomy>
+                                                                  </clade>
+                                                                  <clade>
+                                                                    <taxonomy>
+                                                                      <id provider="uniprot">7240</id>
+                                                                      <code>DROSI</code>
+                                                                      <scientific_name>Drosophila simulans</scientific_name>
+                                                                      <common_name>Fruit fly</common_name>
+                                                                      <rank>species</rank>
+                                                                    </taxonomy>
+                                                                  </clade>
+                                                                </clade>
+                                                                <clade>
+                                                                  <taxonomy>
+                                                                    <id provider="uniprot">7227</id>
+                                                                    <code>DROME</code>
+                                                                    <scientific_name>Drosophila melanogaster</scientific_name>
+                                                                    <common_name>Fruit fly</common_name>
+                                                                    <rank>species</rank>
+                                                                    <uri>http://www.snv.jussieu.fr/bmedia/ATP/images/dro-mal1.jpg</uri>
+                                                                  </taxonomy>
+                                                                </clade>
+                                                              </clade>
+                                                              <clade>
+                                                                <taxonomy>
+                                                                  <id provider="uniprot">7245</id>
+                                                                  <code>DROYA</code>
+                                                                  <scientific_name>Drosophila yakuba</scientific_name>
+                                                                  <common_name>Fruit fly</common_name>
+                                                                  <rank>species</rank>
+                                                                </taxonomy>
+                                                              </clade>
                                                             </clade>
                                                             <clade>
                                                               <taxonomy>
-                                                                <id provider="uniprot">7240</id>
-                                                                <code>DROSI</code>
-                                                                <scientific_name>Drosophila simulans</scientific_name>
+                                                                <id provider="uniprot">7220</id>
+                                                                <code>DROER</code>
+                                                                <scientific_name>Drosophila erecta</scientific_name>
                                                                 <common_name>Fruit fly</common_name>
                                                                 <rank>species</rank>
                                                               </taxonomy>
@@ -1324,20 +1384,68 @@
                                                           </clade>
                                                           <clade>
                                                             <taxonomy>
-                                                              <id provider="uniprot">7227</id>
-                                                              <code>DROME</code>
-                                                              <scientific_name>Drosophila melanogaster</scientific_name>
+                                                              <id provider="uniprot">7217</id>
+                                                              <code>DROAN</code>
+                                                              <scientific_name>Drosophila ananassae</scientific_name>
                                                               <common_name>Fruit fly</common_name>
                                                               <rank>species</rank>
-                                                              <uri>http://www.snv.jussieu.fr/bmedia/ATP/images/dro-mal1.jpg</uri>
                                                             </taxonomy>
                                                           </clade>
                                                         </clade>
                                                         <clade>
                                                           <taxonomy>
-                                                            <id provider="uniprot">7245</id>
-                                                            <code>DROYA</code>
-                                                            <scientific_name>Drosophila yakuba</scientific_name>
+                                                            <id provider="uniprot">32358</id>
+                                                            <scientific_name>pseudoobscura subgroup</scientific_name>
+                                                          </taxonomy>
+                                                          <clade>
+                                                            <taxonomy>
+                                                              <id provider="uniprot">7234</id>
+                                                              <code>DROPE</code>
+                                                              <scientific_name>Drosophila persimilis</scientific_name>
+                                                              <common_name>Fruit fly</common_name>
+                                                              <rank>species</rank>
+                                                            </taxonomy>
+                                                          </clade>
+                                                          <clade>
+                                                            <taxonomy>
+                                                              <id provider="uniprot">46245</id>
+                                                              <code>DROPS</code>
+                                                              <scientific_name>Drosophila pseudoobscura pseudoobscura</scientific_name>
+                                                              <common_name>Fruit fly</common_name>
+                                                              <rank>subspecies</rank>
+                                                              <uri>http://www.naylorgallery.com/wp-content/uploads/fly4stack01small.jpg</uri>
+                                                            </taxonomy>
+                                                          </clade>
+                                                        </clade>
+                                                      </clade>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">7260</id>
+                                                          <code>DROWI</code>
+                                                          <scientific_name>Drosophila willistoni</scientific_name>
+                                                          <common_name>Fruit fly</common_name>
+                                                          <rank>species</rank>
+                                                        </taxonomy>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <name>Drosophila subgenus &amp; Hawaiian Drosophila</name>
+                                                      <clade>
+                                                        <name>Drosophila subgenus</name>
+                                                        <clade>
+                                                          <taxonomy>
+                                                            <id provider="uniprot">7230</id>
+                                                            <code>DROMO</code>
+                                                            <scientific_name>Drosophila mojavensis</scientific_name>
+                                                            <common_name>Fruit fly</common_name>
+                                                            <rank>species</rank>
+                                                          </taxonomy>
+                                                        </clade>
+                                                        <clade>
+                                                          <taxonomy>
+                                                            <id provider="uniprot">7244</id>
+                                                            <code>DROVI</code>
+                                                            <scientific_name>Drosophila virilis</scientific_name>
                                                             <common_name>Fruit fly</common_name>
                                                             <rank>species</rank>
                                                           </taxonomy>
@@ -1345,368 +1453,394 @@
                                                       </clade>
                                                       <clade>
                                                         <taxonomy>
-                                                          <id provider="uniprot">7220</id>
-                                                          <code>DROER</code>
-                                                          <scientific_name>Drosophila erecta</scientific_name>
+                                                          <id provider="uniprot">7222</id>
+                                                          <code>DROGR</code>
+                                                          <scientific_name>Drosophila grimshawi</scientific_name>
                                                           <common_name>Fruit fly</common_name>
+                                                          <synonym>Idiomyia grimshawi</synonym>
                                                           <rank>species</rank>
+                                                          <uri>http://www.pacificislandbooks.com/fruitf~1.jpg</uri>
                                                         </taxonomy>
                                                       </clade>
-                                                    </clade>
-                                                    <clade>
-                                                      <taxonomy>
-                                                        <id provider="uniprot">7217</id>
-                                                        <code>DROAN</code>
-                                                        <scientific_name>Drosophila ananassae</scientific_name>
-                                                        <common_name>Fruit fly</common_name>
-                                                        <rank>species</rank>
-                                                      </taxonomy>
                                                     </clade>
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">32358</id>
-                                                      <scientific_name>pseudoobscura subgroup</scientific_name>
+                                                      <id provider="uniprot">7157</id>
+                                                      <scientific_name>Culicidae</scientific_name>
+                                                      <common_name>mosquitos</common_name>
+                                                      <rank>family</rank>
                                                     </taxonomy>
                                                     <clade>
                                                       <taxonomy>
-                                                        <id provider="uniprot">7234</id>
-                                                        <code>DROPE</code>
-                                                        <scientific_name>Drosophila persimilis</scientific_name>
-                                                        <common_name>Fruit fly</common_name>
+                                                        <id provider="uniprot">7159</id>
+                                                        <code>AEDAE</code>
+                                                        <scientific_name>Aedes aegypti</scientific_name>
+                                                        <common_name>Yellowfever mosquito</common_name>
+                                                        <synonym>Culex aegypti</synonym>
                                                         <rank>species</rank>
+                                                        <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Aedes_aegypti_biting_human.jpg/757px-Aedes_aegypti_biting_human.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
                                                     <clade>
                                                       <taxonomy>
-                                                        <id provider="uniprot">46245</id>
-                                                        <code>DROPS</code>
-                                                        <scientific_name>Drosophila pseudoobscura pseudoobscura</scientific_name>
-                                                        <common_name>Fruit fly</common_name>
-                                                        <rank>subspecies</rank>
-                                                        <uri>http://www.naylorgallery.com/wp-content/uploads/fly4stack01small.jpg</uri>
+                                                        <id provider="uniprot">7165</id>
+                                                        <code>ANOGA</code>
+                                                        <scientific_name>Anopheles gambiae</scientific_name>
+                                                        <common_name>African malaria mosquito</common_name>
+                                                        <rank>species</rank>
+                                                        <uri>http://upload.wikimedia.org/wikipedia/commons/e/e9/Anopheles_gambiae_Mosquito.jpg</uri>
+                                                      </taxonomy>
+                                                    </clade>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">7175</id>
+                                                        <code>CULPI</code>
+                                                        <scientific_name>Culex pipiens</scientific_name>
+                                                        <common_name>House mosquito</common_name>
+                                                        <rank>species</rank>
+                                                        <uri>http://upload.wikimedia.org/wikipedia/commons/3/35/Culex_pipiens_2007-1.jpg</uri>
                                                       </taxonomy>
                                                     </clade>
                                                   </clade>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">7260</id>
-                                                    <code>DROWI</code>
-                                                    <scientific_name>Drosophila willistoni</scientific_name>
-                                                    <common_name>Fruit fly</common_name>
+                                                    <id provider="uniprot">7091</id>
+                                                    <code>BOMMO</code>
+                                                    <scientific_name>Bombyx mori</scientific_name>
+                                                    <common_name>Silk moth</common_name>
                                                     <rank>species</rank>
+                                                    <uri>http://lepidoptera.butterflyhouse.com.au/bomb/mori5.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
                                               <clade>
-                                                <name>Drosophila subgenus &amp; Hawaiian Drosophila</name>
+                                                <taxonomy>
+                                                  <id provider="uniprot">7400</id>
+                                                  <scientific_name>Apocrita</scientific_name>
+                                                  <common_name>wasps, ants and bees</common_name>
+                                                </taxonomy>
                                                 <clade>
-                                                  <name>Drosophila subgenus</name>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">7434</id>
+                                                    <scientific_name>Aculeata</scientific_name>
+                                                    <rank>suborder</rank>
+                                                  </taxonomy>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">7230</id>
-                                                      <code>DROMO</code>
-                                                      <scientific_name>Drosophila mojavensis</scientific_name>
-                                                      <common_name>Fruit fly</common_name>
+                                                      <id provider="uniprot">7460</id>
+                                                      <code>APIME</code>
+                                                      <scientific_name>Apis mellifera</scientific_name>
+                                                      <common_name>Honeybee</common_name>
                                                       <rank>species</rank>
+                                                      <uri>http://www.floridanature.org/photos/Apis_mellifera_6b_&amp;_Trifolium_sp.,_TBP,_Tallahassee,_20030323.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">7244</id>
-                                                      <code>DROVI</code>
-                                                      <scientific_name>Drosophila virilis</scientific_name>
-                                                      <common_name>Fruit fly</common_name>
+                                                      <id provider="uniprot">12957</id>
+                                                      <code>ATTCE</code>
+                                                      <scientific_name>Atta cephalotes</scientific_name>
+                                                      <authority>Linnaeus, 1758</authority>
+                                                      <common_name>Leafcutter ant</common_name>
                                                       <rank>species</rank>
+                                                      <uri>http://upload.wikimedia.org/wikipedia/commons/4/4e/Leaf-cutting_ant.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">7222</id>
-                                                    <code>DROGR</code>
-                                                    <scientific_name>Drosophila grimshawi</scientific_name>
-                                                    <common_name>Fruit fly</common_name>
-                                                    <synonym>Idiomyia grimshawi</synonym>
+                                                    <id provider="uniprot">7425</id>
+                                                    <code>NASVI</code>
+                                                    <scientific_name>Nasonia vitripennis</scientific_name>
+                                                    <common_name>Parasitic wasp</common_name>
                                                     <rank>species</rank>
-                                                    <uri>http://www.pacificislandbooks.com/fruitf~1.jpg</uri>
+                                                    <uri>http://www.freshpond.org/nasonia.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
                                             </clade>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">7157</id>
-                                                <scientific_name>Culicidae</scientific_name>
-                                                <common_name>mosquitos</common_name>
-                                                <rank>family</rank>
+                                                <id provider="uniprot">7070</id>
+                                                <code>TRICA</code>
+                                                <scientific_name>Tribolium castaneum</scientific_name>
+                                                <common_name>Red flour beetle</common_name>
+                                                <rank>species</rank>
+                                                <uri>http://upload.wikimedia.org/wikipedia/commons/d/da/Tribolium_castaneum.jpg</uri>
                                               </taxonomy>
-                                              <clade>
-                                                <taxonomy>
-                                                  <id provider="uniprot">7159</id>
-                                                  <code>AEDAE</code>
-                                                  <scientific_name>Aedes aegypti</scientific_name>
-                                                  <common_name>Yellowfever mosquito</common_name>
-                                                  <synonym>Culex aegypti</synonym>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Aedes_aegypti_biting_human.jpg/757px-Aedes_aegypti_biting_human.jpg</uri>
-                                                </taxonomy>
-                                              </clade>
-                                              <clade>
-                                                <taxonomy>
-                                                  <id provider="uniprot">7165</id>
-                                                  <code>ANOGA</code>
-                                                  <scientific_name>Anopheles gambiae</scientific_name>
-                                                  <common_name>African malaria mosquito</common_name>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/e/e9/Anopheles_gambiae_Mosquito.jpg</uri>
-                                                </taxonomy>
-                                              </clade>
-                                              <clade>
-                                                <taxonomy>
-                                                  <id provider="uniprot">7175</id>
-                                                  <code>CULPI</code>
-                                                  <scientific_name>Culex pipiens</scientific_name>
-                                                  <common_name>House mosquito</common_name>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Culex_pipiens_2007-1.jpg/628px-Culex_pipiens_2007-1.jpg</uri>
-                                                </taxonomy>
-                                              </clade>
                                             </clade>
                                           </clade>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">7091</id>
-                                              <code>BOMMO</code>
-                                              <scientific_name>Bombyx mori</scientific_name>
-                                              <common_name>Silk moth</common_name>
-                                              <rank>species</rank>
-                                              <uri>http://lepidoptera.butterflyhouse.com.au/bomb/mori5.jpg</uri>
+                                              <id provider="uniprot">33342</id>
+                                              <scientific_name>Paraneoptera</scientific_name>
+                                              <rank>infraclass</rank>
                                             </taxonomy>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">7524</id>
+                                                <scientific_name>Hemiptera</scientific_name>
+                                                <rank>order</rank>
+                                              </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">7029</id>
+                                                  <code>ACYPI</code>
+                                                  <scientific_name>Acyrthosiphon pisum</scientific_name>
+                                                  <common_name>Pea aphid</common_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://www.agroatlas.ru/content/pests/Acyrthosiphon_pisum/Acyrthosiphon_pisum.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">13249</id>
+                                                  <code>RHOPR</code>
+                                                  <scientific_name>Rhodnius prolixus</scientific_name>
+                                                  <common_name>Triatomid bug</common_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/b/b9/Rhodnius_prolixus.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">121224</id>
+                                                <code>PEDHC</code>
+                                                <scientific_name>Pediculus humanus subsp. corporis</scientific_name>
+                                                <common_name>Body louse</common_name>
+                                                <rank>subspecies</rank>
+                                                <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Body_lice.jpg/436px-Body_lice.jpg</uri>
+                                              </taxonomy>
+                                            </clade>
                                           </clade>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">7400</id>
-                                            <scientific_name>Apocrita</scientific_name>
-                                            <common_name>wasps, ants and bees</common_name>
+                                            <id provider="uniprot">568273</id>
+                                            <scientific_name>Machilis germanica</scientific_name>
+                                            <rank>species</rank>
+                                            <uri>http://www.naturefg.com/images/c-animals/machilis.jpg</uri>
                                           </taxonomy>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">7434</id>
-                                              <scientific_name>Aculeata</scientific_name>
-                                              <rank>suborder</rank>
-                                            </taxonomy>
-                                            <clade>
-                                              <taxonomy>
-                                                <id provider="uniprot">7460</id>
-                                                <code>APIME</code>
-                                                <scientific_name>Apis mellifera</scientific_name>
-                                                <common_name>Honeybee</common_name>
-                                                <rank>species</rank>
-                                                <uri>http://www.floridanature.org/photos/Apis_mellifera_6b_&amp;_Trifolium_sp.,_TBP,_Tallahassee,_20030323.jpg</uri>
-                                              </taxonomy>
-                                            </clade>
-                                            <clade>
-                                              <taxonomy>
-                                                <id provider="uniprot">12957</id>
-                                                <code>ATTCE</code>
-                                                <scientific_name>Atta cephalotes</scientific_name>
-                                                <authority>Linnaeus, 1758</authority>
-                                                <common_name>Leafcutter ant</common_name>
-                                                <rank>species</rank>
-                                                <uri>http://upload.wikimedia.org/wikipedia/commons/4/4e/Leaf-cutting_ant.jpg</uri>
-                                              </taxonomy>
-                                            </clade>
-                                          </clade>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">7425</id>
-                                              <code>NASVI</code>
-                                              <scientific_name>Nasonia vitripennis</scientific_name>
-                                              <common_name>Parasitic wasp</common_name>
-                                              <rank>species</rank>
-                                              <uri>http://www.freshpond.org/nasonia.jpg</uri>
-                                            </taxonomy>
-                                          </clade>
                                         </clade>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">7070</id>
-                                          <code>TRICA</code>
-                                          <scientific_name>Tribolium castaneum</scientific_name>
-                                          <common_name>Red flour beetle</common_name>
+                                          <id provider="uniprot">383857</id>
+                                          <scientific_name>Campodea fragilis</scientific_name>
                                           <rank>species</rank>
-                                          <uri>http://www.ars.usda.gov/sp2UserFiles/Place/54300530/proj/tribolium/rfb.jpg</uri>
+                                          <uri>http://images.wikia.com/insect/images/3/3c/Campodea_fragilis.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">33342</id>
-                                        <scientific_name>Paraneoptera</scientific_name>
-                                        <rank>infraclass</rank>
+                                        <id provider="uniprot">6657</id>
+                                        <scientific_name>Crustacea</scientific_name>
+                                        <rank>subphylum</rank>
                                       </taxonomy>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">7524</id>
-                                          <scientific_name>Hemiptera</scientific_name>
-                                          <rank>order</rank>
+                                          <id provider="uniprot">6658</id>
+                                          <scientific_name>Branchiopoda</scientific_name>
+                                          <rank>class</rank>
                                         </taxonomy>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">7029</id>
-                                            <code>ACYPI</code>
-                                            <scientific_name>Acyrthosiphon pisum</scientific_name>
-                                            <common_name>Pea aphid</common_name>
+                                            <id provider="uniprot">6661</id>
+                                            <code>ARTSF</code>
+                                            <scientific_name>Artemia franciscana</scientific_name>
+                                            <common_name>Brine shrimp</common_name>
+                                            <synonym>Artemia sanfranciscana</synonym>
                                             <rank>species</rank>
-                                            <uri>http://www.agroatlas.ru/content/pests/Acyrthosiphon_pisum/Acyrthosiphon_pisum.jpg</uri>
+                                            <uri>http://www.aslo.org/photopost/data/518/medium/8Brine_shrimp.jpg</uri>
                                           </taxonomy>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">13249</id>
-                                            <code>RHOPR</code>
-                                            <scientific_name>Rhodnius prolixus</scientific_name>
-                                            <common_name>Triatomid bug</common_name>
+                                            <id provider="uniprot">6669</id>
+                                            <code>DAPPU</code>
+                                            <scientific_name>Daphnia pulex</scientific_name>
+                                            <common_name>Water flea</common_name>
                                             <rank>species</rank>
-                                            <uri>http://upload.wikimedia.org/wikipedia/commons/b/b9/Rhodnius_prolixus.jpg</uri>
+                                            <uri>http://www.microscopy-uk.org.uk/mag/imgjun99/daphni.jpg</uri>
                                           </taxonomy>
                                         </clade>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">121224</id>
-                                          <code>PEDHC</code>
-                                          <scientific_name>Pediculus humanus subsp. corporis</scientific_name>
-                                          <common_name>Body louse</common_name>
-                                          <rank>subspecies</rank>
-                                          <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Body_lice.jpg/436px-Body_lice.jpg</uri>
+                                          <id provider="uniprot">6706</id>
+                                          <code>HOMAM</code>
+                                          <scientific_name>Homarus americanus</scientific_name>
+                                          <common_name>American lobster</common_name>
+                                          <uri>http://upload.wikimedia.org/wikipedia/commons/5/5e/Lobster.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">6658</id>
-                                      <scientific_name>Branchiopoda</scientific_name>
-                                      <rank>class</rank>
+                                      <id provider="uniprot">61985</id>
+                                      <scientific_name>Myriapoda</scientific_name>
+                                      <rank>subphylum</rank>
                                     </taxonomy>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">6661</id>
-                                        <code>ARTSF</code>
-                                        <scientific_name>Artemia franciscana</scientific_name>
-                                        <common_name>Brine shrimp</common_name>
-                                        <synonym>Artemia sanfranciscana</synonym>
-                                        <rank>species</rank>
-                                        <uri>http://www.alireza-asem.ir/images/Artemia.jpg</uri>
+                                        <id provider="uniprot">7553</id>
+                                        <scientific_name>Diplopoda</scientific_name>
+                                        <common_name>millipedes</common_name>
+                                        <rank>class</rank>
                                       </taxonomy>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">118561</id>
+                                          <scientific_name>Helminthomorpha</scientific_name>
+                                          <rank>subclass</rank>
+                                        </taxonomy>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">364406</id>
+                                            <code>ANTGC</code>
+                                            <scientific_name>Antrokoreana gracilipes</scientific_name>
+                                            <common_name>Troglobite millipede</common_name>
+                                            <rank>species</rank>
+                                            <uri>http://www.gwbaekdu.com/data/2d/%EA%B3%A1%EC%84%9D%EA%B5%B4_4(%EB%93%B1%EC%A4%84%EA%B5%B4%EB%85%B8%EB%9E%98%EA%B8%B0).jpg</uri>
+                                          </taxonomy>
+                                        </clade>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">174156</id>
+                                            <code>NARAN</code>
+                                            <scientific_name>Narceus annularis</scientific_name>
+                                            <common_name>Millipede</common_name>
+                                            <rank>species</rank>
+                                            <uri>http://i.pbase.com/g4/59/68959/2/59864073.narceus0705062large.jpg</uri>
+                                          </taxonomy>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">52428</id>
+                                          <scientific_name>Polyxenus lagurus</scientific_name>
+                                          <common_name>bristly millipede</common_name>
+                                          <rank>species</rank>
+                                          <uri>http://upload.wikimedia.org/wikipedia/commons/5/54/Polyxenus.lagurus.1.jpg</uri>
+                                        </taxonomy>
+                                      </clade>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">6669</id>
-                                        <code>DAPPU</code>
-                                        <scientific_name>Daphnia pulex</scientific_name>
-                                        <common_name>Water flea</common_name>
-                                        <rank>species</rank>
-                                        <uri>http://www.microscopy-uk.org.uk/mag/imgjun99/daphni.jpg</uri>
+                                        <id provider="uniprot">7540</id>
+                                        <scientific_name>Chilopoda</scientific_name>
+                                        <common_name>centipedes</common_name>
+                                        <rank>class</rank>
                                       </taxonomy>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">29022</id>
+                                          <code>SCUCO</code>
+                                          <scientific_name>Scutigera coleoptrata</scientific_name>
+                                          <common_name>House centipede</common_name>
+                                          <rank>species</rank>
+                                          <uri>http://upload.wikimedia.org/wikipedia/commons/1/14/Scutigera_coleoptrata.JPG</uri>
+                                        </taxonomy>
+                                      </clade>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">126957</id>
+                                          <code>STRMM</code>
+                                          <scientific_name>Strigamia maritima</scientific_name>
+                                          <common_name>European centipede</common_name>
+                                          <synonym>Geophilus maritimus</synonym>
+                                          <rank>species</rank>
+                                          <uri>http://images.marinespecies.org/resized/22703_strigamia-maritima-male-loch-linnhe-scotland.jpg</uri>
+                                        </taxonomy>
+                                      </clade>
                                     </clade>
                                   </clade>
                                 </clade>
                                 <clade>
                                   <taxonomy>
-                                    <id provider="uniprot">61985</id>
-                                    <scientific_name>Myriapoda</scientific_name>
+                                    <id provider="uniprot">6843</id>
+                                    <scientific_name>Chelicerata</scientific_name>
                                     <rank>subphylum</rank>
                                   </taxonomy>
+                                  <reference doi="10.1016/j.ympev.2009.08.014">
+                                    <desc>A 454 sequencing approach for large scale phylogenomic analysis of the common emperor scorpion (Pandinus imperator)</desc>
+                                  </reference>
+                                  <reference>
+                                  </reference>
+                                  <reference>
+                                  </reference>
+                                  <reference>
+                                  </reference>
                                   <clade>
+                                    <name>Arachnida &amp; Merostomata</name>
                                     <taxonomy>
-                                      <id provider="uniprot">7553</id>
-                                      <scientific_name>Diplopoda</scientific_name>
-                                      <common_name>millipedes</common_name>
-                                      <rank>class</rank>
+                                      <id>Sea spider</id>
                                     </taxonomy>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">118561</id>
-                                        <scientific_name>Helminthomorpha</scientific_name>
-                                        <rank>subclass</rank>
+                                        <id provider="uniprot">6854</id>
+                                        <scientific_name>Arachnida</scientific_name>
+                                        <rank>class</rank>
                                       </taxonomy>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">364406</id>
-                                          <code>ANTGC</code>
-                                          <scientific_name>Antrokoreana gracilipes</scientific_name>
-                                          <common_name>Troglobite millipede</common_name>
+                                          <id provider="uniprot">6945</id>
+                                          <code>IXOSC</code>
+                                          <scientific_name>Ixodes scapularis</scientific_name>
+                                          <common_name>Black-legged tick</common_name>
+                                          <synonym>Deer tick</synonym>
                                           <rank>species</rank>
-                                          <uri>http://www.gwbaekdu.com/data/2d/%EA%B3%A1%EC%84%9D%EA%B5%B4_4(%EB%93%B1%EC%A4%84%EA%B5%B4%EB%85%B8%EB%9E%98%EA%B8%B0).jpg</uri>
+                                          <uri>http://upload.wikimedia.org/wikipedia/commons/8/8c/Deertick.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">174156</id>
-                                          <code>NARAN</code>
-                                          <scientific_name>Narceus annularis</scientific_name>
-                                          <common_name>Millipede</common_name>
+                                          <id provider="uniprot">34649</id>
+                                          <code>MESMA</code>
+                                          <scientific_name>Mesobuthus martensii</scientific_name>
+                                          <authority>Karsch, 1879</authority>
+                                          <common_name>Manchurian scorpion</common_name>
+                                          <synonym>Buthus martensi</synonym>
                                           <rank>species</rank>
-                                          <uri>http://i.pbase.com/g4/59/68959/2/59864073.narceus0705062large.jpg</uri>
+                                          <uri>http://www.ntnu.no/ub/scorpion-files/m_martensii1.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">52428</id>
-                                        <scientific_name>Polyxenus lagurus</scientific_name>
-                                        <common_name>bristly millipede</common_name>
+                                        <id provider="uniprot">6850</id>
+                                        <code>LIMPO</code>
+                                        <scientific_name>Limulus polyphemus</scientific_name>
+                                        <common_name>Atlantic horseshoe crab</common_name>
                                         <rank>species</rank>
-                                        <uri>http://upload.wikimedia.org/wikipedia/commons/5/54/Polyxenus.lagurus.1.jpg</uri>
+                                        <uri>http://www.biopix.eu/photosmedium/Limulus%20polyphemus%2000008.JPG</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">7540</id>
-                                      <scientific_name>Chilopoda</scientific_name>
-                                      <common_name>centipedes</common_name>
-                                      <rank>class</rank>
+                                      <id provider="uniprot">258330</id>
+                                      <scientific_name>Ammothea hilgendorfi</scientific_name>
+                                      <rank>species</rank>
+                                      <uri>http://nathistoc.bio.uci.edu/Pycnogonida/DSCF0073b.jpg</uri>
                                     </taxonomy>
-                                    <clade>
-                                      <taxonomy>
-                                        <id provider="uniprot">29022</id>
-                                        <code>SCUCO</code>
-                                        <scientific_name>Scutigera coleoptrata</scientific_name>
-                                        <common_name>House centipede</common_name>
-                                        <rank>species</rank>
-                                        <uri>http://upload.wikimedia.org/wikipedia/commons/1/14/Scutigera_coleoptrata.JPG</uri>
-                                      </taxonomy>
-                                    </clade>
-                                    <clade>
-                                      <taxonomy>
-                                        <id provider="uniprot">126957</id>
-                                        <code>STRMM</code>
-                                        <scientific_name>Strigamia maritima</scientific_name>
-                                        <common_name>European centipede</common_name>
-                                        <synonym>Geophilus maritimus</synonym>
-                                        <rank>species</rank>
-                                        <uri>http://images.marinespecies.org/resized/22703_strigamia-maritima-male-loch-linnhe-scotland.jpg</uri>
-                                      </taxonomy>
-                                    </clade>
                                   </clade>
                                 </clade>
                               </clade>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">6945</id>
-                                  <code>IXOSC</code>
-                                  <scientific_name>Ixodes scapularis</scientific_name>
-                                  <common_name>Black-legged tick</common_name>
-                                  <synonym>Deer tick</synonym>
+                                  <id provider="uniprot">232323</id>
+                                  <code>HYPDU</code>
+                                  <scientific_name>Hypsibius dujardini</scientific_name>
+                                  <common_name>Water bear</common_name>
+                                  <synonym>Macrobiotus dujardini</synonym>
                                   <rank>species</rank>
-                                  <uri>http://upload.wikimedia.org/wikipedia/commons/8/8c/Deertick.jpg</uri>
+                                  <uri>http://content62.eol.org/content/2013/08/23/23/61018_580_360.jpg</uri>
                                 </taxonomy>
                               </clade>
                             </clade>
