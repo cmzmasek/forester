@@ -25,8 +25,9 @@
 
 package org.forester.ws.seqdb;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,9 +52,9 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public final static Pattern  PharmGKB_PATTERN  = Pattern.compile( "PharmGKB;\\s+([0-9A-Z]+);" );
     public final static Pattern  Reactome_PATTERN  = Pattern.compile( "Reactome;\\s+([0-9A-Z]+);\\s+([^\\.]+)" );
     private String               _ac;
-    private ArrayList<Accession> _cross_references;
+    private SortedSet<Accession> _cross_references;
     private String               _gene_name;
-    private List<GoTerm>         _go_terms;
+    private SortedSet<GoTerm>    _go_terms;
     private String               _name;
     private String               _os_scientific_name;
     private String               _symbol;
@@ -73,7 +74,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<Accession> getCrossReferences() {
+    public SortedSet<Accession> getCrossReferences() {
         return _cross_references;
     }
 
@@ -83,7 +84,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<GoTerm> getGoTerms() {
+    public SortedSet<GoTerm> getGoTerms() {
         return _go_terms;
     }
 
@@ -123,14 +124,14 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
 
     private void addCrossReference( final Accession accession ) {
         if ( _cross_references == null ) {
-            _cross_references = new ArrayList<Accession>();
+            _cross_references = new TreeSet<Accession>();
         }
         _cross_references.add( accession );
     }
 
     private void addGoTerm( final BasicGoTerm g ) {
         if ( _go_terms == null ) {
-            _go_terms = new ArrayList<GoTerm>();
+            _go_terms = new TreeSet<GoTerm>();
         }
         _go_terms.add( g );
     }
@@ -290,7 +291,7 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<Annotation> getAnnotations() {
+    public SortedSet<Annotation> getAnnotations() {
         return null;
     }
 }

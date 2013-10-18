@@ -25,7 +25,7 @@
 
 package org.forester.ws.seqdb;
 
-import java.util.List;
+import java.util.SortedSet;
 
 import org.forester.go.GoTerm;
 import org.forester.phylogeny.data.Accession;
@@ -37,9 +37,9 @@ public interface SequenceDatabaseEntry {
 
     public String getGeneName();
 
-    public List<GoTerm> getGoTerms();
+    public SortedSet<GoTerm> getGoTerms();
 
-    public List<Annotation> getAnnotations();
+    public SortedSet<Annotation> getAnnotations();
 
     public String getProvider();
 
@@ -53,5 +53,5 @@ public interface SequenceDatabaseEntry {
 
     public boolean isEmpty();
 
-    public List<Accession> getCrossReferences();
+    public SortedSet<Accession> getCrossReferences();
 }

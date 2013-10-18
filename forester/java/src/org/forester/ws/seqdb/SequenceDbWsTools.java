@@ -54,35 +54,15 @@ import org.forester.util.SequenceAccessionTools;
 
 public final class SequenceDbWsTools {
 
-    public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
-    public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
     public final static String   BASE_UNIPROT_URL        = "http://www.uniprot.org/";
+    public final static int      DEFAULT_LINES_TO_RETURN = 4000;
     //public final static String   EMBL_DBS_EMBL           = "embl";
     public final static String   EMBL_DBS_REFSEQ_N       = "refseqn";
     public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
+    public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
+    public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
     private final static boolean DEBUG                   = true;
     private final static String  URL_ENC                 = "UTF-8";
-    public final static int      DEFAULT_LINES_TO_RETURN = 4000;
-
-    final static String extractFrom( final String target, final String a ) {
-        final int i_a = target.indexOf( a );
-        return target.substring( i_a + a.length() ).trim();
-    }
-
-    final static String extractFromTo( final String target, final String a, final String b ) {
-        final int i_a = target.indexOf( a );
-        final int i_b = target.indexOf( b );
-        if ( ( i_a < 0 ) || ( i_b < i_a ) ) {
-            throw new IllegalArgumentException( "attempt to extract from \"" + target + "\" between \"" + a
-                    + "\" and \"" + b + "\"" );
-        }
-        return target.substring( i_a + a.length(), i_b ).trim();
-    }
-
-    final static String extractTo( final String target, final String b ) {
-        final int i_b = target.indexOf( b );
-        return target.substring( 0, i_b ).trim();
-    }
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
@@ -142,22 +122,40 @@ public final class SequenceDbWsTools {
         return null;
     }
 
+    public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc ) throws IOException {
+        return obtainEmblEntry( acc, DEFAULT_LINES_TO_RETURN );
+    }
+
     public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc, final int max_lines_to_return )
             throws IOException {
         final List<String> lines = queryEmblDb( acc, max_lines_to_return );
         return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
     }
 
-    public static SequenceDatabaseEntry obtainEmblEntry( final Accession acc ) throws IOException {
-        return obtainEmblEntry( acc, DEFAULT_LINES_TO_RETURN );
+    public static SequenceDatabaseEntry obtainEntry( final String acc_str ) throws IOException {
+        if ( ForesterUtil.isEmpty( acc_str ) ) {
+            throw new IllegalArgumentException( "cannot not extract sequence db accessor from null or empty string" );
+        }
+        final Accession acc = SequenceAccessionTools.parseAccessorFromString( acc_str );
+        if ( acc == null ) {
+            throw new IllegalArgumentException( "could not extract acceptable sequence db accessor from \"" + acc_str
+                    + "\"" );
+        }
+        if ( acc.getSource().equals( Source.REFSEQ.toString() ) || acc.getSource().equals( Source.EMBL.toString() )
+                || acc.getSource().equals( Source.NCBI.toString() ) ) {
+            return obtainEmblEntry( acc, DEFAULT_LINES_TO_RETURN );
+        }
+        else if ( acc.getSource().equals( Source.UNIPROT.toString() ) ) {
+            return obtainUniProtEntry( acc.getValue(), DEFAULT_LINES_TO_RETURN );
+        }
+        else {
+            throw new IllegalArgumentException( "don't know how to handle request for source \"" + acc.getSource()
+                    + "\"" );
+        }
     }
 
-    public final static Accession obtainSeqAccession( final PhylogenyNode node ) {
-        Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
-        if ( !isAccessionAcceptable( acc ) ) {
-            acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
-        }
-        return acc;
+    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc ) throws IOException {
+        return obtainRefSeqEntryFromEmbl( acc, DEFAULT_LINES_TO_RETURN );
     }
 
     public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc, final int max_lines_to_return )
@@ -166,8 +164,12 @@ public final class SequenceDbWsTools {
         return EbiDbEntry.createInstanceFromPlainTextForRefSeq( lines );
     }
 
-    public static SequenceDatabaseEntry obtainRefSeqEntryFromEmbl( final Accession acc ) throws IOException {
-        return obtainRefSeqEntryFromEmbl( acc, DEFAULT_LINES_TO_RETURN );
+    public final static Accession obtainSeqAccession( final PhylogenyNode node ) {
+        Accession acc = SequenceAccessionTools.obtainFromSeqAccession( node );
+        if ( !isAccessionAcceptable( acc ) ) {
+            acc = SequenceAccessionTools.obtainAccessorFromDataFields( node );
+        }
+        return acc;
     }
 
     public final static void obtainSeqInformation( final boolean allow_to_set_taxonomic_data,
@@ -191,10 +193,6 @@ public final class SequenceDbWsTools {
         obtainSeqInformation( allow_to_set_taxonomic_data, DEFAULT_LINES_TO_RETURN, not_found, node );
     }
 
-    public final static void obtainSeqInformation( final PhylogenyNode node ) throws IOException {
-        obtainSeqInformation( true, DEFAULT_LINES_TO_RETURN, new TreeSet<String>(), node );
-    }
-
     public final static SortedSet<String> obtainSeqInformation( final Phylogeny phy,
                                                                 final boolean ext_nodes_only,
                                                                 final boolean allow_to_set_taxonomic_data,
@@ -209,14 +207,18 @@ public final class SequenceDbWsTools {
         return not_found;
     }
 
-    public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
-            throws IOException {
-        final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
-        return UniProtEntry.createInstanceFromPlainText( lines );
+    public final static void obtainSeqInformation( final PhylogenyNode node ) throws IOException {
+        obtainSeqInformation( true, DEFAULT_LINES_TO_RETURN, new TreeSet<String>(), node );
     }
 
     public static SequenceDatabaseEntry obtainUniProtEntry( final String query ) throws IOException {
         return obtainUniProtEntry( query, DEFAULT_LINES_TO_RETURN );
+    }
+
+    public static SequenceDatabaseEntry obtainUniProtEntry( final String query, final int max_lines_to_return )
+            throws IOException {
+        final List<String> lines = queryUniprot( "uniprot/" + query + ".txt", max_lines_to_return );
+        return UniProtEntry.createInstanceFromPlainText( lines );
     }
 
     public static List<String> queryDb( final String query, int max_lines_to_return, final String base_url )
@@ -255,13 +257,6 @@ public final class SequenceDbWsTools {
         return result;
     }
 
-    public static List<String> queryEmblDbForRefSeqEntry( final Accession id, final int max_lines_to_return )
-            throws IOException {
-        final StringBuilder url_sb = new StringBuilder();
-        url_sb.append( EMBL_REFSEQ );
-        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
-    }
-
     public static List<String> queryEmblDb( final Accession id, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
         //  url_sb.append( BASE_EMBL_DB_URL );
@@ -286,8 +281,35 @@ public final class SequenceDbWsTools {
         return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
     }
 
+    public static List<String> queryEmblDbForRefSeqEntry( final Accession id, final int max_lines_to_return )
+            throws IOException {
+        final StringBuilder url_sb = new StringBuilder();
+        url_sb.append( EMBL_REFSEQ );
+        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
+    }
+
     public static List<String> queryUniprot( final String query, final int max_lines_to_return ) throws IOException {
         return queryDb( query, max_lines_to_return, BASE_UNIPROT_URL );
+    }
+
+    final static String extractFrom( final String target, final String a ) {
+        final int i_a = target.indexOf( a );
+        return target.substring( i_a + a.length() ).trim();
+    }
+
+    final static String extractFromTo( final String target, final String a, final String b ) {
+        final int i_a = target.indexOf( a );
+        final int i_b = target.indexOf( b );
+        if ( ( i_a < 0 ) || ( i_b < i_a ) ) {
+            throw new IllegalArgumentException( "attempt to extract from \"" + target + "\" between \"" + a
+                    + "\" and \"" + b + "\"" );
+        }
+        return target.substring( i_a + a.length(), i_b ).trim();
+    }
+
+    final static String extractTo( final String target, final String b ) {
+        final int i_b = target.indexOf( b );
+        return target.substring( 0, i_b ).trim();
     }
 
     private static void addDataFromDbToNode( final boolean allow_to_set_taxonomic_data,

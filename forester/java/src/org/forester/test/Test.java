@@ -11051,8 +11051,7 @@ public final class Test {
 
     private static boolean testEbiEntryRetrieval() {
         try {
-            final SequenceDatabaseEntry entry = SequenceDbWsTools
-                    .obtainEmblEntry( new Accession( "AAK41263", Accession.Source.NCBI ) );
+            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainEntry( "AAK41263" );
             if ( !entry.getAccession().equals( "AAK41263" ) ) {
                 System.out.println( entry.getAccession() );
                 return false;
@@ -11078,12 +11077,102 @@ public final class Test {
                 System.out.println( entry.getTaxonomyIdentifier() );
                 return false;
             }
-            if ( !entry.getAnnotations().get( 0 ).getRefValue().equals( "3.2.1.33" ) ) {
-                System.out.println( entry.getAnnotations().get( 0 ).getRefValue() );
+            if ( !entry.getAnnotations().first().getRefValue().equals( "3.2.1.33" ) ) {
+                System.out.println( entry.getAnnotations().first().getRefValue() );
                 return false;
             }
-            if ( !entry.getAnnotations().get( 0 ).getRefSource().equals( "EC" ) ) {
-                System.out.println( entry.getAnnotations().get( 0 ).getRefSource() );
+            if ( !entry.getAnnotations().first().getRefSource().equals( "EC" ) ) {
+                System.out.println( entry.getAnnotations().first().getRefSource() );
+                return false;
+            }
+            if ( entry.getCrossReferences().size() != 5 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry( "ABJ16409" );
+            if ( !entry1.getAccession().equals( "ABJ16409" ) ) {
+                return false;
+            }
+            if ( !entry1.getTaxonomyScientificName().equals( "Felis catus" ) ) {
+                System.out.println( entry1.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry1.getSequenceName().equals( "Felis catus (domestic cat) partial BCL2" ) ) {
+                System.out.println( entry1.getSequenceName() );
+                return false;
+            }
+            if ( !entry1.getTaxonomyIdentifier().equals( "9685" ) ) {
+                System.out.println( entry1.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry1.getGeneName().equals( "BCL2" ) ) {
+                System.out.println( entry1.getGeneName() );
+                return false;
+            }
+            if ( entry1.getCrossReferences().size() != 6 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry( "NM_184234" );
+            if ( !entry2.getAccession().equals( "NM_184234" ) ) {
+                return false;
+            }
+            if ( !entry2.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
+                System.out.println( entry2.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry2.getSequenceName()
+                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
+                System.out.println( entry2.getSequenceName() );
+                return false;
+            }
+            if ( !entry2.getTaxonomyIdentifier().equals( "9606" ) ) {
+                System.out.println( entry2.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry2.getGeneName().equals( "RBM39" ) ) {
+                System.out.println( entry2.getGeneName() );
+                return false;
+            }
+            if ( entry2.getCrossReferences().size() != 3 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry3 = SequenceDbWsTools.obtainEntry( "HM043801" );
+            if ( !entry3.getAccession().equals( "HM043801" ) ) {
+                return false;
+            }
+            if ( !entry3.getTaxonomyScientificName().equals( "Bursaphelenchus xylophilus" ) ) {
+                System.out.println( entry3.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry3.getSequenceName().equals( "Bursaphelenchus xylophilus RAF gene, complete cds" ) ) {
+                System.out.println( entry3.getSequenceName() );
+                return false;
+            }
+            if ( !entry3.getTaxonomyIdentifier().equals( "6326" ) ) {
+                System.out.println( entry3.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry3.getSequenceSymbol().equals( "RAF" ) ) {
+                System.out.println( entry3.getSequenceSymbol() );
+                return false;
+            }
+            if ( !ForesterUtil.isEmpty( entry3.getGeneName() ) ) {
+                return false;
+            }
+            if ( entry3.getCrossReferences().size() != 8 ) {
+                return false;
+            }
+            //
+            //
+            final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
+            if ( !entry4.getAccession().equals( "AAA36557" ) ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
+            if ( !entry5.getAccession().equals( "HM043801" ) ) {
                 return false;
             }
         }

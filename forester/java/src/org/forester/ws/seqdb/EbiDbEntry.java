@@ -25,8 +25,9 @@
 
 package org.forester.ws.seqdb;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,11 +68,14 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final Pattern chromosome_PATTERN = Pattern.compile( "\\s+/chromosome=\"(\\w+)\"" );
         final Pattern map_PATTERN = Pattern.compile( "\\s+/map=\"([\\w+\\.])\"" );
         final Pattern gene_PATTERN = Pattern.compile( "\\s+/gene=\"(.+)\"" );
-        final Pattern mim_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
-        final Pattern taxon_xref_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
-        final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:(IP\\d+)\"" );
+        final Pattern mim_PATTERN = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
+        final Pattern taxon_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
+        final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:([A-Z0-9]+)\"" );
         final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
+        final Pattern hgnc_PATTERN = Pattern.compile( "\\s+/db_xref=\"HGNC:(\\d+)\"" );
+        final Pattern geneid_PATTERN = Pattern.compile( "\\s+/db_xref=\"GeneID:(\\d+)\"" );
         final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"([\\.\\-\\d]+)\"" );
+        final Pattern product_PATTERN = Pattern.compile( "\\s+/product=\"(\\w{1,10})\"" );
         final EbiDbEntry e = new EbiDbEntry();
         final StringBuilder def = new StringBuilder();
         boolean in_definition = false;
@@ -79,6 +83,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         boolean in_source = false;
         boolean in_gene = false;
         boolean in_cds = false;
+        boolean in_mrna = false;
         boolean in_protein = false;
         for( final String line : lines ) {
             if ( line.startsWith( "ACCESSION " ) ) {
@@ -159,6 +164,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 in_source = false;
                 in_gene = false;
                 in_cds = false;
+                in_mrna = false;
                 in_protein = false;
                 // in_def = false;
             }
@@ -169,42 +175,77 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 in_source = true;
                 in_gene = false;
                 in_cds = false;
+                in_mrna = false;
                 in_protein = false;
             }
             if ( in_features && ( line.startsWith( "     gene " ) || line.startsWith( "FT   gene " ) ) ) {
                 in_source = false;
                 in_gene = true;
                 in_cds = false;
+                in_mrna = false;
                 in_protein = false;
             }
             if ( in_features && ( line.startsWith( "     CDS " ) || line.startsWith( "FT   CDS " ) ) ) {
                 in_source = false;
                 in_gene = false;
                 in_cds = true;
+                in_mrna = false;
                 in_protein = false;
             }
             if ( in_features && ( line.startsWith( "     Protein " ) || line.startsWith( "FT   Protein " ) ) ) {
                 in_source = false;
                 in_gene = false;
                 in_cds = false;
+                in_mrna = false;
                 in_protein = true;
             }
+            if ( in_features && ( line.startsWith( "     mRNA " ) || line.startsWith( "FT   mRNA " ) ) ) {
+                in_source = false;
+                in_gene = false;
+                in_cds = false;
+                in_mrna = true;
+                in_protein = false;
+            }
             if ( in_source ) {
-                final Matcher m = taxon_xref_PATTERN.matcher( line );
+                final Matcher m = taxon_PATTERN.matcher( line );
                 if ( m.find() ) {
                     e.setTaxId( m.group( 1 ) );
                 }
             }
-            if ( in_protein || in_cds ) {
-                final Matcher m = ec_PATTERN.matcher( line );
-                if ( m.find() ) {
-                    e.addAnnotation( new Annotation( "EC", m.group( 1 ) ) );
+            if ( in_cds || in_gene ) {
+                final Matcher hgnc = hgnc_PATTERN.matcher( line );
+                if ( hgnc.find() ) {
+                    e.addCrossReference( new Accession( hgnc.group( 1 ), "hgnc" ) );
+                }
+                final Matcher geneid = geneid_PATTERN.matcher( line );
+                if ( geneid.find() ) {
+                    e.addCrossReference( new Accession( geneid.group( 1 ), "geneid" ) );
                 }
             }
-            if ( in_protein || in_cds || in_gene ) {
-                final Matcher m = gene_PATTERN.matcher( line );
-                if ( m.find() ) {
-                    e.setGeneName( m.group( 1 ) );
+            if ( in_protein || in_cds || in_gene || in_mrna ) {
+                final Matcher ec = ec_PATTERN.matcher( line );
+                if ( ec.find() ) {
+                    e.addAnnotation( new Annotation( "EC", ec.group( 1 ) ) );
+                }
+                final Matcher gene = gene_PATTERN.matcher( line );
+                if ( gene.find() ) {
+                    e.setGeneName( gene.group( 1 ) );
+                }
+                final Matcher uniprot = uniprot_PATTERN.matcher( line );
+                if ( uniprot.find() ) {
+                    e.addCrossReference( new Accession( uniprot.group( 1 ), "uniprot" ) );
+                }
+                final Matcher interpro = interpro_PATTERN.matcher( line );
+                if ( interpro.find() ) {
+                    e.addCrossReference( new Accession( interpro.group( 1 ), "interpro" ) );
+                }
+                final Matcher mim = mim_PATTERN.matcher( line );
+                if ( mim.find() ) {
+                    e.addCrossReference( new Accession( mim.group( 1 ), "mim" ) );
+                }
+                final Matcher product = product_PATTERN.matcher( line );
+                if ( product.find() ) {
+                    e.setSequenceSymbol( product.group( 1 ) );
                 }
             }
         }
@@ -222,15 +263,15 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
     // FIXME actually this is NCBI entry
     //http://www.ebi.ac.uk/Tools/dbfetch/dbfetch/emb/AAR37336/
-    private String           _pa;
-    private String           _de;
-    private String           _os;
-    private String           _tax_id;
-    private String           _symbol;
-    private String           _provider;
-    private List<Accession>  _cross_references;
-    private List<Annotation> _annotations;
-    private String           _gene_name;
+    private String                _pa;
+    private String                _de;
+    private String                _os;
+    private String                _tax_id;
+    private String                _symbol;
+    private String                _provider;
+    private SortedSet<Accession>  _cross_references;
+    private SortedSet<Annotation> _annotations;
+    private String                _gene_name;
 
     // TODO  PUBMED   15798186
     //TODO  (FEATURES) 
@@ -488,7 +529,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
 
     private void addCrossReference( final Accession accession ) {
         if ( _cross_references == null ) {
-            _cross_references = new ArrayList<Accession>();
+            _cross_references = new TreeSet<Accession>();
         }
         System.out.println( "XREF ADDED: " + accession );
         _cross_references.add( accession );
@@ -505,7 +546,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<Accession> getCrossReferences() {
+    public SortedSet<Accession> getCrossReferences() {
         return _cross_references;
     }
 
@@ -515,7 +556,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<GoTerm> getGoTerms() {
+    public SortedSet<GoTerm> getGoTerms() {
         return null;
     }
 
@@ -532,6 +573,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     @Override
     public String getSequenceSymbol() {
         return _symbol;
+    }
+
+    private void setSequenceSymbol( String symbol ) {
+        _symbol = symbol;
     }
 
     @Override
@@ -586,13 +631,13 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public List<Annotation> getAnnotations() {
+    public SortedSet<Annotation> getAnnotations() {
         return _annotations;
     }
 
     private void addAnnotation( final Annotation annotation ) {
         if ( _annotations == null ) {
-            _annotations = new ArrayList<Annotation>();
+            _annotations = new TreeSet<Annotation>();
         }
         _annotations.add( annotation );
     }
