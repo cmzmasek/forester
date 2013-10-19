@@ -1259,8 +1259,6 @@
                               </taxonomy>
                               <clade>
                                 <name>Onychophora &amp; Arthropoda</name>
-                                <taxonomy>
-                                </taxonomy>
                                 <reference doi="10.1073/pnas.1105499108">
                                   <desc>MicroRNAs and phylogenomics resolve the relationships of Tardigrada and suggest that velvet worms are the sister group of Arthropoda</desc>
                                 </reference>
@@ -4429,13 +4427,14 @@
                             </clade>
                             <clade>
                               <taxonomy>
-                                <id provider="uniprot">4641</id>
-                                <code>MUSAC</code>
-                                <scientific_name>Musa acuminata</scientific_name>
-                                <common_name>Banana</common_name>
-                                <synonym>Musa cavendishii</synonym>
-                                <rank>species</rank>
-                                <uri>http://upload.wikimedia.org/wikipedia/commons/f/fd/Musa_acuminata1.jpg</uri>
+                                <id provider="uniprot">214687</id>
+                                <code>MUSAM</code>
+                                <scientific_name>Musa acuminata subsp. malaccensis</scientific_name>
+                                <authority>(Ridl.) N.W.Simmonds</authority>
+                                <common_name>Wild banana</common_name>
+                                <synonym>Musa malaccensis</synonym>
+                                <rank>subspecies</rank>
+                                <uri>http://farm5.staticflickr.com/4009/4572831376_07ca3089d1_z.jpg</uri>
                               </taxonomy>
                             </clade>
                           </clade>
@@ -5003,10 +5002,6 @@
                   </taxonomy>
                   <clade>
                     <name>Labyrinthulomycetes &amp; Ochrophyta &amp; Oomycetes</name>
-                    <taxonomy>
-                    </taxonomy>
-                    <sequence>
-                    </sequence>
                     <clade>
                       <name>Ochrophyta &amp; Oomycetes</name>
                       <reference doi="10.1016/j.protis.2008.11.004">
@@ -5083,8 +5078,6 @@
                         </clade>
                         <clade>
                           <name>Pelagophyceae &amp; Phaeophyceae</name>
-                          <taxonomy>
-                          </taxonomy>
                           <reference doi="10.1128/AEM.06952-11">
                             <desc>Distribution patterns and phylogeny of marine stramenopiles in the north pacific ocean</desc>
                           </reference>
@@ -5315,11 +5308,34 @@
                 </clade>
                 <clade>
                   <taxonomy>
-                    <id provider="uniprot">5664</id>
-                    <code>LEIMA</code>
-                    <scientific_name>Leishmania major</scientific_name>
-                    <rank>species</rank>
+                    <id provider="uniprot">5658</id>
+                    <scientific_name>Leishmania</scientific_name>
+                    <rank>genus</rank>
                   </taxonomy>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">5664</id>
+                      <code>LEIMA</code>
+                      <scientific_name>Leishmania major</scientific_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">5671</id>
+                      <code>LEIIN</code>
+                      <scientific_name>Leishmania infantum</scientific_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">5660</id>
+                      <code>LEIBR</code>
+                      <scientific_name>Leishmania braziliensis</scientific_name>
+                      <rank>species</rank>
+                    </taxonomy>
+                  </clade>
                 </clade>
               </clade>
               <clade>
@@ -5581,10 +5597,10 @@
                   </clade>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">2234</id>
+                      <id provider="uniprot">224325</id>
                       <code>ARCFU</code>
-                      <scientific_name>Archaeoglobus fulgidus</scientific_name>
-                      <rank>species</rank>
+                      <scientific_name>Archaeoglobus fulgidus (strain ATCC 49558 / VC-16 / DSM 4304 / JCM 9628 / NBRC 100126)</scientific_name>
+                      <rank>strain</rank>
                     </taxonomy>
                   </clade>
                 </clade>
@@ -5917,8 +5933,9 @@
                       <taxonomy>
                         <id provider="uniprot">2287</id>
                         <code>SULSO</code>
-                        <scientific_name>Sulfolobus solfataricus</scientific_name>
-                        <rank>species</rank>
+                        <scientific_name>Sulfolobus solfataricus (strain ATCC 35092 / DSM 1617 / JCM 11322 / P2)</scientific_name>
+                        <synonym>Sulfolobus solfataricus P2</synonym>
+                        <rank>strain</rank>
                       </taxonomy>
                     </clade>
                   </clade>
@@ -6887,17 +6904,18 @@
                                     <name>b_136</name>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">1172</id>
-                                        <code>ANAVA</code>
-                                        <scientific_name>Anabaena variabilis</scientific_name>
-                                        <rank>species</rank>
+                                        <id provider="uniprot">240292</id>
+                                        <code>ANAVT</code>
+                                        <scientific_name>Anabaena variabilis (strain ATCC 29413 / PCC 7937)</scientific_name>
+                                        <synonym>Anabaena flos-aquae (strain IUCC 1444)</synonym>
+                                        <rank>strain</rank>
                                       </taxonomy>
                                     </clade>
                                     <clade>
                                       <taxonomy>
                                         <id provider="uniprot">28072</id>
                                         <code>NOSS7</code>
-                                        <scientific_name>Nostoc sp. (strain PCC 7524)</scientific_name>
+                                        <scientific_name>Nostoc sp. (strain ATCC 29411 / PCC 7524)</scientific_name>
                                         <rank>species</rank>
                                       </taxonomy>
                                     </clade>
@@ -6907,15 +6925,16 @@
                                       <id provider="uniprot">63737</id>
                                       <code>NOSP7</code>
                                       <scientific_name>Nostoc punctiforme (strain ATCC 29133 / PCC 73102)</scientific_name>
+                                      <rank>strain</rank>
                                     </taxonomy>
                                   </clade>
                                 </clade>
                                 <clade>
                                   <taxonomy>
-                                    <id provider="uniprot">155978</id>
-                                    <code>ACAMR</code>
-                                    <scientific_name>Acaryochloris marina</scientific_name>
-                                    <rank>species</rank>
+                                    <id provider="uniprot">329726</id>
+                                    <code>ACAM1</code>
+                                    <scientific_name>Acaryochloris marina (strain MBIC 11017</scientific_name>
+                                    <rank>strain</rank>
                                   </taxonomy>
                                 </clade>
                               </clade>
@@ -6952,10 +6971,9 @@
                             </clade>
                             <clade>
                               <taxonomy>
-                                <id provider="uniprot">1148</id>
+                                <id provider="uniprot">1111708</id>
                                 <code>SYNY3</code>
-                                <scientific_name>Synechocystis sp. (strain PCC 6803)</scientific_name>
-                                <rank>species</rank>
+                                <scientific_name>Synechocystis sp. (strain PCC 6803 / Kazusa)</scientific_name>
                               </taxonomy>
                             </clade>
                           </clade>
@@ -7784,10 +7802,10 @@
       </clade>
       <clade>
         <taxonomy>
-          <id provider="uniprot">63363</id>
+          <id provider="uniprot">224324</id>
           <code>AQUAE</code>
-          <scientific_name>Aquifex aeolicus</scientific_name>
-          <rank>species</rank>
+          <scientific_name>Aquifex aeolicus (strain VF5)</scientific_name>
+          <rank>strain</rank>
         </taxonomy>
       </clade>
     </clade>
