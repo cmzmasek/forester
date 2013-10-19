@@ -71,9 +71,12 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final Pattern mim_PATTERN = Pattern.compile( "\\s+/db_xref=\"MIM:(\\d+)\"" );
         final Pattern taxon_PATTERN = Pattern.compile( "\\s+/db_xref=\"taxon:(\\d+)\"" );
         final Pattern interpro_PATTERN = Pattern.compile( "\\s+/db_xref=\"InterPro:([A-Z0-9]+)\"" );
-        final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/TrEMBL:(\\w+)\"" );
-        final Pattern hgnc_PATTERN = Pattern.compile( "\\s+/db_xref=\"HGNC:(\\d+)\"" );
+        final Pattern uniprot_PATTERN = Pattern.compile( "\\s+/db_xref=\"UniProtKB/[A-Za-z-]*:(\\w+)\"" );
+        final Pattern hgnc_PATTERN = Pattern.compile( "\\s+/db_xref=\"[A-Z:]*HGNC:(\\d+)\"" );
         final Pattern geneid_PATTERN = Pattern.compile( "\\s+/db_xref=\"GeneID:(\\d+)\"" );
+        final Pattern pdb_PATTERN = Pattern.compile( "\\s+/db_xref=\"PDB:([A-Z0-9]+)\"" );
+        
+        
         final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"([\\.\\-\\d]+)\"" );
         final Pattern product_PATTERN = Pattern.compile( "\\s+/product=\"(\\w{1,10})\"" );
         final EbiDbEntry e = new EbiDbEntry();
@@ -246,6 +249,10 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 final Matcher product = product_PATTERN.matcher( line );
                 if ( product.find() ) {
                     e.setSequenceSymbol( product.group( 1 ) );
+                }
+                final Matcher pdb = pdb_PATTERN.matcher( line );
+                if ( pdb.find() ) {
+                    e.addCrossReference( new Accession( pdb.group( 1 ), "pdb" ) );
                 }
             }
         }

@@ -11170,6 +11170,22 @@ public final class Test {
             if ( !entry4.getAccession().equals( "AAA36557" ) ) {
                 return false;
             }
+            if ( !entry4.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
+                System.out.println( entry4.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry4.getSequenceName().equals( "Homo sapiens (human) ras protein" ) ) {
+                System.out.println( entry4.getSequenceName() );
+                return false;
+            }
+            if ( !entry4.getTaxonomyIdentifier().equals( "9606" ) ) {
+                System.out.println( entry4.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry4.getGeneName().equals( "ras" ) ) {
+                System.out.println( entry4.getGeneName() );
+                return false;
+            }
             //
             //TODO fails:
             //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
