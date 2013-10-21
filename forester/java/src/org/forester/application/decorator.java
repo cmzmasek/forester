@@ -305,17 +305,17 @@ public final class decorator {
             if ( ( value_column < 0 ) || ( value_column >= mapping_table.getNumberOfColumns() ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for value column" );
             }
-            if ( mapping_table.isEmpty() || mapping_table.getNumberOfColumns() < 1 ) {
+            if ( mapping_table.isEmpty() || ( mapping_table.getNumberOfColumns() < 1 ) ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table is empty" );
             }
             if ( mapping_table.getNumberOfColumns() == 1 ) {
                 ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table has only one column" );
             }
             map = mapping_table.getColumnsAsMap( key_column, value_column );
-            Iterator<Entry<String, String>> iter = map.entrySet().iterator();
+            final Iterator<Entry<String, String>> iter = map.entrySet().iterator();
             System.out.println();
             while ( iter.hasNext() ) {
-                Entry<String, String> e = iter.next();
+                final Entry<String, String> e = iter.next();
                 System.out.println( e.getKey() + " => " + e.getValue() );
             }
             System.out.println();

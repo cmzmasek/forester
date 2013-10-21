@@ -75,8 +75,6 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         final Pattern hgnc_PATTERN = Pattern.compile( "\\s+/db_xref=\"[A-Z:]*HGNC:(\\d+)\"" );
         final Pattern geneid_PATTERN = Pattern.compile( "\\s+/db_xref=\"GeneID:(\\d+)\"" );
         final Pattern pdb_PATTERN = Pattern.compile( "\\s+/db_xref=\"PDB:([A-Z0-9]+)\"" );
-        
-        
         final Pattern ec_PATTERN = Pattern.compile( "\\s+/EC_number=\"([\\.\\-\\d]+)\"" );
         final Pattern product_PATTERN = Pattern.compile( "\\s+/product=\"(\\w{1,10})\"" );
         final EbiDbEntry e = new EbiDbEntry();
@@ -582,7 +580,7 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         return _symbol;
     }
 
-    private void setSequenceSymbol( String symbol ) {
+    private void setSequenceSymbol( final String symbol ) {
         _symbol = symbol;
     }
 
