@@ -1,4 +1,4 @@
-File.open( "g" ) do | file |
+File.open( "g.txt" ) do | file |
   while line = file.gets
     if line =~ /^([A-Z0-9]{3,5})/
       puts "/home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/" + $1 + ".hmmscan    " + $1
