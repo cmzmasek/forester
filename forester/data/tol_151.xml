@@ -2408,6 +2408,9 @@
                 <scientific_name>Holomycota</scientific_name>
                 <synonym>Nucletmycea</synonym>
               </taxonomy>
+              <reference doi="10.1186/1471-2148-9-272">
+                <desc>Phylogenomic analyses predict sistergroup relationship of nucleariids and Fungi and paraphyly of zygomycetes with significant support</desc>
+              </reference>
               <clade>
                 <taxonomy>
                   <id provider="uniprot">4751</id>
@@ -3752,12 +3755,27 @@
                   </clade>
                   <clade>
                     <taxonomy>
-                      <id provider="uniprot">72359</id>
-                      <code>TRAHO</code>
-                      <scientific_name>Trachipleistophora hominis</scientific_name>
-                      <common_name>Microsporidian parasite</common_name>
-                      <rank>species</rank>
+                      <id provider="uniprot">35232</id>
+                      <scientific_name>Pleistophoridae</scientific_name>
+                      <rank>family</rank>
                     </taxonomy>
+                    <clade>
+                      <taxonomy>
+                        <id provider="uniprot">72359</id>
+                        <code>TRAHO</code>
+                        <scientific_name>Trachipleistophora hominis</scientific_name>
+                        <common_name>Microsporidian parasite</common_name>
+                        <rank>species</rank>
+                      </taxonomy>
+                    </clade>
+                    <clade>
+                      <taxonomy>
+                        <id provider="uniprot">948595</id>
+                        <code>VAVCU</code>
+                        <scientific_name>Vavraia culicis (isolate floridensis)</scientific_name>
+                        <common_name>Microsporidian parasite</common_name>
+                      </taxonomy>
+                    </clade>
                   </clade>
                   <clade>
                     <taxonomy>
@@ -3771,15 +3789,21 @@
                 </clade>
               </clade>
               <clade>
-                <name>Fonticula &amp; Nucleariidae</name>
+                <taxonomy>
+                  <id provider="uniprot">1001604</id>
+                  <scientific_name>Nucleariidae and Fonticula group</scientific_name>
+                </taxonomy>
                 <reference doi="10.1093/molbev/msp185">
+                  <desc>Phylogeny of the “Forgotten” Cellular Slime Mold, Fonticula alba, Reveals a Key Evolutionary Branch within Opisthokonta</desc>
                 </reference>
                 <clade>
                   <taxonomy>
                     <id provider="uniprot">691883</id>
+                    <code>FALXX</code>
                     <scientific_name>Fonticula alba</scientific_name>
-                    <synonym>Fonticula alba Worley, Raper &amp; Hohl. 1979</synonym>
+                    <authority>Worley, Raper &amp; Hohl. 1979</authority>
                     <rank>species</rank>
+                    <uri>http://mbe.oxfordjournals.org/content/26/12/2699/F2.medium.gif</uri>
                   </taxonomy>
                 </clade>
                 <clade>
