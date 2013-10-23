@@ -225,8 +225,8 @@ public class surfacing {
     final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.302";
-    final static private String                               PRG_DATE                                                                      = "130715";
+    final static private String                               PRG_VERSION                                                                   = "2.303";
+    final static private String                               PRG_DATE                                                                      = "131022";
     final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
