@@ -67,6 +67,10 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.protein.BasicProtein;
+import org.forester.protein.Domain;
+import org.forester.protein.Protein;
+import org.forester.surfacing.SurfacingUtil;
 
 public final class ForesterUtil {
 
@@ -88,6 +92,22 @@ public final class ForesterUtil {
     public static final String       NCBI_NUCCORE                     = "http://www.ncbi.nlm.nih.gov/nuccore/";
     public final static String       UNIPROT_KB                       = "http://www.uniprot.org/uniprot/";
     public static final String       NCBI_GI                          = "http://www.ncbi.nlm.nih.gov/protein/gi:";
+    public final static Color        DEUTEROSTOMIA_COLOR              = new Color( 255, 0, 0 );
+    public final static Color        PROTOSTOMIA_COLOR                = new Color( 204, 0, 0 );
+    public final static Color        METAZOA_COLOR                    = new Color( 204, 0, 102 );
+    public final static Color        HOLOZOA_COLOR                    = new Color( 127, 0, 255 );
+    public final static Color        FUNGI_COLOR                      = new Color( 255, 128, 0 );
+    public final static Color        HOLOMYCOTA_COLOR                 = new Color( 204, 102, 0 );
+    public final static Color        AMOEBOZOA_COLOR                  = new Color( 255, 0, 255 );
+    public final static Color        VIRIDPLANTAE_COLOR               = new Color( 0, 255, 0 );
+    public final static Color        RHODOPHYTA_COLOR                 = new Color( 0, 153, 76 );
+    public final static Color        HACROBIA_COLOR                   = new Color( 0, 102, 51 );
+    public final static Color        STRAMENOPILES_COLOR              = new Color( 0, 0, 255 );
+    public final static Color        ALVEOLATA_COLOR                  = new Color( 0, 128, 255 );
+    public final static Color        RHIZARIA_COLOR                   = new Color( 0, 255, 255 );
+    public final static Color        EXCAVATA_COLOR                   = new Color( 204, 204, 0 );
+    public final static Color        ARCHAEA_COLOR                    = new Color( 160, 160, 160 );
+    public final static Color        BACTERIA_COLOR                   = new Color( 64, 64, 64 );
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );
@@ -101,10 +121,86 @@ public final class ForesterUtil {
     private ForesterUtil() {
     }
 
+    public static int calculateOverlap( final Domain domain, final List<Boolean> covered_positions ) {
+        int overlap_count = 0;
+        for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
+            if ( ( i < covered_positions.size() ) && ( covered_positions.get( i ) == true ) ) {
+                ++overlap_count;
+            }
+        }
+        return overlap_count;
+    }
+
     final public static void appendSeparatorIfNotEmpty( final StringBuffer sb, final char separator ) {
         if ( sb.length() > 0 ) {
             sb.append( separator );
         }
+    }
+
+    /**
+     * 
+     * Example regarding engulfment: ------------0.1 ----------0.2 --0.3 =>
+     * domain with 0.3 is ignored
+     * 
+     * -----------0.1 ----------0.2 --0.3 => domain with 0.3 is ignored
+     * 
+     * 
+     * ------------0.1 ----------0.3 --0.2 => domains with 0.3 and 0.2 are _not_
+     * ignored
+     * 
+     * @param max_allowed_overlap
+     *            maximal allowed overlap (inclusive) to be still considered not
+     *            overlapping (zero or negative value to allow any overlap)
+     * @param remove_engulfed_domains
+     *            to remove domains which are completely engulfed by coverage of
+     *            domains with better support
+     * @param protein
+     * @return
+     */
+    public static Protein removeOverlappingDomains( final int max_allowed_overlap,
+                                                    final boolean remove_engulfed_domains,
+                                                    final Protein protein ) {
+        final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(), protein.getSpecies()
+                .getSpeciesId(), protein.getLength() );
+        final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
+        final List<Boolean> covered_positions = new ArrayList<Boolean>();
+        for( final Domain domain : sorted ) {
+            if ( ( ( max_allowed_overlap < 0 ) || ( ForesterUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
+                    && ( !remove_engulfed_domains || !isEngulfed( domain, covered_positions ) ) ) {
+                final int covered_positions_size = covered_positions.size();
+                for( int i = covered_positions_size; i < domain.getFrom(); ++i ) {
+                    covered_positions.add( false );
+                }
+                final int new_covered_positions_size = covered_positions.size();
+                for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
+                    if ( i < new_covered_positions_size ) {
+                        covered_positions.set( i, true );
+                    }
+                    else {
+                        covered_positions.add( true );
+                    }
+                }
+                pruned_protein.addProteinDomain( domain );
+            }
+        }
+        return pruned_protein;
+    }
+
+    /**
+     * Returns true is Domain domain falls in an uninterrupted stretch of
+     * covered positions.
+     * 
+     * @param domain
+     * @param covered_positions
+     * @return
+     */
+    public static boolean isEngulfed( final Domain domain, final List<Boolean> covered_positions ) {
+        for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
+            if ( ( i >= covered_positions.size() ) || ( covered_positions.get( i ) != true ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

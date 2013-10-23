@@ -26,6 +26,7 @@
 
 package org.forester.surfacing;
 
+import java.awt.Color;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -33,6 +34,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyNode;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.ForesterUtil;
@@ -154,9 +157,10 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     private void addSpeciesSpecificDomainData( final StringBuffer sb,
                                                final Species species,
                                                final boolean html,
-                                               final Map<String, Integer> tax_code_to_id_map ) {
+                                               final Map<String, Integer> tax_code_to_id_map,
+                                               final Phylogeny phy ) {
         if ( html ) {
-            addTaxWithLink( sb, species.getSpeciesId(), tax_code_to_id_map );
+            addTaxWithLink( sb, species.getSpeciesId(), tax_code_to_id_map, phy );
         }
         else {
             sb.append( species.getSpeciesId() );
@@ -180,17 +184,53 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     private void addTaxWithLink( final StringBuffer sb,
                                  final String tax_code,
-                                 final Map<String, Integer> tax_code_to_id_map ) {
+                                 final Map<String, Integer> tax_code_to_id_map,
+                                 final Phylogeny phy ) {
+        Color c = null;
+        if ( phy != null && !phy.isEmpty() ) {
+            c = getColorDependingOnTaxonomy( tax_code, phy );
+        }
+        if ( c == null ) {
+            c = new Color( 0, 0, 0 );
+        }
+        final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
         sb.append( "<b>" );
         if ( !ForesterUtil.isEmpty( tax_code )
                 && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
             sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK + tax_code_to_id_map.get( tax_code )
-                    + "\" target=\"taxonomy_window\">" + tax_code + "</a>" );
+                    + "\" target=\"taxonomy_window\" color=\"" + hex + "\">" + tax_code + "</a>" );
         }
         else {
             sb.append( tax_code );
         }
         sb.append( "</b>" );
+    }
+
+    private Color getColorDependingOnTaxonomy( final String tax_code, final Phylogeny phy ) {
+        List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+        Color c = null;
+        if ( nodes == null || nodes.isEmpty() ) {
+            throw new RuntimeException( tax_code + " is not found" );
+        }
+        if ( nodes.size() != 1 ) {
+            throw new RuntimeException( tax_code + " is not unique" );
+        }
+        PhylogenyNode n = nodes.get( 0 );
+        while ( n != null ) {
+            c = null;
+            if ( n.getNodeData().isHasTaxonomy()
+                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                c = SurfacingUtil.getColorForTaxCode( n.getNodeData().getTaxonomy().getScientificName() );
+            }
+            if ( c == null && !ForesterUtil.isEmpty( n.getName() ) ) {
+                c = SurfacingUtil.getColorForTaxCode( n.getName() );
+            }
+            if ( c != null ) {
+                break;
+            }
+            n = n.getParent();
+        }
+        return c;
     }
 
     private int compareByDomainId( final DomainSimilarity other ) {
@@ -286,10 +326,11 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     }
 
     private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
-                                                            final Map<String, Integer> tax_code_to_id_map ) {
+                                                            final Map<String, Integer> tax_code_to_id_map,
+                                                            final Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
         for( final Species species : getSpeciesData().keySet() ) {
-            addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map );
+            addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map, phy );
         }
         return sb;
     }
@@ -317,11 +358,13 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
-    private StringBuffer getSpeciesDataInCustomOrder( final boolean html, final Map<String, Integer> tax_code_to_id_map ) {
+    private StringBuffer getSpeciesDataInCustomOrder( final boolean html,
+                                                      final Map<String, Integer> tax_code_to_id_map,
+                                                      final Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
         for( final Species order_species : getSpeciesCustomOrder() ) {
             if ( getSpeciesData().keySet().contains( order_species ) ) {
-                addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map );
+                addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map, phy );
             }
             else {
                 sb.append( PrintableDomainSimilarity.NO_SPECIES );
@@ -357,18 +400,19 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     @Override
     public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option,
-                                        final Map<String, Integer> tax_code_to_id_map ) {
+                                        final Map<String, Integer> tax_code_to_id_map,
+                                        Phylogeny phy ) {
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:
                 return toStringBufferSimpleTabDelimited();
             case HTML:
-                return toStringBufferDetailedHTML( tax_code_to_id_map );
+                return toStringBufferDetailedHTML( tax_code_to_id_map, phy );
             default:
                 throw new AssertionError( "Unknown print option: " + print_option );
         }
     }
 
-    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map ) {
+    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map, Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<tr>" );
         sb.append( "<td>" );
@@ -423,13 +467,13 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
-            sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map ) );
+            sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map, phy ) );
             sb.append( getDomainDataInAlphabeticalOrder() );
             sb.append( "</td>" );
         }
         else {
             sb.append( "<td>" );
-            sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map ) );
+            sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map, phy ) );
             sb.append( getDomainDataInAlphabeticalOrder() );
             sb.append( "</td>" );
         }
@@ -441,7 +485,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         final StringBuffer sb = new StringBuffer();
         sb.append( getDomainId() );
         sb.append( "\t" );
-        sb.append( getSpeciesDataInAlphabeticalOrder( false, null ) );
+        sb.append( getSpeciesDataInAlphabeticalOrder( false, null, null ) );
         sb.append( "\n" );
         return sb;
     }

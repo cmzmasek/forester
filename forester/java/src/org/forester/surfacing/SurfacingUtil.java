@@ -26,6 +26,7 @@
 
 package org.forester.surfacing;
 
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -189,16 +190,6 @@ public final class SurfacingUtil {
             stats.addValue( similarity.getMeanSimilarityScore() );
         }
         return stats;
-    }
-
-    public static int calculateOverlap( final Domain domain, final List<Boolean> covered_positions ) {
-        int overlap_count = 0;
-        for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
-            if ( ( i < covered_positions.size() ) && ( covered_positions.get( i ) == true ) ) {
-                ++overlap_count;
-            }
-        }
-        return overlap_count;
     }
 
     public static void checkForOutputFileWriteability( final File outfile ) {
@@ -1029,23 +1020,6 @@ public final class SurfacingUtil {
         return c;
     }
 
-    /**
-     * Returns true is Domain domain falls in an uninterrupted stretch of
-     * covered positions.
-     * 
-     * @param domain
-     * @param covered_positions
-     * @return
-     */
-    public static boolean isEngulfed( final Domain domain, final List<Boolean> covered_positions ) {
-        for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
-            if ( ( i >= covered_positions.size() ) || ( covered_positions.get( i ) != true ) ) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static void performDomainArchitectureAnalysis( final SortedMap<String, Set<String>> domain_architecutures,
                                                           final SortedMap<String, Integer> domain_architecuture_counts,
                                                           final int min_count,
@@ -1201,55 +1175,6 @@ public final class SurfacingUtil {
             sb.append( ForesterUtil.LINE_SEPARATOR );
         }
         return sb;
-    }
-
-    /**
-     * 
-     * Example regarding engulfment: ------------0.1 ----------0.2 --0.3 =>
-     * domain with 0.3 is ignored
-     * 
-     * -----------0.1 ----------0.2 --0.3 => domain with 0.3 is ignored
-     * 
-     * 
-     * ------------0.1 ----------0.3 --0.2 => domains with 0.3 and 0.2 are _not_
-     * ignored
-     * 
-     * @param max_allowed_overlap
-     *            maximal allowed overlap (inclusive) to be still considered not
-     *            overlapping (zero or negative value to allow any overlap)
-     * @param remove_engulfed_domains
-     *            to remove domains which are completely engulfed by coverage of
-     *            domains with better support
-     * @param protein
-     * @return
-     */
-    public static Protein removeOverlappingDomains( final int max_allowed_overlap,
-                                                    final boolean remove_engulfed_domains,
-                                                    final Protein protein ) {
-        final Protein pruned_protein = new BasicProtein( protein.getProteinId().getId(), protein.getSpecies()
-                .getSpeciesId(), protein.getLength() );
-        final List<Domain> sorted = SurfacingUtil.sortDomainsWithAscendingConfidenceValues( protein );
-        final List<Boolean> covered_positions = new ArrayList<Boolean>();
-        for( final Domain domain : sorted ) {
-            if ( ( ( max_allowed_overlap < 0 ) || ( SurfacingUtil.calculateOverlap( domain, covered_positions ) <= max_allowed_overlap ) )
-                    && ( !remove_engulfed_domains || !isEngulfed( domain, covered_positions ) ) ) {
-                final int covered_positions_size = covered_positions.size();
-                for( int i = covered_positions_size; i < domain.getFrom(); ++i ) {
-                    covered_positions.add( false );
-                }
-                final int new_covered_positions_size = covered_positions.size();
-                for( int i = domain.getFrom(); i <= domain.getTo(); ++i ) {
-                    if ( i < new_covered_positions_size ) {
-                        covered_positions.set( i, true );
-                    }
-                    else {
-                        covered_positions.add( true );
-                    }
-                }
-                pruned_protein.addProteinDomain( domain );
-            }
-        }
-        return pruned_protein;
     }
 
     public static List<Domain> sortDomainsWithAscendingConfidenceValues( final Protein protein ) {
@@ -1677,8 +1602,8 @@ public final class SurfacingUtil {
                                                       final PrintableDomainSimilarity.PRINT_OPTION print_option,
                                                       final DomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
-                                                      final Map<String, Integer> tax_code_to_id_map )
-            throws IOException {
+                                                      final Map<String, Integer> tax_code_to_id_map,
+                                                      Phylogeny phy ) throws IOException {
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );
@@ -1749,10 +1674,11 @@ public final class SurfacingUtil {
             }
             if ( simple_tab_writer != null ) {
                 simple_tab_writer.write( similarity.toStringBuffer( PRINT_OPTION.SIMPLE_TAB_DELIMITED,
-                                                                    tax_code_to_id_map ).toString() );
+                                                                    tax_code_to_id_map,
+                                                                    null ).toString() );
             }
             if ( single_writer != null ) {
-                single_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );
+                single_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map, phy ).toString() );
                 single_writer.write( SurfacingConstants.NL );
             }
             else {
@@ -1761,7 +1687,7 @@ public final class SurfacingUtil {
                 if ( local_writer == null ) {
                     local_writer = split_writers.get( '0' );
                 }
-                local_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map ).toString() );
+                local_writer.write( similarity.toStringBuffer( print_option, tax_code_to_id_map, phy ).toString() );
                 local_writer.write( SurfacingConstants.NL );
             }
         }
@@ -2648,5 +2574,57 @@ public final class SurfacingUtil {
             }
             return 0;
         }
+    }
+
+    final static Color getColorForTaxCode( final String tax ) {
+        if ( tax.equals( "Deuterostomia" ) ) {
+            return ForesterUtil.DEUTEROSTOMIA_COLOR;
+        }
+        else if ( tax.equals( "Protostomia" ) ) {
+            return ForesterUtil.PROTOSTOMIA_COLOR;
+        }
+        else if ( tax.equals( "Metazoa" ) ) {
+            return ForesterUtil.METAZOA_COLOR;
+        }
+        else if ( tax.equals( "Holozoa" ) ) {
+            return ForesterUtil.HOLOZOA_COLOR;
+        }
+        else if ( tax.equals( "Fungi" ) ) {
+            return ForesterUtil.FUNGI_COLOR;
+        }
+        else if ( tax.equals( "Holomycota" ) ) {
+            return ForesterUtil.HOLOMYCOTA_COLOR;
+        }
+        else if ( tax.equals( "Amoebozoa" ) ) {
+            return ForesterUtil.AMOEBOZOA_COLOR;
+        }
+        else if ( tax.equals( "Viridiplantae" ) ) {
+            return ForesterUtil.VIRIDPLANTAE_COLOR;
+        }
+        else if ( tax.equals( "Rhodophytaa" ) ) {
+            return ForesterUtil.RHODOPHYTA_COLOR;
+        }
+        else if ( tax.startsWith( "Hacrobia" ) ) {
+            return ForesterUtil.HACROBIA_COLOR;
+        }
+        else if ( tax.equals( "Stramenopiles" ) ) {
+            return ForesterUtil.STRAMENOPILES_COLOR;
+        }
+        else if ( tax.equals( "Alveolata" ) ) {
+            return ForesterUtil.ALVEOLATA_COLOR;
+        }
+        else if ( tax.equals( "Rhizaria" ) ) {
+            return ForesterUtil.RHIZARIA_COLOR;
+        }
+        else if ( tax.equals( "Excavata" ) ) {
+            return ForesterUtil.EXCAVATA_COLOR;
+        }
+        else if ( tax.equals( "Archaea" ) ) {
+            return ForesterUtil.ARCHAEA_COLOR;
+        }
+        else if ( tax.equals( "Bacteria" ) ) {
+            return ForesterUtil.BACTERIA_COLOR;
+        }
+        return null;
     }
 }

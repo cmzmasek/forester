@@ -43,6 +43,7 @@ import org.forester.evoinference.matrix.distance.DistanceMatrix;
 import org.forester.go.GoId;
 import org.forester.go.GoNameSpace;
 import org.forester.go.GoTerm;
+import org.forester.phylogeny.Phylogeny;
 import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.DescriptiveStatistics;
@@ -98,7 +99,8 @@ public class PairwiseGenomeComparator {
                                             final File out_dir,
                                             final boolean write_pairwise_comparisons,
                                             final Map<String, Integer> tax_code_to_id_map,
-                                            final boolean calc_similarity_scores ) {
+                                            final boolean calc_similarity_scores,
+                                            Phylogeny phy ) {
         init();
         final BasicSymmetricalDistanceMatrix domain_distance_scores_means = new BasicSymmetricalDistanceMatrix( number_of_genomes );
         final BasicSymmetricalDistanceMatrix shared_domains_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );
@@ -215,7 +217,8 @@ public class PairwiseGenomeComparator {
                                                                      domain_similarity_print_option,
                                                                      scoring,
                                                                      false,
-                                                                     tax_code_to_id_map );
+                                                                     tax_code_to_id_map,
+                                                                     phy );
                     }
                     catch ( final IOException e ) {
                         ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""

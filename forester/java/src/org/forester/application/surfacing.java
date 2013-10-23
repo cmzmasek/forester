@@ -2084,7 +2084,8 @@ public class surfacing {
                                                          domain_similarity_print_option,
                                                          scoring,
                                                          true,
-                                                         tax_code_to_id_map );
+                                                         tax_code_to_id_map,
+                                                         intrees[ 0 ] );
             simple_tab_writer.close();
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );
@@ -2123,7 +2124,8 @@ public class surfacing {
                                              out_dir,
                                              write_pwc_files,
                                              tax_code_to_id_map,
-                                             CALC_SIMILARITY_SCORES );
+                                             CALC_SIMILARITY_SCORES,
+                                             intrees[ 0 ] );
             String matrix_output_file = new String( output_file.toString() );
             if ( matrix_output_file.indexOf( '.' ) > 1 ) {
                 matrix_output_file = matrix_output_file.substring( 0, matrix_output_file.indexOf( '.' ) );

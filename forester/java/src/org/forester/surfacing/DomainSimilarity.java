@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import org.forester.phylogeny.Phylogeny;
 import org.forester.species.Species;
 import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 
@@ -101,5 +102,7 @@ public interface DomainSimilarity extends Comparable<DomainSimilarity> {
 
     public double getStandardDeviationOfSimilarityScore();
 
-    public StringBuffer toStringBuffer( PRINT_OPTION print_option, Map<String, Integer> tax_code_to_id_map );
+    public StringBuffer toStringBuffer( PRINT_OPTION print_option,
+                                        Map<String, Integer> tax_code_to_id_map,
+                                        Phylogeny phy );
 }

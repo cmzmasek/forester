@@ -44,7 +44,6 @@ import org.forester.protein.BasicDomain;
 import org.forester.protein.BasicProtein;
 import org.forester.protein.Domain;
 import org.forester.protein.Protein;
-import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.ForesterUtil;
 
 public final class HmmPfamOutputParser {
@@ -408,9 +407,9 @@ public final class HmmPfamOutputParser {
                     if ( ( getMaxAllowedOverlap() != HmmPfamOutputParser.MAX_ALLOWED_OVERLAP_DEFAULT )
                             || isIgnoreEngulfedDomains() ) {
                         final int domains_count = current_protein.getNumberOfProteinDomains();
-                        current_protein = SurfacingUtil.removeOverlappingDomains( getMaxAllowedOverlap(),
-                                                                                  isIgnoreEngulfedDomains(),
-                                                                                  current_protein );
+                        current_protein = ForesterUtil.removeOverlappingDomains( getMaxAllowedOverlap(),
+                                                                                 isIgnoreEngulfedDomains(),
+                                                                                 current_protein );
                         final int domains_removed = domains_count - current_protein.getNumberOfProteinDomains();
                         _domains_stored -= domains_removed;
                         _domains_ignored_due_to_overlap += domains_removed;
