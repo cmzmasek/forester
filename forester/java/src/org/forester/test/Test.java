@@ -11186,6 +11186,14 @@ public final class Test {
                 System.out.println( entry4.getGeneName() );
                 return false;
             }
+            if ( !entry4.getChromosome().equals( "ras" ) ) {
+                System.out.println( entry4.getChromosome() );
+                return false;
+            }
+            if ( !entry4.getMap().equals( "ras" ) ) {
+                System.out.println( entry4.getMap() );
+                return false;
+            }
             //
             //TODO fails:
             //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
