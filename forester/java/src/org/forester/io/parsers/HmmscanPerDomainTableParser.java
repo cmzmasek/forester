@@ -64,6 +64,7 @@ public final class HmmscanPerDomainTableParser {
     private static final boolean          IGNORE_DUFS_DEFAULT         = false;
     private static final int              MAX_ALLOWED_OVERLAP_DEFAULT = -1;
     private static final boolean          IGNORE_REPLACED_RRMS        = false;
+    private static final boolean          IGNORE_hDGE_amylase         = true;                                                      //TODO eventually remove me, added 10/22/13
     private final Set<String>             _filter;
     private final FilterType              _filter_type;
     private final File                    _input_file;
@@ -450,6 +451,8 @@ public final class HmmscanPerDomainTableParser {
             else if ( IGNORE_REPLACED_RRMS
                     && ( uc_id.contains( "RRM_1" ) || uc_id.contains( "RRM_3" ) || uc_id.contains( "RRM_5" ) || uc_id
                             .contains( "RRM_6" ) ) ) {
+            }
+            else if ( IGNORE_hDGE_amylase && ( uc_id.equals( "hDGE_amylase" ) ) ) {
             }
             else if ( isIgnoreVirusLikeIds()
                     && ( uc_id.contains( VIR ) || uc_id.contains( PHAGE ) || uc_id.contains( RETRO )
