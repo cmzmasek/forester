@@ -96,15 +96,17 @@ public final class ForesterUtil {
     public final static Color        PROTOSTOMIA_COLOR                = new Color( 204, 0, 0 );
     public final static Color        METAZOA_COLOR                    = new Color( 204, 0, 102 );
     public final static Color        HOLOZOA_COLOR                    = new Color( 127, 0, 255 );
-    public final static Color        FUNGI_COLOR                      = new Color( 255, 128, 0 );
+    public final static Color        FUNGI_COLOR                      = new Color( 255, 153, 0 );
     public final static Color        HOLOMYCOTA_COLOR                 = new Color( 204, 102, 0 );
     public final static Color        AMOEBOZOA_COLOR                  = new Color( 255, 0, 255 );
     public final static Color        VIRIDPLANTAE_COLOR               = new Color( 0, 255, 0 );
     public final static Color        RHODOPHYTA_COLOR                 = new Color( 0, 153, 76 );
     public final static Color        HACROBIA_COLOR                   = new Color( 0, 102, 51 );
+    public final static Color        GLAUCOPHYTA_COLOR                = new Color( 0, 102, 51 );
     public final static Color        STRAMENOPILES_COLOR              = new Color( 0, 0, 255 );
     public final static Color        ALVEOLATA_COLOR                  = new Color( 0, 128, 255 );
     public final static Color        RHIZARIA_COLOR                   = new Color( 0, 255, 255 );
+    public static final Color        APUSOZOA_COLOR                   = new Color( 204, 255, 255 );
     public final static Color        EXCAVATA_COLOR                   = new Color( 204, 204, 0 );
     public final static Color        ARCHAEA_COLOR                    = new Color( 160, 160, 160 );
     public final static Color        BACTERIA_COLOR                   = new Color( 64, 64, 64 );
@@ -1220,5 +1222,63 @@ public final class ForesterUtil {
         e.printStackTrace( System.err );
         System.err.println();
         System.exit( -1 );
+    }
+
+    public final static Color obtainColorDependingOnTaxonomyGroup( final String tax ) {
+        if ( tax.equalsIgnoreCase( "deuterostomia" ) ) {
+            return DEUTEROSTOMIA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "protostomia" ) ) {
+            return PROTOSTOMIA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "metazoa" ) ) {
+            return METAZOA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "holozoa" ) ) {
+            return HOLOZOA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "fungi" ) ) {
+            return FUNGI_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "holomycota" ) ) {
+            return HOLOMYCOTA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "amoebozoa" ) ) {
+            return AMOEBOZOA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "viridiplantae" ) ) {
+            return VIRIDPLANTAE_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "rhodophyta" ) ) {
+            return RHODOPHYTA_COLOR;
+        }
+        else if ( tax.toLowerCase().startsWith( "hacrobia" ) ) {
+            return HACROBIA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "glaucocystophyceae" ) || tax.equalsIgnoreCase( "glaucophyta" ) ) {
+            return GLAUCOPHYTA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "stramenopiles" ) ) {
+            return STRAMENOPILES_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "alveolata" ) ) {
+            return ALVEOLATA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "rhizaria" ) ) {
+            return RHIZARIA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "excavata" ) ) {
+            return EXCAVATA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "apusozoa" ) ) {
+            return APUSOZOA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "archaea" ) ) {
+            return ARCHAEA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "bacteria" ) ) {
+            return BACTERIA_COLOR;
+        }
+        return null;
     }
 }

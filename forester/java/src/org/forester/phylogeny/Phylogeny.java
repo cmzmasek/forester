@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
+import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.writers.PhylogenyWriter;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.BranchData;
@@ -47,6 +48,8 @@ import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
 import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.ExternalForwardIterator;
 import org.forester.phylogeny.iterators.LevelOrderTreeIterator;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
@@ -304,6 +307,16 @@ public class Phylogeny {
         return _distance_unit;
     }
 
+    public final static Phylogeny createInstanceFromNhxString( final String nhx ) throws IOException {
+        final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+        
+        return factory.create( nhx, new NHXParser() )[ 0 ];
+        
+        
+        
+    }
+    
+    
     /**
      * 
      * Warning. The order of the returned nodes is random

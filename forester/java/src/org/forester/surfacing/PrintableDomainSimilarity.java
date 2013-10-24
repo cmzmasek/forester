@@ -27,6 +27,7 @@
 package org.forester.surfacing;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -42,9 +43,9 @@ import org.forester.util.ForesterUtil;
 
 public class PrintableDomainSimilarity implements DomainSimilarity {
 
-    final public static String                              SPECIES_SEPARATOR = "  ";
-    final private static int                                EQUAL             = 0;
-    final private static String                             NO_SPECIES        = "     ";
+    final public static String                              SPECIES_SEPARATOR           = "  ";
+    final private static int                                EQUAL                       = 0;
+    final private static String                             NO_SPECIES                  = "     ";
     final private double                                    _min;
     final private double                                    _max;
     final private double                                    _mean;
@@ -57,6 +58,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     private List<Species>                                   _species_order;
     private DomainSimilarityCalculator.Detailedness         _detailedness;
     private final boolean                                   _treat_as_binary_comparison;
+    private final static Map<String, String>                _TAXCODE_HEXCOLORSTRING_MAP = new HashMap<String, String>();
 
     public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
                                       final double min,
@@ -186,19 +188,22 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                  final String tax_code,
                                  final Map<String, Integer> tax_code_to_id_map,
                                  final Phylogeny phy ) {
-        Color c = null;
+        String hex = null;
         if ( phy != null && !phy.isEmpty() ) {
-            c = getColorDependingOnTaxonomy( tax_code, phy );
+            hex = obtainHexColorStringDependingOnTaxonomyGroup( tax_code, phy );
         }
-        if ( c == null ) {
-            c = new Color( 0, 0, 0 );
-        }
-        final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
         sb.append( "<b>" );
         if ( !ForesterUtil.isEmpty( tax_code )
                 && ( ( tax_code_to_id_map != null ) && tax_code_to_id_map.containsKey( tax_code ) ) ) {
-            sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK + tax_code_to_id_map.get( tax_code )
-                    + "\" target=\"taxonomy_window\" color=\"" + hex + "\">" + tax_code + "</a>" );
+            if ( !ForesterUtil.isEmpty( hex ) ) {
+                sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK
+                        + tax_code_to_id_map.get( tax_code ) + "\" target=\"t_w\"><font color=\"" + hex + "\">"
+                        + tax_code + "</font></a>" );
+            }
+            else {
+                sb.append( "<a href=\"" + SurfacingConstants.UNIPROT_TAXONOMY_ID_LINK
+                        + tax_code_to_id_map.get( tax_code ) + "\" target=\"t_w\">" + tax_code + "</a>" );
+            }
         }
         else {
             sb.append( tax_code );
@@ -206,31 +211,38 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( "</b>" );
     }
 
-    private Color getColorDependingOnTaxonomy( final String tax_code, final Phylogeny phy ) {
-        List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
-        Color c = null;
-        if ( nodes == null || nodes.isEmpty() ) {
-            throw new RuntimeException( tax_code + " is not found" );
-        }
-        if ( nodes.size() != 1 ) {
-            throw new RuntimeException( tax_code + " is not unique" );
-        }
-        PhylogenyNode n = nodes.get( 0 );
-        while ( n != null ) {
-            c = null;
-            if ( n.getNodeData().isHasTaxonomy()
-                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                c = SurfacingUtil.getColorForTaxCode( n.getNodeData().getTaxonomy().getScientificName() );
+    private String obtainHexColorStringDependingOnTaxonomyGroup( final String tax_code, final Phylogeny phy ) {
+        if ( phy != null && !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
+            List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+            Color c = null;
+            if ( nodes == null || nodes.isEmpty() ) {
+                throw new RuntimeException( tax_code + " is not found" );
             }
-            if ( c == null && !ForesterUtil.isEmpty( n.getName() ) ) {
-                c = SurfacingUtil.getColorForTaxCode( n.getName() );
+            if ( nodes.size() != 1 ) {
+                throw new RuntimeException( tax_code + " is not unique" );
             }
-            if ( c != null ) {
-                break;
+            PhylogenyNode n = nodes.get( 0 );
+            while ( n != null ) {
+                if ( n.getNodeData().isHasTaxonomy()
+                        && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                    c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
+                            .getScientificName() );
+                }
+                if ( c == null && !ForesterUtil.isEmpty( n.getName() ) ) {
+                    c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName() );
+                }
+                if ( c != null ) {
+                    break;
+                }
+                n = n.getParent();
             }
-            n = n.getParent();
+            if ( c == null ) {
+                throw new RuntimeException( "no color found for taxonomy code \"" + tax_code + "\"" );
+            }
+            final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
+            _TAXCODE_HEXCOLORSTRING_MAP.put( tax_code, hex );
         }
-        return c;
+        return _TAXCODE_HEXCOLORSTRING_MAP.get( tax_code );
     }
 
     private int compareByDomainId( final DomainSimilarity other ) {
@@ -350,7 +362,13 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
             sb.append( ": " );
             for( final String s : e.getValue() ) {
-                sb.append( s );
+                final String hex = obtainHexColorStringDependingOnTaxonomyGroup( s, null );
+                if ( !ForesterUtil.isEmpty( hex ) ) {
+                    sb.append( "<font color=\"" + hex + "\">" + s + "</font>" );
+                }
+                else {
+                    sb.append( s );
+                }
                 sb.append( " " );
             }
             sb.append( "<br>" );

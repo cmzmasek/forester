@@ -121,9 +121,9 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         }
         if ( html ) {
             final Set<String> ids = getCombinableDomainIdToCountsMap().keySet();
-            int i = 0;
+          
             for( final String domain_id : ids ) {
-                ++i;
+                
                 sb.append( " " );
                 if ( html ) {
                     sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_id + "\">" + domain_id
