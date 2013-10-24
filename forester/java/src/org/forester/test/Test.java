@@ -759,9 +759,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
-        
-        
         System.out.print( "Tree copy: " );
         if ( Test.testTreeCopy() ) {
             System.out.println( "OK." );
@@ -771,12 +768,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
-        
-        
-        
-        
-        
         System.out.print( "Basic tree methods: " );
         if ( Test.testBasicTreeMethods() ) {
             System.out.println( "OK." );
@@ -2782,35 +2773,32 @@ public final class Test {
         }
         return true;
     }
-    
-    
+
     private static boolean testTreeCopy() {
         try {
             final String str_0 = "((((a,b),c),d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])";
             final Phylogeny t0 = Phylogeny.createInstanceFromNhxString( str_0 );
             final Phylogeny t1 = t0.copy();
-            if ( !t1.toNewHampshireX().equals(  t0.toNewHampshireX() ) ) {
+            if ( !t1.toNewHampshireX().equals( t0.toNewHampshireX() ) ) {
                 return false;
             }
-            if ( !t1.toNewHampshireX().equals( str_0 )) {
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
                 return false;
             }
             t0.deleteSubtree( t0.getNode( "c" ), true );
             t0.deleteSubtree( t0.getNode( "a" ), true );
             t0.deleteSubtree( t0.getNode( "e" ), true );
-            if ( !t0.toNewHampshireX().equals( "(b,d)[&&NHX:S=lizards]" )) {
+            if ( !t0.toNewHampshireX().equals( "(b,d)[&&NHX:S=lizards]" ) ) {
                 return false;
             }
-            
-            if ( !t1.toNewHampshireX().equals( str_0 )) {
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
                 return false;
             }
             t0.deleteSubtree( t0.getNode( "b" ), true );
             t0.deleteSubtree( t0.getNode( "d" ), true );
-            if ( !t1.toNewHampshireX().equals( str_0 )) {
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
                 return false;
             }
-            
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -2818,7 +2806,6 @@ public final class Test {
         }
         return true;
     }
-    
 
     private static boolean testCreateBalancedPhylogeny() {
         try {

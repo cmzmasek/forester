@@ -2912,7 +2912,7 @@ public final class SurfacingUtil {
                                                       final DomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
                                                       final Map<String, Integer> tax_code_to_id_map,
-                                                      Phylogeny phy ) throws IOException {
+                                                      final Phylogeny phy ) throws IOException {
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );

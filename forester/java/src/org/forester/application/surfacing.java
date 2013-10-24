@@ -180,7 +180,7 @@ public class surfacing {
     final static private String                               PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION                                       = "dc_regain_stats";
     final static private String                               DA_ANALYSIS_OPTION                                                            = "DA_analyis";
     final static private String                               USE_LAST_IN_FITCH_OPTION                                                      = "last";
-    public final static String                               PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
+    public final static String                                PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
     final static private String                               PAIRWISE_DOMAIN_COMPARISONS_OPTION                                            = "pwc";
     final static private String                               OUTPUT_FILE_OPTION                                                            = "o";
     final static private String                               PFAM_TO_GO_FILE_USE_OPTION                                                    = "p2g";
@@ -222,22 +222,22 @@ public class surfacing {
     final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
     final static private boolean                              IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                         = false;
     final static private double                               MAX_E_VALUE_DEFAULT                                                           = -1;
-    public final static int                                  MAX_ALLOWED_OVERLAP_DEFAULT                                                   = -1;
+    public final static int                                   MAX_ALLOWED_OVERLAP_DEFAULT                                                   = -1;
     private static final String                               RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION                                        = "random_seed";
     private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS                                      = "consider_bdc_direction";
     private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY                        = "consider_bdc_adj";
-    public static final String                               SEQ_EXTRACT_SUFFIX                                                            = ".prot";
-    public static final String                               PLUS_MINUS_ANALYSIS_OPTION                                                    = "plus_minus";
-    public static final String                               PLUS_MINUS_DOM_SUFFIX                                                         = "_plus_minus_dom.txt";
-    public static final String                               PLUS_MINUS_DOM_SUFFIX_HTML                                                    = "_plus_minus_dom.html";
-    public static final String                               PLUS_MINUS_DC_SUFFIX_HTML                                                     = "_plus_minus_dc.html";
-    public static final int                                  PLUS_MINUS_ANALYSIS_MIN_DIFF_DEFAULT                                          = 0;
-    public static final double                               PLUS_MINUS_ANALYSIS_FACTOR_DEFAULT                                            = 1.0;
-    public static final String                               PLUS_MINUS_ALL_GO_IDS_DOM_SUFFIX                                              = "_plus_minus_go_ids_all.txt";
-    public static final String                               PLUS_MINUS_PASSING_GO_IDS_DOM_SUFFIX                                          = "_plus_minus_go_ids_passing.txt";
+    public static final String                                SEQ_EXTRACT_SUFFIX                                                            = ".prot";
+    public static final String                                PLUS_MINUS_ANALYSIS_OPTION                                                    = "plus_minus";
+    public static final String                                PLUS_MINUS_DOM_SUFFIX                                                         = "_plus_minus_dom.txt";
+    public static final String                                PLUS_MINUS_DOM_SUFFIX_HTML                                                    = "_plus_minus_dom.html";
+    public static final String                                PLUS_MINUS_DC_SUFFIX_HTML                                                     = "_plus_minus_dc.html";
+    public static final int                                   PLUS_MINUS_ANALYSIS_MIN_DIFF_DEFAULT                                          = 0;
+    public static final double                                PLUS_MINUS_ANALYSIS_FACTOR_DEFAULT                                            = 1.0;
+    public static final String                                PLUS_MINUS_ALL_GO_IDS_DOM_SUFFIX                                              = "_plus_minus_go_ids_all.txt";
+    public static final String                                PLUS_MINUS_PASSING_GO_IDS_DOM_SUFFIX                                          = "_plus_minus_go_ids_passing.txt";
     private static final String                               OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS                                           = "all_prot";
     final static private String                               OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION                         = "all_prot_e";
-    public static final boolean                              VERBOSE                                                                       = false;
+    public static final boolean                               VERBOSE                                                                       = false;
     private static final String                               OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX              = "_fitch_dc_gains_counts";
     private static final String                               OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX                = "_fitch_dc_losses_counts";
     private static final String                               DOMAIN_LENGTHS_ANALYSIS_SUFFIX                                                = "_domain_lengths_analysis";
@@ -407,17 +407,10 @@ public class surfacing {
         if ( cla.isOptionSet( surfacing.IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION ) ) {
             ignore_species_specific_domains = true;
         }
-        
-        
-        
         if ( !cla.isOptionValueSet( surfacing.INPUT_SPECIES_TREE_OPTION ) ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "no input species tree file given: "
                     + surfacing.INPUT_SPECIES_TREE_OPTION + "=<file>" );
         }
-        
-        
-        
-        
         File output_file = null;
         if ( cla.isOptionSet( surfacing.OUTPUT_FILE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.OUTPUT_FILE_OPTION ) ) {
@@ -530,10 +523,10 @@ public class surfacing {
         final List<String> plus_minus_analysis_high_low_copy_species = new ArrayList<String>();
         final List<Object> plus_minus_analysis_numbers = new ArrayList<Object>();
         SurfacingUtil.processPlusMinusAnalysisOption( cla,
-                                        plus_minus_analysis_high_copy_base_species,
-                                        plus_minus_analysis_high_copy_target_species,
-                                        plus_minus_analysis_high_low_copy_species,
-                                        plus_minus_analysis_numbers );
+                                                      plus_minus_analysis_high_copy_base_species,
+                                                      plus_minus_analysis_high_copy_target_species,
+                                                      plus_minus_analysis_high_low_copy_species,
+                                                      plus_minus_analysis_numbers );
         File input_genomes_file = null;
         if ( cla.isOptionSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.INPUT_GENOMES_FILE_OPTION ) ) {
@@ -551,9 +544,6 @@ public class surfacing {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "no input genomes file given: "
                     + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
         }
-      
-        
-        
         DomainSimilarity.DomainSimilarityScoring scoring = SCORING_DEFAULT;
         if ( cla.isOptionSet( surfacing.SCORING_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.SCORING_OPTION ) ) {
@@ -779,9 +769,9 @@ public class surfacing {
                     + "=<suffix> to turn on pairwise analyses with less than three input files" );
         }
         SurfacingUtil.checkWriteabilityForPairwiseComparisons( domain_similarity_print_option,
-                                                 input_file_properties,
-                                                 automated_pairwise_comparison_suffix,
-                                                 out_dir );
+                                                               input_file_properties,
+                                                               automated_pairwise_comparison_suffix,
+                                                               out_dir );
         for( int i = 0; i < number_of_genomes; i++ ) {
             File dcc_outfile = new File( input_file_properties[ i ][ 1 ]
                     + surfacing.DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX );
@@ -916,9 +906,8 @@ public class surfacing {
                 intree_files[ 0 ] = new File( intrees_str );
             }
             intrees = SurfacingUtil.obtainAndPreProcessIntrees( intree_files, number_of_genomes, input_file_properties );
-            
         }
-        final Phylogeny intree_0_orig = SurfacingUtil.obtainFirstIntree( intree_files[ 0 ]);
+        final Phylogeny intree_0_orig = SurfacingUtil.obtainFirstIntree( intree_files[ 0 ] );
         long random_number_seed_for_fitch_parsimony = 0l;
         boolean radomize_fitch_parsimony = false;
         if ( cla.isOptionSet( surfacing.RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION ) ) {
@@ -1450,8 +1439,8 @@ public class surfacing {
             SurfacingUtil.log( ( i + 1 ) + "/" + number_of_genomes, log_writer );
             System.out.println( "Processing                                     : " + input_file_properties[ i ][ 1 ]
                     + " [" + input_file_properties[ i ][ 0 ] + "]" );
-            SurfacingUtil.log( "Genome                                         : " + input_file_properties[ i ][ 1 ] + " ["
-                    + input_file_properties[ i ][ 0 ] + "]", log_writer );
+            SurfacingUtil.log( "Genome                                         : " + input_file_properties[ i ][ 1 ]
+                    + " [" + input_file_properties[ i ][ 0 ] + "]", log_writer );
             HmmscanPerDomainTableParser parser = null;
             INDIVIDUAL_SCORE_CUTOFF ind_score_cutoff = INDIVIDUAL_SCORE_CUTOFF.NONE;
             if ( individual_score_cutoffs != null ) {
@@ -1522,57 +1511,70 @@ public class surfacing {
                                                                        distinct_domain_architecuture_counts );
             }
             System.out.println( "Number of proteins encountered                 : " + parser.getProteinsEncountered() );
-            SurfacingUtil.log( "Number of proteins encountered                 : " + parser.getProteinsEncountered(), log_writer );
+            SurfacingUtil.log( "Number of proteins encountered                 : " + parser.getProteinsEncountered(),
+                               log_writer );
             System.out.println( "Number of proteins stored                      : " + protein_list.size() );
             SurfacingUtil.log( "Number of proteins stored                      : " + protein_list.size(), log_writer );
             System.out.println( "Coverage                                       : "
                     + ForesterUtil.roundToInt( 100.0 * coverage ) + "%" );
-            SurfacingUtil.log( "Coverage                                       : " + ForesterUtil.roundToInt( 100.0 * coverage )
-                    + "%", log_writer );
+            SurfacingUtil.log( "Coverage                                       : "
+                                       + ForesterUtil.roundToInt( 100.0 * coverage ) + "%",
+                               log_writer );
             System.out.println( "Domains encountered                            : " + parser.getDomainsEncountered() );
-            SurfacingUtil.log( "Domains encountered                            : " + parser.getDomainsEncountered(), log_writer );
+            SurfacingUtil.log( "Domains encountered                            : " + parser.getDomainsEncountered(),
+                               log_writer );
             System.out.println( "Domains stored                                 : " + parser.getDomainsStored() );
-            SurfacingUtil.log( "Domains stored                                 : " + parser.getDomainsStored(), log_writer );
+            SurfacingUtil.log( "Domains stored                                 : " + parser.getDomainsStored(),
+                               log_writer );
             System.out.println( "Distinct domains stored                        : "
                     + parser.getDomainsStoredSet().size() );
-            SurfacingUtil.log( "Distinct domains stored                        : " + parser.getDomainsStoredSet().size(), log_writer );
+            SurfacingUtil.log( "Distinct domains stored                        : "
+                    + parser.getDomainsStoredSet().size(), log_writer );
             System.out.println( "Domains ignored due to individual score cutoffs: "
                     + parser.getDomainsIgnoredDueToIndividualScoreCutoff() );
             SurfacingUtil.log( "Domains ignored due to individual score cutoffs: "
-                         + parser.getDomainsIgnoredDueToIndividualScoreCutoff(),
-                 log_writer );
+                                       + parser.getDomainsIgnoredDueToIndividualScoreCutoff(),
+                               log_writer );
             System.out.println( "Domains ignored due to E-value                 : "
                     + parser.getDomainsIgnoredDueToEval() );
-            SurfacingUtil.log( "Domains ignored due to E-value                 : " + parser.getDomainsIgnoredDueToEval(), log_writer );
+            SurfacingUtil.log( "Domains ignored due to E-value                 : "
+                                       + parser.getDomainsIgnoredDueToEval(),
+                               log_writer );
             System.out.println( "Domains ignored due to DUF designation         : "
                     + parser.getDomainsIgnoredDueToDuf() );
-            SurfacingUtil.log( "Domains ignored due to DUF designation         : " + parser.getDomainsIgnoredDueToDuf(), log_writer );
+            SurfacingUtil
+                    .log( "Domains ignored due to DUF designation         : " + parser.getDomainsIgnoredDueToDuf(),
+                          log_writer );
             if ( ignore_virus_like_ids ) {
                 System.out.println( "Domains ignored due virus like ids             : "
                         + parser.getDomainsIgnoredDueToVirusLikeIds() );
-                SurfacingUtil.log( "Domains ignored due virus like ids             : " + parser.getDomainsIgnoredDueToVirusLikeIds(),
-                     log_writer );
+                SurfacingUtil.log( "Domains ignored due virus like ids             : "
+                                           + parser.getDomainsIgnoredDueToVirusLikeIds(),
+                                   log_writer );
             }
             System.out.println( "Domains ignored due negative domain filter     : "
                     + parser.getDomainsIgnoredDueToNegativeDomainFilter() );
             SurfacingUtil.log( "Domains ignored due negative domain filter     : "
-                         + parser.getDomainsIgnoredDueToNegativeDomainFilter(),
-                 log_writer );
+                                       + parser.getDomainsIgnoredDueToNegativeDomainFilter(),
+                               log_writer );
             System.out.println( "Domains ignored due to overlap                 : "
                     + parser.getDomainsIgnoredDueToOverlap() );
-            SurfacingUtil.log( "Domains ignored due to overlap                 : " + parser.getDomainsIgnoredDueToOverlap(),
-                 log_writer );
+            SurfacingUtil.log( "Domains ignored due to overlap                 : "
+                                       + parser.getDomainsIgnoredDueToOverlap(),
+                               log_writer );
             if ( negative_filter_file != null ) {
                 System.out.println( "Proteins ignored due to negative filter        : "
                         + parser.getProteinsIgnoredDueToFilter() );
-                SurfacingUtil.log( "Proteins ignored due to negative filter        : " + parser.getProteinsIgnoredDueToFilter(),
-                     log_writer );
+                SurfacingUtil.log( "Proteins ignored due to negative filter        : "
+                                           + parser.getProteinsIgnoredDueToFilter(),
+                                   log_writer );
             }
             if ( positive_filter_file != null ) {
                 System.out.println( "Proteins ignored due to positive filter        : "
                         + parser.getProteinsIgnoredDueToFilter() );
-                SurfacingUtil.log( "Proteins ignored due to positive filter        : " + parser.getProteinsIgnoredDueToFilter(),
-                     log_writer );
+                SurfacingUtil.log( "Proteins ignored due to positive filter        : "
+                                           + parser.getProteinsIgnoredDueToFilter(),
+                                   log_writer );
             }
             if ( da_analysis ) {
                 System.out.println( "Distinct domain architectures stored           : " + distinct_das );
@@ -1708,10 +1710,14 @@ public class surfacing {
             ForesterUtil.programMessage( PRG_NAME, "Range of proteins with a least one domain assigned: "
                     + ( 100 * protein_coverage_stats.getMin() ) + "%-" + ( 100 * protein_coverage_stats.getMax() )
                     + "%" );
-            SurfacingUtil.log( "Average of prot with a least one dom assigned  : " + ( 100 * protein_coverage_stats.arithmeticMean() )
-                    + "% (+/-" + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)", log_writer );
-            SurfacingUtil.log( "Range of prot with a least one dom assigned    : " + ( 100 * protein_coverage_stats.getMin() ) + "%-"
-                    + ( 100 * protein_coverage_stats.getMax() ) + "%", log_writer );
+            SurfacingUtil.log( "Average of prot with a least one dom assigned  : "
+                                       + ( 100 * protein_coverage_stats.arithmeticMean() ) + "% (+/-"
+                                       + ( 100 * protein_coverage_stats.sampleStandardDeviation() ) + "%)",
+                               log_writer );
+            SurfacingUtil.log( "Range of prot with a least one dom assigned    : "
+                                       + ( 100 * protein_coverage_stats.getMin() ) + "%-"
+                                       + ( 100 * protein_coverage_stats.getMax() ) + "%",
+                               log_writer );
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
@@ -1903,11 +1909,11 @@ public class surfacing {
         }
         if ( ( ( intrees != null ) && ( intrees.length > 0 ) ) && ( number_of_genomes > 2 ) ) {
             final StringBuilder parameters_sb = SurfacingUtil.createParametersAsString( ignore_dufs,
-                                                                          e_value_max,
-                                                                          max_allowed_overlap,
-                                                                          no_engulfing_overlaps,
-                                                                          cutoff_scores_file,
-                                                                          dc_type );
+                                                                                        e_value_max,
+                                                                                        max_allowed_overlap,
+                                                                                        no_engulfing_overlaps,
+                                                                                        cutoff_scores_file,
+                                                                                        dc_type );
             String s = "_";
             if ( radomize_fitch_parsimony ) {
                 s += random_number_seed_for_fitch_parsimony + "_";
@@ -1982,30 +1988,31 @@ public class surfacing {
         }
         if ( plus_minus_analysis_high_copy_base_species.size() > 0 ) {
             SurfacingUtil.executePlusMinusAnalysis( output_file,
-                                      plus_minus_analysis_high_copy_base_species,
-                                      plus_minus_analysis_high_copy_target_species,
-                                      plus_minus_analysis_high_low_copy_species,
-                                      gwcd_list,
-                                      protein_lists_per_species,
-                                      domain_id_to_go_ids_map,
-                                      go_id_to_term_map,
-                                      plus_minus_analysis_numbers );
+                                                    plus_minus_analysis_high_copy_base_species,
+                                                    plus_minus_analysis_high_copy_target_species,
+                                                    plus_minus_analysis_high_low_copy_species,
+                                                    gwcd_list,
+                                                    protein_lists_per_species,
+                                                    domain_id_to_go_ids_map,
+                                                    go_id_to_term_map,
+                                                    plus_minus_analysis_numbers );
         }
         if ( output_protein_lists_for_all_domains ) {
             SurfacingUtil.writeProteinListsForAllSpecies( out_dir,
-                                            protein_lists_per_species,
-                                            gwcd_list,
-                                            output_list_of_all_proteins_per_domain_e_value_max );
+                                                          protein_lists_per_species,
+                                                          gwcd_list,
+                                                          output_list_of_all_proteins_per_domain_e_value_max );
         }
         gwcd_list = null;
         if ( all_bin_domain_combinations_gained_fitch != null ) {
             try {
-                SurfacingUtil.executeFitchGainsAnalysis( new File( output_file
-                                                   + surfacing.OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
-                                           all_bin_domain_combinations_gained_fitch,
-                                           all_domains_encountered.size(),
-                                           all_bin_domain_combinations_encountered,
-                                           true );
+                SurfacingUtil
+                        .executeFitchGainsAnalysis( new File( output_file
+                                                            + surfacing.OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
+                                                    all_bin_domain_combinations_gained_fitch,
+                                                    all_domains_encountered.size(),
+                                                    all_bin_domain_combinations_encountered,
+                                                    true );
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );
@@ -2013,12 +2020,13 @@ public class surfacing {
         }
         if ( all_bin_domain_combinations_lost_fitch != null ) {
             try {
-                SurfacingUtil.executeFitchGainsAnalysis( new File( output_file
-                                                   + surfacing.OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
-                                           all_bin_domain_combinations_lost_fitch,
-                                           all_domains_encountered.size(),
-                                           all_bin_domain_combinations_encountered,
-                                           false );
+                SurfacingUtil
+                        .executeFitchGainsAnalysis( new File( output_file
+                                                            + surfacing.OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX ),
+                                                    all_bin_domain_combinations_lost_fitch,
+                                                    all_domains_encountered.size(),
+                                                    all_bin_domain_combinations_encountered,
+                                                    false );
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, e.getLocalizedMessage() );

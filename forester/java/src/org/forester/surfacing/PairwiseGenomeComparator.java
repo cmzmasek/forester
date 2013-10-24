@@ -100,7 +100,7 @@ public class PairwiseGenomeComparator {
                                             final boolean write_pairwise_comparisons,
                                             final Map<String, Integer> tax_code_to_id_map,
                                             final boolean calc_similarity_scores,
-                                            Phylogeny phy ) {
+                                            final Phylogeny phy ) {
         init();
         final BasicSymmetricalDistanceMatrix domain_distance_scores_means = new BasicSymmetricalDistanceMatrix( number_of_genomes );
         final BasicSymmetricalDistanceMatrix shared_domains_based_distances = new BasicSymmetricalDistanceMatrix( number_of_genomes );

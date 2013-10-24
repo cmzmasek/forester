@@ -189,7 +189,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                  final Map<String, Integer> tax_code_to_id_map,
                                  final Phylogeny phy ) {
         String hex = null;
-        if ( phy != null && !phy.isEmpty() ) {
+        if ( ( phy != null ) && !phy.isEmpty() ) {
             hex = obtainHexColorStringDependingOnTaxonomyGroup( tax_code, phy );
         }
         sb.append( "<b>" );
@@ -212,10 +212,10 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     }
 
     private String obtainHexColorStringDependingOnTaxonomyGroup( final String tax_code, final Phylogeny phy ) {
-        if ( phy != null && !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
-            List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+        if ( ( phy != null ) && !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
+            final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
             Color c = null;
-            if ( nodes == null || nodes.isEmpty() ) {
+            if ( ( nodes == null ) || nodes.isEmpty() ) {
                 throw new RuntimeException( tax_code + " is not found" );
             }
             if ( nodes.size() != 1 ) {
@@ -228,7 +228,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                     c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
                             .getScientificName() );
                 }
-                if ( c == null && !ForesterUtil.isEmpty( n.getName() ) ) {
+                if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
                     c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName() );
                 }
                 if ( c != null ) {
@@ -419,7 +419,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
     @Override
     public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option,
                                         final Map<String, Integer> tax_code_to_id_map,
-                                        Phylogeny phy ) {
+                                        final Phylogeny phy ) {
         switch ( print_option ) {
             case SIMPLE_TAB_DELIMITED:
                 return toStringBufferSimpleTabDelimited();
@@ -430,7 +430,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
     }
 
-    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map, Phylogeny phy ) {
+    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map, final Phylogeny phy ) {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<tr>" );
         sb.append( "<td>" );

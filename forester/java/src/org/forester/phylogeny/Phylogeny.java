@@ -309,14 +309,9 @@ public class Phylogeny {
 
     public final static Phylogeny createInstanceFromNhxString( final String nhx ) throws IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-        
         return factory.create( nhx, new NHXParser() )[ 0 ];
-        
-        
-        
     }
-    
-    
+
     /**
      * 
      * Warning. The order of the returned nodes is random
