@@ -1240,9 +1240,13 @@ public final class ForesterUtil {
             printRel( tax_code, "ichthyophonida & filasterea" );
             return TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA;
         }
-        else if ( tax.equalsIgnoreCase( "fungi" ) ) {
-            printRel( tax_code, "fungi" );
-            return TaxonomyColors.FUNGI_COLOR;
+        else if ( tax.equalsIgnoreCase( "dikarya" ) ) {
+            printRel( tax_code, "dikarya" );
+            return TaxonomyColors.DIKARYA_COLOR;
+        }
+        else if ( tax.equalsIgnoreCase( "fungi" ) || tax.equalsIgnoreCase( "other fungi" ) ) {
+            printRel( tax_code, "other fungi" );
+            return TaxonomyColors.OTHER_FUNGI_COLOR;
         }
         else if ( tax.toLowerCase().startsWith( "nucleariidae and fonticula" ) ) {
             printRel( tax_code, "nucleariidae and fonticula group" );
@@ -1305,6 +1309,6 @@ public final class ForesterUtil {
 
     private final static void printRel( final String tax_code, final String group ) {
         //System.out.println( tax_code + "->" + group );
-        System.out.println( "_default_taxcode_taxgroup_map.put( \"" + tax_code + "\", \"" + group + "\" );" );
+        //System.out.println( "_default_taxcode_taxgroup_map.put( \"" + tax_code + "\", \"" + group + "\" );" );
     }
 }

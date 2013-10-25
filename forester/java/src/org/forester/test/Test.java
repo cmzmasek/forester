@@ -2776,7 +2776,7 @@ public final class Test {
 
     private static boolean testTreeCopy() {
         try {
-            final String str_0 = "((((a,b),c),d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])";
+            final String str_0 = "((((a,b),c),d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=animals]";
             final Phylogeny t0 = Phylogeny.createInstanceFromNhxString( str_0 );
             final Phylogeny t1 = t0.copy();
             if ( !t1.toNewHampshireX().equals( t0.toNewHampshireX() ) ) {
@@ -2787,14 +2787,16 @@ public final class Test {
             }
             t0.deleteSubtree( t0.getNode( "c" ), true );
             t0.deleteSubtree( t0.getNode( "a" ), true );
-            t0.deleteSubtree( t0.getNode( "e" ), true );
-            if ( !t0.toNewHampshireX().equals( "(b,d)[&&NHX:S=lizards]" ) ) {
+            t0.getRoot().getNodeData().getTaxonomy().setScientificName( "metazoa" );
+            t0.getNode( "b" ).setName( "Bee" );
+            if ( !t0.toNewHampshireX().equals( "((Bee,d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=metazoa]" ) ) {
                 return false;
             }
             if ( !t1.toNewHampshireX().equals( str_0 ) ) {
                 return false;
             }
-            t0.deleteSubtree( t0.getNode( "b" ), true );
+            t0.deleteSubtree( t0.getNode( "e" ), true );
+            t0.deleteSubtree( t0.getNode( "Bee" ), true );
             t0.deleteSubtree( t0.getNode( "d" ), true );
             if ( !t1.toNewHampshireX().equals( str_0 ) ) {
                 return false;

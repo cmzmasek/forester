@@ -2257,7 +2257,10 @@ public final class SurfacingUtil {
             writeColorLabels( "Porifera (sponges)", TaxonomyColors.PORIFERA_COLOR, w );
             writeColorLabels( "Choanoflagellida", TaxonomyColors.CHOANOFLAGELLIDA, w );
             writeColorLabels( "Ichthyosporea & Filasterea", TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA, w );
-            writeColorLabels( "Fungi", TaxonomyColors.FUNGI_COLOR, w );
+            writeColorLabels( "Dikarya (Ascomycota & Basidiomycota, so-called \"higher fungi\")",
+                              TaxonomyColors.DIKARYA_COLOR,
+                              w );
+            writeColorLabels( "other Fungi", TaxonomyColors.OTHER_FUNGI_COLOR, w );
             writeColorLabels( "Nucleariidae and Fonticula group",
                               TaxonomyColors.NUCLEARIIDAE_AND_FONTICULA_GROUP_COLOR,
                               w );
