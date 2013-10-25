@@ -87,7 +87,7 @@ public class simple_node_processor {
     //            }
     //        }
     //    }
-    private static void processNode( final PhylogenyNode node, final int i, Phylogeny phy ) {
+    private static void processNode( final PhylogenyNode node, final int i, final Phylogeny phy ) {
         //if ( node.isExternal() ) {
         //    final String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
         //    final String s = node.getNodeData().getTaxonomy().getScientificName();
@@ -107,14 +107,14 @@ public class simple_node_processor {
         //            }
         //        }
         if ( node.isExternal() ) {
-//            if ( node.getNodeData().isHasTaxonomy() ) {
-//                final Taxonomy t = node.getNodeData().getTaxonomy();
-//                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
-//                    if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
-//                        node.setName( "" );
-//                    }
-//                }
-//            }
+            //            if ( node.getNodeData().isHasTaxonomy() ) {
+            //                final Taxonomy t = node.getNodeData().getTaxonomy();
+            //                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
+            //                    if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
+            //                        node.setName( "" );
+            //                    }
+            //                }
+            //            }
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy t = node.getNodeData().getTaxonomy();
                 if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) ) {
