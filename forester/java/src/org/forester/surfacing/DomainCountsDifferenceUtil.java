@@ -542,7 +542,7 @@ public final class DomainCountsDifferenceUtil {
         int counter = 0;
         int total_absense_counter = 0;
         int not_total_absense_counter = 0;
-        SurfacingUtil.addHtmlHead( html_writer, "Binary Domain Combination Copy Differences" );
+        SurfacingUtil.writeHtmlHead( html_writer, "Binary Domain Combination Copy Differences" );
         html_writer.write( "<body><table>" );
         for( final BinaryDomainCombination bdc : all_bdcs ) {
             if ( ( high_copy_base_values.get( bdc ) > 0 ) && ( high_copy_target_values.get( bdc ) > 0 )
@@ -666,7 +666,7 @@ public final class DomainCountsDifferenceUtil {
         int counter = 0;
         int total_absense_counter = 0;
         int not_total_absense_counter = 0;
-        SurfacingUtil.addHtmlHead( html_writer, "Domain Copy Differences" );
+        SurfacingUtil.writeHtmlHead( html_writer, "Domain Copy Differences" );
         html_writer.write( "<body><table>" );
         for( final String domain_id : all_domains ) {
             if ( ( high_copy_base_values.get( domain_id ) > 0 ) && ( high_copy_target_values.get( domain_id ) > 0 )
