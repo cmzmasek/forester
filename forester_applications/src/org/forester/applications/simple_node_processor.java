@@ -48,12 +48,12 @@ public class simple_node_processor {
 
     public static void main( final String args[] ) {
         File in = null;
-        File out = null;
+        final File out = null;
         try {
             CommandLineArguments cla = null;
             cla = new CommandLineArguments( args );
             in = cla.getFile( 0 );
-            out = cla.getFile( 1 );
+            //out = cla.getFile( 1 );
             // if ( out.exists() ) {
             //      System.out.println( out + " already exists" );
             //      System.exit( -1 );
@@ -70,7 +70,7 @@ public class simple_node_processor {
                 i++;
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toPhyloXML( out, phylogeny_0, 0 );
+            //writer.toPhyloXML( out, phylogeny_0, 0 );
         }
         catch ( final Exception e ) {
             System.out.println( e.getLocalizedMessage() );
@@ -107,6 +107,9 @@ public class simple_node_processor {
         //            }
         //        }
         if ( node.isExternal() ) {
+            //final Taxonomy t = node.getNodeData().getTaxonomy();
+            //System.out.println( t.getTaxonomyCode() + "\t" + t.getScientificName() + "\t" + t.getCommonName()
+            //        + "\t" + label );
             //            if ( node.getNodeData().isHasTaxonomy() ) {
             //                final Taxonomy t = node.getNodeData().getTaxonomy();
             //                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
