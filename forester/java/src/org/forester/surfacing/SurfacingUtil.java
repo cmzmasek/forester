@@ -121,6 +121,7 @@ public final class SurfacingUtil {
                                                                                   }
                                                                               };
     private final static NumberFormat        FORMATTER_3                      = new DecimalFormat( "0.000" );
+
     private SurfacingUtil() {
         // Hidden constructor.
     }
