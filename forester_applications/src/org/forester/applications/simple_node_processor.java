@@ -40,12 +40,11 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
 public class simple_node_processor {
-
-    private final static String BASE = "b_";
 
     public static void main( final String args[] ) {
         File in = null;
@@ -67,7 +66,7 @@ public class simple_node_processor {
             int i = 0;
             while ( it.hasNext() ) {
                 final PhylogenyNode node = it.next();
-                processNode( node, i );
+                processNode( node, i, phylogeny_0 );
                 i++;
             }
             final PhylogenyWriter writer = new PhylogenyWriter();
@@ -88,7 +87,7 @@ public class simple_node_processor {
     //            }
     //        }
     //    }
-    private static void processNode( final PhylogenyNode node, final int i ) {
+    private static void processNode( final PhylogenyNode node, final int i, Phylogeny phy ) {
         //if ( node.isExternal() ) {
         //    final String c = "" + node.getNodeData().getBinaryCharacters().getPresentCount();
         //    final String s = node.getNodeData().getTaxonomy().getScientificName();
@@ -108,12 +107,18 @@ public class simple_node_processor {
         //            }
         //        }
         if ( node.isExternal() ) {
+//            if ( node.getNodeData().isHasTaxonomy() ) {
+//                final Taxonomy t = node.getNodeData().getTaxonomy();
+//                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
+//                    if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
+//                        node.setName( "" );
+//                    }
+//                }
+//            }
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy t = node.getNodeData().getTaxonomy();
-                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) && ( t.getTaxonomyCode().length() == 5 ) ) {
-                    if ( node.getName().equalsIgnoreCase( t.getTaxonomyCode() ) ) {
-                        node.setName( "" );
-                    }
+                if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) ) {
+                    SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( t.getTaxonomyCode(), phy );
                 }
             }
         }
