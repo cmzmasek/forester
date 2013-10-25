@@ -26,6 +26,7 @@
 
 package org.forester.surfacing;
 
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -94,6 +95,7 @@ import org.forester.util.BasicTableParser;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
+import org.forester.util.TaxonomyColors;
 
 public final class SurfacingUtil {
 
@@ -116,27 +118,28 @@ public final class SurfacingUtil {
             return 0;
         }
     }
-    private final static NumberFormat       FORMATTER_3                      = new DecimalFormat( "0.000" );
-    private static final Comparator<Domain> ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
+    private final static NumberFormat        FORMATTER_3                      = new DecimalFormat( "0.000" );
+    private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
 
-                                                                                 @Override
-                                                                                 public int compare( final Domain d1,
-                                                                                                     final Domain d2 ) {
-                                                                                     if ( d1.getPerSequenceEvalue() < d2
-                                                                                             .getPerSequenceEvalue() ) {
-                                                                                         return -1;
-                                                                                     }
-                                                                                     else if ( d1
-                                                                                             .getPerSequenceEvalue() > d2
-                                                                                             .getPerSequenceEvalue() ) {
-                                                                                         return 1;
-                                                                                     }
-                                                                                     else {
-                                                                                         return d1.compareTo( d2 );
-                                                                                     }
-                                                                                 }
-                                                                             };
-    public final static Pattern             PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
+                                                                                  @Override
+                                                                                  public int compare( final Domain d1,
+                                                                                                      final Domain d2 ) {
+                                                                                      if ( d1.getPerSequenceEvalue() < d2
+                                                                                              .getPerSequenceEvalue() ) {
+                                                                                          return -1;
+                                                                                      }
+                                                                                      else if ( d1
+                                                                                              .getPerSequenceEvalue() > d2
+                                                                                              .getPerSequenceEvalue() ) {
+                                                                                          return 1;
+                                                                                      }
+                                                                                      else {
+                                                                                          return d1.compareTo( d2 );
+                                                                                      }
+                                                                                  }
+                                                                              };
+    public final static Pattern              PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
+    private final static Map<String, String> _TAXCODE_HEXCOLORSTRING_MAP      = new HashMap<String, String>();
 
     public static void addAllBinaryDomainCombinationToSet( final GenomeWideCombinableDomains genome,
                                                            final SortedSet<BinaryDomainCombination> binary_domain_combinations ) {
@@ -154,7 +157,7 @@ public final class SurfacingUtil {
         }
     }
 
-    public static void addHtmlHead( final Writer w, final String title ) throws IOException {
+    public static void writeHtmlHead( final Writer w, final String title ) throws IOException {
         w.write( SurfacingConstants.NL );
         w.write( "<head>" );
         w.write( "<title>" );
@@ -163,31 +166,31 @@ public final class SurfacingUtil {
         w.write( SurfacingConstants.NL );
         w.write( "<style>" );
         w.write( SurfacingConstants.NL );
-        w.write( "a:visited { color : #6633FF; text-decoration : none; }" );
+        w.write( "a:visited { color : #000066; text-decoration : none; }" );
         w.write( SurfacingConstants.NL );
-        w.write( "a:link { color : #6633FF; text-decoration : none; }" );
+        w.write( "a:link { color : #000066; text-decoration : none; }" );
         w.write( SurfacingConstants.NL );
-        w.write( "a:active { color : #99FF00; text-decoration : none; }" );
+        w.write( "a:active { color : ##000066; text-decoration : none; }" );
         w.write( SurfacingConstants.NL );
-        w.write( "a:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; }" );
-        w.write( SurfacingConstants.NL );
-        //
-        w.write( "a.pl:visited { color : #505050; text-decoration : none; font-size: 7pt;}" );
-        w.write( SurfacingConstants.NL );
-        w.write( "a.pl:link { color : #505050; text-decoration : none; font-size: 7pt;}" );
-        w.write( SurfacingConstants.NL );
-        w.write( "a.pl:active { color : #505050; text-decoration : none; font-size: 7pt;}" );
-        w.write( SurfacingConstants.NL );
-        w.write( "a.pl:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; font-size: 7pt;}" );
+        w.write( "a:hover { color : #FFFFFF; background-color : #000000; text-decoration : none; }" );
         w.write( SurfacingConstants.NL );
         //
-        w.write( "a.ps:visited { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( "a.pl:visited { color : #505050; text-decoration : none; font-size: 7px;}" );
         w.write( SurfacingConstants.NL );
-        w.write( "a.ps:link { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( "a.pl:link { color : #505050; text-decoration : none; font-size: 7px;}" );
         w.write( SurfacingConstants.NL );
-        w.write( "a.ps:active { color : #707070; text-decoration : none; font-size: 7pt;}" );
+        w.write( "a.pl:active { color : #505050; text-decoration : none; font-size: 7px;}" );
         w.write( SurfacingConstants.NL );
-        w.write( "a.ps:hover { color : #FFFFFF; background-color : #99FF00; text-decoration : none; font-size: 7pt;}" );
+        w.write( "a.pl:hover { color : #FFFFFF; background-color : #000000; text-decoration : none; font-size: 7px;}" );
+        w.write( SurfacingConstants.NL );
+        //
+        w.write( "a.ps:visited { color : #707070; text-decoration : none; font-size: 7px;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:link { color : #707070; text-decoration : none; font-size: 7px;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:active { color : #707070; text-decoration : none; font-size: 7px;}" );
+        w.write( SurfacingConstants.NL );
+        w.write( "a.ps:hover { color : #FFFFFF; background-color : #000000; text-decoration : none; font-size: 7px;}" );
         w.write( SurfacingConstants.NL );
         //
         w.write( "td { text-align: left; vertical-align: top; font-family: Verdana, Arial, Helvetica; font-size: 8pt}" );
@@ -1715,6 +1718,47 @@ public final class SurfacingUtil {
         }
     }
 
+    public static String obtainHexColorStringDependingOnTaxonomyGroup( final String tax_code, final Phylogeny phy )
+            throws IllegalArgumentException {
+        if ( !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
+            if ( phy != null && !phy.isEmpty() ) {
+                List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+                Color c = null;
+                if ( nodes == null || nodes.isEmpty() ) {
+                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
+                }
+                if ( nodes.size() != 1 ) {
+                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
+                }
+                PhylogenyNode n = nodes.get( 0 );
+                while ( n != null ) {
+                    if ( n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
+                                .getScientificName(), tax_code );
+                    }
+                    if ( c == null && !ForesterUtil.isEmpty( n.getName() ) ) {
+                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
+                    }
+                    if ( c != null ) {
+                        break;
+                    }
+                    n = n.getParent();
+                }
+                if ( c == null ) {
+                    throw new IllegalArgumentException( "no color found for taxonomy code \"" + tax_code + "\"" );
+                }
+                final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
+                _TAXCODE_HEXCOLORSTRING_MAP.put( tax_code, hex );
+            }
+            else {
+                throw new IllegalArgumentException( "unable to obtain color for code " + tax_code
+                        + " (tree is null or empty and code is not in map)" );
+            }
+        }
+        return _TAXCODE_HEXCOLORSTRING_MAP.get( tax_code );
+    }
+
     public static Phylogeny[] obtainAndPreProcessIntrees( final File[] intree_files,
                                                           final int number_of_genomes,
                                                           final String[][] input_file_properties ) {
@@ -2587,7 +2631,7 @@ public final class SurfacingUtil {
             int per_node_counter = 0;
             out.write( "<html>" );
             out.write( SurfacingConstants.NL );
-            addHtmlHead( out, title_for_html );
+            writeHtmlHead( out, title_for_html );
             out.write( SurfacingConstants.NL );
             out.write( "<body>" );
             out.write( SurfacingConstants.NL );
@@ -2900,6 +2944,15 @@ public final class SurfacingUtil {
         out.write( "</td>" );
     }
 
+    private final static void writeColorLabels( String l, Color c, Writer w ) throws IOException {
+        w.write( "<tr><td><b><span style=\"color:" );
+        w.write( String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() ) );
+        w.write( "\">" );
+        w.write( l );
+        w.write( "</span></b></td></tr>" );
+        w.write( SurfacingConstants.NL );
+    }
+
     public static void writeDomainSimilaritiesToFile( final StringBuilder html_desc,
                                                       final StringBuilder html_title,
                                                       final Writer simple_tab_writer,
@@ -2912,7 +2965,7 @@ public final class SurfacingUtil {
                                                       final DomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
                                                       final Map<String, Integer> tax_code_to_id_map,
-                                                      final Phylogeny phy ) throws IOException {
+                                                      Phylogeny phy ) throws IOException {
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );
@@ -2926,10 +2979,10 @@ public final class SurfacingUtil {
                     w.write( "<html>" );
                     w.write( SurfacingConstants.NL );
                     if ( key != '_' ) {
-                        addHtmlHead( w, "DC analysis (" + html_title + ") " + key.toString().toUpperCase() );
+                        writeHtmlHead( w, "DC analysis (" + html_title + ") " + key.toString().toUpperCase() );
                     }
                     else {
-                        addHtmlHead( w, "DC analysis (" + html_title + ")" );
+                        writeHtmlHead( w, "DC analysis (" + html_title + ")" );
                     }
                     w.write( SurfacingConstants.NL );
                     w.write( "<body>" );
@@ -2973,6 +3026,45 @@ public final class SurfacingUtil {
             w.write( SurfacingConstants.NL );
             w.write( "<hr>" );
             w.write( SurfacingConstants.NL );
+            //
+            w.write( "<table>" );
+            w.write( SurfacingConstants.NL );
+            w.write( "<tr><td><b>" );
+            w.write( "Species group colors:" );
+            w.write( "</b></td></tr>" );
+            w.write( SurfacingConstants.NL );
+            writeColorLabels( "Deuterostomia", TaxonomyColors.DEUTEROSTOMIA_COLOR, w );
+            writeColorLabels( "Protostomia", TaxonomyColors.PROTOSTOMIA_COLOR, w );
+            writeColorLabels( "Cnidaria", TaxonomyColors.CNIDARIA_COLOR, w );
+            writeColorLabels( "Placozoa", TaxonomyColors.PLACOZOA_COLOR, w );
+            writeColorLabels( "Ctenophora (comb jellies)", TaxonomyColors.CTENOPHORA_COLOR, w );
+            writeColorLabels( "Porifera (sponges)", TaxonomyColors.PORIFERA_COLOR, w );
+            writeColorLabels( "Choanoflagellida", TaxonomyColors.CHOANOFLAGELLIDA, w );
+            writeColorLabels( "Ichthyosporea & Filasterea", TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA, w );
+            writeColorLabels( "Fungi", TaxonomyColors.FUNGI_COLOR, w );
+            writeColorLabels( "Nucleariidae and Fonticula group",
+                              TaxonomyColors.NUCLEARIIDAE_AND_FONTICULA_GROUP_COLOR,
+                              w );
+            writeColorLabels( "Amoebozoa", TaxonomyColors.AMOEBOZOA_COLOR, w );
+            writeColorLabels( "Embryophyta (plants)", TaxonomyColors.EMBRYOPHYTA_COLOR, w );
+            writeColorLabels( "Chlorophyta (green algae)", TaxonomyColors.CHLOROPHYTA_COLOR, w );
+            writeColorLabels( "Rhodophyta (red algae)", TaxonomyColors.RHODOPHYTA_COLOR, w );
+            writeColorLabels( "Glaucocystophyce (Glaucophyta)", TaxonomyColors.GLAUCOPHYTA_COLOR, w );
+            writeColorLabels( "Hacrobia (Cryptophyta & Haptophyceae & Centroheliozoa)",
+                              TaxonomyColors.HACROBIA_COLOR,
+                              w );
+            writeColorLabels( "Stramenopiles (Chromophyta, heterokonts)", TaxonomyColors.STRAMENOPILES_COLOR, w );
+            writeColorLabels( "Alveolata", TaxonomyColors.ALVEOLATA_COLOR, w );
+            writeColorLabels( "Rhizaria", TaxonomyColors.RHIZARIA_COLOR, w );
+            writeColorLabels( "Excavata", TaxonomyColors.EXCAVATA_COLOR, w );
+            writeColorLabels( "Apusozoa", TaxonomyColors.APUSOZOA_COLOR, w );
+            writeColorLabels( "Archaea", TaxonomyColors.ARCHAEA_COLOR, w );
+            writeColorLabels( "Bacteria", TaxonomyColors.BACTERIA_COLOR, w );
+            w.write( "</table>" );
+            w.write( SurfacingConstants.NL );
+            //
+            w.write( "<hr>" );
+            w.write( SurfacingConstants.NL );
             w.write( "<table>" );
             w.write( SurfacingConstants.NL );
         }
@@ -3013,6 +3105,8 @@ public final class SurfacingUtil {
                     w.write( "</html>" );
                     w.write( SurfacingConstants.NL );
                 }
+                break;
+            default:
                 break;
         }
         for( final Writer w : split_writers.values() ) {
