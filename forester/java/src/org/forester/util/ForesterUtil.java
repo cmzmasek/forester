@@ -50,7 +50,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -757,8 +756,7 @@ public final class ForesterUtil {
 
     final public static StringBuffer mapToStringBuffer( final Map<Object, Object> map, final String key_value_separator ) {
         final StringBuffer sb = new StringBuffer();
-        for( final Iterator<Object> iter = map.keySet().iterator(); iter.hasNext(); ) {
-            final Object key = iter.next();
+        for( final Object key : map.keySet() ) {
             sb.append( key.toString() );
             sb.append( key_value_separator );
             sb.append( map.get( key ).toString() );
@@ -1305,7 +1303,7 @@ public final class ForesterUtil {
         return null;
     }
 
-    private final static void printRel( String tax_code, String group ) {
+    private final static void printRel( final String tax_code, final String group ) {
         //System.out.println( tax_code + "->" + group );
         System.out.println( "_default_taxcode_taxgroup_map.put( \"" + tax_code + "\", \"" + group + "\" );" );
     }
