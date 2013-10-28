@@ -208,9 +208,17 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
                 in_protein = false;
             }
             if ( in_source ) {
-                final Matcher m = taxon_PATTERN.matcher( line );
-                if ( m.find() ) {
-                    e.setTaxId( m.group( 1 ) );
+                final Matcher ti = taxon_PATTERN.matcher( line );
+                if ( ti.find() ) {
+                    e.setTaxId( ti.group( 1 ) );
+                }
+                final Matcher chr = chromosome_PATTERN.matcher( line );
+                if ( chr.find() ) {
+                    e.setChromosome( chr.group( 1 ) );
+                }
+                final Matcher map = map_PATTERN.matcher( line );
+                if ( map.find() ) {
+                    e.setMap( map.group( 1 ) );
                 }
             }
             if ( in_cds || in_gene ) {
@@ -259,7 +267,31 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
         }
         return e;
     }
+    private String _map;
+    private String _chromosome;
 
+    private void setMap( String map ) {
+        _map = map;
+        
+    }
+
+    private void setChromosome( String chromosome ) {
+        _chromosome = chromosome;
+        
+    }
+
+    @Override
+    public String getMap( ) {
+        return _map;
+        
+    }
+    @Override
+    public String  getChromosome() {
+        return _chromosome;
+        
+    }
+    
+    
     private static void x( final StringBuilder sb, final String s ) {
         if ( sb.length() > 0 ) {
             sb.append( " " );
