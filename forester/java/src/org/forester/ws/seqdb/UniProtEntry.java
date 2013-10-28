@@ -294,4 +294,16 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     public SortedSet<Annotation> getAnnotations() {
         return null;
     }
+
+    @Override
+    public String getMap(  ) {
+      
+        return null;
+    }
+
+    @Override
+    public String getChromosome(  ) {
+       
+        return null;
+    }
 }
