@@ -26,6 +26,7 @@
 
 package org.forester.surfacing;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -373,6 +374,68 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
+    
+    
+    private StringBuffer getTaxonomyGroupDistribution( Phylogeny tol ) {
+        //TODO work on me    
+        
+        final SortedMap<String, SortedSet<String>> m = new TreeMap<String, SortedSet<String>>();
+        for( final Species species : getSpeciesData().keySet() ) {
+            for( final String combable_dom : getCombinableDomainIds( species ) ) {
+                if ( !m.containsKey( combable_dom ) ) {
+                    m.put( combable_dom, new TreeSet<String>() );
+                }
+                m.get( combable_dom ).add( species.getSpeciesId() );
+            }
+        }
+        Map<String,Integer> countz = new HashMap<String,Integer>();
+        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
+             for( final String tax_code : e.getValue() ) {
+             final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
+                if ( !ForesterUtil.isEmpty( group ) ) {
+                    if ( !countz.containsKey( group ) ) {
+                        countz.put( group, 1 );
+                    }
+                    else {
+                        countz.put( group, countz.get( group) + 1 );
+                    }
+                    
+                }
+                else {
+                    return null;
+                }
+                
+            }
+           
+        }
+        final StringBuffer sb = new StringBuffer();
+        
+        // i am just a template and need to be modified for "printout" TODO
+        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
+            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
+            sb.append( ": " );
+            sb.append( "<span style=\"font-size:8px\">" );
+            for( final String tax : e.getValue() ) {
+                final String hex = SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( tax, null );
+                if ( !ForesterUtil.isEmpty( hex ) ) {
+                    sb.append( "<span style=\"color:" );
+                    sb.append( hex );
+                    sb.append( "\">" );
+                    sb.append( tax );
+                    sb.append( "</span>" );
+                }
+                else {
+                    sb.append( tax );
+                }
+                sb.append( " " );
+            }
+            sb.append( "</span>" );
+            sb.append( "<br>\n" );
+        }
+        return sb;
+    }
+    
+    
     private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
                                                             final Map<String, Integer> tax_code_to_id_map,
                                                             final Phylogeny phy ) {

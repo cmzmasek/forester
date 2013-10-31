@@ -127,7 +127,7 @@ import org.forester.ws.wabi.TxSearch.TAX_RANK;
 @SuppressWarnings( "unused")
 public final class Test {
 
-    private final static boolean PERFORM_DB_TESTS          = false;
+    private final static boolean PERFORM_DB_TESTS          = true;
     private final static double  ZERO_DIFF                 = 1.0E-9;
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
@@ -501,7 +501,7 @@ public final class Test {
                 failed++;
             }
         }
-        ///////////////////////////////////////// System.exit( 0 );
+        System.exit( 0 );
         System.out.print( "UniProtKB id extraction: " );
         if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
@@ -11503,14 +11503,14 @@ public final class Test {
                 System.out.println( entry4.getGeneName() );
                 return false;
             }
-            //            if ( !entry4.getChromosome().equals( "ras" ) ) {
-            //                System.out.println( entry4.getChromosome() );
-            //                return false;
-            //            }
-            //            if ( !entry4.getMap().equals( "ras" ) ) {
-            //                System.out.println( entry4.getMap() );
-            //                return false;
-            //            }
+            if ( !entry4.getChromosome().equals( "ras" ) ) {
+                System.out.println( entry4.getChromosome() );
+                return false;
+            }
+            if ( !entry4.getMap().equals( "ras" ) ) {
+                System.out.println( entry4.getMap() );
+                return false;
+            }
             //
             //TODO fails:
             //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );

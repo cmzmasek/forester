@@ -101,6 +101,11 @@ public final class SurfacingUtil {
 
     public final static Pattern              PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
     private final static Map<String, String> _TAXCODE_HEXCOLORSTRING_MAP      = new HashMap<String, String>();
+  
+    
+    private final static Map<String, String> _TAXCODE_TAXGROUP_MAP = new HashMap<String, String>();
+    
+    
     private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
 
                                                                                   @Override
@@ -1378,6 +1383,58 @@ public final class SurfacingUtil {
         }
         return _TAXCODE_HEXCOLORSTRING_MAP.get( tax_code );
     }
+    
+    
+    public static String obtainTaxonomyGroup( final String tax_code, final Phylogeny phy )
+            throws IllegalArgumentException {
+        if ( !_TAXCODE_TAXGROUP_MAP.containsKey( tax_code ) ) {
+            if ( ( phy != null ) && !phy.isEmpty() ) {
+                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+                
+                if ( ( nodes == null ) || nodes.isEmpty() ) {
+                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
+                }
+                if ( nodes.size() != 1 ) {
+                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
+                }
+                PhylogenyNode n = nodes.get( 0 );
+                String group = null;
+                Color c = null;
+                while ( n != null ) {
+                    if ( n.getNodeData().isHasTaxonomy()
+                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
+                                .getScientificName(), tax_code );
+                        
+                        group = n.getNodeData().getTaxonomy()
+                                .getScientificName();
+                    }
+                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
+                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
+                        group =  n.getName();
+                    }
+                    if ( c != null ) {
+                        break;
+                    }
+                    group = null;
+                    n = n.getParent();
+                }
+                if ( c == null ) {
+                    throw new IllegalArgumentException( "no group found for taxonomy code \"" + tax_code + "\"" );
+                }
+                
+                _TAXCODE_TAXGROUP_MAP.put( tax_code, group );
+            }
+            else {
+                throw new IllegalArgumentException( "unable to obtain group for code " + tax_code
+                        + " (tree is null or empty and code is not in map)" );
+            }
+        }
+        return _TAXCODE_TAXGROUP_MAP.get( tax_code );
+    }
+    
+    
+    
 
     public static void performDomainArchitectureAnalysis( final SortedMap<String, Set<String>> domain_architecutures,
                                                           final SortedMap<String, Integer> domain_architecuture_counts,

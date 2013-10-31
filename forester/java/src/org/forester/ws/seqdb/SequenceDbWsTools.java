@@ -383,6 +383,15 @@ public final class SequenceDbWsTools {
                     seq.addCrossReference( x );
                 }
             }
+            if ( !ForesterUtil.isEmpty( db_entry.getChromosome() ) && !ForesterUtil.isEmpty( db_entry.getMap() ) ) {
+                seq.setLocation( "chr " + db_entry.getChromosome() + ", " + db_entry.getMap() );
+            }
+            else if ( !ForesterUtil.isEmpty( db_entry.getChromosome() ) ) {
+                seq.setLocation( "chr " + db_entry.getChromosome() );
+            }
+            else if ( !ForesterUtil.isEmpty( db_entry.getMap() ) ) {
+                seq.setLocation( db_entry.getMap() );
+            }
             final Taxonomy tax = node.getNodeData().isHasTaxonomy() ? node.getNodeData().getTaxonomy() : new Taxonomy();
             if ( !ForesterUtil.isEmpty( db_entry.getTaxonomyScientificName() ) ) {
                 tax.setScientificName( db_entry.getTaxonomyScientificName() );
