@@ -1347,32 +1347,34 @@ public final class SurfacingUtil {
             throws IllegalArgumentException {
         if ( !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
             if ( ( phy != null ) && !phy.isEmpty() ) {
-                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
-                Color c = null;
-                if ( ( nodes == null ) || nodes.isEmpty() ) {
-                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
-                }
-                if ( nodes.size() != 1 ) {
-                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
-                }
-                PhylogenyNode n = nodes.get( 0 );
-                while ( n != null ) {
-                    if ( n.getNodeData().isHasTaxonomy()
-                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
-                                .getScientificName(), tax_code );
-                    }
-                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
-                    }
-                    if ( c != null ) {
-                        break;
-                    }
-                    n = n.getParent();
-                }
+//                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+//                Color c = null;
+//                if ( ( nodes == null ) || nodes.isEmpty() ) {
+//                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
+//                }
+//                if ( nodes.size() != 1 ) {
+//                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
+//                }
+//                PhylogenyNode n = nodes.get( 0 );
+//                while ( n != null ) {
+//                    if ( n.getNodeData().isHasTaxonomy()
+//                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+//                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
+//                                .getScientificName(), tax_code );
+//                    }
+//                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
+//                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
+//                    }
+//                    if ( c != null ) {
+//                        break;
+//                    }
+//                    n = n.getParent();
+//                }
+                final String group = obtainTaxonomyGroup( tax_code, phy );
+                Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
                 if ( c == null ) {
                     throw new IllegalArgumentException( "no color found for taxonomy code \"" + tax_code + "\"" );
-                }
+                } 
                 final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
                 _TAXCODE_HEXCOLORSTRING_MAP.put( tax_code, hex );
             }
@@ -1385,11 +1387,11 @@ public final class SurfacingUtil {
     }
     
     
-    public static String obtainTaxonomyGroup( final String tax_code, final Phylogeny phy )
+    public static String obtainTaxonomyGroup( final String tax_code, final Phylogeny species_tree )
             throws IllegalArgumentException {
         if ( !_TAXCODE_TAXGROUP_MAP.containsKey( tax_code ) ) {
-            if ( ( phy != null ) && !phy.isEmpty() ) {
-                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+            if ( ( species_tree != null ) && !species_tree.isEmpty() ) {
+                final List<PhylogenyNode> nodes = species_tree.getNodesViaTaxonomyCode( tax_code );
                 
                 if ( ( nodes == null ) || nodes.isEmpty() ) {
                     throw new IllegalArgumentException( "code " + tax_code + " is not found" );
@@ -1399,27 +1401,25 @@ public final class SurfacingUtil {
                 }
                 PhylogenyNode n = nodes.get( 0 );
                 String group = null;
-                Color c = null;
+                
                 while ( n != null ) {
                     if ( n.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
-                                .getScientificName(), tax_code );
+                        group = ForesterUtil.obtainNormalizedTaxonomyGroup( n.getNodeData().getTaxonomy()
+                                .getScientificName() );
                         
-                        group = n.getNodeData().getTaxonomy()
-                                .getScientificName();
                     }
-                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
-                        group =  n.getName();
+                    if ( ForesterUtil.isEmpty( group  ) && !ForesterUtil.isEmpty( n.getName() ) ) {
+                        group = ForesterUtil.obtainNormalizedTaxonomyGroup( n.getName() );
+                        
                     }
-                    if ( c != null ) {
+                    if ( !ForesterUtil.isEmpty( group  ) ) {
                         break;
                     }
-                    group = null;
+                    
                     n = n.getParent();
                 }
-                if ( c == null ) {
+                if ( ForesterUtil.isEmpty( group  ) ) {
                     throw new IllegalArgumentException( "no group found for taxonomy code \"" + tax_code + "\"" );
                 }
                 

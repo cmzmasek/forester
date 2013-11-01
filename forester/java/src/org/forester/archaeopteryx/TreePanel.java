@@ -702,27 +702,46 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color calculateTaxonomyBasedColor( final Taxonomy tax ) {
-        if ( ForesterUtil.isEmpty( tax.getTaxonomyCode() ) && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+        if ( getOptions().isColorByTaxonomicGroup() && !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+            boolean ex = false;
+            String group = null;
+            try {
+                group =TaxonomyUtil.getTaxGroupByTaxCode( tax.getTaxonomyCode() );
+            }
+            catch ( Exception e ) {
+                ex = true;
+            }
+            if ( !ex && !ForesterUtil.isEmpty( group ) ) {
+                Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                if ( c != null ) {
+                    return c;
+                }
+            }
             return getTreeColorSet().getTaxonomyColor();
         }
-        Color c = null;
-        if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-            c = getControlPanel().getSpeciesColors().get( tax.getTaxonomyCode() );
-        }
-        if ( ( c == null ) && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
-            c = getControlPanel().getSpeciesColors().get( tax.getScientificName() );
-        }
-        if ( c == null ) {
+        else {
+            if ( ForesterUtil.isEmpty( tax.getTaxonomyCode() ) && ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+                return getTreeColorSet().getTaxonomyColor();
+            }
+            Color c = null;
             if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-                c = TreePanelUtil.calculateColorFromString( tax.getTaxonomyCode(), true );
-                getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
+                c = getControlPanel().getSpeciesColors().get( tax.getTaxonomyCode() );
             }
-            else {
-                c = TreePanelUtil.calculateColorFromString( tax.getScientificName(), true );
-                getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
+            if ( ( c == null ) && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
+                c = getControlPanel().getSpeciesColors().get( tax.getScientificName() );
             }
+            if ( c == null ) {
+                if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                    c = TreePanelUtil.calculateColorFromString( tax.getTaxonomyCode(), true );
+                    getControlPanel().getSpeciesColors().put( tax.getTaxonomyCode(), c );
+                }
+                else {
+                    c = TreePanelUtil.calculateColorFromString( tax.getScientificName(), true );
+                    getControlPanel().getSpeciesColors().put( tax.getScientificName(), c );
+                }
+            }
+            return c;
         }
-        return c;
     }
 
     void checkForVectorProperties( final Phylogeny phy ) {

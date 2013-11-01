@@ -1692,4 +1692,9 @@ public final class Configuration {
     public boolean isShowAnnotationRefSource() {
         return _show_annotation_ref_source;
     }
+
+    public boolean isColorByTaxonomicGroup() {
+        
+        return false;
+    }
 }

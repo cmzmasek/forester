@@ -1204,111 +1204,160 @@ public final class ForesterUtil {
         System.exit( -1 );
     }
 
-    public final static Color obtainColorDependingOnTaxonomyGroup( final String tax, final String tax_code ) {
+    public final static Color obtainColorDependingOnTaxonomyGroup( final String tax_group ) {
+        if ( !ForesterUtil.isEmpty( tax_group ) ) {
+            if ( tax_group.equals( "deuterostomia" ) ) {
+                return TaxonomyColors.DEUTEROSTOMIA_COLOR;
+            }
+            else if ( tax_group.equals( "protostomia" ) ) {
+                return TaxonomyColors.PROTOSTOMIA_COLOR;
+            }
+            else if ( tax_group.equals( "cnidaria" ) ) {
+                return TaxonomyColors.CNIDARIA_COLOR;
+            }
+            else if ( tax_group.equals( "placozoa" ) ) {
+                return TaxonomyColors.PLACOZOA_COLOR;
+            }
+            else if ( tax_group.equals( "ctenophora" ) ) {
+                return TaxonomyColors.CTENOPHORA_COLOR;
+            }
+            else if ( tax_group.equals( "porifera" ) ) {
+                return TaxonomyColors.PORIFERA_COLOR;
+            }
+            else if ( tax_group.equals( "choanoflagellida" ) ) {
+                return TaxonomyColors.CHOANOFLAGELLIDA;
+            }
+            else if ( tax_group.equals( "ichthyophonida & filasterea" ) ) {
+                return TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA;
+            }
+            else if ( tax_group.equals( "dikarya" ) ) {
+                return TaxonomyColors.DIKARYA_COLOR;
+            }
+            else if ( tax_group.equalsIgnoreCase( "fungi" ) || tax_group.equalsIgnoreCase( "other fungi" ) ) {
+                return TaxonomyColors.OTHER_FUNGI_COLOR;
+            }
+            else if ( tax_group.equals( "nucleariidae and fonticula" ) ) {
+                return TaxonomyColors.NUCLEARIIDAE_AND_FONTICULA_GROUP_COLOR;
+            }
+            else if ( tax_group.equals( "amoebozoa" ) ) {
+                return TaxonomyColors.AMOEBOZOA_COLOR;
+            }
+            else if ( tax_group.equals( "embryophyta" ) ) {
+                return TaxonomyColors.EMBRYOPHYTA_COLOR;
+            }
+            else if ( tax_group.equals( "chlorophyta" ) ) {
+                return TaxonomyColors.CHLOROPHYTA_COLOR;
+            }
+            else if ( tax_group.equals( "rhodophyta" ) ) {
+                return TaxonomyColors.RHODOPHYTA_COLOR;
+            }
+            else if ( tax_group.equals( "hacrobia" ) ) {
+                return TaxonomyColors.HACROBIA_COLOR;
+            }
+            else if ( tax_group.equals( "glaucocystophyceae" ) ) {
+                return TaxonomyColors.GLAUCOPHYTA_COLOR;
+            }
+            else if ( tax_group.equals( "stramenopiles" ) ) {
+                return TaxonomyColors.STRAMENOPILES_COLOR;
+            }
+            else if ( tax_group.equals( "alveolata" ) ) {
+                return TaxonomyColors.ALVEOLATA_COLOR;
+            }
+            else if ( tax_group.equals( "rhizaria" ) ) {
+                return TaxonomyColors.RHIZARIA_COLOR;
+            }
+            else if ( tax_group.equals( "excavata" ) ) {
+                return TaxonomyColors.EXCAVATA_COLOR;
+            }
+            else if ( tax_group.equals( "apusozoa" ) ) {
+                return TaxonomyColors.APUSOZOA_COLOR;
+            }
+            else if ( tax_group.equals( "archaea" ) ) {
+                return TaxonomyColors.ARCHAEA_COLOR;
+            }
+            else if ( tax_group.equals( "bacteria" ) ) {
+                return TaxonomyColors.BACTERIA_COLOR;
+            }
+        }
+        return null;
+    }
+
+    public final static String obtainNormalizedTaxonomyGroup( final String tax ) {
         if ( tax.equalsIgnoreCase( "deuterostomia" ) ) {
-            printRel( tax_code, "deuterostomia" );
-            return TaxonomyColors.DEUTEROSTOMIA_COLOR;
+            return "deuterostomia";
         }
         else if ( tax.equalsIgnoreCase( "protostomia" ) ) {
-            printRel( tax_code, "protostomia" );
-            return TaxonomyColors.PROTOSTOMIA_COLOR;
+            return "protostomia";
         }
         else if ( tax.equalsIgnoreCase( "cnidaria" ) ) {
-            printRel( tax_code, "cnidaria" );
-            return TaxonomyColors.CNIDARIA_COLOR;
+            return "cnidaria";
         }
         else if ( tax.toLowerCase().startsWith( "trichoplax" ) || tax.equalsIgnoreCase( "placozoa" ) ) {
-            printRel( tax_code, "placozoa" );
-            return TaxonomyColors.PLACOZOA_COLOR;
+            return "placozoa";
         }
         else if ( tax.toLowerCase().startsWith( "mnemiopsis" ) || tax.equalsIgnoreCase( "ctenophora" ) ) {
-            printRel( tax_code, "ctenophora" );
-            return TaxonomyColors.CTENOPHORA_COLOR;
+            return "ctenophora";
         }
         else if ( tax.toLowerCase().startsWith( "amphimedon" ) || tax.equalsIgnoreCase( "porifera" ) ) {
-            printRel( tax_code, "porifera" );
-            return TaxonomyColors.PORIFERA_COLOR;
+            return "porifera";
         }
         else if ( tax.equalsIgnoreCase( "codonosigidae" ) || tax.equalsIgnoreCase( "choanoflagellida" ) ) {
-            printRel( tax_code, "choanoflagellida" );
-            return TaxonomyColors.CHOANOFLAGELLIDA;
+            return "choanoflagellida";
         }
         else if ( tax.toLowerCase().startsWith( "ichthyophonida & filasterea" )
                 || tax.toLowerCase().startsWith( "ichthyophonida and filasterea" )
                 || tax.toLowerCase().startsWith( "ichthyosporea & filasterea" )
                 || tax.toLowerCase().startsWith( "ichthyosporea and filasterea" ) ) {
-            printRel( tax_code, "ichthyophonida & filasterea" );
-            return TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA;
+            return "ichthyophonida & filasterea";
         }
         else if ( tax.equalsIgnoreCase( "dikarya" ) ) {
-            printRel( tax_code, "dikarya" );
-            return TaxonomyColors.DIKARYA_COLOR;
+            return "dikarya";
         }
-        else if ( tax.equalsIgnoreCase( "fungi" ) || tax.equalsIgnoreCase( "other fungi" ) ) {
-            printRel( tax_code, "other fungi" );
-            return TaxonomyColors.OTHER_FUNGI_COLOR;
+        else if ( tax.equalsIgnoreCase( "other fungi" ) ) {
+            return "other fungi";
         }
         else if ( tax.toLowerCase().startsWith( "nucleariidae and fonticula" ) ) {
-            printRel( tax_code, "nucleariidae and fonticula group" );
-            return TaxonomyColors.NUCLEARIIDAE_AND_FONTICULA_GROUP_COLOR;
+            return "nucleariidae and fonticula group";
         }
         else if ( tax.equalsIgnoreCase( "amoebozoa" ) ) {
-            printRel( tax_code, "amoebozoa" );
-            return TaxonomyColors.AMOEBOZOA_COLOR;
+            return "amoebozoa";
         }
         else if ( tax.equalsIgnoreCase( "embryophyta" ) ) {
-            printRel( tax_code, "embryophyta" );
-            return TaxonomyColors.EMBRYOPHYTA_COLOR;
+            return "embryophyta";
         }
         else if ( tax.equalsIgnoreCase( "chlorophyta" ) ) {
-            printRel( tax_code, "chlorophyta" );
-            return TaxonomyColors.CHLOROPHYTA_COLOR;
+            return "chlorophyta";
         }
         else if ( tax.equalsIgnoreCase( "rhodophyta" ) ) {
-            printRel( tax_code, "rhodophyta" );
-            return TaxonomyColors.RHODOPHYTA_COLOR;
+            return "rhodophyta";
         }
         else if ( tax.toLowerCase().startsWith( "hacrobia" ) ) {
-            printRel( tax_code, "hacrobia" );
-            return TaxonomyColors.HACROBIA_COLOR;
+            return "hacrobia";
         }
         else if ( tax.equalsIgnoreCase( "glaucocystophyceae" ) || tax.equalsIgnoreCase( "glaucophyta" ) ) {
-            printRel( tax_code, "glaucocystophyceae" );
-            return TaxonomyColors.GLAUCOPHYTA_COLOR;
+            return "glaucocystophyceae";
         }
         else if ( tax.equalsIgnoreCase( "stramenopiles" ) ) {
-            printRel( tax_code, "stramenopiles" );
-            return TaxonomyColors.STRAMENOPILES_COLOR;
+            return "stramenopiles";
         }
         else if ( tax.equalsIgnoreCase( "alveolata" ) ) {
-            printRel( tax_code, "alveolata" );
-            return TaxonomyColors.ALVEOLATA_COLOR;
+            return "alveolata";
         }
         else if ( tax.equalsIgnoreCase( "rhizaria" ) ) {
-            printRel( tax_code, "rhizaria" );
-            return TaxonomyColors.RHIZARIA_COLOR;
+            return "rhizaria";
         }
         else if ( tax.equalsIgnoreCase( "excavata" ) ) {
-            printRel( tax_code, "excavata" );
-            return TaxonomyColors.EXCAVATA_COLOR;
+            return "excavata";
         }
         else if ( tax.equalsIgnoreCase( "apusozoa" ) ) {
-            printRel( tax_code, "apusozoa" );
-            return TaxonomyColors.APUSOZOA_COLOR;
+            return "apusozoa";
         }
         else if ( tax.equalsIgnoreCase( "archaea" ) ) {
-            printRel( tax_code, "archaea" );
-            return TaxonomyColors.ARCHAEA_COLOR;
+            return "archaea";
         }
         else if ( tax.equalsIgnoreCase( "bacteria" ) ) {
-            printRel( tax_code, "bacteria" );
-            return TaxonomyColors.BACTERIA_COLOR;
+            return "bacteria";
         }
         return null;
-    }
-
-    private final static void printRel( final String tax_code, final String group ) {
-        //System.out.println( tax_code + "->" + group );
-        //System.out.println( "_default_taxcode_taxgroup_map.put( \"" + tax_code + "\", \"" + group + "\" );" );
     }
 }

@@ -42,6 +42,7 @@ import org.forester.util.ForesterUtil;
 final public class Options {
 
     static final double                       MIN_CONFIDENCE_DEFAULT = 0.0;
+    private boolean                           _color_by_taxonomic_group;
     private boolean                           _show_branch_length_values;
     private boolean                           _internal_number_are_confidence_for_nh_parsing;
     private boolean                           _show_scale;
@@ -257,6 +258,11 @@ final public class Options {
         return _show_branch_length_values;
     }
 
+    final boolean isColorByTaxonomicGroup() {
+        return _color_by_taxonomic_group;
+    }
+    
+    
     boolean isShowConfidenceStddev() {
         return _show_confidence_stddev;
     }
@@ -399,6 +405,10 @@ final public class Options {
         _show_branch_length_values = show_branch_length_values;
     }
 
+    final void setColorByTaxonomicGroup( final boolean color_by_taxonomic_group ) {
+        _color_by_taxonomic_group = color_by_taxonomic_group;
+    }
+    
     void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
         _show_confidence_stddev = show_confidence_stddev;
     }
@@ -493,6 +503,7 @@ final public class Options {
             instance.setShowScale( configuration.isShowScale() );
             instance.setShowBranchLengthValues( configuration.isShowBranchLengthValues() );
             instance.setShowOverview( configuration.isShowOverview() );
+            instance.setColorByTaxonomicGroup( configuration.isColorByTaxonomicGroup() );
             instance.setCladogramType( configuration.getCladogramType() );
             instance.setOvPlacement( configuration.getOvPlacement() );
             instance.setPrintLineWidth( configuration.getPrintLineWidth() );

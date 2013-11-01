@@ -6,6 +6,11 @@ import java.util.Map;
 
 final class TaxonomyUtil {
 
+    static String getTaxGroupByTaxCode( String code  ) {
+        return _default_taxcode_taxgroup_map.get( code );
+    }
+    
+    
     private final static Map<String, String> _default_taxcode_taxgroup_map = new HashMap<String, String>();
     static {
         _default_taxcode_taxgroup_map.put( "HUMAN", "deuterostomia" );

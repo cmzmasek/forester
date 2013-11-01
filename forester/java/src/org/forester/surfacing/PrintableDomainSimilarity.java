@@ -26,9 +26,13 @@
 
 package org.forester.surfacing;
 
+import java.awt.Color;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -374,68 +378,111 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
-    
-    
     private StringBuffer getTaxonomyGroupDistribution( Phylogeny tol ) {
         //TODO work on me    
-        
-        final SortedMap<String, SortedSet<String>> m = new TreeMap<String, SortedSet<String>>();
+        final SortedMap<String, Set<String>> domain_to_species_set_map = new TreeMap<String, Set<String>>();
         for( final Species species : getSpeciesData().keySet() ) {
             for( final String combable_dom : getCombinableDomainIds( species ) ) {
-                if ( !m.containsKey( combable_dom ) ) {
-                    m.put( combable_dom, new TreeSet<String>() );
+                if ( !domain_to_species_set_map.containsKey( combable_dom ) ) {
+                    domain_to_species_set_map.put( combable_dom, new HashSet<String>() );
                 }
-                m.get( combable_dom ).add( species.getSpeciesId() );
+                domain_to_species_set_map.get( combable_dom ).add( species.getSpeciesId() );
             }
         }
-        Map<String,Integer> countz = new HashMap<String,Integer>();
-        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
-             for( final String tax_code : e.getValue() ) {
-             final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
+        final StringBuffer sb = new StringBuffer();
+        for( final Map.Entry<String, Set<String>> domain_to_species_set : domain_to_species_set_map.entrySet() ) {
+            final Map<String, Integer> countz = new HashMap<String, Integer>();
+            final ValueComparator bvc = new ValueComparator( countz );
+            final SortedMap<String, Integer> sorted_countz = new TreeMap<String, Integer>( bvc );
+            for( final String tax_code : domain_to_species_set.getValue() ) {
+                final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
                 if ( !ForesterUtil.isEmpty( group ) ) {
                     if ( !countz.containsKey( group ) ) {
                         countz.put( group, 1 );
                     }
                     else {
-                        countz.put( group, countz.get( group) + 1 );
+                        countz.put( group, countz.get( group ) + 1 );
                     }
-                    
                 }
                 else {
                     return null;
                 }
-                
             }
-           
-        }
-        final StringBuffer sb = new StringBuffer();
-        
-        // i am just a template and need to be modified for "printout" TODO
-        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
-            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
+            sorted_countz.putAll( countz );
+            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">" + domain_to_species_set.getKey() + "</a>" );
             sb.append( ": " );
             sb.append( "<span style=\"font-size:8px\">" );
-            for( final String tax : e.getValue() ) {
-                final String hex = SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( tax, null );
-                if ( !ForesterUtil.isEmpty( hex ) ) {
-                    sb.append( "<span style=\"color:" );
-                    sb.append( hex );
-                    sb.append( "\">" );
-                    sb.append( tax );
-                    sb.append( "</span>" );
-                }
-                else {
-                    sb.append( tax );
-                }
+            for( final Map.Entry<String, Integer> group_to_counts : sorted_countz.entrySet() ) {
+                final String group = group_to_counts.getKey();
+                final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                if ( c == null ) {
+                    throw new IllegalArgumentException( "no color found for taxonomy group\"" + group + "\"" );
+                } 
+                final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
+             
+                sb.append( "<span style=\"color:" );
+                sb.append( hex );
+                sb.append( "\">" );
+                sb.append( group );
+                sb.append( ": " );
+                sb.append( group_to_counts.getValue() );
+                sb.append( "</span>" );
                 sb.append( " " );
+                sb.append( "<br>\n" );
             }
             sb.append( "</span>" );
-            sb.append( "<br>\n" );
+            
         }
+        // i am just a template and need to be modified for "printout" TODO
+        //        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
+        //            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
+        //            sb.append( ": " );
+        //            sb.append( "<span style=\"font-size:8px\">" );
+        //            for( final String tax : e.getValue() ) {
+        //                final String hex = SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( tax, null );
+        //                if ( !ForesterUtil.isEmpty( hex ) ) {
+        //                    sb.append( "<span style=\"color:" );
+        //                    sb.append( hex );
+        //                    sb.append( "\">" );
+        //                    sb.append( tax );
+        //                    sb.append( "</span>" );
+        //                }
+        //                else {
+        //                    sb.append( tax );
+        //                }
+        //                sb.append( " " );
+        //            }
+        //            sb.append( "</span>" );
+        //            sb.append( "<br>\n" );
+        //        }
         return sb;
     }
-    
-    
+
+    /*
+     public class Testing {
+
+    public static void main(String[] args) {
+
+        HashMap<String,Double> map = new HashMap<String,Double>();
+        ValueComparator bvc =  new ValueComparator(map);
+        TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(bvc);
+
+        map.put("A",99.5);
+        map.put("B",67.4);
+        map.put("C",67.4);
+        map.put("D",67.3);
+
+        System.out.println("unsorted map: "+map);
+
+        sorted_map.putAll(map);
+
+        System.out.println("results: "+sorted_map);
+    }
+    }
+
+       
+      
+     */
     private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
                                                             final Map<String, Integer> tax_code_to_id_map,
                                                             final Phylogeny phy ) {
@@ -527,12 +574,15 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map, phy ) );
             sb.append( getDomainDataInAlphabeticalOrder() );
+            sb.append( getTaxonomyGroupDistribution( phy ) );
             sb.append( "</td>" );
         }
         else {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map, phy ) );
             sb.append( getDomainDataInAlphabeticalOrder() );
+            sb.append( getTaxonomyGroupDistribution( phy ) );
+
             sb.append( "</td>" );
         }
         sb.append( "</tr>" );
@@ -550,5 +600,23 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
 
     public static enum PRINT_OPTION {
         HTML, SIMPLE_TAB_DELIMITED;
+    }
+
+    class ValueComparator implements Comparator<String> {
+
+        final private Map<String, Integer> _base;
+
+        public ValueComparator( final Map<String, Integer> base ) {
+            _base = base;
+        }
+
+        public int compare( final String a, final String b ) {
+            if ( _base.get( a ) >= _base.get( b ) ) {
+                return -1;
+            }
+            else {
+                return 1;
+            } // returning 0 would merge keys
+        }
     }
 }

@@ -888,13 +888,20 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
+       
+        
         _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
+       
+        _options_jmenu
+        .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( COLOR_BY_TAXONOMIC_GROUP ) );
+
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
+        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
+        
         _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
         _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
         _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
@@ -978,7 +985,9 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
         customizeCheckBoxMenuItem( _color_labels_same_as_parent_branch, getOptions().isColorLabelsSameAsParentBranch() );
-        customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
+        customizeCheckBoxMenuItem( _color_by_taxonomic_group_cbmi, getOptions().isColorByTaxonomicGroup() );
+
+         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
         customizeCheckBoxMenuItem( _background_gradient_cbmi, getOptions().isBackgroundColorGradient() );
         customizeCheckBoxMenuItem( _show_domain_labels, getOptions().isShowDomainLabels() );
         customizeCheckBoxMenuItem( _show_annotation_ref_source, getOptions().isShowAnnotationRefSource() );
