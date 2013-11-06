@@ -706,13 +706,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             boolean ex = false;
             String group = null;
             try {
-                group =TaxonomyUtil.getTaxGroupByTaxCode( tax.getTaxonomyCode() );
+                group = TaxonomyUtil.getTaxGroupByTaxCode( tax.getTaxonomyCode() );
             }
-            catch ( Exception e ) {
+            catch ( final Exception e ) {
                 ex = true;
             }
             if ( !ex && !ForesterUtil.isEmpty( group ) ) {
-                Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
                 if ( c != null ) {
                     return c;
                 }

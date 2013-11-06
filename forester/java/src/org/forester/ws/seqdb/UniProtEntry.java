@@ -296,14 +296,12 @@ public final class UniProtEntry implements SequenceDatabaseEntry {
     }
 
     @Override
-    public String getMap(  ) {
-      
+    public String getMap() {
         return null;
     }
 
     @Override
-    public String getChromosome(  ) {
-       
+    public String getChromosome() {
         return null;
     }
 }

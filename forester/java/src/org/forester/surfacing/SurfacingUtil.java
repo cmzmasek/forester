@@ -101,11 +101,7 @@ public final class SurfacingUtil {
 
     public final static Pattern              PATTERN_SP_STYLE_TAXONOMY        = Pattern.compile( "^[A-Z0-9]{3,5}$" );
     private final static Map<String, String> _TAXCODE_HEXCOLORSTRING_MAP      = new HashMap<String, String>();
-  
-    
-    private final static Map<String, String> _TAXCODE_TAXGROUP_MAP = new HashMap<String, String>();
-    
-    
+    private final static Map<String, String> _TAXCODE_TAXGROUP_MAP            = new HashMap<String, String>();
     private static final Comparator<Domain>  ASCENDING_CONFIDENCE_VALUE_ORDER = new Comparator<Domain>() {
 
                                                                                   @Override
@@ -1347,34 +1343,35 @@ public final class SurfacingUtil {
             throws IllegalArgumentException {
         if ( !_TAXCODE_HEXCOLORSTRING_MAP.containsKey( tax_code ) ) {
             if ( ( phy != null ) && !phy.isEmpty() ) {
-//                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
-//                Color c = null;
-//                if ( ( nodes == null ) || nodes.isEmpty() ) {
-//                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
-//                }
-//                if ( nodes.size() != 1 ) {
-//                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
-//                }
-//                PhylogenyNode n = nodes.get( 0 );
-//                while ( n != null ) {
-//                    if ( n.getNodeData().isHasTaxonomy()
-//                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
-//                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
-//                                .getScientificName(), tax_code );
-//                    }
-//                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
-//                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
-//                    }
-//                    if ( c != null ) {
-//                        break;
-//                    }
-//                    n = n.getParent();
-//                }
+                //                final List<PhylogenyNode> nodes = phy.getNodesViaTaxonomyCode( tax_code );
+                //                Color c = null;
+                //                if ( ( nodes == null ) || nodes.isEmpty() ) {
+                //                    throw new IllegalArgumentException( "code " + tax_code + " is not found" );
+                //                }
+                //                if ( nodes.size() != 1 ) {
+                //                    throw new IllegalArgumentException( "code " + tax_code + " is not unique" );
+                //                }
+                //                PhylogenyNode n = nodes.get( 0 );
+                //                while ( n != null ) {
+                //                    if ( n.getNodeData().isHasTaxonomy()
+                //                            && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                //                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getNodeData().getTaxonomy()
+                //                                .getScientificName(), tax_code );
+                //                    }
+                //                    if ( ( c == null ) && !ForesterUtil.isEmpty( n.getName() ) ) {
+                //                        c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( n.getName(), tax_code );
+                //                    }
+                //                    if ( c != null ) {
+                //                        break;
+                //                    }
+                //                    n = n.getParent();
+                //                }
                 final String group = obtainTaxonomyGroup( tax_code, phy );
-                Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
                 if ( c == null ) {
-                    throw new IllegalArgumentException( "no color found for taxonomy code \"" + tax_code + "\"" );
-                } 
+                    throw new IllegalArgumentException( "no color found for taxonomy group \"" + group
+                            + "\" for code \"" + tax_code + "\"" );
+                }
                 final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
                 _TAXCODE_HEXCOLORSTRING_MAP.put( tax_code, hex );
             }
@@ -1385,14 +1382,12 @@ public final class SurfacingUtil {
         }
         return _TAXCODE_HEXCOLORSTRING_MAP.get( tax_code );
     }
-    
-    
+
     public static String obtainTaxonomyGroup( final String tax_code, final Phylogeny species_tree )
             throws IllegalArgumentException {
         if ( !_TAXCODE_TAXGROUP_MAP.containsKey( tax_code ) ) {
             if ( ( species_tree != null ) && !species_tree.isEmpty() ) {
                 final List<PhylogenyNode> nodes = species_tree.getNodesViaTaxonomyCode( tax_code );
-                
                 if ( ( nodes == null ) || nodes.isEmpty() ) {
                     throw new IllegalArgumentException( "code " + tax_code + " is not found" );
                 }
@@ -1401,28 +1396,23 @@ public final class SurfacingUtil {
                 }
                 PhylogenyNode n = nodes.get( 0 );
                 String group = null;
-                
                 while ( n != null ) {
                     if ( n.getNodeData().isHasTaxonomy()
                             && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
                         group = ForesterUtil.obtainNormalizedTaxonomyGroup( n.getNodeData().getTaxonomy()
                                 .getScientificName() );
-                        
                     }
-                    if ( ForesterUtil.isEmpty( group  ) && !ForesterUtil.isEmpty( n.getName() ) ) {
+                    if ( ForesterUtil.isEmpty( group ) && !ForesterUtil.isEmpty( n.getName() ) ) {
                         group = ForesterUtil.obtainNormalizedTaxonomyGroup( n.getName() );
-                        
                     }
-                    if ( !ForesterUtil.isEmpty( group  ) ) {
+                    if ( !ForesterUtil.isEmpty( group ) ) {
                         break;
                     }
-                    
                     n = n.getParent();
                 }
-                if ( ForesterUtil.isEmpty( group  ) ) {
+                if ( ForesterUtil.isEmpty( group ) ) {
                     throw new IllegalArgumentException( "no group found for taxonomy code \"" + tax_code + "\"" );
                 }
-                
                 _TAXCODE_TAXGROUP_MAP.put( tax_code, group );
             }
             else {
@@ -1432,9 +1422,6 @@ public final class SurfacingUtil {
         }
         return _TAXCODE_TAXGROUP_MAP.get( tax_code );
     }
-    
-    
-    
 
     public static void performDomainArchitectureAnalysis( final SortedMap<String, Set<String>> domain_architecutures,
                                                           final SortedMap<String, Integer> domain_architecuture_counts,
@@ -2238,7 +2225,8 @@ public final class SurfacingUtil {
                                                       final DomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
                                                       final Map<String, Integer> tax_code_to_id_map,
-                                                      final Phylogeny phy ) throws IOException {
+                                                      final Phylogeny phy,
+                                                      final Set<String> pos_filter_doms ) throws IOException {
         if ( ( single_writer != null ) && ( ( split_writers == null ) || split_writers.isEmpty() ) ) {
             split_writers = new HashMap<Character, Writer>();
             split_writers.put( '_', single_writer );
@@ -2279,8 +2267,15 @@ public final class SurfacingUtil {
                 ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
             }
             if ( single_writer != null ) {
-                single_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
-                        + similarity.getDomainId() + "</a></b></td></tr>" );
+                if ( !ForesterUtil.isEmpty( pos_filter_doms ) && pos_filter_doms.contains( similarity.getDomainId() ) ) {
+                    single_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId()
+                            + "\"><span style=\"color:#00ff00\">" + similarity.getDomainId()
+                            + "</span></a></b></td></tr>" );
+                }
+                else {
+                    single_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
+                            + similarity.getDomainId() + "</a></b></td></tr>" );
+                }
                 single_writer.write( SurfacingConstants.NL );
             }
             else {
@@ -2289,8 +2284,15 @@ public final class SurfacingUtil {
                 if ( local_writer == null ) {
                     local_writer = split_writers.get( '0' );
                 }
-                local_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
-                        + similarity.getDomainId() + "</a></b></td></tr>" );
+                if ( !ForesterUtil.isEmpty( pos_filter_doms ) && pos_filter_doms.contains( similarity.getDomainId() ) ) {
+                    local_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId()
+                            + "\"><span style=\"color:#00ff00\">" + similarity.getDomainId()
+                            + "</span></a></b></td></tr>" );
+                }
+                else {
+                    local_writer.write( "<tr><td><b><a href=\"#" + similarity.getDomainId() + "\">"
+                            + similarity.getDomainId() + "</a></b></td></tr>" );
+                }
                 local_writer.write( SurfacingConstants.NL );
             }
         }

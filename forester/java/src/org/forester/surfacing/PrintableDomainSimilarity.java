@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -378,7 +379,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
-    private StringBuffer getTaxonomyGroupDistribution( Phylogeny tol ) {
+    private StringBuffer getTaxonomyGroupDistribution( final Phylogeny tol ) {
         //TODO work on me    
         final SortedMap<String, Set<String>> domain_to_species_set_map = new TreeMap<String, Set<String>>();
         for( final Species species : getSpeciesData().keySet() ) {
@@ -390,49 +391,84 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             }
         }
         final StringBuffer sb = new StringBuffer();
+        sb.append( "<table>" );
         for( final Map.Entry<String, Set<String>> domain_to_species_set : domain_to_species_set_map.entrySet() ) {
-            final Map<String, Integer> countz = new HashMap<String, Integer>();
-            final ValueComparator bvc = new ValueComparator( countz );
-            final SortedMap<String, Integer> sorted_countz = new TreeMap<String, Integer>( bvc );
+            final Map<String, Integer> counts = new HashMap<String, Integer>();
+            //  final ValueComparator bvc = new ValueComparator( counts );
+            //  final SortedMap<String, Integer> sorted_counts = new TreeMap<String, Integer>( bvc );
             for( final String tax_code : domain_to_species_set.getValue() ) {
                 final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
                 if ( !ForesterUtil.isEmpty( group ) ) {
-                    if ( !countz.containsKey( group ) ) {
-                        countz.put( group, 1 );
+                    if ( !counts.containsKey( group ) ) {
+                        counts.put( group, 1 );
                     }
                     else {
-                        countz.put( group, countz.get( group ) + 1 );
+                        counts.put( group, counts.get( group ) + 1 );
                     }
                 }
                 else {
                     return null;
                 }
             }
-            sorted_countz.putAll( countz );
-            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">" + domain_to_species_set.getKey() + "</a>" );
-            sb.append( ": " );
-            sb.append( "<span style=\"font-size:8px\">" );
-            for( final Map.Entry<String, Integer> group_to_counts : sorted_countz.entrySet() ) {
-                final String group = group_to_counts.getKey();
-                final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
-                if ( c == null ) {
-                    throw new IllegalArgumentException( "no color found for taxonomy group\"" + group + "\"" );
-                } 
-                final String hex = String.format( "#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue() );
-             
-                sb.append( "<span style=\"color:" );
-                sb.append( hex );
-                sb.append( "\">" );
-                sb.append( group );
-                sb.append( ": " );
-                sb.append( group_to_counts.getValue() );
-                sb.append( "</span>" );
-                sb.append( " " );
-                sb.append( "<br>\n" );
+            final SortedMap<Integer, SortedSet<String>> counts_to_groups = new TreeMap<Integer, SortedSet<String>>( new Comparator<Integer>() {
+
+                @Override
+                public int compare( final Integer first, final Integer second ) {
+                    return second.compareTo( first );
+                }
+            } );
+            for( final Map.Entry<String, Integer> group_to_counts : counts.entrySet() ) {
+                final int c = group_to_counts.getValue();
+                if ( !counts_to_groups.containsKey( c ) ) {
+                    counts_to_groups.put( c, new TreeSet<String>() );
+                }
+                counts_to_groups.get( c ).add( group_to_counts.getKey() );
             }
-            sb.append( "</span>" );
-            
+            // sorted_counts.putAll( counts );
+            sb.append( "<tr>" );
+            sb.append( "<td>" );
+            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">"
+                    + domain_to_species_set.getKey() + "</a>" );
+            sb.append( ": " );
+            sb.append( "</td>" );
+            // sb.append( "<span style=\"font-size:9px\">" );
+            boolean first = true;
+            for( final Entry<Integer, SortedSet<String>> count_to_groups : counts_to_groups.entrySet() ) {
+                if ( first ) {
+                    first = false;
+                }
+                else {
+                    sb.append( "<tr>" );
+                    sb.append( "<td>" );
+                    sb.append( "</td>" );
+                }
+                sb.append( "<td>" );
+                final SortedSet<String> groups = count_to_groups.getValue();
+                sb.append( count_to_groups.getKey() );
+                sb.append( ":" );
+                for( final String group : groups ) {
+                    final Color color = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                    if ( color == null ) {
+                        throw new IllegalArgumentException( "no color found for taxonomy group\"" + group + "\"" );
+                    }
+                    final String hex = String.format( "#%02x%02x%02x",
+                                                      color.getRed(),
+                                                      color.getGreen(),
+                                                      color.getBlue() );
+                    sb.append( "<span style=\"color:" );
+                    sb.append( hex );
+                    sb.append( "\">" );
+                    sb.append( " " );
+                    sb.append( group );
+                    sb.append( "</span>" );
+                }
+                sb.append( "</td>" );
+                sb.append( "</tr>" );
+            }
+            // sb.append( "</span>" );
+            sb.append( ForesterUtil.getLineSeparator() );
         }
+        sb.append( "</table>" );
         // i am just a template and need to be modified for "printout" TODO
         //        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
         //            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
@@ -582,7 +618,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map, phy ) );
             sb.append( getDomainDataInAlphabeticalOrder() );
             sb.append( getTaxonomyGroupDistribution( phy ) );
-
             sb.append( "</td>" );
         }
         sb.append( "</tr>" );

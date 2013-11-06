@@ -1694,7 +1694,6 @@ public final class Configuration {
     }
 
     public boolean isColorByTaxonomicGroup() {
-        
         return false;
     }
 }

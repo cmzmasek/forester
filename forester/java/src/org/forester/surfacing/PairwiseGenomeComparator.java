@@ -218,7 +218,8 @@ public class PairwiseGenomeComparator {
                                                                      scoring,
                                                                      false,
                                                                      tax_code_to_id_map,
-                                                                     phy );
+                                                                     phy,
+                                                                     null );
                     }
                     catch ( final IOException e ) {
                         ForesterUtil.fatalError( command_line_prg_name, "Failed to write similarites to: \""

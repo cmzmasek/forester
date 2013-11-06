@@ -97,7 +97,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
     static final String         INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
     static final String         DISPLAY_BRANCH_LENGTH_VALUES_LABEL      = "Display Branch Length Values";
-    static final String COLOR_BY_TAXONOMIC_GROUP = "Color by Taxonomic Group";
+    static final String         COLOR_BY_TAXONOMIC_GROUP                = "Color by Taxonomic Group";
     static final String         DISPLAY_SCALE_LABEL                     = "Display Scale";
     static final String         NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladograms";
     static final String         UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
@@ -178,7 +178,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
     JCheckBoxMenuItem           _show_branch_length_values_cbmi;
     JCheckBoxMenuItem           _color_by_taxonomic_group_cbmi;
-    
     JCheckBoxMenuItem           _show_scale_cbmi;                                                                                                                                                                                             //TODO fix me
     JCheckBoxMenuItem           _show_overview_cbmi;
     JCheckBoxMenuItem           _show_domain_labels;
@@ -443,7 +442,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         else if ( o == _color_by_taxonomic_group_cbmi ) {
             updateOptions( getOptions() );
         }
-        
         else if ( o == _show_confidence_stddev_cbmi ) {
             updateOptions( getOptions() );
         }
@@ -1311,12 +1309,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _show_branch_length_values_cbmi != null ) && _show_branch_length_values_cbmi.isEnabled() ) {
             options.setShowBranchLengthValues( _show_branch_length_values_cbmi.isSelected() );
         }
-        
-        if ( ( _color_by_taxonomic_group_cbmi != null ) &&  _color_by_taxonomic_group_cbmi.isEnabled() ) {
-            options.setColorByTaxonomicGroup(  _color_by_taxonomic_group_cbmi.isSelected() );
+        if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
+            options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
-        
-        
         options.setPrintUsingActualSize( ( _print_using_actual_size_cbmi != null )
                 && ( _print_using_actual_size_cbmi.isSelected() ) );
         options.setGraphicsExportUsingActualSize( ( _graphics_export_using_actual_size_cbmi != null )

@@ -1829,7 +1829,8 @@ public class surfacing {
                                                          scoring,
                                                          true,
                                                          tax_code_to_id_map,
-                                                         intree_0_orig );
+                                                         intree_0_orig,
+                                                         positive_filter_file != null ? filter : null );
             simple_tab_writer.close();
             ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote main output (includes domain similarities) to: \""
                     + ( out_dir == null ? my_outfile : out_dir + ForesterUtil.FILE_SEPARATOR + my_outfile ) + "\"" );

@@ -261,8 +261,7 @@ final public class Options {
     final boolean isColorByTaxonomicGroup() {
         return _color_by_taxonomic_group;
     }
-    
-    
+
     boolean isShowConfidenceStddev() {
         return _show_confidence_stddev;
     }
@@ -408,7 +407,7 @@ final public class Options {
     final void setColorByTaxonomicGroup( final boolean color_by_taxonomic_group ) {
         _color_by_taxonomic_group = color_by_taxonomic_group;
     }
-    
+
     void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
         _show_confidence_stddev = show_confidence_stddev;
     }

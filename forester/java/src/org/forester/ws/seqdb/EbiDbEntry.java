@@ -270,28 +270,24 @@ public final class EbiDbEntry implements SequenceDatabaseEntry {
     private String _map;
     private String _chromosome;
 
-    private void setMap( String map ) {
+    private void setMap( final String map ) {
         _map = map;
-        
     }
 
-    private void setChromosome( String chromosome ) {
+    private void setChromosome( final String chromosome ) {
         _chromosome = chromosome;
-        
     }
 
     @Override
-    public String getMap( ) {
+    public String getMap() {
         return _map;
-        
     }
+
     @Override
-    public String  getChromosome() {
+    public String getChromosome() {
         return _chromosome;
-        
     }
-    
-    
+
     private static void x( final StringBuilder sb, final String s ) {
         if ( sb.length() > 0 ) {
             sb.append( " " );

@@ -55,7 +55,7 @@ public interface SequenceDatabaseEntry {
 
     public SortedSet<Accession> getCrossReferences();
 
-    public  String getMap(  );
+    public String getMap();
 
-    public  String getChromosome(  );
+    public String getChromosome();
 }

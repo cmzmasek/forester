@@ -1206,76 +1206,77 @@ public final class ForesterUtil {
 
     public final static Color obtainColorDependingOnTaxonomyGroup( final String tax_group ) {
         if ( !ForesterUtil.isEmpty( tax_group ) ) {
-            if ( tax_group.equals( "deuterostomia" ) ) {
+            if ( tax_group.equals( TaxonomyGroups.DEUTEROSTOMIA ) ) {
                 return TaxonomyColors.DEUTEROSTOMIA_COLOR;
             }
-            else if ( tax_group.equals( "protostomia" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.PROTOSTOMIA ) ) {
                 return TaxonomyColors.PROTOSTOMIA_COLOR;
             }
-            else if ( tax_group.equals( "cnidaria" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.CNIDARIA ) ) {
                 return TaxonomyColors.CNIDARIA_COLOR;
             }
-            else if ( tax_group.equals( "placozoa" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.PLACOZOA ) ) {
                 return TaxonomyColors.PLACOZOA_COLOR;
             }
-            else if ( tax_group.equals( "ctenophora" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.CTENOPHORA ) ) {
                 return TaxonomyColors.CTENOPHORA_COLOR;
             }
-            else if ( tax_group.equals( "porifera" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.PORIFERA ) ) {
                 return TaxonomyColors.PORIFERA_COLOR;
             }
-            else if ( tax_group.equals( "choanoflagellida" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.CHOANOFLAGELLIDA ) ) {
                 return TaxonomyColors.CHOANOFLAGELLIDA;
             }
-            else if ( tax_group.equals( "ichthyophonida & filasterea" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.ICHTHYOPHONIDA_FILASTEREA ) ) {
                 return TaxonomyColors.ICHTHYOSPOREA_AND_FILASTEREA;
             }
-            else if ( tax_group.equals( "dikarya" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.DIKARYA ) ) {
                 return TaxonomyColors.DIKARYA_COLOR;
             }
-            else if ( tax_group.equalsIgnoreCase( "fungi" ) || tax_group.equalsIgnoreCase( "other fungi" ) ) {
+            else if ( tax_group.equalsIgnoreCase( TaxonomyGroups.FUNGI )
+                    || tax_group.equalsIgnoreCase( TaxonomyGroups.OTHER_FUNGI ) ) {
                 return TaxonomyColors.OTHER_FUNGI_COLOR;
             }
-            else if ( tax_group.equals( "nucleariidae and fonticula" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.NUCLEARIIDAE_AND_FONTICULA_GROUP ) ) {
                 return TaxonomyColors.NUCLEARIIDAE_AND_FONTICULA_GROUP_COLOR;
             }
-            else if ( tax_group.equals( "amoebozoa" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.AMOEBOZOA ) ) {
                 return TaxonomyColors.AMOEBOZOA_COLOR;
             }
-            else if ( tax_group.equals( "embryophyta" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.EMBRYOPHYTA ) ) {
                 return TaxonomyColors.EMBRYOPHYTA_COLOR;
             }
-            else if ( tax_group.equals( "chlorophyta" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.CHLOROPHYTA ) ) {
                 return TaxonomyColors.CHLOROPHYTA_COLOR;
             }
-            else if ( tax_group.equals( "rhodophyta" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.RHODOPHYTA ) ) {
                 return TaxonomyColors.RHODOPHYTA_COLOR;
             }
-            else if ( tax_group.equals( "hacrobia" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.HACROBIA ) ) {
                 return TaxonomyColors.HACROBIA_COLOR;
             }
-            else if ( tax_group.equals( "glaucocystophyceae" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.GLAUCOCYSTOPHYCEAE ) ) {
                 return TaxonomyColors.GLAUCOPHYTA_COLOR;
             }
-            else if ( tax_group.equals( "stramenopiles" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.STRAMENOPILES ) ) {
                 return TaxonomyColors.STRAMENOPILES_COLOR;
             }
-            else if ( tax_group.equals( "alveolata" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.ALVEOLATA ) ) {
                 return TaxonomyColors.ALVEOLATA_COLOR;
             }
-            else if ( tax_group.equals( "rhizaria" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.RHIZARIA ) ) {
                 return TaxonomyColors.RHIZARIA_COLOR;
             }
-            else if ( tax_group.equals( "excavata" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.EXCAVATA ) ) {
                 return TaxonomyColors.EXCAVATA_COLOR;
             }
-            else if ( tax_group.equals( "apusozoa" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.APUSOZOA ) ) {
                 return TaxonomyColors.APUSOZOA_COLOR;
             }
-            else if ( tax_group.equals( "archaea" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.ARCHAEA ) ) {
                 return TaxonomyColors.ARCHAEA_COLOR;
             }
-            else if ( tax_group.equals( "bacteria" ) ) {
+            else if ( tax_group.equals( TaxonomyGroups.BACTERIA ) ) {
                 return TaxonomyColors.BACTERIA_COLOR;
             }
         }
@@ -1283,80 +1284,80 @@ public final class ForesterUtil {
     }
 
     public final static String obtainNormalizedTaxonomyGroup( final String tax ) {
-        if ( tax.equalsIgnoreCase( "deuterostomia" ) ) {
-            return "deuterostomia";
+        if ( tax.equalsIgnoreCase( TaxonomyGroups.DEUTEROSTOMIA ) ) {
+            return TaxonomyGroups.DEUTEROSTOMIA;
         }
-        else if ( tax.equalsIgnoreCase( "protostomia" ) ) {
-            return "protostomia";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.PROTOSTOMIA ) ) {
+            return TaxonomyGroups.PROTOSTOMIA;
         }
-        else if ( tax.equalsIgnoreCase( "cnidaria" ) ) {
-            return "cnidaria";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.CNIDARIA ) ) {
+            return TaxonomyGroups.CNIDARIA;
         }
-        else if ( tax.toLowerCase().startsWith( "trichoplax" ) || tax.equalsIgnoreCase( "placozoa" ) ) {
-            return "placozoa";
+        else if ( tax.toLowerCase().startsWith( "trichoplax" ) || tax.equalsIgnoreCase( TaxonomyGroups.PLACOZOA ) ) {
+            return TaxonomyGroups.PLACOZOA;
         }
-        else if ( tax.toLowerCase().startsWith( "mnemiopsis" ) || tax.equalsIgnoreCase( "ctenophora" ) ) {
-            return "ctenophora";
+        else if ( tax.toLowerCase().startsWith( "mnemiopsis" ) || tax.equalsIgnoreCase( TaxonomyGroups.CTENOPHORA ) ) {
+            return TaxonomyGroups.CTENOPHORA;
         }
-        else if ( tax.toLowerCase().startsWith( "amphimedon" ) || tax.equalsIgnoreCase( "porifera" ) ) {
-            return "porifera";
+        else if ( tax.toLowerCase().startsWith( "amphimedon" ) || tax.equalsIgnoreCase( TaxonomyGroups.PORIFERA ) ) {
+            return TaxonomyGroups.PORIFERA;
         }
-        else if ( tax.equalsIgnoreCase( "codonosigidae" ) || tax.equalsIgnoreCase( "choanoflagellida" ) ) {
-            return "choanoflagellida";
+        else if ( tax.equalsIgnoreCase( "codonosigidae" ) || tax.equalsIgnoreCase( TaxonomyGroups.CHOANOFLAGELLIDA ) ) {
+            return TaxonomyGroups.CHOANOFLAGELLIDA;
         }
-        else if ( tax.toLowerCase().startsWith( "ichthyophonida & filasterea" )
+        else if ( tax.toLowerCase().startsWith( TaxonomyGroups.ICHTHYOPHONIDA_FILASTEREA )
                 || tax.toLowerCase().startsWith( "ichthyophonida and filasterea" )
                 || tax.toLowerCase().startsWith( "ichthyosporea & filasterea" )
                 || tax.toLowerCase().startsWith( "ichthyosporea and filasterea" ) ) {
-            return "ichthyophonida & filasterea";
+            return TaxonomyGroups.ICHTHYOPHONIDA_FILASTEREA;
         }
-        else if ( tax.equalsIgnoreCase( "dikarya" ) ) {
-            return "dikarya";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.DIKARYA ) ) {
+            return TaxonomyGroups.DIKARYA;
         }
-        else if ( tax.equalsIgnoreCase( "other fungi" ) ) {
-            return "other fungi";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.FUNGI ) || tax.equalsIgnoreCase( TaxonomyGroups.OTHER_FUNGI ) ) {
+            return TaxonomyGroups.OTHER_FUNGI;
         }
         else if ( tax.toLowerCase().startsWith( "nucleariidae and fonticula" ) ) {
-            return "nucleariidae and fonticula group";
+            return TaxonomyGroups.NUCLEARIIDAE_AND_FONTICULA_GROUP;
         }
-        else if ( tax.equalsIgnoreCase( "amoebozoa" ) ) {
-            return "amoebozoa";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.AMOEBOZOA ) ) {
+            return TaxonomyGroups.AMOEBOZOA;
         }
-        else if ( tax.equalsIgnoreCase( "embryophyta" ) ) {
-            return "embryophyta";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.EMBRYOPHYTA ) ) {
+            return TaxonomyGroups.EMBRYOPHYTA;
         }
-        else if ( tax.equalsIgnoreCase( "chlorophyta" ) ) {
-            return "chlorophyta";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.CHLOROPHYTA ) ) {
+            return TaxonomyGroups.CHLOROPHYTA;
         }
-        else if ( tax.equalsIgnoreCase( "rhodophyta" ) ) {
-            return "rhodophyta";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.RHODOPHYTA ) ) {
+            return TaxonomyGroups.RHODOPHYTA;
         }
-        else if ( tax.toLowerCase().startsWith( "hacrobia" ) ) {
-            return "hacrobia";
+        else if ( tax.toLowerCase().startsWith( TaxonomyGroups.HACROBIA ) ) {
+            return TaxonomyGroups.HACROBIA;
         }
-        else if ( tax.equalsIgnoreCase( "glaucocystophyceae" ) || tax.equalsIgnoreCase( "glaucophyta" ) ) {
-            return "glaucocystophyceae";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.GLAUCOCYSTOPHYCEAE ) || tax.equalsIgnoreCase( "glaucophyta" ) ) {
+            return TaxonomyGroups.GLAUCOCYSTOPHYCEAE;
         }
-        else if ( tax.equalsIgnoreCase( "stramenopiles" ) ) {
-            return "stramenopiles";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.STRAMENOPILES ) ) {
+            return TaxonomyGroups.STRAMENOPILES;
         }
-        else if ( tax.equalsIgnoreCase( "alveolata" ) ) {
-            return "alveolata";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.ALVEOLATA ) ) {
+            return TaxonomyGroups.ALVEOLATA;
         }
-        else if ( tax.equalsIgnoreCase( "rhizaria" ) ) {
-            return "rhizaria";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.RHIZARIA ) ) {
+            return TaxonomyGroups.RHIZARIA;
         }
-        else if ( tax.equalsIgnoreCase( "excavata" ) ) {
-            return "excavata";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.EXCAVATA ) ) {
+            return TaxonomyGroups.EXCAVATA;
         }
-        else if ( tax.equalsIgnoreCase( "apusozoa" ) ) {
-            return "apusozoa";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.APUSOZOA ) ) {
+            return TaxonomyGroups.APUSOZOA;
         }
-        else if ( tax.equalsIgnoreCase( "archaea" ) ) {
-            return "archaea";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.ARCHAEA ) ) {
+            return TaxonomyGroups.ARCHAEA;
         }
-        else if ( tax.equalsIgnoreCase( "bacteria" ) ) {
-            return "bacteria";
+        else if ( tax.equalsIgnoreCase( TaxonomyGroups.BACTERIA ) ) {
+            return TaxonomyGroups.BACTERIA;
         }
         return null;
     }

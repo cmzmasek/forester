@@ -6,16 +6,13 @@ import java.util.Map;
 
 final class TaxonomyUtil {
 
-    static String getTaxGroupByTaxCode( String code  ) {
+    static String getTaxGroupByTaxCode( final String code ) {
         return _default_taxcode_taxgroup_map.get( code );
     }
-    
-    
     private final static Map<String, String> _default_taxcode_taxgroup_map = new HashMap<String, String>();
     static {
         _default_taxcode_taxgroup_map.put( "HUMAN", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "HOMSA", "deuterostomia" );
-         
         _default_taxcode_taxgroup_map.put( "PANTR", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "GORGO", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "PONAB", "deuterostomia" );
@@ -146,21 +143,17 @@ final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "NEMVE", "cnidaria" );
         _default_taxcode_taxgroup_map.put( "HMAXX", "cnidaria" );
         _default_taxcode_taxgroup_map.put( "HYDMA", "cnidaria" ); //TODO
-        
         _default_taxcode_taxgroup_map.put( "TRIAD", "placozoa" );
         _default_taxcode_taxgroup_map.put( "MNELE", "ctenophora" );
         _default_taxcode_taxgroup_map.put( "AMPQE", "porifera" );
         _default_taxcode_taxgroup_map.put( "AMPQU", "porifera" ); //TODO
-         
         _default_taxcode_taxgroup_map.put( "MONBE", "choanoflagellida" );
         _default_taxcode_taxgroup_map.put( "SALS5", "choanoflagellida" );
         _default_taxcode_taxgroup_map.put( "AMOPA", "ichthyophonida & filasterea" );
         _default_taxcode_taxgroup_map.put( "SARXX", "ichthyophonida & filasterea" );
         _default_taxcode_taxgroup_map.put( "SPHAR", "ichthyophonida & filasterea" ); //TODO
-        
         _default_taxcode_taxgroup_map.put( "CAPO3", "ichthyophonida & filasterea" );
         _default_taxcode_taxgroup_map.put( "CAPOW", "ichthyophonida & filasterea" ); //TODO
-        
         _default_taxcode_taxgroup_map.put( "AALXX", "dikarya" );
         _default_taxcode_taxgroup_map.put( "GIBZE", "dikarya" );
         _default_taxcode_taxgroup_map.put( "HYPVG", "dikarya" );
@@ -208,7 +201,6 @@ final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "COPC7", "dikarya" );
         _default_taxcode_taxgroup_map.put( "LACBS", "dikarya" );
         _default_taxcode_taxgroup_map.put( "LACBI", "dikarya" ); //TODO
-        
         _default_taxcode_taxgroup_map.put( "PLEOS", "dikarya" );
         _default_taxcode_taxgroup_map.put( "CPUXX", "dikarya" );
         _default_taxcode_taxgroup_map.put( "SERL9", "dikarya" );
@@ -349,12 +341,9 @@ final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "NAEGR", "excavata" );
         _default_taxcode_taxgroup_map.put( "GIAIC", "excavata" );
         _default_taxcode_taxgroup_map.put( "GIALA", "excavata" ); //TODO
-        
         _default_taxcode_taxgroup_map.put( "TRIVA", "excavata" );
         _default_taxcode_taxgroup_map.put( "TTRXX", "apusozoa" );
         _default_taxcode_taxgroup_map.put( "THETR", "apusozoa" ); //TODO //FIXME
-        
- 
         _default_taxcode_taxgroup_map.put( "METAC", "archaea" );
         _default_taxcode_taxgroup_map.put( "METBF", "archaea" );
         _default_taxcode_taxgroup_map.put( "METMA", "archaea" );
