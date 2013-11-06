@@ -76,9 +76,9 @@ public class PairwiseGenomeComparator {
                                             final Detailedness detailedness,
                                             final boolean ignore_domains_without_combs_in_all_spec,
                                             final boolean ignore_domains_specific_to_one_species,
-                                            final PrintableDomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field,
-                                            final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
-                                            final PrintableDomainSimilarity.DomainSimilarityScoring scoring,
+                                            final DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field,
+                                            final DomainSimilarity.PRINT_OPTION domain_similarity_print_option,
+                                            final DomainSimilarity.DomainSimilarityScoring scoring,
                                             final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                             final Map<GoId, GoTerm> go_id_to_term_map,
                                             final GoNameSpace go_namespace_limit,
@@ -140,7 +140,7 @@ public class PairwiseGenomeComparator {
                                                                                              sort_by_species_count_first,
                                                                                              true,
                                                                                              calc_similarity_scores );
-                final SortedSet<PrintableDomainSimilarity> similarities = calc
+                final SortedSet<DomainSimilarity> similarities = calc
                         .calculateSimilarities( pw_calc,
                                                 genome_pair,
                                                 ignore_domains_without_combs_in_all_spec,

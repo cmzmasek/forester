@@ -85,9 +85,9 @@ import org.forester.protein.BinaryDomainCombination;
 import org.forester.protein.Domain;
 import org.forester.protein.Protein;
 import org.forester.species.Species;
+import org.forester.surfacing.DomainSimilarity.PRINT_OPTION;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder;
-import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 import org.forester.util.AsciiHistogram;
 import org.forester.util.BasicDescriptiveStatistics;
 import org.forester.util.BasicTable;
@@ -143,9 +143,9 @@ public final class SurfacingUtil {
         }
     }
 
-    public static DescriptiveStatistics calculateDescriptiveStatisticsForMeanValues( final Set<PrintableDomainSimilarity> similarities ) {
+    public static DescriptiveStatistics calculateDescriptiveStatisticsForMeanValues( final Set<DomainSimilarity> similarities ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final PrintableDomainSimilarity similarity : similarities ) {
+        for( final DomainSimilarity similarity : similarities ) {
             stats.addValue( similarity.getMeanSimilarityScore() );
         }
         return stats;
@@ -158,7 +158,7 @@ public final class SurfacingUtil {
         }
     }
 
-    public static void checkWriteabilityForPairwiseComparisons( final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
+    public static void checkWriteabilityForPairwiseComparisons( final DomainSimilarity.PRINT_OPTION domain_similarity_print_option,
                                                                 final String[][] input_file_properties,
                                                                 final String automated_pairwise_comparison_suffix,
                                                                 final File outdir ) {
@@ -375,11 +375,11 @@ public final class SurfacingUtil {
         return m;
     }
 
-    public static void decoratePrintableDomainSimilarities( final SortedSet<PrintableDomainSimilarity> domain_similarities,
+    public static void decoratePrintableDomainSimilarities( final SortedSet<DomainSimilarity> domain_similarities,
                                                             final Detailedness detailedness ) {
-        for( final PrintableDomainSimilarity domain_similarity : domain_similarities ) {
-            if ( domain_similarity instanceof PrintableDomainSimilarity ) {
-                final PrintableDomainSimilarity printable_domain_similarity = domain_similarity;
+        for( final DomainSimilarity domain_similarity : domain_similarities ) {
+            if ( domain_similarity instanceof DomainSimilarity ) {
+                final DomainSimilarity printable_domain_similarity = domain_similarity;
                 printable_domain_similarity.setDetailedness( detailedness );
             }
         }
@@ -2218,11 +2218,11 @@ public final class SurfacingUtil {
                                                       final Writer simple_tab_writer,
                                                       final Writer single_writer,
                                                       Map<Character, Writer> split_writers,
-                                                      final SortedSet<PrintableDomainSimilarity> similarities,
+                                                      final SortedSet<DomainSimilarity> similarities,
                                                       final boolean treat_as_binary,
                                                       final List<Species> species_order,
-                                                      final PrintableDomainSimilarity.PRINT_OPTION print_option,
-                                                      final PrintableDomainSimilarity.DomainSimilarityScoring scoring,
+                                                      final DomainSimilarity.PRINT_OPTION print_option,
+                                                      final DomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
                                                       final Map<String, Integer> tax_code_to_id_map,
                                                       final Phylogeny phy,
@@ -2262,7 +2262,7 @@ public final class SurfacingUtil {
                 break;
         }
         //
-        for( final PrintableDomainSimilarity similarity : similarities ) {
+        for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( similarity ).setSpeciesOrder( species_order );
             }
@@ -2347,7 +2347,7 @@ public final class SurfacingUtil {
             w.write( SurfacingConstants.NL );
         }
         //
-        for( final PrintableDomainSimilarity similarity : similarities ) {
+        for( final DomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
                 ( similarity ).setSpeciesOrder( species_order );
             }

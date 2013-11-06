@@ -313,17 +313,17 @@ public class TestSurfacing {
             cdc_list.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                            true,
                                                                            new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
                                                                                          false,
                                                                                          true );
-            final SortedSet<PrintableDomainSimilarity> sims = calc
+            final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
                                             true,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it = sims.iterator();
-            final PrintableDomainSimilarity sa = sims_it.next();
+            final Iterator<DomainSimilarity> sims_it = sims.iterator();
+            final DomainSimilarity sa = sims_it.next();
             if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -364,7 +364,7 @@ public class TestSurfacing {
             if ( sa.getMaximalDifferenceInCounts() != 3 ) {
                 return false;
             }
-            final PrintableDomainSimilarity sb = sims_it.next();
+            final DomainSimilarity sb = sims_it.next();
             if ( !sb.getDomainId().equals( "B" ) ) {
                 return false;
             }
@@ -398,7 +398,7 @@ public class TestSurfacing {
             if ( sb.getMaximalDifferenceInCounts() != 2 ) {
                 return false;
             }
-            final PrintableDomainSimilarity sc = sims_it.next();
+            final DomainSimilarity sc = sims_it.next();
             if ( !sc.getDomainId().equals( "C" ) ) {
                 return false;
             }
@@ -464,17 +464,17 @@ public class TestSurfacing {
             cdc_list2.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                             false,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc2 = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc2 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           false,
                                                                                           false,
                                                                                           true );
-            final SortedSet<PrintableDomainSimilarity> sims2 = calc2
+            final SortedSet<DomainSimilarity> sims2 = calc2
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list2,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it2 = sims2.iterator();
-            final PrintableDomainSimilarity sa2 = sims_it2.next();
+            final Iterator<DomainSimilarity> sims_it2 = sims2.iterator();
+            final DomainSimilarity sa2 = sims_it2.next();
             if ( !sa2.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -552,17 +552,17 @@ public class TestSurfacing {
             cdc_list3.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                             true,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc3 = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc3 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           false,
                                                                                           false,
                                                                                           true );
-            final SortedSet<PrintableDomainSimilarity> sims3 = calc3
+            final SortedSet<DomainSimilarity> sims3 = calc3
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list3,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it3 = sims3.iterator();
-            final PrintableDomainSimilarity sa3 = sims_it3.next();
+            final Iterator<DomainSimilarity> sims_it3 = sims3.iterator();
+            final DomainSimilarity sa3 = sims_it3.next();
             if ( !sa3.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -596,17 +596,17 @@ public class TestSurfacing {
             cdc_list4.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                             false,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc4 = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc4 = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                           true,
                                                                                           false,
                                                                                           true );
-            final SortedSet<PrintableDomainSimilarity> sims4 = calc4
+            final SortedSet<DomainSimilarity> sims4 = calc4
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list4,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it4 = sims4.iterator();
-            final PrintableDomainSimilarity sa4 = sims_it4.next();
+            final Iterator<DomainSimilarity> sims_it4 = sims4.iterator();
+            final DomainSimilarity sa4 = sims_it4.next();
             if ( !sa4.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -629,10 +629,10 @@ public class TestSurfacing {
             if ( ssdsd4.getNumberOfProteinsExhibitingCombinationWith( "X" ) != 3 ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims4_d = calc4
+            final SortedSet<DomainSimilarity> sims4_d = calc4
                     .calculateSimilarities( new DomainCountsBasedPairwiseSimilarityCalculator(), cdc_list4, false, true );
-            final Iterator<PrintableDomainSimilarity> sims_it4_d = sims4_d.iterator();
-            final PrintableDomainSimilarity sa4_d = sims_it4_d.next();
+            final Iterator<DomainSimilarity> sims_it4_d = sims4_d.iterator();
+            final DomainSimilarity sa4_d = sims_it4_d.next();
             if ( !sa4_d.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -653,13 +653,13 @@ public class TestSurfacing {
             if ( sa4_d.getN() != 6 ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims4_p = calc4
+            final SortedSet<DomainSimilarity> sims4_p = calc4
                     .calculateSimilarities( new ProteinCountsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list4,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it4_p = sims4_p.iterator();
-            final PrintableDomainSimilarity sa4_p = sims_it4_p.next();
+            final Iterator<DomainSimilarity> sims_it4_p = sims4_p.iterator();
+            final DomainSimilarity sa4_p = sims_it4_p.next();
             if ( !sa4_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -708,10 +708,10 @@ public class TestSurfacing {
             cdc_list5.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                             true,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final SortedSet<PrintableDomainSimilarity> sims5_d = calc4
+            final SortedSet<DomainSimilarity> sims5_d = calc4
                     .calculateSimilarities( new DomainCountsBasedPairwiseSimilarityCalculator(), cdc_list5, false, true );
-            final Iterator<PrintableDomainSimilarity> sims_it5_d = sims5_d.iterator();
-            final PrintableDomainSimilarity sa5_d = sims_it5_d.next();
+            final Iterator<DomainSimilarity> sims_it5_d = sims5_d.iterator();
+            final DomainSimilarity sa5_d = sims_it5_d.next();
             if ( sa5_d.getSpecies().size() != 4 ) {
                 return false;
             }
@@ -779,13 +779,13 @@ public class TestSurfacing {
             if ( sa5_d.getMaximalDifferenceInCounts() != 11 ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims5_p = calc4
+            final SortedSet<DomainSimilarity> sims5_p = calc4
                     .calculateSimilarities( new ProteinCountsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list5,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it5_p = sims5_p.iterator();
-            final PrintableDomainSimilarity sa5_p = sims_it5_p.next();
+            final Iterator<DomainSimilarity> sims_it5_p = sims5_p.iterator();
+            final DomainSimilarity sa5_p = sims_it5_p.next();
             if ( !sa5_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -843,10 +843,10 @@ public class TestSurfacing {
             cdc_list6.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                             false,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final SortedSet<PrintableDomainSimilarity> sims6_d = calc4
+            final SortedSet<DomainSimilarity> sims6_d = calc4
                     .calculateSimilarities( new DomainCountsBasedPairwiseSimilarityCalculator(), cdc_list6, false, true );
-            final Iterator<PrintableDomainSimilarity> sims_it6_d = sims6_d.iterator();
-            final PrintableDomainSimilarity sa6_d = sims_it6_d.next();
+            final Iterator<DomainSimilarity> sims_it6_d = sims6_d.iterator();
+            final DomainSimilarity sa6_d = sims_it6_d.next();
             if ( sa6_d.getSpecies().size() != 4 ) {
                 return false;
             }
@@ -914,13 +914,13 @@ public class TestSurfacing {
             if ( sa6_d.getMaximalDifferenceInCounts() != 11 ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims6_p = calc4
+            final SortedSet<DomainSimilarity> sims6_p = calc4
                     .calculateSimilarities( new ProteinCountsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list6,
                                             false,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it6_p = sims6_p.iterator();
-            final PrintableDomainSimilarity sa6_p = sims_it6_p.next();
+            final Iterator<DomainSimilarity> sims_it6_p = sims6_p.iterator();
+            final DomainSimilarity sa6_p = sims_it6_p.next();
             if ( !sa6_p.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -1028,17 +1028,17 @@ public class TestSurfacing {
             cdc_list.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                            true,
                                                                            new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
                                                                                          false,
                                                                                          true );
-            final SortedSet<PrintableDomainSimilarity> sims = calc
+            final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
                                             true,
                                             false );
-            final Iterator<PrintableDomainSimilarity> sims_it = sims.iterator();
-            final PrintableDomainSimilarity sa = sims_it.next();
+            final Iterator<DomainSimilarity> sims_it = sims.iterator();
+            final DomainSimilarity sa = sims_it.next();
             if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -1069,7 +1069,7 @@ public class TestSurfacing {
             if ( sa.getMaximalDifferenceInCounts() != 0 ) {
                 return false;
             }
-            final PrintableDomainSimilarity sb = sims_it.next();
+            final DomainSimilarity sb = sims_it.next();
             if ( !sb.getDomainId().equals( "B" ) ) {
                 return false;
             }
@@ -1079,13 +1079,13 @@ public class TestSurfacing {
             if ( !sb.getSpecies().contains( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims2 = calc
+            final SortedSet<DomainSimilarity> sims2 = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
                                             true,
                                             true );
-            final Iterator<PrintableDomainSimilarity> sims_it2 = sims2.iterator();
-            final PrintableDomainSimilarity sa2 = sims_it2.next();
+            final Iterator<DomainSimilarity> sims_it2 = sims2.iterator();
+            final DomainSimilarity sa2 = sims_it2.next();
             if ( !sa2.getDomainId().equals( "D" ) ) {
                 return false;
             }
@@ -1137,11 +1137,11 @@ public class TestSurfacing {
             cdc_list.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve,
                                                                            true,
                                                                            new BasicSpecies( "nemve" ) ) );
-            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
+            final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID,
                                                                                          false,
                                                                                          false,
                                                                                          true );
-            final SortedSet<PrintableDomainSimilarity> sims = calc
+            final SortedSet<DomainSimilarity> sims = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
                                             false,
@@ -1149,8 +1149,8 @@ public class TestSurfacing {
             if ( sims.size() != 1 ) {
                 return false;
             }
-            final Iterator<PrintableDomainSimilarity> sims_it = sims.iterator();
-            final PrintableDomainSimilarity sa = sims_it.next();
+            final Iterator<DomainSimilarity> sims_it = sims.iterator();
+            final DomainSimilarity sa = sims_it.next();
             if ( !sa.getDomainId().equals( "A" ) ) {
                 return false;
             }
@@ -1169,7 +1169,7 @@ public class TestSurfacing {
             if ( !sa.getSpecies().contains( new BasicSpecies( "rabbit" ) ) ) {
                 return false;
             }
-            final SortedSet<PrintableDomainSimilarity> sims_ns = calc
+            final SortedSet<DomainSimilarity> sims_ns = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list,
                                             true,
@@ -1211,7 +1211,7 @@ public class TestSurfacing {
             cdc_list2.add( BasicGenomeWideCombinableDomains.createInstance( protein_list_nemve2,
                                                                             true,
                                                                             new BasicSpecies( "nemve" ) ) );
-            final SortedSet<PrintableDomainSimilarity> sims2 = calc
+            final SortedSet<DomainSimilarity> sims2 = calc
                     .calculateSimilarities( new CombinationsBasedPairwiseDomainSimilarityCalculator(),
                                             cdc_list2,
                                             true,

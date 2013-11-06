@@ -44,7 +44,7 @@ import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.ForesterUtil;
 
-public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimilarity> {
+public class DomainSimilarity implements Comparable<DomainSimilarity> {
 
     final public static String                              SPECIES_SEPARATOR          = "  ";
     final private static int                                EQUAL                      = 0;
@@ -63,18 +63,18 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
     private List<Species>                                   _species_order;
     private final boolean                                   _treat_as_binary_comparison;
 
-    public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
-                                      final double min,
-                                      final double max,
-                                      final double mean,
-                                      final double median,
-                                      final double sd,
-                                      final int n,
-                                      final int max_difference_in_counts,
-                                      final int max_difference,
-                                      final SortedMap<Species, SpeciesSpecificDcData> species_data,
-                                      final boolean sort_by_species_count_first,
-                                      final boolean treat_as_binary_comparison ) {
+    public DomainSimilarity( final CombinableDomains combinable_domains,
+                             final double min,
+                             final double max,
+                             final double mean,
+                             final double median,
+                             final double sd,
+                             final int n,
+                             final int max_difference_in_counts,
+                             final int max_difference,
+                             final SortedMap<Species, SpeciesSpecificDcData> species_data,
+                             final boolean sort_by_species_count_first,
+                             final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
             throw new IllegalArgumentException( "attempt to use null combinable domains" );
         }
@@ -122,12 +122,12 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
         }
     }
 
-    public PrintableDomainSimilarity( final CombinableDomains combinable_domains,
-                                      final int max_difference_in_counts,
-                                      final int max_difference,
-                                      final SortedMap<Species, SpeciesSpecificDcData> species_data,
-                                      final boolean sort_by_species_count_first,
-                                      final boolean treat_as_binary_comparison ) {
+    public DomainSimilarity( final CombinableDomains combinable_domains,
+                             final int max_difference_in_counts,
+                             final int max_difference,
+                             final SortedMap<Species, SpeciesSpecificDcData> species_data,
+                             final boolean sort_by_species_count_first,
+                             final boolean treat_as_binary_comparison ) {
         if ( combinable_domains == null ) {
             throw new IllegalArgumentException( "attempt to use null combinable domains" );
         }
@@ -159,7 +159,7 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
         }
     }
 
-    public int compareTo( final PrintableDomainSimilarity domain_similarity ) {
+    public int compareTo( final DomainSimilarity domain_similarity ) {
         if ( this == domain_similarity ) {
             return EQUAL;
         }
@@ -272,7 +272,7 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
         _species_order = species_order;
     }
 
-    public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option,
+    public StringBuffer toStringBuffer( final DomainSimilarity.PRINT_OPTION print_option,
                                         final Map<String, Integer> tax_code_to_id_map,
                                         final Phylogeny phy ) {
         switch ( print_option ) {
@@ -353,7 +353,7 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
         sb.append( "</b>" );
     }
 
-    private int compareByDomainId( final PrintableDomainSimilarity other ) {
+    private int compareByDomainId( final DomainSimilarity other ) {
         return getDomainId().compareToIgnoreCase( other.getDomainId() );
     }
 
@@ -421,8 +421,8 @@ public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimi
                 addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map, phy );
             }
             else {
-                sb.append( PrintableDomainSimilarity.NO_SPECIES );
-                sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
+                sb.append( DomainSimilarity.NO_SPECIES );
+                sb.append( DomainSimilarity.SPECIES_SEPARATOR );
             }
         }
         return sb;
