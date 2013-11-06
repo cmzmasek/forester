@@ -58,76 +58,10 @@ import org.forester.util.ForesterUtil;
  */
 public final class DomainCountsDifferenceUtil {
 
-    private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_TARGET_SPECIES = COPY_CALCULATION_MODE.MIN;
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_BASE_SPECIES   = COPY_CALCULATION_MODE.MIN;
+    private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_HIGH_COPY_TARGET_SPECIES = COPY_CALCULATION_MODE.MIN;
     private static final COPY_CALCULATION_MODE COPY_CALC_MODE_FOR_LOW_COPY_SPECIES         = COPY_CALCULATION_MODE.MAX;
     private static final String                PLUS_MINUS_PROTEINS_FILE_DOM_SUFFIX         = ".prot";
-
-    //FIXME really needs to be tested! 
-    private static void addCounts( final SortedMap<BinaryDomainCombination, List<Integer>> copy_counts,
-                                   final BinaryDomainCombination dc,
-                                   final GenomeWideCombinableDomains genome,
-                                   final Set<BinaryDomainCombination> bdc ) {
-        if ( !copy_counts.containsKey( dc ) ) {
-            copy_counts.put( dc, new ArrayList<Integer>() );
-        }
-        if ( bdc.contains( dc )
-                && ( ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains().get( dc.getId1() ) != null ) ) {
-            final int count = ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains()
-                    .get( dc.getId1() );
-            copy_counts.get( dc ).add( count );
-        }
-        else {
-            copy_counts.get( dc ).add( 0 );
-        }
-    }
-
-    private static void addCounts( final SortedMap<String, List<Integer>> copy_counts,
-                                   final String domain,
-                                   final GenomeWideCombinableDomains genome ) {
-        if ( !copy_counts.containsKey( domain ) ) {
-            copy_counts.put( domain, new ArrayList<Integer>() );
-        }
-        if ( genome.contains( domain ) ) {
-            copy_counts.get( domain ).add( genome.get( domain ).getKeyDomainProteinsCount() );
-        }
-        else {
-            copy_counts.get( domain ).add( 0 );
-        }
-    }
-
-    private static StringBuilder addGoInformation( final String d,
-                                                   final Map<String, List<GoId>> domain_id_to_go_ids_map,
-                                                   final Map<GoId, GoTerm> go_id_to_term_map ) {
-        final StringBuilder sb = new StringBuilder();
-        if ( ( domain_id_to_go_ids_map == null ) || domain_id_to_go_ids_map.isEmpty()
-                || !domain_id_to_go_ids_map.containsKey( d ) ) {
-            return sb;
-        }
-        final List<GoId> go_ids = domain_id_to_go_ids_map.get( d );
-        for( int i = 0; i < go_ids.size(); ++i ) {
-            final GoId go_id = go_ids.get( i );
-            if ( go_id_to_term_map.containsKey( go_id ) ) {
-                appendGoTerm( sb, go_id_to_term_map.get( go_id ) );
-                sb.append( "<br>" );
-            }
-            else {
-                sb.append( "go id \"" + go_id + "\" not found [" + d + "]" );
-            }
-        }
-        return sb;
-    }
-
-    private static void appendGoTerm( final StringBuilder sb, final GoTerm go_term ) {
-        final GoId go_id = go_term.getGoId();
-        sb.append( "<a href=\"" + SurfacingConstants.AMIGO_LINK + go_id + "\" target=\"amigo_window\">" + go_id
-                + "</a>" );
-        sb.append( ":" );
-        sb.append( go_term.getName() );
-        sb.append( " [" );
-        sb.append( go_term.getGoNameSpace().toShortString() );
-        sb.append( "]" );
-    }
 
     public static void calculateCopyNumberDifferences( final List<GenomeWideCombinableDomains> genomes,
                                                        final SortedMap<Species, List<Protein>> protein_lists_per_species,
@@ -299,6 +233,72 @@ public final class DomainCountsDifferenceUtil {
                                              bdcs_per_genome );
         writeGoIdsToFile( all_gos_writer, go_ids_all );
         writeGoIdsToFile( passing_gos_writer, go_ids_of_passing_domains );
+    }
+
+    //FIXME really needs to be tested! 
+    private static void addCounts( final SortedMap<BinaryDomainCombination, List<Integer>> copy_counts,
+                                   final BinaryDomainCombination dc,
+                                   final GenomeWideCombinableDomains genome,
+                                   final Set<BinaryDomainCombination> bdc ) {
+        if ( !copy_counts.containsKey( dc ) ) {
+            copy_counts.put( dc, new ArrayList<Integer>() );
+        }
+        if ( bdc.contains( dc )
+                && ( ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains().get( dc.getId1() ) != null ) ) {
+            final int count = ( ( BasicCombinableDomains ) genome.get( dc.getId0() ) ).getCombiningDomains()
+                    .get( dc.getId1() );
+            copy_counts.get( dc ).add( count );
+        }
+        else {
+            copy_counts.get( dc ).add( 0 );
+        }
+    }
+
+    private static void addCounts( final SortedMap<String, List<Integer>> copy_counts,
+                                   final String domain,
+                                   final GenomeWideCombinableDomains genome ) {
+        if ( !copy_counts.containsKey( domain ) ) {
+            copy_counts.put( domain, new ArrayList<Integer>() );
+        }
+        if ( genome.contains( domain ) ) {
+            copy_counts.get( domain ).add( genome.get( domain ).getKeyDomainProteinsCount() );
+        }
+        else {
+            copy_counts.get( domain ).add( 0 );
+        }
+    }
+
+    private static StringBuilder addGoInformation( final String d,
+                                                   final Map<String, List<GoId>> domain_id_to_go_ids_map,
+                                                   final Map<GoId, GoTerm> go_id_to_term_map ) {
+        final StringBuilder sb = new StringBuilder();
+        if ( ( domain_id_to_go_ids_map == null ) || domain_id_to_go_ids_map.isEmpty()
+                || !domain_id_to_go_ids_map.containsKey( d ) ) {
+            return sb;
+        }
+        final List<GoId> go_ids = domain_id_to_go_ids_map.get( d );
+        for( int i = 0; i < go_ids.size(); ++i ) {
+            final GoId go_id = go_ids.get( i );
+            if ( go_id_to_term_map.containsKey( go_id ) ) {
+                appendGoTerm( sb, go_id_to_term_map.get( go_id ) );
+                sb.append( "<br>" );
+            }
+            else {
+                sb.append( "go id \"" + go_id + "\" not found [" + d + "]" );
+            }
+        }
+        return sb;
+    }
+
+    private static void appendGoTerm( final StringBuilder sb, final GoTerm go_term ) {
+        final GoId go_id = go_term.getGoId();
+        sb.append( "<a href=\"" + SurfacingConstants.AMIGO_LINK + go_id + "\" target=\"amigo_window\">" + go_id
+                + "</a>" );
+        sb.append( ":" );
+        sb.append( go_term.getName() );
+        sb.append( " [" );
+        sb.append( go_term.getGoNameSpace().toShortString() );
+        sb.append( "]" );
     }
 
     private static void calculateDomainCountsBasedValue( final SortedMap<BinaryDomainCombination, Double> copy_values,
@@ -827,6 +827,6 @@ public final class DomainCountsDifferenceUtil {
     }
 
     public static enum COPY_CALCULATION_MODE {
-        MEAN, MEDIAN, MAX, MIN
+        MAX, MEAN, MEDIAN, MIN
     }
 }

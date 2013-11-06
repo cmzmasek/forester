@@ -55,16 +55,16 @@ import org.forester.util.ForesterUtil;
 public final class DomainParsimonyCalculator {
 
     private static final String                     TYPE_FORBINARY_CHARACTERS = "parsimony inferred";
-    private CharacterStateMatrix<GainLossStates>    _gain_loss_matrix;
     private CharacterStateMatrix<BinaryStates>      _binary_internal_states_matrix;
-    private final List<GenomeWideCombinableDomains> _gwcd_list;
-    private final Phylogeny                         _phylogeny;
-    private int                                     _total_losses;
-    private int                                     _total_gains;
-    private int                                     _total_unchanged;
     private int                                     _cost;
     private Map<String, Set<String>>                _domain_id_to_secondary_features_map;
+    private CharacterStateMatrix<GainLossStates>    _gain_loss_matrix;
+    private final List<GenomeWideCombinableDomains> _gwcd_list;
+    private final Phylogeny                         _phylogeny;
     private SortedSet<String>                       _positive_filter;
+    private int                                     _total_gains;
+    private int                                     _total_losses;
+    private int                                     _total_unchanged;
 
     private DomainParsimonyCalculator( final Phylogeny phylogeny ) {
         init();
@@ -85,70 +85,6 @@ public final class DomainParsimonyCalculator {
         _phylogeny = phylogeny;
         _gwcd_list = gwcd_list;
         setDomainIdToSecondaryFeaturesMap( domain_id_to_secondary_features_map );
-    }
-
-    int calculateNumberOfBinaryDomainCombination() {
-        if ( getGenomeWideCombinableDomainsList().isEmpty() ) {
-            throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
-        }
-        final Set<BinaryDomainCombination> all_binary_combinations = new HashSet<BinaryDomainCombination>();
-        for( final GenomeWideCombinableDomains gwcd : getGenomeWideCombinableDomainsList() ) {
-            for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
-                all_binary_combinations.add( bc );
-            }
-        }
-        return all_binary_combinations.size();
-    }
-
-    CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence() {
-        return createMatrixOfBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
-    }
-
-    CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence() {
-        return createMatrixOfDomainPresenceOrAbsence( getGenomeWideCombinableDomainsList(), getPositiveFilter() );
-    }
-
-    CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeaturePresenceOrAbsence( final Map<Species, MappingResults> mapping_results_map ) {
-        return createMatrixOfSecondaryFeaturePresenceOrAbsence( getGenomeWideCombinableDomainsList(),
-                                                                getDomainIdToSecondaryFeaturesMap(),
-                                                                mapping_results_map );
-    }
-
-    Phylogeny decoratePhylogenyWithDomains( final Phylogeny phylogeny ) {
-        for( final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
-            final PhylogenyNode node = it.next();
-            final String node_identifier = node.getName();
-            final BinaryCharacters bc = new BinaryCharacters( getUnitsOnNode( node_identifier ),
-                                                              getUnitsGainedOnNode( node_identifier ),
-                                                              getUnitsLostOnNode( node_identifier ),
-                                                              TYPE_FORBINARY_CHARACTERS,
-                                                              getSumOfPresentOnNode( node_identifier ),
-                                                              getSumOfGainsOnNode( node_identifier ),
-                                                              getSumOfLossesOnNode( node_identifier ) );
-            node.getNodeData().setBinaryCharacters( bc );
-        }
-        return phylogeny;
-    }
-
-    private void executeDolloParsimony( final boolean on_domain_presence ) {
-        reset();
-        final DolloParsimony dollo = DolloParsimony.createInstance();
-        dollo.setReturnGainLossMatrix( true );
-        dollo.setReturnInternalStates( true );
-        CharacterStateMatrix<BinaryStates> states = null;
-        if ( on_domain_presence ) {
-            states = createMatrixOfDomainPresenceOrAbsence();
-        }
-        else {
-            states = createMatrixOfBinaryDomainCombinationPresenceOrAbsence();
-        }
-        dollo.execute( getPhylogeny(), states );
-        setGainLossMatrix( dollo.getGainLossMatrix() );
-        setBinaryInternalStatesMatrix( dollo.getInternalStatesMatrix() );
-        setCost( dollo.getCost() );
-        setTotalGains( dollo.getTotalGains() );
-        setTotalLosses( dollo.getTotalLosses() );
-        setTotalUnchanged( dollo.getTotalUnchanged() );
     }
 
     public void executeDolloParsimonyOnBinaryDomainCombintionPresence() {
@@ -183,84 +119,16 @@ public final class DomainParsimonyCalculator {
         setTotalUnchanged( dollo.getTotalUnchanged() );
     }
 
-    private void executeFitchParsimony( final boolean on_domain_presence,
-                                        final boolean use_last,
-                                        final boolean randomize,
-                                        final long random_number_seed ) {
-        reset();
-        if ( use_last ) {
-            System.out.println( "   Fitch parsimony: use_last = true" );
-        }
-        final FitchParsimony<BinaryStates> fitch = new FitchParsimony<BinaryStates>();
-        fitch.setRandomize( randomize );
-        if ( randomize ) {
-            fitch.setRandomNumberSeed( random_number_seed );
-        }
-        fitch.setUseLast( use_last );
-        fitch.setReturnGainLossMatrix( true );
-        fitch.setReturnInternalStates( true );
-        CharacterStateMatrix<BinaryStates> states = null;
-        if ( on_domain_presence ) {
-            states = createMatrixOfDomainPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
-        }
-        else {
-            states = createMatrixOfBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
-        }
-        fitch.execute( getPhylogeny(), states, true );
-        setGainLossMatrix( fitch.getGainLossMatrix() );
-        setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
-        setCost( fitch.getCost() );
-        setTotalGains( fitch.getTotalGains() );
-        setTotalLosses( fitch.getTotalLosses() );
-        setTotalUnchanged( fitch.getTotalUnchanged() );
-    }
-
-    private void executeFitchParsimonyOnSecondaryFeatures( final boolean use_last,
-                                                           final boolean randomize,
-                                                           final long random_number_seed ) {
-        reset();
-        if ( use_last ) {
-            System.out.println( "   Fitch parsimony: use_last = true" );
-        }
-        final FitchParsimony<BinaryStates> fitch = new FitchParsimony<BinaryStates>();
-        fitch.setRandomize( randomize );
-        if ( randomize ) {
-            fitch.setRandomNumberSeed( random_number_seed );
-        }
-        fitch.setUseLast( use_last );
-        fitch.setReturnGainLossMatrix( true );
-        fitch.setReturnInternalStates( true );
-        final Map<String, Set<String>> map = getDomainIdToSecondaryFeaturesMap();
-        final Map<String, String> newmap = new HashMap<String, String>();
-        final Iterator<Entry<String, Set<String>>> it = map.entrySet().iterator();
-        while ( it.hasNext() ) {
-            final Map.Entry<String, Set<String>> pair = it.next();
-            if ( pair.getValue().size() != 1 ) {
-                throw new IllegalArgumentException( pair.getKey() + " mapps to " + pair.getValue().size() + " items" );
-            }
-            newmap.put( pair.getKey(), ( String ) pair.getValue().toArray()[ 0 ] );
-        }
-        final CharacterStateMatrix<BinaryStates> states = createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList(),
-                                                                                                                                  newmap );
-        fitch.execute( getPhylogeny(), states, true );
-        setGainLossMatrix( fitch.getGainLossMatrix() );
-        setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
-        setCost( fitch.getCost() );
-        setTotalGains( fitch.getTotalGains() );
-        setTotalLosses( fitch.getTotalLosses() );
-        setTotalUnchanged( fitch.getTotalUnchanged() );
-    }
-
     public void executeFitchParsimonyOnBinaryDomainCombintion( final boolean use_last ) {
         executeFitchParsimony( false, use_last, false, 0 );
     }
 
-    public void executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( final boolean use_last ) {
-        executeFitchParsimonyOnSecondaryFeatures( use_last, false, 0 );
-    }
-
     public void executeFitchParsimonyOnBinaryDomainCombintion( final long random_number_seed ) {
         executeFitchParsimony( false, false, true, random_number_seed );
+    }
+
+    public void executeFitchParsimonyOnBinaryDomainCombintionOnSecondaryFeatures( final boolean use_last ) {
+        executeFitchParsimonyOnSecondaryFeatures( use_last, false, 0 );
     }
 
     public void executeFitchParsimonyOnDomainPresence( final boolean use_last ) {
@@ -348,10 +216,6 @@ public final class DomainParsimonyCalculator {
         return _cost;
     }
 
-    private Map<String, Set<String>> getDomainIdToSecondaryFeaturesMap() {
-        return _domain_id_to_secondary_features_map;
-    }
-
     public CharacterStateMatrix<Integer> getGainLossCountsMatrix() {
         final CharacterStateMatrix<Integer> matrix = new BasicCharacterStateMatrix<Integer>( getGainLossMatrix()
                 .getNumberOfIdentifiers(), 3 );
@@ -384,10 +248,6 @@ public final class DomainParsimonyCalculator {
         return _gain_loss_matrix;
     }
 
-    private List<GenomeWideCombinableDomains> getGenomeWideCombinableDomainsList() {
-        return _gwcd_list;
-    }
-
     public CharacterStateMatrix<BinaryStates> getInternalStatesMatrix() {
         return _binary_internal_states_matrix;
     }
@@ -409,14 +269,6 @@ public final class DomainParsimonyCalculator {
         return net;
     }
 
-    private Phylogeny getPhylogeny() {
-        return _phylogeny;
-    }
-
-    private SortedSet<String> getPositiveFilter() {
-        return _positive_filter;
-    }
-
     public int getSumOfGainsOnNode( final String node_identifier ) {
         return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.GAIN );
     }
@@ -427,18 +279,6 @@ public final class DomainParsimonyCalculator {
 
     public int getSumOfPresentOnNode( final String node_identifier ) {
         return getSumOfGainsOnNode( node_identifier ) + getSumOfUnchangedPresentOnNode( node_identifier );
-    }
-
-    int getSumOfUnchangedAbsentOnNode( final String node_identifier ) {
-        return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_ABSENT );
-    }
-
-    int getSumOfUnchangedOnNode( final String node_identifier ) {
-        return getSumOfUnchangedPresentOnNode( node_identifier ) + getSumOfUnchangedAbsentOnNode( node_identifier );
-    }
-
-    int getSumOfUnchangedPresentOnNode( final String node_identifier ) {
-        return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_PRESENT );
     }
 
     public int getTotalGains() {
@@ -467,12 +307,172 @@ public final class DomainParsimonyCalculator {
         return present;
     }
 
+    int calculateNumberOfBinaryDomainCombination() {
+        if ( getGenomeWideCombinableDomainsList().isEmpty() ) {
+            throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
+        }
+        final Set<BinaryDomainCombination> all_binary_combinations = new HashSet<BinaryDomainCombination>();
+        for( final GenomeWideCombinableDomains gwcd : getGenomeWideCombinableDomainsList() ) {
+            for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
+                all_binary_combinations.add( bc );
+            }
+        }
+        return all_binary_combinations.size();
+    }
+
+    CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence() {
+        return createMatrixOfBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
+    }
+
+    CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence() {
+        return createMatrixOfDomainPresenceOrAbsence( getGenomeWideCombinableDomainsList(), getPositiveFilter() );
+    }
+
+    CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeaturePresenceOrAbsence( final Map<Species, MappingResults> mapping_results_map ) {
+        return createMatrixOfSecondaryFeaturePresenceOrAbsence( getGenomeWideCombinableDomainsList(),
+                                                                getDomainIdToSecondaryFeaturesMap(),
+                                                                mapping_results_map );
+    }
+
+    Phylogeny decoratePhylogenyWithDomains( final Phylogeny phylogeny ) {
+        for( final PhylogenyNodeIterator it = phylogeny.iteratorPostorder(); it.hasNext(); ) {
+            final PhylogenyNode node = it.next();
+            final String node_identifier = node.getName();
+            final BinaryCharacters bc = new BinaryCharacters( getUnitsOnNode( node_identifier ),
+                                                              getUnitsGainedOnNode( node_identifier ),
+                                                              getUnitsLostOnNode( node_identifier ),
+                                                              TYPE_FORBINARY_CHARACTERS,
+                                                              getSumOfPresentOnNode( node_identifier ),
+                                                              getSumOfGainsOnNode( node_identifier ),
+                                                              getSumOfLossesOnNode( node_identifier ) );
+            node.getNodeData().setBinaryCharacters( bc );
+        }
+        return phylogeny;
+    }
+
+    int getSumOfUnchangedAbsentOnNode( final String node_identifier ) {
+        return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_ABSENT );
+    }
+
+    int getSumOfUnchangedOnNode( final String node_identifier ) {
+        return getSumOfUnchangedPresentOnNode( node_identifier ) + getSumOfUnchangedAbsentOnNode( node_identifier );
+    }
+
+    int getSumOfUnchangedPresentOnNode( final String node_identifier ) {
+        return getStateSumDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_PRESENT );
+    }
+
     SortedSet<String> getUnitsUnchangedAbsentOnNode( final String node_identifier ) {
         return getUnitsDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_ABSENT );
     }
 
     SortedSet<String> getUnitsUnchangedPresentOnNode( final String node_identifier ) {
         return getUnitsDeltaOnNode( node_identifier, getGainLossMatrix(), GainLossStates.UNCHANGED_PRESENT );
+    }
+
+    private void executeDolloParsimony( final boolean on_domain_presence ) {
+        reset();
+        final DolloParsimony dollo = DolloParsimony.createInstance();
+        dollo.setReturnGainLossMatrix( true );
+        dollo.setReturnInternalStates( true );
+        CharacterStateMatrix<BinaryStates> states = null;
+        if ( on_domain_presence ) {
+            states = createMatrixOfDomainPresenceOrAbsence();
+        }
+        else {
+            states = createMatrixOfBinaryDomainCombinationPresenceOrAbsence();
+        }
+        dollo.execute( getPhylogeny(), states );
+        setGainLossMatrix( dollo.getGainLossMatrix() );
+        setBinaryInternalStatesMatrix( dollo.getInternalStatesMatrix() );
+        setCost( dollo.getCost() );
+        setTotalGains( dollo.getTotalGains() );
+        setTotalLosses( dollo.getTotalLosses() );
+        setTotalUnchanged( dollo.getTotalUnchanged() );
+    }
+
+    private void executeFitchParsimony( final boolean on_domain_presence,
+                                        final boolean use_last,
+                                        final boolean randomize,
+                                        final long random_number_seed ) {
+        reset();
+        if ( use_last ) {
+            System.out.println( "   Fitch parsimony: use_last = true" );
+        }
+        final FitchParsimony<BinaryStates> fitch = new FitchParsimony<BinaryStates>();
+        fitch.setRandomize( randomize );
+        if ( randomize ) {
+            fitch.setRandomNumberSeed( random_number_seed );
+        }
+        fitch.setUseLast( use_last );
+        fitch.setReturnGainLossMatrix( true );
+        fitch.setReturnInternalStates( true );
+        CharacterStateMatrix<BinaryStates> states = null;
+        if ( on_domain_presence ) {
+            states = createMatrixOfDomainPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
+        }
+        else {
+            states = createMatrixOfBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList() );
+        }
+        fitch.execute( getPhylogeny(), states, true );
+        setGainLossMatrix( fitch.getGainLossMatrix() );
+        setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
+        setCost( fitch.getCost() );
+        setTotalGains( fitch.getTotalGains() );
+        setTotalLosses( fitch.getTotalLosses() );
+        setTotalUnchanged( fitch.getTotalUnchanged() );
+    }
+
+    private void executeFitchParsimonyOnSecondaryFeatures( final boolean use_last,
+                                                           final boolean randomize,
+                                                           final long random_number_seed ) {
+        reset();
+        if ( use_last ) {
+            System.out.println( "   Fitch parsimony: use_last = true" );
+        }
+        final FitchParsimony<BinaryStates> fitch = new FitchParsimony<BinaryStates>();
+        fitch.setRandomize( randomize );
+        if ( randomize ) {
+            fitch.setRandomNumberSeed( random_number_seed );
+        }
+        fitch.setUseLast( use_last );
+        fitch.setReturnGainLossMatrix( true );
+        fitch.setReturnInternalStates( true );
+        final Map<String, Set<String>> map = getDomainIdToSecondaryFeaturesMap();
+        final Map<String, String> newmap = new HashMap<String, String>();
+        final Iterator<Entry<String, Set<String>>> it = map.entrySet().iterator();
+        while ( it.hasNext() ) {
+            final Map.Entry<String, Set<String>> pair = it.next();
+            if ( pair.getValue().size() != 1 ) {
+                throw new IllegalArgumentException( pair.getKey() + " mapps to " + pair.getValue().size() + " items" );
+            }
+            newmap.put( pair.getKey(), ( String ) pair.getValue().toArray()[ 0 ] );
+        }
+        final CharacterStateMatrix<BinaryStates> states = createMatrixOfSecondaryFeatureBinaryDomainCombinationPresenceOrAbsence( getGenomeWideCombinableDomainsList(),
+                                                                                                                                  newmap );
+        fitch.execute( getPhylogeny(), states, true );
+        setGainLossMatrix( fitch.getGainLossMatrix() );
+        setBinaryInternalStatesMatrix( fitch.getInternalStatesMatrix() );
+        setCost( fitch.getCost() );
+        setTotalGains( fitch.getTotalGains() );
+        setTotalLosses( fitch.getTotalLosses() );
+        setTotalUnchanged( fitch.getTotalUnchanged() );
+    }
+
+    private Map<String, Set<String>> getDomainIdToSecondaryFeaturesMap() {
+        return _domain_id_to_secondary_features_map;
+    }
+
+    private List<GenomeWideCombinableDomains> getGenomeWideCombinableDomainsList() {
+        return _gwcd_list;
+    }
+
+    private Phylogeny getPhylogeny() {
+        return _phylogeny;
+    }
+
+    private SortedSet<String> getPositiveFilter() {
+        return _positive_filter;
     }
 
     private void init() {
@@ -544,50 +544,98 @@ public final class DomainParsimonyCalculator {
         return new DomainParsimonyCalculator( phylogeny, gwcd_list, domain_id_to_secondary_features_map );
     }
 
-    /**
-     * For folds instead of Pfam-domains, for example
-     * 
-     * 
-     * @param gwcd_list
-     * @return
-     */
-    static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeaturePresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                               final Map<String, Set<String>> domain_id_to_second_features_map,
-                                                                                               final Map<Species, MappingResults> mapping_results_map ) {
+    public static CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
         }
-        if ( ( domain_id_to_second_features_map == null ) || domain_id_to_second_features_map.isEmpty() ) {
-            throw new IllegalArgumentException( "domain id to secondary features map is null or empty" );
-        }
         final int number_of_identifiers = gwcd_list.size();
-        final SortedSet<String> all_secondary_features = new TreeSet<String>();
+        final SortedSet<BinaryDomainCombination> all_binary_combinations = new TreeSet<BinaryDomainCombination>();
+        final Set<BinaryDomainCombination>[] binary_combinations_per_genome = new HashSet[ number_of_identifiers ];
+        int identifier_index = 0;
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
-            int mapped = 0;
-            int not_mapped = 0;
-            for( final String domain : gwcd.getAllDomainIds() ) {
-                if ( domain_id_to_second_features_map.containsKey( domain ) ) {
-                    all_secondary_features.addAll( domain_id_to_second_features_map.get( domain ) );
-                    mapped++;
-                }
-                else {
-                    not_mapped++;
-                }
+            binary_combinations_per_genome[ identifier_index ] = new HashSet<BinaryDomainCombination>();
+            for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
+                all_binary_combinations.add( bc );
+                binary_combinations_per_genome[ identifier_index ].add( bc );
             }
-            if ( mapping_results_map != null ) {
-                final MappingResults mr = new MappingResults();
-                mr.setDescription( gwcd.getSpecies().getSpeciesId() );
-                mr.setSumOfSuccesses( mapped );
-                mr.setSumOfFailures( not_mapped );
-                mapping_results_map.put( gwcd.getSpecies(), mr );
-            }
+            ++identifier_index;
         }
-        final int number_of_characters = all_secondary_features.size();
+        final int number_of_characters = all_binary_combinations.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
                                                                                                                                                  number_of_characters );
         int character_index = 0;
-        for( final String second_id : all_secondary_features ) {
-            matrix.setCharacter( character_index++, second_id );
+        for( final BinaryDomainCombination bc : all_binary_combinations ) {
+            matrix.setCharacter( character_index++, bc.toString() );
+        }
+        identifier_index = 0;
+        final Set<String> all_identifiers = new HashSet<String>();
+        for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
+            final String species_id = gwcd.getSpecies().getSpeciesId();
+            if ( all_identifiers.contains( species_id ) ) {
+                throw new AssertionError( "species [" + species_id + "] is not unique" );
+            }
+            all_identifiers.add( species_id );
+            matrix.setIdentifier( identifier_index, species_id );
+            for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
+                BinaryDomainCombination bc = null;
+                if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED_ADJACTANT ) {
+                    bc = AdjactantDirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                }
+                else if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED ) {
+                    bc = DirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                }
+                else {
+                    bc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                }
+                if ( binary_combinations_per_genome[ identifier_index ].contains( bc ) ) {
+                    matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
+                }
+                else {
+                    matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.ABSENT );
+                }
+            }
+            ++identifier_index;
+        }
+        return matrix;
+    }
+
+    public static CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
+                                                                                            final SortedSet<String> positive_filter ) {
+        if ( gwcd_list.isEmpty() ) {
+            throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
+        }
+        if ( ( positive_filter != null ) && ( positive_filter.size() < 1 ) ) {
+            throw new IllegalArgumentException( "positive filter is empty" );
+        }
+        final int number_of_identifiers = gwcd_list.size();
+        final SortedSet<String> all_domain_ids = new TreeSet<String>();
+        for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
+            for( final String domain : gwcd.getAllDomainIds() ) {
+                all_domain_ids.add( domain );
+            }
+        }
+        int number_of_characters = all_domain_ids.size();
+        if ( positive_filter != null ) {
+            //number_of_characters = positive_filter.size(); -- bad if doms in filter but not in genomes 
+            number_of_characters = 0;
+            for( final String id : all_domain_ids ) {
+                if ( positive_filter.contains( id ) ) {
+                    number_of_characters++;
+                }
+            }
+        }
+        final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
+                                                                                                                                                 number_of_characters );
+        int character_index = 0;
+        for( final String id : all_domain_ids ) {
+            if ( positive_filter == null ) {
+                matrix.setCharacter( character_index++, id );
+            }
+            else {
+                if ( positive_filter.contains( id ) ) {
+                    matrix.setCharacter( character_index++, id );
+                }
+            }
         }
         int identifier_index = 0;
         final Set<String> all_identifiers = new HashSet<String>();
@@ -598,14 +646,12 @@ public final class DomainParsimonyCalculator {
             }
             all_identifiers.add( species_id );
             matrix.setIdentifier( identifier_index, species_id );
-            final Set<String> all_second_per_gwcd = new HashSet<String>();
-            for( final String domain : gwcd.getAllDomainIds() ) {
-                if ( domain_id_to_second_features_map.containsKey( domain ) ) {
-                    all_second_per_gwcd.addAll( domain_id_to_second_features_map.get( domain ) );
-                }
-            }
             for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
-                if ( all_second_per_gwcd.contains( matrix.getCharacter( ci ) ) ) {
+                if ( ForesterUtil.isEmpty( matrix.getCharacter( ci ) ) ) {
+                    throw new RuntimeException( "this should not have happened: problem with character #" + ci );
+                }
+                final String id = matrix.getCharacter( ci );
+                if ( gwcd.contains( id ) ) {
                     matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
                 }
                 else {
@@ -687,124 +733,54 @@ public final class DomainParsimonyCalculator {
         return matrix;
     }
 
-    private static BinaryDomainCombination mapBinaryDomainCombination( final Map<String, String> domain_id_to_second_features_map,
-                                                                       final BinaryDomainCombination bc,
-                                                                       final SortedSet<String> no_mappings ) {
-        String id0 = "";
-        String id1 = "";
-        if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
-            no_mappings.add( bc.getId0() );
-            id0 = bc.getId0();
-        }
-        else {
-            id0 = domain_id_to_second_features_map.get( bc.getId0() );
-        }
-        if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
-            no_mappings.add( bc.getId1() );
-            id1 = bc.getId1();
-        }
-        else {
-            id1 = domain_id_to_second_features_map.get( bc.getId1() );
-        }
-        return new BasicBinaryDomainCombination( id0, id1 );
-    }
-
-    public static CharacterStateMatrix<BinaryStates> createMatrixOfBinaryDomainCombinationPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list ) {
-        if ( gwcd_list.isEmpty() ) {
-            throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
-        }
-        final int number_of_identifiers = gwcd_list.size();
-        final SortedSet<BinaryDomainCombination> all_binary_combinations = new TreeSet<BinaryDomainCombination>();
-        final Set<BinaryDomainCombination>[] binary_combinations_per_genome = new HashSet[ number_of_identifiers ];
-        int identifier_index = 0;
-        for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
-            binary_combinations_per_genome[ identifier_index ] = new HashSet<BinaryDomainCombination>();
-            for( final BinaryDomainCombination bc : gwcd.toBinaryDomainCombinations() ) {
-                all_binary_combinations.add( bc );
-                binary_combinations_per_genome[ identifier_index ].add( bc );
-            }
-            ++identifier_index;
-        }
-        final int number_of_characters = all_binary_combinations.size();
-        final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
-                                                                                                                                                 number_of_characters );
-        int character_index = 0;
-        for( final BinaryDomainCombination bc : all_binary_combinations ) {
-            matrix.setCharacter( character_index++, bc.toString() );
-        }
-        identifier_index = 0;
-        final Set<String> all_identifiers = new HashSet<String>();
-        for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
-            final String species_id = gwcd.getSpecies().getSpeciesId();
-            if ( all_identifiers.contains( species_id ) ) {
-                throw new AssertionError( "species [" + species_id + "] is not unique" );
-            }
-            all_identifiers.add( species_id );
-            matrix.setIdentifier( identifier_index, species_id );
-            for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
-                BinaryDomainCombination bc = null;
-                if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED_ADJACTANT ) {
-                    bc = AdjactantDirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
-                }
-                else if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED ) {
-                    bc = DirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
-                }
-                else {
-                    bc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
-                }
-                if ( binary_combinations_per_genome[ identifier_index ].contains( bc ) ) {
-                    matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
-                }
-                else {
-                    matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.ABSENT );
-                }
-            }
-            ++identifier_index;
-        }
-        return matrix;
-    }
-
     static CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list ) {
         return createMatrixOfDomainPresenceOrAbsence( gwcd_list, null );
     }
 
-    public static CharacterStateMatrix<BinaryStates> createMatrixOfDomainPresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
-                                                                                            final SortedSet<String> positive_filter ) {
+    /**
+     * For folds instead of Pfam-domains, for example
+     * 
+     * 
+     * @param gwcd_list
+     * @return
+     */
+    static CharacterStateMatrix<BinaryStates> createMatrixOfSecondaryFeaturePresenceOrAbsence( final List<GenomeWideCombinableDomains> gwcd_list,
+                                                                                               final Map<String, Set<String>> domain_id_to_second_features_map,
+                                                                                               final Map<Species, MappingResults> mapping_results_map ) {
         if ( gwcd_list.isEmpty() ) {
             throw new IllegalArgumentException( "genome wide combinable domains list is empty" );
         }
-        if ( ( positive_filter != null ) && ( positive_filter.size() < 1 ) ) {
-            throw new IllegalArgumentException( "positive filter is empty" );
+        if ( ( domain_id_to_second_features_map == null ) || domain_id_to_second_features_map.isEmpty() ) {
+            throw new IllegalArgumentException( "domain id to secondary features map is null or empty" );
         }
         final int number_of_identifiers = gwcd_list.size();
-        final SortedSet<String> all_domain_ids = new TreeSet<String>();
+        final SortedSet<String> all_secondary_features = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
+            int mapped = 0;
+            int not_mapped = 0;
             for( final String domain : gwcd.getAllDomainIds() ) {
-                all_domain_ids.add( domain );
-            }
-        }
-        int number_of_characters = all_domain_ids.size();
-        if ( positive_filter != null ) {
-            //number_of_characters = positive_filter.size(); -- bad if doms in filter but not in genomes 
-            number_of_characters = 0;
-            for( final String id : all_domain_ids ) {
-                if ( positive_filter.contains( id ) ) {
-                    number_of_characters++;
+                if ( domain_id_to_second_features_map.containsKey( domain ) ) {
+                    all_secondary_features.addAll( domain_id_to_second_features_map.get( domain ) );
+                    mapped++;
+                }
+                else {
+                    not_mapped++;
                 }
             }
+            if ( mapping_results_map != null ) {
+                final MappingResults mr = new MappingResults();
+                mr.setDescription( gwcd.getSpecies().getSpeciesId() );
+                mr.setSumOfSuccesses( mapped );
+                mr.setSumOfFailures( not_mapped );
+                mapping_results_map.put( gwcd.getSpecies(), mr );
+            }
         }
+        final int number_of_characters = all_secondary_features.size();
         final CharacterStateMatrix<CharacterStateMatrix.BinaryStates> matrix = new BasicCharacterStateMatrix<CharacterStateMatrix.BinaryStates>( number_of_identifiers,
                                                                                                                                                  number_of_characters );
         int character_index = 0;
-        for( final String id : all_domain_ids ) {
-            if ( positive_filter == null ) {
-                matrix.setCharacter( character_index++, id );
-            }
-            else {
-                if ( positive_filter.contains( id ) ) {
-                    matrix.setCharacter( character_index++, id );
-                }
-            }
+        for( final String second_id : all_secondary_features ) {
+            matrix.setCharacter( character_index++, second_id );
         }
         int identifier_index = 0;
         final Set<String> all_identifiers = new HashSet<String>();
@@ -815,12 +791,14 @@ public final class DomainParsimonyCalculator {
             }
             all_identifiers.add( species_id );
             matrix.setIdentifier( identifier_index, species_id );
-            for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
-                if ( ForesterUtil.isEmpty( matrix.getCharacter( ci ) ) ) {
-                    throw new RuntimeException( "this should not have happened: problem with character #" + ci );
+            final Set<String> all_second_per_gwcd = new HashSet<String>();
+            for( final String domain : gwcd.getAllDomainIds() ) {
+                if ( domain_id_to_second_features_map.containsKey( domain ) ) {
+                    all_second_per_gwcd.addAll( domain_id_to_second_features_map.get( domain ) );
                 }
-                final String id = matrix.getCharacter( ci );
-                if ( gwcd.contains( id ) ) {
+            }
+            for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
+                if ( all_second_per_gwcd.contains( matrix.getCharacter( ci ) ) ) {
                     matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
                 }
                 else {
@@ -878,5 +856,27 @@ public final class DomainParsimonyCalculator {
             }
         }
         return d;
+    }
+
+    private static BinaryDomainCombination mapBinaryDomainCombination( final Map<String, String> domain_id_to_second_features_map,
+                                                                       final BinaryDomainCombination bc,
+                                                                       final SortedSet<String> no_mappings ) {
+        String id0 = "";
+        String id1 = "";
+        if ( !domain_id_to_second_features_map.containsKey( bc.getId0() ) ) {
+            no_mappings.add( bc.getId0() );
+            id0 = bc.getId0();
+        }
+        else {
+            id0 = domain_id_to_second_features_map.get( bc.getId0() );
+        }
+        if ( !domain_id_to_second_features_map.containsKey( bc.getId1() ) ) {
+            no_mappings.add( bc.getId1() );
+            id1 = bc.getId1();
+        }
+        else {
+            id1 = domain_id_to_second_features_map.get( bc.getId1() );
+        }
+        return new BasicBinaryDomainCombination( id0, id1 );
     }
 }

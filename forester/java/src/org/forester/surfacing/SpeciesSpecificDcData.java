@@ -45,11 +45,11 @@ interface SpeciesSpecificDcData {
      */
     public SortedMap<String, Integer> getCombinableDomainIdToCountsMap();
 
+    public SortedSet<String> getKeyDomainProteins();
+
     public int getNumberOfProteinsExhibitingCombinationWith( final String domain_id );
 
     public StringBuffer toStringBuffer( final DomainSimilarityCalculator.Detailedness detailedness, boolean html );
-
-    public SortedSet<String> getKeyDomainProteins();
 
     void addKeyDomainProtein( String protein );
 }

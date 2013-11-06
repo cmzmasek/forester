@@ -52,8 +52,8 @@ import org.forester.util.ForesterUtil;
 public class PairwiseGenomeComparator {
 
     private List<DistanceMatrix> _domain_distance_scores_means;
-    private List<DistanceMatrix> _shared_domains_based_distances;
     private List<DistanceMatrix> _shared_binary_combinations_based_distances;
+    private List<DistanceMatrix> _shared_domains_based_distances;
 
     public PairwiseGenomeComparator() {
         init();
@@ -71,20 +71,14 @@ public class PairwiseGenomeComparator {
         return _shared_domains_based_distances;
     }
 
-    private void init() {
-        _domain_distance_scores_means = new ArrayList<DistanceMatrix>();
-        _shared_domains_based_distances = new ArrayList<DistanceMatrix>();
-        _shared_binary_combinations_based_distances = new ArrayList<DistanceMatrix>();
-    }
-
     public void performPairwiseComparisons( final StringBuilder html_desc,
                                             final boolean sort_by_species_count_first,
                                             final Detailedness detailedness,
                                             final boolean ignore_domains_without_combs_in_all_spec,
                                             final boolean ignore_domains_specific_to_one_species,
-                                            final DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field,
+                                            final PrintableDomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field,
                                             final PrintableDomainSimilarity.PRINT_OPTION domain_similarity_print_option,
-                                            final DomainSimilarity.DomainSimilarityScoring scoring,
+                                            final PrintableDomainSimilarity.DomainSimilarityScoring scoring,
                                             final Map<String, List<GoId>> domain_id_to_go_ids_map,
                                             final Map<GoId, GoTerm> go_id_to_term_map,
                                             final GoNameSpace go_namespace_limit,
@@ -146,7 +140,7 @@ public class PairwiseGenomeComparator {
                                                                                              sort_by_species_count_first,
                                                                                              true,
                                                                                              calc_similarity_scores );
-                final SortedSet<DomainSimilarity> similarities = calc
+                final SortedSet<PrintableDomainSimilarity> similarities = calc
                         .calculateSimilarities( pw_calc,
                                                 genome_pair,
                                                 ignore_domains_without_combs_in_all_spec,
@@ -297,6 +291,12 @@ public class PairwiseGenomeComparator {
         if ( verbose ) {
             System.out.println();
         }
+    }
+
+    private void init() {
+        _domain_distance_scores_means = new ArrayList<DistanceMatrix>();
+        _shared_domains_based_distances = new ArrayList<DistanceMatrix>();
+        _shared_binary_combinations_based_distances = new ArrayList<DistanceMatrix>();
     }
 
     static private String[] getAllUniqueDomainIdAsArray( final List<GenomeWideCombinableDomains> list_of_genome_wide_combinable_domains ) {

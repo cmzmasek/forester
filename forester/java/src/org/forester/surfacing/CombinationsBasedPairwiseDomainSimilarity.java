@@ -29,9 +29,9 @@ package org.forester.surfacing;
 
 public class CombinationsBasedPairwiseDomainSimilarity implements PairwiseDomainSimilarity {
 
-    private final int    _same_domains;
-    private final int    _different_domains;
     private final int    _difference_in_counts;
+    private final int    _different_domains;
+    private final int    _same_domains;
     private final double _score;
 
     public CombinationsBasedPairwiseDomainSimilarity( final int same_domains,

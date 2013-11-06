@@ -43,17 +43,6 @@ public interface CombinableDomains {
     public void addCombinableDomain( final String protein_domain );
 
     /**
-     * 
-     * This must return all domains in this set of combinable domains (i.e.
-     * the key domain and all domains which can combine with the key domain).
-     * 
-     *  @return all domains
-     */
-    List<String> getAllDomains();
-
-    List<String> getCombinableDomains();
-
-    /**
      * Returns the combinable domain identifiers sorted in alphabetical manner: -
      * keys are the combinable domain identifiers - values are the counts of
      * proteins exhibiting a particular combination
@@ -80,6 +69,8 @@ public interface CombinableDomains {
      */
     public int getKeyDomainCount();
 
+    public Set<String> getKeyDomainProteins();
+
     /**
      * Returns how many proteins with the key domain are present in a given
      * species genome.
@@ -87,8 +78,6 @@ public interface CombinableDomains {
      * @return key domain proteins count in species
      */
     public int getKeyDomainProteinsCount();
-
-    public Set<String> getKeyDomainProteins();
 
     public int getNumberOfCombinableDomains();
 
@@ -103,6 +92,21 @@ public interface CombinableDomains {
 
     public boolean isCombinable( final String protein_domain );
 
+    public List<BinaryDomainCombination> toBinaryDomainCombinations();
+
+    void addKeyDomainProtein( String protein );
+
+    /**
+     * 
+     * This must return all domains in this set of combinable domains (i.e.
+     * the key domain and all domains which can combine with the key domain).
+     * 
+     *  @return all domains
+     */
+    List<String> getAllDomains();
+
+    List<String> getCombinableDomains();
+
     /**
      * Sets how many times the key domain is present in a given species genome.
      * 
@@ -110,8 +114,4 @@ public interface CombinableDomains {
      *            key domain count in species
      */
     void setKeyDomainCount( final int key_domain_count );
-
-    public List<BinaryDomainCombination> toBinaryDomainCombinations();
-
-    void addKeyDomainProtein( String protein );
 }

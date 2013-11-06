@@ -40,11 +40,11 @@ import org.forester.util.ForesterUtil;
 
 public class BasicCombinableDomains implements CombinableDomains {
 
+    final private TreeMap<String, Integer> _combining_domains;
     final private String                   _key_domain;
     private int                            _key_domain_count;
-    final private Species                  _species;
-    final private TreeMap<String, Integer> _combining_domains;
     final private Set<String>              _proteins_with_key_domain;
+    final private Species                  _species;
 
     public BasicCombinableDomains( final String key_domain, final Species species ) {
         _key_domain = key_domain;
@@ -117,10 +117,6 @@ public class BasicCombinableDomains implements CombinableDomains {
         return sb;
     }
 
-    protected TreeMap<String, Integer> getCombiningDomains() {
-        return _combining_domains;
-    }
-
     @Override
     public String getKeyDomain() {
         return _key_domain;
@@ -129,6 +125,11 @@ public class BasicCombinableDomains implements CombinableDomains {
     @Override
     public int getKeyDomainCount() {
         return _key_domain_count;
+    }
+
+    @Override
+    public Set<String> getKeyDomainProteins() {
+        return _proteins_with_key_domain;
     }
 
     @Override
@@ -190,8 +191,7 @@ public class BasicCombinableDomains implements CombinableDomains {
         return sb.toString();
     }
 
-    @Override
-    public Set<String> getKeyDomainProteins() {
-        return _proteins_with_key_domain;
+    protected TreeMap<String, Integer> getCombiningDomains() {
+        return _combining_domains;
     }
 }

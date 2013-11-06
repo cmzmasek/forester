@@ -98,25 +98,29 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
         final StringBuffer sb = new StringBuffer();
         if ( detailedness == DomainSimilarityCalculator.Detailedness.PUNCTILIOUS ) {
             if ( html ) {
-                sb.append( " " );
+                //sb.append( " " );
+                sb.append( "<td>" );
             }
             sb.append( getKeyDomainDomainsCount() );
             if ( html ) {
-                sb.append( ", " );
+                //sb.append( ", " );
+                sb.append( "</td><td>" );
             }
             else {
                 sb.append( "\t" );
             }
             sb.append( getKeyDomainProteinsCount() );
             if ( html ) {
-                sb.append( ", " );
+                // sb.append( ", " );
+                sb.append( "</td><td>" );
             }
             else {
                 sb.append( "\t" );
             }
             sb.append( getCombinableDomainsCount() );
-            if ( html && !getCombinableDomainIdToCountsMap().isEmpty() ) {
-                sb.append( ":" );
+            if ( html /*&& !getCombinableDomainIdToCountsMap().isEmpty()*/) {
+                // sb.append( ":" );
+                sb.append( "</td><td>" );
             }
         }
         if ( html ) {
@@ -148,6 +152,7 @@ class PrintableSpeciesSpecificDcData implements SpeciesSpecificDcData {
                 sb.append( link );
             }
             sb.append( "]" );
+            sb.append( "</td>" );
         }
         return sb;
     }

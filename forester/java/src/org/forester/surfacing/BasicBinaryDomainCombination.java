@@ -35,15 +35,6 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     String _id1;
     String _str;
 
-    BasicBinaryDomainCombination() {
-        _id0 = null;
-        _id1 = null;
-    }
-
-    private String getAsStr() {
-        return _id0 + SEPARATOR + _id1;
-    }
-
     public BasicBinaryDomainCombination( final String id0, final String id1 ) {
         if ( ( id0 == null ) || ( id1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
@@ -56,6 +47,11 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
             _id0 = id1;
             _id1 = id0;
         }
+    }
+
+    BasicBinaryDomainCombination() {
+        _id0 = null;
+        _id1 = null;
     }
 
     @Override
@@ -156,6 +152,10 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     @Override
     public String toString() {
         return getAsStr();
+    }
+
+    private String getAsStr() {
+        return _id0 + SEPARATOR + _id1;
     }
 
     public static BinaryDomainCombination createInstance( final String ids ) {

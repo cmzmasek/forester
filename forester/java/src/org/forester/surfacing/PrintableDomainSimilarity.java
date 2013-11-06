@@ -44,11 +44,12 @@ import org.forester.species.Species;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.util.ForesterUtil;
 
-public class PrintableDomainSimilarity implements DomainSimilarity {
+public class PrintableDomainSimilarity implements Comparable<PrintableDomainSimilarity> {
 
-    final public static String                              SPECIES_SEPARATOR = "  ";
-    final private static int                                EQUAL             = 0;
-    final private static String                             NO_SPECIES        = "     ";
+    final public static String                              SPECIES_SEPARATOR          = "  ";
+    final private static int                                EQUAL                      = 0;
+    final private static String                             NO_SPECIES                 = "     ";
+    private static final boolean                            OUTPUT_TAXCODES_PER_DOMAIN = false;
     final private CombinableDomains                         _combinable_domains;
     private DomainSimilarityCalculator.Detailedness         _detailedness;
     final private double                                    _max;
@@ -158,8 +159,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
     }
 
-    @Override
-    public int compareTo( final DomainSimilarity domain_similarity ) {
+    public int compareTo( final PrintableDomainSimilarity domain_similarity ) {
         if ( this == domain_similarity ) {
             return EQUAL;
         }
@@ -173,7 +173,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return compareByDomainId( domain_similarity );
     }
 
-    @Override
     public SortedSet<String> getCombinableDomainIds( final Species species_of_combinable_domain ) {
         final SortedSet<String> sorted_ids = new TreeSet<String>();
         if ( getSpeciesData().containsKey( species_of_combinable_domain ) ) {
@@ -185,42 +184,56 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sorted_ids;
     }
 
-    @Override
     public String getDomainId() {
         return getCombinableDomains().getKeyDomain();
     }
 
-    @Override
+    /**
+     * For pairwise similarities, this should return the "difference"; for example the difference in counts
+     * for copy number based features (the same as getMaximalDifferenceInCounts(), or the number
+     * of actually different domain combinations. 
+     * For pairwise similarities, this should return the difference,
+     * while for comparisons of more than two domains, this should return the maximal difference
+     * 
+     */
     public int getMaximalDifference() {
         return _max_difference;
     }
 
-    @Override
+    /**
+     * For pairwise similarities, this should return the difference in counts,
+     * while for comparisons of more than two domains, this should return the maximal difference
+     * in counts
+     * 
+     * 
+     * @return the (maximal) difference in counts
+     */
     public int getMaximalDifferenceInCounts() {
         return _max_difference_in_counts;
     }
 
-    @Override
     public double getMaximalSimilarityScore() {
         return _max;
     }
 
-    @Override
     public double getMeanSimilarityScore() {
         return _mean;
     }
 
-    @Override
     public double getMinimalSimilarityScore() {
         return _min;
     }
 
-    @Override
+    /**
+     * This should return the number of pairwise distances used to calculate
+     * this similarity score
+     * 
+     * @return the number of pairwise distances
+     */
     public int getN() {
         return _n;
     }
 
-    @Override
     public SortedSet<Species> getSpecies() {
         final SortedSet<Species> species = new TreeSet<Species>();
         for( final Species s : getSpeciesData().keySet() ) {
@@ -233,12 +246,17 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _species_order;
     }
 
-    @Override
+    /**
+     * This should return a map, which maps species names to
+     * SpeciesSpecificDomainSimilariyData
+     * 
+     * 
+     * @return SortedMap<String, SpeciesSpecificDomainSimilariyData>
+     */
     public SortedMap<Species, SpeciesSpecificDcData> getSpeciesData() {
         return _species_data;
     }
 
-    @Override
     public double getStandardDeviationOfSimilarityScore() {
         return _sd;
     }
@@ -254,7 +272,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         _species_order = species_order;
     }
 
-    @Override
     public StringBuffer toStringBuffer( final PrintableDomainSimilarity.PRINT_OPTION print_option,
                                         final Map<String, Integer> tax_code_to_id_map,
                                         final Phylogeny phy ) {
@@ -262,7 +279,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             case SIMPLE_TAB_DELIMITED:
                 return toStringBufferSimpleTabDelimited();
             case HTML:
-                return toStringBufferDetailedHTML( tax_code_to_id_map, phy );
+                return toStringBufferDetailedHTML( tax_code_to_id_map, phy, OUTPUT_TAXCODES_PER_DOMAIN );
             default:
                 throw new AssertionError( "Unknown print option: " + print_option );
         }
@@ -274,14 +291,17 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                                                final Map<String, Integer> tax_code_to_id_map,
                                                final Phylogeny phy ) {
         if ( html ) {
+            sb.append( "<tr>" );
+            sb.append( "<td>" );
             addTaxWithLink( sb, species.getSpeciesId(), tax_code_to_id_map, phy );
+            sb.append( "</td>" );
         }
         else {
             sb.append( species.getSpeciesId() );
         }
         if ( getDetaildness() != DomainSimilarityCalculator.Detailedness.BASIC ) {
             if ( html ) {
-                sb.append( ":" );
+                //sb.append( ":" );
             }
             else {
                 sb.append( "\t" );
@@ -289,7 +309,8 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
             sb.append( getSpeciesData().get( species ).toStringBuffer( getDetaildness(), html ) );
         }
         if ( html ) {
-            sb.append( "<br>" );
+            //sb.append( "<br>" );
+            sb.append( "</tr>" );
         }
         else {
             sb.append( "\n\t" );
@@ -332,7 +353,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( "</b>" );
     }
 
-    private int compareByDomainId( final DomainSimilarity other ) {
+    private int compareByDomainId( final PrintableDomainSimilarity other ) {
         return getDomainId().compareToIgnoreCase( other.getDomainId() );
     }
 
@@ -357,7 +378,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         }
         for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
             sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
-            sb.append( ": " );
+            sb.append( " " );
             sb.append( "<span style=\"font-size:7px\">" );
             for( final String tax : e.getValue() ) {
                 final String hex = SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( tax, null );
@@ -379,8 +400,35 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return sb;
     }
 
+    private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
+                                                            final Map<String, Integer> tax_code_to_id_map,
+                                                            final Phylogeny phy ) {
+        final StringBuffer sb = new StringBuffer();
+        sb.append( "<table>" );
+        for( final Species species : getSpeciesData().keySet() ) {
+            addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map, phy );
+        }
+        sb.append( "</table>" );
+        return sb;
+    }
+
+    private StringBuffer getSpeciesDataInCustomOrder( final boolean html,
+                                                      final Map<String, Integer> tax_code_to_id_map,
+                                                      final Phylogeny phy ) {
+        final StringBuffer sb = new StringBuffer();
+        for( final Species order_species : getSpeciesCustomOrder() ) {
+            if ( getSpeciesData().keySet().contains( order_species ) ) {
+                addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map, phy );
+            }
+            else {
+                sb.append( PrintableDomainSimilarity.NO_SPECIES );
+                sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
+            }
+        }
+        return sb;
+    }
+
     private StringBuffer getTaxonomyGroupDistribution( final Phylogeny tol ) {
-        //TODO work on me    
         final SortedMap<String, Set<String>> domain_to_species_set_map = new TreeMap<String, Set<String>>();
         for( final Species species : getSpeciesData().keySet() ) {
             for( final String combable_dom : getCombinableDomainIds( species ) ) {
@@ -394,8 +442,6 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( "<table>" );
         for( final Map.Entry<String, Set<String>> domain_to_species_set : domain_to_species_set_map.entrySet() ) {
             final Map<String, Integer> counts = new HashMap<String, Integer>();
-            //  final ValueComparator bvc = new ValueComparator( counts );
-            //  final SortedMap<String, Integer> sorted_counts = new TreeMap<String, Integer>( bvc );
             for( final String tax_code : domain_to_species_set.getValue() ) {
                 final String group = SurfacingUtil.obtainTaxonomyGroup( tax_code, tol );
                 if ( !ForesterUtil.isEmpty( group ) ) {
@@ -424,14 +470,12 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                 }
                 counts_to_groups.get( c ).add( group_to_counts.getKey() );
             }
-            // sorted_counts.putAll( counts );
             sb.append( "<tr>" );
             sb.append( "<td>" );
             sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + domain_to_species_set.getKey() + "\">"
                     + domain_to_species_set.getKey() + "</a>" );
-            sb.append( ": " );
+            sb.append( " " );
             sb.append( "</td>" );
-            // sb.append( "<span style=\"font-size:9px\">" );
             boolean first = true;
             for( final Entry<Integer, SortedSet<String>> count_to_groups : counts_to_groups.entrySet() ) {
                 if ( first ) {
@@ -445,7 +489,7 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                 sb.append( "<td>" );
                 final SortedSet<String> groups = count_to_groups.getValue();
                 sb.append( count_to_groups.getKey() );
-                sb.append( ":" );
+                sb.append( " " );
                 for( final String group : groups ) {
                     final Color color = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
                     if ( color == null ) {
@@ -465,83 +509,9 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
                 sb.append( "</td>" );
                 sb.append( "</tr>" );
             }
-            // sb.append( "</span>" );
             sb.append( ForesterUtil.getLineSeparator() );
         }
         sb.append( "</table>" );
-        // i am just a template and need to be modified for "printout" TODO
-        //        for( final Map.Entry<String, SortedSet<String>> e : m.entrySet() ) {
-        //            sb.append( "<a href=\"" + SurfacingConstants.PFAM_FAMILY_ID_LINK + e.getKey() + "\">" + e.getKey() + "</a>" );
-        //            sb.append( ": " );
-        //            sb.append( "<span style=\"font-size:8px\">" );
-        //            for( final String tax : e.getValue() ) {
-        //                final String hex = SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( tax, null );
-        //                if ( !ForesterUtil.isEmpty( hex ) ) {
-        //                    sb.append( "<span style=\"color:" );
-        //                    sb.append( hex );
-        //                    sb.append( "\">" );
-        //                    sb.append( tax );
-        //                    sb.append( "</span>" );
-        //                }
-        //                else {
-        //                    sb.append( tax );
-        //                }
-        //                sb.append( " " );
-        //            }
-        //            sb.append( "</span>" );
-        //            sb.append( "<br>\n" );
-        //        }
-        return sb;
-    }
-
-    /*
-     public class Testing {
-
-    public static void main(String[] args) {
-
-        HashMap<String,Double> map = new HashMap<String,Double>();
-        ValueComparator bvc =  new ValueComparator(map);
-        TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(bvc);
-
-        map.put("A",99.5);
-        map.put("B",67.4);
-        map.put("C",67.4);
-        map.put("D",67.3);
-
-        System.out.println("unsorted map: "+map);
-
-        sorted_map.putAll(map);
-
-        System.out.println("results: "+sorted_map);
-    }
-    }
-
-       
-      
-     */
-    private StringBuffer getSpeciesDataInAlphabeticalOrder( final boolean html,
-                                                            final Map<String, Integer> tax_code_to_id_map,
-                                                            final Phylogeny phy ) {
-        final StringBuffer sb = new StringBuffer();
-        for( final Species species : getSpeciesData().keySet() ) {
-            addSpeciesSpecificDomainData( sb, species, html, tax_code_to_id_map, phy );
-        }
-        return sb;
-    }
-
-    private StringBuffer getSpeciesDataInCustomOrder( final boolean html,
-                                                      final Map<String, Integer> tax_code_to_id_map,
-                                                      final Phylogeny phy ) {
-        final StringBuffer sb = new StringBuffer();
-        for( final Species order_species : getSpeciesCustomOrder() ) {
-            if ( getSpeciesData().keySet().contains( order_species ) ) {
-                addSpeciesSpecificDomainData( sb, order_species, html, tax_code_to_id_map, phy );
-            }
-            else {
-                sb.append( PrintableDomainSimilarity.NO_SPECIES );
-                sb.append( PrintableDomainSimilarity.SPECIES_SEPARATOR );
-            }
-        }
         return sb;
     }
 
@@ -553,7 +523,9 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         return _treat_as_binary_comparison;
     }
 
-    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map, final Phylogeny phy ) {
+    private StringBuffer toStringBufferDetailedHTML( final Map<String, Integer> tax_code_to_id_map,
+                                                     final Phylogeny phy,
+                                                     final boolean output_tax_codes_per_domain ) {
         final StringBuffer sb = new StringBuffer();
         sb.append( "<tr>" );
         sb.append( "<td>" );
@@ -609,14 +581,18 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         if ( ( getSpeciesCustomOrder() == null ) || getSpeciesCustomOrder().isEmpty() ) {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInAlphabeticalOrder( true, tax_code_to_id_map, phy ) );
-            sb.append( getDomainDataInAlphabeticalOrder() );
+            if ( output_tax_codes_per_domain ) {
+                sb.append( getDomainDataInAlphabeticalOrder() );
+            }
             sb.append( getTaxonomyGroupDistribution( phy ) );
             sb.append( "</td>" );
         }
         else {
             sb.append( "<td>" );
             sb.append( getSpeciesDataInCustomOrder( true, tax_code_to_id_map, phy ) );
-            sb.append( getDomainDataInAlphabeticalOrder() );
+            if ( output_tax_codes_per_domain ) {
+                sb.append( getDomainDataInAlphabeticalOrder() );
+            }
             sb.append( getTaxonomyGroupDistribution( phy ) );
             sb.append( "</td>" );
         }
@@ -631,6 +607,14 @@ public class PrintableDomainSimilarity implements DomainSimilarity {
         sb.append( getSpeciesDataInAlphabeticalOrder( false, null, null ) );
         sb.append( "\n" );
         return sb;
+    }
+
+    static public enum DomainSimilarityScoring {
+        COMBINATIONS, DOMAINS, PROTEINS;
+    }
+
+    public static enum DomainSimilaritySortField {
+        ABS_MAX_COUNTS_DIFFERENCE, DOMAIN_ID, MAX, MAX_COUNTS_DIFFERENCE, MAX_DIFFERENCE, MEAN, MIN, SD, SPECIES_COUNT,
     }
 
     public static enum PRINT_OPTION {

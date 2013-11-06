@@ -127,7 +127,7 @@ import org.forester.ws.wabi.TxSearch.TAX_RANK;
 @SuppressWarnings( "unused")
 public final class Test {
 
-    private final static boolean PERFORM_DB_TESTS          = true;
+    private final static boolean PERFORM_DB_TESTS          = false;
     private final static double  ZERO_DIFF                 = 1.0E-9;
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
@@ -501,7 +501,7 @@ public final class Test {
                 failed++;
             }
         }
-        System.exit( 0 );
+        /////////////////////System.exit( 0 );
         System.out.print( "UniProtKB id extraction: " );
         if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );

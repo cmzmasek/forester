@@ -63,9 +63,6 @@ import org.forester.surfacing.CombinationsBasedPairwiseDomainSimilarityCalculato
 import org.forester.surfacing.DomainCountsBasedPairwiseSimilarityCalculator;
 import org.forester.surfacing.DomainLengthsTable;
 import org.forester.surfacing.DomainParsimonyCalculator;
-import org.forester.surfacing.DomainSimilarity;
-import org.forester.surfacing.DomainSimilarity.DomainSimilarityScoring;
-import org.forester.surfacing.DomainSimilarity.DomainSimilaritySortField;
 import org.forester.surfacing.DomainSimilarityCalculator;
 import org.forester.surfacing.DomainSimilarityCalculator.Detailedness;
 import org.forester.surfacing.GenomeWideCombinableDomains;
@@ -74,6 +71,7 @@ import org.forester.surfacing.MappingResults;
 import org.forester.surfacing.PairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.PairwiseGenomeComparator;
 import org.forester.surfacing.PrintableDomainSimilarity;
+import org.forester.surfacing.PrintableDomainSimilarity.DomainSimilarityScoring;
 import org.forester.surfacing.PrintableDomainSimilarity.PRINT_OPTION;
 import org.forester.surfacing.ProteinCountsBasedPairwiseDomainSimilarityCalculator;
 import org.forester.surfacing.SurfacingUtil;
@@ -87,188 +85,188 @@ import org.forester.util.ForesterUtil;
 
 public class surfacing {
 
-    private static final int                                  MINIMAL_NUMBER_OF_SIMILARITIES_FOR_SPLITTING                                  = 1000;
-    public final static String                                DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS                           = "graph_analysis_out";
-    public final static String                                DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS                       = "_dc.dot";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS        = "_fitch_present_dc.dot";
-    public final static String                                DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX                                    = ".dcc";
+    private static final int                                                 MINIMAL_NUMBER_OF_SIMILARITIES_FOR_SPLITTING                                  = 1000;
+    public final static String                                               DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS                           = "graph_analysis_out";
+    public final static String                                               DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS                       = "_dc.dot";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS        = "_fitch_present_dc.dot";
+    public final static String                                               DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX                                    = ".dcc";
     // gain/loss:
-    public final static String                                PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_DOMAINS                                      = "_dollo_gl_d";
-    public final static String                                PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_BINARY_COMBINATIONS                          = "_dollo_gl_dc";
-    public final static String                                PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_DOMAINS                                      = "_fitch_gl_d";
-    public final static String                                PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS                          = "_fitch_gl_dc";
+    public final static String                                               PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_DOMAINS                                      = "_dollo_gl_d";
+    public final static String                                               PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_BINARY_COMBINATIONS                          = "_dollo_gl_dc";
+    public final static String                                               PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_DOMAINS                                      = "_fitch_gl_d";
+    public final static String                                               PARSIMONY_OUTPUT_GL_SUFFIX_FITCH_BINARY_COMBINATIONS                          = "_fitch_gl_dc";
     // gain/loss counts:
-    public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_DOMAINS                               = "_dollo_glc_d";
-    public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_BINARY_COMBINATIONS                   = "_dollo_glc_dc";
-    public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_DOMAINS                               = "_fitch_glc_d";
-    public final static String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_BINARY_COMBINATIONS                   = "_fitch_glc_dc";
+    public final static String                                               PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_DOMAINS                               = "_dollo_glc_d";
+    public final static String                                               PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_BINARY_COMBINATIONS                   = "_dollo_glc_dc";
+    public final static String                                               PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_DOMAINS                               = "_fitch_glc_d";
+    public final static String                                               PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_FITCH_BINARY_COMBINATIONS                   = "_fitch_glc_dc";
     // tables:
-    public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_BC                                               = "_fitch_gains_dc";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC                                          = "_fitch_gains_dc.html";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_BC                                              = "_fitch_losses_dc";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC                                         = "_fitch_losses_dc.html";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_BC                                             = "_fitch_present_dc";
-    public final static String                                PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC                                        = "_fitch_present_dc.html";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_D                                                = "_dollo_gains_d";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D                                           = "_dollo_gains_d.html";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_D                                               = "_dollo_losses_d";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D                                          = "_dollo_losses_d.html";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_D                                              = "_dollo_present_d";
-    public final static String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D                                         = "_dollo_present_d.html";
-    public final static String                                DOMAINS_PRESENT_NEXUS                                                         = "_dom.nex";
-    public final static String                                BDC_PRESENT_NEXUS                                                             = "_dc.nex";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_GAINS_BC                                               = "_fitch_gains_dc";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_GAINS_HTML_BC                                          = "_fitch_gains_dc.html";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_LOSSES_BC                                              = "_fitch_losses_dc";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_LOSSES_HTML_BC                                         = "_fitch_losses_dc.html";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_PRESENT_BC                                             = "_fitch_present_dc";
+    public final static String                                               PARSIMONY_OUTPUT_FITCH_PRESENT_HTML_BC                                        = "_fitch_present_dc.html";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_GAINS_D                                                = "_dollo_gains_d";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_GAINS_HTML_D                                           = "_dollo_gains_d.html";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_LOSSES_D                                               = "_dollo_losses_d";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_LOSSES_HTML_D                                          = "_dollo_losses_d.html";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_PRESENT_D                                              = "_dollo_present_d";
+    public final static String                                               PARSIMONY_OUTPUT_DOLLO_PRESENT_HTML_D                                         = "_dollo_present_d.html";
+    public final static String                                               DOMAINS_PRESENT_NEXUS                                                         = "_dom.nex";
+    public final static String                                               BDC_PRESENT_NEXUS                                                             = "_dc.nex";
     // ---
-    public final static String                                PRG_NAME                                                                      = "surfacing";
-    public static final String                                DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                                    = "_d_dollo"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH                                    = "_d_fitch"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                 = "_dc_dollo"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH                 = "_dc_fitch"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                NEXUS_EXTERNAL_DOMAINS                                                        = "_dom.nex";
-    public static final String                                NEXUS_EXTERNAL_DOMAIN_COMBINATIONS                                            = "_dc.nex";
-    public static final String                                NEXUS_SECONDARY_FEATURES                                                      = "_secondary_features.nex";
-    public static final String                                PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_SECONDARY_FEATURES                           = "_dollo_gl_secondary_features";
-    public static final String                                PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_SECONDARY_FEATURES                    = "_dollo_glc_secondary_features";
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_GAINS_SECONDARY_FEATURES                               = "_dollo_gains_secondary_features";
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_LOSSES_SECONDARY_FEATURES                              = "_dollo_losses_secondary_features";
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_PRESENT_SECONDARY_FEATURES                             = "_dollo_present_secondary_features";
-    public static final String                                SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                         = "_secondary_features_dollo"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_ALL_NAMESPACES                              = "_dollo_goid_d";
-    public static final String                                PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_ALL_NAMESPACES                             = "_fitch_goid_dc";
-    final static private String                               HELP_OPTION_1                                                                 = "help";
-    final static private String                               HELP_OPTION_2                                                                 = "h";
-    final static private String                               OUTPUT_DIR_OPTION                                                             = "out_dir";
-    final static private String                               SCORING_OPTION                                                                = "scoring";
-    private static final DomainSimilarityScoring              SCORING_DEFAULT                                                               = DomainSimilarity.DomainSimilarityScoring.COMBINATIONS;
-    final static private String                               SCORING_DOMAIN_COUNT_BASED                                                    = "domains";
-    final static private String                               SCORING_PROTEIN_COUNT_BASED                                                   = "proteins";
-    final static private String                               SCORING_COMBINATION_BASED                                                     = "combinations";
-    final static private String                               DETAILEDNESS_OPTION                                                           = "detail";
-    private final static Detailedness                         DETAILEDNESS_DEFAULT                                                          = DomainSimilarityCalculator.Detailedness.PUNCTILIOUS;
-    final static private String                               SPECIES_MATRIX_OPTION                                                         = "smatrix";
-    final static private String                               DETAILEDNESS_BASIC                                                            = "basic";
-    final static private String                               DETAILEDNESS_LIST_IDS                                                         = "list_ids";
-    final static private String                               DETAILEDNESS_PUNCTILIOUS                                                      = "punctilious";
-    final static private String                               DOMAIN_SIMILARITY_SORT_OPTION                                                 = "sort";
-    private static final DomainSimilaritySortField            DOMAIN_SORT_FILD_DEFAULT                                                      = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
-    final static private String                               DOMAIN_SIMILARITY_SORT_MIN                                                    = "min";
-    final static private String                               DOMAIN_SIMILARITY_SORT_MAX                                                    = "max";
-    final static private String                               DOMAIN_SIMILARITY_SORT_SD                                                     = "sd";
-    final static private String                               DOMAIN_SIMILARITY_SORT_MEAN                                                   = "mean";
-    final static private String                               DOMAIN_SIMILARITY_SORT_DIFF                                                   = "diff";
-    final static private String                               DOMAIN_SIMILARITY_SORT_COUNTS_DIFF                                            = "count_diff";
-    final static private String                               DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF                                        = "abs_count_diff";
-    final static private String                               DOMAIN_SIMILARITY_SORT_SPECIES_COUNT                                          = "species";
-    final static private String                               DOMAIN_SIMILARITY_SORT_ALPHA                                                  = "alpha";
-    final static private String                               DOMAIN_SIMILARITY_SORT_BY_SPECIES_COUNT_FIRST_OPTION                          = "species_first";
-    final static private String                               DOMAIN_COUNT_SORT_OPTION                                                      = "dc_sort";
-    private static final GenomeWideCombinableDomainsSortOrder DOMAINS_SORT_ORDER_DEFAULT                                                    = GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder.ALPHABETICAL_KEY_ID;
-    final static private String                               DOMAIN_COUNT_SORT_ALPHA                                                       = "alpha";
-    final static private String                               DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT                                            = "dom";
-    final static private String                               DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT                                   = "prot";
-    final static private String                               DOMAIN_COUNT_SORT_COMBINATIONS_COUNT                                          = "comb";
-    final static private String                               CUTOFF_SCORE_FILE_OPTION                                                      = "cos";
-    final static private String                               NOT_IGNORE_DUFS_OPTION                                                        = "dufs";
-    final static private String                               MAX_E_VALUE_OPTION                                                            = "e";
-    final static private String                               MAX_ALLOWED_OVERLAP_OPTION                                                    = "mo";
-    final static private String                               NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
-    final static private String                               IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
-    final static private String                               PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION                                       = "dc_regain_stats";
-    final static private String                               DA_ANALYSIS_OPTION                                                            = "DA_analyis";
-    final static private String                               USE_LAST_IN_FITCH_OPTION                                                      = "last";
-    public final static String                                PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
-    final static private String                               PAIRWISE_DOMAIN_COMPARISONS_OPTION                                            = "pwc";
-    final static private String                               OUTPUT_FILE_OPTION                                                            = "o";
-    final static private String                               PFAM_TO_GO_FILE_USE_OPTION                                                    = "p2g";
-    final static private String                               GO_OBO_FILE_USE_OPTION                                                        = "obo";
-    final static private String                               GO_NAMESPACE_LIMIT_OPTION                                                     = "go_namespace";
-    final static private String                               GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION                                  = "molecular_function";
-    final static private String                               GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS                                  = "biological_process";
-    final static private String                               GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT                                  = "cellular_component";
-    final static private String                               SECONDARY_FEATURES_PARSIMONY_MAP_FILE                                         = "secondary";
-    final static private String                               DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED                           = "simple_tab";
-    final static private String                               DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML                                    = "simple_html";
-    final static private String                               DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML                                  = "detailed_html";
-    final static private String                               DOMAIN_SIMILARITY_PRINT_OPTION                                                = "ds_output";
-    private static final PRINT_OPTION                         DOMAIN_SIMILARITY_PRINT_OPTION_DEFAULT                                        = PrintableDomainSimilarity.PRINT_OPTION.HTML;
-    final static private String                               IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION                     = "ignore_singlet_domains";
-    final static private String                               IGNORE_VIRAL_IDS                                                              = "ignore_viral_ids";
-    final static private boolean                              IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_DEFAULT                    = false;
-    final static private String                               IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION                                 = "ignore_species_specific_domains";
-    final static private boolean                              IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION_DEFAULT                         = false;
-    final static private String                               MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX                                = "_mean_score.pwd";
-    final static private String                               MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX                            = "_domains.pwd";
-    final static private String                               MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX                   = "_bin_combinations.pwd";
-    final static private String                               NJ_TREE_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX                               = "_mean_score_NJ"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    final static private String                               NJ_TREE_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX                           = "_domains_NJ"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    final static private String                               NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX                  = "_bin_combinations_NJ"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    final static private String                               FILTER_POSITIVE_OPTION                                                        = "pos_filter";
-    final static private String                               FILTER_NEGATIVE_OPTION                                                        = "neg_filter";
-    final static private String                               FILTER_NEGATIVE_DOMAINS_OPTION                                                = "neg_dom_filter";
-    final static private String                               INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
-    final static private String                               INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
-    final static private String                               SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                               PRG_VERSION                                                                   = "2.304";
-    final static private String                               PRG_DATE                                                                      = "131024";
-    final static private String                               E_MAIL                                                                        = "czmasek@burnham.org";
-    final static private String                               WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
-    final static private boolean                              IGNORE_DUFS_DEFAULT                                                           = true;
-    final static private boolean                              IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                         = false;
-    final static private double                               MAX_E_VALUE_DEFAULT                                                           = -1;
-    public final static int                                   MAX_ALLOWED_OVERLAP_DEFAULT                                                   = -1;
-    private static final String                               RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION                                        = "random_seed";
-    private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS                                      = "consider_bdc_direction";
-    private static final String                               CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY                        = "consider_bdc_adj";
-    public static final String                                SEQ_EXTRACT_SUFFIX                                                            = ".prot";
-    public static final String                                PLUS_MINUS_ANALYSIS_OPTION                                                    = "plus_minus";
-    public static final String                                PLUS_MINUS_DOM_SUFFIX                                                         = "_plus_minus_dom.txt";
-    public static final String                                PLUS_MINUS_DOM_SUFFIX_HTML                                                    = "_plus_minus_dom.html";
-    public static final String                                PLUS_MINUS_DC_SUFFIX_HTML                                                     = "_plus_minus_dc.html";
-    public static final int                                   PLUS_MINUS_ANALYSIS_MIN_DIFF_DEFAULT                                          = 0;
-    public static final double                                PLUS_MINUS_ANALYSIS_FACTOR_DEFAULT                                            = 1.0;
-    public static final String                                PLUS_MINUS_ALL_GO_IDS_DOM_SUFFIX                                              = "_plus_minus_go_ids_all.txt";
-    public static final String                                PLUS_MINUS_PASSING_GO_IDS_DOM_SUFFIX                                          = "_plus_minus_go_ids_passing.txt";
-    private static final String                               OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS                                           = "all_prot";
-    final static private String                               OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION                         = "all_prot_e";
-    public static final boolean                               VERBOSE                                                                       = false;
-    private static final String                               OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX              = "_fitch_dc_gains_counts";
-    private static final String                               OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX                = "_fitch_dc_losses_counts";
-    private static final String                               DOMAIN_LENGTHS_ANALYSIS_SUFFIX                                                = "_domain_lengths_analysis";
-    private static final boolean                              PERFORM_DOMAIN_LENGTH_ANALYSIS                                                = true;
-    public static final String                                ALL_PFAMS_ENCOUNTERED_SUFFIX                                                  = "_all_encountered_pfams";
-    public static final String                                ALL_PFAMS_ENCOUNTERED_WITH_GO_ANNOTATION_SUFFIX                               = "_all_encountered_pfams_with_go_annotation";
-    public static final String                                ENCOUNTERED_PFAMS_SUMMARY_SUFFIX                                              = "_encountered_pfams_summary";
-    public static final String                                ALL_PFAMS_GAINED_AS_DOMAINS_SUFFIX                                            = "_all_pfams_gained_as_domains";
-    public static final String                                ALL_PFAMS_LOST_AS_DOMAINS_SUFFIX                                              = "_all_pfams_lost_as_domains";
-    public static final String                                ALL_PFAMS_GAINED_AS_DC_SUFFIX                                                 = "_all_pfams_gained_as_dc";
-    public static final String                                ALL_PFAMS_LOST_AS_DC_SUFFIX                                                   = "_all_pfams_lost_as_dc";
-    public static final String                                BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES                                = "PER_NODE_EVENTS";
-    public static final String                                BASE_DIRECTORY_PER_SUBTREE_DOMAIN_GAIN_LOSS_FILES                             = "PER_SUBTREE_EVENTS";
-    public static final String                                D_PROMISCUITY_FILE_SUFFIX                                                     = "_domain_promiscuities";
-    private static final String                               LOG_FILE_SUFFIX                                                               = "_log.txt";
-    private static final String                               DATA_FILE_SUFFIX                                                              = "_domain_combination_data.txt";
-    private static final String                               DATA_FILE_DESC                                                                = "#SPECIES\tPRTEIN_ID\tN_TERM_DOMAIN\tC_TERM_DOMAIN\tN_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tC_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tN_TERM_DOMAIN_COUNTS_PER_PROTEIN\tC_TERM_DOMAIN_COUNTS_PER_PROTEIN";
-    private static final String                               WRITE_TO_NEXUS_OPTION                                                         = "nexus";
-    private static final INDIVIDUAL_SCORE_CUTOFF              INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                               = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;                                                                                                                                                      //TODO look at me! change?
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                          = "_indep_dc_gains_fitch_counts.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                              = "_indep_dc_gains_fitch_lists.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX               = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_unique.txt";
-    public static final String                                LIMIT_SPEC_FOR_PROT_EX                                                        = null;                                                                                                                                                                                       // e.g. "HUMAN"; set to null for not using this feature (default).
-    public static final String                                BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH_MAPPED          = "_dc_MAPPED_secondary_features_fitch"
-                                                                                                                                                    + ForesterConstants.PHYLO_XML_SUFFIX;
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_MAPPED_OUTPUT_SUFFIX                   = "_indep_dc_gains_fitch_counts_MAPPED.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists_MAPPED.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
-    public static final String                                INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
-    private static final boolean                              CALC_SIMILARITY_SCORES                                                        = false;
+    public final static String                                               PRG_NAME                                                                      = "surfacing";
+    public static final String                                               DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                                    = "_d_dollo"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               DOMAINS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH                                    = "_d_fitch"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                 = "_dc_dollo"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH                 = "_dc_fitch"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               NEXUS_EXTERNAL_DOMAINS                                                        = "_dom.nex";
+    public static final String                                               NEXUS_EXTERNAL_DOMAIN_COMBINATIONS                                            = "_dc.nex";
+    public static final String                                               NEXUS_SECONDARY_FEATURES                                                      = "_secondary_features.nex";
+    public static final String                                               PARSIMONY_OUTPUT_GL_SUFFIX_DOLLO_SECONDARY_FEATURES                           = "_dollo_gl_secondary_features";
+    public static final String                                               PARSIMONY_OUTPUT_GL_COUNTS_SUFFIX_DOLLO_SECONDARY_FEATURES                    = "_dollo_glc_secondary_features";
+    public static final String                                               PARSIMONY_OUTPUT_DOLLO_GAINS_SECONDARY_FEATURES                               = "_dollo_gains_secondary_features";
+    public static final String                                               PARSIMONY_OUTPUT_DOLLO_LOSSES_SECONDARY_FEATURES                              = "_dollo_losses_secondary_features";
+    public static final String                                               PARSIMONY_OUTPUT_DOLLO_PRESENT_SECONDARY_FEATURES                             = "_dollo_present_secondary_features";
+    public static final String                                               SECONDARY_FEATURES_PARSIMONY_TREE_OUTPUT_SUFFIX_DOLLO                         = "_secondary_features_dollo"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               PARSIMONY_OUTPUT_DOLLO_ALL_GOID_D_ALL_NAMESPACES                              = "_dollo_goid_d";
+    public static final String                                               PARSIMONY_OUTPUT_FITCH_ALL_GOID_BC_ALL_NAMESPACES                             = "_fitch_goid_dc";
+    final static private String                                              HELP_OPTION_1                                                                 = "help";
+    final static private String                                              HELP_OPTION_2                                                                 = "h";
+    final static private String                                              OUTPUT_DIR_OPTION                                                             = "out_dir";
+    final static private String                                              SCORING_OPTION                                                                = "scoring";
+    private static final DomainSimilarityScoring                             SCORING_DEFAULT                                                               = PrintableDomainSimilarity.DomainSimilarityScoring.COMBINATIONS;
+    final static private String                                              SCORING_DOMAIN_COUNT_BASED                                                    = "domains";
+    final static private String                                              SCORING_PROTEIN_COUNT_BASED                                                   = "proteins";
+    final static private String                                              SCORING_COMBINATION_BASED                                                     = "combinations";
+    final static private String                                              DETAILEDNESS_OPTION                                                           = "detail";
+    private final static Detailedness                                        DETAILEDNESS_DEFAULT                                                          = DomainSimilarityCalculator.Detailedness.PUNCTILIOUS;
+    final static private String                                              SPECIES_MATRIX_OPTION                                                         = "smatrix";
+    final static private String                                              DETAILEDNESS_BASIC                                                            = "basic";
+    final static private String                                              DETAILEDNESS_LIST_IDS                                                         = "list_ids";
+    final static private String                                              DETAILEDNESS_PUNCTILIOUS                                                      = "punctilious";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_OPTION                                                 = "sort";
+    private static final PrintableDomainSimilarity.DomainSimilaritySortField DOMAIN_SORT_FILD_DEFAULT                                                      = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+    final static private String                                              DOMAIN_SIMILARITY_SORT_MIN                                                    = "min";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_MAX                                                    = "max";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_SD                                                     = "sd";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_MEAN                                                   = "mean";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_DIFF                                                   = "diff";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_COUNTS_DIFF                                            = "count_diff";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF                                        = "abs_count_diff";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_SPECIES_COUNT                                          = "species";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_ALPHA                                                  = "alpha";
+    final static private String                                              DOMAIN_SIMILARITY_SORT_BY_SPECIES_COUNT_FIRST_OPTION                          = "species_first";
+    final static private String                                              DOMAIN_COUNT_SORT_OPTION                                                      = "dc_sort";
+    private static final GenomeWideCombinableDomainsSortOrder                DOMAINS_SORT_ORDER_DEFAULT                                                    = GenomeWideCombinableDomains.GenomeWideCombinableDomainsSortOrder.ALPHABETICAL_KEY_ID;
+    final static private String                                              DOMAIN_COUNT_SORT_ALPHA                                                       = "alpha";
+    final static private String                                              DOMAIN_COUNT_SORT_KEY_DOMAIN_COUNT                                            = "dom";
+    final static private String                                              DOMAIN_COUNT_SORT_KEY_DOMAIN_PROTEINS_COUNT                                   = "prot";
+    final static private String                                              DOMAIN_COUNT_SORT_COMBINATIONS_COUNT                                          = "comb";
+    final static private String                                              CUTOFF_SCORE_FILE_OPTION                                                      = "cos";
+    final static private String                                              NOT_IGNORE_DUFS_OPTION                                                        = "dufs";
+    final static private String                                              MAX_E_VALUE_OPTION                                                            = "e";
+    final static private String                                              MAX_ALLOWED_OVERLAP_OPTION                                                    = "mo";
+    final static private String                                              NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
+    final static private String                                              IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
+    final static private String                                              PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION                                       = "dc_regain_stats";
+    final static private String                                              DA_ANALYSIS_OPTION                                                            = "DA_analyis";
+    final static private String                                              USE_LAST_IN_FITCH_OPTION                                                      = "last";
+    public final static String                                               PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
+    final static private String                                              PAIRWISE_DOMAIN_COMPARISONS_OPTION                                            = "pwc";
+    final static private String                                              OUTPUT_FILE_OPTION                                                            = "o";
+    final static private String                                              PFAM_TO_GO_FILE_USE_OPTION                                                    = "p2g";
+    final static private String                                              GO_OBO_FILE_USE_OPTION                                                        = "obo";
+    final static private String                                              GO_NAMESPACE_LIMIT_OPTION                                                     = "go_namespace";
+    final static private String                                              GO_NAMESPACE_LIMIT_OPTION_MOLECULAR_FUNCTION                                  = "molecular_function";
+    final static private String                                              GO_NAMESPACE_LIMIT_OPTION_BIOLOGICAL_PROCESS                                  = "biological_process";
+    final static private String                                              GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT                                  = "cellular_component";
+    final static private String                                              SECONDARY_FEATURES_PARSIMONY_MAP_FILE                                         = "secondary";
+    final static private String                                              DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_TAB_DELIMITED                           = "simple_tab";
+    final static private String                                              DOMAIN_SIMILARITY_PRINT_OPTION_SIMPLE_HTML                                    = "simple_html";
+    final static private String                                              DOMAIN_SIMILARITY_PRINT_OPTION_DETAILED_HTML                                  = "detailed_html";
+    final static private String                                              DOMAIN_SIMILARITY_PRINT_OPTION                                                = "ds_output";
+    private static final PRINT_OPTION                                        DOMAIN_SIMILARITY_PRINT_OPTION_DEFAULT                                        = PrintableDomainSimilarity.PRINT_OPTION.HTML;
+    final static private String                                              IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION                     = "ignore_singlet_domains";
+    final static private String                                              IGNORE_VIRAL_IDS                                                              = "ignore_viral_ids";
+    final static private boolean                                             IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_DEFAULT                    = false;
+    final static private String                                              IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION                                 = "ignore_species_specific_domains";
+    final static private boolean                                             IGNORE_DOMAINS_SPECIFIC_TO_ONE_SPECIES_OPTION_DEFAULT                         = false;
+    final static private String                                              MATRIX_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX                                = "_mean_score.pwd";
+    final static private String                                              MATRIX_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX                            = "_domains.pwd";
+    final static private String                                              MATRIX_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX                   = "_bin_combinations.pwd";
+    final static private String                                              NJ_TREE_MEAN_SCORE_BASED_GENOME_DISTANCE_SUFFIX                               = "_mean_score_NJ"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    final static private String                                              NJ_TREE_SHARED_DOMAINS_BASED_GENOME_DISTANCE_SUFFIX                           = "_domains_NJ"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    final static private String                                              NJ_TREE_SHARED_BIN_COMBINATIONS_BASED_GENOME_DISTANCE_SUFFIX                  = "_bin_combinations_NJ"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    final static private String                                              FILTER_POSITIVE_OPTION                                                        = "pos_filter";
+    final static private String                                              FILTER_NEGATIVE_OPTION                                                        = "neg_filter";
+    final static private String                                              FILTER_NEGATIVE_DOMAINS_OPTION                                                = "neg_dom_filter";
+    final static private String                                              INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
+    final static private String                                              INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
+    final static private String                                              SEQ_EXTRACT_OPTION                                                            = "prot_extract";
+    final static private String                                              PRG_VERSION                                                                   = "2.400";
+    final static private String                                              PRG_DATE                                                                      = "131106";
+    final static private String                                              E_MAIL                                                                        = "czmasek@burnham.org";
+    final static private String                                              WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
+    final static private boolean                                             IGNORE_DUFS_DEFAULT                                                           = true;
+    final static private boolean                                             IGNORE_COMBINATION_WITH_SAME_DEFAULLT                                         = false;
+    final static private double                                              MAX_E_VALUE_DEFAULT                                                           = -1;
+    public final static int                                                  MAX_ALLOWED_OVERLAP_DEFAULT                                                   = -1;
+    private static final String                                              RANDOM_SEED_FOR_FITCH_PARSIMONY_OPTION                                        = "random_seed";
+    private static final String                                              CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS                                      = "consider_bdc_direction";
+    private static final String                                              CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY                        = "consider_bdc_adj";
+    public static final String                                               SEQ_EXTRACT_SUFFIX                                                            = ".prot";
+    public static final String                                               PLUS_MINUS_ANALYSIS_OPTION                                                    = "plus_minus";
+    public static final String                                               PLUS_MINUS_DOM_SUFFIX                                                         = "_plus_minus_dom.txt";
+    public static final String                                               PLUS_MINUS_DOM_SUFFIX_HTML                                                    = "_plus_minus_dom.html";
+    public static final String                                               PLUS_MINUS_DC_SUFFIX_HTML                                                     = "_plus_minus_dc.html";
+    public static final int                                                  PLUS_MINUS_ANALYSIS_MIN_DIFF_DEFAULT                                          = 0;
+    public static final double                                               PLUS_MINUS_ANALYSIS_FACTOR_DEFAULT                                            = 1.0;
+    public static final String                                               PLUS_MINUS_ALL_GO_IDS_DOM_SUFFIX                                              = "_plus_minus_go_ids_all.txt";
+    public static final String                                               PLUS_MINUS_PASSING_GO_IDS_DOM_SUFFIX                                          = "_plus_minus_go_ids_passing.txt";
+    private static final String                                              OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS                                           = "all_prot";
+    final static private String                                              OUTPUT_LIST_OF_ALL_PROTEINS_PER_DOMAIN_E_VALUE_OPTION                         = "all_prot_e";
+    public static final boolean                                              VERBOSE                                                                       = false;
+    private static final String                                              OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX              = "_fitch_dc_gains_counts";
+    private static final String                                              OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX                = "_fitch_dc_losses_counts";
+    private static final String                                              DOMAIN_LENGTHS_ANALYSIS_SUFFIX                                                = "_domain_lengths_analysis";
+    private static final boolean                                             PERFORM_DOMAIN_LENGTH_ANALYSIS                                                = true;
+    public static final String                                               ALL_PFAMS_ENCOUNTERED_SUFFIX                                                  = "_all_encountered_pfams";
+    public static final String                                               ALL_PFAMS_ENCOUNTERED_WITH_GO_ANNOTATION_SUFFIX                               = "_all_encountered_pfams_with_go_annotation";
+    public static final String                                               ENCOUNTERED_PFAMS_SUMMARY_SUFFIX                                              = "_encountered_pfams_summary";
+    public static final String                                               ALL_PFAMS_GAINED_AS_DOMAINS_SUFFIX                                            = "_all_pfams_gained_as_domains";
+    public static final String                                               ALL_PFAMS_LOST_AS_DOMAINS_SUFFIX                                              = "_all_pfams_lost_as_domains";
+    public static final String                                               ALL_PFAMS_GAINED_AS_DC_SUFFIX                                                 = "_all_pfams_gained_as_dc";
+    public static final String                                               ALL_PFAMS_LOST_AS_DC_SUFFIX                                                   = "_all_pfams_lost_as_dc";
+    public static final String                                               BASE_DIRECTORY_PER_NODE_DOMAIN_GAIN_LOSS_FILES                                = "PER_NODE_EVENTS";
+    public static final String                                               BASE_DIRECTORY_PER_SUBTREE_DOMAIN_GAIN_LOSS_FILES                             = "PER_SUBTREE_EVENTS";
+    public static final String                                               D_PROMISCUITY_FILE_SUFFIX                                                     = "_domain_promiscuities";
+    private static final String                                              LOG_FILE_SUFFIX                                                               = "_log.txt";
+    private static final String                                              DATA_FILE_SUFFIX                                                              = "_domain_combination_data.txt";
+    private static final String                                              DATA_FILE_DESC                                                                = "#SPECIES\tPRTEIN_ID\tN_TERM_DOMAIN\tC_TERM_DOMAIN\tN_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tC_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tN_TERM_DOMAIN_COUNTS_PER_PROTEIN\tC_TERM_DOMAIN_COUNTS_PER_PROTEIN";
+    private static final String                                              WRITE_TO_NEXUS_OPTION                                                         = "nexus";
+    private static final INDIVIDUAL_SCORE_CUTOFF                             INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                               = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;                                                                                                                                                      //TODO look at me! change?
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                          = "_indep_dc_gains_fitch_counts.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                              = "_indep_dc_gains_fitch_lists.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_SUFFIX               = "_indep_dc_gains_fitch_lists_for_go_mapping.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_OUTPUT_UNIQUE_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_unique.txt";
+    public static final String                                               LIMIT_SPEC_FOR_PROT_EX                                                        = null;                                                                                                                                                                                       // e.g. "HUMAN"; set to null for not using this feature (default).
+    public static final String                                               BINARY_DOMAIN_COMBINATIONS_PARSIMONY_TREE_OUTPUT_SUFFIX_FITCH_MAPPED          = "_dc_MAPPED_secondary_features_fitch"
+                                                                                                                                                                   + ForesterConstants.PHYLO_XML_SUFFIX;
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_MAPPED_OUTPUT_SUFFIX                   = "_indep_dc_gains_fitch_counts_MAPPED.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_MAPPED_OUTPUT_SUFFIX                       = "_indep_dc_gains_fitch_lists_MAPPED.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_SUFFIX        = "_indep_dc_gains_fitch_lists_for_go_mapping_MAPPED.txt";
+    public static final String                                               INDEPENDENT_DC_GAINS_FITCH_PARS_DC_FOR_GO_MAPPING_MAPPED_OUTPUT_UNIQUE_SUFFIX = "_indep_dc_gains_fitch_lists_for_go_mapping_unique_MAPPED.txt";
+    private static final boolean                                             CALC_SIMILARITY_SCORES                                                        = false;
 
     public static void main( final String args[] ) {
         final long start_time = new Date().getTime();
@@ -544,7 +542,7 @@ public class surfacing {
             ForesterUtil.fatalError( surfacing.PRG_NAME, "no input genomes file given: "
                     + surfacing.INPUT_GENOMES_FILE_OPTION + "=<file>" );
         }
-        DomainSimilarity.DomainSimilarityScoring scoring = SCORING_DEFAULT;
+        PrintableDomainSimilarity.DomainSimilarityScoring scoring = SCORING_DEFAULT;
         if ( cla.isOptionSet( surfacing.SCORING_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.SCORING_OPTION ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME,
@@ -556,13 +554,13 @@ public class surfacing {
             }
             final String scoring_str = cla.getOptionValue( surfacing.SCORING_OPTION );
             if ( scoring_str.equals( surfacing.SCORING_DOMAIN_COUNT_BASED ) ) {
-                scoring = DomainSimilarity.DomainSimilarityScoring.DOMAINS;
+                scoring = PrintableDomainSimilarity.DomainSimilarityScoring.DOMAINS;
             }
             else if ( scoring_str.equals( surfacing.SCORING_COMBINATION_BASED ) ) {
-                scoring = DomainSimilarity.DomainSimilarityScoring.COMBINATIONS;
+                scoring = PrintableDomainSimilarity.DomainSimilarityScoring.COMBINATIONS;
             }
             else if ( scoring_str.equals( surfacing.SCORING_PROTEIN_COUNT_BASED ) ) {
-                scoring = DomainSimilarity.DomainSimilarityScoring.PROTEINS;
+                scoring = PrintableDomainSimilarity.DomainSimilarityScoring.PROTEINS;
             }
             else {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + scoring_str
@@ -641,8 +639,8 @@ public class surfacing {
             }
             query_domain_ids = cla.getOptionValue( surfacing.SEQ_EXTRACT_OPTION );
         }
-        DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field = DOMAIN_SORT_FILD_DEFAULT;
-        DomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field_for_automated_pwc = DOMAIN_SORT_FILD_DEFAULT;
+        PrintableDomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field = DOMAIN_SORT_FILD_DEFAULT;
+        PrintableDomainSimilarity.DomainSimilaritySortField domain_similarity_sort_field_for_automated_pwc = DOMAIN_SORT_FILD_DEFAULT;
         if ( cla.isOptionSet( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for domain combinations similarities sorting: -"
@@ -656,40 +654,40 @@ public class surfacing {
             }
             final String sort_str = cla.getOptionValue( surfacing.DOMAIN_SIMILARITY_SORT_OPTION ).toLowerCase();
             if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_ALPHA ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_MAX ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.MAX;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.MAX;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_MIN ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.MIN;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.MIN;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_MEAN ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.MEAN;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.MEAN;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.MEAN;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.MEAN;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_SPECIES_COUNT ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.SPECIES_COUNT;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.SPECIES_COUNT;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_SD ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.SD;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.SD;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.DOMAIN_ID;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_DIFF ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.MAX_DIFFERENCE;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.MAX_DIFFERENCE;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.MAX_DIFFERENCE;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.MAX_DIFFERENCE;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_ABS_COUNTS_DIFF ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
             }
             else if ( sort_str.equals( surfacing.DOMAIN_SIMILARITY_SORT_COUNTS_DIFF ) ) {
-                domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE;
-                domain_similarity_sort_field_for_automated_pwc = DomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE;
+                domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE;
+                domain_similarity_sort_field_for_automated_pwc = PrintableDomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE;
             }
             else {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "unknown value \"" + sort_str
@@ -875,9 +873,9 @@ public class surfacing {
                         + surfacing.GO_NAMESPACE_LIMIT_OPTION_CELLULAR_COMPONENT + ">\"" );
             }
         }
-        if ( ( domain_similarity_sort_field == DomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE )
+        if ( ( domain_similarity_sort_field == PrintableDomainSimilarity.DomainSimilaritySortField.MAX_COUNTS_DIFFERENCE )
                 && ( number_of_genomes > 2 ) ) {
-            domain_similarity_sort_field = DomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
+            domain_similarity_sort_field = PrintableDomainSimilarity.DomainSimilaritySortField.ABS_MAX_COUNTS_DIFFERENCE;
         }
         File[] intree_files = null;
         Phylogeny[] intrees = null;
@@ -1778,7 +1776,7 @@ public class surfacing {
         if ( domain_id_to_go_ids_map != null ) {
             go_annotation_output = DomainSimilarityCalculator.GoAnnotationOutput.ALL;
         }
-        final SortedSet<DomainSimilarity> similarities = calc
+        final SortedSet<PrintableDomainSimilarity> similarities = calc
                 .calculateSimilarities( pw_calc,
                                         gwcd_list,
                                         ignore_domains_without_combs_in_all_spec,

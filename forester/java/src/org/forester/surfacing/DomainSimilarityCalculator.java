@@ -32,16 +32,16 @@ import java.util.SortedSet;
 
 public interface DomainSimilarityCalculator {
 
-    public SortedSet<DomainSimilarity> calculateSimilarities( final PairwiseDomainSimilarityCalculator pairwise_calculator,
-                                                              final List<GenomeWideCombinableDomains> cdc_list,
-                                                              final boolean ignore_domains_without_combinations_in_any_genome,
-                                                              final boolean ignore_domains_specific_to_one_genome );;
+    public SortedSet<PrintableDomainSimilarity> calculateSimilarities( final PairwiseDomainSimilarityCalculator pairwise_calculator,
+                                                                       final List<GenomeWideCombinableDomains> cdc_list,
+                                                                       final boolean ignore_domains_without_combinations_in_any_genome,
+                                                                       final boolean ignore_domains_specific_to_one_genome );;
 
     public static enum Detailedness {
         BASIC, LIST_COMBINING_DOMAIN_FOR_EACH_SPECIES, PUNCTILIOUS
     }
 
     public static enum GoAnnotationOutput {
-        NONE, ALL
+        ALL, NONE
     }
 }

@@ -52,8 +52,6 @@ public interface GenomeWideCombinableDomains {
 
     public DomainCombinationType getDomainCombinationType();
 
-    SortedSet<String> getMostPromiscuosDomain();
-
     /**
      * This should return a statistic for per domain 
      * promiscuity in a genome.
@@ -75,7 +73,9 @@ public interface GenomeWideCombinableDomains {
 
     public StringBuilder toStringBuilder( GenomeWideCombinableDomainsSortOrder order );
 
+    SortedSet<String> getMostPromiscuosDomain();
+
     public static enum GenomeWideCombinableDomainsSortOrder {
-        ALPHABETICAL_KEY_ID, KEY_DOMAIN_PROTEINS_COUNT, KEY_DOMAIN_COUNT, COMBINATIONS_COUNT
+        ALPHABETICAL_KEY_ID, COMBINATIONS_COUNT, KEY_DOMAIN_COUNT, KEY_DOMAIN_PROTEINS_COUNT
     }
 }

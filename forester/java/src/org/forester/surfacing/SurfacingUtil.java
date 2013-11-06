@@ -143,9 +143,9 @@ public final class SurfacingUtil {
         }
     }
 
-    public static DescriptiveStatistics calculateDescriptiveStatisticsForMeanValues( final Set<DomainSimilarity> similarities ) {
+    public static DescriptiveStatistics calculateDescriptiveStatisticsForMeanValues( final Set<PrintableDomainSimilarity> similarities ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( final DomainSimilarity similarity : similarities ) {
+        for( final PrintableDomainSimilarity similarity : similarities ) {
             stats.addValue( similarity.getMeanSimilarityScore() );
         }
         return stats;
@@ -375,11 +375,11 @@ public final class SurfacingUtil {
         return m;
     }
 
-    public static void decoratePrintableDomainSimilarities( final SortedSet<DomainSimilarity> domain_similarities,
+    public static void decoratePrintableDomainSimilarities( final SortedSet<PrintableDomainSimilarity> domain_similarities,
                                                             final Detailedness detailedness ) {
-        for( final DomainSimilarity domain_similarity : domain_similarities ) {
+        for( final PrintableDomainSimilarity domain_similarity : domain_similarities ) {
             if ( domain_similarity instanceof PrintableDomainSimilarity ) {
-                final PrintableDomainSimilarity printable_domain_similarity = ( PrintableDomainSimilarity ) domain_similarity;
+                final PrintableDomainSimilarity printable_domain_similarity = domain_similarity;
                 printable_domain_similarity.setDetailedness( detailedness );
             }
         }
@@ -2218,11 +2218,11 @@ public final class SurfacingUtil {
                                                       final Writer simple_tab_writer,
                                                       final Writer single_writer,
                                                       Map<Character, Writer> split_writers,
-                                                      final SortedSet<DomainSimilarity> similarities,
+                                                      final SortedSet<PrintableDomainSimilarity> similarities,
                                                       final boolean treat_as_binary,
                                                       final List<Species> species_order,
                                                       final PrintableDomainSimilarity.PRINT_OPTION print_option,
-                                                      final DomainSimilarity.DomainSimilarityScoring scoring,
+                                                      final PrintableDomainSimilarity.DomainSimilarityScoring scoring,
                                                       final boolean verbose,
                                                       final Map<String, Integer> tax_code_to_id_map,
                                                       final Phylogeny phy,
@@ -2262,9 +2262,9 @@ public final class SurfacingUtil {
                 break;
         }
         //
-        for( final DomainSimilarity similarity : similarities ) {
+        for( final PrintableDomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
-                ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
+                ( similarity ).setSpeciesOrder( species_order );
             }
             if ( single_writer != null ) {
                 if ( !ForesterUtil.isEmpty( pos_filter_doms ) && pos_filter_doms.contains( similarity.getDomainId() ) ) {
@@ -2347,9 +2347,9 @@ public final class SurfacingUtil {
             w.write( SurfacingConstants.NL );
         }
         //
-        for( final DomainSimilarity similarity : similarities ) {
+        for( final PrintableDomainSimilarity similarity : similarities ) {
             if ( ( species_order != null ) && !species_order.isEmpty() ) {
-                ( ( PrintableDomainSimilarity ) similarity ).setSpeciesOrder( species_order );
+                ( similarity ).setSpeciesOrder( species_order );
             }
             if ( simple_tab_writer != null ) {
                 simple_tab_writer.write( similarity.toStringBuffer( PRINT_OPTION.SIMPLE_TAB_DELIMITED,

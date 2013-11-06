@@ -29,8 +29,8 @@ package org.forester.surfacing;
 public class MappingResults {
 
     private String _description;
-    private int    _sum_of_successes;
     private int    _sum_of_failures;
+    private int    _sum_of_successes;
 
     public String getDescription() {
         return _description;

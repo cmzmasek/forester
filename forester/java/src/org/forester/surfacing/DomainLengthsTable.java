@@ -50,21 +50,6 @@ public class DomainLengthsTable {
         _species = new ArrayList<Species>();
     }
 
-    private void addDomainLengths( final DomainLengths domain_lengths ) {
-        if ( getDomainLengths().containsKey( domain_lengths.getDomainId() ) ) {
-            throw new IllegalArgumentException( "domain lengths for [" + domain_lengths.getDomainId()
-                    + "] already added" );
-        }
-        getDomainLengths().put( domain_lengths.getDomainId(), domain_lengths );
-    }
-
-    private void addLength( final String domain_id, final Species species, final int domain_length ) {
-        if ( !getDomainLengths().containsKey( domain_id ) ) {
-            addDomainLengths( new DomainLengths( domain_id ) );
-        }
-        getDomainLengths().get( domain_id ).addLength( species, domain_length );
-    }
-
     public void addLengths( final List<Protein> protein_list ) {
         for( final Protein protein : protein_list ) {
             final Species species = protein.getSpecies();
@@ -142,10 +127,6 @@ public class DomainLengthsTable {
         return sb;
     }
 
-    private SortedMap<String, DomainLengths> getDomainLengths() {
-        return _domain_lengths;
-    }
-
     public DomainLengths getDomainLengths( final String domain_id ) {
         return getDomainLengths().get( domain_id );
     }
@@ -164,5 +145,24 @@ public class DomainLengthsTable {
 
     public List<Species> getSpecies() {
         return _species;
+    }
+
+    private void addDomainLengths( final DomainLengths domain_lengths ) {
+        if ( getDomainLengths().containsKey( domain_lengths.getDomainId() ) ) {
+            throw new IllegalArgumentException( "domain lengths for [" + domain_lengths.getDomainId()
+                    + "] already added" );
+        }
+        getDomainLengths().put( domain_lengths.getDomainId(), domain_lengths );
+    }
+
+    private void addLength( final String domain_id, final Species species, final int domain_length ) {
+        if ( !getDomainLengths().containsKey( domain_id ) ) {
+            addDomainLengths( new DomainLengths( domain_id ) );
+        }
+        getDomainLengths().get( domain_id ).addLength( species, domain_length );
+    }
+
+    private SortedMap<String, DomainLengths> getDomainLengths() {
+        return _domain_lengths;
     }
 }
