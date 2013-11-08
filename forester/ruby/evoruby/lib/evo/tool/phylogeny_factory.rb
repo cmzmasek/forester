@@ -30,7 +30,7 @@ module Evoruby
     TEMPLATE_FILE                     = '00_phylogeny_factory.template'
     PBS_O_WORKDIR                     = '$PBS_O_WORKDIR/'
     MIN_LENGTH_DEFAULT                = 50
-    PFAM_HHMS                         = "/home/czmasek/DATA/PFAM/PFAM260X/PFAM_A_HMMs/"
+    PFAM_HHMS                         = "/home/czmasek/DATA/PFAM/PFAM270X/PFAM_A_HMMs/"
     WALLTIME                          = '100:00:00'
     QUEUE                             = 'default'
 
