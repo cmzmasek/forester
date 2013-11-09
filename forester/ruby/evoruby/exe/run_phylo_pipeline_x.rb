@@ -22,7 +22,7 @@ module Evoruby
     TAP       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/tap.rb"
 
     def run
-      unless ARGV.length >= 4 && ARGV.length <= 6
+      unless ARGV.length >= 2 && ARGV.length <= 4
         error "arguments are:  <min-length> " +
          "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 10] [hmmscan option, default is --nobias, --max for no heuristics]"
       end
@@ -58,10 +58,12 @@ module Evoruby
       end
       puts
 
-      counter = 0
+      counter = 1
       input_files.each do | input |
 
         puts counter.to_s + "/" +  input_files.size.to_s + " " + input + ": "
+        
+        counter += 1
         
         hmm_name = ""
 
