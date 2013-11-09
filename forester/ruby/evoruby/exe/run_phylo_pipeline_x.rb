@@ -26,7 +26,7 @@ module Evoruby
         error "arguments are:  <min-length> " +
          "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 10] [hmmscan option, default is --nobias, --max for no heuristics]"
       end
-      
+
       length      = ARGV[ 0 ].to_i
       e_value_exp = ARGV[ 1 ].to_i
 
@@ -62,9 +62,9 @@ module Evoruby
       input_files.each do | input |
 
         puts counter.to_s + "/" +  input_files.size.to_s + " " + input + ": "
-        
+
         counter += 1
-        
+
         hmm_name = ""
 
         if input.downcase.end_with?( "_ni.fasta" )
@@ -80,24 +80,26 @@ module Evoruby
           error "illegal name: " + input
         end
 
+        Dir.mkdir( hmm_name )
+
         puts
         puts "b. hmmscan:"
-        cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
+        cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
         run_command( cmd )
         puts
 
         puts "c. hmmscan to simple domain table:"
-        cmd = "#{HSP} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
+        cmd = "#{HSP} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
         run_command( cmd )
         puts
 
         puts "d. domain table to forester format:"
-        cmd = "#{D2F} -e=10 #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table #{input} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
+        cmd = "#{D2F} -e=10 #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table #{input} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
         run_command( cmd )
         puts
 
         puts "e. dsx:"
-        cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         run_command( cmd )
         puts
 
