@@ -9,6 +9,7 @@
 #
 #
 
+require 'fileutils'
 
 module Evoruby
 
@@ -66,10 +67,12 @@ module Evoruby
         counter += 1
 
         hmm_name = ""
+        id_norm = false
 
         if input.downcase.end_with?( "_ni.fasta" )
           hmm_name = input[ 0 .. input.length - 10 ]
         elsif input.downcase.end_with?( ".fasta" )
+          id_norm = true
           hmm_name = input[ 0 .. input.length - 7 ]
           puts
           puts "a. identifier normalization:"
@@ -102,6 +105,12 @@ module Evoruby
         cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         run_command( cmd )
         puts
+
+        if id_norm
+          FileUtils.mv "#{hmm_name}_ni.fasta", "#{hmm_name}/#{hmm_name}_ni.fasta"
+          FileUtils.mv "#{hmm_name}.nim", "#{hmm_name}/#{hmm_name}.nim"
+          FileUtils.cp input, "#{hmm_name}/#{input}"
+        end
 
       end
 
