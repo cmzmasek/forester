@@ -26,9 +26,7 @@ module Evoruby
         error "arguments are:  <min-length> " +
          "<neg E-value exponent for domain extraction> [E-value for hmmscan, default is 10] [hmmscan option, default is --nobias, --max for no heuristics]"
       end
-
-
-
+      
       length      = ARGV[ 0 ].to_i
       e_value_exp = ARGV[ 1 ].to_i
 
@@ -60,8 +58,11 @@ module Evoruby
       end
       puts
 
+      counter = 0
       input_files.each do | input |
 
+        puts counter.to_s + "/" +  input_files.size.to_s + " " + input + ": "
+        
         hmm_name = ""
 
         if input.downcase.end_with?( "_ni.fasta" )
@@ -69,31 +70,31 @@ module Evoruby
         elsif input.downcase.end_with?( ".fasta" )
           hmm_name = input[ 0 .. input.length - 7 ]
           puts
-          puts "0. identifier normalization:"
-          cmd = "#{TAP} #{input}"
+          puts "a. identifier normalization:"
+          cmd = "#{TAP} #{input} #{hmm_name}_ni.fasta #{hmm_name}.nim"
           run_command( cmd )
-          puts
+          input = hmm_name + "_ni.fasta"
         else
           error "illegal name: " + input
         end
 
         puts
-        puts "1. hmmscan:"
+        puts "b. hmmscan:"
         cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
         run_command( cmd )
         puts
 
-        puts "2. hmmscan to simple domain table:"
+        puts "c. hmmscan to simple domain table:"
         cmd = "#{HSP} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
         run_command( cmd )
         puts
 
-        puts "3. domain table to forester format:"
+        puts "d. domain table to forester format:"
         cmd = "#{D2F} -e=10 #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table #{input} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
         run_command( cmd )
         puts
 
-        puts "4. dsx:"
+        puts "e. dsx:"
         cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         run_command( cmd )
         puts
