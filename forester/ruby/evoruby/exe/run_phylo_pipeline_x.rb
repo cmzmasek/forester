@@ -68,6 +68,7 @@ module Evoruby
 
         hmm_name = ""
         id_norm = false
+        orig_input = input
 
         if input.downcase.end_with?( "_ni.fasta" )
           hmm_name = input[ 0 .. input.length - 10 ]
@@ -109,7 +110,7 @@ module Evoruby
         if id_norm
           FileUtils.mv "#{hmm_name}_ni.fasta", "#{hmm_name}/#{hmm_name}_ni.fasta"
           FileUtils.mv "#{hmm_name}.nim", "#{hmm_name}/#{hmm_name}.nim"
-          FileUtils.cp input, "#{hmm_name}/#{input}"
+          FileUtils.cp orig_input, "#{hmm_name}/#{orig_input}"
         end
 
       end
