@@ -113,6 +113,10 @@ module Evoruby
           FileUtils.cp orig_input, "#{hmm_name}/#{orig_input}"
         end
 
+        Dir.mkdir( hmm_name + "/msa" )
+
+        FileUtils.cp "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta", "#{hmm_name}/msa/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+
       end
 
     end
