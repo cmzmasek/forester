@@ -131,10 +131,10 @@ module Evoruby
           if LAUNCH_ANALYSIS
             puts "f. analysis:"
             Dir.chdir "#{hmm_name}/msa/"
-            run_command "#{PF} -s"
+            run_command "#{PF} -b=1 -s"
             Dir.chdir "../.."
             Dir.chdir "#{hmm_name}/msa100/"
-            run_command "#{PF} -s"
+            run_command "#{PF} -b=100 -s"
             Dir.chdir "../.."
             puts
           end
