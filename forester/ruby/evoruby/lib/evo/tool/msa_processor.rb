@@ -27,9 +27,9 @@ module Evoruby
   class MsaProcessor
 
     PRG_NAME       = "msa_pro"
-    PRG_DATE       = "130411"
+    PRG_DATE       = "131112"
     PRG_DESC       = "processing of multiple sequence alignments"
-    PRG_VERSION    = "1.07"
+    PRG_VERSION    = "1.08"
     COPYRIGHT      = "2008-2010 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
@@ -484,8 +484,32 @@ module Evoruby
             Util.print_message( PRG_NAME, "Gap-proportion of processed alignment: " + gp.to_s )
             log << "Gap-proportion of processed alignment: " +  gp.to_s + ld
           else
-            Util.print_warning_message( PRG_NAME, "output is not aligned" )
+            min = 0
+            max = 0
+            sum = 0
+            first = true
+            for s in 0 ... msa.get_number_of_seqs
+              seq = msa.get_sequence( s )
+              l = seq.get_length
+              sum += l
+              if l > max
+                max = l
+              end
+              if first || l < min
+                min = l
+              end
+              first = false
+            end
+            avg = sum / msa.get_number_of_seqs
+            Util.print_message( PRG_NAME, "output is not aligned" )
             log << "output is not aligned" + ld
+            Util.print_message( PRG_NAME, "Shortest sequence                    : " + min.to_s )
+            log <<  "Shortest sequence                    : " + min.to_s + ld
+            Util.print_message( PRG_NAME, "Longest sequence                     : " + max.to_s )
+            log <<  "Longest sequence                     : " + max.to_s + ld
+            Util.print_message( PRG_NAME, "Average length                       : " + avg.to_s )
+            log <<  "Average length                       : " + avg.to_s + ld
+
           end
         end
 
@@ -535,12 +559,13 @@ module Evoruby
           w.set_exception_if_name_too_long( @die_if_name_too_long )
         end
 
-
         begin
           io.write_to_file( msa, output, w )
         rescue Exception => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
+
+        Util.print_message( PRG_NAME, "Number of sequences in output        : " + msa.get_length.to_s )
 
         begin
           f = File.open( output + LOG_SUFFIX, 'a' )
