@@ -39,7 +39,7 @@ module Evoruby
 
     RSL                 = 'RSL'
     HMM                 = 'HMM'
-    PHYLO_PL            = 'PHYLO_PL'
+    PHYLO_OPT            = 'PHYLO_OPT'
 
     OPTION_OPEN          = '%['
     OPTION_CLOSE          = ']%'
@@ -140,7 +140,7 @@ module Evoruby
         elsif ( line =~ /^%\s*(\S+)\s*=\s*(\S+)/ )
           key = $1
           value = $2
-          if key == PHYLO_PL
+          if key == PHYLO_OPT
             value = update_phylo_pl_options( value, bootstraps )
           end
           options[ key ] = value
@@ -264,16 +264,16 @@ module Evoruby
     end
 
     def update_phylo_pl_options( phylo_pl_options, bootstraps )
-      opts = phylo_pl_options
+      #opts = phylo_pl_options
       puts
-      puts "opts: " + opts
-      unless opts  =~ /B\d/
-        opts = 'B' + bootstraps.to_s + opts
+      puts "opts: " + phylo_pl_options
+      unless phylo_pl_options  =~ /B\d/
+        phylo_pl_options = 'B' + bootstraps.to_s + phylo_pl_options
       end
-      opts = '-' + opts
+      phylo_pl_options = '-' + phylo_pl_options
       puts
-      puts "new opts: " + opts
-      opts
+      puts "new opts: " + phylo_pl_options
+      phylo_pl_options
     end
 
     def subst_min_length( command, id, min_lengths )
