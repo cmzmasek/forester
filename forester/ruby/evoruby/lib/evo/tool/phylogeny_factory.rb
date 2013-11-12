@@ -265,10 +265,14 @@ module Evoruby
 
     def update_phylo_pl_options( phylo_pl_options, bootstraps )
       opts = phylo_pl_options
+      puts
+      puts "opts: " + opts
       unless opts  =~ /B\d/
         opts = 'B' + bootstraps.to_s + opts
       end
       opts = '-' + opts
+      puts
+      puts "new opts: " + opts
       opts
     end
 
