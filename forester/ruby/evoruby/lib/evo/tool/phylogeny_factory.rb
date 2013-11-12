@@ -18,18 +18,19 @@ module Evoruby
   class PhylogenyFactory
 
     PRG_NAME       = "phylogeny_factory"
-    PRG_DATE       = "130402"
+    PRG_DATE       = "1301111"
     PRG_DESC       = "automated phylogeny reconstruction using queing system"
-    PRG_VERSION    = "1.002"
+    PRG_VERSION    = "1.100"
     COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "www.phylosoft.org"
 
     USE_JOB_SUBMISSION_SYSTEM_OPTION  = 's'
+    BS_OPTION                         = 'b'
     LOG_FILE                          = '00_phylogeny_factory.log'
     TEMPLATE_FILE                     = '00_phylogeny_factory.template'
     PBS_O_WORKDIR                     = '$PBS_O_WORKDIR/'
-    MIN_LENGTH_DEFAULT                = 50
+    MIN_LENGTH_DEFAULT                = 40
     PFAM_HHMS                         = "/home/czmasek/DATA/PFAM/PFAM270X/PFAM_A_HMMs/"
     WALLTIME                          = '100:00:00'
     QUEUE                             = 'default'
@@ -38,6 +39,7 @@ module Evoruby
 
     RSL                 = 'RSL'
     HMM                 = 'HMM'
+    PHYLO_PL            = 'PHYLO_PL'
 
     OPTION_OPEN          = '%['
     OPTION_CLOSE          = ']%'
@@ -65,6 +67,7 @@ module Evoruby
 
       allowed_opts = Array.new
       allowed_opts.push( USE_JOB_SUBMISSION_SYSTEM_OPTION )
+      allowed_opts.push( BS_OPTION )
 
       disallowed = cla.validate_allowed_options_as_str( allowed_opts )
       if ( disallowed.length > 0 )
@@ -88,12 +91,25 @@ module Evoruby
         use_job_submission_system = true
       end
 
+      bootstraps = 1
+      if cla.is_option_set?( BS_OPTION )
+        bootstraps = cla.get_option_value_as_int( BS_OPTION )
+      end
+      if bootstraps < 0
+        puts( '[' + PRG_NAME + '] > negative bootstrap value' )
+        exit( -1 )
+      end
+      if bootstraps == 0
+        bootstraps = 1
+      end
+
       log = String.new
 
       now = DateTime.now
       log << "Program     : " + PRG_NAME + NL
       log << "Version     : " + PRG_VERSION + NL
       log << "Program date: " + PRG_DATE + NL + NL
+      log << "Bootstraps  : " + bootstraps.to_s + NL
       log << "Date/time   : " + now.to_s + NL
       log << "Directory   : " + Dir.getwd  + NL + NL
 
@@ -102,7 +118,6 @@ module Evoruby
       paths       = Hash.new  # path placeholder -> full path
       min_lengths = Hash.new  # alignment id -> minimal length
       options     = Hash.new  # option placeholder -> option
-      #  ids         = Set.new
 
       commands    = Array.new
 
@@ -123,8 +138,13 @@ module Evoruby
           puts( '[' + PRG_NAME + '] > min lengths: ' + $1 + ' => ' + $2 )
 
         elsif ( line =~ /^%\s*(\S+)\s*=\s*(\S+)/ )
-          options[ $1 ] = $2
-          puts( '[' + PRG_NAME + '] > options    : ' + $1 + ' => ' + $2 )
+          key = $1
+          value = $2
+          if key == PHYLO_PL
+            value = update_phylo_pl_options( value, bootstraps )
+          end
+          options[ key ] = value
+          puts( '[' + PRG_NAME + '] > options    : ' + key + ' => ' + value )
 
         elsif ( line =~ /^>\s*(.+)/ )
           command = command + $1 + ";#{NL}"
@@ -243,6 +263,14 @@ module Evoruby
       command
     end
 
+    def update_phylo_pl_options( phylo_pl_options, bootstraps )
+      unless phylo_pl_options =~ /B\d/
+        phylo_pl_options = 'B' + bootstraps.to_s + phylo_pl_options
+      end
+      phylo_pl_options = '-' + phylo_pl_options
+      phylo_pl_options
+    end
+
     def subst_min_length( command, id, min_lengths )
       min_length = nil
       if id != nil && id.length > 0
@@ -274,10 +302,10 @@ end # module Evoruby
 # are to be used:
 #  the substring between the first two double underscores is a
 #  unique identifier and needs to match the identifiers
-#  in '% <parameter-type> <unique-id>=<value>' statements 
+#  in '% <parameter-type> <unique-id>=<value>' statements
 #  Example:
 #  alignment name     : 'x__bcl2__e1'
-#  parameter statments: '% RSL bcl2=60' 
+#  parameter statments: '% RSL bcl2=60'
 $ PROBCONS=/home/czmasek/SOFTWARE/PROBCONS/probcons_v1_12/probcons
 $ DIALIGN_TX=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/source/dialign-tx
 $ DIALIGN_CONF=/home/czmasek/SOFTWARE/DIALIGNTX/DIALIGN-TX_1.0.2/conf
@@ -291,13 +319,13 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 
 
 % RSL Hormone_recep=60
-% 
+%
 % RSL Y_phosphatase=100
 % RSL Y_phosphatase2=75
 % RSL Y_phosphatase3=50
 % RSL Y_phosphatase3C=40
 
-% PHYLO_OPT=-B100q@1r4j2IGS21X
+% PHYLO_OPT=B100q@1r4j2IGS21X
 
 % TMP_DIR  = /home/czmasek/tmp/
 
@@ -305,23 +333,23 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 > KALIGN $ > $_kalign
 > MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_kalign $_kalign_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_kalign_05_%[RSL]%.aln $_kalign_05_%[RSL]% %[TMP_DIR]%
-- 
+-
 
 > KALIGN $ > $_kalign_
 > MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_kalign_ $_kalign_09_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_kalign_09_%[RSL]%.aln $_kalign_09_%[RSL]% %[TMP_DIR]%
-- 
+-
 
 
 > HMMALIGN --amino --trim --outformat Pfam -o $_hmmalign %[HMM]% $ > /dev/null
 > MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_hmmalign $_hmmalign_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_hmmalign_05_%[RSL]%.aln $_hmmalign_05_%[RSL]% %[TMP_DIR]%
-- 
+-
 
 > HMMALIGN --amino --trim --outformat Pfam -o $_hmmalign_ %[HMM]% $ > /dev/null
 > MSA_PRO -o=p -n=10 -d -rr=0.9 -c -rsl=%[RSL]% $_hmmalign_ $_hmmalign_09_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_hmmalign_09_%[RSL]%.aln $_hmmalign_09_%[RSL]% %[TMP_DIR]%
-- 
+-
 
 
 > MAFFT --maxiterate 1000 --localpair $ > $_mafft
@@ -334,7 +362,7 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 > PHYLO_PL %[PHYLO_OPT]% $_mafft_09_%[RSL]%.aln $_mafft_09_%[RSL]% %[TMP_DIR]%
 -
 
-        
+
 > MUSCLE  -maxiters 1000 -maxtrees 100 -in $ -out $_muscle
 > MSA_PRO -o=p -n=10 -d -rr=0.5 -c -rsl=%[RSL]% $_muscle $_muscle_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_muscle_05_%[RSL]%.aln $_muscle_05_%[RSL]% %[TMP_DIR]%
@@ -360,12 +388,12 @@ $ PHYLO_PL=/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/archive/perl/ph
 > PROBCONS $ > $_probcons
 > MSA_PRO -o=p -n=10 -d -rem_red -rr=0.5 -c -rsl=%[RSL]% $_probcons $_probcons_05_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_probcons_05_%[RSL]%.aln $_probcons_05_%[RSL]% %[TMP_DIR]%
--  
+-
 
 > PROBCONS $ > $_probcons_
 > MSA_PRO -o=p -n=10 -d -rem_red -rr=0.9 -c -rsl=%[RSL]% $_probcons_ $_probcons_09_%[RSL]%.aln
 > PHYLO_PL %[PHYLO_OPT]% $_probcons_09_%[RSL]%.aln $_probcons_09_%[RSL]% %[TMP_DIR]%
--  
+-
 
 
 > DIALIGN_TX DIALIGN_CONF $ $_dialigntx

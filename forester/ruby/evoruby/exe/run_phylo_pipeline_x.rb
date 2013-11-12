@@ -15,12 +15,17 @@ module Evoruby
 
   class RunPhyloPipeline
 
-    PFAM      = "/home/czmasek/DATA/PFAM/PFAM270X/"
-    HMMSCAN  = "/home/czmasek/SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
-    HSP       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/hsp.rb"
-    D2F       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/d2f.rb"
-    DSX       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/dsx.rb"
-    TAP       = "/home/czmasek/SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/tap.rb"
+    LAUNCH_ANALYSIS = true
+    HOME          = "/home/czmasek/"
+    FORESTER_RUBY = "#{HOME}SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/"
+    PFAM          = "#{HOME}DATA/PFAM/PFAM270X/"
+    HMMSCAN       = "#{HOME}SOFTWARE/HMMER/hmmer-3.0/src/hmmscan"
+    HSP           = "#{FORESTER_RUBY}hsp.rb"
+    D2F           = "#{FORESTER_RUBY}d2f.rb"
+    DSX           = "#{FORESTER_RUBY}dsx.rb"
+    TAP           = "#{FORESTER_RUBY}tap.rb"
+    PF            = "#{FORESTER_RUBY}phylogeny_factory.rb"
+    TEMPLATE_FILE = '00_phylogeny_factory.template'
 
     def run
       unless ARGV.length >= 2 && ARGV.length <= 4
@@ -114,8 +119,26 @@ module Evoruby
         end
 
         Dir.mkdir( hmm_name + "/msa" )
+        Dir.mkdir( hmm_name + "/msa100" )
 
         FileUtils.cp "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta", "#{hmm_name}/msa/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        FileUtils.cp "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta", "#{hmm_name}/msa100/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+
+        if File.exists?( TEMPLATE_FILE )
+          FileUtils.cp TEMPLATE_FILE, "#{hmm_name}/msa/"
+          FileUtils.cp TEMPLATE_FILE, "#{hmm_name}/msa100/"
+
+          if LAUNCH_ANALYSIS
+            puts "f. analysis:"
+            Dir.chdir "#{hmm_name}/msa/"
+            run_command "#{PF} -s"
+            Dir.chdir "../.."
+            Dir.chdir "#{hmm_name}/msa100/"
+            run_command "#{PF} -s"
+            Dir.chdir "../.."
+            puts
+          end
+        end
 
       end
 
