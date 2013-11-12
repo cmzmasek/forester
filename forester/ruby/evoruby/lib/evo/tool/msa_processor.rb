@@ -301,8 +301,8 @@ module Evoruby
         Util.print_message( PRG_NAME, "Gap-proportion of original alignment : " + gp.to_s )
         log << "Gap-proportion of original alignment : " +  gp.to_s + ld
       else
-        Util.print_message( PRG_NAME, "the input is not aligned" )
-        log << "The input is not aligned" + ld
+        Util.print_message( PRG_NAME, "Input is not aligned" )
+        log << "Input is not aligned" + ld
       end
 
       all_names = Set.new()
@@ -501,8 +501,8 @@ module Evoruby
               first = false
             end
             avg = sum / msa.get_number_of_seqs
-            Util.print_message( PRG_NAME, "output is not aligned" )
-            log << "output is not aligned" + ld
+            Util.print_message( PRG_NAME, "Output is not aligned" )
+            log << "Output is not aligned" + ld
             Util.print_message( PRG_NAME, "Shortest sequence                    : " + min.to_s )
             log <<  "Shortest sequence                    : " + min.to_s + ld
             Util.print_message( PRG_NAME, "Longest sequence                     : " + max.to_s )
@@ -566,6 +566,7 @@ module Evoruby
         end
 
         Util.print_message( PRG_NAME, "Number of sequences in output        : " + msa.get_number_of_seqs.to_s )
+        log << "Number of sequences in output        : " + msa.get_number_of_seqs.to_s + ld
 
         begin
           f = File.open( output + LOG_SUFFIX, 'a' )
