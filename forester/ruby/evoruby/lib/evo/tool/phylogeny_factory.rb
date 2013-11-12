@@ -264,11 +264,12 @@ module Evoruby
     end
 
     def update_phylo_pl_options( phylo_pl_options, bootstraps )
-      unless phylo_pl_options =~ /B\d/
-        phylo_pl_options = 'B' + bootstraps.to_s + phylo_pl_options
+      opts = phylo_pl_options
+      unless opts  =~ /B\d/
+        opts = 'B' + bootstraps.to_s + opts
       end
-      phylo_pl_options = '-' + phylo_pl_options
-      phylo_pl_options
+      opts = '-' + opts
+      opts
     end
 
     def subst_min_length( command, id, min_lengths )
