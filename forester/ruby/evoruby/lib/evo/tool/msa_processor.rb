@@ -565,7 +565,7 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
 
-        Util.print_message( PRG_NAME, "Number of sequences in output        : " + msa.get_length.to_s )
+        Util.print_message( PRG_NAME, "Number of sequences in output        : " + msa.get_number_of_seqs.to_s )
 
         begin
           f = File.open( output + LOG_SUFFIX, 'a' )
