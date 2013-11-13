@@ -488,8 +488,7 @@ public final class decorator {
                 + "    : to extract bracketed scientific names, e.g. [Nematostella vectensis]" );
         System.out.println( " -" + EXTRACT_BRACKETED_TAXONOMIC_CODE_OPTION
                 + "    : to extract bracketed taxonomic codes, e.g. [NEMVE]" );
-        System.out.println( " -s=<c> : column separator in mapping file, default is \""
-                + decorator.MAPPING_FILE_SEPARATOR_DEFAULT + "\"" );
+        System.out.println( " -s=<c> : column separator in mapping file, default is tab" );
         System.out.println( " -x     : process name \"intelligently\" (only for -f=n)" );
         System.out.println( " -" + decorator.PROCESS_SIMILAR_TO_OPTION
                 + "    : process name \"intelligently\" and process information after \"similar to\" (only for -f=n)" );
