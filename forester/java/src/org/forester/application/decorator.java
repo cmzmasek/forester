@@ -26,13 +26,16 @@
 package org.forester.application;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.PhylogenyWriter;
@@ -42,6 +45,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
+import org.forester.sequence.Sequence;
 import org.forester.tools.PhylogenyDecorator;
 import org.forester.tools.PhylogenyDecorator.FIELD;
 import org.forester.util.BasicTable;
@@ -52,6 +56,7 @@ import org.forester.util.ForesterUtil;
 public final class decorator {
 
     private static final String SEQUENCE_NAME_FIELD                     = "s";
+    private static final String MOL_SEQ                                 = "m";
     private static final String TAXONOMY_CODE_FIELD                     = "c";
     private static final String TAXONOMY_SCIENTIFIC_NAME_FIELD          = "sn";
     private static final String DS_FILED                                = "d";
@@ -60,6 +65,7 @@ public final class decorator {
     final static private String PICKY_OPTION                            = "p";
     final static private String FIELD_OPTION                            = "f";
     final static private String TRIM_AFTER_TILDE_OPTION                 = "t";
+    final static private String VERBOSE_OPTION                          = "ve";
     final static private String TREE_NAME_OPTION                        = "pn";
     final static private String TREE_ID_OPTION                          = "pi";
     final static private String TREE_DESC_OPTION                        = "pd";
@@ -77,8 +83,8 @@ public final class decorator {
     final static private String MAPPING_FILE_SEPARATOR_OPTION           = "s";
     final static private char   MAPPING_FILE_SEPARATOR_DEFAULT          = '\t';
     final static private String PRG_NAME                                = "decorator";
-    final static private String PRG_VERSION                             = "1.14";
-    final static private String PRG_DATE                                = "130426";
+    final static private String PRG_VERSION                             = "1.16";
+    final static private String PRG_DATE                                = "131113";
 
     public static void main( final String args[] ) {
         ForesterUtil.printProgramInformation( decorator.PRG_NAME, decorator.PRG_VERSION, decorator.PRG_DATE );
@@ -120,6 +126,7 @@ public final class decorator {
         allowed_options.add( decorator.TRIM_AFTER_TILDE_OPTION );
         allowed_options.add( decorator.ORDER_TREE_OPTION );
         allowed_options.add( decorator.MIDPOINT_ROOT_OPTION );
+        allowed_options.add( decorator.VERBOSE_OPTION );
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
             ForesterUtil.fatalError( decorator.PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -154,6 +161,7 @@ public final class decorator {
         boolean trim_after_tilde = false;
         boolean order_tree = false;
         boolean midpoint_root = false;
+        boolean verbose = false;
         String tree_name = "";
         String tree_id = "";
         String tree_desc = "";
@@ -225,6 +233,9 @@ public final class decorator {
             if ( cla.isOptionSet( decorator.ORDER_TREE_OPTION ) ) {
                 order_tree = true;
             }
+            if ( cla.isOptionSet( decorator.VERBOSE_OPTION ) ) {
+                verbose = true;
+            }
             if ( cla.isOptionSet( decorator.FIELD_OPTION ) ) {
                 field_str = cla.getOptionValue( decorator.FIELD_OPTION );
                 if ( field_str.equals( NODE_NAME_FIELD ) ) {
@@ -243,6 +254,9 @@ public final class decorator {
                 }
                 else if ( field_str.equals( SEQUENCE_NAME_FIELD ) ) {
                     field = FIELD.SEQUENCE_NAME;
+                }
+                else if ( field_str.equals( MOL_SEQ ) ) {
+                    field = FIELD.MOL_SEQ;
                 }
                 else if ( field_str.equals( TAXONOMY_SCIENTIFIC_NAME_FIELD ) ) {
                     field = FIELD.TAXONOMY_SCIENTIFIC_NAME;
@@ -291,34 +305,41 @@ public final class decorator {
         }
         Map<String, String> map = null;
         if ( !advanced_table ) {
-            BasicTable<String> mapping_table = null;
-            try {
-                mapping_table = BasicTableParser.parse( mapping_infile, separator, true, false );
+            if ( field != FIELD.MOL_SEQ ) {
+                BasicTable<String> mapping_table = null;
+                try {
+                    mapping_table = BasicTableParser.parse( mapping_infile, separator, true, false );
+                }
+                catch ( final Exception e ) {
+                    ForesterUtil.fatalError( decorator.PRG_NAME,
+                                             "failed to read [" + mapping_infile + "] [" + e.getMessage() + "]" );
+                }
+                if ( ( key_column < 0 ) || ( key_column >= mapping_table.getNumberOfColumns() ) ) {
+                    ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for key column" );
+                }
+                if ( ( value_column < 0 ) || ( value_column >= mapping_table.getNumberOfColumns() ) ) {
+                    ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for value column" );
+                }
+                if ( mapping_table.isEmpty() || ( mapping_table.getNumberOfColumns() < 1 ) ) {
+                    ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table is empty" );
+                }
+                if ( mapping_table.getNumberOfColumns() == 1 ) {
+                    ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table has only one column" );
+                }
+                map = mapping_table.getColumnsAsMap( key_column, value_column );
+                if ( verbose ) {
+                    final Iterator<Entry<String, String>> iter = map.entrySet().iterator();
+                    System.out.println();
+                    while ( iter.hasNext() ) {
+                        final Entry<String, String> e = iter.next();
+                        System.out.println( e.getKey() + " => " + e.getValue() );
+                    }
+                    System.out.println();
+                }
             }
-            catch ( final Exception e ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME,
-                                         "failed to read [" + mapping_infile + "] [" + e.getMessage() + "]" );
+            else {
+                map = readFastaFileIntoMap( mapping_infile, verbose );
             }
-            if ( ( key_column < 0 ) || ( key_column >= mapping_table.getNumberOfColumns() ) ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for key column" );
-            }
-            if ( ( value_column < 0 ) || ( value_column >= mapping_table.getNumberOfColumns() ) ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME, "illegal value for value column" );
-            }
-            if ( mapping_table.isEmpty() || ( mapping_table.getNumberOfColumns() < 1 ) ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table is empty" );
-            }
-            if ( mapping_table.getNumberOfColumns() == 1 ) {
-                ForesterUtil.fatalError( decorator.PRG_NAME, "mapping table has only one column" );
-            }
-            map = mapping_table.getColumnsAsMap( key_column, value_column );
-            final Iterator<Entry<String, String>> iter = map.entrySet().iterator();
-            System.out.println();
-            while ( iter.hasNext() ) {
-                final Entry<String, String> e = iter.next();
-                System.out.println( e.getKey() + " => " + e.getValue() );
-            }
-            System.out.println();
         }
         if ( !ForesterUtil.isEmpty( tree_name ) || !ForesterUtil.isEmpty( tree_id )
                 || !ForesterUtil.isEmpty( tree_desc ) ) {
@@ -366,7 +387,8 @@ public final class decorator {
                                              process_name_intelligently,
                                              process_similar_to,
                                              numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                             trim_after_tilde );
+                                             trim_after_tilde,
+                                             verbose );
             }
         }
         catch ( final NullPointerException e ) {
@@ -397,10 +419,44 @@ public final class decorator {
         ForesterUtil.programMessage( PRG_NAME, "OK." );
     }
 
+    private static Map<String, String> readFastaFileIntoMap( final File mapping_infile, final boolean verbose ) {
+        List<Sequence> seqs = null;
+        try {
+            seqs = FastaParser.parse( new FileInputStream( mapping_infile ) );
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( decorator.PRG_NAME, "failed to read fasta-file from [" + mapping_infile + "] ["
+                    + e.getMessage() + "]" );
+        }
+        if ( ForesterUtil.isEmpty( seqs ) ) {
+            ForesterUtil.fatalError( decorator.PRG_NAME, "fasta-file [" + mapping_infile
+                    + "] is devoid of fasta-formatted sequences" );
+        }
+        final Map<String, String> map = new HashMap<String, String>();
+        for( final Sequence seq : seqs ) {
+            if ( ForesterUtil.isEmpty( seq.getIdentifier() ) ) {
+                ForesterUtil.fatalError( decorator.PRG_NAME, "fasta-file [" + mapping_infile
+                        + "] contains sequence with empty identifier" );
+            }
+            if ( map.containsKey( seq.getIdentifier() ) ) {
+                ForesterUtil.fatalError( decorator.PRG_NAME, "sequence identifier [" + seq.getIdentifier()
+                        + "] is not unique" );
+            }
+            if ( seq.getLength() < 1 ) {
+                ForesterUtil.fatalError( decorator.PRG_NAME, "sequence [" + seq.getIdentifier() + "] is empty" );
+            }
+            map.put( seq.getIdentifier(), seq.getMolecularSequenceAsString() );
+            if ( verbose ) {
+                System.out.println( seq.getIdentifier() + " => " + seq.getMolecularSequenceAsString() );
+            }
+        }
+        return map;
+    }
+
     private static void argumentsError() {
         System.out.println();
         System.out.println( decorator.PRG_NAME + " -" + ADVANCED_TABLE_OPTION + " | -f=<c> <phylogenies infile> "
-                + "[mapping table file] <phylogenies outfile>" );
+                + "[mapping table file|fasta-file] <phylogenies outfile>" );
         System.out.println();
         System.out.println( "options:" );
         System.out.println();
@@ -423,6 +479,7 @@ public final class decorator {
         System.out.println( "                                " + TAXONOMY_SCIENTIFIC_NAME_FIELD
                 + ": taxonomy scientific name" );
         System.out.println( "                                " + SEQUENCE_NAME_FIELD + " : sequence name" );
+        System.out.println( "                                " + MOL_SEQ + " : molecular sequence" );
         System.out.println( " -k=<n> : key column in mapping table (0 based)," );
         System.out.println( "          names of the node to be decorated - default is 0" );
         System.out.println( " -v=<n> : value column in mapping table (0 based)," );
@@ -439,8 +496,9 @@ public final class decorator {
         System.out.println( " -c     : cut name after first space (only for -f=n)" );
         System.out.println( " -" + decorator.TRIM_AFTER_TILDE_OPTION
                 + "     : trim node name to be replaced after tilde" );
-        System.out.println( " -" + decorator.MIDPOINT_ROOT_OPTION + "     : to midpoint-root the tree" );
-        System.out.println( " -" + decorator.ORDER_TREE_OPTION + "     : to order tree branches" );
+        System.out.println( " -" + decorator.MIDPOINT_ROOT_OPTION + "    : to midpoint-root the tree" );
+        System.out.println( " -" + decorator.ORDER_TREE_OPTION + "    : to order tree branches" );
+        System.out.println( " -" + decorator.VERBOSE_OPTION + "    : verbose" );
         System.out.println();
         System.exit( -1 );
     }

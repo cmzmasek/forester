@@ -48,23 +48,22 @@ import org.forester.util.ForesterUtil;
 
 public final class PhylogenyDecorator {
 
-    // From evoruby/lib/evo/apps/tseq_taxonomy_processor.rb:
-    final private static String TP_TAXONOMY_CODE        = "TAXONOMY_CODE";
-    final private static String TP_TAXONOMY_ID          = "TAXONOMY_ID";
-    final private static String TP_TAXONOMY_ID_PROVIDER = "TAXONOMY_ID_PROVIDER";
-    final private static String TP_TAXONOMY_SN          = "TAXONOMY_SN";
-    final private static String TP_TAXONOMY_CN          = "TAXONOMY_CN";
-    final private static String TP_TAXONOMY_SYN         = "TAXONOMY_SYN";
-    final private static String TP_SEQ_SYMBOL           = "SEQ_SYMBOL";
+    public final static boolean SANITIZE                = false;
+    final private static String TP_NODE_NAME            = "NODE_NAME";
     final private static String TP_SEQ_ACCESSION        = "SEQ_ACCESSION";
     final private static String TP_SEQ_ACCESSION_SOURCE = "SEQ_ACCESSION_SOURCE";
     final private static String TP_SEQ_ANNOTATION_DESC  = "SEQ_ANNOTATION_DESC";
     final private static String TP_SEQ_ANNOTATION_REF   = "SEQ_ANNOTATION_REF";
     final private static String TP_SEQ_MOL_SEQ          = "SEQ_MOL_SEQ";
     final private static String TP_SEQ_NAME             = "SEQ_NAME";
-    final private static String TP_NODE_NAME            = "NODE_NAME";
-    public final static boolean SANITIZE                = false;
-    public final static boolean VERBOSE                 = true;
+    final private static String TP_SEQ_SYMBOL           = "SEQ_SYMBOL";
+    final private static String TP_TAXONOMY_CN          = "TAXONOMY_CN";
+    // From evoruby/lib/evo/apps/tseq_taxonomy_processor.rb:
+    final private static String TP_TAXONOMY_CODE        = "TAXONOMY_CODE";
+    final private static String TP_TAXONOMY_ID          = "TAXONOMY_ID";
+    final private static String TP_TAXONOMY_ID_PROVIDER = "TAXONOMY_ID_PROVIDER";
+    final private static String TP_TAXONOMY_SN          = "TAXONOMY_SN";
+    final private static String TP_TAXONOMY_SYN         = "TAXONOMY_SYN";
 
     private PhylogenyDecorator() {
         // Not needed.
@@ -170,7 +169,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+                                 final boolean trim_after_tilde,
+                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         PhylogenyDecorator.decorate( phylogeny,
                                      map,
@@ -183,7 +183,8 @@ public final class PhylogenyDecorator {
                                      process_name_intelligently,
                                      process_similar_to,
                                      numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                     trim_after_tilde );
+                                     trim_after_tilde,
+                                     verbose );
     }
 
     /**
@@ -212,8 +213,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde ) throws IllegalArgumentException,
-            PhyloXmlDataFormatException {
+                                 final boolean trim_after_tilde,
+                                 final boolean verbose ) throws IllegalArgumentException, PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "attempt to extract bracketed scientific name together with data field pointing to scientific name" );
         }
@@ -231,7 +232,7 @@ public final class PhylogenyDecorator {
             }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
-                    name = PhylogenyDecorator.extractIntermediate( intermediate_map, name );
+                    name = PhylogenyDecorator.extractIntermediate( intermediate_map, name, verbose );
                 }
                 if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) ) {
                     String new_value = map.get( name );
@@ -248,11 +249,8 @@ public final class PhylogenyDecorator {
                             new_value = extractBracketedScientificNames( node, new_value );
                         }
                         else if ( extract_bracketed_tax_code ) {
-                            if ( ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value ).find() ) {
+                            if ( ParserUtils.TAXOMONY_CODE_PATTERN_BRACKETED.matcher( new_value ).find() ) {
                                 new_value = extractBracketedTaxCodes( node, new_value );
-                            }
-                            else if ( ParserUtils.TAXOMONY_CODE_PATTERN_6.matcher( new_value ).find() ) {
-                                new_value = extractBracketedTaxCodes6( node, new_value );
                             }
                             else if ( picky ) {
                                 throw new IllegalArgumentException( " could not get taxonomy from \"" + new_value
@@ -260,8 +258,17 @@ public final class PhylogenyDecorator {
                             }
                         }
                         switch ( field ) {
+                            case MOL_SEQ:
+                                if ( verbose ) {
+                                    System.out.println( name + ": " + new_value );
+                                }
+                                if ( !node.getNodeData().isHasSequence() ) {
+                                    node.getNodeData().setSequence( new Sequence() );
+                                }
+                                node.getNodeData().getSequence().setMolecularSequence( new_value );
+                                break;
                             case SEQUENCE_ANNOTATION_DESC:
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( name + ": " + new_value );
                                 }
                                 if ( !node.getNodeData().isHasSequence() ) {
@@ -272,7 +279,7 @@ public final class PhylogenyDecorator {
                                 node.getNodeData().getSequence().addAnnotation( annotation );
                                 break;
                             case DOMAIN_STRUCTURE:
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( name + ": " + new_value );
                                 }
                                 if ( !node.getNodeData().isHasSequence() ) {
@@ -282,14 +289,14 @@ public final class PhylogenyDecorator {
                                         .setDomainArchitecture( new DomainArchitecture( new_value ) );
                                 break;
                             case TAXONOMY_CODE:
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( name + ": " + new_value );
                                 }
                                 ForesterUtil.ensurePresenceOfTaxonomy( node );
                                 node.getNodeData().getTaxonomy().setTaxonomyCode( new_value );
                                 break;
                             case TAXONOMY_SCIENTIFIC_NAME:
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( name + ": " + new_value );
                                 }
                                 ForesterUtil.ensurePresenceOfTaxonomy( node );
@@ -299,7 +306,7 @@ public final class PhylogenyDecorator {
                                 if ( trim_after_tilde ) {
                                     new_value = addTildeAnnotation( tilde_annotation, new_value );
                                 }
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( name + ": " + new_value );
                                 }
                                 if ( !node.getNodeData().isHasSequence() ) {
@@ -308,23 +315,23 @@ public final class PhylogenyDecorator {
                                 node.getNodeData().getSequence().setName( new_value );
                                 break;
                             case NODE_NAME:
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.print( name + " -> " );
                                 }
                                 if ( cut_name_after_space ) {
-                                    if ( PhylogenyDecorator.VERBOSE ) {
+                                    if ( verbose ) {
                                         System.out.print( new_value + " -> " );
                                     }
                                     new_value = PhylogenyDecorator.deleteAtFirstSpace( new_value );
                                 }
                                 else if ( process_name_intelligently ) {
-                                    if ( PhylogenyDecorator.VERBOSE ) {
+                                    if ( verbose ) {
                                         System.out.print( new_value + " -> " );
                                     }
                                     new_value = PhylogenyDecorator.processNameIntelligently( new_value );
                                 }
                                 else if ( process_similar_to ) {
-                                    if ( PhylogenyDecorator.VERBOSE ) {
+                                    if ( verbose ) {
                                         System.out.print( new_value + " -> " );
                                     }
                                     new_value = PhylogenyDecorator.processSimilarTo( new_value );
@@ -335,7 +342,7 @@ public final class PhylogenyDecorator {
                                 if ( trim_after_tilde ) {
                                     new_value = addTildeAnnotation( tilde_annotation, new_value );
                                 }
-                                if ( PhylogenyDecorator.VERBOSE ) {
+                                if ( verbose ) {
                                     System.out.println( new_value );
                                 }
                                 node.setName( new_value );
@@ -350,13 +357,6 @@ public final class PhylogenyDecorator {
                 }
             }
         }
-    }
-
-    private final static String addTildeAnnotation( final String tilde_annotation, final String new_value ) {
-        if ( ForesterUtil.isEmpty( tilde_annotation ) ) {
-            return new_value;
-        }
-        return new_value + tilde_annotation;
     }
 
     public static void decorate( final Phylogeny[] phylogenies,
@@ -380,7 +380,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+                                 final boolean trim_after_tilde,
+                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         for( final Phylogeny phylogenie : phylogenies ) {
             PhylogenyDecorator.decorate( phylogenie,
@@ -393,7 +394,8 @@ public final class PhylogenyDecorator {
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         trim_after_tilde );
+                                         trim_after_tilde,
+                                         verbose );
         }
     }
 
@@ -408,7 +410,8 @@ public final class PhylogenyDecorator {
                                  final boolean process_name_intelligently,
                                  final boolean process_similar_to,
                                  final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde ) throws IllegalArgumentException, NHXFormatException,
+                                 final boolean trim_after_tilde,
+                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
         for( final Phylogeny phylogenie : phylogenies ) {
             PhylogenyDecorator.decorate( phylogenie,
@@ -422,7 +425,8 @@ public final class PhylogenyDecorator {
                                          process_name_intelligently,
                                          process_similar_to,
                                          numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         trim_after_tilde );
+                                         trim_after_tilde,
+                                         verbose );
         }
     }
 
@@ -450,6 +454,13 @@ public final class PhylogenyDecorator {
         return map;
     }
 
+    private final static String addTildeAnnotation( final String tilde_annotation, final String new_value ) {
+        if ( ForesterUtil.isEmpty( tilde_annotation ) ) {
+            return new_value;
+        }
+        return new_value + tilde_annotation;
+    }
+
     private static String deleteAtFirstSpace( final String name ) {
         final int first_space = name.indexOf( " " );
         if ( first_space > 1 ) {
@@ -467,48 +478,37 @@ public final class PhylogenyDecorator {
     }
 
     private static String extractBracketedTaxCodes( final PhylogenyNode node, final String new_value ) {
-        final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_4.matcher( new_value );
-        String tc = "?";
-        if ( m.find() ) {
-            tc = m.group( 1 );
+        final StringBuilder sb = new StringBuilder();
+        sb.append( new_value );
+        final String tc = extractBracketedTaxCodes( sb );
+        if ( !ForesterUtil.isEmpty( tc ) ) {
+            ForesterUtil.ensurePresenceOfTaxonomy( node );
+            try {
+                node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
+            }
+            catch ( final PhyloXmlDataFormatException e ) {
+                throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
+            }
+            return sb.toString().trim();
         }
-        ForesterUtil.ensurePresenceOfTaxonomy( node );
-        try {
-            node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
-        }
-        catch ( final PhyloXmlDataFormatException e ) {
-            throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
-        }
-        return new_value; //TODO //FIXME
+        return new_value;
     }
 
-    private static String extractBracketedTaxCodes6( final PhylogenyNode node, final String new_value ) {
-        final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_6.matcher( new_value );
-        String tc = "?";
+    private static String extractBracketedTaxCodes( final StringBuilder sb ) {
+        final Matcher m = ParserUtils.TAXOMONY_CODE_PATTERN_BRACKETED.matcher( sb );
         if ( m.find() ) {
-            tc = m.group( 1 );
+            final String tc = m.group( 1 );
+            sb.delete( m.start( 1 ) - 1, m.end( 1 ) + 1 );
+            return tc;
         }
-        ForesterUtil.ensurePresenceOfTaxonomy( node );
-        try {
-            if ( tc.length() == 6 ) {
-                final String t = tc.substring( 0, 5 );
-                System.out.println( "WARNING: taxonomy code " + tc + " -> " + t );
-                tc = t;
-            }
-            else {
-                throw new IllegalArgumentException();
-            }
-            node.getNodeData().getTaxonomy().setTaxonomyCode( tc );
-        }
-        catch ( final PhyloXmlDataFormatException e ) {
-            throw new IllegalArgumentException( "illegal format for taxonomy code: " + tc );
-        }
-        return new_value; //TODO //FIXME
+        return null;
     }
 
-    private static String extractIntermediate( final Map<String, String> intermediate_map, final String name ) {
+    private static String extractIntermediate( final Map<String, String> intermediate_map,
+                                               final String name,
+                                               final boolean verbose ) {
         String new_name = null;
-        if ( PhylogenyDecorator.VERBOSE ) {
+        if ( verbose ) {
             System.out.print( name + " => " );
         }
         if ( intermediate_map.containsKey( name ) ) {
@@ -520,7 +520,7 @@ public final class PhylogenyDecorator {
         else {
             throw new IllegalArgumentException( "\"" + name + "\" not found in name secondary map" );
         }
-        if ( PhylogenyDecorator.VERBOSE ) {
+        if ( verbose ) {
             System.out.println( new_name + "  " );
         }
         return new_name;
@@ -575,6 +575,12 @@ public final class PhylogenyDecorator {
     }
 
     public static enum FIELD {
-        NODE_NAME, SEQUENCE_ANNOTATION_DESC, DOMAIN_STRUCTURE, TAXONOMY_CODE, TAXONOMY_SCIENTIFIC_NAME, SEQUENCE_NAME;
+        DOMAIN_STRUCTURE,
+        MOL_SEQ,
+        NODE_NAME,
+        SEQUENCE_ANNOTATION_DESC,
+        SEQUENCE_NAME,
+        TAXONOMY_CODE,
+        TAXONOMY_SCIENTIFIC_NAME;
     }
 }
