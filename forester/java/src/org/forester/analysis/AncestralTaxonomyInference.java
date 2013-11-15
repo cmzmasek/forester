@@ -124,6 +124,7 @@ public final class AncestralTaxonomyInference {
         if ( last_common_lineage.isEmpty() ) {
             boolean saw_viruses = false;
             boolean saw_cellular_organism = false;
+            boolean saw_x = false;
             for( final String[] lineage : lineages ) {
                 if ( lineage.length > 0 ) {
                     if ( lineage[ 0 ].equalsIgnoreCase( UniProtTaxonomy.VIRUSES ) ) {
@@ -132,14 +133,17 @@ public final class AncestralTaxonomyInference {
                     else if ( lineage[ 0 ].equalsIgnoreCase( UniProtTaxonomy.CELLULAR_ORGANISMS ) ) {
                         saw_cellular_organism = true;
                     }
-                    if ( saw_cellular_organism && saw_viruses ) {
+                    else if ( lineage[ 0 ].equalsIgnoreCase( UniProtTaxonomy.X ) ) {
+                        saw_x = true;
+                    }
+                    if ( ( saw_cellular_organism && saw_viruses ) || saw_x ) {
                         break;
                     }
                 }
             }
-            if ( saw_cellular_organism && saw_viruses ) {
-                //last_common_lineage.add( UniProtTaxonomy.CELLULAR_ORGANISMS );
-               // last_common = UniProtTaxonomy.CELLULAR_ORGANISMS;
+            if ( ( saw_cellular_organism && saw_viruses ) || saw_x ) {
+                last_common_lineage.add( UniProtTaxonomy.X );
+                last_common = UniProtTaxonomy.X;
             }
             else {
                 String msg = "no common lineage for:\n";

@@ -27,6 +27,7 @@ package org.forester.archaeopteryx;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
@@ -207,8 +208,7 @@ class NodePanel extends JPanel implements TreeSelectionListener {
             addSubelement( category,
                            "External children",
                            String.valueOf( phylogeny_node.getAllExternalDescendants().size() ) );
-            final SortedMap<Taxonomy, Integer> distinct_tax = PhylogenyMethods
-                    .obtainDistinctTaxonomyCounts( phylogeny_node );
+            final Map<Taxonomy, Integer> distinct_tax = PhylogenyMethods.obtainDistinctTaxonomyCounts( phylogeny_node );
             if ( distinct_tax != null ) {
                 final int no_tax = PhylogenyMethods.calculateNumberOfExternalNodesWithoutTaxonomy( phylogeny_node );
                 final int tax_count = distinct_tax.size();

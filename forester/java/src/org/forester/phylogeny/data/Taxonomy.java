@@ -248,9 +248,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
 
     public boolean isEmpty() {
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
-                && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() )
-                && ForesterUtil.isEmpty( getRank() ) && ForesterUtil.isEmpty( _uris )
-                && ForesterUtil.isEmpty( getAuthority() ) && ForesterUtil.isEmpty( _synonyms ) && ForesterUtil
+                && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() ) && ForesterUtil
                 .isEmpty( _lineage ) );
     }
 
@@ -289,13 +287,8 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         else if ( !ForesterUtil.isEmpty( getCommonName() ) && !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
             return getCommonName().equalsIgnoreCase( tax.getCommonName() );
         }
-        else if ( !ForesterUtil.isEmpty( getScientificName() ) && !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-            return getScientificName().equalsIgnoreCase( tax.getCommonName() );
-        }
-        else if ( !ForesterUtil.isEmpty( getCommonName() ) && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
-            return getCommonName().equalsIgnoreCase( tax.getScientificName() );
-        }
-        throw new RuntimeException( "comparison not possible with empty fields" );
+        //throw new RuntimeException( "comparison not possible with empty fields" );
+        return false;
     }
 
     public void setAuthority( final String authority ) {
@@ -423,16 +416,29 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         if ( equals( o ) ) {
             return 0;
         }
-        else if ( !ForesterUtil.isEmpty( getScientificName() ) && !ForesterUtil.isEmpty( o.getScientificName() ) ) {
+        if ( ( getIdentifier() != null ) && ( o.getIdentifier() != null )
+                && !ForesterUtil.isEmpty( getIdentifier().getValue() )
+                && !ForesterUtil.isEmpty( o.getIdentifier().getValue() ) ) {
+            final int x = getIdentifier().getValuePlusProvider().compareTo( o.getIdentifier().getValuePlusProvider() );
+            if ( x != 0 ) {
+                return x;
+            }
+        }
+        if ( !ForesterUtil.isEmpty( getScientificName() ) && !ForesterUtil.isEmpty( o.getScientificName() ) ) {
             return getScientificName().compareToIgnoreCase( o.getScientificName() );
         }
-        else if ( !ForesterUtil.isEmpty( getCommonName() ) && !ForesterUtil.isEmpty( o.getCommonName() ) ) {
+        if ( !ForesterUtil.isEmpty( getCommonName() ) && !ForesterUtil.isEmpty( o.getCommonName() ) ) {
             return getCommonName().compareToIgnoreCase( o.getCommonName() );
         }
-        else if ( !ForesterUtil.isEmpty( getTaxonomyCode() ) && !ForesterUtil.isEmpty( o.getTaxonomyCode() ) ) {
+        if ( !ForesterUtil.isEmpty( getTaxonomyCode() ) && !ForesterUtil.isEmpty( o.getTaxonomyCode() ) ) {
             return getTaxonomyCode().compareToIgnoreCase( o.getTaxonomyCode() );
         }
-        return 0;
+        if ( ( getIdentifier() != null ) && ( o.getIdentifier() != null )
+                && !ForesterUtil.isEmpty( getIdentifier().getValue() )
+                && !ForesterUtil.isEmpty( o.getIdentifier().getValue() ) ) {
+            return getIdentifier().getValuePlusProvider().compareTo( o.getIdentifier().getValuePlusProvider() );
+        }
+        return 1;
     }
 
     public void setLineage( final List<String> lineage ) {

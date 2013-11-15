@@ -32,18 +32,19 @@ import org.forester.util.ForesterUtil;
 
 public final class UniProtTaxonomy {
 
-    public  static final String ARCHAEA            = "Archaea";
-    public  static final String BACTERIA           = "Bacteria";
-    public  static final String EUKARYOTA          = "Eukaryota";
-    private final List<String>  _lineage;
-    private final String        _code;
-    private final String        _scientific_name;
-    private final String        _common_name;
-    private final String        _synonym;
-    private final String        _rank;
-    private final String        _id;
-    public final static String  CELLULAR_ORGANISMS = "cellular organisms";
-    public final static String  VIRUSES            = "Viruses";
+    public static final String ARCHAEA            = "Archaea";
+    public static final String BACTERIA           = "Bacteria";
+    public static final String EUKARYOTA          = "Eukaryota";
+    private final List<String> _lineage;
+    private final String       _code;
+    private final String       _scientific_name;
+    private final String       _common_name;
+    private final String       _synonym;
+    private final String       _rank;
+    private final String       _id;
+    public final static String CELLULAR_ORGANISMS = "cellular organisms";
+    public final static String VIRUSES            = "Viruses";
+    public static final String X                  = "x";
 
     public UniProtTaxonomy( final String line ) {
         final String[] items = line.split( "\t" );
@@ -107,13 +108,12 @@ public final class UniProtTaxonomy {
         _synonym = synonym;
         _rank = rank;
         _id = id;
-        if ( ( _lineage != null &&  _lineage.isEmpty() ) || ( ( !ForesterUtil.isEmpty( _lineage ) ) && !_lineage.get( _lineage.size() - 1 ).equalsIgnoreCase( _scientific_name ) ) ) {
+        if ( ( ( _lineage != null ) && _lineage.isEmpty() )
+                || ( ( !ForesterUtil.isEmpty( _lineage ) ) && !_lineage.get( _lineage.size() - 1 )
+                        .equalsIgnoreCase( _scientific_name ) ) ) {
             _lineage.add( _scientific_name );
         }
-      
     }
-
-    
 
     /**
      * Creates deep copy for all fields, except lineage.
@@ -157,17 +157,15 @@ public final class UniProtTaxonomy {
     public String getSynonym() {
         return _synonym;
     }
-    
+
     public final static UniProtTaxonomy createSpecialFromScientificName( final String sn ) {
-        
-        List<String> lineage = new ArrayList<String>();
-        String code = "";
-        String common_name = "";
+        final List<String> lineage = new ArrayList<String>();
+        final String code = "";
+        final String common_name = "";
         String scientific_name = "";
-        String synonym = "";
+        final String synonym = "";
         String rank = "";
         String id = "";
-        
         if ( sn.equalsIgnoreCase( BACTERIA ) ) {
             scientific_name = BACTERIA;
             lineage.add( "cellular organisms" );
@@ -177,7 +175,6 @@ public final class UniProtTaxonomy {
         else if ( sn.equalsIgnoreCase( ARCHAEA ) ) {
             scientific_name = ARCHAEA;
             lineage.add( "cellular organisms" );
-          
             rank = "superkingdom";
             id = "2157";
         }
@@ -192,11 +189,12 @@ public final class UniProtTaxonomy {
             rank = "superkingdom";
             id = "10239";
         }
+        else if ( sn.equalsIgnoreCase( X ) ) {
+            scientific_name = X;
+        }
         else {
             throw new IllegalArgumentException( "illegal attempt to make UniProt taxonomy for :" + sn );
         }
         return new UniProtTaxonomy( lineage, code, common_name, scientific_name, synonym, rank, id );
-        
-        
     }
 }

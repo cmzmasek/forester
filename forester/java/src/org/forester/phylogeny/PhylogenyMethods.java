@@ -36,9 +36,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
@@ -711,9 +710,9 @@ public class PhylogenyMethods {
      * null is returned.
      * 
      */
-    public static SortedMap<Taxonomy, Integer> obtainDistinctTaxonomyCounts( final PhylogenyNode node ) {
+    public static Map<Taxonomy, Integer> obtainDistinctTaxonomyCounts( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();
-        final SortedMap<Taxonomy, Integer> tax_map = new TreeMap<Taxonomy, Integer>();
+        final Map<Taxonomy, Integer> tax_map = new HashMap<Taxonomy, Integer>();
         for( final PhylogenyNode n : descs ) {
             if ( !n.getNodeData().isHasTaxonomy() || n.getNodeData().getTaxonomy().isEmpty() ) {
                 return null;
