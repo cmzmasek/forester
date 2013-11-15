@@ -184,6 +184,16 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromScientificName( final String query ) throws IOException {
+        if ( query.equalsIgnoreCase( UniProtTaxonomy.BACTERIA ) ||
+                query.equalsIgnoreCase( UniProtTaxonomy.ARCHAEA ) ||
+                query.equalsIgnoreCase( UniProtTaxonomy.VIRUSES ) ||
+                query.equalsIgnoreCase( UniProtTaxonomy.EUKARYOTA ) 
+                ) {
+            final List<UniProtTaxonomy> l = new ArrayList<UniProtTaxonomy>();
+            l.add( UniProtTaxonomy.createSpecialFromScientificName( query ) );
+            return l;
+        }
+        
         return SequenceDbWsTools.getTaxonomiesFromScientificNameStrict( query, MAX_TAXONOMIES_TO_RETURN );
     }
 

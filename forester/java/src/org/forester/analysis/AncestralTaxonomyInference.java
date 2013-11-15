@@ -138,8 +138,8 @@ public final class AncestralTaxonomyInference {
                 }
             }
             if ( saw_cellular_organism && saw_viruses ) {
-                last_common_lineage.add( UniProtTaxonomy.CELLULAR_ORGANISMS );
-                last_common = UniProtTaxonomy.CELLULAR_ORGANISMS;
+                //last_common_lineage.add( UniProtTaxonomy.CELLULAR_ORGANISMS );
+               // last_common = UniProtTaxonomy.CELLULAR_ORGANISMS;
             }
             else {
                 String msg = "no common lineage for:\n";
