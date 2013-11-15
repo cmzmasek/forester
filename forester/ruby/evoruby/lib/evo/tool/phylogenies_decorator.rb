@@ -24,7 +24,7 @@ module Evoruby
 
     #DECORATOR_OPTIONS_SEQ_NAMES = '-r=1 -mdn'
     #DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -sn'
-    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -c -tc -mp -or'
+    DECORATOR_OPTIONS_SEQ_NAMES = '-p -t -tc -mp -or'
     # -mdn is a hidden expert option to rename e.g. "6_ORYLA3" to "6_[3]_ORYLA"
     #DECORATOR_OPTIONS_SEQ_NAMES = '-sn -r=1'
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
@@ -33,7 +33,8 @@ module Evoruby
     DOMAINS_MAPFILE_SUFFIX    = '.dff'
     SLEEP_TIME                = 0.1
     REMOVE_NI                 = true
-    TMP_FILE                  = '___PD___'
+    TMP_FILE_1                  = '___PD1___'
+    TMP_FILE_2                  = '___PD2___'
     LOG_FILE                  = '00_phylogenies_decorator.log'
     FORESTER_HOME             = ENV[Constants::FORESTER_HOME_ENV_VARIABLE]
     JAVA_HOME                 = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
@@ -46,8 +47,7 @@ module Evoruby
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
-    IDS_ONLY_OPTION     = "n"
-    DOMAINS_ONLY_OPTION = "d"
+
     HELP_OPTION_1       = "help"
     HELP_OPTION_2       = "h"
 
@@ -146,8 +146,11 @@ module Evoruby
       log << 'input suffix     : ' + in_suffix + NL
       log << 'output suffix    : ' + out_suffix + NL
 
-      if ( File.exists?( TMP_FILE ) )
-        File.delete( TMP_FILE )
+      if ( File.exists?( TMP_FILE_1 ) )
+        File.delete( TMP_FILE_1 )
+      end
+      if ( File.exists?( TMP_FILE_2 ) )
+        File.delete( TMP_FILE_2 )
       end
 
       files = Dir.entries( "." )
@@ -189,61 +192,52 @@ module Evoruby
 
           ids_mapfile_name = nil
           domains_mapfile_name = nil
+          seqs_file_name = nil
 
-          if ids_only
-            ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-          elsif domains_only
-            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
-          else
-            ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
-            domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
+          ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
+          domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
+          seqs_file_name = get_seq_file( files, phylogeny_id )
+
+
+          begin
+            Util.check_file_for_readability( domains_mapfile_name )
+          rescue ArgumentError
+            Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
           end
 
-          if domains_mapfile_name != nil
-            begin
-              Util.check_file_for_readability( domains_mapfile_name )
-            rescue ArgumentError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{domains_mapfile_name}]: ' + $! )
-            end
+          begin
+            Util.check_file_for_readability( ids_mapfile_name )
+          rescue ArgumentError
+            Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
           end
 
-          if ids_mapfile_name != nil
-            begin
-              Util.check_file_for_readability( ids_mapfile_name )
-            rescue ArgumentError
-              Util.fatal_error( PRG_NAME, 'failed to read from [#{ids_mapfile_name}]: ' + $! )
-            end
+          begin
+            Util.check_file_for_readability( seqs_file_name  )
+          rescue ArgumentError
+            Util.fatal_error( PRG_NAME, 'failed to read from [#{seqs_file_name }]: ' + $! )
           end
 
-          if domains_mapfile_name != nil
-            if ids_mapfile_name != nil
-              my_outfile = TMP_FILE
-            else
-              my_outfile = outfile
-            end
-            cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
-             '-f=d ' + phylogeny_file + ' ' +
-             domains_mapfile_name + ' ' + my_outfile
-            puts cmd
-            execute_cmd( cmd, log )
-          end
+          cmd = decorator +
+           ' -p -f=m ' + phylogeny_file + ' ' +
+           seqs_file_name  + ' ' + TMP_FILE_1
+          puts cmd
+          execute_cmd( cmd, log )
 
-          if ids_mapfile_name != nil
-            if domains_mapfile_name != nil
-              my_infile = TMP_FILE
-            else
-              my_infile = phylogeny_file
-            end
-            cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
-             '-f=n ' + my_infile + ' ' +
-             ids_mapfile_name + ' ' + outfile
-            puts cmd
-            execute_cmd( cmd, log )
-          end
+          cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
+           '-f=d ' + TMP_FILE_1 + ' ' +
+           domains_mapfile_name + ' ' +TMP_FILE_2
+          puts cmd
+          execute_cmd( cmd, log )
 
-          if ( File.exists?( TMP_FILE ) )
-            File.delete( TMP_FILE )
-          end
+          cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
+           '-f=n ' + TMP_FILE_2 + ' ' +
+           ids_mapfile_name + ' ' + outfile
+          puts cmd
+          execute_cmd( cmd, log )
+
+          File.delete( TMP_FILE_1 )
+          File.delete( TMP_FILE_2 )
+
         end
       }
       open( LOG_FILE, 'w' ) do | f |
@@ -302,13 +296,35 @@ module Evoruby
       matching_files[ 0 ]
     end
 
+    def get_seq_file( files_in_dir, phylogeny_id )
+      matching_files = Array.new
+
+      files_in_dir.each { | file |
+
+        if ( !File.directory?( file ) &&
+             file !~ /^\./ &&
+             file !~ /^00/ &&
+             file =~ /^#{phylogeny_id}.+\d$/ )
+          matching_files << file
+        end
+
+      }
+
+      if matching_files.length < 1
+        Util.fatal_error( PRG_NAME, 'no seq file matching [' + phylogeny_id + '] present in current directory' )
+      end
+      if matching_files.length > 1
+        Util.fatal_error( PRG_NAME, 'more than one seq file matching [' + phylogeny_id + '] present in current directory' )
+      end
+      matching_files[ 0 ]
+    end
+
+
     def print_help()
       puts( "Usage:" )
       puts()
-      puts( "  " + PRG_NAME + ".rb [options] <suffix of intrees to be decorated> <suffix for decorated outtrees> " )
+      puts( "  " + PRG_NAME + ".rb <suffix of intrees to be decorated> <suffix for decorated outtrees> " )
       puts()
-      puts( "  options: -" + IDS_ONLY_OPTION + ": decorate with sequence/species names only" )
-      puts( "           -" + DOMAINS_ONLY_OPTION + ": decorate with domain structures only" )
       puts()
     end
   end # class PhylogenyiesDecorator
