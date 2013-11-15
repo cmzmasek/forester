@@ -48,7 +48,6 @@ import org.forester.util.ForesterUtil;
 
 public final class PhylogenyDecorator {
 
-    public final static boolean SANITIZE                = false;
     final private static String TP_NODE_NAME            = "NODE_NAME";
     final private static String TP_SEQ_ACCESSION        = "SEQ_ACCESSION";
     final private static String TP_SEQ_ACCESSION_SOURCE = "SEQ_ACCESSION_SOURCE";
@@ -71,21 +70,13 @@ public final class PhylogenyDecorator {
 
     public static void decorate( final Phylogeny phylogeny,
                                  final Map<String, Map<String, String>> map,
-                                 final boolean picky,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map )
-            throws IllegalArgumentException, PhyloXmlDataFormatException {
+                                 final boolean picky ) throws IllegalArgumentException, PhyloXmlDataFormatException {
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             final String name = node.getName();
             if ( !ForesterUtil.isEmpty( name ) ) {
-                if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) ) {
-                    Map<String, String> new_values = map.get( name );
-                    int x = 0;
-                    while ( ( new_values == null ) && ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 )
-                            && ( x <= numbers_of_chars_allowed_to_remove_if_not_found_in_map ) ) {
-                        new_values = map.get( name.substring( 0, name.length() - x ) );
-                        ++x;
-                    }
+                if ( map.containsKey( name ) ) {
+                    final Map<String, String> new_values = map.get( name );
                     if ( new_values != null ) {
                         if ( new_values.containsKey( TP_TAXONOMY_CODE ) ) {
                             ForesterUtil.ensurePresenceOfTaxonomy( node );
@@ -159,32 +150,26 @@ public final class PhylogenyDecorator {
         }
     }
 
-    public static void decorate( final Phylogeny phylogeny,
-                                 final Map<String, String> map,
-                                 final FIELD field,
-                                 final boolean extract_bracketed_scientific_name,
-                                 final boolean extract_bracketed_tax_code,
-                                 final boolean picky,
-                                 final boolean cut_name_after_space,
-                                 final boolean process_name_intelligently,
-                                 final boolean process_similar_to,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde,
-                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
+    public static String decorate( final Phylogeny phylogeny,
+                                   final Map<String, String> map,
+                                   final FIELD field,
+                                   final boolean extract_bracketed_scientific_name,
+                                   final boolean extract_bracketed_tax_code,
+                                   final boolean picky,
+                                   final boolean cut_name_after_space,
+                                   final boolean trim_after_tilde,
+                                   final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
             PhyloXmlDataFormatException {
-        PhylogenyDecorator.decorate( phylogeny,
-                                     map,
-                                     field,
-                                     extract_bracketed_scientific_name,
-                                     extract_bracketed_tax_code,
-                                     picky,
-                                     null,
-                                     cut_name_after_space,
-                                     process_name_intelligently,
-                                     process_similar_to,
-                                     numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                     trim_after_tilde,
-                                     verbose );
+        return PhylogenyDecorator.decorate( phylogeny,
+                                            map,
+                                            field,
+                                            extract_bracketed_scientific_name,
+                                            extract_bracketed_tax_code,
+                                            picky,
+                                            null,
+                                            cut_name_after_space,
+                                            trim_after_tilde,
+                                            verbose );
     }
 
     /**
@@ -202,49 +187,64 @@ public final class PhylogenyDecorator {
      * @throws IllegalArgumentException
      * @throws PhyloXmlDataFormatException 
      */
-    public static void decorate( final Phylogeny phylogeny,
-                                 final Map<String, String> map,
-                                 final FIELD field,
-                                 final boolean extract_bracketed_scientific_name,
-                                 final boolean extract_bracketed_tax_code,
-                                 final boolean picky,
-                                 final Map<String, String> intermediate_map,
-                                 final boolean cut_name_after_space,
-                                 final boolean process_name_intelligently,
-                                 final boolean process_similar_to,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde,
-                                 final boolean verbose ) throws IllegalArgumentException, PhyloXmlDataFormatException {
+    public static String decorate( final Phylogeny phylogeny,
+                                   final Map<String, String> map,
+                                   final FIELD field,
+                                   final boolean extract_bracketed_scientific_name,
+                                   final boolean extract_bracketed_tax_code,
+                                   final boolean picky,
+                                   final Map<String, String> intermediate_map,
+                                   final boolean cut_name_after_space,
+                                   final boolean trim_after_tilde,
+                                   final boolean verbose ) throws IllegalArgumentException, PhyloXmlDataFormatException {
         if ( extract_bracketed_scientific_name && ( field == FIELD.TAXONOMY_SCIENTIFIC_NAME ) ) {
             throw new IllegalArgumentException( "attempt to extract bracketed scientific name together with data field pointing to scientific name" );
         }
         if ( map.isEmpty() ) {
             throw new IllegalArgumentException( "map is empty" );
         }
+        if ( picky && ( map.size() < phylogeny.getNumberOfExternalNodes() ) ) {
+            throw new IllegalArgumentException( "map contains less entries than the tree has external nodes" );
+        }
+        int ext_nodes = 0;
+        int ext_nodes_updated = 0;
+        int int_nodes = 0;
+        int int_nodes_updated = 0;
         for( final PhylogenyNodeIterator iter = phylogeny.iteratorPostorder(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
+            if ( node.isExternal() ) {
+                ++ext_nodes;
+            }
+            else {
+                ++int_nodes;
+            }
             String name = node.getName();
+            if ( picky && node.isExternal() && ForesterUtil.isEmpty( name ) ) {
+                throw new IllegalArgumentException( "external node with no name present" );
+            }
             String tilde_annotation = null;
             if ( trim_after_tilde && ( name.indexOf( '~' ) > 0 ) ) {
                 final int ti = name.indexOf( '~' );
+                final String orig = name;
                 tilde_annotation = name.substring( ti );
                 name = name.substring( 0, ti );
+                if ( node.isExternal() && ForesterUtil.isEmpty( name ) ) {
+                    throw new IllegalArgumentException( "external node with illegal name: " + orig );
+                }
             }
             if ( !ForesterUtil.isEmpty( name ) ) {
                 if ( intermediate_map != null ) {
                     name = PhylogenyDecorator.extractIntermediate( intermediate_map, name, verbose );
                 }
-                if ( map.containsKey( name ) || ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 ) ) {
-                    String new_value = map.get( name );
-                    int x = 0;
-                    while ( ( new_value == null ) && ( numbers_of_chars_allowed_to_remove_if_not_found_in_map > 0 )
-                            && ( x <= numbers_of_chars_allowed_to_remove_if_not_found_in_map ) ) {
-                        new_value = map.get( name.substring( 0, name.length() - x ) );
-                        ++x;
-                    }
-                    if ( new_value != null ) {
-                        new_value = new_value.trim();
-                        new_value.replaceAll( "/\\s+/", " " );
+                if ( map.containsKey( name ) ) {
+                    String new_value = map.get( name ).trim().replaceAll( "/\\s+/", " " );
+                    if ( !ForesterUtil.isEmpty( new_value ) ) {
+                        if ( node.isExternal() ) {
+                            ++ext_nodes_updated;
+                        }
+                        else {
+                            ++int_nodes_updated;
+                        }
                         if ( extract_bracketed_scientific_name && new_value.endsWith( "]" ) ) {
                             new_value = extractBracketedScientificNames( node, new_value );
                         }
@@ -324,21 +324,6 @@ public final class PhylogenyDecorator {
                                     }
                                     new_value = PhylogenyDecorator.deleteAtFirstSpace( new_value );
                                 }
-                                else if ( process_name_intelligently ) {
-                                    if ( verbose ) {
-                                        System.out.print( new_value + " -> " );
-                                    }
-                                    new_value = PhylogenyDecorator.processNameIntelligently( new_value );
-                                }
-                                else if ( process_similar_to ) {
-                                    if ( verbose ) {
-                                        System.out.print( new_value + " -> " );
-                                    }
-                                    new_value = PhylogenyDecorator.processSimilarTo( new_value );
-                                }
-                                if ( PhylogenyDecorator.SANITIZE ) {
-                                    new_value = PhylogenyDecorator.sanitize( new_value );
-                                }
                                 if ( trim_after_tilde ) {
                                     new_value = addTildeAnnotation( tilde_annotation, new_value );
                                 }
@@ -351,83 +336,17 @@ public final class PhylogenyDecorator {
                                 throw new RuntimeException( "unknown field \"" + field + "\"" );
                         }
                     }
+                    else {
+                        throw new IllegalArgumentException( "node name \"" + name + "\" maps to empty value" );
+                    }
                 }
                 else if ( picky ) {
-                    throw new IllegalArgumentException( "\"" + name + "\" not found in name map" );
+                    throw new IllegalArgumentException( "node name \"" + name + "\" not found in map" );
                 }
             }
         }
-    }
-
-    public static void decorate( final Phylogeny[] phylogenies,
-                                 final Map<String, Map<String, String>> map,
-                                 final boolean picky,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map )
-            throws IllegalArgumentException, NHXFormatException, PhyloXmlDataFormatException {
-        for( final Phylogeny phylogenie : phylogenies ) {
-            PhylogenyDecorator
-                    .decorate( phylogenie, map, picky, numbers_of_chars_allowed_to_remove_if_not_found_in_map );
-        }
-    }
-
-    public static void decorate( final Phylogeny[] phylogenies,
-                                 final Map<String, String> map,
-                                 final FIELD field,
-                                 final boolean extract_bracketed_scientific_name,
-                                 final boolean extract_bracketed_tax_code,
-                                 final boolean picky,
-                                 final boolean cut_name_after_space,
-                                 final boolean process_name_intelligently,
-                                 final boolean process_similar_to,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde,
-                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
-            PhyloXmlDataFormatException {
-        for( final Phylogeny phylogenie : phylogenies ) {
-            PhylogenyDecorator.decorate( phylogenie,
-                                         map,
-                                         field,
-                                         extract_bracketed_scientific_name,
-                                         extract_bracketed_tax_code,
-                                         picky,
-                                         cut_name_after_space,
-                                         process_name_intelligently,
-                                         process_similar_to,
-                                         numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         trim_after_tilde,
-                                         verbose );
-        }
-    }
-
-    public static void decorate( final Phylogeny[] phylogenies,
-                                 final Map<String, String> map,
-                                 final FIELD field,
-                                 final boolean extract_bracketed_scientific_name,
-                                 final boolean extract_bracketed_tax_code,
-                                 final boolean picky,
-                                 final Map<String, String> intermediate_map,
-                                 final boolean cut_name_after_space,
-                                 final boolean process_name_intelligently,
-                                 final boolean process_similar_to,
-                                 final int numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                 final boolean trim_after_tilde,
-                                 final boolean verbose ) throws IllegalArgumentException, NHXFormatException,
-            PhyloXmlDataFormatException {
-        for( final Phylogeny phylogenie : phylogenies ) {
-            PhylogenyDecorator.decorate( phylogenie,
-                                         map,
-                                         field,
-                                         extract_bracketed_scientific_name,
-                                         extract_bracketed_tax_code,
-                                         picky,
-                                         intermediate_map,
-                                         cut_name_after_space,
-                                         process_name_intelligently,
-                                         process_similar_to,
-                                         numbers_of_chars_allowed_to_remove_if_not_found_in_map,
-                                         trim_after_tilde,
-                                         verbose );
-        }
+        return "updated " + ext_nodes_updated + "/" + ext_nodes + " external nodes, updated " + int_nodes_updated + "/"
+                + int_nodes + " internal nodes";
     }
 
     public static Map<String, Map<String, String>> parseMappingTable( final File mapping_table_file )
@@ -524,54 +443,6 @@ public final class PhylogenyDecorator {
             System.out.println( new_name + "  " );
         }
         return new_name;
-    }
-
-    private static String processNameIntelligently( final String name ) {
-        final String[] s = name.split( " " );
-        if ( s.length < 2 ) {
-            return name;
-        }
-        else if ( ( s[ 0 ].indexOf( "_" ) > 0 ) && ( s[ 0 ].indexOf( "|" ) > 0 ) ) {
-            return s[ 0 ];
-        }
-        else if ( ( s[ 1 ].indexOf( "_" ) > 0 ) && ( s[ 1 ].indexOf( "|" ) > 0 ) ) {
-            return s[ 1 ];
-        }
-        else if ( ( s[ 0 ].indexOf( "_" ) > 0 ) && ( s[ 0 ].indexOf( "." ) > 0 ) ) {
-            return s[ 0 ];
-        }
-        else if ( ( s[ 1 ].indexOf( "_" ) > 0 ) && ( s[ 1 ].indexOf( "." ) > 0 ) ) {
-            return s[ 1 ];
-        }
-        else if ( s[ 0 ].indexOf( "_" ) > 0 ) {
-            return s[ 0 ];
-        }
-        else if ( s[ 1 ].indexOf( "_" ) > 0 ) {
-            return s[ 1 ];
-        }
-        else {
-            return s[ 0 ];
-        }
-    }
-
-    private static String processSimilarTo( final String name ) {
-        final int i = name.toLowerCase().indexOf( "similar to" );
-        String similar_to = "";
-        if ( i >= 0 ) {
-            similar_to = " similarity=" + name.substring( i + 10 ).trim();
-        }
-        final String pi = processNameIntelligently( name );
-        return pi + similar_to;
-    }
-
-    private static String sanitize( String s ) {
-        s = s.replace( ' ', '_' );
-        s = s.replace( '(', '{' );
-        s = s.replace( ')', '}' );
-        s = s.replace( '[', '{' );
-        s = s.replace( ']', '}' );
-        s = s.replace( ',', '_' );
-        return s;
     }
 
     public static enum FIELD {
