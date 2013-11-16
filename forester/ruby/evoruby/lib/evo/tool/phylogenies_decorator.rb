@@ -30,7 +30,7 @@ module Evoruby
     #DECORATOR_OPTIONS_DOMAINS = '-r=1'
     DECORATOR_OPTIONS_DOMAINS = '-p -t'
     IDS_MAPFILE_SUFFIX        = '.nim'
-    DOMAINS_MAPFILE_SUFFIX    = '.dff'
+    DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
     SLEEP_TIME                = 0.1
     REMOVE_NI                 = true
     TMP_FILE_1                  = '___PD1___'
@@ -253,15 +253,13 @@ module Evoruby
           matching_files << file
         end
       }
-    
-
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
-           '_] [' + suffix_pattern + '] present in current directory' )
+            + suffix_pattern + '] present in current directory' )
       end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id +
-           '_] [' + suffix_pattern + '] present in current directory' )
+            + suffix_pattern + '] present in current directory' )
       end
       matching_files[ 0 ]
     end
