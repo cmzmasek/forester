@@ -167,7 +167,7 @@ module Evoruby
 
           phylogeny_id = get_id( phylogeny_file )
           puts "id:" + phylogeny_id
-          
+
           ids_mapfile_name = nil
           domains_mapfile_name = nil
           seqs_file_name = nil
@@ -243,7 +243,7 @@ module Evoruby
 
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
       matching_files = Array.new
-     
+
       files_in_dir.each { | file |
 
         if ( !File.directory?( file ) &&
@@ -255,11 +255,11 @@ module Evoruby
       }
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
-            + suffix_pattern + '] present in current directory' )
+           + suffix_pattern + '] present in current directory' )
       end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id +
-            + suffix_pattern + '] present in current directory' )
+           + suffix_pattern + '] present in current directory' )
       end
       matching_files[ 0 ]
     end
@@ -272,16 +272,16 @@ module Evoruby
         if ( !File.directory?( file ) &&
              file !~ /^\./ &&
              file !~ /^00/ &&
-             file =~ /^#{phylogeny_id}.+\d$/ )
+             file =~ /^#{phylogeny_id}__.+\d$/ )
           matching_files << file
         end
       }
 
       if matching_files.length < 1
-        Util.fatal_error( PRG_NAME, 'no seq file matching [' + phylogeny_id + '] present in current directory' )
+        Util.fatal_error( PRG_NAME, 'no seq file matching [' + phylogeny_id + '__] present in current directory' )
       end
       if matching_files.length > 1
-        Util.fatal_error( PRG_NAME, 'more than one seq file matching [' + phylogeny_id + '] present in current directory' )
+        Util.fatal_error( PRG_NAME, 'more than one seq file matching [' + phylogeny_id + '__] present in current directory' )
       end
       matching_files[ 0 ]
     end
