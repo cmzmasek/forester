@@ -31,7 +31,7 @@ module Evoruby
     DECORATOR_OPTIONS_DOMAINS = '-p -t'
     IDS_MAPFILE_SUFFIX        = '.nim'
     DOMAINS_MAPFILE_SUFFIX    = '_hmmscan_10.dff'
-    SLEEP_TIME                = 0.1
+    SLEEP_TIME                = 0.05
     REMOVE_NI                 = true
     TMP_FILE_1                  = '___PD1___'
     TMP_FILE_2                  = '___PD2___'
@@ -40,10 +40,10 @@ module Evoruby
     JAVA_HOME                 = ENV[Constants::JAVA_HOME_ENV_VARIABLE]
 
     PRG_NAME       = "phylogenies_decorator"
-    PRG_DATE       = "2012.10.11"
+    PRG_DATE       = "2013.11.15"
     PRG_DESC       = "decoration of phylogenies with sequence/species names and domain architectures"
     PRG_VERSION    = "1.02"
-    COPYRIGHT      = "2012 Christian M Zmasek"
+    COPYRIGHT      = "2013 Christian M Zmasek"
     CONTACT        = "phylosoft@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
 
@@ -166,7 +166,10 @@ module Evoruby
           log << counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile + NL
 
           phylogeny_id = get_id( phylogeny_file )
-          puts "id:" + phylogeny_id
+          puts
+
+          Util.print_message( PRG_NAME, "id: " + phylogeny_id )
+          log << "id: " + phylogeny_id + NL
 
           ids_mapfile_name = nil
           domains_mapfile_name = nil
@@ -175,7 +178,6 @@ module Evoruby
           ids_mapfile_name = get_file( files, phylogeny_id, IDS_MAPFILE_SUFFIX )
           domains_mapfile_name = get_file( files, phylogeny_id, DOMAINS_MAPFILE_SUFFIX )
           seqs_file_name = get_seq_file( files, phylogeny_id )
-
 
           begin
             Util.check_file_for_readability( domains_mapfile_name )
@@ -272,7 +274,7 @@ module Evoruby
         if ( !File.directory?( file ) &&
              file !~ /^\./ &&
              file !~ /^00/ &&
-             file =~ /^#{phylogeny_id}__.+\d$/ )
+             ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}__.*\.fasta$/ ) )
           matching_files << file
         end
       }
