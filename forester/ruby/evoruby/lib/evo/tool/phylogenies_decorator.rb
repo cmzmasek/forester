@@ -101,31 +101,8 @@ module Evoruby
         Util.fatal_error( PRG_NAME, 'logfile [' + LOG_FILE + '] already exists' )
       end
 
-      allowed_opts = Array.new
-      allowed_opts.push( IDS_ONLY_OPTION )
-      allowed_opts.push( DOMAINS_ONLY_OPTION )
-
-      disallowed = cla.validate_allowed_options_as_str( allowed_opts )
-      if ( disallowed.length > 0 )
-        Util.fatal_error( PRG_NAME, "unknown option(s): " + disallowed )
-      end
-
-      ids_only = false
-      domains_only = false
-
       in_suffix = cla.get_file_name( 0 )
       out_suffix = cla.get_file_name( 1 )
-
-      if cla.is_option_set?( IDS_ONLY_OPTION )
-        ids_only = true
-      end
-      if cla.is_option_set?( DOMAINS_ONLY_OPTION )
-        domains_only = true
-      end
-
-      if ( ids_only && domains_only )
-        Util.fatal_error( PRG_NAME, 'attempt to use ids only and domains only at the same time' )
-      end
 
       log = String.new
 
