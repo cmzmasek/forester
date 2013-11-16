@@ -236,7 +236,7 @@ module Evoruby
 
 
     def get_id( phylogeny_file_name )
-      phylogeny_file_name =~ /^([^_]+)/
+      phylogeny_file_name =~ /^(.+?)__/
       $1
     end
 
