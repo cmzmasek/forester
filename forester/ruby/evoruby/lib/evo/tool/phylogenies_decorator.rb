@@ -166,7 +166,8 @@ module Evoruby
           log << counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile + NL
 
           phylogeny_id = get_id( phylogeny_file )
-
+          puts "id:" + phylogeny_id
+          
           ids_mapfile_name = nil
           domains_mapfile_name = nil
           seqs_file_name = nil
@@ -251,8 +252,6 @@ module Evoruby
              file =~ /^#{phylogeny_id}#{suffix_pattern}$/ )
           matching_files << file
         end
-       
-       
       }
     
 
@@ -278,7 +277,6 @@ module Evoruby
              file =~ /^#{phylogeny_id}.+\d$/ )
           matching_files << file
         end
-
       }
 
       if matching_files.length < 1
