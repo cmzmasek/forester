@@ -242,27 +242,21 @@ module Evoruby
 
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
       matching_files = Array.new
-      matching_suffix_files = Array.new
+     
       files_in_dir.each { | file |
 
         if ( !File.directory?( file ) &&
              file !~ /^\./ &&
              file !~ /^00/ &&
-             file =~ /^#{phylogeny_id}.*#{suffix_pattern}$/ )
+             file =~ /^#{phylogeny_id}#{suffix_pattern}$/ )
           matching_files << file
         end
-        if ( !File.directory?( file ) &&
-             file !~ /^\./ &&
-             file !~ /^00/ &&
-             file =~ /#{suffix_pattern}$/ )
-          matching_suffix_files << file
-        end
+       
+       
       }
-      if matching_files.length < 1 && matching_suffix_files.length == 1
-        return matching_suffix_files[ 0 ]
-      end
+    
 
-      if matching_files.length < 1 && matching_suffix_files.length < 1
+      if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
            '_] [' + suffix_pattern + '] present in current directory' )
       end
