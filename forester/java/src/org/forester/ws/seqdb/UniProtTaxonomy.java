@@ -26,7 +26,9 @@
 package org.forester.ws.seqdb;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.forester.util.ForesterUtil;
 
@@ -45,7 +47,9 @@ public final class UniProtTaxonomy {
     public final static String CELLULAR_ORGANISMS = "cellular organisms";
     public final static String VIRUSES            = "Viruses";
     public static final String X                  = "x";
-
+    
+  
+    
     public UniProtTaxonomy( final String line ) {
         final String[] items = line.split( "\t" );
         if ( items.length < 5 ) {
@@ -158,6 +162,11 @@ public final class UniProtTaxonomy {
         return _synonym;
     }
 
+    
+   
+    
+    
+    
     public final static UniProtTaxonomy createSpecialFromScientificName( final String sn ) {
         final List<String> lineage = new ArrayList<String>();
         final String code = "";
