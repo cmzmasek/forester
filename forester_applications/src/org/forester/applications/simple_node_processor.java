@@ -53,6 +53,7 @@ public class simple_node_processor {
             CommandLineArguments cla = null;
             cla = new CommandLineArguments( args );
             in = cla.getFile( 0 );
+         //   in = new File( "");
             //out = cla.getFile( 1 );
             // if ( out.exists() ) {
             //      System.out.println( out + " already exists" );
@@ -121,7 +122,12 @@ public class simple_node_processor {
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy t = node.getNodeData().getTaxonomy();
                 if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) ) {
-                    SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( t.getTaxonomyCode(), phy );
+                    final String c =  t.getTaxonomyCode();
+                    if ( c.indexOf( "XX" ) == 3 ) {
+                         System.out.println( "FAKE_CODE_TO_ID_MAP.put( \"" + c + "\", "+  t.getIdentifier().getValue()   + ");" );
+                    }
+                    
+                    //   SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( t.getTaxonomyCode(), phy );
                 }
             }
         }
