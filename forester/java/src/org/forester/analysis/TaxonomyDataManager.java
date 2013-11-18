@@ -50,7 +50,6 @@ import org.forester.util.ForesterUtil;
 import org.forester.util.TaxonomyUtil;
 import org.forester.ws.seqdb.SequenceDbWsTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
-import org.forester.archaeopteryx.*;
 
 public final class TaxonomyDataManager extends RunnableProcess {
 
@@ -197,12 +196,10 @@ public final class TaxonomyDataManager extends RunnableProcess {
     }
 
     private final static List<UniProtTaxonomy> getTaxonomiesFromTaxonomyCode( final String query ) throws IOException {
-        if ( query.indexOf( "XX" ) == 3 && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) ) {
+        if ( ( query.indexOf( "XX" ) == 3 ) && TaxonomyUtil.isHasTaxIdFromFakeTaxCode( query ) ) {
             final int id = TaxonomyUtil.getTaxIdFromFakeTaxCode( query );
             return SequenceDbWsTools.getTaxonomiesFromId( String.valueOf( id ), MAX_TAXONOMIES_TO_RETURN );
- 
         }
-        
         return SequenceDbWsTools.getTaxonomiesFromTaxonomyCode( query, MAX_TAXONOMIES_TO_RETURN );
     }
 

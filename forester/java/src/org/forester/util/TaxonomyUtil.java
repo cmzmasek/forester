@@ -9,16 +9,15 @@ public final class TaxonomyUtil {
     public static String getTaxGroupByTaxCode( final String code ) {
         return _default_taxcode_taxgroup_map.get( code );
     }
-    
+
     public static int getTaxIdFromFakeTaxCode( final String code ) {
-       return FAKE_CODE_TO_ID_MAP.get( code );
+        return FAKE_CODE_TO_ID_MAP.get( code );
     }
-    
+
     public static boolean isHasTaxIdFromFakeTaxCode( final String code ) {
         return FAKE_CODE_TO_ID_MAP.containsKey( code );
-     }
-    
-    private final static Map<String, String> _default_taxcode_taxgroup_map = new HashMap<String, String>();
+    }
+    private final static Map<String, String>  _default_taxcode_taxgroup_map = new HashMap<String, String>();
     static {
         _default_taxcode_taxgroup_map.put( "HUMAN", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "HOMSA", "deuterostomia" );
@@ -543,37 +542,34 @@ public final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "HELPH", "bacteria" );
         _default_taxcode_taxgroup_map.put( "AQUAE", "bacteria" );
     }
-    
-    private final static Map<String,Integer> FAKE_CODE_TO_ID_MAP = new  HashMap<String,Integer>();
-
+    private final static Map<String, Integer> FAKE_CODE_TO_ID_MAP           = new HashMap<String, Integer>();
     static {
-        FAKE_CODE_TO_ID_MAP.put( "CTEXX", 283909);
-        FAKE_CODE_TO_ID_MAP.put( "HMAXX", 6085);
-        FAKE_CODE_TO_ID_MAP.put( "SARXX", 72019);
-        FAKE_CODE_TO_ID_MAP.put( "AALXX", 398408);
-        FAKE_CODE_TO_ID_MAP.put( "PFIXX", 83344);
-        FAKE_CODE_TO_ID_MAP.put( "MPSXX", 692275);
-        FAKE_CODE_TO_ID_MAP.put( "BCOXX", 430998);
-        FAKE_CODE_TO_ID_MAP.put( "APPXX", 178873);
-        FAKE_CODE_TO_ID_MAP.put( "APMXX", 46634);
-        FAKE_CODE_TO_ID_MAP.put( "APSXX", 1042127);
-        FAKE_CODE_TO_ID_MAP.put( "CPUXX", 80637);
-        FAKE_CODE_TO_ID_MAP.put( "JARXX", 202697);
-        FAKE_CODE_TO_ID_MAP.put( "FPIXX", 40483);
-        FAKE_CODE_TO_ID_MAP.put( "PPLXX", 104341);
-        FAKE_CODE_TO_ID_MAP.put( "MVNXX", 1069443);
-        FAKE_CODE_TO_ID_MAP.put( "CREXX", 61392);
-        FAKE_CODE_TO_ID_MAP.put( "FALXX", 691883);
-        FAKE_CODE_TO_ID_MAP.put( "CCLXX", 85681);
-        FAKE_CODE_TO_ID_MAP.put( "ORCXX", 385169);
-        FAKE_CODE_TO_ID_MAP.put( "ASCXX", 763042);
-        FAKE_CODE_TO_ID_MAP.put( "CSUXX", 574566);
-        FAKE_CODE_TO_ID_MAP.put( "OTRXX", 1172189);
-        FAKE_CODE_TO_ID_MAP.put( "FCYXX", 186039);
-        FAKE_CODE_TO_ID_MAP.put( "AKEXX", 702273);
-        FAKE_CODE_TO_ID_MAP.put( "SAGXX", 876976);
-        FAKE_CODE_TO_ID_MAP.put( "ALIXX", 87102);
-        FAKE_CODE_TO_ID_MAP.put( "TTRXX", 529818);
-
+        FAKE_CODE_TO_ID_MAP.put( "CTEXX", 283909 );
+        FAKE_CODE_TO_ID_MAP.put( "HMAXX", 6085 );
+        FAKE_CODE_TO_ID_MAP.put( "SARXX", 72019 );
+        FAKE_CODE_TO_ID_MAP.put( "AALXX", 398408 );
+        FAKE_CODE_TO_ID_MAP.put( "PFIXX", 83344 );
+        FAKE_CODE_TO_ID_MAP.put( "MPSXX", 692275 );
+        FAKE_CODE_TO_ID_MAP.put( "BCOXX", 430998 );
+        FAKE_CODE_TO_ID_MAP.put( "APPXX", 178873 );
+        FAKE_CODE_TO_ID_MAP.put( "APMXX", 46634 );
+        FAKE_CODE_TO_ID_MAP.put( "APSXX", 1042127 );
+        FAKE_CODE_TO_ID_MAP.put( "CPUXX", 80637 );
+        FAKE_CODE_TO_ID_MAP.put( "JARXX", 202697 );
+        FAKE_CODE_TO_ID_MAP.put( "FPIXX", 40483 );
+        FAKE_CODE_TO_ID_MAP.put( "PPLXX", 104341 );
+        FAKE_CODE_TO_ID_MAP.put( "MVNXX", 1069443 );
+        FAKE_CODE_TO_ID_MAP.put( "CREXX", 61392 );
+        FAKE_CODE_TO_ID_MAP.put( "FALXX", 691883 );
+        FAKE_CODE_TO_ID_MAP.put( "CCLXX", 85681 );
+        FAKE_CODE_TO_ID_MAP.put( "ORCXX", 385169 );
+        FAKE_CODE_TO_ID_MAP.put( "ASCXX", 763042 );
+        FAKE_CODE_TO_ID_MAP.put( "CSUXX", 574566 );
+        FAKE_CODE_TO_ID_MAP.put( "OTRXX", 1172189 );
+        FAKE_CODE_TO_ID_MAP.put( "FCYXX", 186039 );
+        FAKE_CODE_TO_ID_MAP.put( "AKEXX", 702273 );
+        FAKE_CODE_TO_ID_MAP.put( "SAGXX", 876976 );
+        FAKE_CODE_TO_ID_MAP.put( "ALIXX", 87102 );
+        FAKE_CODE_TO_ID_MAP.put( "TTRXX", 529818 );
     }
 }
