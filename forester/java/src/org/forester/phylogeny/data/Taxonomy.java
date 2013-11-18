@@ -318,11 +318,21 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
         _synonyms = synonyms;
     }
 
-    public void setTaxonomyCode( final String taxonomy_code ) throws PhyloXmlDataFormatException {
+    public void setTaxonomyCode( String taxonomy_code ) throws PhyloXmlDataFormatException {
         if ( !ForesterUtil.isEmpty( taxonomy_code )
                 && !PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( taxonomy_code ).matches() ) {
             throw new PhyloXmlDataFormatException( "illegal taxonomy code: [" + taxonomy_code + "]" );
         }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //TODO FIXME (added on 13-11-18) remove me eventually
+        if ( taxonomy_code.equals( "ACIBL" ) ) {
+            taxonomy_code = "KORVE";
+        }
+        else if ( taxonomy_code.equals( "PYRKO" ) ) {
+            taxonomy_code = "THEKO";
+        }
+        //TODO FIXME (added on 13-11-18) remove me eventually
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         _taxonomy_code = taxonomy_code;
     }
 

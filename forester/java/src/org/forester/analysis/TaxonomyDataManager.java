@@ -57,7 +57,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         CODE, SN, CN, ID, LIN;
     }
     private static final int                              MAX_CACHE_SIZE           = 100000;
-    private static final int                              MAX_TAXONOMIES_TO_RETURN = 10;
+    private static final int                              MAX_TAXONOMIES_TO_RETURN = 2000;
     private static final HashMap<String, UniProtTaxonomy> _sn_up_cache_map         = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _lineage_up_cache_map    = new HashMap<String, UniProtTaxonomy>();
     private static final HashMap<String, UniProtTaxonomy> _code_up_cache_map       = new HashMap<String, UniProtTaxonomy>();
