@@ -127,7 +127,7 @@ import org.forester.ws.wabi.TxSearch.TAX_RANK;
 @SuppressWarnings( "unused")
 public final class Test {
 
-    private final static boolean PERFORM_DB_TESTS          = false;
+    private final static boolean PERFORM_DB_TESTS          = true;
     private final static double  ZERO_DIFF                 = 1.0E-9;
     private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
@@ -490,18 +490,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        if ( PERFORM_DB_TESTS ) {
-            System.out.print( "Ebi Entry Retrieval: " );
-            if ( Test.testEbiEntryRetrieval() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-        }
-        /////////////////////System.exit( 0 );
         System.out.print( "UniProtKB id extraction: " );
         if ( Test.testExtractUniProtKbProteinSeqIdentifier() ) {
             System.out.println( "OK." );
@@ -521,6 +509,18 @@ public final class Test {
             failed++;
         }
         if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Ebi Entry Retrieval: " );
+            if ( Test.testEbiEntryRetrieval() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+        }
+        // System.exit( 0 );
+        if ( PERFORM_DB_TESTS ) {
             System.out.print( "Sequence DB tools 2: " );
             if ( testSequenceDbWsTools2() ) {
                 System.out.println( "OK." );
@@ -532,6 +532,7 @@ public final class Test {
                 System.exit( -1 );
             }
         }
+        // System.exit( 0 );
         System.out.print( "Hmmscan output parser: " );
         if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
@@ -11297,6 +11298,20 @@ public final class Test {
                 System.out.println( acc.toString() );
                 return false;
             }
+            n.setName( "gi|71845847|1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
+                    || !acc.getValue().equals( "71845847" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "gi|71845847|gb|AAZ45343.1| 1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAZ45343.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
         }
         catch ( final Exception e ) {
             return false;
@@ -11322,7 +11337,6 @@ public final class Test {
             }
             final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
             SequenceDbWsTools.obtainSeqInformation( n2 );
-            System.out.println( n2.toString() );
             if ( !n2.getNodeData().getSequence().getName()
                     .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
                 return false;
@@ -11338,7 +11352,6 @@ public final class Test {
             }
             final PhylogenyNode n3 = new PhylogenyNode( "NM_184234.2" );
             SequenceDbWsTools.obtainSeqInformation( n3 );
-            System.out.println( "n=" + n3.toString() );
             if ( !n3.getNodeData().getSequence().getName()
                     .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
                 return false;
@@ -11503,14 +11516,14 @@ public final class Test {
                 System.out.println( entry4.getGeneName() );
                 return false;
             }
-            if ( !entry4.getChromosome().equals( "ras" ) ) {
-                System.out.println( entry4.getChromosome() );
-                return false;
-            }
-            if ( !entry4.getMap().equals( "ras" ) ) {
-                System.out.println( entry4.getMap() );
-                return false;
-            }
+            //   if ( !entry4.getChromosome().equals( "ras" ) ) {
+            //     System.out.println( entry4.getChromosome() );
+            //     return false;
+            // }
+            // if ( !entry4.getMap().equals( "ras" ) ) {
+            //     System.out.println( entry4.getMap() );
+            //     return false;
+            // }
             //TODO FIXME gi...
             //
             //TODO fails:
@@ -11518,6 +11531,22 @@ public final class Test {
             //            if ( !entry5.getAccession().equals( "HM043801" ) ) {
             //                return false;
             //            }
+            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "AAZ45343.1" );
+            if ( !entry5.getAccession().equals( "AAZ45343" ) ) {
+                return false;
+            }
+            if ( !entry5.getTaxonomyScientificName().equals( "Dechloromonas aromatica RCB" ) ) {
+                System.out.println( entry5.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry5.getSequenceName().equals( "Dechloromonas aromatica RCB 1,4-alpha-glucan branching enzyme" ) ) {
+                System.out.println( entry5.getSequenceName() );
+                return false;
+            }
+            if ( !entry5.getTaxonomyIdentifier().equals( "159087" ) ) {
+                System.out.println( entry5.getTaxonomyIdentifier() );
+                return false;
+            }
         }
         catch ( final IOException e ) {
             System.out.println();

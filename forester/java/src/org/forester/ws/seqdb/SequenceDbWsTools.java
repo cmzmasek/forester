@@ -61,6 +61,7 @@ public final class SequenceDbWsTools {
     public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
     public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
     public final static String   EMBL_REFSEQ             = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=REFSEQ&style=raw&id=";
+    public final static String   EMBL_EMBL               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
     private final static boolean DEBUG                   = true;
     private final static String  URL_ENC                 = "UTF-8";
 
@@ -257,28 +258,24 @@ public final class SequenceDbWsTools {
         return result;
     }
 
-    public static List<String> queryEmblDb( final Accession id, final int max_lines_to_return ) throws IOException {
+    public static List<String> queryEmblDb( final Accession acc, final int max_lines_to_return ) throws IOException {
         final StringBuilder url_sb = new StringBuilder();
         //  url_sb.append( BASE_EMBL_DB_URL );
-        if ( id.getSource().equals( Source.NCBI.toString() ) ) {
+        System.out.println( "source: " + acc.getSource() );
+        if ( acc.getSource().equals( Source.NCBI.toString() ) ) {
             url_sb.append( EMBL_GENBANK );
             //url_sb.append( '/' );
         }
-        else if ( id.getSource().equals( Source.REFSEQ.toString() ) ) {
+        else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
             url_sb.append( EMBL_REFSEQ );
-            //            if ( id.getValue().toUpperCase().indexOf( 'P' ) == 1 ) {
-            //                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_P );
-            //                url_sb.append( '/' );
-            //            }
-            //            else {
-            //                url_sb.append( SequenceDbWsTools.EMBL_DBS_REFSEQ_N );
-            //                url_sb.append( '/' );
-            //            }
+        }
+        else if ( acc.getSource().equals( Source.EMBL.toString() ) ) {
+            url_sb.append( EMBL_EMBL );
         }
         else {
-            throw new IllegalArgumentException( "unable to handle source: " + id.getSource() );
+            throw new IllegalArgumentException( "unable to handle source: " + acc.getSource() );
         }
-        return queryDb( id.getValue(), max_lines_to_return, url_sb.toString() );
+        return queryDb( acc.getValue(), max_lines_to_return, url_sb.toString() );
     }
 
     public static List<String> queryEmblDbForRefSeqEntry( final Accession id, final int max_lines_to_return )
@@ -330,20 +327,32 @@ public final class SequenceDbWsTools {
                 // Eat this, and move to next.
             }
         }
-        else if ( acc.getSource().equals( Source.EMBL.toString() ) ) {
+        else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
             if ( DEBUG ) {
-                System.out.println( "embl: " + query );
+                System.out.println( "refseq: " + query );
             }
             try {
-                db_entry = obtainEmblEntry( new Accession( query ), lines_to_return );
+                db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
             }
             catch ( final FileNotFoundException e ) {
                 // Eat this, and move to next.
             }
         }
-        else if ( acc.getSource().equals( Source.REFSEQ.toString() ) ) {
+        else if ( acc.getSource().equals( Source.EMBL.toString() ) || acc.getSource().equals( Source.NCBI.toString() )
+                || acc.getSource().equals( Source.EMBL.toString() ) ) {
             if ( DEBUG ) {
-                System.out.println( "refseq: " + query );
+                System.out.println( acc.toString() );
+            }
+            try {
+                db_entry = obtainEmblEntry( acc, lines_to_return );
+            }
+            catch ( final FileNotFoundException e ) {
+                // Eat this, and move to next.
+            }
+        }
+        else if ( acc.getSource().equals( Source.GI.toString() ) ) {
+            if ( DEBUG ) {
+                System.out.println( "gi: " + query );
             }
             try {
                 db_entry = obtainRefSeqEntryFromEmbl( new Accession( query ), lines_to_return );
