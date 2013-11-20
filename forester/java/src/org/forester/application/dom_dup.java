@@ -189,7 +189,7 @@ public class dom_dup {
         System.out.println();
         System.out.println( PRG_NAME + "" );
         System.out.println();
-        System.out.println( " exmple: " );
+        System.out.println( " example: " );
         System.out.println();
         System.out
                 .println( "dom_dup \"HUMAN~[12]-2\" groups.txt RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_gsdi.phylo.xml" );

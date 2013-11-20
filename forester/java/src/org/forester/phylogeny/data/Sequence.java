@@ -455,9 +455,6 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
                 annotation.toPhyloXML( writer, level, my_ind );
             }
         }
-        if ( getDomainArchitecture() != null ) {
-            getDomainArchitecture().toPhyloXML( writer, level, my_ind );
-        }
         if ( ( getCrossReferences() != null ) && !getCrossReferences().isEmpty() ) {
             writer.write( ForesterUtil.LINE_SEPARATOR );
             writer.write( my_ind );
@@ -468,6 +465,9 @@ public class Sequence implements PhylogenyData, MultipleUris, Comparable<Sequenc
             writer.write( ForesterUtil.LINE_SEPARATOR );
             writer.write( my_ind );
             PhylogenyDataUtil.appendClose( writer, PhyloXmlMapping.SEQUENCE_X_REFS );
+        }
+        if ( getDomainArchitecture() != null ) {
+            getDomainArchitecture().toPhyloXML( writer, level, my_ind );
         }
         writer.write( ForesterUtil.LINE_SEPARATOR );
         writer.write( indentation );

@@ -32,7 +32,7 @@ public class subtree_feature_count {
     public static void main( final String args[] ) {
         try {
             final CommandLineArguments cla = new CommandLineArguments( args );
-            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( cla.getNumberOfNames() != 3 ) ) {
+            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( args.length < 2 ) ) {
                 printHelp();
                 System.exit( 0 );
             }
@@ -121,7 +121,7 @@ public class subtree_feature_count {
         }
     }
 
-    private static PhylogenyNode moveUp( final PhylogenyNode node, final double depth ) {
+    private static PhylogenyNode moveUpOLd( final PhylogenyNode node, final double depth ) {
         PhylogenyNode n = node;
         double current_depth = 0.0;
         while ( current_depth < depth ) {
@@ -132,6 +132,16 @@ public class subtree_feature_count {
             n = n.getParent();
         }
         return n;
+    }
+
+    private static PhylogenyNode moveUp( final PhylogenyNode node, final double depth ) {
+        PhylogenyNode n = node;
+        PhylogenyNode prev = node;
+        while ( depth > n.calculateDistanceToRoot() ) {
+            prev = n;
+            n = n.getParent();
+        }
+        return prev;
     }
 
     private static void printHelp() {
@@ -146,10 +156,8 @@ public class subtree_feature_count {
         System.out.println();
         System.out.println( PRG_NAME + "" );
         System.out.println();
-        System.out.println( " exmple: " );
+        System.out.println( " example: " );
         System.out.println();
-        System.out
-                .println( "dom_dup \"HUMAN~[12]-2\" groups.txt RRMa_ALL_plus_RRMa_ee3_50_hmmalign_05_40_fme_gsdi.phylo.xml" );
         System.out.println();
         System.out.println();
     }
