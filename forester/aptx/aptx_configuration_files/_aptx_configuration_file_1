@@ -223,6 +223,7 @@ click_to: swap                     display
 click_to: sort_descendants         display
 click_to: color_subtree            display
 click_to: open_seq_web             nodisplay
+click_to: open_pdb_web             nodisplay
 click_to: open_tax_web             nodisplay
 click_to: blast                    nodisplay
 click_to: cut_subtree              nodisplay
