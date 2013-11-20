@@ -45,7 +45,7 @@ public class subtree_feature_count {
             final double depth = cla.getOptionValueAsDouble( DEPTH_OPTION );
             final File intree_file = cla.getFile( 0 );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny phy = factory.create( intree_file, new PhyloXmlParser() )[ 0 ];
+            final Phylogeny phy = factory.create( intree_file, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
             execute( phy, depth );
         }
         catch ( final Exception e ) {
@@ -56,7 +56,11 @@ public class subtree_feature_count {
 
     private static StringBuilder analyzeSubtree( final PhylogenyNode n, final double depth ) {
         final PhylogenyNode node = moveUp( n, depth );
-        for( final PhylogenyNode ext : node.getAllExternalDescendants() ) {
+        final List<PhylogenyNode> ext_descs = node.getAllExternalDescendants();
+        for( final PhylogenyNode ext : ext_descs ) {
+            if ( ext.getIndicator() != 0 ) {
+                throw new RuntimeException( "this should not have happened" );
+            }
             ext.setIndicator( ( byte ) 1 );
         }
         int xray = 0;
@@ -66,7 +70,7 @@ public class subtree_feature_count {
         PhylogenyNode first_node = null;
         PhylogenyNode last_node = null;
         int c = 0;
-        for( final PhylogenyNode ext : node.getAllExternalDescendants() ) {
+        for( final PhylogenyNode ext : ext_descs ) {
             if ( is_first ) {
                 first_node = ext;
                 is_first = false;

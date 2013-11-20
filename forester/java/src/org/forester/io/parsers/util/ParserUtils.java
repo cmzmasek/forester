@@ -76,7 +76,7 @@ public final class ParserUtils {
         PhylogenyParser parser = null;
         final String first_line = ForesterUtil.getFirstLine( file ).trim().toLowerCase();
         if ( first_line.startsWith( "<" ) ) {
-            parser = new PhyloXmlParser();
+            parser = PhyloXmlParser.createPhyloXmlParser();
             if ( phyloxml_validate_against_xsd ) {
                 final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
                 final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
@@ -127,7 +127,7 @@ public final class ParserUtils {
         }
         else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( ".px" ) || filename_lc.endsWith( "phyloxml" )
                 || filename_lc.endsWith( ".zip" ) ) {
-            parser = new PhyloXmlParser();
+            parser = PhyloXmlParser.createPhyloXmlParser();
             if ( phyloxml_validate_against_xsd ) {
                 final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
                 final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
@@ -168,7 +168,7 @@ public final class ParserUtils {
         if ( parser == null ) {
             final String first_line = ForesterUtil.getFirstLine( url ).trim().toLowerCase();
             if ( first_line.startsWith( "<" ) ) {
-                parser = new PhyloXmlParser();
+                parser = PhyloXmlParser.createPhyloXmlParser();
                 if ( phyloxml_validate_against_xsd ) {
                     final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
                     final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );

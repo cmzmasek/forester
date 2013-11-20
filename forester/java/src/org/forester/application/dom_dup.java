@@ -51,7 +51,7 @@ public class dom_dup {
             final File intree_file = cla.getFile( 2 );
             final File species_groups_file = cla.getFile( 1 );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny phy = factory.create( intree_file, new PhyloXmlParser() )[ 0 ];
+            final Phylogeny phy = factory.create( intree_file, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
             ForesterUtil.programMessage( PRG_NAME, "Pattern string: " + pattern_str );
             final Pattern pattern = Pattern.compile( pattern_str );
             ForesterUtil.programMessage( PRG_NAME, "Pattern is: " + pattern );

@@ -132,7 +132,7 @@ public class UrlTreeReader implements Runnable {
                         ( ( NHXParser ) parser ).setGuessRootedness( true );
                         break;
                     case PHYLOXML:
-                        parser = new PhyloXmlParser();
+                        parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
                         break;
                     default:
                         throw new IllegalArgumentException( "unknown format: " + client.getReturnFormat() );

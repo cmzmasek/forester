@@ -75,7 +75,7 @@ public class PhyloXmlParser implements PhylogenyParser {
     private StringBuffer         _error_messages;
     private StringBuffer         _warning_messages;
 
-    public PhyloXmlParser() {
+    private PhyloXmlParser() {
         init();
         reset();
     }
@@ -276,6 +276,11 @@ public class PhyloXmlParser implements PhylogenyParser {
             throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
                     + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
         }
+        return xml_parser;
+    }
+
+    public static PhyloXmlParser createPhyloXmlParser() {
+        final PhyloXmlParser xml_parser = new PhyloXmlParser();
         return xml_parser;
     }
 

@@ -180,7 +180,7 @@ public final class gsdi {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            gene_tree = factory.create( gene_tree_file, new PhyloXmlParser() )[ 0 ];
+            gene_tree = factory.create( gene_tree_file, PhyloXmlParser.createPhyloXmlParserXsdValidating() )[ 0 ];
         }
         catch ( final IOException e ) {
             fatalError( "error",

@@ -1365,7 +1365,7 @@ public final class Test {
     private static boolean testBasicPhyloXMLparsing() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParser();
             final Phylogeny[] phylogenies_0 = factory.create( Test.PATH_TO_TEST_DATA + "phyloxml_test_t1.xml",
                                                               xml_parser );
             if ( xml_parser.getErrorCount() > 0 ) {
@@ -1558,7 +1558,7 @@ public final class Test {
     private static boolean testBasicPhyloXMLparsingRoundtrip() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParser();
             if ( USE_LOCAL_PHYLOXML_SCHEMA ) {
                 xml_parser.setValidateAgainstSchema( PHYLOXML_LOCAL_XSD );
             }
@@ -1910,7 +1910,7 @@ public final class Test {
                 // Do nothing -- means were not running from jar.
             }
             if ( xml_parser == null ) {
-                xml_parser = new PhyloXmlParser();
+                xml_parser = PhyloXmlParser.createPhyloXmlParser();
                 if ( USE_LOCAL_PHYLOXML_SCHEMA ) {
                     xml_parser.setValidateAgainstSchema( PHYLOXML_LOCAL_XSD );
                 }
@@ -8540,7 +8540,7 @@ public final class Test {
                 // Do nothing -- means were not running from jar.
             }
             if ( xml_parser == null ) {
-                xml_parser = new PhyloXmlParser();
+                xml_parser = PhyloXmlParser.createPhyloXmlParser();
                 if ( USE_LOCAL_PHYLOXML_SCHEMA ) {
                     xml_parser.setValidateAgainstSchema( PHYLOXML_LOCAL_XSD );
                 }

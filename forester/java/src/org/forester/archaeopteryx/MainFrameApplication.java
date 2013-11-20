@@ -1761,7 +1761,7 @@ public final class MainFrameApplication extends MainFrame {
             }
         }
         if ( xml_parser == null ) {
-            xml_parser = new PhyloXmlParser();
+            xml_parser = PhyloXmlParser.createPhyloXmlParser();
         }
         return xml_parser;
     }
@@ -2227,7 +2227,8 @@ public final class MainFrameApplication extends MainFrame {
         if ( ( file != null ) && ( result == JFileChooser.APPROVE_OPTION ) ) {
             if ( _open_filechooser_for_species_tree.getFileFilter() == MainFrameApplication.xmlfilter ) {
                 try {
-                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( PhyloXmlParser
+                            .createPhyloXmlParserXsdValidating(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {
@@ -2248,7 +2249,8 @@ public final class MainFrameApplication extends MainFrame {
             // "*.*":
             else {
                 try {
-                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( new PhyloXmlParser(), file );
+                    final Phylogeny[] trees = PhylogenyMethods.readPhylogenies( PhyloXmlParser
+                            .createPhyloXmlParserXsdValidating(), file );
                     t = trees[ 0 ];
                 }
                 catch ( final Exception e ) {

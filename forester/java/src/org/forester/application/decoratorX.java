@@ -48,7 +48,7 @@ public class decoratorX {
                 System.exit( -1 );
             }
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
             final Phylogeny phy = factory.create( intree, xml_parser )[ 0 ];
             final BasicTable<String> t = BasicTableParser.parse( intable, '\t' );
             final PhylogenyNodeIterator it = phy.iteratorExternalForward();
