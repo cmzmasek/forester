@@ -2850,6 +2850,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             case OPEN_TAX_WEB:
                 openTaxWeb( node );
                 break;
+            case OPEN_PDB_WEB:
+                openPdbWeb( node );
+                break;
             case CUT_SUBTREE:
                 cutSubtree( node );
                 break;
@@ -2940,6 +2943,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return a.getValue();
         }
         return null;
+    }
+
+    final private List<Accession> getPdbAccs( final PhylogenyNode node ) {
+        final List<Accession> pdb_ids = new ArrayList<Accession>();
+        if ( node.getNodeData().isHasSequence() ) {
+            final Sequence seq = node.getNodeData().getSequence();
+            if ( !ForesterUtil.isEmpty( seq.getCrossReferences() ) ) {
+                final SortedSet<Accession> cross_refs = seq.getCrossReferences();
+                for( final Accession acc : cross_refs ) {
+                    if ( acc.getSource().equalsIgnoreCase( "pdb" ) ) {
+                        pdb_ids.add( acc );
+                    }
+                }
+            }
+        }
+        return pdb_ids;
     }
 
     final private boolean isCanOpenTaxWeb( final PhylogenyNode node ) {
@@ -3177,6 +3196,41 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     _node_popup_menu_items[ i ].setEnabled( false );
                 }
             }
+            else if ( title.equals( Configuration.clickto_options[ Configuration.open_pdb_web ][ 0 ] ) ) {
+                final List<Accession> accs = getPdbAccs( node );
+                _node_popup_menu_items[ i ] = new JMenuItem( title );
+                if ( !ForesterUtil.isEmpty( accs ) ) {
+                    if ( accs.size() == 1 ) {
+                        _node_popup_menu_items[ i ].setText( _node_popup_menu_items[ i ].getText() + " ["
+                                + TreePanelUtil.pdbAccToString( accs, 0 ) + "]" );
+                        _node_popup_menu_items[ i ].setEnabled( true );
+                    }
+                    else if ( accs.size() == 2 ) {
+                        _node_popup_menu_items[ i ].setText( _node_popup_menu_items[ i ].getText() + " ["
+                                + TreePanelUtil.pdbAccToString( accs, 0 ) + ", "
+                                + TreePanelUtil.pdbAccToString( accs, 1 ) + "]" );
+                        _node_popup_menu_items[ i ].setEnabled( true );
+                    }
+                    else if ( accs.size() == 3 ) {
+                        _node_popup_menu_items[ i ].setText( _node_popup_menu_items[ i ].getText() + " ["
+                                + TreePanelUtil.pdbAccToString( accs, 0 ) + ", "
+                                + TreePanelUtil.pdbAccToString( accs, 1 ) + ", "
+                                + TreePanelUtil.pdbAccToString( accs, 2 ) + "]" );
+                        _node_popup_menu_items[ i ].setEnabled( true );
+                    }
+                    else {
+                        _node_popup_menu_items[ i ].setText( _node_popup_menu_items[ i ].getText() + " ["
+                                + TreePanelUtil.pdbAccToString( accs, 0 ) + ", "
+                                + TreePanelUtil.pdbAccToString( accs, 1 ) + ", "
+                                + TreePanelUtil.pdbAccToString( accs, 2 ) + ", + " + ( accs.size() - 3 ) + " more]" );
+                        _node_popup_menu_items[ i ].setEnabled( true );
+                    }
+                }
+                else {
+                    _node_popup_menu_items[ i ].setEnabled( false );
+                }
+                //
+            }
             else if ( title.equals( Configuration.clickto_options[ Configuration.open_tax_web ][ 0 ] ) ) {
                 _node_popup_menu_items[ i ].setEnabled( isCanOpenTaxWeb( node ) );
             }
@@ -3294,6 +3348,36 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else {
             cannotOpenBrowserWarningMessage( "sequence" );
+        }
+    }
+
+    final private void openPdbWeb( final PhylogenyNode node ) {
+        final List<Accession> pdb_ids = getPdbAccs( node );
+        if ( ForesterUtil.isEmpty( pdb_ids ) ) {
+            cannotOpenBrowserWarningMessage( "PDB" );
+            return;
+        }
+        final List<String> uri_strs = TreePanelUtil.createUrisForPdbWeb( node, pdb_ids, getConfiguration(), this );
+        if ( !ForesterUtil.isEmpty( uri_strs ) ) {
+            for( final String uri_str : uri_strs ) {
+                try {
+                    AptxUtil.launchWebBrowser( new URI( uri_str ),
+                                               isApplet(),
+                                               isApplet() ? obtainApplet() : null,
+                                               "_aptx_seq" );
+                }
+                catch ( final IOException e ) {
+                    AptxUtil.showErrorMessage( this, e.toString() );
+                    e.printStackTrace();
+                }
+                catch ( final URISyntaxException e ) {
+                    AptxUtil.showErrorMessage( this, e.toString() );
+                    e.printStackTrace();
+                }
+            }
+        }
+        else {
+            cannotOpenBrowserWarningMessage( "PDB" );
         }
     }
 

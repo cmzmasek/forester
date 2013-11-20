@@ -91,6 +91,7 @@ public final class ForesterUtil {
     public static final String       NCBI_NUCCORE                     = "http://www.ncbi.nlm.nih.gov/nuccore/";
     public final static String       UNIPROT_KB                       = "http://www.uniprot.org/uniprot/";
     public static final String       NCBI_GI                          = "http://www.ncbi.nlm.nih.gov/protein/gi:";
+    public static final String       PDB                              = "http://www.pdb.org/pdb/explore/explore.do?pdbId=";
     static {
         final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
         dfs.setDecimalSeparator( '.' );

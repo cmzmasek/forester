@@ -137,6 +137,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _edit_node_data_item;
     private int                  _select_nodes_item;
     private int                  _get_ext_desc_data;
+    private int                  _open_pdb_item;
     private int                  _blast_item;
     // zooming and quick tree manipulation buttons:
     private JButton              _zoom_in_x;
@@ -1119,6 +1120,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         else if ( action == _get_ext_desc_data ) {
             setActionWhenNodeClicked( NodeClickAction.GET_EXT_DESC_DATA );
         }
+        else if ( action == _open_pdb_item ) {
+            setActionWhenNodeClicked( NodeClickAction.OPEN_PDB_WEB );
+        }
         else {
             throw new RuntimeException( "unknown action: " + action );
         }
@@ -1733,6 +1737,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+        if ( _configuration.doDisplayClickToOption( Configuration.open_pdb_web ) ) {
+            _open_pdb_item = cb_index;
+            addClickToOption( Configuration.open_pdb_web, _configuration.getClickToTitle( Configuration.open_pdb_web ) );
+            if ( default_option == Configuration.open_pdb_web ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
         if ( _configuration.doDisplayClickToOption( Configuration.open_tax_web ) ) {
             _open_tax_web_item = cb_index;
             addClickToOption( Configuration.open_tax_web, _configuration.getClickToTitle( Configuration.open_tax_web ) );
@@ -2053,6 +2065,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         SELECT_NODES,
         SORT_DESCENDENTS,
         GET_EXT_DESC_DATA,
-        BLAST;
+        BLAST,
+        OPEN_PDB_WEB;
     }
 }

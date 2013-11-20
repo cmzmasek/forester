@@ -22,6 +22,7 @@ import org.forester.analysis.TaxonomyDataManager;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
@@ -35,46 +36,6 @@ import org.forester.util.SequenceAccessionTools;
 import org.forester.ws.seqdb.UniProtTaxonomy;
 
 public class TreePanelUtil {
-
-    static int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
-        final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
-        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    if ( map.containsKey( d ) ) {
-                        map.put( d, map.get( d ) + 1 );
-                    }
-                    else {
-                        map.put( d, 1 );
-                    }
-                }
-            }
-        }
-        int size = 0;
-        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
-                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
-            for( final Entry<String, Integer> e : map.entrySet() ) {
-                final String v = e.getKey();
-                final Object c = e.getValue();
-                sb.append( v );
-                sb.append( "\t" );
-                sb.append( c );
-                sb.append( ForesterUtil.LINE_SEPARATOR );
-            }
-            size = map.size();
-        }
-        else {
-            for( final String d : data ) {
-                if ( !ForesterUtil.isEmpty( d ) ) {
-                    sb.append( d );
-                    sb.append( ForesterUtil.LINE_SEPARATOR );
-                }
-            }
-            size = data.size();
-        }
-        return size;
-    }
 
     public final static String createUriForSeqWeb( final PhylogenyNode node,
                                                    final Configuration conf,
@@ -137,6 +98,21 @@ public class TreePanelUtil {
             }
         }
         return uri_str;
+    }
+
+    public static List<String> createUrisForPdbWeb( final PhylogenyNode node,
+                                                    final List<Accession> pdb_accs,
+                                                    final Configuration configuration,
+                                                    final TreePanel treePanel ) {
+        final List<String> uris = new ArrayList<String>();
+        if ( !ForesterUtil.isEmpty( pdb_accs ) ) {
+            for( final Accession pdb_acc : pdb_accs ) {
+                if ( !ForesterUtil.isEmpty( pdb_acc.getValue() ) ) {
+                    uris.add( ForesterUtil.PDB + pdb_acc.getValue() );
+                }
+            }
+        }
+        return uris;
     }
 
     /**
@@ -499,12 +475,59 @@ public class TreePanelUtil {
                 .getSynonyms().isEmpty() );
     }
 
+    static int makeSB( final List<String> data, final Options optz, final StringBuilder sb ) {
+        final SortedMap<String, Integer> map = new TreeMap<String, Integer>();
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    if ( map.containsKey( d ) ) {
+                        map.put( d, map.get( d ) + 1 );
+                    }
+                    else {
+                        map.put( d, 1 );
+                    }
+                }
+            }
+        }
+        int size = 0;
+        if ( ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ )
+                && ( optz.getExtDescNodeDataToReturn() != NODE_DATA.SEQUENCE_MOL_SEQ_FASTA ) ) {
+            for( final Entry<String, Integer> e : map.entrySet() ) {
+                final String v = e.getKey();
+                final Object c = e.getValue();
+                sb.append( v );
+                sb.append( "\t" );
+                sb.append( c );
+                sb.append( ForesterUtil.LINE_SEPARATOR );
+            }
+            size = map.size();
+        }
+        else {
+            for( final String d : data ) {
+                if ( !ForesterUtil.isEmpty( d ) ) {
+                    sb.append( d );
+                    sb.append( ForesterUtil.LINE_SEPARATOR );
+                }
+            }
+            size = data.size();
+        }
+        return size;
+    }
+
     final static char normalizeCharForRGB( char c ) {
         c -= 65;
         c *= 10.2;
         c = c > 255 ? 255 : c;
         c = c < 0 ? 0 : c;
         return c;
+    }
+
+    final static String pdbAccToString( final List<Accession> accs, final int i ) {
+        if ( ForesterUtil.isEmpty( accs.get( i ).getComment() ) ) {
+            return accs.get( i ).getValue();
+        }
+        return accs.get( i ).getValue() + " (" + accs.get( i ).getComment().toLowerCase() + ")";
     }
 
     final static Phylogeny subTree( final PhylogenyNode new_root, final Phylogeny source_phy ) {
