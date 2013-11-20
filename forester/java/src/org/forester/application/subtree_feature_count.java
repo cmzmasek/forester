@@ -125,23 +125,10 @@ public class subtree_feature_count {
         }
     }
 
-    private static PhylogenyNode moveUpOLd( final PhylogenyNode node, final double depth ) {
-        PhylogenyNode n = node;
-        double current_depth = 0.0;
-        while ( current_depth < depth ) {
-            current_depth += n.getDistanceToParent();
-            if ( n.getParent() == null ) {
-                throw new IllegalArgumentException( "Depth " + depth + " is too large" );
-            }
-            n = n.getParent();
-        }
-        return n;
-    }
-
     private static PhylogenyNode moveUp( final PhylogenyNode node, final double depth ) {
         PhylogenyNode n = node;
         PhylogenyNode prev = node;
-        while ( depth > n.calculateDistanceToRoot() ) {
+        while ( depth < n.calculateDistanceToRoot() ) {
             prev = n;
             n = n.getParent();
         }
