@@ -38,7 +38,7 @@ public class tax_code_cleaner {
             //      System.exit( -1 );
             //  }
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
             final Phylogeny[] phylogenies_0 = factory.create( in, xml_parser );
             final Phylogeny phylogeny_0 = phylogenies_0[ 0 ];
             final PhylogenyNodeIterator it = phylogeny_0.iteratorPostorder();

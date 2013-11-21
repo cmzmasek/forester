@@ -40,7 +40,6 @@ import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
-import org.forester.surfacing.SurfacingUtil;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
@@ -53,14 +52,14 @@ public class simple_node_processor {
             CommandLineArguments cla = null;
             cla = new CommandLineArguments( args );
             in = cla.getFile( 0 );
-         //   in = new File( "");
+            //   in = new File( "");
             //out = cla.getFile( 1 );
             // if ( out.exists() ) {
             //      System.out.println( out + " already exists" );
             //      System.exit( -1 );
             //  }
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
             final Phylogeny[] phylogenies_0 = factory.create( in, xml_parser );
             final Phylogeny phylogeny_0 = phylogenies_0[ 0 ];
             final PhylogenyNodeIterator it = phylogeny_0.iteratorPostorder();
@@ -122,11 +121,11 @@ public class simple_node_processor {
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy t = node.getNodeData().getTaxonomy();
                 if ( !ForesterUtil.isEmpty( t.getTaxonomyCode() ) ) {
-                    final String c =  t.getTaxonomyCode();
+                    final String c = t.getTaxonomyCode();
                     if ( c.indexOf( "XX" ) == 3 ) {
-                         System.out.println( "FAKE_CODE_TO_ID_MAP.put( \"" + c + "\", "+  t.getIdentifier().getValue()   + ");" );
+                        System.out.println( "FAKE_CODE_TO_ID_MAP.put( \"" + c + "\", " + t.getIdentifier().getValue()
+                                + ");" );
                     }
-                    
                     //   SurfacingUtil.obtainHexColorStringDependingOnTaxonomyGroup( t.getTaxonomyCode(), phy );
                 }
             }

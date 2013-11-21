@@ -58,7 +58,8 @@ public class map_lengths {
         }
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhyloXmlParser xml_parser = new PhyloXmlParser();
+            final PhyloXmlParser xml_parser = PhyloXmlParser.createPhyloXmlParserXsdValidating();
+            ;
             final Phylogeny[] phylogenies_0 = factory.create( cla.getFile( 0 ), xml_parser );
             final Phylogeny phy = phylogenies_0[ 0 ];
             for( int i = 1; i < cla.getNumberOfNames(); i++ ) {
