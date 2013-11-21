@@ -410,6 +410,26 @@ public class PhylogenyMethods {
         phy.externalNodesHaveChanged();
     }
 
+    public final static List<List<PhylogenyNode>> divideIntoSubTrees( final Phylogeny phy,
+                                                                      final double min_distance_to_root ) {
+        if ( min_distance_to_root <= 0 ) {
+            throw new IllegalArgumentException( "attempt to use min distance to root of: " + min_distance_to_root );
+        }
+        final List<List<PhylogenyNode>> l = new ArrayList<List<PhylogenyNode>>();
+        setAllIndicatorsToZero( phy );
+        for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getIndicator() != 0 ) {
+                continue;
+            }
+            l.add( divideIntoSubTreesHelper( n, min_distance_to_root ) );
+            if ( l.isEmpty() ) {
+                throw new RuntimeException( "this should not have happened" );
+            }
+        }
+        return l;
+    }
+
     public static List<PhylogenyNode> getAllDescendants( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = new ArrayList<PhylogenyNode>();
         final Set<Long> encountered = new HashSet<Long>();
@@ -1141,6 +1161,12 @@ public class PhylogenyMethods {
         return nodes;
     }
 
+    public static void setAllIndicatorsToZero( final Phylogeny phy ) {
+        for( final PhylogenyNodeIterator it = phy.iteratorPostorder(); it.hasNext(); ) {
+            it.next().setIndicator( ( byte ) 0 );
+        }
+    }
+
     /**
      * Convenience method.
      * Sets value for the first confidence value (created if not present, values overwritten otherwise). 
@@ -1632,6 +1658,20 @@ public class PhylogenyMethods {
         }
     }
 
+    private final static List<PhylogenyNode> divideIntoSubTreesHelper( final PhylogenyNode node,
+                                                                       final double min_distance_to_root ) {
+        final List<PhylogenyNode> l = new ArrayList<PhylogenyNode>();
+        final PhylogenyNode r = moveTowardsRoot( node, min_distance_to_root );
+        for( final PhylogenyNode ext : r.getAllExternalDescendants() ) {
+            if ( ext.getIndicator() != 0 ) {
+                throw new RuntimeException( "this should not have happened" );
+            }
+            ext.setIndicator( ( byte ) 1 );
+            l.add( ext );
+        }
+        return l;
+    }
+
     /**
      * Calculates the distance between PhylogenyNodes n1 and n2.
      * PRECONDITION: n1 is a descendant of n2.
@@ -1673,19 +1713,29 @@ public class PhylogenyMethods {
         }
     }
 
+    private final static PhylogenyNode moveTowardsRoot( final PhylogenyNode node, final double min_distance_to_root ) {
+        PhylogenyNode n = node;
+        PhylogenyNode prev = node;
+        while ( min_distance_to_root < n.calculateDistanceToRoot() ) {
+            prev = n;
+            n = n.getParent();
+        }
+        return prev;
+    }
+
     public static enum DESCENDANT_SORT_PRIORITY {
-        TAXONOMY, SEQUENCE, NODE_NAME;
+        NODE_NAME, SEQUENCE, TAXONOMY;
     }
 
     public static enum PhylogenyNodeField {
         CLADE_NAME,
-        TAXONOMY_CODE,
-        TAXONOMY_SCIENTIFIC_NAME,
-        TAXONOMY_COMMON_NAME,
-        SEQUENCE_SYMBOL,
         SEQUENCE_NAME,
+        SEQUENCE_SYMBOL,
+        TAXONOMY_CODE,
+        TAXONOMY_COMMON_NAME,
+        TAXONOMY_ID,
         TAXONOMY_ID_UNIPROT_1,
         TAXONOMY_ID_UNIPROT_2,
-        TAXONOMY_ID;
+        TAXONOMY_SCIENTIFIC_NAME;
     }
 }
