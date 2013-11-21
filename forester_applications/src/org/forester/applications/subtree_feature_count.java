@@ -1,5 +1,6 @@
 // javac -cp ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
 // ~/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester_applications/src/org/forester/applications/subtree_feature_count.java
+//
 // java -Xmx2048m -cp
 // /home/czmasek/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester_applications/src/:/home/czmasek/SOFTWARE_DEV/ECLIPSE_WORKSPACE/forester/java/forester.jar
 // org.forester.applications.subtree_feature_count
@@ -110,9 +111,8 @@ public class subtree_feature_count {
                                               E_MAIL,
                                               WWW,
                                               ForesterUtil.getForesterLibraryInformation() );
-        System.out.println( "Usage:" );
-        System.out.println();
-        System.out.println( PRG_NAME + "-d=<min distance to root> <intree>" );
+        System.out.print( "Usage: " );
+        System.out.println( PRG_NAME + " -d=<min distance to root> <intree>" );
         System.out.println();
         System.out.println();
     }
