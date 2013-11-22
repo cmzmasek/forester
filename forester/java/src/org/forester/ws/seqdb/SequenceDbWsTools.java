@@ -56,7 +56,6 @@ public final class SequenceDbWsTools {
 
     public final static String   BASE_UNIPROT_URL        = "http://www.uniprot.org/";
     public final static int      DEFAULT_LINES_TO_RETURN = 4000;
-    //public final static String   EMBL_DBS_EMBL           = "embl";
     public final static String   EMBL_DBS_REFSEQ_N       = "refseqn";
     public final static String   EMBL_DBS_REFSEQ_P       = "refseqp";
     public final static String   EMBL_GENBANK            = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=GENBANK&style=raw&id=";
@@ -64,6 +63,7 @@ public final class SequenceDbWsTools {
     public final static String   EMBL_EMBL               = "http://www.ebi.ac.uk/Tools/dbfetch/dbfetch?db=EMBL&style=raw&id=";
     private final static boolean DEBUG                   = true;
     private final static String  URL_ENC                 = "UTF-8";
+    private final static int     SLEEP                   = 200;
 
     public static List<UniProtTaxonomy> getTaxonomiesFromCommonNameStrict( final String cn,
                                                                            final int max_taxonomies_return )
@@ -250,7 +250,7 @@ public final class SequenceDbWsTools {
         in.close();
         try {
             // To prevent accessing online dbs in too quick succession. 
-            Thread.sleep( 20 );
+            Thread.sleep( SLEEP );
         }
         catch ( final InterruptedException e ) {
             e.printStackTrace();
@@ -417,7 +417,7 @@ public final class SequenceDbWsTools {
             }
         }
         try {
-            Thread.sleep( 10 );// Sleep for 10 ms
+            Thread.sleep( SLEEP );
         }
         catch ( final InterruptedException ie ) {
         }
