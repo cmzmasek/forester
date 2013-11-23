@@ -28,6 +28,7 @@ package org.forester.application;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.forester.analysis.AncestralTaxonomyInference;
@@ -75,42 +76,49 @@ public final class annotator {
                 infiles.add( file );
             }
         }
+        Collections.sort( infiles );
         int c = 0;
         for( final File infile : infiles ) {
             System.out.println( ++c + "/" + infiles.size() + ": " + infile );
-            Phylogeny phy = null;
-            try {
-                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-                final Phylogeny[] phylogenies = factory.create( infile,
-                                                                PhyloXmlParser.createPhyloXmlParserXsdValidating() );
-                phy = phylogenies[ 0 ];
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.fatalError( PRG_NAME, "failed to read phylgenies from [" + infile + "] [" + e.getMessage()
-                        + "]" );
-            }
-            try {
-                obtainSeqInformation( phy );
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-            }
-            try {
-                inferTaxonomyFromDescendents( phy );
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-            }
-            catch ( final AncestralTaxonomyInferenceException e ) {
-                ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-            }
             final File outfile = new File( outdir.getAbsolutePath().toString() + "/" + infile.getName() );
-            try {
-                final PhylogenyWriter w = new PhylogenyWriter();
-                w.toPhyloXML( phy, 0, outfile );
+            if ( outfile.exists() ) {
+                System.out.println( outfile + " already exists" );
             }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( PRG_NAME, "failed to write output [" + e.getMessage() + "]" );
+            else {
+                Phylogeny phy = null;
+                try {
+                    final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+                    final Phylogeny[] phylogenies = factory.create( infile,
+                                                                    PhyloXmlParser.createPhyloXmlParserXsdValidating() );
+                    phy = phylogenies[ 0 ];
+                }
+                catch ( final Exception e ) {
+                    ForesterUtil
+                            .fatalError( PRG_NAME, "failed to read phylgenies from [" + infile + "] [" + e.getMessage()
+                                    + "]" );
+                }
+                try {
+                    obtainSeqInformation( phy );
+                }
+                catch ( final IOException e ) {
+                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+                }
+                try {
+                    inferTaxonomyFromDescendents( phy );
+                }
+                catch ( final IOException e ) {
+                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+                }
+                catch ( final AncestralTaxonomyInferenceException e ) {
+                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+                }
+                try {
+                    final PhylogenyWriter w = new PhylogenyWriter();
+                    w.toPhyloXML( phy, 0, outfile );
+                }
+                catch ( final IOException e ) {
+                    ForesterUtil.fatalError( PRG_NAME, "failed to write output [" + e.getMessage() + "]" );
+                }
             }
         }
     }
