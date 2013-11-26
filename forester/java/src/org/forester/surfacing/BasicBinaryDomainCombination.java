@@ -26,12 +26,32 @@
 
 package org.forester.surfacing;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    String _data;
+    final static Map<Integer, String> id2str = new HashMap<Integer, String>();
+    final static Map<String, Integer> str2id = new HashMap<String, Integer>();
+    static short                      count  = 0;
+    short                             _id0;
+    short                             _id1;
+
+    public static short getId( final String id ) {
+        if ( !str2id.containsKey( id ) ) {
+            id2str.put( ( int ) count, id );
+            str2id.put( id, ( int ) count );
+            ++count;
+        }
+        return Short.valueOf( str2id.get( id ) + "" );
+    }
+
+    public static String getStr( final short id ) {
+        return id2str.get( id );
+    }
 
     public BasicBinaryDomainCombination( final String id0, final String id1 ) {
         if ( ( id0 == null ) || ( id1 == null ) ) {
@@ -41,10 +61,10 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
             throw new IllegalArgumentException( "ill formatted domain id: " + id0 + ", " + id1 );
         }
         if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
-            _data = id0 + SEPARATOR + id1;
+            //  _data = id0 + SEPARATOR + id1;
         }
         else {
-            _data = id1 + SEPARATOR + id0;
+            // _data = id1 + SEPARATOR + id0;
         }
     }
 
