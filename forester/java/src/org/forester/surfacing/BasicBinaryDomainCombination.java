@@ -42,9 +42,11 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     public static short getId( final String id ) {
         if ( !str2id.containsKey( id ) ) {
-            if ( count > ...) error
-            id2str.put(  count, id );
-            str2id.put( id,  count );
+            if ( count >= Short.MAX_VALUE ) {
+                throw new RuntimeException( "too many domain ids!" );
+            }
+            id2str.put( count, id );
+            str2id.put( id, count );
             ++count;
         }
         return  str2id.get( id ) ;
@@ -62,15 +64,19 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
             throw new IllegalArgumentException( "ill formatted domain id: " + id0 + ", " + id1 );
         }
         if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
-            //  _data = id0 + SEPARATOR + id1;
+           _id0 = getId( id0 );
+           _id1 = getId( id1 );
         }
         else {
             // _data = id1 + SEPARATOR + id0;
+            _id0 = getId( id1 );
+            _id1 = getId( id0 );
         }
     }
 
     BasicBinaryDomainCombination() {
-        _data = null;
+        _id0 = -1;
+        _id1 = -1;
     }
 
     @Override
@@ -111,12 +117,14 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     @Override
     public String getId0() {
-        return _data.substring( 0, _data.indexOf( SEPARATOR ) );
+        //return _data.substring( 0, _data.indexOf( SEPARATOR ) );
+        return getStr( _id0 );
     }
 
     @Override
     public String getId1() {
-        return _data.substring( _data.indexOf( SEPARATOR ) + 1 );
+        //return _data.substring( _data.indexOf( SEPARATOR ) + 1 );
+        return getStr( _id1 );
     }
 
     @Override
@@ -174,7 +182,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     }
 
     private String getAsStr() {
-        return _data;
+        return getId0() + SEPARATOR + getId1();
     }
 
     public static BinaryDomainCombination createInstance( final String ids ) {

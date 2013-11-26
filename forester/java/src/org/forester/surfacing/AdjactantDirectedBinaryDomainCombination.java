@@ -37,7 +37,9 @@ public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainC
         }
         // _id0 = n_terminal;
         // _id1 = c_terminal;
-        _data = n_terminal + SEPARATOR + c_terminal;
+       // _data = n_terminal + SEPARATOR + c_terminal;
+        _id0 = getId( n_terminal );
+        _id1 = getId( c_terminal );
     }
 
     public static AdjactantDirectedBinaryDomainCombination createInstance( final String ids ) {
