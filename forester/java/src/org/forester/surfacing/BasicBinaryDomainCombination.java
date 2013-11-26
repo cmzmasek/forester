@@ -40,7 +40,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     short                           _id0;
     short                           _id1;
 
-    public static short getId( final String id ) {
+    static short getId( final String id ) {
         if ( !str2id.containsKey( id ) ) {
             if ( count >= Short.MAX_VALUE ) {
                 throw new RuntimeException( "too many domain ids!" );
@@ -52,7 +52,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         return  str2id.get( id ) ;
     }
 
-    public static String getStr( final short id ) {
+     static String getStr( final short id ) {
         return id2str.get( id );
     }
 
