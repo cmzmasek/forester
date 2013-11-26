@@ -34,20 +34,20 @@ import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    final static Map<Integer, String> id2str = new HashMap<Integer, String>();
-    final static Map<String, Integer> str2id = new HashMap<String, Integer>();
-    static short                      count  = 0;
-    short                             _id0;
-    short                             _id1;
+    final static Map<Short, String> id2str = new HashMap<Short, String>();
+    final static Map<String, Short> str2id = new HashMap<String, Short>();
+    static short                    count  = 0;
+    short                           _id0;
+    short                           _id1;
 
     public static short getId( final String id ) {
         if ( !str2id.containsKey( id ) ) {
             if ( count > ...) error
-            id2str.put( ( int ) count, id );
-            str2id.put( id, ( int ) count );
+            id2str.put(  count, id );
+            str2id.put( id,  count );
             ++count;
         }
-        return Short.valueOf( str2id.get( id ) + "" );
+        return  str2id.get( id ) ;
     }
 
     public static String getStr( final short id ) {
