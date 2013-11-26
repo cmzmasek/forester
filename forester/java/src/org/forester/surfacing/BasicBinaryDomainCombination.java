@@ -31,29 +31,24 @@ import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    // String _id0;
-    // String _id1;
     String _data;
 
     public BasicBinaryDomainCombination( final String id0, final String id1 ) {
         if ( ( id0 == null ) || ( id1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
+        if ( ( id0.indexOf( SEPARATOR ) != -1 ) || ( id1.indexOf( SEPARATOR ) != -1 ) ) {
+            throw new IllegalArgumentException( "ill formatted domain id: " + id0 + ", " + id1 );
+        }
         if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
-            //  _id0 = id0;
-            //  _id1 = id1;
             _data = id0 + SEPARATOR + id1;
         }
         else {
-            // _id0 = id1;
-            // _id1 = id0;
             _data = id1 + SEPARATOR + id0;
         }
     }
 
     BasicBinaryDomainCombination() {
-        //_id0 = null;
-        // _id1 = null;
         _data = null;
     }
 
@@ -96,13 +91,11 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     @Override
     public String getId0() {
         return _data.substring( 0, _data.indexOf( SEPARATOR ) );
-        // return _id0;
     }
 
     @Override
     public String getId1() {
         return _data.substring( _data.indexOf( SEPARATOR ) + 1 );
-        //return _id1;
     }
 
     @Override
@@ -160,7 +153,6 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     }
 
     private String getAsStr() {
-        // return _id0 + SEPARATOR + _id1;
         return _data;
     }
 
