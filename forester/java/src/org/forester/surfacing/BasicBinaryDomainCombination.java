@@ -42,6 +42,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
     public static short getId( final String id ) {
         if ( !str2id.containsKey( id ) ) {
+            if ( count > ...) error
             id2str.put( ( int ) count, id );
             str2id.put( id, ( int ) count );
             ++count;
