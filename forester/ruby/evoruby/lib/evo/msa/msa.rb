@@ -80,6 +80,12 @@ module Evoruby
       indices = Array.new()
       for i in 0 ... get_number_of_seqs()
         current_name = get_sequence( i ).get_name()
+        if case_sensitive && !partial_match
+          if !@name_to_seq_indices.has_key?( current_name )
+            @name_to_seq_indices[ current_name ] = []
+          end
+          @name_to_seq_indices[ current_name ].push( i )
+        end
         if !case_sensitive
           current_name = current_name.downcase
           name = name.downcase
@@ -88,9 +94,6 @@ module Evoruby
            ( partial_match && current_name.include?( name ) )
           indices.push( i )
         end
-      end
-      if case_sensitive && !partial_match
-        @name_to_seq_indices[ name ] = indices
       end
       indices
     end
@@ -133,6 +136,12 @@ module Evoruby
       for i in 0 ... get_number_of_seqs()
         get_sequence( i ).get_name() =~ /^\s*(\S+)/
         current_name = $1
+        if case_sensitive
+          if !@namestart_to_seq_indices.has_key?( current_name )
+            @namestart_to_seq_indices[ current_name ] = []
+          end
+          @namestart_to_seq_indices[ current_name ].push( i )
+        end
         if !case_sensitive
           current_name = current_name.downcase
           name = name.downcase
@@ -140,9 +149,6 @@ module Evoruby
         if  current_name == name
           indices.push( i )
         end
-      end
-      if case_sensitive
-        @namestart_to_seq_indices[ name ] = indices
       end
       indices
     end
