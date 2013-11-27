@@ -35,6 +35,7 @@ import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
+    final static boolean                                            VERBOSE = true;
     final private static Map<Integer, BasicBinaryDomainCombination> DC_POOL = new HashMap<Integer, BasicBinaryDomainCombination>();
     final private static Map<Integer, String>                       S_POOL  = new HashMap<Integer, String>();
     short                                                           _id0;
@@ -176,9 +177,6 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         else {
             final String s = getId0() + SEPARATOR + getId1();
             S_POOL.put( code, s );
-            if ( S_POOL.size() % 100 == 0 ) {
-                System.out.println( "ss=" + S_POOL.size() );
-            }
             return s;
         }
     }
@@ -208,8 +206,8 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         else {
             final BasicBinaryDomainCombination dc = new BasicBinaryDomainCombination( id0, id1 );
             DC_POOL.put( code, dc );
-            if ( DC_POOL.size() % 100 == 0 ) {
-                System.out.println( "s=" + DC_POOL.size() );
+            if ( VERBOSE && ( DC_POOL.size() % 100 == 0 ) ) {
+                System.out.println( " dc pool size: " + DC_POOL.size() );
             }
             return dc;
         }

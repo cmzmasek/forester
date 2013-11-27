@@ -87,6 +87,7 @@ public class surfacing {
 
     private static final int                                        MINIMAL_NUMBER_OF_SIMILARITIES_FOR_SPLITTING                                  = 1000;
     public final static String                                      DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS                           = "graph_analysis_out";
+    public final static String                                      DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION                                       = "dcc";
     public final static String                                      DOMAIN_COMBINITONS_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS                       = "_dc.dot";
     public final static String                                      PARSIMONY_OUTPUT_FITCH_PRESENT_BC_OUTPUTFILE_SUFFIX_FOR_GRAPH_ANALYSIS        = "_fitch_present_dc.dot";
     public final static String                                      DOMAIN_COMBINITON_COUNTS_OUTPUTFILE_SUFFIX                                    = ".dcc";
@@ -336,6 +337,7 @@ public class surfacing {
         allowed_options.add( SECONDARY_FEATURES_PARSIMONY_MAP_FILE );
         allowed_options.add( PLUS_MINUS_ANALYSIS_OPTION );
         allowed_options.add( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS );
+        allowed_options.add( DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION );
         allowed_options.add( OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS );
         allowed_options.add( CONSIDER_DOMAIN_COMBINATION_DIRECTEDNESS_AND_ADJACENCY );
         allowed_options.add( WRITE_TO_NEXUS_OPTION );
@@ -374,6 +376,10 @@ public class surfacing {
         }
         boolean output_binary_domain_combinationsfor_graph_analysis = false;
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS ) ) {
+            output_binary_domain_combinationsfor_graph_analysis = true;
+        }
+        final boolean output_binary_domain_combinationsfor_counts = false;
+        if ( cla.isOptionSet( DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION ) ) {
             output_binary_domain_combinationsfor_graph_analysis = true;
         }
         if ( cla.isOptionSet( surfacing.MAX_FS_E_VALUE_OPTION ) ) {
@@ -1653,12 +1659,15 @@ public class surfacing {
                                          protein_length_stats_by_dc,
                                          domain_number_stats_by_dc ) );
                 if ( gwcd_list.get( i ).getSize() > 0 ) {
-                    SurfacingUtil.writeDomainCombinationsCountsFile( input_file_properties,
-                                                                     out_dir,
-                                                                     per_genome_domain_promiscuity_statistics_writer,
-                                                                     gwcd_list.get( i ),
-                                                                     i,
-                                                                     dc_sort_order );
+                    if ( output_binary_domain_combinationsfor_counts ) {
+                        SurfacingUtil
+                                .writeDomainCombinationsCountsFile( input_file_properties,
+                                                                    out_dir,
+                                                                    per_genome_domain_promiscuity_statistics_writer,
+                                                                    gwcd_list.get( i ),
+                                                                    i,
+                                                                    dc_sort_order );
+                    }
                     if ( output_binary_domain_combinationsfor_graph_analysis ) {
                         SurfacingUtil.writeBinaryDomainCombinationsFileForGraphAnalysis( input_file_properties,
                                                                                          out_dir,
@@ -2157,6 +2166,8 @@ public class surfacing {
         System.out.println( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE
                 + "=<file>: to perfom parsimony analysis on secondary features" );
         System.out.println( surfacing.PLUS_MINUS_ANALYSIS_OPTION + "=<file>: to presence/absence genome analysis" );
+        System.out.println( surfacing.DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION
+                + ": to output binary domain counts (as individual files)" );
         System.out.println( surfacing.DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS
                 + ": to output binary domain combinations for (downstream) graph analysis" );
         System.out.println( surfacing.OUTPUT_LIST_OF_ALL_PROTEINS_OPTIONS + ": to output all proteins per domain" );
