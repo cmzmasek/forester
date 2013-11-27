@@ -178,7 +178,7 @@ public class surfacing {
     final static private String                                     NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
     final static private String                                     IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
     final static private String                                     PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION                                       = "dc_regain_stats";
-    final static private String                                     DA_ANALYSIS_OPTION                                                            = "DA_analyis";
+    final static private String                                     DA_ANALYSIS_OPTION                                                            = "da_analyis";
     final static private String                                     USE_LAST_IN_FITCH_OPTION                                                      = "last";
     public final static String                                      PAIRWISE_DOMAIN_COMPARISONS_PREFIX                                            = "pwc_";
     final static private String                                     PAIRWISE_DOMAIN_COMPARISONS_OPTION                                            = "pwc";
