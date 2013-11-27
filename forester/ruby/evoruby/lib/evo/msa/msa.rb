@@ -19,6 +19,8 @@ module Evoruby
     def initialize()
       @sequences = Array.new
       @identical_seqs_detected = Array.new
+      @name_to_seq_indices = Hash.new
+      @namestart_to_seq_indices = Hash.new
     end
 
 
@@ -47,6 +49,8 @@ module Evoruby
          " sequences"
         raise ArgumentError, error_msg
       end
+      @name_to_seq_indices.clear
+      @namestart_to_seq_indices.clear
       @sequences.delete_at( index )
     end
 
@@ -70,6 +74,9 @@ module Evoruby
     end
 
     def find_by_name( name, case_sensitive, partial_match )
+      if case_sensitive && !partial_match && @name_to_seq_indices.has_key?( name )
+        return @name_to_seq_indices[ name ]
+      end
       indices = Array.new()
       for i in 0 ... get_number_of_seqs()
         current_name = get_sequence( i ).get_name()
@@ -81,6 +88,9 @@ module Evoruby
            ( partial_match && current_name.include?( name ) )
           indices.push( i )
         end
+      end
+      if case_sensitive && !partial_match
+        @name_to_seq_indices[ name ] = indices
       end
       indices
     end
@@ -116,6 +126,9 @@ module Evoruby
     end
 
     def find_by_name_start( name, case_sensitive )
+      if case_sensitive && @namestart_to_seq_indices.has_key?( name )
+        return @namestart_to_seq_indices[ name ]
+      end
       indices = []
       for i in 0 ... get_number_of_seqs()
         get_sequence( i ).get_name() =~ /^\s*(\S+)/
@@ -124,9 +137,12 @@ module Evoruby
           current_name = current_name.downcase
           name = name.downcase
         end
-        if  ( current_name == name )
+        if  current_name == name
           indices.push( i )
         end
+      end
+      if case_sensitive
+        @namestart_to_seq_indices[ name ] = indices
       end
       indices
     end
@@ -162,10 +178,10 @@ module Evoruby
     # throws ArgumentError
     def get_by_name_start( name, case_sensitive = true )
       indices = find_by_name_start( name, case_sensitive )
-      if ( indices.length > 1 )
+      if indices.length > 1
         error_msg = "\"" + name + "\" not unique"
         raise ArgumentError, error_msg
-      elsif ( indices.length < 1 )
+      elsif  indices.length < 1
         error_msg = "\"" + name + "\" not found"
         raise ArgumentError, error_msg
       end

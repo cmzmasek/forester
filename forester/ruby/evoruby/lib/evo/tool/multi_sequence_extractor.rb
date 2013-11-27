@@ -23,9 +23,9 @@ module Evoruby
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
-    PRG_VERSION                        = "1.02"
+    PRG_VERSION                        = "1.03"
     PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "130322"
+    PRG_DATE                           = "131127"
     COPYRIGHT                          = "2008-2013 Christian M Zmasek"
     CONTACT                            = "phylosoft@gmail.com"
     WWW                                = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -294,20 +294,34 @@ module Evoruby
             per_species_counter = per_species_counter + 1
             seq = nil
 
-            if current_msa.find_by_name_start( seq_name, true ).size > 0
-              begin
-                seq = current_msa.get_by_name_start( seq_name, true ).copy
-              rescue ArgumentError => e
-                Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-              end
-            else
+            indices = current_msa.find_by_name_start( seq_name, true )
+            if indices.size == 1
+              seq =  current_msa.get_sequence( indices[ 0 ] )
+            elsif indices.size == 0
               # Not found, try finding by partial match.
               begin
                 seq = current_msa.get_by_name( seq_name, true, true )
               rescue ArgumentError => e
                 Util.fatal_error( PRG_NAME, "error: " + e.to_s )
               end
+            else
+              Util.fatal_error( PRG_NAME, "error: seq name \"" + seq_name + "\" not unique"  )
             end
+
+            # if current_msa.find_by_name_start( seq_name, true ).size > 0
+            #   begin
+            #     seq = current_msa.get_by_name_start( seq_name, true ).copy
+            #   rescue ArgumentError => e
+            #     Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+            #   end
+            # else
+            #   # Not found, try finding by partial match.
+            #   begin
+            #     seq = current_msa.get_by_name( seq_name, true, true )
+            #   rescue ArgumentError => e
+            #     Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+            #   end
+            # end
 
             normalized_id = per_species_counter.to_s( 16 ).upcase +
              "_" + current_species
