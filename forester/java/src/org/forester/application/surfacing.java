@@ -241,7 +241,7 @@ public class surfacing {
     private static final String                                     OUTPUT_DOMAIN_COMBINATIONS_GAINED_MORE_THAN_ONCE_ANALYSIS_SUFFIX              = "_fitch_dc_gains_counts";
     private static final String                                     OUTPUT_DOMAIN_COMBINATIONS_LOST_MORE_THAN_ONCE_ANALYSIS_SUFFIX                = "_fitch_dc_losses_counts";
     private static final String                                     DOMAIN_LENGTHS_ANALYSIS_SUFFIX                                                = "_domain_lengths_analysis";
-    private static final boolean                                    PERFORM_DOMAIN_LENGTH_ANALYSIS                                                = true;
+    private static final String                                     PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION                                         = "dla";
     public static final String                                      ALL_PFAMS_ENCOUNTERED_SUFFIX                                                  = "_all_encountered_pfams";
     public static final String                                      ALL_PFAMS_ENCOUNTERED_WITH_GO_ANNOTATION_SUFFIX                               = "_all_encountered_pfams_with_go_annotation";
     public static final String                                      ENCOUNTERED_PFAMS_SUMMARY_SUFFIX                                              = "_encountered_pfams_summary";
@@ -345,6 +345,7 @@ public class surfacing {
         allowed_options.add( DA_ANALYSIS_OPTION );
         allowed_options.add( USE_LAST_IN_FITCH_OPTION );
         allowed_options.add( PERFORM_DC_FITCH );
+        allowed_options.add( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
         double fs_e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
@@ -419,6 +420,10 @@ public class surfacing {
         }
         if ( cla.isOptionSet( surfacing.IGNORE_COMBINATION_WITH_SAME_OPTION ) ) {
             ignore_combination_with_same = true;
+        }
+        boolean domain_length_analysis = false;
+        if ( cla.isOptionSet( surfacing.PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION ) ) {
+            domain_length_analysis = true;
         }
         boolean ignore_domains_without_combs_in_all_spec = IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_DEFAULT;
         if ( cla.isOptionSet( surfacing.IGNORE_DOMAINS_WITHOUT_COMBINATIONS_IN_ALL_SPECIES_OPTION ) ) {
@@ -963,7 +968,7 @@ public class surfacing {
         File[] secondary_features_map_files = null;
         final File domain_lengths_analysis_outfile = new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
                 + DOMAIN_LENGTHS_ANALYSIS_SUFFIX );
-        if ( PERFORM_DOMAIN_LENGTH_ANALYSIS ) {
+        if ( domain_length_analysis ) {
             SurfacingUtil.checkForOutputFileWriteability( domain_lengths_analysis_outfile );
         }
         if ( cla.isOptionSet( surfacing.SECONDARY_FEATURES_PARSIMONY_MAP_FILE ) ) {
@@ -1391,7 +1396,6 @@ public class surfacing {
             all_bin_domain_combinations_gained_fitch = new ArrayList<BinaryDomainCombination>();
             all_bin_domain_combinations_lost_fitch = new ArrayList<BinaryDomainCombination>();
         }
-        DomainLengthsTable domain_lengths_table = new DomainLengthsTable();
         final File per_genome_domain_promiscuity_statistics_file = new File( out_dir + ForesterUtil.FILE_SEPARATOR
                 + output_file + D_PROMISCUITY_FILE_SUFFIX );
         BufferedWriter per_genome_domain_promiscuity_statistics_writer = null;
@@ -1427,8 +1431,8 @@ public class surfacing {
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getMessage() );
         }
-        final DescriptiveStatistics protein_coverage_stats = new BasicDescriptiveStatistics();
-        final DescriptiveStatistics all_genomes_domains_per_potein_stats = new BasicDescriptiveStatistics();
+        DescriptiveStatistics protein_coverage_stats = new BasicDescriptiveStatistics();
+        DescriptiveStatistics all_genomes_domains_per_potein_stats = new BasicDescriptiveStatistics();
         final SortedMap<Integer, Integer> all_genomes_domains_per_potein_histo = new TreeMap<Integer, Integer>();
         final SortedSet<String> domains_which_are_always_single = new TreeSet<String>();
         final SortedSet<String> domains_which_are_sometimes_single_sometimes_not = new TreeSet<String>();
@@ -1461,6 +1465,10 @@ public class surfacing {
         if ( perform_dc_regain_proteins_stats ) {
             protein_length_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
             domain_number_stats_by_dc = new HashMap<String, DescriptiveStatistics>();
+        }
+        DomainLengthsTable domain_lengths_table = null;
+        if ( domain_length_analysis ) {
+            domain_lengths_table = new DomainLengthsTable();
         }
         // Main loop:
         final SortedMap<String, Set<String>> distinct_domain_architecutures_per_genome = new TreeMap<String, Set<String>>();
@@ -1648,7 +1656,9 @@ public class surfacing {
                                                         domains_which_are_sometimes_single_sometimes_not,
                                                         domains_which_never_single,
                                                         domains_per_potein_stats_writer );
-            domain_lengths_table.addLengths( protein_list );
+            if ( domain_length_analysis ) {
+                domain_lengths_table.addLengths( protein_list );
+            }
             if ( !da_analysis ) {
                 gwcd_list.add( BasicGenomeWideCombinableDomains
                         .createInstance( protein_list,
@@ -1728,8 +1738,10 @@ public class surfacing {
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.sampleStandardDeviation() + "" );
             domains_per_potein_stats_writer.write( "\t" );
-            domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.median() + "" );
-            domains_per_potein_stats_writer.write( "\t" );
+            if ( all_genomes_domains_per_potein_stats.getN() <= 300 ) {
+                domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.median() + "" );
+                domains_per_potein_stats_writer.write( "\t" );
+            }
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getN() + "" );
             domains_per_potein_stats_writer.write( "\t" );
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getMin() + "" );
@@ -1737,6 +1749,7 @@ public class surfacing {
             domains_per_potein_stats_writer.write( all_genomes_domains_per_potein_stats.getMax() + "" );
             domains_per_potein_stats_writer.write( "\n" );
             domains_per_potein_stats_writer.close();
+            all_genomes_domains_per_potein_stats = null;
             SurfacingUtil.printOutPercentageOfMultidomainProteins( all_genomes_domains_per_potein_histo, log_writer );
             ForesterUtil.map2file( new File( out_dir + ForesterUtil.FILE_SEPARATOR + output_file
                     + "_all_genomes_domains_per_potein_histo.txt" ), all_genomes_domains_per_potein_histo, "\t", "\n" );
@@ -1761,6 +1774,7 @@ public class surfacing {
                                        + ( 100 * protein_coverage_stats.getMin() ) + "%-"
                                        + ( 100 * protein_coverage_stats.getMax() ) + "%",
                                log_writer );
+            protein_coverage_stats = null;
         }
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
@@ -1783,7 +1797,7 @@ public class surfacing {
         catch ( final IOException e2 ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e2.getLocalizedMessage() );
         }
-        if ( PERFORM_DOMAIN_LENGTH_ANALYSIS ) {
+        if ( domain_length_analysis ) {
             try {
                 SurfacingUtil.executeDomainLengthAnalysis( input_file_properties,
                                                            number_of_genomes,
@@ -2177,7 +2191,8 @@ public class surfacing {
         System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
         System.out.println( PERFORM_DC_FITCH + ": to perform DC Fitch parsimony" );
         System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
-        System.out.println( DA_ANALYSIS_OPTION + ": to do DA analysis" );
+        System.out.println( DA_ANALYSIS_OPTION + ": to perform DA analysis" );
+        System.out.println( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION + ": to perform domain length analysis" );
         System.out.println();
         System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
