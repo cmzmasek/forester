@@ -379,9 +379,9 @@ public class surfacing {
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS ) ) {
             output_binary_domain_combinationsfor_graph_analysis = true;
         }
-        final boolean output_binary_domain_combinationsfor_counts = false;
+        boolean output_binary_domain_combinationsfor_counts = false;
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_COUNTS_OUTPUT_OPTION ) ) {
-            output_binary_domain_combinationsfor_graph_analysis = true;
+            output_binary_domain_combinationsfor_counts = true;
         }
         if ( cla.isOptionSet( surfacing.MAX_FS_E_VALUE_OPTION ) ) {
             try {
@@ -2061,7 +2061,8 @@ public class surfacing {
             SurfacingUtil.writeProteinListsForAllSpecies( out_dir,
                                                           protein_lists_per_species,
                                                           gwcd_list,
-                                                          output_list_of_all_proteins_per_domain_e_value_max );
+                                                          output_list_of_all_proteins_per_domain_e_value_max,
+                                                          positive_filter_file != null ? filter : null );
         }
         gwcd_list = null;
         if ( all_bin_domain_combinations_gained_fitch != null ) {

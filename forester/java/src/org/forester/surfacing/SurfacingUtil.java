@@ -1886,9 +1886,16 @@ public final class SurfacingUtil {
         catch ( final IOException e ) {
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getMessage() );
         }
-        ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote binary domain combination for \""
-                + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ", "
-                + input_file_properties[ i ][ 2 ] + ") to: \"" + dc_outfile_dot + "\"" );
+        if ( input_file_properties[ i ].length == 3 ) {
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote binary domain combination for \""
+                    + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ", "
+                    + input_file_properties[ i ][ 2 ] + ") to: \"" + dc_outfile_dot + "\"" );
+        }
+        else {
+            ForesterUtil.programMessage( surfacing.PRG_NAME, "Wrote binary domain combination for \""
+                    + input_file_properties[ i ][ 0 ] + "\" (" + input_file_properties[ i ][ 1 ] + ") to: \""
+                    + dc_outfile_dot + "\"" );
+        }
     }
 
     public static void writeBinaryStatesMatrixAsListToFile( final CharacterStateMatrix<CharacterStateMatrix.GainLossStates> matrix,
@@ -2511,12 +2518,16 @@ public final class SurfacingUtil {
     public static void writeProteinListsForAllSpecies( final File output_dir,
                                                        final SortedMap<Species, List<Protein>> protein_lists_per_species,
                                                        final List<GenomeWideCombinableDomains> gwcd_list,
-                                                       final double domain_e_cutoff ) {
+                                                       final double domain_e_cutoff,
+                                                       final Set<String> pos_filter_doms ) {
         final SortedSet<String> all_domains = new TreeSet<String>();
         for( final GenomeWideCombinableDomains gwcd : gwcd_list ) {
             all_domains.addAll( gwcd.getAllDomainIds() );
         }
         for( final String domain : all_domains ) {
+            if ( !ForesterUtil.isEmpty( pos_filter_doms ) && !pos_filter_doms.contains( domain ) ) {
+                continue;
+            }
             final File out = new File( output_dir + ForesterUtil.FILE_SEPARATOR + domain + surfacing.SEQ_EXTRACT_SUFFIX );
             checkForOutputFileWriteability( out );
             try {
