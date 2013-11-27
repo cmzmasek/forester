@@ -33,19 +33,13 @@ public interface BinaryDomainCombination extends Comparable<BinaryDomainCombinat
 
     public String getId1();
 
-    public abstract StringBuffer toGraphDescribingLanguage( final OutputFormat format,
-                                                            final String node_attribute,
-                                                            String edge_attribute );
+    short getId0Code();
 
-    /**
-     * This has to return a String representation
-     * in the following format:
-     * id0 - id1
-     * 
-     * @return a String representation in the form id0 - id1
-     */
-    @Override
-    public String toString();
+    short getId1Code();
+
+    public StringBuffer toGraphDescribingLanguage( final OutputFormat format,
+                                                   final String node_attribute,
+                                                   String edge_attribute );
 
     public static enum DomainCombinationType {
         BASIC, DIRECTED, DIRECTED_ADJACTANT;

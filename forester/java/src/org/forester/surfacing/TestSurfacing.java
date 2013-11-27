@@ -57,7 +57,6 @@ import org.forester.protein.Protein;
 import org.forester.protein.ProteinId;
 import org.forester.species.BasicSpecies;
 import org.forester.species.Species;
-import org.forester.test.Test;
 import org.forester.util.ForesterUtil;
 
 @SuppressWarnings( "unused")
@@ -256,9 +255,6 @@ public class TestSurfacing {
             final Domain F = new BasicDomain( "F", 1, 2, ( short ) 1, ( short ) 1, 0.01, -12 );
             final Domain G = new BasicDomain( "G", 1, 2, ( short ) 1, ( short ) 1, 0.001, -12 );
             final Domain X = new BasicDomain( "X", 1, 2, ( short ) 1, ( short ) 1, 0.0001, -12 );
-            if ( !TestSurfacing.isEqual( X.getPerSequenceScore(), -12 ) ) {
-                return false;
-            }
             final Protein mouse_1 = new BasicProtein( "1", "mouse", 0 );
             final Protein rabbit_1 = new BasicProtein( "1", "rabbit", 0 );
             final Protein ciona_1 = new BasicProtein( "1", "ciona", 0 );
@@ -982,9 +978,6 @@ public class TestSurfacing {
             final Domain F = new BasicDomain( "F", 1, 2, ( short ) 1, ( short ) 1, 0.01, -12 );
             final Domain G = new BasicDomain( "G", 1, 2, ( short ) 1, ( short ) 1, 0.001, -12 );
             final Domain X = new BasicDomain( "X", 1, 2, ( short ) 1, ( short ) 1, 0.0001, -12 );
-            if ( !TestSurfacing.isEqual( X.getPerSequenceScore(), -12 ) ) {
-                return false;
-            }
             final Protein mouse_1 = new BasicProtein( "1", "mouse", 0 );
             final Protein rabbit_1 = new BasicProtein( "1", "rabbit", 0 );
             final Protein ciona_1 = new BasicProtein( "1", "ciona", 0 );
@@ -1229,16 +1222,16 @@ public class TestSurfacing {
 
     private static boolean testBinaryDomainCombination() {
         try {
-            final BasicBinaryDomainCombination s0 = new BasicBinaryDomainCombination( "a", "a" );
-            final BasicBinaryDomainCombination s1 = new BasicBinaryDomainCombination( "b", "a" );
-            final BasicBinaryDomainCombination s2 = new BasicBinaryDomainCombination( "a", "b" );
-            final BasicBinaryDomainCombination s3 = new BasicBinaryDomainCombination( "B", "A" );
-            final BasicBinaryDomainCombination s4 = new BasicBinaryDomainCombination( "A", "B" );
-            final BasicBinaryDomainCombination s5 = new BasicBinaryDomainCombination( "c", "a" );
-            final BasicBinaryDomainCombination s6 = new BasicBinaryDomainCombination( "b", "c" );
-            final BasicBinaryDomainCombination s7 = new BasicBinaryDomainCombination( "d", "a" );
-            final BasicBinaryDomainCombination s8 = new BasicBinaryDomainCombination( "b", "d" );
-            final BinaryDomainCombination s9 = BasicBinaryDomainCombination.createInstance( "z-z=a-aa" );
+            final BasicBinaryDomainCombination s0 = BasicBinaryDomainCombination.obtainInstance( "a", "a" );
+            final BasicBinaryDomainCombination s1 = BasicBinaryDomainCombination.obtainInstance( "b", "a" );
+            final BasicBinaryDomainCombination s2 = BasicBinaryDomainCombination.obtainInstance( "a", "b" );
+            final BasicBinaryDomainCombination s3 = BasicBinaryDomainCombination.obtainInstance( "B", "A" );
+            final BasicBinaryDomainCombination s4 = BasicBinaryDomainCombination.obtainInstance( "A", "B" );
+            final BasicBinaryDomainCombination s5 = BasicBinaryDomainCombination.obtainInstance( "c", "a" );
+            final BasicBinaryDomainCombination s6 = BasicBinaryDomainCombination.obtainInstance( "b", "c" );
+            final BasicBinaryDomainCombination s7 = BasicBinaryDomainCombination.obtainInstance( "d", "a" );
+            final BasicBinaryDomainCombination s8 = BasicBinaryDomainCombination.obtainInstance( "b", "d" );
+            final BinaryDomainCombination s9 = BasicBinaryDomainCombination.obtainInstance( "z-z=a-aa" );
             if ( !s9.toString().equals( "a-aa=z-z" ) ) {
                 System.out.println( s9.toString() );
                 return false;
@@ -1284,10 +1277,10 @@ public class TestSurfacing {
                 System.out.println( sorted.size() );
                 return false;
             }
-            final DirectedBinaryDomainCombination aa = new DirectedBinaryDomainCombination( "a", "a" );
-            final DirectedBinaryDomainCombination ba = new DirectedBinaryDomainCombination( "b", "a" );
-            final DirectedBinaryDomainCombination ab = new DirectedBinaryDomainCombination( "a", "b" );
-            final DirectedBinaryDomainCombination bb = new DirectedBinaryDomainCombination( "b", "b" );
+            final DirectedBinaryDomainCombination aa = DirectedBinaryDomainCombination.obtainInstance( "a", "a" );
+            final DirectedBinaryDomainCombination ba = DirectedBinaryDomainCombination.obtainInstance( "b", "a" );
+            final DirectedBinaryDomainCombination ab = DirectedBinaryDomainCombination.obtainInstance( "a", "b" );
+            final DirectedBinaryDomainCombination bb = DirectedBinaryDomainCombination.obtainInstance( "b", "b" );
             if ( !aa.equals( aa ) ) {
                 return false;
             }
@@ -1477,11 +1470,11 @@ public class TestSurfacing {
             if ( cd0.toBinaryDomainCombinations().size() != 3 ) {
                 return false;
             }
-            final BasicBinaryDomainCombination s0 = new BasicBinaryDomainCombination( "key0", "a" );
-            final BasicBinaryDomainCombination s1 = new BasicBinaryDomainCombination( "b", "key0" );
-            final BasicBinaryDomainCombination s2 = new BasicBinaryDomainCombination( "key0", "c" );
-            final BasicBinaryDomainCombination s3 = new BasicBinaryDomainCombination( "key0", "cc" );
-            final BasicBinaryDomainCombination s4 = new BasicBinaryDomainCombination( "c", "key0" );
+            final BasicBinaryDomainCombination s0 = BasicBinaryDomainCombination.obtainInstance( "key0", "a" );
+            final BasicBinaryDomainCombination s1 = BasicBinaryDomainCombination.obtainInstance( "b", "key0" );
+            final BasicBinaryDomainCombination s2 = BasicBinaryDomainCombination.obtainInstance( "key0", "c" );
+            final BasicBinaryDomainCombination s3 = BasicBinaryDomainCombination.obtainInstance( "key0", "cc" );
+            final BasicBinaryDomainCombination s4 = BasicBinaryDomainCombination.obtainInstance( "c", "key0" );
             if ( !cd0.toBinaryDomainCombinations().contains( s0 ) ) {
                 return false;
             }
@@ -1527,7 +1520,7 @@ public class TestSurfacing {
             if ( cd1.toBinaryDomainCombinations().size() != 4 ) {
                 return false;
             }
-            final BasicBinaryDomainCombination kk = new BasicBinaryDomainCombination( "key1", "key1" );
+            final BasicBinaryDomainCombination kk = BasicBinaryDomainCombination.obtainInstance( "key1", "key1" );
             if ( !cd1.toBinaryDomainCombinations().contains( kk ) ) {
                 return false;
             }
@@ -1712,15 +1705,15 @@ public class TestSurfacing {
             if ( cd0.toBinaryDomainCombinations().size() != 3 ) {
                 return false;
             }
-            final BinaryDomainCombination s0 = new DirectedBinaryDomainCombination( "key0", "a" );
-            final BinaryDomainCombination s1 = new DirectedBinaryDomainCombination( "b", "key0" );
-            final BinaryDomainCombination s2 = new DirectedBinaryDomainCombination( "key0", "c" );
-            final BinaryDomainCombination s3 = new DirectedBinaryDomainCombination( "key0", "cc" );
-            final BinaryDomainCombination s4 = new DirectedBinaryDomainCombination( "a", "b" );
-            final BinaryDomainCombination s5 = new DirectedBinaryDomainCombination( "b", "a" );
-            final BinaryDomainCombination s6 = new DirectedBinaryDomainCombination( "key0", "b" );
-            final BinaryDomainCombination s7 = new DirectedBinaryDomainCombination( "a", "key0" );
-            final BinaryDomainCombination s8 = new DirectedBinaryDomainCombination( "c", "key0" );
+            final BinaryDomainCombination s0 = DirectedBinaryDomainCombination.obtainInstance( "key0", "a" );
+            final BinaryDomainCombination s1 = DirectedBinaryDomainCombination.obtainInstance( "b", "key0" );
+            final BinaryDomainCombination s2 = DirectedBinaryDomainCombination.obtainInstance( "key0", "c" );
+            final BinaryDomainCombination s3 = DirectedBinaryDomainCombination.obtainInstance( "key0", "cc" );
+            final BinaryDomainCombination s4 = DirectedBinaryDomainCombination.obtainInstance( "a", "b" );
+            final BinaryDomainCombination s5 = DirectedBinaryDomainCombination.obtainInstance( "b", "a" );
+            final BinaryDomainCombination s6 = DirectedBinaryDomainCombination.obtainInstance( "key0", "b" );
+            final BinaryDomainCombination s7 = DirectedBinaryDomainCombination.obtainInstance( "a", "key0" );
+            final BinaryDomainCombination s8 = DirectedBinaryDomainCombination.obtainInstance( "c", "key0" );
             if ( !cd0.toBinaryDomainCombinations().contains( s0 ) ) {
                 return false;
             }
@@ -1778,7 +1771,7 @@ public class TestSurfacing {
             if ( cd1.toBinaryDomainCombinations().size() != 4 ) {
                 return false;
             }
-            final BinaryDomainCombination kk = new DirectedBinaryDomainCombination( "key1", "key1" );
+            final BinaryDomainCombination kk = DirectedBinaryDomainCombination.obtainInstance( "key1", "key1" );
             if ( !cd1.toBinaryDomainCombinations().contains( kk ) ) {
                 return false;
             }
@@ -1827,85 +1820,112 @@ public class TestSurfacing {
             list_1.add( five_1 );
             final GenomeWideCombinableDomains gwcd_1 = BasicGenomeWideCombinableDomains
                     .createInstance( list_1, false, new BasicSpecies( "1" ), DomainCombinationType.DIRECTED );
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "B" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "B" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "B", "A" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "B", "A" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "A" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "A", "A" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "C" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "C" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "C", "A" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "C", "A" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "B", "C" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "B",
+                                                                                                                "C" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "C", "X" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "C",
+                                                                                                                "X" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "C", "Y" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "C",
+                                                                                                                "Y" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "X" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "X" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "Y" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "Y" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "Y", "A" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "Y",
+                                                                                                                "A" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "X", "A" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "X", "A" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "C", "B" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "C", "B" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "X", "Y" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "X",
+                                                                                                                "Y" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "Y", "X" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "Y",
+                                                                                                                "X" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "Y" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "Y" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "A", "X" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "A",
+                                                                                                                "X" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "Y", "C" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "Y", "C" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "M", "N" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "M",
+                                                                                                                "N" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "N", "M" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "N",
+                                                                                                                "M" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "N", "P" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "N",
+                                                                                                                "P" ) ) ) {
                 return false;
             }
-            if ( !gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "M", "P" ) ) ) {
+            if ( !gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "M",
+                                                                                                                "P" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "P", "N" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "P", "N" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "P", "M" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "P", "M" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "XX", "YY" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "XX",
+                                                                                                               "YY" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "YY", "XX" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations().contains( DirectedBinaryDomainCombination.obtainInstance( "YY",
+                                                                                                               "XX" ) ) ) {
                 return false;
             }
-            if ( gwcd_1.toBinaryDomainCombinations().contains( new DirectedBinaryDomainCombination( "B", "B" ) ) ) {
+            if ( gwcd_1.toBinaryDomainCombinations()
+                    .contains( DirectedBinaryDomainCombination.obtainInstance( "B", "B" ) ) ) {
                 return false;
             }
             //            final List<GenomeWideCombinableDomains> gwcd_list = new ArrayList<GenomeWideCombinableDomains>();
@@ -2403,115 +2423,115 @@ public class TestSurfacing {
             final GenomeWideCombinableDomains gwcd_1 = BasicGenomeWideCombinableDomains
                     .createInstance( list_1, false, new BasicSpecies( "1" ), DomainCombinationType.DIRECTED_ADJACTANT );
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "B" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "B" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "B", "A" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "B", "A" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "A" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "A" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "C" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "C" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "C", "A" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "C", "A" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "B", "C" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "B", "C" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "C", "X" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "C", "X" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "C", "Y" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "C", "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "X", "Y" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "X", "Y" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "X" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "X" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "Y" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "Y" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "Y", "A" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "Y", "A" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "X", "A" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "X", "A" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "C", "B" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "C", "B" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "X", "Y" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "X", "Y" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "Y", "X" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "Y", "X" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "Y" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "Y" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "A", "X" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "A", "X" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "Y", "C" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "Y", "C" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "M", "N" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "M", "N" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "N", "M" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "N", "M" ) ) ) {
                 return false;
             }
             if ( !gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "N", "P" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "N", "P" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "M", "P" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "M", "P" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "P", "N" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "P", "N" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "P", "M" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "P", "M" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "XX", "YY" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "XX", "YY" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "YY", "XX" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "YY", "XX" ) ) ) {
                 return false;
             }
             if ( gwcd_1.toBinaryDomainCombinations()
-                    .contains( new AdjactantDirectedBinaryDomainCombination( "B", "B" ) ) ) {
+                    .contains( AdjactantDirectedBinaryDomainCombination.obtainInstance( "B", "B" ) ) ) {
                 return false;
             }
         }
@@ -2820,256 +2840,256 @@ public class TestSurfacing {
             if ( shared_i.size() != 3 ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "a" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "a" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "c" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "c" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "d" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "d" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "e" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "e" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "c" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "c" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "d" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "d" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "e" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "e" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "c", "d" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "d" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "c", "e" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "e" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "d", "e" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "d", "e" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "e", "f" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "e", "f" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "g", "h" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "g", "h" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "i" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "i" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "a", "l" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "l" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "i" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "i" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "b", "l" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "l" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "c", "i" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "i" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "c", "l" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "l" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "i", "l" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "i", "l" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "i", "f" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "i", "f" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "m", "n" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "m", "n" ) ) ) {
                 return false;
             }
-            if ( !a_ni.contains( new BasicBinaryDomainCombination( "j", "k" ) ) ) {
+            if ( !a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "j", "k" ) ) ) {
                 return false;
             }
-            if ( a_ni.contains( new BasicBinaryDomainCombination( "a", "g" ) ) ) {
+            if ( a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "g" ) ) ) {
                 return false;
             }
-            if ( a_ni.contains( new BasicBinaryDomainCombination( "a", "m" ) ) ) {
+            if ( a_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "m" ) ) ) {
                 return false;
             }
-            if ( a_i.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( a_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( a_i.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( a_i.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( a_i.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( a_i.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( !shared_ni.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( !shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( !shared_ni.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( !shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
-            if ( !shared_ni.contains( new BasicBinaryDomainCombination( "a", "c" ) ) ) {
+            if ( !shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "c" ) ) ) {
                 return false;
             }
-            if ( !shared_ni.contains( new BasicBinaryDomainCombination( "b", "c" ) ) ) {
+            if ( !shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "c" ) ) ) {
                 return false;
             }
-            if ( !shared_ni.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( !shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( shared_ni.contains( new BasicBinaryDomainCombination( "m", "n" ) ) ) {
+            if ( shared_ni.contains( BasicBinaryDomainCombination.obtainInstance( "m", "n" ) ) ) {
                 return false;
             }
-            if ( shared_i.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( !shared_i.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( !shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
-            if ( !shared_i.contains( new BasicBinaryDomainCombination( "a", "c" ) ) ) {
+            if ( !shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "c" ) ) ) {
                 return false;
             }
-            if ( !shared_i.contains( new BasicBinaryDomainCombination( "b", "c" ) ) ) {
+            if ( !shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "b", "c" ) ) ) {
                 return false;
             }
-            if ( shared_i.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( shared_i.contains( new BasicBinaryDomainCombination( "m", "n" ) ) ) {
+            if ( shared_i.contains( BasicBinaryDomainCombination.obtainInstance( "m", "n" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "a", "d" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "a", "e" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "b", "d" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "b", "e" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "c", "d" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "c", "e" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "d", "e" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "d", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "e", "f" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "e", "f" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "g", "h" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "g", "h" ) ) ) {
                 return false;
             }
-            if ( !s_0_ni.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( !s_0_ni.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "a", "d" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "a", "e" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "b", "d" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "b", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "b", "e" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "b", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "c", "d" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "c", "d" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "c", "e" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "c", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "d", "e" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "d", "e" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "e", "f" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "e", "f" ) ) ) {
                 return false;
             }
-            if ( !s_0_i.contains( new BasicBinaryDomainCombination( "g", "h" ) ) ) {
+            if ( !s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "g", "h" ) ) ) {
                 return false;
             }
-            if ( s_0_i.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( s_0_i.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "a", "i" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "a", "l" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "b", "i" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "b", "l" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "b", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "c", "i" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "c", "l" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "c", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "l", "i" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "l", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "i", "f" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "i", "f" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "m", "n" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "m", "n" ) ) ) {
                 return false;
             }
-            if ( !s_1_ni.contains( new BasicBinaryDomainCombination( "j", "k" ) ) ) {
+            if ( !s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "j", "k" ) ) ) {
                 return false;
             }
-            if ( s_1_ni.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( s_1_ni.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "a", "i" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "a", "l" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "b", "i" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "b", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "b", "l" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "b", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "c", "i" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "c", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "c", "l" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "c", "l" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "l", "i" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "l", "i" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "i", "f" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "i", "f" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "m", "n" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "m", "n" ) ) ) {
                 return false;
             }
-            if ( !s_1_i.contains( new BasicBinaryDomainCombination( "j", "k" ) ) ) {
+            if ( !s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "j", "k" ) ) ) {
                 return false;
             }
-            if ( s_1_i.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( s_1_i.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
             if ( !isEqual( calc_ni.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
@@ -3186,36 +3206,43 @@ public class TestSurfacing {
                 return false;
             }
             if ( !calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "v", "u" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "v", "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "w", "v" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "v" ) ) ) {
                 return false;
             }
             if ( !calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "w", "x" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "x" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getSharedBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "u" ) ) ) {
+            if ( !calc_u.getSharedBinaryDomainCombinations()
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getSharedBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "z", "y" ) ) ) {
+            if ( !calc_u.getSharedBinaryDomainCombinations()
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "z", "y" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "v", "u" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "v",
+                                                                                                                 "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "v" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                 "v" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "x" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                 "x" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "u" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                 "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "z", "y" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
+                                                                                                                 "y" ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( true );
@@ -3286,36 +3313,43 @@ public class TestSurfacing {
                 return false;
             }
             if ( calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "v", "u" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "v", "u" ) ) ) {
                 return false;
             }
             if ( !calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "w", "v" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "v" ) ) ) {
                 return false;
             }
             if ( !calc_u.getBinaryDomainCombinationsSpecificToGenome0()
-                    .contains( new BasicBinaryDomainCombination( "w", "x" ) ) ) {
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "x" ) ) ) {
                 return false;
             }
-            if ( calc_u.getSharedBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "u" ) ) ) {
+            if ( calc_u.getSharedBinaryDomainCombinations()
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "w", "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getSharedBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "z", "y" ) ) ) {
+            if ( !calc_u.getSharedBinaryDomainCombinations()
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "z", "y" ) ) ) {
                 return false;
             }
-            if ( calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "v", "u" ) ) ) {
+            if ( calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "v",
+                                                                                                                "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "v" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                 "v" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "x" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                 "x" ) ) ) {
                 return false;
             }
-            if ( calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "w", "u" ) ) ) {
+            if ( calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "w",
+                                                                                                                "u" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "z", "y" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
+                                                                                                                 "y" ) ) ) {
                 return false;
             }
             calc_u.setAllowDomainsToBeIgnored( false );
@@ -3392,10 +3426,12 @@ public class TestSurfacing {
             if ( calc_u.getAllBinaryDomainCombinations().size() != 1 ) {
                 return false;
             }
-            if ( !calc_u.getSharedBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "y", "z" ) ) ) {
+            if ( !calc_u.getSharedBinaryDomainCombinations()
+                    .contains( BasicBinaryDomainCombination.obtainInstance( "y", "z" ) ) ) {
                 return false;
             }
-            if ( !calc_u.getAllBinaryDomainCombinations().contains( new BasicBinaryDomainCombination( "z", "y" ) ) ) {
+            if ( !calc_u.getAllBinaryDomainCombinations().contains( BasicBinaryDomainCombination.obtainInstance( "z",
+                                                                                                                 "y" ) ) ) {
                 return false;
             }
             if ( !isEqual( calc_u.calculateSharedBinaryDomainCombinationBasedGenomeSimilarityScore(),
@@ -4378,128 +4414,128 @@ public class TestSurfacing {
             if ( bc0.size() != 15 ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "b", "a" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "b", "a" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "a", "c" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "c" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "a", "d" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "d" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "a", "e" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "e" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "b", "c" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "b", "c" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "b", "d" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "b", "d" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "b", "e" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "b", "e" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "c", "d" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "c", "d" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "c", "e" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "c", "e" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "d", "e" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "d", "e" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "e", "f" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "e", "f" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( !bc0.contains( new BasicBinaryDomainCombination( "g", "h" ) ) ) {
+            if ( !bc0.contains( BasicBinaryDomainCombination.obtainInstance( "g", "h" ) ) ) {
                 return false;
             }
-            if ( bc0.contains( new BasicBinaryDomainCombination( "f", "a" ) ) ) {
+            if ( bc0.contains( BasicBinaryDomainCombination.obtainInstance( "f", "a" ) ) ) {
                 return false;
             }
-            if ( bc0.contains( new BasicBinaryDomainCombination( "f", "b" ) ) ) {
+            if ( bc0.contains( BasicBinaryDomainCombination.obtainInstance( "f", "b" ) ) ) {
                 return false;
             }
-            if ( bc0.contains( new BasicBinaryDomainCombination( "a", "h" ) ) ) {
+            if ( bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "h" ) ) ) {
                 return false;
             }
-            if ( bc0.contains( new BasicBinaryDomainCombination( "a", "g" ) ) ) {
+            if ( bc0.contains( BasicBinaryDomainCombination.obtainInstance( "a", "g" ) ) ) {
                 return false;
             }
             final SortedSet<BinaryDomainCombination> bc1 = eel_ignore.toBinaryDomainCombinations();
             if ( bc1.size() != 12 ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "a", "a" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "a" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "a", "b" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "b" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "b", "a" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "b", "a" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "a", "c" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "c" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "a", "d" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "d" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "a", "e" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "e" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "b", "c" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "b", "c" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "b", "d" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "b", "d" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "b", "e" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "b", "e" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "c", "d" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "c", "d" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "c", "e" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "c", "e" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "d", "e" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "d", "e" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "e", "f" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "e", "f" ) ) ) {
                 return false;
             }
-            if ( !bc1.contains( new BasicBinaryDomainCombination( "g", "h" ) ) ) {
+            if ( !bc1.contains( BasicBinaryDomainCombination.obtainInstance( "g", "h" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "e", "e" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "e", "e" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "f", "f" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "f", "f" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "f", "a" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "f", "a" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "f", "b" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "f", "b" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "a", "g" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "a", "g" ) ) ) {
                 return false;
             }
-            if ( bc1.contains( new BasicBinaryDomainCombination( "b", "g" ) ) ) {
+            if ( bc1.contains( BasicBinaryDomainCombination.obtainInstance( "b", "g" ) ) ) {
                 return false;
             }
         }
@@ -4590,12 +4626,6 @@ public class TestSurfacing {
             if ( uba_domain.getTo() != 57 ) {
                 return false;
             }
-            if ( !Test.isEqual( uba_domain.getPerSequenceEvalue(), 0.00084 ) ) {
-                return false;
-            }
-            if ( !Test.isEqual( uba_domain.getPerSequenceScore(), 23.2 ) ) {
-                return false;
-            }
             final HmmPfamOutputParser parser2 = new HmmPfamOutputParser( new File( test_dir
                     + ForesterUtil.getFileSeparator() + "hmmpfam_output_short" ), "human", "ls" );
             parser2.setEValueMaximum( 0.2 );
@@ -4677,9 +4707,6 @@ public class TestSurfacing {
             if ( uba_domain2.getTo() != 57 ) {
                 return false;
             }
-            if ( !Test.isEqual( uba_domain2.getPerSequenceEvalue(), 0.00084 ) ) {
-                return false;
-            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -4709,7 +4736,6 @@ public class TestSurfacing {
             filter.add( "strange" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.NEGATIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4729,7 +4755,6 @@ public class TestSurfacing {
             filter.add( "strange" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.POSITIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4750,7 +4775,6 @@ public class TestSurfacing {
             filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.POSITIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4772,7 +4796,6 @@ public class TestSurfacing {
             filter.add( "X" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.NEGATIVE_DOMAIN );
             parser.setEValueMaximum( 0.2 );
@@ -4793,7 +4816,6 @@ public class TestSurfacing {
             filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.NEGATIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4812,7 +4834,6 @@ public class TestSurfacing {
             filter.add( "UIM" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.NEGATIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4834,7 +4855,6 @@ public class TestSurfacing {
             filter.add( "UIM" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.POSITIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );
@@ -4857,7 +4877,6 @@ public class TestSurfacing {
             filter.add( "C" );
             parser = new HmmPfamOutputParser( new File( test_dir + ForesterUtil.getFileSeparator() + "hmmpfam_output3" ),
                                               "human",
-                                              "ls",
                                               filter,
                                               HmmPfamOutputParser.FilterType.POSITIVE_PROTEIN );
             parser.setEValueMaximum( 0.2 );

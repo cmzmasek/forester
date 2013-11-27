@@ -171,7 +171,8 @@ public class surfacing {
     final static private String                                     DOMAIN_COUNT_SORT_COMBINATIONS_COUNT                                          = "comb";
     final static private String                                     CUTOFF_SCORE_FILE_OPTION                                                      = "cos";
     final static private String                                     NOT_IGNORE_DUFS_OPTION                                                        = "dufs";
-    final static private String                                     MAX_E_VALUE_OPTION                                                            = "e";
+    final static private String                                     MAX_FS_E_VALUE_OPTION                                                         = "fs_e";
+    final static private String                                     MAX_I_E_VALUE_OPTION                                                          = "ie";
     final static private String                                     MAX_ALLOWED_OVERLAP_OPTION                                                    = "mo";
     final static private String                                     NO_ENGULFING_OVERLAP_OPTION                                                   = "no_eo";
     final static private String                                     IGNORE_COMBINATION_WITH_SAME_OPTION                                           = "ignore_self_comb";
@@ -213,8 +214,8 @@ public class surfacing {
     final static private String                                     INPUT_GENOMES_FILE_OPTION                                                     = "genomes";
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
-    final static private String                                     PRG_VERSION                                                                   = "2.401";
-    final static private String                                     PRG_DATE                                                                      = "131125";
+    final static private String                                     PRG_VERSION                                                                   = "2.402";
+    final static private String                                     PRG_DATE                                                                      = "131126";
     final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -254,6 +255,7 @@ public class surfacing {
     private static final String                                     DATA_FILE_SUFFIX                                                              = "_domain_combination_data.txt";
     private static final String                                     DATA_FILE_DESC                                                                = "#SPECIES\tPRTEIN_ID\tN_TERM_DOMAIN\tC_TERM_DOMAIN\tN_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tC_TERM_DOMAIN_PER_DOMAIN_E_VALUE\tN_TERM_DOMAIN_COUNTS_PER_PROTEIN\tC_TERM_DOMAIN_COUNTS_PER_PROTEIN";
     private static final String                                     WRITE_TO_NEXUS_OPTION                                                         = "nexus";
+    private static final String                                     PERFORM_DC_FITCH                                                              = "dc_pars";
     private static final INDIVIDUAL_SCORE_CUTOFF                    INDIVIDUAL_SCORE_CUTOFF_DEFAULT                                               = INDIVIDUAL_SCORE_CUTOFF.FULL_SEQUENCE;                                                                                                                                                      //TODO look at me! change?
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_COUNTS_OUTPUT_SUFFIX                          = "_indep_dc_gains_fitch_counts.txt";
     public static final String                                      INDEPENDENT_DC_GAINS_FITCH_PARS_DC_OUTPUT_SUFFIX                              = "_indep_dc_gains_fitch_lists.txt";
@@ -301,7 +303,8 @@ public class surfacing {
         }
         final List<String> allowed_options = new ArrayList<String>();
         allowed_options.add( surfacing.NOT_IGNORE_DUFS_OPTION );
-        allowed_options.add( surfacing.MAX_E_VALUE_OPTION );
+        allowed_options.add( surfacing.MAX_FS_E_VALUE_OPTION );
+        allowed_options.add( surfacing.MAX_I_E_VALUE_OPTION );
         allowed_options.add( surfacing.DETAILEDNESS_OPTION );
         allowed_options.add( surfacing.OUTPUT_FILE_OPTION );
         allowed_options.add( surfacing.DOMAIN_SIMILARITY_SORT_OPTION );
@@ -339,9 +342,11 @@ public class surfacing {
         allowed_options.add( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION );
         allowed_options.add( DA_ANALYSIS_OPTION );
         allowed_options.add( USE_LAST_IN_FITCH_OPTION );
+        allowed_options.add( PERFORM_DC_FITCH );
         boolean ignore_dufs = surfacing.IGNORE_DUFS_DEFAULT;
         boolean ignore_combination_with_same = surfacing.IGNORE_COMBINATION_WITH_SAME_DEFAULLT;
-        double e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
+        double fs_e_value_max = surfacing.MAX_E_VALUE_DEFAULT;
+        double ie_value_max = surfacing.MAX_E_VALUE_DEFAULT;
         int max_allowed_overlap = surfacing.MAX_ALLOWED_OVERLAP_DEFAULT;
         final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
         if ( dissallowed_options.length() > 0 ) {
@@ -355,6 +360,10 @@ public class surfacing {
         if ( cla.isOptionSet( WRITE_TO_NEXUS_OPTION ) ) {
             write_to_nexus = true;
         }
+        boolean perform_dc_fich = false;
+        if ( cla.isOptionSet( PERFORM_DC_FITCH ) ) {
+            perform_dc_fich = true;
+        }
         boolean perform_dc_regain_proteins_stats = false;
         if ( cla.isOptionSet( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION ) ) {
             perform_dc_regain_proteins_stats = true;
@@ -367,9 +376,17 @@ public class surfacing {
         if ( cla.isOptionSet( DOMAIN_COMBINITONS_OUTPUT_OPTION_FOR_GRAPH_ANALYSIS ) ) {
             output_binary_domain_combinationsfor_graph_analysis = true;
         }
-        if ( cla.isOptionSet( surfacing.MAX_E_VALUE_OPTION ) ) {
+        if ( cla.isOptionSet( surfacing.MAX_FS_E_VALUE_OPTION ) ) {
             try {
-                e_value_max = cla.getOptionValueAsDouble( surfacing.MAX_E_VALUE_OPTION );
+                fs_e_value_max = cla.getOptionValueAsDouble( surfacing.MAX_FS_E_VALUE_OPTION );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for E-value maximum" );
+            }
+        }
+        if ( cla.isOptionSet( surfacing.MAX_I_E_VALUE_OPTION ) ) {
+            try {
+                ie_value_max = cla.getOptionValueAsDouble( surfacing.MAX_I_E_VALUE_OPTION );
             }
             catch ( final Exception e ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "no acceptable value for E-value maximum" );
@@ -1037,9 +1054,13 @@ public class surfacing {
             System.out.println( "Cutoff scores file          : " + cutoff_scores_file );
             html_desc.append( "<tr><td>Cutoff scores file:</td><td>" + cutoff_scores_file + "</td></tr>" + nl );
         }
-        if ( e_value_max >= 0.0 ) {
-            System.out.println( "E-value maximum (inclusive) : " + e_value_max );
-            html_desc.append( "<tr><td>E-value maximum (inclusive):</td><td>" + e_value_max + "</td></tr>" + nl );
+        if ( ie_value_max >= 0.0 ) {
+            System.out.println( "iE-value maximum (incl)     : " + ie_value_max );
+            html_desc.append( "<tr><td>iE-value maximum (inclusive):</td><td>" + ie_value_max + "</td></tr>" + nl );
+        }
+        if ( fs_e_value_max >= 0.0 ) {
+            System.out.println( "FS E-value maximum (incl)   : " + fs_e_value_max );
+            html_desc.append( "<tr><td>FS E-value maximum (inclusive):</td><td>" + fs_e_value_max + "</td></tr>" + nl );
         }
         if ( output_protein_lists_for_all_domains ) {
             System.out.println( "Domain E-value max          : " + output_list_of_all_proteins_per_domain_e_value_max );
@@ -1084,14 +1105,20 @@ public class surfacing {
                     + ( dc_type == BinaryDomainCombination.DomainCombinationType.DIRECTED_ADJACTANT ) + "</td></tr>"
                     + nl );
         }
-        System.out.println( "Use last in Fitch parimony  : " + use_last_in_fitch_parsimony );
-        html_desc.append( "<tr><td>Use last in Fitch parimon:</td><td>" + use_last_in_fitch_parsimony + "</td></tr>"
-                + nl );
+        System.out.println( "Fitch parsimony of DCs      : " + perform_dc_fich );
+        html_desc.append( "<tr><td>Fitch parsimony of DCs:</td><td>" + perform_dc_fich + "</td></tr>" + nl );
+        if ( perform_dc_fich ) {
+            System.out.println( "Use last in Fitch parsimony : " + use_last_in_fitch_parsimony );
+            html_desc.append( "<tr><td>Use last in Fitch parsimony:</td><td>" + use_last_in_fitch_parsimony
+                    + "</td></tr>" + nl );
+        }
         System.out.println( "Write to Nexus files        : " + write_to_nexus );
         html_desc.append( "<tr><td>Write to Nexus files:</td><td>" + write_to_nexus + "</td></tr>" + nl );
-        System.out.println( "DC regain prot stats        : " + perform_dc_regain_proteins_stats );
-        html_desc.append( "<tr><td>DC regain prot stats:</td><td>" + perform_dc_regain_proteins_stats + "</td></tr>"
-                + nl );
+        if ( perform_dc_fich ) {
+            System.out.println( "DC regain prot stats        : " + perform_dc_regain_proteins_stats );
+            html_desc.append( "<tr><td>DC regain prot stats:</td><td>" + perform_dc_regain_proteins_stats
+                    + "</td></tr>" + nl );
+        }
         System.out.println( "DA analysis                 : " + da_analysis );
         html_desc.append( "<tr><td>DA analysis :</td><td>" + da_analysis + "</td></tr>" + nl );
         System.out.print( "Domain counts sort order    : " );
@@ -1310,7 +1337,8 @@ public class surfacing {
             }
         } // if ( perform_pwc ) {
         System.out.println();
-        html_desc.append( "<tr><td>Command line:</td><td>\n" + cla.getCommandLineArgsAsString() + "\n</td></tr>" + nl );
+        html_desc.append( "<tr><td>Command line:</td><td>" + nl + nl + cla.getCommandLineArgsAsString() + nl + nl
+                + "</td></tr>" + nl );
         System.out.println( "Command line                : " + cla.getCommandLineArgsAsString() );
         BufferedWriter[] query_domains_writer_ary = null;
         List<String>[] query_domain_ids_array = null;
@@ -1469,8 +1497,11 @@ public class surfacing {
                                                           ind_score_cutoff,
                                                           true );
             }
-            if ( e_value_max >= 0.0 ) {
-                parser.setEValueMaximum( e_value_max );
+            if ( fs_e_value_max >= 0.0 ) {
+                parser.setFsEValueMaximum( fs_e_value_max );
+            }
+            if ( ie_value_max >= 0.0 ) {
+                parser.setIEValueMaximum( ie_value_max );
             }
             parser.setIgnoreDufs( ignore_dufs );
             parser.setIgnoreVirusLikeIds( ignore_virus_like_ids );
@@ -1533,10 +1564,15 @@ public class surfacing {
             SurfacingUtil.log( "Domains ignored due to individual score cutoffs: "
                                        + parser.getDomainsIgnoredDueToIndividualScoreCutoff(),
                                log_writer );
-            System.out.println( "Domains ignored due to E-value                 : "
-                    + parser.getDomainsIgnoredDueToEval() );
-            SurfacingUtil.log( "Domains ignored due to E-value                 : "
-                                       + parser.getDomainsIgnoredDueToEval(),
+            System.out.println( "Domains ignored due to FS E-value              : "
+                    + parser.getDomainsIgnoredDueToFsEval() );
+            SurfacingUtil.log( "Domains ignored due to FS E-value              : "
+                                       + parser.getDomainsIgnoredDueToFsEval(),
+                               log_writer );
+            System.out.println( "Domains ignored due to iE-value                : "
+                    + parser.getDomainsIgnoredDueToIEval() );
+            SurfacingUtil.log( "Domains ignored due to iE-value                : "
+                                       + parser.getDomainsIgnoredDueToIEval(),
                                log_writer );
             System.out.println( "Domains ignored due to DUF designation         : "
                     + parser.getDomainsIgnoredDueToDuf() );
@@ -1908,7 +1944,8 @@ public class surfacing {
         }
         if ( ( ( intrees != null ) && ( intrees.length > 0 ) ) && ( number_of_genomes > 2 ) ) {
             final StringBuilder parameters_sb = SurfacingUtil.createParametersAsString( ignore_dufs,
-                                                                                        e_value_max,
+                                                                                        ie_value_max,
+                                                                                        fs_e_value_max,
                                                                                         max_allowed_overlap,
                                                                                         no_engulfing_overlaps,
                                                                                         cutoff_scores_file,
@@ -1943,7 +1980,8 @@ public class surfacing {
                                                         domain_length_stats_by_domain,
                                                         tax_code_to_id_map,
                                                         write_to_nexus,
-                                                        use_last_in_fitch_parsimony );
+                                                        use_last_in_fitch_parsimony,
+                                                        perform_dc_fich );
                 // Listing of all domain combinations gained is only done if only one input tree is used. 
                 if ( ( domain_id_to_secondary_features_maps != null )
                         && ( domain_id_to_secondary_features_maps.length > 0 ) ) {
@@ -2075,7 +2113,8 @@ public class surfacing {
         System.out.println( surfacing.DOMAIN_SIMILARITY_SORT_OPTION + ": sorting for similarities (default: "
                 + DOMAIN_SORT_FILD_DEFAULT + ")" );
         System.out.println( surfacing.OUTPUT_FILE_OPTION + ": name for (main) output file (mandatory)" );
-        System.out.println( surfacing.MAX_E_VALUE_OPTION + ": max (inclusive) E-value" );
+        System.out.println( surfacing.MAX_I_E_VALUE_OPTION + ": max (inclusive) iE-value" );
+        System.out.println( surfacing.MAX_FS_E_VALUE_OPTION + ": max (inclusive) FS E-value" );
         System.out.println( surfacing.MAX_ALLOWED_OVERLAP_OPTION + ": maximal allowed domain overlap" );
         System.out.println( surfacing.NO_ENGULFING_OVERLAP_OPTION + ": to ignore engulfed lower confidence domains" );
         System.out.println( surfacing.SPECIES_MATRIX_OPTION + ": species matrix" );
@@ -2125,6 +2164,7 @@ public class surfacing {
                 + ": e value max per domain for output of all proteins per domain" );
         System.out.println( surfacing.USE_LAST_IN_FITCH_OPTION + ": to use last in Fitch parsimony" );
         System.out.println( surfacing.WRITE_TO_NEXUS_OPTION + ": to output in Nexus format" );
+        System.out.println( PERFORM_DC_FITCH + ": to perform DC Fitch parsimony" );
         System.out.println( PERFORM_DC_REGAIN_PROTEINS_STATS_OPTION + ": to perform DC regain protein statistics" );
         System.out.println( DA_ANALYSIS_OPTION + ": to do DA analysis" );
         System.out.println();
@@ -2136,7 +2176,7 @@ public class surfacing {
         System.out.println( "Example 2: java -Xms128m -Xmx512m -cp path/to/forester.jar"
                 + " org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
                 + " -cos=Pfam_ls_22_TC2 -p2g=pfam2go -obo=gene_ontology_edit.obo "
-                + "-dc_sort=dom -ignore_with_self -no_singles -e=0.001 -mo=1 -no_eo -genomes=eukaryotes.txt "
+                + "-dc_sort=dom -ignore_with_self -no_singles -ie=0.001 -mo=1 -no_eo -genomes=eukaryotes.txt "
                 + "-ds_output=detailed_html -scoring=domains -sort=alpha " );
         System.out.println();
     }

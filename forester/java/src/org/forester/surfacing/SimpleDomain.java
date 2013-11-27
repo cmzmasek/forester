@@ -26,6 +26,7 @@
 
 package org.forester.surfacing;
 
+import org.forester.protein.BasicDomain;
 import org.forester.protein.Domain;
 import org.forester.util.ForesterUtil;
 
@@ -35,19 +36,15 @@ import org.forester.util.ForesterUtil;
  */
 public class SimpleDomain implements Domain {
 
-    final private String _id;
+    final private short _id;
 
     public SimpleDomain( final String id ) {
         if ( ForesterUtil.isEmpty( id ) ) {
             throw new IllegalArgumentException( "attempt to create protein domain with null or empty id" );
         }
-        _id = id;
+        _id = BasicDomain.obtainIdAsShort( id );
     }
 
-    // ^^  @Override
-    // ^^  public void addGoId( final GoId go_id ) {
-    // ^^     throw new RuntimeException( "method not implemented" );
-    // ^^ }
     @Override
     public int compareTo( final Domain domain ) {
         if ( this == domain ) {
@@ -58,7 +55,7 @@ public class SimpleDomain implements Domain {
 
     @Override
     public String getDomainId() {
-        return _id;
+        return BasicDomain.obtainIdFromShort( _id );
     }
 
     @Override
@@ -66,10 +63,6 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
-    // ^^   @Override
-    // ^^   public GoId getGoId( final int i ) {
-    // ^^      throw new RuntimeException( "method not implemented" );
-    // ^^  }
     @Override
     public int getLength() {
         throw new RuntimeException( "method not implemented" );
@@ -80,10 +73,6 @@ public class SimpleDomain implements Domain {
         throw new RuntimeException( "method not implemented" );
     }
 
-    // ^^   @Override
-    // ^^  public int getNumberOfGoIds() {
-    // ^^      throw new RuntimeException( "method not implemented" );
-    // ^^ }
     @Override
     public double getPerDomainEvalue() {
         throw new RuntimeException( "method not implemented" );
@@ -95,34 +84,12 @@ public class SimpleDomain implements Domain {
     }
 
     @Override
-    public double getPerSequenceEvalue() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
-    @Override
-    public double getPerSequenceScore() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
-    public String getSearchParameter() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
-    @Override
     public int getTo() {
         throw new RuntimeException( "method not implemented" );
     }
 
     @Override
     public short getTotalCount() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
-    public boolean isCompleteQueryMatch() {
-        throw new RuntimeException( "method not implemented" );
-    }
-
-    public boolean isCompleteTargetMatch() {
         throw new RuntimeException( "method not implemented" );
     }
 }

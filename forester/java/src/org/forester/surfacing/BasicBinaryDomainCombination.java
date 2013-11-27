@@ -29,34 +29,23 @@ package org.forester.surfacing;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.forester.protein.BasicDomain;
 import org.forester.protein.BinaryDomainCombination;
 import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    final static Map<Short, String> id2str = new HashMap<Short, String>();
-    final static Map<String, Short> str2id = new HashMap<String, Short>();
-    static short                    count  = 0;
-    short                           _id0;
-    short                           _id1;
+    final private static Map<Integer, BasicBinaryDomainCombination> DC_POOL = new HashMap<Integer, BasicBinaryDomainCombination>();
+    final private static Map<Integer, String>                       S_POOL  = new HashMap<Integer, String>();
+    short                                                           _id0;
+    short                                                           _id1;
 
-    static short getId( final String id ) {
-        if ( !str2id.containsKey( id ) ) {
-            if ( count >= Short.MAX_VALUE ) {
-                throw new RuntimeException( "too many domain ids!" );
-            }
-            id2str.put( count, id );
-            str2id.put( id, count );
-            ++count;
-        }
-        return  str2id.get( id ) ;
+    BasicBinaryDomainCombination() {
+        _id0 = -1;
+        _id1 = -1;
     }
 
-     static String getStr( final short id ) {
-        return id2str.get( id );
-    }
-
-    public BasicBinaryDomainCombination( final String id0, final String id1 ) {
+    private BasicBinaryDomainCombination( final String id0, final String id1 ) {
         if ( ( id0 == null ) || ( id1 == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
@@ -64,23 +53,17 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
             throw new IllegalArgumentException( "ill formatted domain id: " + id0 + ", " + id1 );
         }
         if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
-           _id0 = getId( id0 );
-           _id1 = getId( id1 );
+            _id0 = BasicDomain.obtainIdAsShort( id0 );
+            _id1 = BasicDomain.obtainIdAsShort( id1 );
         }
         else {
-            // _data = id1 + SEPARATOR + id0;
-            _id0 = getId( id1 );
-            _id1 = getId( id0 );
+            _id0 = BasicDomain.obtainIdAsShort( id1 );
+            _id1 = BasicDomain.obtainIdAsShort( id0 );
         }
-    }
-
-    BasicBinaryDomainCombination() {
-        _id0 = -1;
-        _id1 = -1;
     }
 
     @Override
-    public int compareTo( final BinaryDomainCombination binary_domain_combination ) {
+    final public int compareTo( final BinaryDomainCombination binary_domain_combination ) {
         if ( binary_domain_combination.getClass() != this.getClass() ) {
             throw new IllegalArgumentException( "attempt to compare [" + binary_domain_combination.getClass() + "] to "
                     + "[" + this.getClass() + "]" );
@@ -98,7 +81,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     }
 
     @Override
-    public boolean equals( final Object o ) {
+    final public boolean equals( final Object o ) {
         if ( this == o ) {
             return true;
         }
@@ -110,32 +93,40 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
                     + o.getClass() + "]" );
         }
         else {
-            return ( getId0().equals( ( ( BinaryDomainCombination ) o ).getId0() ) )
-                    && ( getId1().equals( ( ( BinaryDomainCombination ) o ).getId1() ) );
+            return ( getId0Code() == ( ( BinaryDomainCombination ) o ).getId0Code() )
+                    && ( getId1Code() == ( ( BinaryDomainCombination ) o ).getId1Code() );
         }
     }
 
     @Override
-    public String getId0() {
-        //return _data.substring( 0, _data.indexOf( SEPARATOR ) );
-        return getStr( _id0 );
+    final public String getId0() {
+        return BasicDomain.obtainIdFromShort( _id0 );
     }
 
     @Override
-    public String getId1() {
-        //return _data.substring( _data.indexOf( SEPARATOR ) + 1 );
-        return getStr( _id1 );
+    final public short getId0Code() {
+        return _id0;
     }
 
     @Override
-    public int hashCode() {
-        return getAsStr().hashCode();
+    final public String getId1() {
+        return BasicDomain.obtainIdFromShort( _id1 );
     }
 
     @Override
-    public StringBuffer toGraphDescribingLanguage( final OutputFormat format,
-                                                   final String node_attribute,
-                                                   final String edge_attribute ) {
+    final public short getId1Code() {
+        return _id1;
+    }
+
+    @Override
+    final public int hashCode() {
+        return calcCode( _id0, _id1 );
+    }
+
+    @Override
+    final public StringBuffer toGraphDescribingLanguage( final OutputFormat format,
+                                                         final String node_attribute,
+                                                         final String edge_attribute ) {
         final StringBuffer sb = new StringBuffer();
         switch ( format ) {
             case DOT:
@@ -177,15 +168,22 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
     }
 
     @Override
-    public String toString() {
-        return getAsStr();
+    final public String toString() {
+        final int code = calcCode( _id0, _id1 );
+        if ( S_POOL.containsKey( code ) ) {
+            return S_POOL.get( code );
+        }
+        else {
+            final String s = getId0() + SEPARATOR + getId1();
+            S_POOL.put( code, s );
+            if ( S_POOL.size() % 100 == 0 ) {
+                System.out.println( "ss=" + S_POOL.size() );
+            }
+            return s;
+        }
     }
 
-    private String getAsStr() {
-        return getId0() + SEPARATOR + getId1();
-    }
-
-    public static BinaryDomainCombination createInstance( final String ids ) {
+    public static BinaryDomainCombination obtainInstance( final String ids ) {
         if ( ids.indexOf( BinaryDomainCombination.SEPARATOR ) < 1 ) {
             throw new IllegalArgumentException( "Unexpected format for binary domain combination [" + ids + "]" );
         }
@@ -193,6 +191,31 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         if ( ids_ary.length != 2 ) {
             throw new IllegalArgumentException( "Unexpected format for binary domain combination [" + ids + "]" );
         }
-        return new BasicBinaryDomainCombination( ids_ary[ 0 ], ids_ary[ 1 ] );
+        return BasicBinaryDomainCombination.obtainInstance( ids_ary[ 0 ], ids_ary[ 1 ] );
+    }
+
+    public static BasicBinaryDomainCombination obtainInstance( final String id0, final String id1 ) {
+        int code;
+        if ( id0.toLowerCase().compareTo( id1.toLowerCase() ) < 0 ) {
+            code = calcCode( BasicDomain.obtainIdAsShort( id0 ), BasicDomain.obtainIdAsShort( id1 ) );
+        }
+        else {
+            code = calcCode( BasicDomain.obtainIdAsShort( id1 ), BasicDomain.obtainIdAsShort( id0 ) );
+        }
+        if ( DC_POOL.containsKey( code ) ) {
+            return DC_POOL.get( code );
+        }
+        else {
+            final BasicBinaryDomainCombination dc = new BasicBinaryDomainCombination( id0, id1 );
+            DC_POOL.put( code, dc );
+            if ( DC_POOL.size() % 100 == 0 ) {
+                System.out.println( "s=" + DC_POOL.size() );
+            }
+            return dc;
+        }
+    }
+
+    final static int calcCode( final int id0, final int id1 ) {
+        return ( id0 * ( Short.MAX_VALUE + 1 ) ) + id1;
     }
 }

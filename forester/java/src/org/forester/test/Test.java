@@ -175,8 +175,8 @@ public final class Test {
             if ( ForesterUtil.calculateOverlap( d4, covered ) != 2 ) {
                 return false;
             }
-            final Domain a = new BasicDomain( "a", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 0.01, 1 );
-            final Domain b = new BasicDomain( "b", ( short ) 2, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain a = new BasicDomain( "a", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 1, -1 );
+            final Domain b = new BasicDomain( "b", ( short ) 2, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, -1 );
             final Protein ab = new BasicProtein( "ab", "varanus", 0 );
             ab.addProteinDomain( a );
             ab.addProteinDomain( b );
@@ -187,7 +187,7 @@ public final class Test {
             if ( ab_s0.getNumberOfProteinDomains() != 1 ) {
                 return false;
             }
-            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().equals( "a" ) ) {
+            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().equals( "b" ) ) {
                 return false;
             }
             final Protein ab_s1 = ForesterUtil.removeOverlappingDomains( 4, false, ab );
@@ -5103,7 +5103,10 @@ public final class Test {
             if ( parser2.getDomainsIgnoredDueToDuf() != 0 ) {
                 return false;
             }
-            if ( parser2.getDomainsIgnoredDueToEval() != 0 ) {
+            if ( parser2.getDomainsIgnoredDueToFsEval() != 0 ) {
+                return false;
+            }
+            if ( parser2.getDomainsIgnoredDueToIEval() != 0 ) {
                 return false;
             }
             final Protein p1 = proteins.get( 0 );
@@ -5141,12 +5144,6 @@ public final class Test {
                 return false;
             }
             if ( !Test.isEqual( p4.getProteinDomain( 0 ).getPerDomainScore(), 135.7 ) ) {
-                return false;
-            }
-            if ( !Test.isEqual( p4.getProteinDomain( 0 ).getPerSequenceEvalue(), 8.3e-40 ) ) {
-                return false;
-            }
-            if ( !Test.isEqual( p4.getProteinDomain( 0 ).getPerSequenceScore(), 136.3 ) ) {
                 return false;
             }
             if ( !Test.isEqual( p4.getProteinDomain( 0 ).getNumber(), 1 ) ) {

@@ -26,23 +26,26 @@
 
 package org.forester.surfacing;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.forester.protein.BasicDomain;
 import org.forester.protein.BinaryDomainCombination;
 
 public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainCombination {
 
-    public AdjactantDirectedBinaryDomainCombination( final String n_terminal, final String c_terminal ) {
+    final private static Map<Integer, AdjactantDirectedBinaryDomainCombination> ADDC_POOL = new HashMap<Integer, AdjactantDirectedBinaryDomainCombination>();
+
+    private AdjactantDirectedBinaryDomainCombination( final String n_terminal, final String c_terminal ) {
         super();
         if ( ( n_terminal == null ) || ( c_terminal == null ) ) {
             throw new IllegalArgumentException( "attempt to create binary domain combination using null" );
         }
-        // _id0 = n_terminal;
-        // _id1 = c_terminal;
-       // _data = n_terminal + SEPARATOR + c_terminal;
-        _id0 = getId( n_terminal );
-        _id1 = getId( c_terminal );
+        _id0 = BasicDomain.obtainIdAsShort( n_terminal );
+        _id1 = BasicDomain.obtainIdAsShort( c_terminal );
     }
 
-    public static AdjactantDirectedBinaryDomainCombination createInstance( final String ids ) {
+    public final static AdjactantDirectedBinaryDomainCombination obtainInstance( final String ids ) {
         if ( ids.indexOf( BinaryDomainCombination.SEPARATOR ) < 1 ) {
             throw new IllegalArgumentException( "Unexpected format for binary domain combination [" + ids + "]" );
         }
@@ -50,6 +53,20 @@ public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainC
         if ( ids_ary.length != 2 ) {
             throw new IllegalArgumentException( "Unexpected format for binary domain combination [" + ids + "]" );
         }
-        return new AdjactantDirectedBinaryDomainCombination( ids_ary[ 0 ], ids_ary[ 1 ] );
+        return AdjactantDirectedBinaryDomainCombination.obtainInstance( ids_ary[ 0 ], ids_ary[ 1 ] );
+    }
+
+    public final static AdjactantDirectedBinaryDomainCombination obtainInstance( final String n_terminal,
+                                                                                 final String c_terminal ) {
+        final int code = calcCode( BasicDomain.obtainIdAsShort( n_terminal ), BasicDomain.obtainIdAsShort( c_terminal ) );
+        if ( ADDC_POOL.containsKey( code ) ) {
+            return ADDC_POOL.get( code );
+        }
+        else {
+            final AdjactantDirectedBinaryDomainCombination dc = new AdjactantDirectedBinaryDomainCombination( n_terminal,
+                                                                                                              c_terminal );
+            ADDC_POOL.put( code, dc );
+            return dc;
+        }
     }
 }

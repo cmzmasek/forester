@@ -45,7 +45,7 @@ public class AdjactantDirectedCombinableDomains extends BasicCombinableDomains {
         for( final String domain : getCombiningDomains().keySet() ) {
             // Precondition (!): key domain is most upstream domain.
             //TODO ensure this is true.
-            binary_combinations.add( new AdjactantDirectedBinaryDomainCombination( getKeyDomain(), domain ) );
+            binary_combinations.add( AdjactantDirectedBinaryDomainCombination.obtainInstance( getKeyDomain(), domain ) );
         }
         return binary_combinations;
     }

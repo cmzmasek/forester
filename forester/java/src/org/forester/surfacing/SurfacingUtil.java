@@ -107,13 +107,12 @@ public final class SurfacingUtil {
                                                                                   @Override
                                                                                   public int compare( final Domain d1,
                                                                                                       final Domain d2 ) {
-                                                                                      if ( d1.getPerSequenceEvalue() < d2
-                                                                                              .getPerSequenceEvalue() ) {
+                                                                                      if ( d1.getPerDomainEvalue() < d2
+                                                                                              .getPerDomainEvalue() ) {
                                                                                           return -1;
                                                                                       }
-                                                                                      else if ( d1
-                                                                                              .getPerSequenceEvalue() > d2
-                                                                                              .getPerSequenceEvalue() ) {
+                                                                                      else if ( d1.getPerDomainEvalue() > d2
+                                                                                              .getPerDomainEvalue() ) {
                                                                                           return 1;
                                                                                       }
                                                                                       else {
@@ -199,14 +198,14 @@ public final class SurfacingUtil {
                         || ( !get_gains && ( matrix.getState( id, c ) == CharacterStateMatrix.GainLossStates.LOSS ) ) ) {
                     if ( dc_type == BinaryDomainCombination.DomainCombinationType.DIRECTED_ADJACTANT ) {
                         all_binary_domains_combination_gained.add( AdjactantDirectedBinaryDomainCombination
-                                .createInstance( matrix.getCharacter( c ) ) );
+                                .obtainInstance( matrix.getCharacter( c ) ) );
                     }
                     else if ( dc_type == BinaryDomainCombination.DomainCombinationType.DIRECTED ) {
                         all_binary_domains_combination_gained.add( DirectedBinaryDomainCombination
-                                .createInstance( matrix.getCharacter( c ) ) );
+                                .obtainInstance( matrix.getCharacter( c ) ) );
                     }
                     else {
-                        all_binary_domains_combination_gained.add( BasicBinaryDomainCombination.createInstance( matrix
+                        all_binary_domains_combination_gained.add( BasicBinaryDomainCombination.obtainInstance( matrix
                                 .getCharacter( c ) ) );
                     }
                 }
@@ -249,13 +248,15 @@ public final class SurfacingUtil {
     }
 
     public static StringBuilder createParametersAsString( final boolean ignore_dufs,
-                                                          final double e_value_max,
+                                                          final double ie_value_max,
+                                                          final double fs_e_value_max,
                                                           final int max_allowed_overlap,
                                                           final boolean no_engulfing_overlaps,
                                                           final File cutoff_scores_file,
                                                           final BinaryDomainCombination.DomainCombinationType dc_type ) {
         final StringBuilder parameters_sb = new StringBuilder();
-        parameters_sb.append( "E-value: " + e_value_max );
+        parameters_sb.append( "iE-value: " + ie_value_max );
+        parameters_sb.append( ", FS E-value: " + fs_e_value_max );
         if ( cutoff_scores_file != null ) {
             parameters_sb.append( ", Cutoff-scores-file: " + cutoff_scores_file );
         }
@@ -667,6 +668,7 @@ public final class SurfacingUtil {
      * 
      * @param all_binary_domains_combination_lost_fitch 
      * @param use_last_in_fitch_parsimony 
+     * @param perform_dc_fich 
      * @param consider_directedness_and_adjacency_for_bin_combinations 
      * @param all_binary_domains_combination_gained if null ignored, otherwise this is to list all binary domain combinations
      * which were gained under unweighted (Fitch) parsimony.
@@ -691,7 +693,8 @@ public final class SurfacingUtil {
                                                  final Map<String, DescriptiveStatistics> domain_length_stats_by_domain,
                                                  final Map<String, Integer> tax_code_to_id_map,
                                                  final boolean write_to_nexus,
-                                                 final boolean use_last_in_fitch_parsimony ) {
+                                                 final boolean use_last_in_fitch_parsimony,
+                                                 final boolean perform_dc_fich ) {
         final String sep = ForesterUtil.LINE_SEPARATOR + "###################" + ForesterUtil.LINE_SEPARATOR;
         final String date_time = ForesterUtil.getCurrentDateTime();
         final SortedSet<String> all_pfams_encountered = new TreeSet<String>();
@@ -794,7 +797,7 @@ public final class SurfacingUtil {
             e.printStackTrace();
             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );
         }
-        if ( domain_parsimony.calculateNumberOfBinaryDomainCombination() > 0 ) {
+        if ( perform_dc_fich && ( domain_parsimony.calculateNumberOfBinaryDomainCombination() > 0 ) ) {
             // FITCH DOMAIN COMBINATIONS
             // -------------------------
             local_phylogeny_l = phylogeny.copy();
@@ -1957,7 +1960,7 @@ public final class SurfacingUtil {
                                     .getState( id, c ) == CharacterStateMatrix.GainLossStates.UNCHANGED_PRESENT ) ) ) ) {
                         BinaryDomainCombination bdc = null;
                         try {
-                            bdc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( c ) );
+                            bdc = BasicBinaryDomainCombination.obtainInstance( matrix.getCharacter( c ) );
                         }
                         catch ( final Exception e ) {
                             ForesterUtil.fatalError( surfacing.PRG_NAME, e.getLocalizedMessage() );

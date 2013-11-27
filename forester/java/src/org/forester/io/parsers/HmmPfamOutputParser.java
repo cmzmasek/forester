@@ -64,7 +64,6 @@ public final class HmmPfamOutputParser {
     private final FilterType        _filter_type;
     private final File              _input_file;
     private final String            _species;
-    private final String            _model_type;
     private double                  _e_value_maximum;
     private Map<String, String>     _individual_domain_score_cutoffs;
     private boolean                 _ignore_dufs;
@@ -93,7 +92,6 @@ public final class HmmPfamOutputParser {
     public HmmPfamOutputParser( final File input_file, final String species, final String model_type ) {
         _input_file = input_file;
         _species = species;
-        _model_type = model_type;
         _filter = null;
         _filter_type = FilterType.NONE;
         init();
@@ -101,12 +99,10 @@ public final class HmmPfamOutputParser {
 
     public HmmPfamOutputParser( final File input_file,
                                 final String species,
-                                final String model_type,
                                 final Set<String> filter,
                                 final FilterType filter_type ) {
         _input_file = input_file;
         _species = species;
-        _model_type = model_type;
         _filter = filter;
         _filter_type = filter_type;
         init();
@@ -216,10 +212,6 @@ public final class HmmPfamOutputParser {
 
     private int getMaxAllowedOverlap() {
         return _max_allowed_overlap;
-    }
-
-    private String getModelType() {
-        return _model_type;
     }
 
     public int getProteinsEncountered() {
@@ -436,8 +428,6 @@ public final class HmmPfamOutputParser {
                 int to = -1;
                 double e_value = -1;
                 double score = -1;
-                boolean is_complete_hmm_match = false;
-                boolean is_complete_query_match = false;
                 try {
                     from = Integer.valueOf( from_str ).intValue();
                 }
@@ -467,7 +457,7 @@ public final class HmmPfamOutputParser {
                             + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 if ( hmm_match_str.equals( "[]" ) ) {
-                    is_complete_hmm_match = true;
+                    //is_complete_hmm_match = true;
                 }
                 else if ( !( hmm_match_str.equals( ".]" ) || hmm_match_str.equals( "[." ) || hmm_match_str
                         .equals( ".." ) ) ) {
@@ -475,7 +465,7 @@ public final class HmmPfamOutputParser {
                             + line_number + "] in [" + getInputFile().getCanonicalPath() + "]" );
                 }
                 if ( query_match_str.equals( ".." ) ) {
-                    is_complete_query_match = true;
+                    // is_complete_query_match = true;
                 }
                 else if ( !( query_match_str.equals( ".]" ) || query_match_str.equals( "[." ) || query_match_str
                         .equals( "[]" ) ) ) {

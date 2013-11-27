@@ -579,13 +579,13 @@ public final class DomainParsimonyCalculator {
             for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
                 BinaryDomainCombination bc = null;
                 if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED_ADJACTANT ) {
-                    bc = AdjactantDirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = AdjactantDirectedBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 else if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED ) {
-                    bc = DirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = DirectedBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 else {
-                    bc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = BasicBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 if ( binary_combinations_per_genome[ identifier_index ].contains( bc ) ) {
                     matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
@@ -713,13 +713,13 @@ public final class DomainParsimonyCalculator {
             for( int ci = 0; ci < matrix.getNumberOfCharacters(); ++ci ) {
                 BinaryDomainCombination bc = null;
                 if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED_ADJACTANT ) {
-                    bc = AdjactantDirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = AdjactantDirectedBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 else if ( gwcd.getDomainCombinationType() == DomainCombinationType.DIRECTED ) {
-                    bc = DirectedBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = DirectedBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 else {
-                    bc = BasicBinaryDomainCombination.createInstance( matrix.getCharacter( ci ) );
+                    bc = BasicBinaryDomainCombination.obtainInstance( matrix.getCharacter( ci ) );
                 }
                 if ( binary_combinations_per_genome_mapped[ identifier_index ].contains( bc ) ) {
                     matrix.setState( identifier_index, ci, CharacterStateMatrix.BinaryStates.PRESENT );
@@ -877,6 +877,7 @@ public final class DomainParsimonyCalculator {
         else {
             id1 = domain_id_to_second_features_map.get( bc.getId1() );
         }
-        return new BasicBinaryDomainCombination( id0, id1 );
+        //   return new BasicBinaryDomainCombination( id0, id1 );
+        return BasicBinaryDomainCombination.obtainInstance( id0, id1 );
     }
 }

@@ -44,7 +44,7 @@ public class DirectedCombinableDomains extends BasicCombinableDomains {
         for( final String domain : getCombiningDomains().keySet() ) {
             // Precondition (!): key domain is most upstream domain.
             //TODO ensure this is true.
-            binary_combinations.add( new DirectedBinaryDomainCombination( getKeyDomain(), domain ) );
+            binary_combinations.add( DirectedBinaryDomainCombination.obtainInstance( getKeyDomain(), domain ) );
         }
         return binary_combinations;
     }

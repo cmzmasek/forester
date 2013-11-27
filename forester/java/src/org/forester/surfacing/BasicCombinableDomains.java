@@ -171,7 +171,8 @@ public class BasicCombinableDomains implements CombinableDomains {
     public List<BinaryDomainCombination> toBinaryDomainCombinations() {
         final List<BinaryDomainCombination> binary_combinations = new ArrayList<BinaryDomainCombination>( getNumberOfCombinableDomains() );
         for( final String domain : getCombiningDomains().keySet() ) {
-            binary_combinations.add( new BasicBinaryDomainCombination( getKeyDomain(), domain ) );
+            // binary_combinations.add( new BasicBinaryDomainCombination( getKeyDomain(), domain ) );
+            binary_combinations.add( BasicBinaryDomainCombination.obtainInstance( getKeyDomain(), domain ) );
         }
         return binary_combinations;
     }

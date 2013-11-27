@@ -68,7 +68,8 @@ public final class HmmscanPerDomainTableParser {
     private final FilterType              _filter_type;
     private final File                    _input_file;
     private final String                  _species;
-    private double                        _e_value_maximum;
+    private double                        _fs_e_value_maximum;
+    private double                        _i_e_value_maximum;
     private Map<String, Double>           _individual_score_cutoffs;
     private boolean                       _ignore_dufs;
     private boolean                       _ignore_virus_like_ids;
@@ -81,7 +82,8 @@ public final class HmmscanPerDomainTableParser {
     private int                           _domains_encountered;
     private int                           _domains_ignored_due_to_duf;
     private int                           _domains_ignored_due_to_overlap;
-    private int                           _domains_ignored_due_to_e_value;
+    private int                           _domains_ignored_due_to_fs_e_value;
+    private int                           _domains_ignored_due_to_i_e_value;
     private int                           _domains_ignored_due_to_individual_score_cutoff;
     private int                           _domains_stored;
     private SortedSet<String>             _domains_stored_set;
@@ -207,8 +209,12 @@ public final class HmmscanPerDomainTableParser {
         return _domains_ignored_due_to_duf;
     }
 
-    public int getDomainsIgnoredDueToEval() {
-        return _domains_ignored_due_to_e_value;
+    public int getDomainsIgnoredDueToIEval() {
+        return _domains_ignored_due_to_i_e_value;
+    }
+
+    public int getDomainsIgnoredDueToFsEval() {
+        return _domains_ignored_due_to_fs_e_value;
     }
 
     public int getDomainsIgnoredDueToIndividualScoreCutoff() {
@@ -243,8 +249,12 @@ public final class HmmscanPerDomainTableParser {
         return _domains_stored_set;
     }
 
-    private double getEValueMaximum() {
-        return _e_value_maximum;
+    private double getFsEValueMaximum() {
+        return _fs_e_value_maximum;
+    }
+
+    private double getIEValueMaximum() {
+        return _i_e_value_maximum;
     }
 
     private Set<String> getFilter() {
@@ -296,7 +306,8 @@ public final class HmmscanPerDomainTableParser {
     }
 
     private void init() {
-        _e_value_maximum = HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT;
+        _fs_e_value_maximum = HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT;
+        _i_e_value_maximum = HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT;
         setIgnoreDufs( HmmscanPerDomainTableParser.IGNORE_DUFS_DEFAULT );
         setReturnType( HmmscanPerDomainTableParser.RETURN_TYPE_DEFAULT );
         _max_allowed_overlap = HmmscanPerDomainTableParser.MAX_ALLOWED_OVERLAP_DEFAULT;
@@ -313,7 +324,8 @@ public final class HmmscanPerDomainTableParser {
         setProteinsIgnoredDueToFilter( 0 );
         setDomainsIgnoredDueToNegativeFilter( 0 );
         setDomainsIgnoredDueToDuf( 0 );
-        setDomainsIgnoredDueToEval( 0 );
+        setDomainsIgnoredDueToFsEval( 0 );
+        setDomainsIgnoredDueToIEval( 0 );
         setDomainsIgnoredDueToIndividualScoreCutoff( 0 );
         setDomainsIgnoredDueToVirusLikeId( 0 );
         setDomainsIgnoredDueToOverlap( 0 );
@@ -440,9 +452,13 @@ public final class HmmscanPerDomainTableParser {
             else if ( ali_from == ali_to ) {
                 //Ignore
             }
-            else if ( ( getEValueMaximum() != HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT )
-                    && ( fs_e_value > getEValueMaximum() ) ) {
-                ++_domains_ignored_due_to_e_value;
+            else if ( ( getFsEValueMaximum() != HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT )
+                    && ( fs_e_value > getFsEValueMaximum() ) ) {
+                ++_domains_ignored_due_to_fs_e_value;
+            }
+            else if ( ( getIEValueMaximum() != HmmscanPerDomainTableParser.E_VALUE_MAXIMUM_DEFAULT )
+                    && ( i_e_value > getIEValueMaximum() ) ) {
+                ++_domains_ignored_due_to_i_e_value;
             }
             else if ( isIgnoreDufs() && uc_id.startsWith( "DUF" ) ) {
                 ++_domains_ignored_due_to_duf;
@@ -471,8 +487,6 @@ public final class HmmscanPerDomainTableParser {
                                                        ali_to,
                                                        ( short ) domain_number,
                                                        ( short ) total_domains,
-                                                       fs_e_value,
-                                                       fs_score,
                                                        i_e_value,
                                                        domain_score );
                     current_protein.addProteinDomain( pd );
@@ -524,8 +538,12 @@ public final class HmmscanPerDomainTableParser {
         _domains_ignored_due_to_duf = domains_ignored_due_to_duf;
     }
 
-    private void setDomainsIgnoredDueToEval( final int domains_ignored_due_to_e_value ) {
-        _domains_ignored_due_to_e_value = domains_ignored_due_to_e_value;
+    private void setDomainsIgnoredDueToFsEval( final int domains_ignored_due_to_fs_e_value ) {
+        _domains_ignored_due_to_fs_e_value = domains_ignored_due_to_fs_e_value;
+    }
+
+    private void setDomainsIgnoredDueToIEval( final int domains_ignored_due_to_i_e_value ) {
+        _domains_ignored_due_to_i_e_value = domains_ignored_due_to_i_e_value;
     }
 
     private void setDomainsIgnoredDueToIndividualScoreCutoff( final int domains_ignored_due_to_individual_score_cutoff ) {
@@ -560,11 +578,18 @@ public final class HmmscanPerDomainTableParser {
         _domains_stored_set = _storeddomains_stored;
     }
 
-    public void setEValueMaximum( final double e_value_maximum ) {
-        if ( e_value_maximum < 0.0 ) {
+    public void setFsEValueMaximum( final double fs_e_value_maximum ) {
+        if ( fs_e_value_maximum < 0.0 ) {
             throw new IllegalArgumentException( "attempt to set the maximum E-value to a negative value" );
         }
-        _e_value_maximum = e_value_maximum;
+        _fs_e_value_maximum = fs_e_value_maximum;
+    }
+
+    public void setIEValueMaximum( final double i_e_value_maximum ) {
+        if ( i_e_value_maximum < 0.0 ) {
+            throw new IllegalArgumentException( "attempt to set the maximum E-value to a negative value" );
+        }
+        _i_e_value_maximum = i_e_value_maximum;
     }
 
     public void setIgnoreDufs( final boolean ignore_dufs ) {

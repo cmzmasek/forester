@@ -28,24 +28,17 @@ package org.forester.protein;
 
 public interface Domain extends Comparable<Domain> {
 
-    // ^^  public void addGoId( GoId go_id );
     public String getDomainId();
 
     public int getLength();
 
     public int getFrom();
 
-    // ^^   public GoId getGoId( int i );
     public short getNumber();
 
-    // ^^  public int getNumberOfGoIds();
     public double getPerDomainEvalue();
 
     public double getPerDomainScore();
-
-    public double getPerSequenceEvalue();
-
-    public double getPerSequenceScore();
 
     public int getTo();
 
