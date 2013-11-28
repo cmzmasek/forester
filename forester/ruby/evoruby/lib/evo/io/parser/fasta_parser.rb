@@ -15,63 +15,60 @@ require 'iconv'
 
 module Evoruby
 
-    class FastaParser < MsaParser
+  class FastaParser < MsaParser
 
-        def initialize
-        end
+    def initialize
+    end
 
-        def parse( path )
-            Util.check_file_for_readability( path )
-            msa = Msa.new
-            current_seq = String.new()
-            name        = String.new()
-            saw_first_seq = false
-            ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
-            File.open( path ) do | file |
-                while line = file.gets
-                    line = ic.iconv( line )
-                    if can_ignore?( line, saw_first_seq )
+    def parse( path )
+      Util.check_file_for_readability( path )
+      msa = Msa.new
+      current_seq = String.new()
+      name        = String.new()
+      saw_first_seq = false
+      ic = Iconv.new( 'UTF-8//IGNORE', 'UTF-8' )
+      File.open( path ) do | file |
+        while line = file.gets
+          line = ic.iconv( line )
+          if can_ignore?( line, saw_first_seq )
 
-                    elsif line =~ /^\s*>\s*(.+)/
-                        saw_first_seq = true
-                        add_seq( name, current_seq, msa )
-                        name = $1
-                        current_seq = String.new()
-                    elsif line =~ /^\s*(.+)/
-                        if name.length < 1
-                            error_msg = "format error at: " + line
-                            raise IOError, error_msg
-                        end
-                        # was: seq = $1.rstrip
-                        seq =  $1.gsub(/\s+/, '')
-                        current_seq << seq
-                    else
-                        error_msg = "Unexpected line: " + line
-                        raise IOError, error_msg
-                    end
-                end
-            end
+          elsif line =~ /^\s*>\s*(.+)/
+            saw_first_seq = true
             add_seq( name, current_seq, msa )
-            return msa
-        end
-
-        private
-
-        def add_seq( name, seq, msa )
-            if name.length > 0 && seq.length > 0
-                msa.add( name, seq )
+            name = $1
+            current_seq = String.new()
+          elsif line =~ /^\s*(.+)/
+            if name.length < 1
+              error_msg = "format error at: " + line
+              raise IOError, error_msg
             end
+            # was: seq = $1.rstrip
+            seq =  $1.gsub(/\s+/, '')
+            current_seq << seq
+          else
+            error_msg = "Unexpected line: " + line
+            raise IOError, error_msg
+          end
         end
+      end
+      add_seq( name, current_seq, msa )
+      return msa
+    end
 
-        def can_ignore?( line, saw_first_seq )
-            return ( line !~ /\S/  ||
-                 line =~ /^\s*#/ ||
-                 line =~ /^\s*%/ ||
-                 line =~ /^\s*\/\// ||
-                 line =~ /^\s*!!/ ||
-                 ( !saw_first_seq && line =~/^\s*[^>]/ ) )
-        end
+    private
 
-    end # class FastaParser
+    def add_seq( name, seq, msa )
+      if name.length > 0 && seq.length > 0
+        msa.add( name, seq )
+      end
+    end
+
+    def can_ignore?( line, saw_first_seq )
+      return ( line !~ /\S/  ||
+         line =~ /^\s*#/ ||
+         ( !saw_first_seq && line =~/^\s*[^>]/ ) )
+    end
+
+  end # class FastaParser
 
 end # module Evoruby
