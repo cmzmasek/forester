@@ -291,7 +291,7 @@ module Evoruby
                 print_counts( per_species_counter, log, Constants::LINE_DELIMITER )
                 per_species_counter = 0
               end
-              puts " " + species_counter.to_s +  ": " + current_species + " [" + my_readlink + "]"
+              puts " " + species_counter.to_s +  ":" + current_species + " [" + my_readlink + "]"
               log << species_counter.to_s +  ": " + current_species + " [" + my_readlink + "]" + Constants::LINE_DELIMITER
               species_counter += 1
             end
