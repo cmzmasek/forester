@@ -549,7 +549,7 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
-      if @file_to_msa.size < 500
+      if @file_to_msa.size < 400 && msa.get_number_of_seqs < 40000
         @file_to_msa[ input ] = msa
       end
       msa
