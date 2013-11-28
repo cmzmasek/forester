@@ -44,7 +44,7 @@ module Evoruby
                         end
                         # was: seq = $1.rstrip
                         seq =  $1.gsub(/\s+/, '')
-                        current_seq = current_seq + seq
+                        current_seq << seq
                     else
                         error_msg = "Unexpected line: " + line
                         raise IOError, error_msg
