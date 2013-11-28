@@ -295,7 +295,7 @@ module Evoruby
               log << species_counter.to_s +  ": " + current_species + " [" + my_readlink + "]" + Constants::LINE_DELIMITER
               species_counter += 1
             end
-            puts "   " + seq_name
+            #puts "   " + seq_name
             log << "   " + seq_name + Constants::LINE_DELIMITER
             per_species_counter = per_species_counter + 1
             seq = nil
