@@ -41,6 +41,9 @@ module Evoruby
     NORMALIZED_IDS_MAP_SUFFIX           = ".nim"
     PROTEINS_LIST_FILE_SEPARATOR        = "\t"
 
+    def initialize()
+      @file_to_msa = Hash.new
+    end
 
     def run()
 
@@ -464,8 +467,6 @@ module Evoruby
           Util.fatal_error( PRG_NAME, "error: " + e.to_s )
         end
       end
-
-
     end
 
 
@@ -537,12 +538,19 @@ module Evoruby
     end
 
     def read_fasta_file( input )
+      if @file_to_msa.has_key?( input )
+        return @file_to_msa[ input ]
+      end
+
       f = MsaFactory.new()
       msa = nil
       begin
         msa = f.create_msa_from_file( input, FastaParser.new() )
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
+      end
+      if @file_to_msa.size < 500
+        @file_to_msa[ input ] = msa
       end
       msa
     end
