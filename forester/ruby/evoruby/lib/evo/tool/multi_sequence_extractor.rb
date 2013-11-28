@@ -292,11 +292,10 @@ module Evoruby
                 per_species_counter = 0
               end
               puts " " + species_counter.to_s +  ":" + current_species + " [" + my_readlink + "]"
-              log << species_counter.to_s +  ": " + current_species + " [" + my_readlink + "]" + Constants::LINE_DELIMITER
+              log << species_counter.to_s <<  ": " << current_species << " [" + my_readlink + "]" << Constants::LINE_DELIMITER
               species_counter += 1
             end
-            #puts "   " + seq_name
-            log << "   " + seq_name + Constants::LINE_DELIMITER
+            log << "   " << seq_name << Constants::LINE_DELIMITER
             per_species_counter = per_species_counter + 1
             seq = nil
 
@@ -521,8 +520,8 @@ module Evoruby
     end
 
     def print_counts( per_species_counter, log, ld )
-      puts "   [sum: " + per_species_counter.to_s + "]"
-      log << "   [sum: " + per_species_counter.to_s + "]" + ld
+      puts "   sum: " + per_species_counter.to_s
+      log << "   sum: " + per_species_counter.to_s + ld
     end
 
     def read_fasta_file( input )
