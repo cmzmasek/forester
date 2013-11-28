@@ -43,6 +43,7 @@ module Evoruby
 
     def initialize()
       @file_to_msa = Hash.new
+      @seqs = 0
     end
 
     def run()
@@ -549,8 +550,10 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
-      if @file_to_msa.size < 500 && msa.get_number_of_seqs <= 50000
+      if @seqs <= 10000000
         @file_to_msa[ input ] = msa
+        @seqs += msa.get_number_of_seqs
+        puts "total seqs in memory: " + @seqs.to_str
       end
       msa
     end
