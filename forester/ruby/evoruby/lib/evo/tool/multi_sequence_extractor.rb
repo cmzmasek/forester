@@ -314,21 +314,6 @@ module Evoruby
               Util.fatal_error( PRG_NAME, "error: seq name \"" + seq_name + "\" not unique"  )
             end
 
-            # if current_msa.find_by_name_start( seq_name, true ).size > 0
-            #   begin
-            #     seq = current_msa.get_by_name_start( seq_name, true ).copy
-            #   rescue ArgumentError => e
-            #     Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-            #   end
-            # else
-            #   # Not found, try finding by partial match.
-            #   begin
-            #     seq = current_msa.get_by_name( seq_name, true, true )
-            #   rescue ArgumentError => e
-            #     Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-            #   end
-            # end
-
             normalized_id = per_species_counter.to_s( 16 ).upcase +
              "_" + current_species
 
@@ -552,7 +537,7 @@ module Evoruby
       rescue Exception => e
         Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
-      if @seqs <= 100000000
+      if @seqs <= 500000
         @file_to_msa[ input ] = msa
         @seqs += msa.get_number_of_seqs
         puts "   total seqs in memory: " + @seqs.to_s
