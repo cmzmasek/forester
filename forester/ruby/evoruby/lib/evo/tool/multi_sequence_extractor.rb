@@ -555,6 +555,7 @@ module Evoruby
       if @seqs <= 100000000
         @file_to_msa[ input ] = msa
         @seqs += msa.get_number_of_seqs
+        puts "   adding: " + msa.get_number_of_seqs.to_s
         puts "   total seqs in memory: " + @seqs.to_s
       end
       msa
