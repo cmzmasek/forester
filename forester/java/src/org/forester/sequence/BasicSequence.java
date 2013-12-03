@@ -31,7 +31,7 @@ import org.forester.util.ForesterUtil;
 public class BasicSequence implements Sequence {
 
     private final char[] _mol_sequence;
-    private final String _identifier;
+    private String       _identifier;
     private final TYPE   _type;
 
     private BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
@@ -57,6 +57,10 @@ public class BasicSequence implements Sequence {
         _mol_sequence = mol_sequence;
         _identifier = identifier;
         _type = type;
+    }
+
+    public void setIdentifier( final String id ) {
+        _identifier = id;
     }
 
     @Override

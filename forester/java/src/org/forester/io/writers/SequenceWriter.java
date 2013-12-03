@@ -1,6 +1,7 @@
 
 package org.forester.io.writers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -64,6 +65,13 @@ public class SequenceWriter {
                 w.write( seq.getMolecularSequence(), lines * width, rest );
             }
         }
+    }
+
+    public static void writeSeqs( final List<Sequence> seqs, final File file, final SEQ_FORMAT format, final int width )
+            throws IOException {
+        final Writer w = ForesterUtil.createBufferedWriter( file );
+        SequenceWriter.writeSeqs( seqs, w, format, width );
+        w.close();
     }
 
     public static void writeSeqs( final List<Sequence> seqs,
