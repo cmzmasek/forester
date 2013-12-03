@@ -96,10 +96,15 @@ public final class check_fasta {
             try {
                 final List<Sequence> seqs = FastaParser.parse( new FileInputStream( infile ) );
                 final Map<String, Short> names = new HashMap<String, Short>();
+                int duplicates = 0;
                 for( final Sequence seq : seqs ) {
-                    procSeq( infile.toString(), names, seq );
+                    if ( procSeq( infile.toString(), names, seq ) ) {
+                        ++duplicates;
+                    }
                 }
-                SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 60 );
+                if ( duplicates > 0 ) {
+                    SequenceWriter.writeSeqs( seqs, outfile, SEQ_FORMAT.FASTA, 60 );
+                }
             }
             catch ( final IOException e ) {
                 ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
@@ -107,17 +112,20 @@ public final class check_fasta {
         }
     }
 
-    private static void procSeq( final String infile, final Map<String, Short> names, final Sequence seq ) {
+    private static boolean procSeq( final String infile, final Map<String, Short> names, final Sequence seq ) {
+        boolean duplicate = false;
         final String name = seq.getIdentifier();
         if ( !names.containsKey( name ) ) {
             names.put( name, ( short ) 1 );
         }
         else {
+            duplicate = true;
             final short i = names.get( name );
             ( ( BasicSequence ) seq ).setIdentifier( name + "_" + i );
             names.put( name, ( short ) ( i + 1 ) );
-            System.out.println( "  " + infile + i + ": " + seq.getIdentifier() );
+            System.out.println( "  " + infile + " " + i + ": " + seq.getIdentifier() );
         }
+        return duplicate;
     }
 
     private static void argumentsError() {
