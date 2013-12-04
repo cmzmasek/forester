@@ -58,6 +58,8 @@ module Evoruby
 
       input_files = Dir.entries(".").select { |f| !File.directory?( f ) && f.downcase.end_with?( ".fasta" ) }
 
+      input_files.sort!
+
       puts "Input files:"
       input_files.each do | input |
         puts input
