@@ -93,7 +93,7 @@ module Evoruby
             unless File.exist? input
               error "expected to already exist: " + input
             end
-            puts "a. identifier normalization already done:" + input
+            puts "a. identifier normalization already done: " + input
           end
         else
           error "illegal name: " + input
