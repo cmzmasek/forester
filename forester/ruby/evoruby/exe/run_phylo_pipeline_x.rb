@@ -163,12 +163,12 @@ module Evoruby
         run_1 = false
         run_100 = false
 
-        unless File.exist? "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta"
+        unless File.exist? "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
           run_1 = true
           FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         end
 
-        unless File.exist? "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta"
+        unless File.exist? "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
           run_100 = true
           FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         end
