@@ -135,12 +135,12 @@ module Evoruby
 
 
         dsx_output = "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
-        unless File.exist? dsx_output
+        unless File.exist? dsx_output + ".fasta"
           puts "e. dsx:"
           cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmmscan_output} #{input} #{dsx_output}"
           run_command( cmd )
         else
-          puts "e. dsx output already exists: " + dsx_output
+          puts "e. dsx output already exists: " + dsx_output + ".fasta"
         end
         puts
 
@@ -163,12 +163,12 @@ module Evoruby
         run_1 = false
         run_100 = false
 
-        unless File.exist? "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta"
           run_1 = true
           FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         end
 
-        unless File.exist? "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta"
           run_100 = true
           FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
         end
