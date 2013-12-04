@@ -135,7 +135,7 @@ module Evoruby
 
 
         dsx_output = "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
-        unless File.exist? d2f_output
+        unless File.exist? dsx_output
           puts "e. dsx:"
           cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmmscan_output} #{input} #{dsx_output}"
           run_command( cmd )
