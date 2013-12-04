@@ -133,8 +133,8 @@ module Evoruby
         end
         puts
 
-
-        dsx_output = "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        dsx_output_base = "#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        dsx_output = hmm_name +"/" + dsx_output_base
         unless File.exist? dsx_output + ".fasta"
           puts "e. dsx:"
           cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmmscan_output} #{input} #{dsx_output}"
@@ -163,14 +163,14 @@ module Evoruby
         run_1 = false
         run_100 = false
 
-        unless File.exist? "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? "#{msa_dir}/#{dsx_output_base}"
           run_1 = true
-          FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+          FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{dsx_output_base}"
         end
 
-        unless File.exist? "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? "#{msa_100_dir}/#{dsx_output_base}"
           run_100 = true
-          FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+          FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{dsx_output_base}"
         end
 
         if File.exist?( TEMPLATE_FILE )
