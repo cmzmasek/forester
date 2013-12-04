@@ -78,38 +78,70 @@ module Evoruby
         if input.downcase.end_with?( "_ni.fasta" )
           hmm_name = input[ 0 .. input.length - 10 ]
         elsif input.downcase.end_with?( ".fasta" )
-          id_norm = true
           hmm_name = input[ 0 .. input.length - 7 ]
-          puts
-          puts "a. identifier normalization:"
-          cmd = "#{TAP} #{input} #{hmm_name}_ni.fasta #{hmm_name}.nim"
-          run_command( cmd )
-          input = hmm_name + "_ni.fasta"
+          unless File.exist? hmm_name
+            id_norm = true
+            puts
+            puts "a. identifier normalization:"
+            cmd = "#{TAP} #{input} #{hmm_name}_ni.fasta #{hmm_name}.nim"
+            run_command( cmd )
+            input = hmm_name + "_ni.fasta"
+          else
+            input = hmm_name + "/" + hmm_name + "_ni.fasta"
+            unless File.exist? input
+              error "expected to already exist: " + input
+            end
+            puts "a. identifier normalization already done:" + input
+          end
         else
           error "illegal name: " + input
         end
 
-        Dir.mkdir( hmm_name )
+        unless File.exist? hmm_name
+          Dir.mkdir( hmm_name )
+        end
 
         puts
-        puts "b. hmmscan:"
-        cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
-        run_command( cmd )
+        hmmscan_output = hmm_name + "/" + hmm_name + "_hmmscan_" + e_for_hmmscan.to_s
+        unless File.exist? hmmscan_output
+          puts "b. hmmscan:"
+          cmd = "#{HMMSCAN} #{hmmscan_option} --domtblout #{hmmscan_output} -E #{e_for_hmmscan.to_s} #{PFAM}Pfam-A.hmm #{input}"
+          run_command( cmd )
+        else
+          puts "b. hmmscan output already exists: " + hmmscan_output
+        end
         puts
 
-        puts "c. hmmscan to simple domain table:"
-        cmd = "#{HSP} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
-        run_command( cmd )
+
+        hsp_output = hmm_name + "/" + hmm_name + "_hmmscan_#{e_for_hmmscan.to_s}_domain_table"
+        unless File.exist? hsp_output
+          puts "c. hmmscan to simple domain table:"
+          cmd = "#{HSP} #{hmmscan_output} #{hsp_output}"
+          run_command( cmd )
+        else
+          puts "c. hmmscan to simple domain table output already exists: " + hsp_output
+        end
         puts
 
-        puts "d. domain table to forester format:"
-        cmd = "#{D2F} -e=10 #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}_domain_table #{input} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
-        run_command( cmd )
+        d2f_output = "#{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s}.dff"
+        unless File.exist? d2f_output
+          puts "d. domain table to forester format:"
+          cmd = "#{D2F} -e=10 #{hsp_output} #{input} #{d2f_output}"
+          run_command( cmd )
+        else
+          puts "d. domain table to forester format output already exists: " + d2f_output
+        end
         puts
 
-        puts "e. dsx:"
-        cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmm_name}/#{hmm_name}_hmmscan_#{e_for_hmmscan.to_s} #{input} #{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
-        run_command( cmd )
+
+        dsx_output = "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? d2f_output
+          puts "e. dsx:"
+          cmd = "#{DSX} -d -e=1e-#{e_value_exp.to_s} -l=#{length} #{hmm_name} #{hmmscan_output} #{input} #{dsx_output}"
+          run_command( cmd )
+        else
+          puts "e. dsx output already exists: " + dsx_output
+        end
         puts
 
         if id_norm
@@ -118,22 +150,29 @@ module Evoruby
           FileUtils.cp orig_input, "#{hmm_name}/#{orig_input}"
         end
 
-        Dir.mkdir( hmm_name + "/msa" )
-        Dir.mkdir( hmm_name + "/msa100" )
+        msa_dir = hmm_name + "/msa_ee#{e_value_exp.to_s}_#{length}"
+        msa_100_dir =hmm_name + "/msa100_ee#{e_value_exp.to_s}_#{length}"
 
-        FileUtils.cp "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta", "#{hmm_name}/msa/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
-        FileUtils.cp "#{hmm_name}/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}.fasta", "#{hmm_name}/msa100/#{hmm_name}__#{hmm_name}__ee#{e_value_exp.to_s}_#{length}"
+        unless File.exist? msa_dir
+          Dir.mkdir( msa_dir )
+        end
+        unless File.exist? msa_100_dir
+          Dir.mkdir( msa_100_dir )
+        end
 
-        if File.exists?( TEMPLATE_FILE )
-          FileUtils.cp TEMPLATE_FILE, "#{hmm_name}/msa/"
-          FileUtils.cp TEMPLATE_FILE, "#{hmm_name}/msa100/"
+        FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{dsx_output}"
+        FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{dsx_output}"
+
+        if File.exist?( TEMPLATE_FILE )
+          FileUtils.cp TEMPLATE_FILE, msa_dir
+          FileUtils.cp TEMPLATE_FILE, msa_100_dir
 
           if LAUNCH_ANALYSIS
             puts "f. analysis:"
-            Dir.chdir "#{hmm_name}/msa/"
+            Dir.chdir msa_dir
             run_command "#{PF} -b=1 -s"
             Dir.chdir "../.."
-            Dir.chdir "#{hmm_name}/msa100/"
+            Dir.chdir msa_100_dir
             run_command "#{PF} -b=100 -s"
             Dir.chdir "../.."
             puts

@@ -301,7 +301,7 @@ module Evoruby
 
             indices = current_msa.find_by_name_start( seq_name, true )
             if indices.size == 1
-              seq =  current_msa.get_sequence( indices[ 0 ] )
+              seq = current_msa.get_sequence( indices[ 0 ] )
             elsif indices.size == 0
               # Not found, try finding by partial match.
               begin
