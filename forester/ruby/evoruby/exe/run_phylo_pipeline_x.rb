@@ -160,21 +160,39 @@ module Evoruby
           Dir.mkdir( msa_100_dir )
         end
 
-        FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{dsx_output}"
-        FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{dsx_output}"
+        run_1 = false
+        run_100 = false
+
+        unless File.exist? "#{msa_dir}/#{dsx_output}"
+          run_1 = true
+          FileUtils.cp "#{dsx_output}.fasta", "#{msa_dir}/#{dsx_output}"
+        end
+
+        unless File.exist? "#{msa_100_dir}/#{dsx_output}"
+          run_100 = true
+          FileUtils.cp "#{dsx_output}.fasta", "#{msa_100_dir}/#{dsx_output}"
+        end
 
         if File.exist?( TEMPLATE_FILE )
-          FileUtils.cp TEMPLATE_FILE, msa_dir
-          FileUtils.cp TEMPLATE_FILE, msa_100_dir
+          if run_1
+            FileUtils.cp TEMPLATE_FILE, msa_dir
+          end
+          if run_100
+            FileUtils.cp TEMPLATE_FILE, msa_100_dir
+          end
 
           if LAUNCH_ANALYSIS
             puts "f. analysis:"
-            Dir.chdir msa_dir
-            run_command "#{PF} -b=1 -s"
-            Dir.chdir "../.."
-            Dir.chdir msa_100_dir
-            run_command "#{PF} -b=100 -s"
-            Dir.chdir "../.."
+            if run_1
+              Dir.chdir msa_dir
+              run_command "#{PF} -b=1 -s"
+              Dir.chdir "../.."
+            end
+            if run_100
+              Dir.chdir msa_100_dir
+              run_command "#{PF} -b=100 -s"
+              Dir.chdir "../.."
+            end
             puts
           end
         end
