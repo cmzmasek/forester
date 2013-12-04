@@ -181,7 +181,7 @@ module Evoruby
             FileUtils.cp TEMPLATE_FILE, msa_100_dir
           end
 
-          if LAUNCH_ANALYSIS
+          if LAUNCH_ANALYSIS && ( run_1 || run_100 )
             puts "f. analysis:"
             if run_1
               Dir.chdir msa_dir
