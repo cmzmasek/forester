@@ -15,7 +15,7 @@ module Evoruby
 
   class RunPhyloPipeline
 
-    LAUNCH_ANALYSIS = true
+    LAUNCH_ANALYSIS = false
     HOME          = "/home/czmasek/"
     FORESTER_RUBY = "#{HOME}SOFTWARE/FORESTER/DEV/forester/forester/ruby/evoruby/exe/"
     PFAM          = "#{HOME}DATA/PFAM/PFAM270X/"
