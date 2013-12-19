@@ -90,6 +90,11 @@ public final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "BRAFL", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "SACKO", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "STRPU", "deuterostomia" );
+        _default_taxcode_taxgroup_map.put( "FICAL", "deuterostomia" );
+        _default_taxcode_taxgroup_map.put( "OPHHA", "deuterostomia" );
+        _default_taxcode_taxgroup_map.put( "PYTBI", "deuterostomia" );
+        _default_taxcode_taxgroup_map.put( "LYTVA", "deuterostomia" );
+        _default_taxcode_taxgroup_map.put( "PATMI", "deuterostomia" );
         _default_taxcode_taxgroup_map.put( "DROSE", "protostomia" );
         _default_taxcode_taxgroup_map.put( "DROSI", "protostomia" );
         _default_taxcode_taxgroup_map.put( "DROME", "protostomia" );
@@ -322,6 +327,8 @@ public final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "TETTS", "alveolata" );
         _default_taxcode_taxgroup_map.put( "OTRXX", "alveolata" );
         _default_taxcode_taxgroup_map.put( "BLEJA", "alveolata" );
+        _default_taxcode_taxgroup_map.put( "PERM5", "alveolata" );
+        _default_taxcode_taxgroup_map.put( "ICHMG", "alveolata" );
         _default_taxcode_taxgroup_map.put( "FCYXX", "stramenopiles" );
         _default_taxcode_taxgroup_map.put( "PHATR", "stramenopiles" );
         _default_taxcode_taxgroup_map.put( "THAPS", "stramenopiles" );
