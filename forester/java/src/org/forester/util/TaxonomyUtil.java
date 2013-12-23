@@ -293,6 +293,7 @@ public final class TaxonomyUtil {
         _default_taxcode_taxgroup_map.put( "PICAB", "embryophyta" );
         _default_taxcode_taxgroup_map.put( "SELML", "embryophyta" );
         _default_taxcode_taxgroup_map.put( "PHYPA", "embryophyta" );
+        _default_taxcode_taxgroup_map.put( "AMBTC", "embryophyta" );
         _default_taxcode_taxgroup_map.put( "OSTLU", "chlorophyta" );
         _default_taxcode_taxgroup_map.put( "ORCXX", "chlorophyta" );
         _default_taxcode_taxgroup_map.put( "OSTTA", "chlorophyta" );
