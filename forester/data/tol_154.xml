@@ -1272,8 +1272,6 @@
                           </clade>
                           <clade>
                             <name>Hemichordata &amp; Echinodermata</name>
-                            <taxonomy>
-                            </taxonomy>
                             <clade>
                               <taxonomy>
                                 <id provider="uniprot">7586</id>
@@ -4061,532 +4059,533 @@
                       <taxonomy>
                         <id provider="uniprot">58023</id>
                         <scientific_name>Tracheophyta</scientific_name>
-                        <common_name>vascular plants</common_name>
                       </taxonomy>
                       <clade>
                         <taxonomy>
                           <id provider="uniprot">58024</id>
                           <scientific_name>Spermatophyta</scientific_name>
-                          <common_name>seed plants</common_name>
                         </taxonomy>
                         <clade>
                           <taxonomy>
                             <id provider="uniprot">3398</id>
                             <scientific_name>Magnoliophyta</scientific_name>
-                            <common_name>flowering plants</common_name>
-                            <synonym>Angiospermae</synonym>
                           </taxonomy>
                           <clade>
-                            <taxonomy>
-                              <id provider="uniprot">71240</id>
-                              <scientific_name>eudicotyledons</scientific_name>
-                            </taxonomy>
+                            <name>eudicotyledons &amp; Liliopsida</name>
                             <clade>
                               <taxonomy>
-                                <id provider="uniprot">91827</id>
-                                <scientific_name>core eudicotyledons</scientific_name>
+                                <id provider="uniprot">71240</id>
+                                <scientific_name>eudicotyledons</scientific_name>
                               </taxonomy>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">71275</id>
-                                  <scientific_name>rosids</scientific_name>
-                                  <rank>subclass</rank>
+                                  <id provider="uniprot">91827</id>
+                                  <scientific_name>core eudicotyledons</scientific_name>
                                 </taxonomy>
                                 <clade>
-                                  <name>fabids &amp; malvids</name>
+                                  <taxonomy>
+                                    <id provider="uniprot">71275</id>
+                                    <scientific_name>rosids</scientific_name>
+                                    <rank>subclass</rank>
+                                  </taxonomy>
                                   <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">91835</id>
-                                      <scientific_name>fabids</scientific_name>
-                                    </taxonomy>
-                                    <clade>
-                                      <name>Rosales &amp; Cucurbitales &amp; Fabales</name>
-                                      <clade>
-                                        <name>Rosales &amp; Cucurbitales</name>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">3745</id>
-                                            <scientific_name>Rosaceae</scientific_name>
-                                            <rank>family</rank>
-                                          </taxonomy>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">57918</id>
-                                              <code>FRAVE</code>
-                                              <scientific_name>Fragaria vesca</scientific_name>
-                                              <common_name>Woodland strawberry</common_name>
-                                              <synonym>Fragaria vesca L.</synonym>
-                                              <synonym>European strawberry</synonym>
-                                              <synonym>alpine strawberry</synonym>
-                                              <rank>species</rank>
-                                              <uri>http://www.boga.ruhr-uni-bochum.de/html/Fragaria.vesca.ja6.jpg</uri>
-                                              <uri>http://caliban.mpiz-koeln.mpg.de/thome/band3/tafel_092_small.jpg</uri>
-                                            </taxonomy>
-                                          </clade>
-                                          <clade>
-                                            <taxonomy>
-                                              <id provider="uniprot">3760</id>
-                                              <code>PRUPE</code>
-                                              <scientific_name>Prunus persica</scientific_name>
-                                              <common_name>Peach</common_name>
-                                              <synonym>Persica vulgaris</synonym>
-                                              <synonym>Amygdalus persica</synonym>
-                                              <rank>species</rank>
-                                              <uri>http://www.mezhenskyjv.narod.ru/foto_sortov/dokaz.jpg</uri>
-                                            </taxonomy>
-                                          </clade>
-                                        </clade>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">3659</id>
-                                            <code>CUCSA</code>
-                                            <scientific_name>Cucumis sativus</scientific_name>
-                                            <common_name>Cucumber</common_name>
-                                            <rank>species</rank>
-                                          </taxonomy>
-                                        </clade>
-                                      </clade>
-                                      <clade>
-                                        <taxonomy>
-                                          <id provider="uniprot">3814</id>
-                                          <scientific_name>Papilionoideae</scientific_name>
-                                          <rank>subfamily</rank>
-                                        </taxonomy>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">3847</id>
-                                            <code>SOYBN</code>
-                                            <scientific_name>Glycine max</scientific_name>
-                                            <authority>cv. Wye</authority>
-                                            <common_name>Soybean</common_name>
-                                            <synonym>Glycine hispida</synonym>
-                                            <rank>species</rank>
-                                          </taxonomy>
-                                        </clade>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">3880</id>
-                                            <code>MEDTR</code>
-                                            <scientific_name>Medicago truncatula</scientific_name>
-                                            <common_name>Barrel medic</common_name>
-                                            <synonym>Medicago tribuloides</synonym>
-                                            <rank>species</rank>
-                                            <uri>http://crdp.ac-besancon.fr/flore/FABACEAE/photos/medicago_truncatula_30.jpg</uri>
-                                          </taxonomy>
-                                        </clade>
-                                      </clade>
-                                    </clade>
+                                    <name>fabids &amp; malvids</name>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">3646</id>
-                                        <scientific_name>Malpighiales</scientific_name>
-                                        <rank>order</rank>
+                                        <id provider="uniprot">91835</id>
+                                        <scientific_name>fabids</scientific_name>
                                       </taxonomy>
                                       <clade>
-                                        <taxonomy>
-                                          <id provider="uniprot">3977</id>
-                                          <scientific_name>Euphorbiaceae</scientific_name>
-                                          <rank>family</rank>
-                                        </taxonomy>
+                                        <name>Rosales &amp; Cucurbitales &amp; Fabales</name>
                                         <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">3983</id>
-                                            <code>MANES</code>
-                                            <scientific_name>Manihot esculenta</scientific_name>
-                                            <common_name>Tapioca</common_name>
-                                            <synonym>Jatropha manihot</synonym>
-                                            <rank>species</rank>
-                                            <uri>http://upload.wikimedia.org/wikipedia/commons/9/99/Iwata_kenichi_cassava.jpg</uri>
-                                          </taxonomy>
+                                          <name>Rosales &amp; Cucurbitales</name>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3745</id>
+                                              <scientific_name>Rosaceae</scientific_name>
+                                              <rank>family</rank>
+                                            </taxonomy>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">57918</id>
+                                                <code>FRAVE</code>
+                                                <scientific_name>Fragaria vesca</scientific_name>
+                                                <common_name>Woodland strawberry</common_name>
+                                                <synonym>Fragaria vesca L.</synonym>
+                                                <synonym>European strawberry</synonym>
+                                                <synonym>alpine strawberry</synonym>
+                                                <rank>species</rank>
+                                                <uri>http://www.boga.ruhr-uni-bochum.de/html/Fragaria.vesca.ja6.jpg</uri>
+                                                <uri>http://caliban.mpiz-koeln.mpg.de/thome/band3/tafel_092_small.jpg</uri>
+                                              </taxonomy>
+                                            </clade>
+                                            <clade>
+                                              <taxonomy>
+                                                <id provider="uniprot">3760</id>
+                                                <code>PRUPE</code>
+                                                <scientific_name>Prunus persica</scientific_name>
+                                                <common_name>Peach</common_name>
+                                                <synonym>Persica vulgaris</synonym>
+                                                <synonym>Amygdalus persica</synonym>
+                                                <rank>species</rank>
+                                                <uri>http://www.mezhenskyjv.narod.ru/foto_sortov/dokaz.jpg</uri>
+                                              </taxonomy>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3659</id>
+                                              <code>CUCSA</code>
+                                              <scientific_name>Cucumis sativus</scientific_name>
+                                              <common_name>Cucumber</common_name>
+                                              <rank>species</rank>
+                                            </taxonomy>
+                                          </clade>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">3988</id>
-                                            <code>RICCO</code>
-                                            <scientific_name>Ricinus communis</scientific_name>
-                                            <common_name>Castor bean</common_name>
-                                            <synonym>Ricinus sanguineus</synonym>
-                                            <rank>species</rank>
-                                            <uri>http://nmorganics.net/wp-content/uploads/2011/09/castor.jpg</uri>
+                                            <id provider="uniprot">3814</id>
+                                            <scientific_name>Papilionoideae</scientific_name>
+                                            <rank>subfamily</rank>
                                           </taxonomy>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3847</id>
+                                              <code>SOYBN</code>
+                                              <scientific_name>Glycine max</scientific_name>
+                                              <authority>cv. Wye</authority>
+                                              <common_name>Soybean</common_name>
+                                              <synonym>Glycine hispida</synonym>
+                                              <rank>species</rank>
+                                            </taxonomy>
+                                          </clade>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3880</id>
+                                              <code>MEDTR</code>
+                                              <scientific_name>Medicago truncatula</scientific_name>
+                                              <common_name>Barrel medic</common_name>
+                                              <synonym>Medicago tribuloides</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://crdp.ac-besancon.fr/flore/FABACEAE/photos/medicago_truncatula_30.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
                                         </clade>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">3694</id>
-                                          <code>POPTR</code>
-                                          <scientific_name>Populus trichocarpa</scientific_name>
-                                          <common_name>Western balsam poplar</common_name>
-                                          <synonym>Populus balsamifera subsp. trichocarpa</synonym>
-                                          <rank>species</rank>
-                                        </taxonomy>
-                                      </clade>
-                                    </clade>
-                                  </clade>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">91836</id>
-                                      <scientific_name>malvids</scientific_name>
-                                    </taxonomy>
-                                    <clade>
-                                      <name>Brassicales &amp; Sapindales</name>
-                                      <clade>
-                                        <taxonomy>
-                                          <id provider="uniprot">3699</id>
-                                          <scientific_name>Brassicales</scientific_name>
+                                          <id provider="uniprot">3646</id>
+                                          <scientific_name>Malpighiales</scientific_name>
                                           <rank>order</rank>
                                         </taxonomy>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">3700</id>
-                                            <scientific_name>Brassicaceae</scientific_name>
+                                            <id provider="uniprot">3977</id>
+                                            <scientific_name>Euphorbiaceae</scientific_name>
                                             <rank>family</rank>
                                           </taxonomy>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">3701</id>
-                                              <scientific_name>Arabidopsis</scientific_name>
-                                              <rank>genus</rank>
+                                              <id provider="uniprot">3983</id>
+                                              <code>MANES</code>
+                                              <scientific_name>Manihot esculenta</scientific_name>
+                                              <common_name>Tapioca</common_name>
+                                              <synonym>Jatropha manihot</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://upload.wikimedia.org/wikipedia/commons/9/99/Iwata_kenichi_cassava.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3988</id>
+                                              <code>RICCO</code>
+                                              <scientific_name>Ricinus communis</scientific_name>
+                                              <common_name>Castor bean</common_name>
+                                              <synonym>Ricinus sanguineus</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://nmorganics.net/wp-content/uploads/2011/09/castor.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">3694</id>
+                                            <code>POPTR</code>
+                                            <scientific_name>Populus trichocarpa</scientific_name>
+                                            <common_name>Western balsam poplar</common_name>
+                                            <synonym>Populus balsamifera subsp. trichocarpa</synonym>
+                                            <rank>species</rank>
+                                          </taxonomy>
+                                        </clade>
+                                      </clade>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">91836</id>
+                                        <scientific_name>malvids</scientific_name>
+                                      </taxonomy>
+                                      <clade>
+                                        <name>Brassicales &amp; Sapindales</name>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">3699</id>
+                                            <scientific_name>Brassicales</scientific_name>
+                                            <rank>order</rank>
+                                          </taxonomy>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">3700</id>
+                                              <scientific_name>Brassicaceae</scientific_name>
+                                              <rank>family</rank>
                                             </taxonomy>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">59689</id>
-                                                <code>ARALY</code>
-                                                <scientific_name>Arabidopsis lyrata</scientific_name>
-                                                <common_name>Lyre-leaved rock-cress</common_name>
-                                                <synonym>Arabis lyrata</synonym>
-                                                <rank>species</rank>
+                                                <id provider="uniprot">3701</id>
+                                                <scientific_name>Arabidopsis</scientific_name>
+                                                <rank>genus</rank>
                                               </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">59689</id>
+                                                  <code>ARALY</code>
+                                                  <scientific_name>Arabidopsis lyrata</scientific_name>
+                                                  <common_name>Lyre-leaved rock-cress</common_name>
+                                                  <synonym>Arabis lyrata</synonym>
+                                                  <rank>species</rank>
+                                                </taxonomy>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">3702</id>
+                                                  <code>ARATH</code>
+                                                  <scientific_name>Arabidopsis thaliana</scientific_name>
+                                                  <common_name>Mouse-ear cress</common_name>
+                                                  <rank>species</rank>
+                                                </taxonomy>
+                                              </clade>
                                             </clade>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">3702</id>
-                                                <code>ARATH</code>
-                                                <scientific_name>Arabidopsis thaliana</scientific_name>
-                                                <common_name>Mouse-ear cress</common_name>
+                                                <id provider="uniprot">98038</id>
+                                                <code>THEHA</code>
+                                                <scientific_name>Thellungiella halophila</scientific_name>
+                                                <common_name>Salt cress</common_name>
                                                 <rank>species</rank>
+                                                <uri>http://mplant.oxfordjournals.org/content/2/1/3/F1.large.jpg</uri>
                                               </taxonomy>
                                             </clade>
                                           </clade>
                                           <clade>
                                             <taxonomy>
-                                              <id provider="uniprot">98038</id>
-                                              <code>THEHA</code>
-                                              <scientific_name>Thellungiella halophila</scientific_name>
-                                              <common_name>Salt cress</common_name>
+                                              <id provider="uniprot">3649</id>
+                                              <code>CARPA</code>
+                                              <scientific_name>Carica papaya</scientific_name>
+                                              <common_name>Papaya</common_name>
                                               <rank>species</rank>
-                                              <uri>http://mplant.oxfordjournals.org/content/2/1/3/F1.large.jpg</uri>
+                                              <uri>http://www.biopix.com/photos/jko-carica-papaya-00412.jpg</uri>
+                                              <uri>http://www.texasriviera.com/greenthumbs/papaya10.jpg</uri>
                                             </taxonomy>
                                           </clade>
                                         </clade>
                                         <clade>
                                           <taxonomy>
-                                            <id provider="uniprot">3649</id>
-                                            <code>CARPA</code>
-                                            <scientific_name>Carica papaya</scientific_name>
-                                            <common_name>Papaya</common_name>
+                                            <id provider="uniprot">2706</id>
+                                            <scientific_name>Citrus</scientific_name>
+                                            <rank>genus</rank>
+                                          </taxonomy>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">85681</id>
+                                              <code>CCLXX</code>
+                                              <scientific_name>Citrus clementina</scientific_name>
+                                              <synonym>Citrus clementina hort. ex Tanaka</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://www.citrusgenomedb.org/sites/default/files/tripal/tripal_organism/images/Citrus_clementina.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                          <clade>
+                                            <taxonomy>
+                                              <id provider="uniprot">2711</id>
+                                              <code>CITSI</code>
+                                              <scientific_name>Citrus sinensis</scientific_name>
+                                              <common_name>Sweet orange</common_name>
+                                              <synonym>Citrus x sinensis</synonym>
+                                              <synonym>Citrus aurantium var. sinensis</synonym>
+                                              <rank>species</rank>
+                                              <uri>http://www.west-crete.com/flowers/photos/citrus_sinensis-1.jpg</uri>
+                                            </taxonomy>
+                                          </clade>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">71139</id>
+                                          <code>EUCGR</code>
+                                          <scientific_name>Eucalyptus grandis</scientific_name>
+                                          <common_name>Flooded gum</common_name>
+                                          <rank>species</rank>
+                                          <uri>http://www.calflora.net/losangelesarboretum/images/eucalyptus_grandis.jpg</uri>
+                                        </taxonomy>
+                                      </clade>
+                                    </clade>
+                                  </clade>
+                                  <clade>
+                                    <taxonomy>
+                                      <id provider="eol">582304</id>
+                                      <code>VITVI</code>
+                                      <scientific_name>Vitis vinifera</scientific_name>
+                                      <common_name>Grape</common_name>
+                                      <rank>species</rank>
+                                    </taxonomy>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <taxonomy>
+                                    <id provider="uniprot">91888</id>
+                                    <scientific_name>lamiids</scientific_name>
+                                  </taxonomy>
+                                  <clade>
+                                    <taxonomy>
+                                      <id provider="uniprot">4070</id>
+                                      <scientific_name>Solanaceae</scientific_name>
+                                      <rank>family</rank>
+                                    </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">4107</id>
+                                        <scientific_name>Solanum</scientific_name>
+                                        <rank>genus</rank>
+                                      </taxonomy>
+                                      <clade>
+                                        <taxonomy>
+                                          <id provider="uniprot">49274</id>
+                                          <scientific_name>Lycopersicon</scientific_name>
+                                          <rank>subgenus</rank>
+                                        </taxonomy>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">4081</id>
+                                            <code>SOLLC</code>
+                                            <scientific_name>Solanum lycopersicum</scientific_name>
+                                            <common_name>Tomato</common_name>
+                                            <synonym>Lycopersicon esculentum</synonym>
                                             <rank>species</rank>
-                                            <uri>http://www.biopix.com/photos/jko-carica-papaya-00412.jpg</uri>
-                                            <uri>http://www.texasriviera.com/greenthumbs/papaya10.jpg</uri>
+                                            <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0905/1214.jpeg</uri>
+                                          </taxonomy>
+                                        </clade>
+                                        <clade>
+                                          <taxonomy>
+                                            <id provider="uniprot">4084</id>
+                                            <code>SOLPI</code>
+                                            <scientific_name>Solanum pimpinellifolium</scientific_name>
+                                            <common_name>Currant tomato</common_name>
+                                            <synonym>Lycopersicon pimpinellifolium</synonym>
+                                            <rank>species</rank>
+                                            <uri>http://upload.wikimedia.org/wikipedia/commons/b/b8/Currant_tomato.jpg</uri>
                                           </taxonomy>
                                         </clade>
                                       </clade>
                                       <clade>
                                         <taxonomy>
-                                          <id provider="uniprot">2706</id>
-                                          <scientific_name>Citrus</scientific_name>
-                                          <rank>genus</rank>
+                                          <id provider="uniprot">4113</id>
+                                          <code>SOLTU</code>
+                                          <scientific_name>Solanum tuberosum</scientific_name>
+                                          <common_name>Potato</common_name>
+                                          <rank>species</rank>
+                                          <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0508/0344.jpeg</uri>
                                         </taxonomy>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">85681</id>
-                                            <code>CCLXX</code>
-                                            <scientific_name>Citrus clementina</scientific_name>
-                                            <synonym>Citrus clementina hort. ex Tanaka</synonym>
-                                            <rank>species</rank>
-                                            <uri>http://www.citrusgenomedb.org/sites/default/files/tripal/tripal_organism/images/Citrus_clementina.jpg</uri>
-                                          </taxonomy>
-                                        </clade>
-                                        <clade>
-                                          <taxonomy>
-                                            <id provider="uniprot">2711</id>
-                                            <code>CITSI</code>
-                                            <scientific_name>Citrus sinensis</scientific_name>
-                                            <common_name>Sweet orange</common_name>
-                                            <synonym>Citrus x sinensis</synonym>
-                                            <synonym>Citrus aurantium var. sinensis</synonym>
-                                            <rank>species</rank>
-                                            <uri>http://www.west-crete.com/flowers/photos/citrus_sinensis-1.jpg</uri>
-                                          </taxonomy>
-                                        </clade>
                                       </clade>
                                     </clade>
                                     <clade>
                                       <taxonomy>
-                                        <id provider="uniprot">71139</id>
-                                        <code>EUCGR</code>
-                                        <scientific_name>Eucalyptus grandis</scientific_name>
-                                        <common_name>Flooded gum</common_name>
+                                        <id provider="uniprot">4097</id>
+                                        <code>TOBAC</code>
+                                        <scientific_name>Nicotiana tabacum</scientific_name>
+                                        <common_name>Common tobacco</common_name>
                                         <rank>species</rank>
-                                        <uri>http://www.calflora.net/losangelesarboretum/images/eucalyptus_grandis.jpg</uri>
+                                        <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0105/2073.jpeg</uri>
                                       </taxonomy>
                                     </clade>
                                   </clade>
-                                </clade>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="eol">582304</id>
-                                    <code>VITVI</code>
-                                    <scientific_name>Vitis vinifera</scientific_name>
-                                    <common_name>Grape</common_name>
-                                    <rank>species</rank>
-                                  </taxonomy>
+                                  <clade>
+                                    <taxonomy>
+                                      <id provider="uniprot">4155</id>
+                                      <code>MIMGU</code>
+                                      <scientific_name>Mimulus guttatus</scientific_name>
+                                      <common_name>Yellow monkey flower</common_name>
+                                      <synonym>Yellow monkey flower</synonym>
+                                      <rank>species</rank>
+                                    </taxonomy>
+                                  </clade>
                                 </clade>
                               </clade>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">91888</id>
-                                  <scientific_name>lamiids</scientific_name>
+                                  <id provider="uniprot">218851</id>
+                                  <code>AQUCA</code>
+                                  <scientific_name>Aquilegia caerulea</scientific_name>
+                                  <authority>E.James</authority>
+                                  <common_name>Rocky mountain columbine</common_name>
+                                  <synonym>Aquilegia coerulea</synonym>
+                                  <rank>species</rank>
+                                  <uri>http://www.wildflower.org/image_archive/320x240/PCD3618/PCD3618_IMG0033.JPG</uri>
                                 </taxonomy>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">4070</id>
-                                    <scientific_name>Solanaceae</scientific_name>
-                                    <rank>family</rank>
-                                  </taxonomy>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4107</id>
-                                      <scientific_name>Solanum</scientific_name>
-                                      <rank>genus</rank>
-                                    </taxonomy>
-                                    <clade>
-                                      <taxonomy>
-                                        <id provider="uniprot">49274</id>
-                                        <scientific_name>Lycopersicon</scientific_name>
-                                        <rank>subgenus</rank>
-                                      </taxonomy>
-                                      <clade>
-                                        <taxonomy>
-                                          <id provider="uniprot">4081</id>
-                                          <code>SOLLC</code>
-                                          <scientific_name>Solanum lycopersicum</scientific_name>
-                                          <common_name>Tomato</common_name>
-                                          <synonym>Lycopersicon esculentum</synonym>
-                                          <rank>species</rank>
-                                          <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0905/1214.jpeg</uri>
-                                        </taxonomy>
-                                      </clade>
-                                      <clade>
-                                        <taxonomy>
-                                          <id provider="uniprot">4084</id>
-                                          <code>SOLPI</code>
-                                          <scientific_name>Solanum pimpinellifolium</scientific_name>
-                                          <common_name>Currant tomato</common_name>
-                                          <synonym>Lycopersicon pimpinellifolium</synonym>
-                                          <rank>species</rank>
-                                          <uri>http://upload.wikimedia.org/wikipedia/commons/b/b8/Currant_tomato.jpg</uri>
-                                        </taxonomy>
-                                      </clade>
-                                    </clade>
-                                    <clade>
-                                      <taxonomy>
-                                        <id provider="uniprot">4113</id>
-                                        <code>SOLTU</code>
-                                        <scientific_name>Solanum tuberosum</scientific_name>
-                                        <common_name>Potato</common_name>
-                                        <rank>species</rank>
-                                        <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0508/0344.jpeg</uri>
-                                      </taxonomy>
-                                    </clade>
-                                  </clade>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4097</id>
-                                      <code>TOBAC</code>
-                                      <scientific_name>Nicotiana tabacum</scientific_name>
-                                      <common_name>Common tobacco</common_name>
-                                      <rank>species</rank>
-                                      <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0105/2073.jpeg</uri>
-                                    </taxonomy>
-                                  </clade>
-                                </clade>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">4155</id>
-                                    <code>MIMGU</code>
-                                    <scientific_name>Mimulus guttatus</scientific_name>
-                                    <common_name>Yellow monkey flower</common_name>
-                                    <synonym>Yellow monkey flower</synonym>
-                                    <rank>species</rank>
-                                  </taxonomy>
-                                </clade>
                               </clade>
                             </clade>
                             <clade>
                               <taxonomy>
-                                <id provider="uniprot">218851</id>
-                                <code>AQUCA</code>
-                                <scientific_name>Aquilegia caerulea</scientific_name>
-                                <authority>E.James</authority>
-                                <common_name>Rocky mountain columbine</common_name>
-                                <synonym>Aquilegia coerulea</synonym>
-                                <rank>species</rank>
-                                <uri>http://www.wildflower.org/image_archive/320x240/PCD3618/PCD3618_IMG0033.JPG</uri>
-                              </taxonomy>
-                            </clade>
-                          </clade>
-                          <clade>
-                            <taxonomy>
-                              <id provider="uniprot">4447</id>
-                              <scientific_name>Liliopsida</scientific_name>
-                              <common_name>monocots</common_name>
-                              <synonym>Monocotyledoneae</synonym>
-                              <rank>class</rank>
-                            </taxonomy>
-                            <clade>
-                              <taxonomy>
-                                <id provider="uniprot">4479</id>
-                                <scientific_name>Poaceae</scientific_name>
-                                <common_name>grass family</common_name>
-                                <synonym>Gramineae</synonym>
-                                <rank>family</rank>
+                                <id provider="uniprot">4447</id>
+                                <scientific_name>Liliopsida</scientific_name>
+                                <rank>class</rank>
                               </taxonomy>
                               <clade>
                                 <taxonomy>
-                                  <id provider="uniprot">147369</id>
-                                  <scientific_name>Panicoideae</scientific_name>
-                                  <authority>Link, 1827</authority>
-                                  <synonym>Centothecoideae</synonym>
-                                  <rank>subfamily</rank>
+                                  <id provider="uniprot">4479</id>
+                                  <scientific_name>Poaceae</scientific_name>
+                                  <rank>family</rank>
                                 </taxonomy>
                                 <clade>
                                   <taxonomy>
-                                    <id provider="uniprot">147429</id>
-                                    <scientific_name>Andropogoneae</scientific_name>
-                                    <authority>Dumort., 1824</authority>
-                                    <rank>tribe</rank>
-                                  </taxonomy>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4558</id>
-                                      <code>SORBI</code>
-                                      <scientific_name>Sorghum bicolor</scientific_name>
-                                      <common_name>Sorghum</common_name>
-                                      <synonym>Sorghum vulgare</synonym>
-                                      <rank>species</rank>
-                                    </taxonomy>
-                                  </clade>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4577</id>
-                                      <code>MAIZE</code>
-                                      <scientific_name>Zea mays</scientific_name>
-                                      <common_name>Maize</common_name>
-                                      <rank>species</rank>
-                                    </taxonomy>
-                                  </clade>
-                                </clade>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">147428</id>
-                                    <scientific_name>Paniceae</scientific_name>
-                                    <rank>tribe</rank>
-                                  </taxonomy>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">38727</id>
-                                      <code>PANVG</code>
-                                      <scientific_name>Panicum virgatum</scientific_name>
-                                      <common_name>switchgrass</common_name>
-                                      <rank>species</rank>
-                                      <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/2/29/PanicumVirgatum.jpg/220px-PanicumVirgatum.jpg</uri>
-                                    </taxonomy>
-                                  </clade>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4555</id>
-                                      <code>SETIT</code>
-                                      <scientific_name>Setaria italica</scientific_name>
-                                      <common_name>Foxtail millet</common_name>
-                                      <synonym>Panicum italicum</synonym>
-                                      <rank>species</rank>
-                                      <uri>http://en.academic.ru/pictures/enwiki/83/Setaria_italica0.jpg</uri>
-                                    </taxonomy>
-                                  </clade>
-                                </clade>
-                              </clade>
-                              <clade>
-                                <taxonomy>
-                                  <id provider="uniprot">359160</id>
-                                  <scientific_name>BEP clade</scientific_name>
-                                </taxonomy>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">4527</id>
-                                    <scientific_name>Oryza</scientific_name>
-                                    <rank>genus</rank>
-                                  </taxonomy>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">4530</id>
-                                      <code>ORYSA</code>
-                                      <scientific_name>Oryza sativa</scientific_name>
-                                      <common_name>Rice</common_name>
-                                      <rank>species</rank>
-                                    </taxonomy>
-                                  </clade>
-                                  <clade>
-                                    <taxonomy>
-                                      <id provider="uniprot">39947</id>
-                                      <code>ORYSJ</code>
-                                      <scientific_name>Oryza sativa subsp. japonica</scientific_name>
-                                      <common_name>Rice</common_name>
-                                    </taxonomy>
-                                  </clade>
-                                </clade>
-                                <clade>
-                                  <taxonomy>
-                                    <id provider="uniprot">147368</id>
-                                    <scientific_name>Pooideae</scientific_name>
+                                    <id provider="uniprot">147369</id>
+                                    <scientific_name>Panicoideae</scientific_name>
                                     <rank>subfamily</rank>
                                   </taxonomy>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">15368</id>
-                                      <code>BRADI</code>
-                                      <scientific_name>Brachypodium distachyon</scientific_name>
-                                      <common_name>Purple false brome</common_name>
-                                      <synonym>Trachynia distachya</synonym>
-                                      <rank>species</rank>
-                                      <uri>http://upload.wikimedia.org/wikipedia/commons/0/01/Brachypodium_distachyon_Bd21-3.jpg</uri>
+                                      <id provider="uniprot">147429</id>
+                                      <scientific_name>Andropogoneae</scientific_name>
+                                      <rank>tribe</rank>
                                     </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">4558</id>
+                                        <code>SORBI</code>
+                                        <scientific_name>Sorghum bicolor</scientific_name>
+                                        <common_name>Sorghum</common_name>
+                                        <synonym>Sorghum vulgare</synonym>
+                                        <rank>species</rank>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">4577</id>
+                                        <code>MAIZE</code>
+                                        <scientific_name>Zea mays</scientific_name>
+                                        <common_name>Maize</common_name>
+                                        <rank>species</rank>
+                                      </taxonomy>
+                                    </clade>
                                   </clade>
                                   <clade>
                                     <taxonomy>
-                                      <id provider="uniprot">112509</id>
-                                      <code>HORVD</code>
-                                      <scientific_name>Hordeum vulgare var. distichum</scientific_name>
-                                      <common_name>Two-rowed barley</common_name>
-                                      <rank>subspecies</rank>
-                                      <uri>http://www.missouriplants.com/Grasses/Hordeum_vulgare_plant.jpg</uri>
+                                      <id provider="uniprot">147428</id>
+                                      <scientific_name>Paniceae</scientific_name>
+                                      <rank>tribe</rank>
                                     </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">38727</id>
+                                        <code>PANVG</code>
+                                        <scientific_name>Panicum virgatum</scientific_name>
+                                        <common_name>switchgrass</common_name>
+                                        <rank>species</rank>
+                                        <uri>http://upload.wikimedia.org/wikipedia/commons/thumb/2/29/PanicumVirgatum.jpg/220px-PanicumVirgatum.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">4555</id>
+                                        <code>SETIT</code>
+                                        <scientific_name>Setaria italica</scientific_name>
+                                        <common_name>Foxtail millet</common_name>
+                                        <synonym>Panicum italicum</synonym>
+                                        <rank>species</rank>
+                                        <uri>http://en.academic.ru/pictures/enwiki/83/Setaria_italica0.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <taxonomy>
+                                    <id provider="uniprot">359160</id>
+                                    <scientific_name>BEP clade</scientific_name>
+                                  </taxonomy>
+                                  <clade>
+                                    <taxonomy>
+                                      <id provider="uniprot">4527</id>
+                                      <scientific_name>Oryza</scientific_name>
+                                      <rank>genus</rank>
+                                    </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">4530</id>
+                                        <code>ORYSA</code>
+                                        <scientific_name>Oryza sativa</scientific_name>
+                                        <common_name>Rice</common_name>
+                                        <rank>species</rank>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">39947</id>
+                                        <code>ORYSJ</code>
+                                        <scientific_name>Oryza sativa subsp. japonica</scientific_name>
+                                        <common_name>Rice</common_name>
+                                      </taxonomy>
+                                    </clade>
+                                  </clade>
+                                  <clade>
+                                    <taxonomy>
+                                      <id provider="uniprot">147368</id>
+                                      <scientific_name>Pooideae</scientific_name>
+                                      <rank>subfamily</rank>
+                                    </taxonomy>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">15368</id>
+                                        <code>BRADI</code>
+                                        <scientific_name>Brachypodium distachyon</scientific_name>
+                                        <common_name>Purple false brome</common_name>
+                                        <synonym>Trachynia distachya</synonym>
+                                        <rank>species</rank>
+                                        <uri>http://upload.wikimedia.org/wikipedia/commons/0/01/Brachypodium_distachyon_Bd21-3.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
+                                    <clade>
+                                      <taxonomy>
+                                        <id provider="uniprot">112509</id>
+                                        <code>HORVD</code>
+                                        <scientific_name>Hordeum vulgare var. distichum</scientific_name>
+                                        <common_name>Two-rowed barley</common_name>
+                                        <rank>subspecies</rank>
+                                        <uri>http://www.missouriplants.com/Grasses/Hordeum_vulgare_plant.jpg</uri>
+                                      </taxonomy>
+                                    </clade>
                                   </clade>
                                 </clade>
                               </clade>
+                              <clade>
+                                <taxonomy>
+                                  <id provider="uniprot">214687</id>
+                                  <code>MUSAM</code>
+                                  <scientific_name>Musa acuminata subsp. malaccensis</scientific_name>
+                                  <authority>(Ridl.) N.W.Simmonds</authority>
+                                  <common_name>Wild banana</common_name>
+                                  <synonym>Musa malaccensis</synonym>
+                                  <rank>subspecies</rank>
+                                  <uri>http://farm5.staticflickr.com/4009/4572831376_07ca3089d1_z.jpg</uri>
+                                </taxonomy>
+                              </clade>
                             </clade>
-                            <clade>
-                              <taxonomy>
-                                <id provider="uniprot">214687</id>
-                                <code>MUSAM</code>
-                                <scientific_name>Musa acuminata subsp. malaccensis</scientific_name>
-                                <authority>(Ridl.) N.W.Simmonds</authority>
-                                <common_name>Wild banana</common_name>
-                                <synonym>Musa malaccensis</synonym>
-                                <rank>subspecies</rank>
-                                <uri>http://farm5.staticflickr.com/4009/4572831376_07ca3089d1_z.jpg</uri>
-                              </taxonomy>
-                            </clade>
+                          </clade>
+                          <clade>
+                            <taxonomy>
+                              <id provider="uniprot">13333</id>
+                              <code>AMBTC</code>
+                              <scientific_name>Amborella trichopoda</scientific_name>
+                              <rank>species</rank>
+                              <uri>http://www.sciencemag.org/content/342/6165/1456/F1.medium.gif</uri>
+                            </taxonomy>
                           </clade>
                         </clade>
                         <clade>
