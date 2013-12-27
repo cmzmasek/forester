@@ -166,8 +166,10 @@ module Evoruby
           log << counter.to_s + ': ' + phylogeny_file + ' -> ' +  outfile + NL
 
           phylogeny_id = get_id( phylogeny_file )
+          if  phylogeny_id == nil || phylogeny_id.size < 1
+            Util.fatal_error( PRG_NAME, 'could not get id from ' + phylogeny_file.to_s )
+          end
           puts
-
           Util.print_message( PRG_NAME, "id: " + phylogeny_id )
           log << "id: " + phylogeny_id + NL
 
@@ -256,11 +258,11 @@ module Evoruby
         end
       }
       if matching_files.length < 1
-        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
+        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id
            + suffix_pattern + '] present in current directory' )
       end
       if matching_files.length > 1
-        Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id +
+        Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id
            + suffix_pattern + '] present in current directory' )
       end
       matching_files[ 0 ]
