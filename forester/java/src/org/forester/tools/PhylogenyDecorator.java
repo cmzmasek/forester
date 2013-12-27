@@ -203,9 +203,7 @@ public final class PhylogenyDecorator {
         if ( map.isEmpty() ) {
             throw new IllegalArgumentException( "map is empty" );
         }
-        if ( picky && ( map.size() < phylogeny.getNumberOfExternalNodes() ) ) {
-            throw new IllegalArgumentException( "map contains less entries than the tree has external nodes" );
-        }
+      
         int ext_nodes = 0;
         int ext_nodes_updated = 0;
         int int_nodes = 0;
