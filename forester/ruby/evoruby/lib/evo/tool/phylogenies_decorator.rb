@@ -241,8 +241,12 @@ module Evoruby
 
 
     def get_id( phylogeny_file_name )
-      phylogeny_file_name =~ /^(.+?)__/
-      $1
+      if phylogeny_file_name =~ /^(.+?)__/
+        return $1
+      elsif phylogeny_file_name =~ /^(.+?)_/
+        return $1
+      end
+      nil
     end
 
     def get_file( files_in_dir, phylogeny_id, suffix_pattern )
@@ -276,18 +280,18 @@ module Evoruby
         if ( !File.directory?( file ) &&
              file !~ /^\./ &&
              file !~ /^00/ &&
-             ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}__.*\.fasta$/ ) )
+             ( file =~ /^#{phylogeny_id}__.+\d$/ || file =~ /^#{phylogeny_id}_.*\.fasta$/ ) )
           matching_files << file
         end
       }
 
       if matching_files.length < 1
         Util.fatal_error( PRG_NAME, 'no seq file matching [' +
-           phylogeny_id + '__] present in current directory' )
+           phylogeny_id + '_] present in current directory' )
       end
       if matching_files.length > 1
         Util.fatal_error( PRG_NAME, 'more than one seq file matching [' +
-           phylogeny_id + '__] present in current directory' )
+           phylogeny_id + '_] present in current directory' )
       end
       matching_files[ 0 ]
     end
