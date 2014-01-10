@@ -258,12 +258,12 @@ module Evoruby
         end
       }
       if matching_files.length < 1
-        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id
-           + suffix_pattern + '] present in current directory' )
+        Util.fatal_error( PRG_NAME, 'no file matching [' + phylogeny_id +
+           suffix_pattern + '] present in current directory' )
       end
       if matching_files.length > 1
-        Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id
-           + suffix_pattern + '] present in current directory' )
+        Util.fatal_error( PRG_NAME, 'more than one file matching [' + phylogeny_id +
+           suffix_pattern + '] present in current directory' )
       end
       matching_files[ 0 ]
     end
