@@ -5,7 +5,7 @@
 # FORESTER -- software libraries and applications
 # for evolutionary biology research and applications.
 #
-# Copyright (C) 2008-2009 Christian M. Zmasek
+# Copyright (C) 2008-2014 Christian M. Zmasek
 # Copyright (C) 2008-2009 Burnham Institute for Medical Research
 # All rights reserved
 # 
