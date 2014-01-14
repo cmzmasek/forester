@@ -112,6 +112,7 @@ public final class annotator {
                 //                catch ( final AncestralTaxonomyInferenceException e ) {
                 //                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
                 //                }
+                //phy.setRerootable( false );
                 try {
                     final PhylogenyWriter w = new PhylogenyWriter();
                     w.toPhyloXML( phy, 0, outfile );
