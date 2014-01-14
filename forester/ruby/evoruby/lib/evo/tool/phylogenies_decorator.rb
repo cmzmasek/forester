@@ -203,19 +203,31 @@ module Evoruby
            ' -p -f=m ' + phylogeny_file + ' ' +
            seqs_file_name  + ' ' + TMP_FILE_1
           puts cmd
-          execute_cmd( cmd, log )
+          begin
+            execute_cmd( cmd, log )
+          rescue Error
+            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+          end
 
           cmd = decorator + ' ' + DECORATOR_OPTIONS_DOMAINS + ' ' +
            '-f=d ' + TMP_FILE_1 + ' ' +
            domains_mapfile_name + ' ' +TMP_FILE_2
           puts cmd
-          execute_cmd( cmd, log )
+          begin
+            execute_cmd( cmd, log )
+          rescue Error
+            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+          end
 
           cmd = decorator + ' ' +  DECORATOR_OPTIONS_SEQ_NAMES + ' ' +
            '-f=n ' + TMP_FILE_2 + ' ' +
            ids_mapfile_name + ' ' + outfile
           puts cmd
-          execute_cmd( cmd, log )
+          begin
+            execute_cmd( cmd, log )
+          rescue Error
+            Util.fatal_error( PRG_NAME, 'error: ' + $! )
+          end
 
           File.delete( TMP_FILE_1 )
           File.delete( TMP_FILE_2 )
