@@ -3794,24 +3794,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                               final boolean to_pdf,
                                               final boolean to_graphics_file ) {
         final List<Confidence> confidences = node.getBranchData().getConfidences();
-        //        if ( confidences.size() == 1 ) {
-        //            final double value = node.getBranchData().getConfidence( 0 ).getValue();
-        //            if ( ( value == Confidence.CONFIDENCE_DEFAULT_VALUE ) || ( value < getOptions().getMinConfidenceValue() ) ) {
-        //                return;
-        //            }
-        //            conf_str = FORMATTER_CONFIDENCE.format( value );
-        //        }
-        //        else if ( confidences.size() > 1 ) {
-        boolean one_ok = false;
         boolean not_first = false;
         Collections.sort( confidences );
         final StringBuilder sb = new StringBuilder();
-        String conf_str = "";
         for( final Confidence confidence : confidences ) {
             final double value = confidence.getValue();
             if ( value != Confidence.CONFIDENCE_DEFAULT_VALUE ) {
-                if ( value >= getOptions().getMinConfidenceValue() ) {
-                    one_ok = true;
+                if ( value < getOptions().getMinConfidenceValue() ) {
+                    return;
                 }
                 if ( not_first ) {
                     sb.append( "/" );
@@ -3831,12 +3821,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     }
                 }
             }
-            //}
-            if ( one_ok ) {
-                conf_str = sb.toString();
-            }
         }
-        if ( conf_str.length() > 0 ) {
+        if ( sb.length() > 0 ) {
             final double parent_x = node.getParent().getXcoord();
             double x = node.getXcoord();
             g.setFont( getTreeFontSet().getSmallFont() );
@@ -3852,6 +3838,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 g.setColor( getTreeColorSet().getConfidenceColor() );
             }
+            final String conf_str = sb.toString();
             TreePanel
                     .drawString( conf_str,
                                  parent_x

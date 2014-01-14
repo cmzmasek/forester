@@ -203,7 +203,6 @@ public final class PhylogenyDecorator {
         if ( map.isEmpty() ) {
             throw new IllegalArgumentException( "map is empty" );
         }
-      
         int ext_nodes = 0;
         int ext_nodes_updated = 0;
         int int_nodes = 0;
