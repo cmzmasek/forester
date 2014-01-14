@@ -103,15 +103,15 @@ public final class annotator {
                 catch ( final IOException e ) {
                     ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
                 }
-                try {
-                    inferTaxonomyFromDescendents( phy );
-                }
-                catch ( final IOException e ) {
-                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-                }
-                catch ( final AncestralTaxonomyInferenceException e ) {
-                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
-                }
+                //                try {
+                //                    inferTaxonomyFromDescendents( phy );
+                //                }
+                //                catch ( final IOException e ) {
+                //                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+                //                }
+                //                catch ( final AncestralTaxonomyInferenceException e ) {
+                //                    ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+                //                }
                 try {
                     final PhylogenyWriter w = new PhylogenyWriter();
                     w.toPhyloXML( phy, 0, outfile );
