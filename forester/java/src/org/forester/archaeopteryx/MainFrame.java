@@ -30,6 +30,7 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,33 +97,33 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SEARCH_TERMS_ONLY_LABEL                 = "Match Complete Terms Only";
     static final String         SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
     static final String         INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
-    static final String         DISPLAY_BRANCH_LENGTH_VALUES_LABEL      = "Display Branch Length Values";
-    static final String         COLOR_BY_TAXONOMIC_GROUP                = "Color by Taxonomic Group";
-    static final String         DISPLAY_SCALE_LABEL                     = "Display Scale";
+    static final String         DISPLAY_BRANCH_LENGTH_VALUES_LABEL      = "Branch Length Values";
+    static final String         COLOR_BY_TAXONOMIC_GROUP                = "Colorize by Taxonomic Group";
+    static final String         DISPLAY_SCALE_LABEL                     = "Scale";
     static final String         NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladograms";
     static final String         UNIFORM_CLADOGRAMS_LABEL                = "Total Node Sum Dependent Cladograms";
     static final String         LABEL_DIRECTION_LABEL                   = "Radial Labels";
     static final String         LABEL_DIRECTION_TIP                     = "To use radial node labels in radial and unrooted display types";
     static final String         SCREEN_ANTIALIAS_LABEL                  = "Antialias";
-    static final String         COLOR_LABELS_LABEL                      = "Color Labels Same as Parent Branch";
+    static final String         COLOR_LABELS_LABEL                      = "Colorize Labels Same as Parent Branch";
     static final String         BG_GRAD_LABEL                           = "Background Color Gradient";
-    static final String         DISPLAY_NODE_BOXES_LABEL_EXT            = "Show External Node Shapes";
-    static final String         DISPLAY_NODE_BOXES_LABEL_INT            = "Show Internal Node Shapes";
-    static final String         SHOW_OVERVIEW_LABEL                     = "Show Overview";
+    static final String         DISPLAY_NODE_BOXES_LABEL_EXT            = "External Node Shapes";
+    static final String         DISPLAY_NODE_BOXES_LABEL_INT            = "Internal Node Shapes";
+    static final String         SHOW_OVERVIEW_LABEL                     = "Overview";
     static final String         FONT_SIZE_MENU_LABEL                    = "Font Size";
     static final String         NONUNIFORM_CLADOGRAMS_LABEL             = "External Node Sum Dependent Cladograms";
-    static final String         SHOW_DOMAIN_LABELS_LABEL                = "Show Domain Labels";
-    static final String         SHOW_ANN_REF_SOURCE_LABEL               = "Show Seq Annotation Ref Sources";
+    static final String         SHOW_DOMAIN_LABELS_LABEL                = "Domain Labels";
+    static final String         SHOW_ANN_REF_SOURCE_LABEL               = "Seq Annotation Ref Sources";
     static final String         COLOR_LABELS_TIP                        = "To use parent branch colors for node labels as well, need to turn off taxonomy dependent colorization and turn on branch colorization for this to become apparent";
     static final String         ABBREV_SN_LABEL                         = "Abbreviate Scientific Taxonomic Names";
     static final String         TAXONOMY_COLORIZE_NODE_SHAPES_LABEL     = "Colorize Node Shapes According to Taxonomy";
     static final String         CYCLE_NODE_SHAPE_LABEL                  = "Cycle Node Shapes";
     static final String         CYCLE_NODE_FILL_LABEL                   = "Cycle Node Fill Type";
     static final String         CHOOSE_NODE_SIZE_LABEL                  = "Choose Node Shape Size";
-    static final String         SHOW_CONF_STDDEV_LABEL                  = "Show Confidence Standard Deviations";
+    static final String         SHOW_CONF_STDDEV_LABEL                  = "Confidence Standard Deviations";
     static final String         USE_BRACKETS_FOR_CONF_IN_NH_LABEL       = "Use Brackets for Confidence Values";
     static final String         USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
-    static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Show Basic Tree Information";
+    static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Basic Tree Information";
     JMenuBar                    _jmenubar;
     JMenu                       _file_jmenu;
     JMenu                       _tools_menu;
@@ -322,7 +323,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             switchColors();
         }
         else if ( o == _display_basic_information_item ) {
-            displayBasicInformation();
+            displayBasicInformation( getCurrentTreePanel().getTreeFile() );
         }
         else if ( o == _view_as_NH_item ) {
             viewAsNH();
@@ -664,9 +665,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _view_jmenu = createMenu( "View", getConfiguration() );
         _view_jmenu.add( _display_basic_information_item = new JMenuItem( SHOW_BASIC_TREE_INFORMATION_LABEL ) );
         _view_jmenu.addSeparator();
-        _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
-        _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
-        _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
+        _view_jmenu.add( _view_as_XML_item = new JMenuItem( "as phyloXML" ) );
+        _view_jmenu.add( _view_as_NH_item = new JMenuItem( "as Newick" ) );
+        _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "as Nexus" ) );
         customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
         customizeJMenuItem( _view_as_XML_item );
@@ -761,13 +762,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    void displayBasicInformation() {
+    void displayBasicInformation( final File treefile ) {
         if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
             String title = "Basic Information";
             if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
+                title = title + " for \"" + _mainpanel.getCurrentPhylogeny().getName() + "\"";
             }
-            showTextFrame( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny() ), title );
+            showTextFrame( AptxUtil.createBasicInformation( _mainpanel.getCurrentPhylogeny(), treefile ), title );
         }
     }
 
@@ -1395,7 +1396,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
             String title = "Nexus";
             if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( _mainpanel.getCurrentPhylogeny().toNexus( getOptions().getNhConversionSupportValueStyle() ),
                            title );
@@ -1406,7 +1407,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
             String title = "New Hampshire";
             if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( _mainpanel.getCurrentPhylogeny()
                                    .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
@@ -1418,7 +1419,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( ( _mainpanel.getCurrentPhylogeny() != null ) && !_mainpanel.getCurrentPhylogeny().isEmpty() ) {
             String title = "phyloXML";
             if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
-                title = _mainpanel.getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( _mainpanel.getCurrentPhylogeny().toPhyloXML( 0 ), title );
         }

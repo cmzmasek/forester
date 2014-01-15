@@ -397,9 +397,23 @@ public final class AptxUtil {
         return iter.hasNext();
     }
 
-    final static String createBasicInformation( final Phylogeny phy ) {
+    final static String createBasicInformation( final Phylogeny phy, final File treefile ) {
         final StringBuilder desc = new StringBuilder();
         if ( ( phy != null ) && !phy.isEmpty() ) {
+            String f = null;
+            if ( treefile != null ) {
+                try {
+                    f = treefile.getCanonicalPath();
+                }
+                catch ( final IOException e ) {
+                    //Not important, ignore.
+                }
+                if ( !ForesterUtil.isEmpty( f ) ) {
+                    desc.append( "Path: " );
+                    desc.append( f );
+                    desc.append( "\n" );
+                }
+            }
             if ( !ForesterUtil.isEmpty( phy.getName() ) ) {
                 desc.append( "Name: " );
                 desc.append( phy.getName() );
@@ -488,10 +502,10 @@ public final class AptxUtil {
                 desc.append( "\n" );
                 desc.append( "Descendants per node statistics: " );
                 desc.append( "\n" );
-                desc.append( "    Median: " + ForesterUtil.round( ds.median(), 2 ) );
+                desc.append( "    Median: " + ForesterUtil.round( ds.median(), 6 ) );
                 desc.append( "\n" );
-                desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 2 ) + " (stdev: "
-                        + ForesterUtil.round( ds.sampleStandardDeviation(), 2 ) + ")" );
+                desc.append( "    Mean: " + ForesterUtil.round( ds.arithmeticMean(), 6 ) + " (stdev: "
+                        + ForesterUtil.round( ds.sampleStandardDeviation(), 6 ) + ")" );
                 desc.append( "\n" );
                 desc.append( "    Minimum: " + ForesterUtil.roundToInt( ds.getMin() ) );
                 desc.append( "\n" );
@@ -530,9 +544,9 @@ public final class AptxUtil {
                             desc.append( " (stdev: " + ForesterUtil.round( cs.sampleStandardDeviation(), 6 ) + ")" );
                         }
                         desc.append( "\n" );
-                        desc.append( "    Minimum: " + ForesterUtil.roundToInt( cs.getMin() ) );
+                        desc.append( "    Minimum: " + ForesterUtil.round( cs.getMin(), 6 ) );
                         desc.append( "\n" );
-                        desc.append( "    Maximum: " + ForesterUtil.roundToInt( cs.getMax() ) );
+                        desc.append( "    Maximum: " + ForesterUtil.round( cs.getMax(), 6 ) );
                         desc.append( "\n" );
                     }
                 }

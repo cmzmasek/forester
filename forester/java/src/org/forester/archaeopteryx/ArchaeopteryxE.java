@@ -102,6 +102,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _abbreviate_scientific_names;
     private JCheckBoxMenuItem           _screen_antialias_cbmi;
     private JCheckBoxMenuItem           _background_gradient_cbmi;
+    private JCheckBoxMenuItem           _color_by_taxonomic_group_cbmi;
     private JRadioButtonMenuItem        _non_lined_up_cladograms_rbmi;
     private JRadioButtonMenuItem        _uniform_cladograms_rbmi;
     private JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
@@ -336,6 +337,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             catch ( final IOException e1 ) {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
             }
+        }
+        else if ( o == _color_by_taxonomic_group_cbmi ) {
+            updateOptions( getOptions() );
         }
         repaint();
     }
@@ -700,35 +704,40 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _radio_group_1.add( _ext_node_dependent_cladogram_rbmi );
         _radio_group_1.add( _uniform_cladograms_rbmi );
         _radio_group_1.add( _non_lined_up_cladograms_rbmi );
+        /////
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
                 .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
+        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
+            _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
+        }
+        _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( MainFrame.SHOW_ANN_REF_SOURCE_LABEL ) );
+        _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
+        _options_jmenu
+                .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
         _options_jmenu
                 .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
-        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
-        _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
-        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
-        _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( MainFrame.LABEL_DIRECTION_LABEL ) );
         _options_jmenu
                 .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
         _color_labels_same_as_parent_branch.setToolTipText( MainFrame.COLOR_LABELS_TIP );
         _options_jmenu.add( _abbreviate_scientific_names = new JCheckBoxMenuItem( MainFrame.ABBREV_SN_LABEL ) );
+        _options_jmenu.add( _label_direction_cbmi = new JCheckBoxMenuItem( MainFrame.LABEL_DIRECTION_LABEL ) );
         _label_direction_cbmi.setToolTipText( MainFrame.LABEL_DIRECTION_TIP );
         _options_jmenu.add( _screen_antialias_cbmi = new JCheckBoxMenuItem( MainFrame.SCREEN_ANTIALIAS_LABEL ) );
         _options_jmenu.add( _background_gradient_cbmi = new JCheckBoxMenuItem( MainFrame.BG_GRAD_LABEL ) );
-        if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
-            _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
-        }
+        _options_jmenu.add( _cycle_node_shape_mi = new JMenuItem( MainFrame.CYCLE_NODE_SHAPE_LABEL ) );
+        _options_jmenu.add( _cycle_node_fill_mi = new JMenuItem( MainFrame.CYCLE_NODE_FILL_LABEL ) );
+        _options_jmenu.add( _choose_node_size_mi = new JMenuItem( MainFrame.CHOOSE_NODE_SIZE_LABEL ) );
         _options_jmenu.add( _choose_minimal_confidence_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _overview_placment_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _switch_colors_mi = new JMenuItem( "" ) );
         _options_jmenu.add( _choose_font_mi = new JMenuItem( "" ) );
+        /////
         _options_jmenu.addSeparator();
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.SEARCH_SUBHEADER ),
                                                                 getConfiguration() ) );
@@ -741,6 +750,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeJMenuItem( _choose_minimal_confidence_mi );
         customizeJMenuItem( _switch_colors_mi );
         customizeJMenuItem( _overview_placment_mi );
+        customizeCheckBoxMenuItem( _color_by_taxonomic_group_cbmi, getOptions().isColorByTaxonomicGroup() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );
         customizeCheckBoxMenuItem( _screen_antialias_cbmi, getOptions().isAntialiasScreen() );
@@ -820,9 +830,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _view_jmenu
                 .add( _display_basic_information_item = new JMenuItem( MainFrame.SHOW_BASIC_TREE_INFORMATION_LABEL ) );
         _view_jmenu.addSeparator();
-        _view_jmenu.add( _view_as_XML_item = new JMenuItem( "View as phyloXML" ) );
-        _view_jmenu.add( _view_as_NH_item = new JMenuItem( "View as Newick" ) );
-        _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "View as Nexus" ) );
+        _view_jmenu.add( _view_as_XML_item = new JMenuItem( "as phyloXML" ) );
+        _view_jmenu.add( _view_as_NH_item = new JMenuItem( "as Newick" ) );
+        _view_jmenu.add( _view_as_nexus_item = new JMenuItem( "as Nexus" ) );
         customizeJMenuItem( _display_basic_information_item );
         customizeJMenuItem( _view_as_NH_item );
         customizeJMenuItem( _view_as_XML_item );
@@ -875,9 +885,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "Basic Information";
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+                title = title + " for \"" + _mainpanel.getCurrentPhylogeny().getName() + "\"";
             }
-            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny() ), title );
+            showTextFrame( AptxUtil.createBasicInformation( getMainPanel().getCurrentPhylogeny(), null ), title );
         }
     }
 
@@ -1350,6 +1360,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( ( _circular_type_cbmi != null ) && _circular_type_cbmi.isSelected() ) {
             options.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
         }
+        if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
+            options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
+        }
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {
@@ -1361,7 +1374,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "Nexus";
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toNexus( getOptions()
                                    .getNhConversionSupportValueStyle() ),
@@ -1373,7 +1386,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "New Hampshire";
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny()
                                    .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
@@ -1385,7 +1398,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( getMainPanel().getCurrentPhylogeny() != null ) && !getMainPanel().getCurrentPhylogeny().isEmpty() ) {
             String title = "phyloXML";
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
-                title = getMainPanel().getCurrentPhylogeny().getName() + " " + title;
+                title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
             showTextFrame( getMainPanel().getCurrentPhylogeny().toPhyloXML( 0 ), title );
         }
