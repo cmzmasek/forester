@@ -70,99 +70,99 @@ import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
 
-    private static final String  RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
+    final static Font            jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                       Font.BOLD,
+                                                                       9 );
     final static Font            jcb_font                  = new Font( Configuration.getDefaultFontFamilyName(),
                                                                        Font.PLAIN,
                                                                        9 );
     final static Font            js_font                   = new Font( Configuration.getDefaultFontFamilyName(),
                                                                        Font.PLAIN,
                                                                        9 );
-    final static Font            jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                       Font.BOLD,
-                                                                       9 );
+    private static final String  RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
     private static final long    serialVersionUID          = -8463483932821545633L;
-    private final MainPanel      _mainpanel;
+    private NodeClickAction      _action_when_node_clicked;
+    private int                  _add_new_node_item;
+    private Map<Integer, String> _all_click_to_names;
+    private Map<String, Color>   _annotation_colors;
+    private int                  _blast_item;
+    private JComboBox            _click_to_combobox;
+    private JLabel               _click_to_label;
+    private List<String>         _click_to_names;
+    private int                  _collapse_cb_item;
+    private JCheckBox            _color_acc_species;
+    private JCheckBox            _color_according_to_annotation;
+    private boolean              _color_branches;
+    private JCheckBox            _color_branches_cb;
+    private int                  _color_subtree_cb_item;
     // The settings from the conf file
     private final Configuration  _configuration;
+    private int                  _copy_subtree_item;
+    private int                  _cut_subtree_item;
+    private JButton              _decr_domain_structure_evalue_thr;
+    private int                  _delete_node_or_subtree_item;
+    private JCheckBox            _display_as_phylogram_cb;
     // Tree checkboxes
     private JCheckBox            _display_internal_data;
-    private JCheckBox            _show_node_names;
-    private JCheckBox            _show_taxo_code;
-    private JCheckBox            _write_confidence;
-    private JCheckBox            _show_events;
-    private JCheckBox            _color_acc_species;
-    private JCheckBox            _color_branches_cb;
-    private JCheckBox            _width_branches;
-    private JCheckBox            _show_domain_architectures;
-    private JCheckBox            _show_annotation;
-    private JCheckBox            _show_binary_characters;
-    private JCheckBox            _show_binary_character_counts;
-    private JCheckBox            _show_seq_names;
-    private JCheckBox            _show_seq_symbols;
-    private JCheckBox            _show_gene_names;
-    private JCheckBox            _show_sequence_acc;
-    private JCheckBox            _node_desc_popup_cb;
-    private JCheckBox            _dynamically_hide_data;
-    private JCheckBox            _show_taxo_scientific_names;
-    private JCheckBox            _show_taxo_common_names;
-    private JCheckBox            _show_taxo_images_cb;
-    private JCheckBox            _color_according_to_annotation;
-    private JCheckBox            _display_as_phylogram_cb;
-    private JCheckBox            _seq_relation_confidence_switch;
-    private JComboBox            _show_sequence_relations;
-    private JComboBox            _sequence_relation_type_box;
-    private JCheckBox            _show_vector_data_cb;
-    private JCheckBox            _show_properties_cb;
-    private JLabel               _click_to_label;
-    private JLabel               _zoom_label;
     private JLabel               _domain_display_label;
-    private JComboBox            _click_to_combobox;
-    private Map<Integer, String> _all_click_to_names;
-    private List<String>         _click_to_names;
+    private JTextField           _domain_structure_evalue_thr_tf;
+    private List<Boolean>        _draw_phylogram;
+    private JCheckBox            _dynamically_hide_data;
+    private int                  _edit_node_data_item;
+    private int                  _get_ext_desc_data;
+    private JButton              _incr_domain_structure_evalue_thr;
+    private final MainPanel      _mainpanel;
+    private JCheckBox            _node_desc_popup_cb;
+    private int                  _open_pdb_item;
+    private int                  _open_seq_web_item;
+    private int                  _open_tax_web_item;
+    private JButton              _order;
+    private boolean              _order_of_appearance;
+    private int                  _paste_subtree_item;
+    private int                  _reroot_cb_item;
+    private JButton              _return_to_super_tree;
+    private JLabel               _search_found_label;
+    private JButton              _search_reset_button;
+    private JTextField           _search_tf;
+    private int                  _select_nodes_item;
+    private Sequence             _selected_query_seq;
+    private JCheckBox            _seq_relation_confidence_switch;
+    private JComboBox            _sequence_relation_type_box;
+    private JCheckBox            _show_annotation;
+    private JCheckBox            _show_binary_character_counts;
+    private JCheckBox            _show_binary_characters;
     // Indices for the click-to options in the combo box
     private int                  _show_data_item;
-    private int                  _collapse_cb_item;
-    private int                  _reroot_cb_item;
-    private int                  _swap_cb_item;
-    private int                  _subtree_cb_item;
-    private int                  _color_subtree_cb_item;
-    private int                  _open_seq_web_item;
+    private JCheckBox            _show_domain_architectures;
+    private JCheckBox            _show_events;
+    private JCheckBox            _show_gene_names;
+    private JCheckBox            _show_node_names;
+    private JCheckBox            _show_properties_cb;
+    private JCheckBox            _show_seq_names;
+    private JCheckBox            _show_seq_symbols;
+    private JCheckBox            _show_sequence_acc;
+    private JComboBox            _show_sequence_relations;
+    private JCheckBox            _show_taxo_code;
+    private JCheckBox            _show_taxo_common_names;
+    private JCheckBox            _show_taxo_images_cb;
+    private JCheckBox            _show_taxo_scientific_names;
+    private JCheckBox            _show_vector_data_cb;
+    private JButton              _show_whole;
     private int                  _sort_descendents_item;
-    private int                  _open_tax_web_item;
-    private int                  _cut_subtree_item;
-    private int                  _copy_subtree_item;
-    private int                  _delete_node_or_subtree_item;
-    private int                  _paste_subtree_item;
-    private int                  _add_new_node_item;
-    private int                  _edit_node_data_item;
-    private int                  _select_nodes_item;
-    private int                  _get_ext_desc_data;
-    private int                  _open_pdb_item;
-    private int                  _blast_item;
+    private Map<String, Color>   _species_colors;
+    private int                  _subtree_cb_item;
+    private int                  _swap_cb_item;
+    private JButton              _uncollapse_all;
+    private JCheckBox            _width_branches;
+    private JCheckBox            _write_confidence;
+    private JButton              _zoom_in_domain_structure;
     // zooming and quick tree manipulation buttons:
     private JButton              _zoom_in_x;
     private JButton              _zoom_in_y;
+    private JLabel               _zoom_label;
+    private JButton              _zoom_out_domain_structure;
     private JButton              _zoom_out_x;
     private JButton              _zoom_out_y;
-    private JButton              _show_whole;
-    private JButton              _order;
-    private JButton              _uncollapse_all;
-    private JButton              _zoom_in_domain_structure;
-    private JButton              _zoom_out_domain_structure;
-    private JButton              _decr_domain_structure_evalue_thr;
-    private JButton              _incr_domain_structure_evalue_thr;
-    private JButton              _return_to_super_tree;
-    private JTextField           _domain_structure_evalue_thr_tf;
-    private JTextField           _search_tf;
-    private boolean              _order_of_appearance;
-    private boolean              _color_branches;
-    private NodeClickAction      _action_when_node_clicked;
-    private List<Boolean>        _draw_phylogram;
-    private Map<String, Color>   _annotation_colors;
-    private Map<String, Color>   _species_colors;
-    private JButton              _search_reset_button;
-    private JLabel               _search_found_label;
-    private Sequence             _selected_query_seq;
 
     ControlPanel( final MainPanel ap, final Configuration configuration ) {
         init();
@@ -205,7 +205,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             else if ( e.getSource() == _show_domain_architectures ) {
                 search();
-                displayedPhylogenyMightHaveChanged( false );
+                displayedPhylogenyMightHaveChanged( true );
             }
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
                 if ( e.getSource() == getDisplayAsPhylogramCb() ) {
@@ -432,19 +432,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         _return_to_super_tree.setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
         _return_to_super_tree.setEnabled( true );
-    }
-
-    void showAnnotations() {
-        if ( _show_annotation != null ) {
-            _show_annotation.setSelected( true );
-        }
-        if ( _color_according_to_annotation != null ) {
-            _color_according_to_annotation.setSelected( true );
-        }
-        if ( _color_acc_species != null ) {
-            _color_acc_species.setSelected( false );
-        }
-        _mainpanel.getCurrentTreePanel().repaint();
     }
 
     /**
@@ -760,6 +747,14 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getMainPanel().getOptions();
     }
 
+    JLabel getSearchFoundCountsLabel() {
+        return _search_found_label;
+    }
+
+    JButton getSearchResetButton() {
+        return _search_reset_button;
+    }
+
     JTextField getSearchTextField() {
         return _search_tf;
     }
@@ -824,12 +819,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _show_domain_architectures != null ) && _show_domain_architectures.isSelected() );
     }
 
-    boolean isShowSeqNames() {
-        return ( ( _show_seq_names != null ) && _show_seq_names.isSelected() );
-    }
-
-    boolean isShowSeqSymbols() {
-        return ( ( _show_seq_symbols != null ) && _show_seq_symbols.isSelected() );
+    boolean isShowGeneNames() {
+        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
     }
 
     boolean isShowInternalData() {
@@ -840,12 +831,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _show_node_names != null ) && _show_node_names.isSelected() );
     }
 
-    boolean isShowSequenceAcc() {
-        return ( ( _show_sequence_acc != null ) && _show_sequence_acc.isSelected() );
+    boolean isShowSeqNames() {
+        return ( ( _show_seq_names != null ) && _show_seq_names.isSelected() );
     }
 
-    boolean isShowGeneNames() {
-        return ( ( _show_gene_names != null ) && _show_gene_names.isSelected() );
+    boolean isShowSeqSymbols() {
+        return ( ( _show_seq_symbols != null ) && _show_seq_symbols.isSelected() );
+    }
+
+    boolean isShowSequenceAcc() {
+        return ( ( _show_sequence_acc != null ) && _show_sequence_acc.isSelected() );
     }
 
     boolean isShowSequenceRelationConfidence() {
@@ -904,6 +899,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             getSearchResetButton().setEnabled( false );
             getSearchResetButton().setVisible( false );
             searchReset();
+        }
+    }
+
+    void searchReset() {
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().setFoundNodes( null );
         }
     }
 
@@ -1160,6 +1161,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         // }
     }
 
+    void setSearchFoundCountsOnLabel( final int counts ) {
+        getSearchFoundCountsLabel().setText( "Found: " + counts );
+    }
+
     void setShowEvents( final boolean show_events ) {
         if ( getShowEventsCb() == null ) {
             _show_events = new JCheckBox( "" );
@@ -1290,6 +1295,19 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton( _search_reset_button, s_panel_2 );
     }
 
+    void showAnnotations() {
+        if ( _show_annotation != null ) {
+            _show_annotation.setSelected( true );
+        }
+        if ( _color_according_to_annotation != null ) {
+            _color_according_to_annotation.setSelected( true );
+        }
+        if ( _color_acc_species != null ) {
+            _color_acc_species.setSelected( false );
+        }
+        _mainpanel.getCurrentTreePanel().repaint();
+    }
+
     /**
      * Fit entire tree into window.
      */
@@ -1377,11 +1395,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
             getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             getSequenceRelationTypeBox().removeAllItems();
             for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
                     .getRelevantSequenceRelationTypes() ) {
                 _sequence_relation_type_box.addItem( type );
             }
+            getMainPanel().getCurrentTreePanel().repaint();
             //setSequenceRelationQueries( getMainPanel().getCurrentPhylogeny().getSequenceRelationQueries() );
             // according to GUILHEM the line above can be removed.
         }
@@ -1580,14 +1600,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _draw_phylogram;
     }
 
-    JLabel getSearchFoundCountsLabel() {
-        return _search_found_label;
-    }
-
-    JButton getSearchResetButton() {
-        return _search_reset_button;
-    }
-
     private void init() {
         _draw_phylogram = new ArrayList<Boolean>();
         setSpeciesColors( new HashMap<String, Color>() );
@@ -1652,18 +1664,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
     }
 
-    void searchReset() {
-        if ( getMainPanel().getCurrentTreePanel() != null ) {
-            getMainPanel().getCurrentTreePanel().setFoundNodes( null );
-        }
-    }
-
     private void setDrawPhylogram( final int index, final boolean b ) {
         getIsDrawPhylogramList().set( index, b );
-    }
-
-    void setSearchFoundCountsOnLabel( final int counts ) {
-        getSearchFoundCountsLabel().setText( "Found: " + counts );
     }
 
     private void setupClickToOptions() {
@@ -2048,24 +2050,24 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     enum NodeClickAction {
-        SHOW_DATA,
-        COLLAPSE,
-        REROOT,
-        SUBTREE,
-        SWAP,
-        COLOR_SUBTREE,
-        OPEN_TAX_WEB,
-        OPEN_SEQ_WEB,
-        CUT_SUBTREE,
-        COPY_SUBTREE,
-        DELETE_NODE_OR_SUBTREE,
-        PASTE_SUBTREE,
         ADD_NEW_NODE,
-        EDIT_NODE_DATA,
-        SELECT_NODES,
-        SORT_DESCENDENTS,
-        GET_EXT_DESC_DATA,
         BLAST,
-        OPEN_PDB_WEB;
+        COLLAPSE,
+        COLOR_SUBTREE,
+        COPY_SUBTREE,
+        CUT_SUBTREE,
+        DELETE_NODE_OR_SUBTREE,
+        EDIT_NODE_DATA,
+        GET_EXT_DESC_DATA,
+        OPEN_PDB_WEB,
+        OPEN_SEQ_WEB,
+        OPEN_TAX_WEB,
+        PASTE_SUBTREE,
+        REROOT,
+        SELECT_NODES,
+        SHOW_DATA,
+        SORT_DESCENDENTS,
+        SUBTREE,
+        SWAP;
     }
 }

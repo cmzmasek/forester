@@ -42,13 +42,13 @@ public final class Constants {
     public final static boolean __SYNTH_LF                                                    = false;                                                               // TODO remove me
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
-    final static String         VERSION                                                       = "0.9818 A";
-    final static String         PRG_DATE                                                      = "140114";
+    final static String         VERSION                                                       = "0.9819 FX";
+    final static String         PRG_DATE                                                      = "140115";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
             "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
     final static boolean        VERBOSE_DEFAULT                                               = false;
-    final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 200;
+    final static int            DOMAIN_STRUCTURE_DEFAULT_WIDTH                                = 100;
     final static String         AUTHOR_EMAIL                                                  = "phyloxml@gmail.com";
     final static int            DOMAIN_STRUCTURE_E_VALUE_THR_DEFAULT_EXP                      = -3;
     final static float          BUTTON_ZOOM_IN_FACTOR                                         = 1.25f;
