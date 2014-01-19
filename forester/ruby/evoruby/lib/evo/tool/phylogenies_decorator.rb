@@ -200,7 +200,7 @@ module Evoruby
           end
 
           cmd = decorator +
-           ' -p -f=m ' + phylogeny_file + ' ' +
+           ' -t -p -f=m ' + phylogeny_file + ' ' +
            seqs_file_name  + ' ' + TMP_FILE_1
           puts cmd
           begin
