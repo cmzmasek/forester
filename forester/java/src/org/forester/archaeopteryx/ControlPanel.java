@@ -121,9 +121,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _paste_subtree_item;
     private int                  _reroot_cb_item;
     private JButton              _return_to_super_tree;
-    private JLabel               _search_found_label;
-    private JButton              _search_reset_button;
-    private JTextField           _search_tf;
+   
     private int                  _select_nodes_item;
     private Sequence             _selected_query_seq;
     private JCheckBox            _seq_relation_confidence_switch;
@@ -131,6 +129,14 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _show_annotation;
     private JCheckBox            _show_binary_character_counts;
     private JCheckBox            _show_binary_characters;
+    // Search 
+    private JLabel               _search_found_label_0;
+    private JButton              _search_reset_button_0;
+    private JTextField           _search_tf_0;
+    private JLabel               _search_found_label_1;
+    private JButton              _search_reset_button_1;
+    private JTextField           _search_tf_1;
+    
     // Indices for the click-to options in the combo box
     private int                  _show_data_item;
     private JCheckBox            _show_domain_architectures;
@@ -204,7 +210,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                 displayedPhylogenyMightHaveChanged( true );
             }
             else if ( e.getSource() == _show_domain_architectures ) {
-                search();
+                search0();
+                search1();
                 displayedPhylogenyMightHaveChanged( true );
             }
             else if ( ( tp != null ) && ( tp.getPhylogeny() != null ) ) {
@@ -276,8 +283,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                     _mainpanel.getCurrentTreePanel().increaseDomainStructureEvalueThreshold();
                     displayedPhylogenyMightHaveChanged( true );
                 }
-                else if ( e.getSource() == _search_tf ) {
-                    search();
+                else if ( e.getSource() == _search_tf_0 ) {
+                    search0();
+                    displayedPhylogenyMightHaveChanged( true );
+                }
+                else if ( e.getSource() == _search_tf_1 ) {
+                    search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
                 else {
@@ -747,16 +758,28 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getMainPanel().getOptions();
     }
 
-    JLabel getSearchFoundCountsLabel() {
-        return _search_found_label;
+    JLabel getSearchFoundCountsLabel0() {
+        return _search_found_label_0;
+    }
+    
+    JLabel getSearchFoundCountsLabel1() {
+        return _search_found_label_1;
     }
 
-    JButton getSearchResetButton() {
-        return _search_reset_button;
+    JButton getSearchResetButton0() {
+        return _search_reset_button_0;
+    }
+    
+    JButton getSearchResetButton1() {
+        return _search_reset_button_1;
     }
 
-    JTextField getSearchTextField() {
-        return _search_tf;
+    JTextField getSearchTextField0() {
+        return _search_tf_0;
+    }
+    
+    JTextField getSearchTextField1() {
+        return _search_tf_1;
     }
 
     List<String> getSingleClickToNames() {
@@ -875,36 +898,62 @@ final class ControlPanel extends JPanel implements ActionListener {
         getIsDrawPhylogramList().remove( index );
     }
 
-    void search() {
+    void search0() {
         final MainPanel main_panel = getMainPanel();
         final Phylogeny tree = main_panel.getCurrentPhylogeny();
         if ( ( tree == null ) || tree.isEmpty() ) {
             return;
         }
-        String query = getSearchTextField().getText();
+        String query = getSearchTextField0().getText();
         if ( query != null ) {
             query = query.trim();
         }
-        else {
-            getSearchFoundCountsLabel().setVisible( false );
-            getSearchResetButton().setEnabled( false );
-            getSearchResetButton().setVisible( false );
-            searchReset();
-        }
+       
+        
         if ( !ForesterUtil.isEmpty( query ) ) {
-            search( main_panel, tree, query );
+            search0( main_panel, tree, query );
         }
         else {
-            getSearchFoundCountsLabel().setVisible( false );
-            getSearchResetButton().setEnabled( false );
-            getSearchResetButton().setVisible( false );
-            searchReset();
+            getSearchFoundCountsLabel0().setVisible( false );
+            getSearchResetButton0().setEnabled( false );
+            getSearchResetButton0().setVisible( false );
+            searchReset0();
         }
     }
+    
+    void search1() {
+        final MainPanel main_panel = getMainPanel();
+        final Phylogeny tree = main_panel.getCurrentPhylogeny();
+        if ( ( tree == null ) || tree.isEmpty() ) {
+            return;
+        }
+        String query = getSearchTextField1().getText();
+        if ( query != null ) {
+            query = query.trim();
+        }
+       
+        if ( !ForesterUtil.isEmpty( query ) ) {
+            search1( main_panel, tree, query );
+        }
+        else {
+            getSearchFoundCountsLabel1().setVisible( false );
+            getSearchResetButton1().setEnabled( false );
+            getSearchResetButton1().setVisible( false );
+            searchReset1();
+        }
+    }
+    
+    
 
-    void searchReset() {
+    void searchReset0() {
         if ( getMainPanel().getCurrentTreePanel() != null ) {
-            getMainPanel().getCurrentTreePanel().setFoundNodes( null );
+            getMainPanel().getCurrentTreePanel().setFoundNodes0( null );
+        }
+    }
+    
+    void searchReset1() {
+        if ( getMainPanel().getCurrentTreePanel() != null ) {
+            getMainPanel().getCurrentTreePanel().setFoundNodes1( null );
         }
     }
 
@@ -1161,8 +1210,12 @@ final class ControlPanel extends JPanel implements ActionListener {
         // }
     }
 
-    void setSearchFoundCountsOnLabel( final int counts ) {
-        getSearchFoundCountsLabel().setText( "Found: " + counts );
+    void setSearchFoundCountsOnLabel0( final int counts ) {
+        getSearchFoundCountsLabel0().setText( "Found: " + counts );
+    }
+    
+    void setSearchFoundCountsOnLabel1( final int counts ) {
+        getSearchFoundCountsLabel1().setText( "Found: " + counts );
     }
 
     void setShowEvents( final boolean show_events ) {
@@ -1195,7 +1248,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         endClickToOptions();
         // Zoom and quick edit buttons
         addButtons();
-        setupSearchTools();
+        setupSearchTools0();
+        setupSearchTools1();
     }
 
     void setUpControlsForDomainStrucures() {
@@ -1234,33 +1288,33 @@ final class ControlPanel extends JPanel implements ActionListener {
         addJButton( _incr_domain_structure_evalue_thr, d2_panel );
     }
 
-    void setupSearchTools() {
+    void setupSearchTools0() {
         final String tip = "Enter text to search for. Use ',' for multiple searches (logical OR) and '+' for logical AND.";
-        final JLabel search_label = new JLabel( "Search:" );
+        final JLabel search_label = new JLabel( "Search (A):" );
         search_label.setFont( ControlPanel.jcb_bold_font );
         if ( !getConfiguration().isUseNativeUI() ) {
             search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
         add( search_label );
         search_label.setToolTipText( tip );
-        _search_found_label = new JLabel();
-        getSearchFoundCountsLabel().setVisible( false );
-        _search_found_label.setFont( ControlPanel.jcb_bold_font );
+        _search_found_label_0 = new JLabel();
+        getSearchFoundCountsLabel0().setVisible( false );
+        _search_found_label_0.setFont( ControlPanel.jcb_bold_font );
         if ( !getConfiguration().isUseNativeUI() ) {
-            _search_found_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+            _search_found_label_0.setForeground( getConfiguration().getGuiCheckboxTextColor() );
         }
-        _search_tf = new JTextField( 3 );
-        _search_tf.setToolTipText( tip );
-        _search_tf.setEditable( true );
+        _search_tf_0 = new JTextField( 3 );
+        _search_tf_0.setToolTipText( tip );
+        _search_tf_0.setEditable( true );
         if ( !getConfiguration().isUseNativeUI() ) {
-            _search_tf.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
-            _search_tf.setBackground( getConfiguration().getGuiCheckboxTextColor() );
-            _search_tf.setBorder( null );
+            _search_tf_0.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _search_tf_0.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _search_tf_0.setBorder( null );
         }
-        _search_reset_button = new JButton();
-        getSearchResetButton().setText( "Reset" );
-        getSearchResetButton().setEnabled( false );
-        getSearchResetButton().setVisible( false );
+        _search_reset_button_0 = new JButton();
+        getSearchResetButton0().setText( "Reset" );
+        getSearchResetButton0().setEnabled( false );
+        getSearchResetButton0().setVisible( false );
         final JPanel s_panel_1 = new JPanel( new BorderLayout() );
         final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
         s_panel_1.setBackground( getBackground() );
@@ -1271,7 +1325,7 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void keyReleased( final KeyEvent key_event ) {
-                search();
+                search0();
                 displayedPhylogenyMightHaveChanged( true );
             }
         };
@@ -1279,22 +1333,84 @@ final class ControlPanel extends JPanel implements ActionListener {
 
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                searchReset();
-                setSearchFoundCountsOnLabel( 0 );
-                getSearchFoundCountsLabel().setVisible( false );
-                getSearchTextField().setText( "" );
-                getSearchResetButton().setEnabled( false );
-                getSearchResetButton().setVisible( false );
+                searchReset0();
+                setSearchFoundCountsOnLabel0( 0 );
+                getSearchFoundCountsLabel0().setVisible( false );
+                getSearchTextField0().setText( "" );
+                getSearchResetButton0().setEnabled( false );
+                getSearchResetButton0().setVisible( false );
                 displayedPhylogenyMightHaveChanged( true );
             }
         };
-        _search_reset_button.addActionListener( action_listener );
-        _search_tf.addKeyListener( key_adapter );
-        addJTextField( _search_tf, s_panel_1 );
-        s_panel_2.add( _search_found_label );
-        addJButton( _search_reset_button, s_panel_2 );
+        _search_reset_button_0.addActionListener( action_listener );
+        _search_tf_0.addKeyListener( key_adapter );
+        addJTextField( _search_tf_0, s_panel_1 );
+        s_panel_2.add( _search_found_label_0 );
+        addJButton( _search_reset_button_0, s_panel_2 );
     }
 
+    void setupSearchTools1() {
+        final String tip = "Enter text to search for. Use ',' for multiple searches (logical OR) and '+' for logical AND.";
+        final JLabel search_label = new JLabel( "Search (B):" );
+        search_label.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            search_label.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        add( search_label );
+        search_label.setToolTipText( tip );
+        _search_found_label_1 = new JLabel();
+        getSearchFoundCountsLabel1().setVisible( false );
+        _search_found_label_1.setFont( ControlPanel.jcb_bold_font );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_found_label_1.setForeground( getConfiguration().getGuiCheckboxTextColor() );
+        }
+        _search_tf_1 = new JTextField( 3 );
+        _search_tf_1.setToolTipText( tip );
+        _search_tf_1.setEditable( true );
+        if ( !getConfiguration().isUseNativeUI() ) {
+            _search_tf_1.setForeground( getConfiguration().getGuiMenuBackgroundColor() );
+            _search_tf_1.setBackground( getConfiguration().getGuiCheckboxTextColor() );
+            _search_tf_1.setBorder( null );
+        }
+        _search_reset_button_1 = new JButton();
+        getSearchResetButton1().setText( "Reset" );
+        getSearchResetButton1().setEnabled( false );
+        getSearchResetButton1().setVisible( false );
+        final JPanel s_panel_1 = new JPanel( new BorderLayout() );
+        final JPanel s_panel_2 = new JPanel( new GridLayout( 1, 2, 0, 0 ) );
+        s_panel_1.setBackground( getBackground() );
+        add( s_panel_1 );
+        s_panel_2.setBackground( getBackground() );
+        add( s_panel_2 );
+        final KeyAdapter key_adapter = new KeyAdapter() {
+
+            @Override
+            public void keyReleased( final KeyEvent key_event ) {
+                search1();
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        final ActionListener action_listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed( final ActionEvent e ) {
+                searchReset1();
+                setSearchFoundCountsOnLabel1( 0 );
+                getSearchFoundCountsLabel1().setVisible( false );
+                getSearchTextField1().setText( "" );
+                getSearchResetButton1().setEnabled( false );
+                getSearchResetButton1().setVisible( false );
+                displayedPhylogenyMightHaveChanged( true );
+            }
+        };
+        _search_reset_button_1.addActionListener( action_listener );
+        _search_tf_1.addKeyListener( key_adapter );
+        addJTextField( _search_tf_1, s_panel_1 );
+        s_panel_2.add( _search_found_label_1 );
+        addJButton( _search_reset_button_1, s_panel_2 );
+    }
+    
+    
     void showAnnotations() {
         if ( _show_annotation != null ) {
             _show_annotation.setSelected( true );
@@ -1394,7 +1510,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                         .getPhylogenyGraphicsType() );
             }
             getMainPanel().getCurrentTreePanel().updateSubSuperTreeButton();
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
             getMainPanel().getControlPanel().updateDomainStructureEvaluethresholdDisplay();
             getSequenceRelationTypeBox().removeAllItems();
             for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
@@ -1610,10 +1727,10 @@ final class ControlPanel extends JPanel implements ActionListener {
         return getIsDrawPhylogramList().get( index );
     }
 
-    private void search( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
-        getSearchFoundCountsLabel().setVisible( true );
-        getSearchResetButton().setEnabled( true );
-        getSearchResetButton().setVisible( true );
+    private void search0( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
+        getSearchFoundCountsLabel0().setVisible( true );
+        getSearchResetButton0().setEnabled( true );
+        getSearchResetButton0().setVisible( true );
         String[] queries = null;
         List<PhylogenyNode> nodes = null;
         if ( query_str.indexOf( ',' ) >= 0 ) {
@@ -1652,15 +1769,69 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
         }
         if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
-            main_panel.getCurrentTreePanel().setFoundNodes( new HashSet<Long>() );
+            main_panel.getCurrentTreePanel().setFoundNodes0( new HashSet<Long>() );
             for( final PhylogenyNode node : nodes ) {
-                main_panel.getCurrentTreePanel().getFoundNodes().add( node.getId() );
+                main_panel.getCurrentTreePanel().getFoundNodes0().add( node.getId() );
             }
-            setSearchFoundCountsOnLabel( nodes.size() );
+            setSearchFoundCountsOnLabel0( nodes.size() );
         }
         else {
-            setSearchFoundCountsOnLabel( 0 );
-            searchReset();
+            setSearchFoundCountsOnLabel0( 0 );
+            searchReset0();
+        }
+    }
+    
+    private void search1( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
+        getSearchFoundCountsLabel1().setVisible( true );
+        getSearchResetButton1().setEnabled( true );
+        getSearchResetButton1().setVisible( true );
+        String[] queries = null;
+        List<PhylogenyNode> nodes = null;
+        if ( query_str.indexOf( ',' ) >= 0 ) {
+            queries = query_str.split( ",+" );
+        }
+        else {
+            queries = new String[ 1 ];
+            queries[ 0 ] = query_str.trim();
+        }
+        if ( ( queries != null ) && ( queries.length > 0 ) ) {
+            nodes = new ArrayList<PhylogenyNode>();
+            for( String query : queries ) {
+                if ( ForesterUtil.isEmpty( query ) ) {
+                    continue;
+                }
+                query = query.trim();
+                if ( query.indexOf( '+' ) >= 0 ) {
+                    nodes.addAll( PhylogenyMethods.searchDataLogicalAnd( query.split( "\\++" ),
+                                                                         tree,
+                                                                         getOptions().isSearchCaseSensitive(),
+                                                                         !getOptions().isMatchWholeTermsOnly(),
+                                                                         isShowDomainArchitectures() ) );
+                }
+                else {
+                    nodes.addAll( PhylogenyMethods.searchData( query,
+                                                               tree,
+                                                               getOptions().isSearchCaseSensitive(),
+                                                               !getOptions().isMatchWholeTermsOnly(),
+                                                               isShowDomainArchitectures() ) );
+                }
+            }
+            if ( getOptions().isInverseSearchResult() ) {
+                final List<PhylogenyNode> all = PhylogenyMethods.obtainAllNodesAsList( tree );
+                all.removeAll( nodes );
+                nodes = all;
+            }
+        }
+        if ( ( nodes != null ) && ( nodes.size() > 0 ) ) {
+            main_panel.getCurrentTreePanel().setFoundNodes1( new HashSet<Long>() );
+            for( final PhylogenyNode node : nodes ) {
+                main_panel.getCurrentTreePanel().getFoundNodes1().add( node.getId() );
+            }
+            setSearchFoundCountsOnLabel1( nodes.size() );
+        }
+        else {
+            setSearchFoundCountsOnLabel1( 0 );
+            searchReset1();
         }
     }
 

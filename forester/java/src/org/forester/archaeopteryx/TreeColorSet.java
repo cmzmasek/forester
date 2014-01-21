@@ -68,7 +68,9 @@ public final class TreeColorSet {
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
             new Color( 255, 255, 0 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color
+            new Color( 0, 255, 0 ), // found_color 0
+            new Color( 255, 0, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -85,7 +87,9 @@ public final class TreeColorSet {
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
             new Color( 255, 255, 0 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color
+            new Color( 0, 255, 0 ), // found_color 0
+            new Color( 255, 0, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -102,7 +106,9 @@ public final class TreeColorSet {
             new Color( 0, 0, 0 ), // branch_color
             new Color( 0, 0, 0 ), // box_color
             new Color( 0, 0, 0 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color
+            new Color( 255, 0, 0 ), // found_color 0
+            new Color( 0, 255, 0 ), // found_color 1
+            new Color( 0, 0, 255 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -119,7 +125,9 @@ public final class TreeColorSet {
             new Color( 240, 240, 240 ), // branch_color
             new Color( 140, 140, 140 ), // box_color
             new Color( 140, 140, 140 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color
+            new Color( 255, 0, 0 ), // found_color 0
+            new Color( 0, 255, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -136,7 +144,9 @@ public final class TreeColorSet {
             new Color( 0, 155, 0 ), // branch_color
             new Color( 0, 255, 0 ), // box_color
             new Color( 0, 255, 0 ), // collapesed_fill_color
-            new Color( 255, 255, 255 ), // found_color
+            new Color( 255, 0, 0 ), // found_color 0
+            new Color(  0, 255, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -153,7 +163,9 @@ public final class TreeColorSet {
             new Color( 0, 20, 200 ), // branch_color
             new Color( 0, 20, 200 ), // box_color
             new Color( 255, 255, 0 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color
+            new Color( 0, 255, 0 ), // found_color 0
+            new Color( 255, 0, 0 ), // found_color 1
+            new Color( 0, 0, 255 ), // found_color 0 + 1
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -170,7 +182,9 @@ public final class TreeColorSet {
             new Color( 0, 255, 255 ), // branch_color
             new Color( 0, 255, 255 ), // box_color
             new Color( 255, 255, 0 ), // collapesed_fill_color
-            new Color( 0, 255, 0 ), // found_color
+            new Color( 0, 255, 0 ), // found_color 0
+            new Color( 0, 0, 255 ), // found_color 1
+            new Color( 0, 255, 255 ), // found_color 0 + 1
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -187,7 +201,9 @@ public final class TreeColorSet {
             new Color( 255, 200, 0 ), // branch_color
             new Color( 255, 200, 0 ), // box_color
             new Color( 255, 255, 255 ), // collapesed_fill_color
-            new Color( 255, 255, 255 ), // found_color
+            new Color( 255, 255, 0 ), // found_color 0
+            new Color( 0, 255, 255 ), // found_color 1
+            new Color( 255, 255, 255 ), // found_color 0 + 1
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -205,6 +221,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // box_color
             new Color( 0, 0, 0 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color
+            new Color( 255, 0, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -221,7 +239,9 @@ public final class TreeColorSet {
             new Color( 0, 191, 255 ), // branch_color
             new Color( 0, 191, 255 ), // box_color
             new Color( 255, 255, 255 ), // collapesed_fill_color
-            new Color( 255, 0, 0 ), // found_color
+            new Color( 255, 0, 0 ), // found_color 0
+            new Color( 0, 255, 0 ), // found_color 1
+            new Color( 255, 255, 0 ), // found_color 0 + 1
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -237,8 +257,10 @@ public final class TreeColorSet {
             new Color( 77, 77, 255 ), // branch_length_color
             new Color( 234, 173, 234 ), // branch_color
             new Color( 77, 77, 255 ), // box_color
-            new Color( 77, 77, 255 ), // collapesed_fill_color
-            new Color( 243, 243, 21 ), // found_color
+            new Color( 77, 77, 255 ), // collapsed_fill_color
+            new Color( 243, 243, 21 ), // found_color 0
+            new Color( 255,20, 147 ), // found_color 1
+            new Color( 255, 255, 255 ), // found_color 1 + 2
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
@@ -261,7 +283,9 @@ public final class TreeColorSet {
     private Color              dup_box_color;
     private Color              spec_box_color;
     private Color              collapse_fill_color;
-    private Color              found_color;
+    private Color              found_color_0;
+    private Color              found_color_1;
+    private Color              found_color_0_and_1;
     private Color              duplication_or_specation_color;
     private Color              domains_color;
     private Color              binary_domain_combinations_color;
@@ -348,8 +372,16 @@ public final class TreeColorSet {
         return duplication_or_specation_color;
     }
 
-    Color getFoundColor() {
-        return found_color;
+    Color getFoundColor0() {
+        return found_color_0;
+    }
+    
+    Color getFoundColor1() {
+        return found_color_1;
+    }
+    
+    Color getFoundColor0and1() {
+        return found_color_0_and_1;
     }
 
     Color getGainedCharactersColor() {
@@ -411,14 +443,20 @@ public final class TreeColorSet {
         branch_color = _color_schemes[ scheme ][ 6 ];
         box_color = _color_schemes[ scheme ][ 7 ];
         collapse_fill_color = _color_schemes[ scheme ][ 8 ];
-        found_color = _color_schemes[ scheme ][ 9 ];
-        dup_box_color = _color_schemes[ scheme ][ 10 ];
-        spec_box_color = _color_schemes[ scheme ][ 11 ];
-        duplication_or_specation_color = _color_schemes[ scheme ][ 12 ];
-        domains_color = _color_schemes[ scheme ][ 13 ];
-        binary_domain_combinations_color = _color_schemes[ scheme ][ 14 ];
-        annotation_color = _color_schemes[ scheme ][ 15 ];
-        ov_color = _color_schemes[ scheme ][ 16 ];
+        found_color_0 = _color_schemes[ scheme ][ 9 ];
+        
+        found_color_1 = _color_schemes[ scheme ][ 10 ];
+        
+        found_color_0_and_1 = _color_schemes[ scheme ][11 ];
+        
+        
+        dup_box_color = _color_schemes[ scheme ][ 12 ];
+        spec_box_color = _color_schemes[ scheme ][ 13 ];
+        duplication_or_specation_color = _color_schemes[ scheme ][ 14 ];
+        domains_color = _color_schemes[ scheme ][ 15 ];
+        binary_domain_combinations_color = _color_schemes[ scheme ][ 16 ];
+        annotation_color = _color_schemes[ scheme ][ 17 ];
+        ov_color = _color_schemes[ scheme ][ 18 ];
     }
 
     void setCurrentColorScheme( final int color_scheme ) {

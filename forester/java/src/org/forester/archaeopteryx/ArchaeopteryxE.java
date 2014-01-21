@@ -242,15 +242,18 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _search_case_senstive_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _search_whole_words_only_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _inverse_search_result_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _show_scale_cbmi ) {
             updateOptions( getOptions() );

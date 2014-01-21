@@ -424,15 +424,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( o == _search_case_senstive_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _search_whole_words_only_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _inverse_search_result_cbmi ) {
             updateOptions( getOptions() );
-            getMainPanel().getControlPanel().search();
+            getMainPanel().getControlPanel().search0();
+            getMainPanel().getControlPanel().search1();
         }
         else if ( o == _show_scale_cbmi ) {
             updateOptions( getOptions() );
@@ -1427,7 +1430,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void annotateSequences() {
         if ( getCurrentTreePanel() != null ) {
-            final Set<Long> nodes = getCurrentTreePanel().getFoundNodes();
+            final Set<Long> nodes = getCurrentTreePanel().getFoundNodes0();
             if ( ( nodes == null ) || nodes.isEmpty() ) {
                 JOptionPane
                         .showMessageDialog( this,

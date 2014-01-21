@@ -174,7 +174,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final PhylogenyNode[]        _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
     private int                          _subtree_index                                     = 0;
     private MainPanel                    _main_panel                                        = null;
-    private Set<Long>                    _found_nodes                                       = null;
+    private Set<Long>                    _found_nodes_0                                       = null;
+    private Set<Long>                    _found_nodes_1                                       = null;
+    
     private PhylogenyNode                _highlight_node                                    = null;
     private JPopupMenu                   _node_popup_menu                                   = null;
     private JMenuItem                    _node_popup_menu_items[]                           = null;
@@ -967,8 +969,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _domain_structure_e_value_thr_exp;
     }
 
-    final Set<Long> getFoundNodes() {
-        return _found_nodes;
+    final Set<Long> getFoundNodes0() {
+        return _found_nodes_0;
+    }
+    
+    final Set<Long> getFoundNodes1() {
+        return _found_nodes_1;
     }
 
     final Color getGraphicsForNodeBoxWithColorForParentBranch( final PhylogenyNode node ) {
@@ -1223,10 +1229,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // Check if shift key is down
                 if ( ( e.getModifiers() & InputEvent.SHIFT_MASK ) != 0 ) {
                     // Yes, so add to _found_nodes
-                    if ( getFoundNodes() == null ) {
-                        setFoundNodes( new HashSet<Long>() );
+                    if ( getFoundNodes0() == null ) {
+                        setFoundNodes0( new HashSet<Long>() );
                     }
-                    getFoundNodes().add( node.getId() );
+                    getFoundNodes0().add( node.getId() );
                     // Check if control key is down
                 }
                 else if ( ( e.getModifiers() & InputEvent.CTRL_MASK ) != 0 ) {
@@ -1424,10 +1430,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   root_x + ( Math.cos( angle ) * parent_radius ),
                   root_y + ( Math.sin( angle ) * parent_radius ),
                   g );
-        paintNodeBox( c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file, isInFoundNodes( c )
-                || isInCurrentExternalNodes( c ) );
+        paintNodeBox( c.getXcoord(), c.getYcoord(), c, g, to_pdf, to_graphics_file );
         if ( c.isExternal() ) {
-            final boolean is_in_found_nodes = isInFoundNodes( c ) || isInCurrentExternalNodes( c );
+            final boolean is_in_found_nodes = isInFoundNodes0( c ) || isInFoundNodes1( c ) || isInCurrentExternalNodes( c );
             if ( ( _dynamic_hiding_factor > 1 ) && !is_in_found_nodes
                     && ( ( _urt_nodeid_index_map.get( c.getId() ) % _dynamic_hiding_factor ) != 1 ) ) {
                 return;
@@ -1454,8 +1459,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   root_x + ( Math.cos( angle ) * parent_radius ),
                   root_y + ( Math.sin( angle ) * parent_radius ),
                   g );
-        if ( isInFoundNodes( c ) || isInCurrentExternalNodes( c ) ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+        if ( ( isInFoundNodes0( c ) && !isInFoundNodes1( c ) ) || isInCurrentExternalNodes( c ) ) {
+            g.setColor( getTreeColorSet().getFoundColor0() );
+            drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
+        }
+        else if ( ( isInFoundNodes1( c ) && !isInFoundNodes0( c ) ) ) {
+            g.setColor( getTreeColorSet().getFoundColor1() );
+            drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
+        }
+        else if (  isInFoundNodes0( c ) && isInFoundNodes1( c )  ) {
+            g.setColor( getTreeColorSet().getFoundColor0and1() );
             drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
         }
     }
@@ -1491,7 +1504,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         paintCirculars( phy.getRoot(), phy, center_x, center_y, radius, radial_labels, g, to_pdf, to_graphics_file );
-        paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file, isInFoundNodes( _root ) );
+        paintNodeBox( _root.getXcoord(), _root.getYcoord(), _root, g, to_pdf, to_graphics_file );
+    }
+
+    private boolean isInFoundNodes( PhylogenyNode n ) {
+        return isInFoundNodes0( n ) || isInFoundNodes1( n );
     }
 
     final void paintCircularLite( final Phylogeny phy,
@@ -1812,22 +1829,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final void selectNode( final PhylogenyNode node ) {
-        if ( ( getFoundNodes() != null ) && getFoundNodes().contains( node.getId() ) ) {
-            getFoundNodes().remove( node.getId() );
-            getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
-            if ( getFoundNodes().size() < 1 ) {
-                getControlPanel().searchReset();
+        if ( ( getFoundNodes0() != null ) && getFoundNodes0().contains( node.getId() ) ) {
+            getFoundNodes0().remove( node.getId() );
+            getControlPanel().setSearchFoundCountsOnLabel0( getFoundNodes0().size() );
+            if ( getFoundNodes0().size() < 1 ) {
+                getControlPanel().searchReset0();
             }
         }
         else {
-            getControlPanel().getSearchFoundCountsLabel().setVisible( true );
-            getControlPanel().getSearchResetButton().setEnabled( true );
-            getControlPanel().getSearchResetButton().setVisible( true );
-            if ( getFoundNodes() == null ) {
-                setFoundNodes( new HashSet<Long>() );
+            getControlPanel().getSearchFoundCountsLabel0().setVisible( true );
+            getControlPanel().getSearchResetButton0().setEnabled( true );
+            getControlPanel().getSearchResetButton0().setVisible( true );
+            if ( getFoundNodes0() == null ) {
+                setFoundNodes0( new HashSet<Long>() );
             }
-            getFoundNodes().add( node.getId() );
-            getControlPanel().setSearchFoundCountsOnLabel( getFoundNodes().size() );
+            getFoundNodes0().add( node.getId() );
+            getControlPanel().setSearchFoundCountsOnLabel0( getFoundNodes0().size() );
         }
     }
 
@@ -1845,8 +1862,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _current_external_nodes_data_buffer = sb;
     }
 
-    final void setFoundNodes( final Set<Long> found_nodes ) {
-        _found_nodes = found_nodes;
+    final void setFoundNodes0( final Set<Long> found_nodes ) {
+        _found_nodes_0 = found_nodes;
+    }
+    
+    final void setFoundNodes1( final Set<Long> found_nodes ) {
+        _found_nodes_1 = found_nodes;
     }
 
     final void setInOvRect( final boolean in_ov_rect ) {
@@ -2247,7 +2268,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( getCopiedAndPastedNodes() != null )
                 && !to_pdf
                 && !to_graphics_file && getCopiedAndPastedNodes().contains( node.getId() ) ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getTreeColorSet().getFoundColor0() );
         }
         else if ( getControlPanel().isColorBranches() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
@@ -2426,8 +2447,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         _color_chooser.setPreviewPanel( new JPanel() );
         SubtreeColorizationActionListener al;
-        if ( ( getFoundNodes() != null ) && !getFoundNodes().isEmpty() ) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
+        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
+            final List<PhylogenyNode> additional_nodes = getFoundNodes0AsListOfPhylogenyNodes();
             al = new SubtreeColorizationActionListener( _color_chooser, node, additional_nodes );
         }
         else {
@@ -2438,9 +2459,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         dialog.setVisible( true );
     }
 
-    private List<PhylogenyNode> getFoundNodesAsListOfPhylogenyNodes() {
+    private List<PhylogenyNode> getFoundNodes0AsListOfPhylogenyNodes() {
         final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
-        for( final Long id : getFoundNodes() ) {
+        for( final Long id : getFoundNodes0() ) {
+            additional_nodes.add( _phylogeny.getNode( id ) );
+        }
+        return additional_nodes;
+    }
+    
+    private List<PhylogenyNode> getFoundNodes1AsListOfPhylogenyNodes() {
+        final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
+        for( final Long id : getFoundNodes1() ) {
             additional_nodes.add( _phylogeny.getNode( id ) );
         }
         return additional_nodes;
@@ -2979,8 +3008,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return ( ( getCurrentExternalNodes() != null ) && getCurrentExternalNodes().contains( node.getId() ) );
     }
 
-    final private boolean isInFoundNodes( final PhylogenyNode node ) {
-        return ( ( getFoundNodes() != null ) && getFoundNodes().contains( node.getId() ) );
+    final private boolean isInFoundNodes0( final PhylogenyNode node ) {
+        return ( ( getFoundNodes0() != null ) && getFoundNodes0().contains( node.getId() ) );
+    }
+    
+    final private boolean isInFoundNodes1( final PhylogenyNode node ) {
+        return ( ( getFoundNodes1() != null ) && getFoundNodes1().contains( node.getId() ) );
     }
 
     final private boolean isInOv() {
@@ -3653,8 +3686,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( node.isExternal() ) {
-            paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file, isInFoundNodes( node )
-                    || isInCurrentExternalNodes( node ) );
+            paintNodeBox( x2, y2, node, g, to_pdf, to_graphics_file );
         }
     }
 
@@ -3739,7 +3771,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             c = Color.BLACK;
         }
         else if ( is_in_found_nodes ) {
-            c = getTreeColorSet().getFoundColor();
+            c = getColorForFoundNode( node );
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             c = getTaxonomyBasedColor( node );
@@ -3848,11 +3880,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void paintFoundNode( final int x, final int y, final Graphics2D g ) {
+    private final  Color getColorForFoundNode( final PhylogenyNode n ) {
+        if ( isInCurrentExternalNodes( n ) ) {
+            return getTreeColorSet().getFoundColor0();
+        }    
+        else if ( isInFoundNodes0( n ) && !isInFoundNodes1( n ) ) {
+            return getTreeColorSet().getFoundColor0() ;
+        }
+        else if ( !isInFoundNodes0( n ) && isInFoundNodes1( n ) ) {
+            return getTreeColorSet().getFoundColor1() ;
+        }
+        else  {
+            return getTreeColorSet().getFoundColor0and1() ;
+        }
+    }
+    
+    
+    final private void paintFoundNode( final PhylogenyNode n, final double x, final double y, final Graphics2D g ) {
         final int box_size = getOptions().getDefaultNodeShapeSize();
-        final int half_box_size = getOptions().getDefaultNodeShapeSize() / 2;
-        g.setColor( getTreeColorSet().getFoundColor() );
-        g.fillRect( x - half_box_size, y - half_box_size, box_size, box_size );
+        final double half_box_size = getOptions().getDefaultNodeShapeSize() / 2.0;
+        
+      
+                
+        
+        g.setColor( getColorForFoundNode( n ) );
+        //g.fillRect( x - half_box_size, y - half_box_size, box_size, box_size );
+        //TODO check me
+        //FIXME
+        _rectangle.setRect(  x - half_box_size, y - half_box_size, box_size, box_size );
+        g.fill(  _rectangle );
     }
 
     final private void paintGainedAndLostCharacters( final Graphics2D g,
@@ -3893,20 +3949,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                      final PhylogenyNode node,
                                      final Graphics2D g,
                                      final boolean to_pdf,
-                                     final boolean to_graphics_file,
-                                     final boolean is_in_found_nodes ) {
+                                     final boolean to_graphics_file ) {
         if ( node.isCollapse() ) {
             return;
         }
         // if this node should be highlighted, do so
         if ( ( _highlight_node == node ) && !to_pdf && !to_graphics_file ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getTreeColorSet().getFoundColor0() );
             drawOval( x - 8, y - 8, 16, 16, g );
             drawOval( x - 9, y - 8, 17, 17, g );
             drawOval( x - 9, y - 9, 18, 18, g );
         }
-        if ( is_in_found_nodes ) {
-            paintFoundNode( ForesterUtil.roundToInt( x ), ForesterUtil.roundToInt( y ), g );
+        if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
+            paintFoundNode( node,  x ,  y , g );
         }
         else {
             Color outline_color = null;
@@ -4039,7 +4094,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor( Color.BLACK );
         }
         else if ( is_in_found_nodes ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getColorForFoundNode( node ) );
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
@@ -4258,7 +4313,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             g.setColor( Color.BLACK );
         }
         else if ( is_in_found_nodes ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getColorForFoundNode( node ) );
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
@@ -4390,7 +4445,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getColorForFoundNode( node ) );
             drawRectFilled( node.getXSecondary() - 1, node.getYSecondary() - 1, 3, 3, g );
         }
         float new_x = 0;
@@ -4518,8 +4573,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 child_node.setYcoord( y2 );
                 y2 += _y_distance * child_node.getNumberOfExternalNodes();
             }
-            paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file, isInFoundNodes( node )
-                    || isInCurrentExternalNodes( node ) );
+            paintNodeBox( node.getXcoord(), node.getYcoord(), node, g, to_pdf, to_graphics_file );
         }
         if ( dynamically_hide
                 && !is_in_found_nodes
@@ -4646,7 +4700,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final float height = getOvMaxHeight() / h_ratio;
         final float x = getVisibleRect().x + getOvXPosition() + ( getOvMaxWidth() / x_ratio );
         final float y = getVisibleRect().y + getOvYPosition() + ( getOvMaxHeight() / y_ratio );
-        g.setColor( getTreeColorSet().getFoundColor() );
+        g.setColor( getTreeColorSet().getFoundColor0() );
         getOvRectangle().setRect( x, y, width, height );
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_1 );
@@ -4715,7 +4769,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final double w = PhylogenyMethods.getBranchWidthValue( root );
             drawRectFilled( x1 - d, root.getYcoord() - ( w / 2 ), d, w, g );
         }
-        paintNodeBox( x1, root.getYcoord(), root, g, to_pdf, to_graphics_file, isInFoundNodes( root ) );
+        paintNodeBox( x1, root.getYcoord(), root, g, to_pdf, to_graphics_file );
     }
 
     final private void paintScale( final Graphics2D g,
@@ -4759,7 +4813,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         else if ( is_in_found_nodes ) {
             g.setFont( getTreeFontSet().getLargeItalicFont().deriveFont( TreeFontSet.BOLD_AND_ITALIC ) );
-            g.setColor( getTreeColorSet().getFoundColor() );
+            g.setColor( getColorForFoundNode( node ) );
         }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
@@ -4917,11 +4971,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             current_angle += arc_size;
             assignGraphicsForBranchWithColorForParentBranch( desc, false, g, to_pdf, to_graphics_file );
             drawLine( x, y, new_x, new_y, g );
-            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file, isInFoundNodes( desc )
-                    || isInCurrentExternalNodes( desc ) );
+            paintNodeBox( new_x, new_y, desc, g, to_pdf, to_graphics_file );
         }
         if ( n.isRoot() ) {
-            paintNodeBox( n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file, isInFoundNodes( n ) );
+            paintNodeBox( n.getXcoord(), n.getYcoord(), n, g, to_pdf, to_graphics_file  );
         }
     }
 
@@ -4965,7 +5018,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             desc.setXSecondary( new_x );
             desc.setYSecondary( new_y );
             if ( isInFoundNodes( desc ) || isInCurrentExternalNodes( desc ) ) {
-                g.setColor( getTreeColorSet().getFoundColor() );
+                g.setColor( getColorForFoundNode( desc ) );
                 drawRectFilled( desc.getXSecondary() - 1, desc.getYSecondary() - 1, 3, 3, g );
                 g.setColor( getTreeColorSet().getOvColor() );
             }
@@ -5177,8 +5230,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void showExtDescNodeData( final PhylogenyNode node ) {
         final List<String> data = new ArrayList<String>();
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
-        if ( ( getFoundNodes() != null ) && !getFoundNodes().isEmpty() ) {
-            for( final PhylogenyNode n : getFoundNodesAsListOfPhylogenyNodes() ) {
+        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
+            for( final PhylogenyNode n : getFoundNodes0AsListOfPhylogenyNodes() ) {
+                if ( !nodes.contains( n ) ) {
+                    nodes.add( n );
+                }
+            }
+        }
+        if ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() ) {
+            for( final PhylogenyNode n : getFoundNodes1AsListOfPhylogenyNodes() ) {
                 if ( !nodes.contains( n ) ) {
                     nodes.add( n );
                 }
@@ -5323,7 +5383,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             else {
                 setCurrentExternalNodesDataBuffer( sb );
                 String title;
-                if ( ( getFoundNodes() != null ) && !getFoundNodes().isEmpty() ) {
+                if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
                     title = ( getOptions().getExtDescNodeDataToReturn() == NODE_DATA.UNKNOWN ? "Data"
                             : obtainTitleForExtDescNodeData() )
                             + " for "
@@ -5556,8 +5616,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         _rollover_popup
                                 .setBorder( BorderFactory.createLineBorder( getTreeColorSet().getBranchColor() ) );
                         _rollover_popup.setBackground( getTreeColorSet().getBackgroundColor() );
-                        if ( isInFoundNodes( node ) ) {
-                            _rollover_popup.setForeground( getTreeColorSet().getFoundColor() );
+                        if ( isInFoundNodes0( node ) && !isInFoundNodes1( node ) ) {
+                            _rollover_popup.setForeground( getTreeColorSet().getFoundColor0() );
+                        }
+                        else if ( !isInFoundNodes0( node ) && isInFoundNodes1( node ) ) {
+                            _rollover_popup.setForeground( getTreeColorSet().getFoundColor1() );
+                        }
+                        else if ( isInFoundNodes0( node ) && isInFoundNodes1( node ) ) {
+                            _rollover_popup.setForeground( getTreeColorSet().getFoundColor0and1() );
                         }
                         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
                             _rollover_popup.setForeground( getTaxonomyBasedColor( node ) );
