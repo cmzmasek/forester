@@ -38,6 +38,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
@@ -1709,7 +1711,7 @@ public class PhylogenyMethods {
             return my_s.indexOf( my_query ) >= 0;
         }
         else {
-            return my_s.equals( my_query );
+            return Pattern.compile( "\\b" + my_query  + "\\b").matcher( my_s ).find();
         }
     }
 
