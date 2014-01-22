@@ -1711,7 +1711,7 @@ public class PhylogenyMethods {
             return my_s.indexOf( my_query ) >= 0;
         }
         else {
-            return Pattern.compile( "\\b" + my_query  + "\\b").matcher( my_s ).find();
+            return Pattern.compile( "(\\b|_)" + Pattern.quote(my_query)  + "(\\b|_)").matcher( my_s ).find();
         }
     }
 
