@@ -444,7 +444,7 @@ final public class Options {
         _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
-        _antialias_screen = false;
+        _antialias_screen = true;
         _antialias_print = true;
         _graphics_export_visible_only = false;
         _editable = true;

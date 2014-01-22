@@ -704,19 +704,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color calculateTaxonomyBasedColor( final Taxonomy tax ) {
-        if ( getOptions().isColorByTaxonomicGroup() && !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-            boolean ex = false;
-            String group = null;
-            try {
-                group = TaxonomyUtil.getTaxGroupByTaxCode( tax.getTaxonomyCode() );
-            }
-            catch ( final Exception e ) {
-                ex = true;
-            }
-            if ( !ex && !ForesterUtil.isEmpty( group ) ) {
-                final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
-                if ( c != null ) {
-                    return c;
+        if ( getOptions().isColorByTaxonomicGroup() ) {
+            if ( !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
+                boolean ex = false;
+                String group = null;
+                try {
+                    group = TaxonomyUtil.getTaxGroupByTaxCode( tax.getTaxonomyCode() );
+                }
+                catch ( final Exception e ) {
+                    ex = true;
+                }
+                if ( !ex && !ForesterUtil.isEmpty( group ) ) {
+                    final Color c = ForesterUtil.obtainColorDependingOnTaxonomyGroup( group );
+                    if ( c != null ) {
+                        return c;
+                    }
                 }
             }
             return getTreeColorSet().getTaxonomyColor();

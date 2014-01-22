@@ -36,34 +36,39 @@ import org.forester.util.ForesterUtil;
  */
 public final class TreeColorSet {
 
-    public static final String OVERVIEW                   = "Overview";
     public static final String ANNOTATION                 = "Annotation";
+    public static final String BACKGROUND                 = "Background";
+    public static final String BACKGROUND_GRADIENT_BOTTOM = "Background Gradient Bottom";
     public static final String BINARY_DOMAIN_COMBINATIONS = "Binary Domain Combinations";
-    public static final String DOMAINS                    = "Domains";
-    public static final String DUPLICATION_OR_SPECATION   = "Duplication or Specation";
-    public static final String SPECIATION                 = "Speciation";
-    public static final String DUPLICATION                = "Duplication";
-    public static final String MATCHING_NODES             = "Matching Nodes";
-    public static final String COLLAPSED                  = "Collapsed";
-    public static final String NODE_BOX                   = "Node Box";
     public static final String BRANCH                     = "Branch";
     public static final String BRANCH_LENGTH              = "Branch Length";
+    public static final String COLLAPSED                  = "Collapsed";
     public static final String CONFIDENCE                 = "Confidence";
-    public static final String TAXONOMY                   = "Taxonomy";
+    public static final String DOMAINS                    = "Domains";
+    public static final String DUPLICATION                = "Duplication";
+    public static final String DUPLICATION_OR_SPECATION   = "Duplication or Specation";
+    public static final String MATCHING_NODES_A           = "Matching A";
+    public static final String MATCHING_NODES_A_AND_B     = "Matching A and B";
+    public static final String MATCHING_NODES_B           = "Matching B";
+    public static final String NODE_BOX                   = "Node Box";
+    public static final String OVERVIEW                   = "Overview";
     public static final String SEQUENCE                   = "Sequence";
-    public static final String BACKGROUND_GRADIENT_BOTTOM = "Background Gradient Bottom";
-    public static final String BACKGROUND                 = "Background";
-    static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Silver",
-            "The Matrix", "White & Blue", "Cyan", "Clockwork", "Blue", "Blue & White", "Neon" };
+    public static final String SPECIATION                 = "Speciation";
+    public static final String TAXONOMY                   = "Taxonomy";
     static final String[]      COLOR_FIELDS               = { BACKGROUND, BACKGROUND_GRADIENT_BOTTOM, SEQUENCE,
-            TAXONOMY, CONFIDENCE, BRANCH_LENGTH, BRANCH, NODE_BOX, COLLAPSED, MATCHING_NODES, DUPLICATION, SPECIATION,
-            DUPLICATION_OR_SPECATION, DOMAINS, BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
+            TAXONOMY, CONFIDENCE, BRANCH_LENGTH, BRANCH, NODE_BOX, COLLAPSED, MATCHING_NODES_A, MATCHING_NODES_B,
+            MATCHING_NODES_A_AND_B, DUPLICATION, SPECIATION, DUPLICATION_OR_SPECATION, DOMAINS,
+            BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
+    static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Silver", "Green",
+            "White & Blue", "Cyan", "Orange", "Blue", "Blue & White", "Neon" };
+    // Color schemes:
+    private int                _color_scheme;
     // All the color sets; better be the same # of sets as there are names!
     private final Color[][]    _color_schemes             = { { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 100, 100 ), // background_color_gradient_bottom
-            new Color( 220, 220, 220 ), // sequence  __ Default (same as Black)
-            new Color( 180, 180, 180 ), // taxonomy
-            new Color( 56, 176, 222 ), // support  
+            new Color( 230, 230, 230 ), // sequence  __ Default (same as Black)
+            new Color( 255, 220, 220 ), // taxonomy
+            new Color( 56, 176, 255 ), // support  
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
@@ -80,9 +85,9 @@ public final class TreeColorSet {
             , new Color( 130, 130, 130 )                 // overview
             }, { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 255, 255 ), // background_color_gradient_bottom    
-            new Color( 220, 220, 220 ), // sequence  __ Black
-            new Color( 180, 180, 180 ), // taxonomy
-            new Color( 56, 176, 222 ), // support  
+            new Color( 230, 230, 230 ), // sequence  __ Black
+            new Color( 255, 220, 220 ), // taxonomy
+            new Color( 56, 176, 255 ), // support  
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
@@ -269,28 +274,26 @@ public final class TreeColorSet {
             new Color( 27, 255, 0 ) // annotation
             , new Color( 77, 77, 255 ) // ov
             }                                            };
-    // Color schemes:
-    private int                _color_scheme;
-    // The drawing colors
-    private Color              seq_color;
-    private Color              taxonomy_color;
-    private Color              bootstrap_color;
-    private Color              branch_length_color;
-    private Color              branch_color;
-    private Color              box_color;
+    private Color              annotation_color;
     private Color              background_color;
     private Color              background_color_gradient_bottom;
-    private Color              dup_box_color;
-    private Color              spec_box_color;
-    private Color              collapse_fill_color;
-    private Color              found_color_0;
-    private Color              found_color_1;
-    private Color              found_color_0_and_1;
-    private Color              duplication_or_specation_color;
-    private Color              domains_color;
     private Color              binary_domain_combinations_color;
-    private Color              annotation_color;
+    private Color              bootstrap_color;
+    private Color              box_color;
+    private Color              branch_color;
+    private Color              branch_length_color;
+    private Color              collapse_fill_color;
+    private Color              domains_color;
+    private Color              dup_box_color;
+    private Color              duplication_or_specation_color;
+    private Color              found_color_0;
+    private Color              found_color_0_and_1;
+    private Color              found_color_1;
     private Color              ov_color;
+    // The drawing colors
+    private Color              seq_color;
+    private Color              spec_box_color;
+    private Color              taxonomy_color;
 
     private TreeColorSet() {
         // Hidden constructor.
@@ -376,12 +379,12 @@ public final class TreeColorSet {
         return found_color_0;
     }
 
-    Color getFoundColor1() {
-        return found_color_1;
-    }
-
     Color getFoundColor0and1() {
         return found_color_0_and_1;
+    }
+
+    Color getFoundColor1() {
+        return found_color_1;
     }
 
     Color getGainedCharactersColor() {
@@ -425,10 +428,6 @@ public final class TreeColorSet {
         }
     }
 
-    private void setColorForDefault( final int i, final Color color ) {
-        _color_schemes[ 0 ][ i ] = color;
-    }
-
     /**
      * Switches colors between different schemes.
      */
@@ -457,6 +456,10 @@ public final class TreeColorSet {
 
     void setCurrentColorScheme( final int color_scheme ) {
         _color_scheme = color_scheme;
+    }
+
+    private void setColorForDefault( final int i, final Color color ) {
+        _color_schemes[ 0 ][ i ] = color;
     }
 
     static TreeColorSet createInstance() {

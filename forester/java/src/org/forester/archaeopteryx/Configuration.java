@@ -55,115 +55,34 @@ import org.forester.util.ForesterUtil;
 
 public final class Configuration {
 
-    static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
-    private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
-    private static final int                DEPRECATED                                             = -2;
-    private UI                              _ui                                                    = UI.UNKNOWN;
-    private boolean                         _use_tabbed_display                                    = false;
-    private boolean                         _hide_controls_and_menus                               = false;
-    private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
-    private SortedMap<String, Color>        _display_colors                                        = null;
-    private boolean                         _antialias_screen                                      = true;
-    private PHYLOGENY_GRAPHICS_TYPE         _phylogeny_graphics_type                               = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
-    private String                          _base_font_family_name                                 = "";
-    private int                             _base_font_size                                        = -1;
-    private int                             _min_base_font_size                                    = 2;
-    private int                             _max_base_font_size                                    = 20;
-    private int                             _graphics_export_x                                     = -1;
-    private int                             _graphics_export_y                                     = -1;
-    private short                           _ov_max_width                                          = 80;
-    private short                           _ov_max_height                                         = 80;
-    private OVERVIEW_PLACEMENT_TYPE         _ov_placement                                          = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
-    private double                          _min_confidence_value                                  = Options.MIN_CONFIDENCE_DEFAULT;
-    private float                           _print_line_width                                      = Constants.PDF_LINE_WIDTH_DEFAULT;
-    private boolean                         _show_scale                                            = false;
-    private boolean                         _show_branch_length_values                             = false;
-    private boolean                         _show_overview                                         = true;
-    private short                           _number_of_digits_after_comma_for_confidence_values    = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
-    private short                           _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
-    private boolean                         _editable                                              = true;
-    private boolean                         _nh_parsing_replace_underscores                        = false;
-    private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.NO;
-    private boolean                         _internal_number_are_confidence_for_nh_parsing         = false;
-    private boolean                         _display_sequence_relations                            = false;
-    private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
-    private boolean                         _background_color_gradient                             = false;
-    private boolean                         _show_domain_labels                                    = true;
-    private boolean                         _show_annotation_ref_source                            = true;
-    private boolean                         _abbreviate_scientific_names                           = false;
-    private boolean                         _color_labels_same_as_parent_branch                    = false;
-    private boolean                         _show_default_node_shapes_internal                     = false;
-    private boolean                         _show_default_node_shapes_external                     = false;
-    private NodeShape                       _default_node_shape                                    = NodeShape.RECTANGLE;
-    private NodeFill                        _default_node_fill                                     = NodeFill.SOLID;
-    private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-    private boolean                         _taxonomy_colorize_node_shapes                         = false;
-    private int                             _default_bootstrap_samples                             = -1;
-    private File                            _path_to_local_mafft                                   = null;
-    private File                            _path_to_local_fastme                                  = null;
-    private File                            _path_to_local_raxml                                   = null;
-    final static int                        display_as_phylogram                                   = 0;
-    final static int                        show_node_names                                        = 1;
-    final static int                        show_tax_code                                          = 2;
-    final static int                        show_annotation                                        = 3;
-    final static int                        write_confidence_values                                = 4;
-    final static int                        write_events                                           = 5;
+    final static int                        add_new_node                                           = 14;
+    final static int                        blast                                                  = 9;
+    final static String                     clickto_options[][]                                    = {
+            { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
+            { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" },
+            { "Colorize Subtree/Node(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+            { "Open Taxonomy DB", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
+            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
+            { "Return", "display" }, { "Select Node(s)", "display" }                              };
+    final static int                        collapse_uncollapse                                    = 1;
+    final static int                        color_according_to_annotation                          = 19;
     final static int                        color_according_to_species                             = 6;
     final static int                        color_branches                                         = 7;
-    final static int                        width_branches                                         = 8;
-    final static int                        show_custom_node_shapes                                = 9;
-    final static int                        show_domain_architectures                              = 10;
-    final static int                        show_binary_characters                                 = 11;
-    final static int                        show_binary_character_counts                           = 12;
-    final static int                        show_seq_names                                         = 13;
-    final static int                        show_sequence_acc                                      = 14;
+    final static int                        color_subtree                                          = 5;
+    final static int                        copy_subtree                                           = 11;
+    final static int                        cut_subtree                                            = 10;
+    final static int                        delete_subtree_or_node                                 = 13;
+    final static int                        display_as_phylogram                                   = 0;
     final static int                        display_internal_data                                  = 15;
-    final static int                        dynamically_hide_data                                  = 16;
-    final static int                        show_taxonomy_scientific_names                         = 17;
-    final static int                        show_taxonomy_common_names                             = 18;
-    final static int                        color_according_to_annotation                          = 19;
-    final static int                        show_seq_symbols                                       = 20;
-    final static int                        node_data_popup                                        = 21;
-    final static int                        show_relation_confidence                               = 22;
-    final static int                        show_vector_data                                       = 23;
-    final static int                        show_taxonomy_images                                   = 24;
-    final static int                        show_properties                                        = 25;
-    final static int                        show_gene_names                                        = 26;
     // ------------------
     // Click-to options
     // ------------------
     final static int                        display_node_data                                      = 0;
-    final static int                        collapse_uncollapse                                    = 1;
-    final static int                        reroot                                                 = 2;
-    final static int                        subtree                                                = 3;
-    final static int                        swap                                                   = 4;
-    final static int                        color_subtree                                          = 5;
-    final static int                        open_seq_web                                           = 6;
-    final static int                        open_pdb_web                                           = 7;
-    final static int                        open_tax_web                                           = 8;
-    final static int                        blast                                                  = 9;
-    final static int                        cut_subtree                                            = 10;
-    final static int                        copy_subtree                                           = 11;
-    final static int                        paste_subtree                                          = 12;
-    final static int                        delete_subtree_or_node                                 = 13;
-    final static int                        add_new_node                                           = 14;
-    final static int                        edit_node_data                                         = 15;
-    final static int                        sort_descendents                                       = 16;
-    final static int                        get_ext_desc_data                                      = 17;
-    final static int                        select_nodes                                           = 18;
-    // ---------------------------
-    // Display options for trees
-    // ---------------------------
-    // ---------------------------------
-    // Pertaining to the config itself
-    // ---------------------------------
-    // Full path to config (may be URL)
-    String                                  config_filename;
-    String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
-            { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "yes" },
+            { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
             { "Use Branch Colors", "display", "no" }, { "Use Branch Widths", "display", "no" },
             { "Show Custom Nodes", "display", "yes" }, { "Protein Domains", "nodisplay", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
@@ -174,16 +93,66 @@ public final class Configuration {
             { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
             { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
             { "Properties", "nodisplay", "no" }, { "Gene Name", "display", "yes" }                };
-    final static String                     clickto_options[][]                                    = {
-            { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-            { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" },
-            { "Colorize Subtree/Node(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
-            { "Open Taxonomy DB", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
-            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
-            { "Return", "display" }, { "Select Node(s)", "display" }                              };
+    final static int                        dynamically_hide_data                                  = 16;
+    final static int                        edit_node_data                                         = 15;
+    final static int                        get_ext_desc_data                                      = 17;
+    final static int                        node_data_popup                                        = 21;
+    final static int                        open_pdb_web                                           = 7;
+    final static int                        open_seq_web                                           = 6;
+    final static int                        open_tax_web                                           = 8;
+    final static int                        paste_subtree                                          = 12;
+    final static int                        reroot                                                 = 2;
+    final static int                        select_nodes                                           = 18;
+    final static int                        show_annotation                                        = 3;
+    final static int                        show_binary_character_counts                           = 12;
+    final static int                        show_binary_characters                                 = 11;
+    final static int                        show_custom_node_shapes                                = 9;
+    final static int                        show_domain_architectures                              = 10;
+    final static int                        show_gene_names                                        = 26;
+    final static int                        show_node_names                                        = 1;
+    final static int                        show_properties                                        = 25;
+    final static int                        show_relation_confidence                               = 22;
+    final static int                        show_seq_names                                         = 13;
+    final static int                        show_seq_symbols                                       = 20;
+    final static int                        show_sequence_acc                                      = 14;
+    final static int                        show_tax_code                                          = 2;
+    final static int                        show_taxonomy_common_names                             = 18;
+    final static int                        show_taxonomy_images                                   = 24;
+    final static int                        show_taxonomy_scientific_names                         = 17;
+    final static int                        show_vector_data                                       = 23;
+    final static int                        sort_descendents                                       = 16;
+    final static int                        subtree                                                = 3;
+    final static int                        swap                                                   = 4;
+    static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
+    final static int                        width_branches                                         = 8;
+    final static int                        write_confidence_values                                = 4;
+    final static int                        write_events                                           = 5;
+    // ----------------
+    // Function colors
+    // ----------------
+    private static Hashtable<String, Color> _annotation_colors;
+    // ----------------
+    // Domain colors
+    // ----------------
+    private static Hashtable<String, Color> _domain_colors;
+    // ----------------
+    // Species colors
+    // ----------------
+    private static Hashtable<String, Color> _species_colors;
+    private static String                   DEFAULT_FONT_FAMILY                                    = "";
+    private static final int                DEPRECATED                                             = -2;
+    private static final String             DISPLAY_COLOR_KEY                                      = "display_color";
+    // ---------------------------
+    // Display options for trees
+    // ---------------------------
+    // ---------------------------------
+    // Pertaining to the config itself
+    // ---------------------------------
+    // Full path to config (may be URL)
+    String                                  config_filename;
     // This option is selected in the dropdown
     int                                     default_clickto                                        = Configuration.display_node_data;
+    String                                  default_config_filename                                = Constants.DEFAULT_CONFIGURATION_FILE_NAME;
     // --------------
     // Color set
     // --------------
@@ -192,37 +161,68 @@ public final class Configuration {
     // Fonts
     // -------
     TreeFontSet                             tree_font_set;
-    // ----------------
-    // Species colors
-    // ----------------
-    private static Hashtable<String, Color> _species_colors;
-    // ----------------
-    // Domain colors
-    // ----------------
-    private static Hashtable<String, Color> _domain_colors;
-    // ----------------
-    // Function colors
-    // ----------------
-    private static Hashtable<String, Color> _annotation_colors;
     boolean                                 verbose                                                = Constants.VERBOSE_DEFAULT;
-    private NODE_LABEL_DIRECTION            _node_label_direction                                  = NODE_LABEL_DIRECTION.HORIZONTAL;
-    private Color                           _gui_background_color                                  = Constants.GUI_BACKGROUND_DEFAULT;
-    private Color                           _gui_checkbox_text_color                               = Constants.CHECKBOX_TEXT_COLOR_DEFAULT;
-    private Color                           _gui_checkbox_and_button_active_color                  = Constants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
-    private Color                           _gui_button_text_color                                 = Constants.BUTTON_TEXT_COLOR_DEFAULT;
-    private Color                           _gui_button_background_color                           = Constants.BUTTON_BACKGROUND_COLOR_DEFAULT;
-    private Color                           _gui_menu_background_color                             = Constants.MENU_BACKGROUND_COLOR_DEFAULT;
-    private Color                           _gui_menu_text_color                                   = Constants.MENU_TEXT_COLOR_DEFAULT;
-    private Color                           _gui_button_border_color                               = Constants.BUTTON_BORDER_COLOR_DEFAULT;
-    private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
+    private boolean                         _abbreviate_scientific_names                           = false;
+    private boolean                         _antialias_screen                                      = true;
+    private boolean                         _background_color_gradient                             = false;
+    private String                          _base_font_family_name                                 = "";
+    private int                             _base_font_size                                        = -1;
+    private CLADOGRAM_TYPE                  _cladogram_type                                        = Constants.CLADOGRAM_TYPE_DEFAULT;
+    private boolean                         _color_labels_same_as_parent_branch                    = false;
+    private int                             _default_bootstrap_samples                             = -1;
+    private NodeFill                        _default_node_fill                                     = NodeFill.SOLID;
+    private NodeShape                       _default_node_shape                                    = NodeShape.RECTANGLE;
+    private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
+    private SortedMap<String, Color>        _display_colors                                        = null;
+    private boolean                         _display_sequence_relations                            = false;
     private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
+    private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
+    private boolean                         _editable                                              = true;
     private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.UNKNOWN;
-    private String                          _label_for_get_ext_descendents_data                    = "";
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
     private int                             _frame_x_size;
     private int                             _frame_y_size;
+    private int                             _graphics_export_x                                     = -1;
+    private int                             _graphics_export_y                                     = -1;
+    private Color                           _gui_background_color                                  = Constants.GUI_BACKGROUND_DEFAULT;
+    private Color                           _gui_button_background_color                           = Constants.BUTTON_BACKGROUND_COLOR_DEFAULT;
+    private Color                           _gui_button_border_color                               = Constants.BUTTON_BORDER_COLOR_DEFAULT;
+    private Color                           _gui_button_text_color                                 = Constants.BUTTON_TEXT_COLOR_DEFAULT;
+    private Color                           _gui_checkbox_and_button_active_color                  = Constants.CHECKBOX_AND_BUTTON_ACTIVE_COLOR_DEFAULT;
+    private Color                           _gui_checkbox_text_color                               = Constants.CHECKBOX_TEXT_COLOR_DEFAULT;
+    private Color                           _gui_menu_background_color                             = Constants.MENU_BACKGROUND_COLOR_DEFAULT;
+    private Color                           _gui_menu_text_color                                   = Constants.MENU_TEXT_COLOR_DEFAULT;
+    private boolean                         _hide_controls_and_menus                               = false;
+    private boolean                         _internal_number_are_confidence_for_nh_parsing         = false;
+    private String                          _label_for_get_ext_descendents_data                    = "";
+    private int                             _max_base_font_size                                    = 20;
     private boolean                         _midpoint_root                                         = false;
-    private static String                   DEFAULT_FONT_FAMILY                                    = "";
+    private int                             _min_base_font_size                                    = 2;
+    private double                          _min_confidence_value                                  = Options.MIN_CONFIDENCE_DEFAULT;
+    private boolean                         _nh_parsing_replace_underscores                        = false;
+    private NODE_LABEL_DIRECTION            _node_label_direction                                  = NODE_LABEL_DIRECTION.HORIZONTAL;
+    private short                           _number_of_digits_after_comma_for_branch_length_values = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT;
+    private short                           _number_of_digits_after_comma_for_confidence_values    = Constants.NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT;
+    private short                           _ov_max_height                                         = 80;
+    private short                           _ov_max_width                                          = 80;
+    private OVERVIEW_PLACEMENT_TYPE         _ov_placement                                          = OVERVIEW_PLACEMENT_TYPE.UPPER_LEFT;
+    private File                            _path_to_local_fastme                                  = null;
+    private File                            _path_to_local_mafft                                   = null;
+    private File                            _path_to_local_raxml                                   = null;
+    private PHYLOGENY_GRAPHICS_TYPE         _phylogeny_graphics_type                               = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
+    private float                           _print_line_width                                      = Constants.PDF_LINE_WIDTH_DEFAULT;
+    private boolean                         _show_annotation_ref_source                            = true;
+    private boolean                         _show_branch_length_values                             = false;
+    private boolean                         _show_default_node_shapes_external                     = false;
+    private boolean                         _show_default_node_shapes_internal                     = false;
+    private boolean                         _show_domain_labels                                    = true;
+    private boolean                         _show_overview                                         = true;
+    private boolean                         _show_scale                                            = false;
+    private boolean                         _taxonomy_colorize_node_shapes                         = false;
+    private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.NO;
+    private UI                              _ui                                                    = UI.UNKNOWN;
+    private boolean                         _use_tabbed_display                                    = false;
+    private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
@@ -367,8 +367,20 @@ public final class Configuration {
         return _background_color_gradient;
     }
 
+    public boolean isColorByTaxonomicGroup() {
+        return false;
+    }
+
     public boolean isColorLabelsSameAsParentBranch() {
         return _color_labels_same_as_parent_branch;
+    }
+
+    public boolean isMidpointReroot() {
+        return _midpoint_root;
+    }
+
+    public boolean isShowAnnotationRefSource() {
+        return _show_annotation_ref_source;
     }
 
     public boolean isShowDefaultNodeShapesExternal() {
@@ -405,14 +417,6 @@ public final class Configuration {
 
     public void setBaseFontSize( final int base_font_size ) {
         _base_font_size = base_font_size;
-    }
-
-    private void setMaxBaseFontSize( final int max_base_font_size ) {
-        _max_base_font_size = max_base_font_size;
-    }
-
-    private void setMinBaseFontSize( final int min_base_font_size ) {
-        _min_base_font_size = min_base_font_size;
     }
 
     public void setColorizeBranches( final boolean b ) {
@@ -501,6 +505,10 @@ public final class Configuration {
 
     public void setFrameYSize( final int frame_y_size ) {
         _frame_y_size = frame_y_size;
+    }
+
+    public void setMidpointReroot( final boolean midpoint_root ) {
+        _midpoint_root = midpoint_root;
     }
 
     public void setMinConfidenceValue( final double min_confidence_value ) {
@@ -600,14 +608,6 @@ public final class Configuration {
         return _base_font_size;
     }
 
-    int getMinBaseFontSize() {
-        return _min_base_font_size;
-    }
-
-    int getMaxBaseFontSize() {
-        return _max_base_font_size;
-    }
-
     CLADOGRAM_TYPE getCladogramType() {
         return _cladogram_type;
     }
@@ -677,6 +677,14 @@ public final class Configuration {
 
     Color getGuiMenuTextColor() {
         return _gui_menu_text_color;
+    }
+
+    int getMaxBaseFontSize() {
+        return _max_base_font_size;
+    }
+
+    int getMinBaseFontSize() {
+        return _min_base_font_size;
     }
 
     double getMinConfidenceValue() {
@@ -1629,12 +1637,16 @@ public final class Configuration {
         }
     }
 
-    private void setShowAnnotationRefSource( final boolean b ) {
-        _show_annotation_ref_source = b;
-    }
-
     private void setLabelForGetExtDescendentsData( final String label_for_get_ext_descendents_data ) {
         _label_for_get_ext_descendents_data = label_for_get_ext_descendents_data;
+    }
+
+    private void setMaxBaseFontSize( final int max_base_font_size ) {
+        _max_base_font_size = max_base_font_size;
+    }
+
+    private void setMinBaseFontSize( final int min_base_font_size ) {
+        _min_base_font_size = min_base_font_size;
     }
 
     private void setOvMaxHeight( final short ov_max_height ) {
@@ -1661,6 +1673,10 @@ public final class Configuration {
         _path_to_local_raxml = path_to_local_raxml;
     }
 
+    private void setShowAnnotationRefSource( final boolean b ) {
+        _show_annotation_ref_source = b;
+    }
+
     private void setShowOverview( final boolean show_overview ) {
         _show_overview = show_overview;
     }
@@ -1674,30 +1690,14 @@ public final class Configuration {
     }
 
     public enum EXT_NODE_DATA_RETURN_ON {
-        CONSOLE, WINODW, BUFFER_ONLY;
+        BUFFER_ONLY, CONSOLE, WINODW;
     }
 
     public enum UI {
-        NATIVE, CROSSPLATFORM, NIMBUS, UNKNOWN
+        CROSSPLATFORM, NATIVE, NIMBUS, UNKNOWN
     }
 
     static enum TRIPLET {
-        TRUE, FALSE, UNKNOWN
-    }
-
-    public boolean isMidpointReroot() {
-        return _midpoint_root;
-    }
-
-    public void setMidpointReroot( final boolean midpoint_root ) {
-        _midpoint_root = midpoint_root;
-    }
-
-    public boolean isShowAnnotationRefSource() {
-        return _show_annotation_ref_source;
-    }
-
-    public boolean isColorByTaxonomicGroup() {
-        return false;
+        FALSE, TRUE, UNKNOWN
     }
 }
