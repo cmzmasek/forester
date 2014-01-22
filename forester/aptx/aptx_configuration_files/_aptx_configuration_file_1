@@ -134,7 +134,6 @@ show_default_node_shapes_external:         no
 default_node_size:                         4
 default_node_shape:                        rectangle
 default_node_fill:                         solid
-taxonomy_colorize_node_shapes:             no
 #graphics_export_x:                         595
 #graphics_export_y:                         792
 pdf_export_line_width:                     0.5
@@ -251,7 +250,9 @@ display_color: branch_length              0x8C8C8C
 display_color: branch                     0xFFFFFF
 display_color: node_box                   0xFFFFFF
 display_color: collapsed                  0xFFFF00
-display_color: matching_nodes             0x00FF00
+display_color: matching_a                 0x00FF00
+display_color: matching_b                 0xFF0000
+display_color: matching_a_and_b           0xFFFF00
 display_color: duplication                0xFF0000
 display_color: speciation                 0x00FF00
 display_color: duplication_or_specation   0xFFFF00

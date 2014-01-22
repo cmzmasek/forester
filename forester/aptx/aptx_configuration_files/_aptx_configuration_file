@@ -172,7 +172,6 @@ show_default_node_shapes_external:         no
 default_node_size:                         4
 default_node_shape:                        rectangle
 default_node_fill:                         solid
-taxonomy_colorize_node_shapes:             no
 #graphics_export_x:                         595
 #graphics_export_y:                         792
 pdf_export_line_width:                     0.5
@@ -212,7 +211,7 @@ validate_against_phyloxml_xsd_schema:      true
 
 phylogram:                      display   ?
 rollover:                       display   yes
-color_according_to_species:     display   yes
+color_according_to_species:     display   no
 color_according_to_annotation:  display   no
 show_node_names:                display   yes
 show_seq_names:                 display   yes
@@ -222,7 +221,7 @@ show_gene_names:                display   yes
 show_taxonomy_code:             display   yes
 show_taxonomy_scientific_names: display   yes
 show_taxonomy_common_names:     display   no
-show_taxonomy_images:           display   yes
+show_taxonomy_images:           display   no
 show_annotations:               display   no
 write_confidence_values:        display   ?
 write_events:                   display   ?
@@ -272,14 +271,16 @@ default_click_to: display_node_data
 
 display_color: background                 0x000000
 display_color: background_gradient_bottom 0x0000FF
-display_color: sequence                   0xDCDCDC
-display_color: taxonomy                   0xB4B4B4
-display_color: confidence                 0x38B0DE
+display_color: sequence                   0xE6E6E6
+display_color: taxonomy                   0xFFDCDC
+display_color: confidence                 0x38B0FF
 display_color: branch_length              0x8C8C8C
 display_color: branch                     0xFFFFFF
 display_color: node_box                   0xFFFFFF
 display_color: collapsed                  0xFFFF00
-display_color: matching_nodes             0x00FF00
+display_color: matching_a                 0x00FF00
+display_color: matching_b                 0xFF0000
+display_color: matching_a_and_b           0xFFFF00
 display_color: duplication                0xFF0000
 display_color: speciation                 0x00FF00
 display_color: duplication_or_specation   0xFFFF00
