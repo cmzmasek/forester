@@ -121,7 +121,13 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _paste_subtree_item;
     private int                  _reroot_cb_item;
     private JButton              _return_to_super_tree;
-   
+    // Search 
+    private JLabel               _search_found_label_0;
+    private JLabel               _search_found_label_1;
+    private JButton              _search_reset_button_0;
+    private JButton              _search_reset_button_1;
+    private JTextField           _search_tf_0;
+    private JTextField           _search_tf_1;
     private int                  _select_nodes_item;
     private Sequence             _selected_query_seq;
     private JCheckBox            _seq_relation_confidence_switch;
@@ -129,14 +135,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _show_annotation;
     private JCheckBox            _show_binary_character_counts;
     private JCheckBox            _show_binary_characters;
-    // Search 
-    private JLabel               _search_found_label_0;
-    private JButton              _search_reset_button_0;
-    private JTextField           _search_tf_0;
-    private JLabel               _search_found_label_1;
-    private JButton              _search_reset_button_1;
-    private JTextField           _search_tf_1;
-    
     // Indices for the click-to options in the combo box
     private int                  _show_data_item;
     private JCheckBox            _show_domain_architectures;
@@ -761,7 +759,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     JLabel getSearchFoundCountsLabel0() {
         return _search_found_label_0;
     }
-    
+
     JLabel getSearchFoundCountsLabel1() {
         return _search_found_label_1;
     }
@@ -769,7 +767,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     JButton getSearchResetButton0() {
         return _search_reset_button_0;
     }
-    
+
     JButton getSearchResetButton1() {
         return _search_reset_button_1;
     }
@@ -777,7 +775,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     JTextField getSearchTextField0() {
         return _search_tf_0;
     }
-    
+
     JTextField getSearchTextField1() {
         return _search_tf_1;
     }
@@ -908,8 +906,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( query != null ) {
             query = query.trim();
         }
-       
-        
         if ( !ForesterUtil.isEmpty( query ) ) {
             search0( main_panel, tree, query );
         }
@@ -920,7 +916,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             searchReset0();
         }
     }
-    
+
     void search1() {
         final MainPanel main_panel = getMainPanel();
         final Phylogeny tree = main_panel.getCurrentPhylogeny();
@@ -931,7 +927,6 @@ final class ControlPanel extends JPanel implements ActionListener {
         if ( query != null ) {
             query = query.trim();
         }
-       
         if ( !ForesterUtil.isEmpty( query ) ) {
             search1( main_panel, tree, query );
         }
@@ -942,15 +937,13 @@ final class ControlPanel extends JPanel implements ActionListener {
             searchReset1();
         }
     }
-    
-    
 
     void searchReset0() {
         if ( getMainPanel().getCurrentTreePanel() != null ) {
             getMainPanel().getCurrentTreePanel().setFoundNodes0( null );
         }
     }
-    
+
     void searchReset1() {
         if ( getMainPanel().getCurrentTreePanel() != null ) {
             getMainPanel().getCurrentTreePanel().setFoundNodes1( null );
@@ -1213,7 +1206,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setSearchFoundCountsOnLabel0( final int counts ) {
         getSearchFoundCountsLabel0().setText( "Found: " + counts );
     }
-    
+
     void setSearchFoundCountsOnLabel1( final int counts ) {
         getSearchFoundCountsLabel1().setText( "Found: " + counts );
     }
@@ -1409,8 +1402,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         s_panel_2.add( _search_found_label_1 );
         addJButton( _search_reset_button_1, s_panel_2 );
     }
-    
-    
+
     void showAnnotations() {
         if ( _show_annotation != null ) {
             _show_annotation.setSelected( true );
@@ -1780,7 +1772,7 @@ final class ControlPanel extends JPanel implements ActionListener {
             searchReset0();
         }
     }
-    
+
     private void search1( final MainPanel main_panel, final Phylogeny tree, final String query_str ) {
         getSearchFoundCountsLabel1().setVisible( true );
         getSearchResetButton1().setEnabled( true );

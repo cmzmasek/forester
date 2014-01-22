@@ -38,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.forester.io.parsers.PhylogenyParser;
@@ -1711,7 +1710,7 @@ public class PhylogenyMethods {
             return my_s.indexOf( my_query ) >= 0;
         }
         else {
-            return Pattern.compile( "(\\b|_)" + Pattern.quote(my_query)  + "(\\b|_)").matcher( my_s ).find();
+            return Pattern.compile( "(\\b|_)" + Pattern.quote( my_query ) + "(\\b|_)" ).matcher( my_s ).find();
         }
     }
 
