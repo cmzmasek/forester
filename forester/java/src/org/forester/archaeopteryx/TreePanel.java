@@ -168,6 +168,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private static final BasicStroke     STROKE_2                                           = new BasicStroke( 2f );
     private static final double          TWO_PI                                             = 2 * Math.PI;
     private final static int             WIGGLE                                             = 2;
+    private final static double          OVERVIEW_FOUND_NODE_BOX_SIZE                       = 2;
+    private final static double          OVERVIEW_FOUND_NODE_BOX_SIZE_HALF                  = 1;
     HashMap<Long, Short>                 _nodeid_dist_to_leaf                               = new HashMap<Long, Short>();
     final private Arc2D                  _arc                                               = new Arc2D.Double();
     private AffineTransform              _at;
@@ -1461,17 +1463,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                   root_x + ( Math.cos( angle ) * parent_radius ),
                   root_y + ( Math.sin( angle ) * parent_radius ),
                   g );
-        if ( ( isInFoundNodes0( c ) && !isInFoundNodes1( c ) ) || isInCurrentExternalNodes( c ) ) {
-            g.setColor( getTreeColorSet().getFoundColor0() );
-            drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
-        }
-        else if ( ( isInFoundNodes1( c ) && !isInFoundNodes0( c ) ) ) {
-            g.setColor( getTreeColorSet().getFoundColor1() );
-            drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
-        }
-        else if ( isInFoundNodes0( c ) && isInFoundNodes1( c ) ) {
-            g.setColor( getTreeColorSet().getFoundColor0and1() );
-            drawRectFilled( c.getXSecondary() - 1, c.getYSecondary() - 1, 3, 3, g );
+        if ( isInFoundNodes( c ) || isInCurrentExternalNodes( c ) ) {
+            g.setColor( getColorForFoundNode( c ) );
+            drawRectFilled( c.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, c.getYSecondary()
+                    - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, OVERVIEW_FOUND_NODE_BOX_SIZE, OVERVIEW_FOUND_NODE_BOX_SIZE, g );
         }
     }
 
@@ -3897,17 +3892,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    final private void paintFoundNode( final PhylogenyNode n, final double x, final double y, final Graphics2D g ) {
-        final int box_size = getOptions().getDefaultNodeShapeSize();
-        final double half_box_size = getOptions().getDefaultNodeShapeSize() / 2.0;
-        g.setColor( getColorForFoundNode( n ) );
-        //g.fillRect( x - half_box_size, y - half_box_size, box_size, box_size );
-        //TODO check me
-        //FIXME
-        _rectangle.setRect( x - half_box_size, y - half_box_size, box_size, box_size );
-        g.fill( _rectangle );
-    }
-
     final private void paintGainedAndLostCharacters( final Graphics2D g,
                                                      final PhylogenyNode node,
                                                      final String gained,
@@ -3957,13 +3941,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             drawOval( x - 9, y - 8, 17, 17, g );
             drawOval( x - 9, y - 9, 18, 18, g );
         }
-        if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
-            paintFoundNode( node, x, y, g );
-        }
-        else {
+        if ( ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) )
+                || ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
+                || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
+                || ( getControlPanel().isEvents() && node.isHasAssignedEvent() && ( node.getNodeData().getEvent()
+                        .isDuplication()
+                        || node.getNodeData().getEvent().isSpeciation() || node.getNodeData().getEvent()
+                        .isSpeciationOrDuplication() ) ) ) {
+            final double box_size = getOptions().getDefaultNodeShapeSize();
+            final double half_box_size = box_size / 2.0;
             Color outline_color = null;
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 outline_color = Color.BLACK;
+            }
+            else if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
+                outline_color = getColorForFoundNode( node );
             }
             else if ( getControlPanel().isEvents() && TreePanelUtil.isHasAssignedEvent( node ) ) {
                 final Event event = node.getNodeData().getEvent();
@@ -3977,79 +3969,58 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     outline_color = getTreeColorSet().getDuplicationOrSpeciationColor();
                 }
             }
-            else if ( getOptions().isTaxonomyColorizeNodeShapes() ) {
-                outline_color = getTaxonomyBasedColor( node );
-            }
             else {
                 outline_color = getGraphicsForNodeBoxWithColorForParentBranch( node );
                 if ( to_pdf && ( outline_color == getTreeColorSet().getBranchColor() ) ) {
                     outline_color = getTreeColorSet().getBranchColorForPdf();
                 }
             }
-            final int box_size = getOptions().getDefaultNodeShapeSize();
-            final int half_box_size = box_size / 2;
-            if ( ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
-                    || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
-                    || ( getControlPanel().isEvents() && node.isHasAssignedEvent() ) ) {
-                if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
-                    if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
-                        drawOvalGradient( x - half_box_size,
-                                          y - half_box_size,
-                                          box_size,
-                                          box_size,
-                                          g,
-                                          to_pdf ? Color.WHITE : outline_color,
-                                          to_pdf ? outline_color : getBackground(),
-                                          outline_color );
-                    }
-                    else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
-                        Color background = getBackground();
-                        if ( to_pdf ) {
-                            background = Color.WHITE;
-                        }
-                        drawOvalGradient( x - half_box_size,
-                                          y - half_box_size,
-                                          box_size,
-                                          box_size,
-                                          g,
-                                          background,
-                                          background,
-                                          outline_color );
-                    }
-                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
-                        g.setColor( outline_color );
-                        drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
-                    }
+            if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
+                if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                    drawOvalGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
+                            : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
                 }
-                else if ( getOptions().getDefaultNodeShape() == NodeVisualization.NodeShape.RECTANGLE ) {
-                    if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.GRADIENT ) {
-                        drawRectGradient( x - half_box_size,
-                                          y - half_box_size,
-                                          box_size,
-                                          box_size,
-                                          g,
-                                          to_pdf ? Color.WHITE : outline_color,
-                                          to_pdf ? outline_color : getBackground(),
-                                          outline_color );
+                else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                    Color background = getBackground();
+                    if ( to_pdf ) {
+                        background = Color.WHITE;
                     }
-                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
-                        Color background = getBackground();
-                        if ( to_pdf ) {
-                            background = Color.WHITE;
-                        }
-                        drawRectGradient( x - half_box_size,
-                                          y - half_box_size,
-                                          box_size,
-                                          box_size,
-                                          g,
-                                          background,
-                                          background,
-                                          outline_color );
+                    drawOvalGradient( x - half_box_size,
+                                      y - half_box_size,
+                                      box_size,
+                                      box_size,
+                                      g,
+                                      background,
+                                      background,
+                                      outline_color );
+                }
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
+                    g.setColor( outline_color );
+                    drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
+                }
+            }
+            else if ( getOptions().getDefaultNodeShape() == NodeVisualization.NodeShape.RECTANGLE ) {
+                if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.GRADIENT ) {
+                    drawRectGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
+                            : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
+                }
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
+                    Color background = getBackground();
+                    if ( to_pdf ) {
+                        background = Color.WHITE;
                     }
-                    else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
-                        g.setColor( outline_color );
-                        drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
-                    }
+                    drawRectGradient( x - half_box_size,
+                                      y - half_box_size,
+                                      box_size,
+                                      box_size,
+                                      g,
+                                      background,
+                                      background,
+                                      outline_color );
+                }
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
+                    g.setColor( outline_color );
+                    drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                 }
             }
         }
@@ -4443,7 +4414,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
             g.setColor( getColorForFoundNode( node ) );
-            drawRectFilled( node.getXSecondary() - 1, node.getYSecondary() - 1, 3, 3, g );
+            drawRectFilled( node.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, node.getYSecondary()
+                    - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF, OVERVIEW_FOUND_NODE_BOX_SIZE, OVERVIEW_FOUND_NODE_BOX_SIZE, g );
         }
         float new_x = 0;
         if ( !node.isExternal() && !node.isCollapse() ) {
@@ -5016,7 +4988,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             desc.setYSecondary( new_y );
             if ( isInFoundNodes( desc ) || isInCurrentExternalNodes( desc ) ) {
                 g.setColor( getColorForFoundNode( desc ) );
-                drawRectFilled( desc.getXSecondary() - 1, desc.getYSecondary() - 1, 3, 3, g );
+                drawRectFilled( desc.getXSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                                desc.getYSecondary() - OVERVIEW_FOUND_NODE_BOX_SIZE_HALF,
+                                OVERVIEW_FOUND_NODE_BOX_SIZE,
+                                OVERVIEW_FOUND_NODE_BOX_SIZE,
+                                g );
                 g.setColor( getTreeColorSet().getOvColor() );
             }
             paintUnrootedLite( desc, current_angle, current_angle + arc_size, g, urt_ov_factor );

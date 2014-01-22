@@ -79,7 +79,6 @@ final public class Options {
     private NodeVisualization.NodeShape       _default_node_shape;
     private NodeVisualization.NodeFill        _default_node_fill;
     private short                             _default_node_shape_size;
-    private boolean                           _taxonomy_colorize_node_shapes;
     private boolean                           _show_default_node_shapes_internal;
     private boolean                           _show_default_node_shapes_external;
     private boolean                           _show_confidence_stddev;
@@ -282,10 +281,6 @@ final public class Options {
         return _show_scale;
     }
 
-    boolean isTaxonomyColorizeNodeShapes() {
-        return _taxonomy_colorize_node_shapes;
-    }
-
     final void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
         _abbreviate_scientific_names = abbreviate_scientific_names;
     }
@@ -428,10 +423,6 @@ final public class Options {
         _show_scale = show_scale;
     }
 
-    void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
-        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
-    }
-
     final void setTaxonomyExtraction( final TAXONOMY_EXTRACTION taxonomy_extraction ) {
         _taxonomy_extraction = taxonomy_extraction;
     }
@@ -440,7 +431,6 @@ final public class Options {
         _default_node_shape = NodeShape.CIRCLE;
         _default_node_fill = NodeFill.GRADIENT;
         _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _taxonomy_colorize_node_shapes = false;
         _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
@@ -553,7 +543,6 @@ final public class Options {
             if ( configuration.getDefaultNodeShapeSize() >= 0 ) {
                 instance.setDefaultNodeShapeSize( configuration.getDefaultNodeShapeSize() );
             }
-            instance.setTaxonomyColorizeNodeShapes( configuration.isTaxonomyColorizeNodeShapes() );
             instance.setShowDefaultNodeShapesInternal( configuration.isShowDefaultNodeShapesInternal() );
             instance.setShowDefaultNodeShapesExternal( configuration.isShowDefaultNodeShapesExternal() );
             if ( configuration.getExtDescNodeDataToReturn() != null ) {

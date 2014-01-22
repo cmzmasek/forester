@@ -192,7 +192,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _cycle_node_shape_mi;
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
-    JCheckBoxMenuItem           _taxonomy_colorize_node_shapes_cbmi;
     JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
     // _  print
     JCheckBoxMenuItem           _graphics_export_visible_only_cbmi;
@@ -405,9 +404,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_default_node_shapes_external_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _non_lined_up_cladograms_rbmi ) {
@@ -1283,8 +1279,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
                 && _show_default_node_shapes_external_cbmi.isSelected() );
-        options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
-                && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }

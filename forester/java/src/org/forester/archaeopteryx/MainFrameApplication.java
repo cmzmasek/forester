@@ -899,8 +899,6 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu.add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( COLOR_BY_TAXONOMIC_GROUP ) );
-        _options_jmenu
-                .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
         _options_jmenu.add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( COLOR_LABELS_LABEL ) );
         _color_labels_same_as_parent_branch.setToolTipText( MainFrame.COLOR_LABELS_TIP );
         _options_jmenu.add( _abbreviate_scientific_names = new JCheckBoxMenuItem( ABBREV_SN_LABEL ) );
@@ -976,7 +974,6 @@ public final class MainFrameApplication extends MainFrame {
                 .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
                 .isShowDefaultNodeShapesInternal() );
-        customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );

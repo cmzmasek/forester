@@ -218,7 +218,6 @@ public final class Configuration {
     private boolean                         _show_domain_labels                                    = true;
     private boolean                         _show_overview                                         = true;
     private boolean                         _show_scale                                            = false;
-    private boolean                         _taxonomy_colorize_node_shapes                         = false;
     private TAXONOMY_EXTRACTION             _taxonomy_extraction                                   = TAXONOMY_EXTRACTION.NO;
     private UI                              _ui                                                    = UI.UNKNOWN;
     private boolean                         _use_tabbed_display                                    = false;
@@ -395,10 +394,6 @@ public final class Configuration {
         return _show_domain_labels;
     }
 
-    public boolean isTaxonomyColorizeNodeShapes() {
-        return _taxonomy_colorize_node_shapes;
-    }
-
     public void putDisplayColors( final String key, final Color color ) {
         getDisplayColors().put( key, color );
     }
@@ -561,10 +556,6 @@ public final class Configuration {
 
     public void setTaxonomyColorize( final boolean b ) {
         display_options[ color_according_to_species ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setTaxonomyColorizeNodeShapes( final boolean taxonomy_colorize_node_shapes ) {
-        _taxonomy_colorize_node_shapes = taxonomy_colorize_node_shapes;
     }
 
     public void setUseBranchesWidths( final boolean b ) {
@@ -1426,9 +1417,6 @@ public final class Configuration {
                 ForesterUtil.printWarningMessage( Constants.PRG_NAME, "unknown value [" + shape_str
                         + "] for [default_node_shape]" );
             }
-        }
-        else if ( key.equals( "taxonomy_colorize_node_shapes" ) ) {
-            setTaxonomyColorizeNodeShapes( parseBoolean( ( String ) st.nextElement() ) );
         }
         else if ( key.equals( "midpoint_reroot" ) ) {
             setMidpointReroot( parseBoolean( ( String ) st.nextElement() ) );

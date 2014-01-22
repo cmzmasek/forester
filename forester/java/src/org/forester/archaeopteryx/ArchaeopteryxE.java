@@ -125,7 +125,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _cycle_node_shape_mi;
     private JMenuItem                   _cycle_node_fill_mi;
     private JMenuItem                   _choose_node_size_mi;
-    private JCheckBoxMenuItem           _taxonomy_colorize_node_shapes_cbmi;
     private JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
     private final LinkedList<TextFrame> _textframes      = new LinkedList<TextFrame>();
     private JMenu                       _analysis_menu;
@@ -298,9 +297,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             updateOptions( getOptions() );
         }
         else if ( o == _show_default_node_shapes_external_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _taxonomy_colorize_node_shapes_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _about_item ) {
@@ -724,8 +720,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu
                 .add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( MainFrame.COLOR_BY_TAXONOMIC_GROUP ) );
         _options_jmenu
-                .add( _taxonomy_colorize_node_shapes_cbmi = new JCheckBoxMenuItem( MainFrame.TAXONOMY_COLORIZE_NODE_SHAPES_LABEL ) );
-        _options_jmenu
                 .add( _color_labels_same_as_parent_branch = new JCheckBoxMenuItem( MainFrame.COLOR_LABELS_LABEL ) );
         _color_labels_same_as_parent_branch.setToolTipText( MainFrame.COLOR_LABELS_TIP );
         _options_jmenu.add( _abbreviate_scientific_names = new JCheckBoxMenuItem( MainFrame.ABBREV_SN_LABEL ) );
@@ -765,7 +759,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .isShowDefaultNodeShapesExternal() );
         customizeCheckBoxMenuItem( _show_default_node_shapes_internal_cbmi, getOptions()
                 .isShowDefaultNodeShapesInternal() );
-        customizeCheckBoxMenuItem( _taxonomy_colorize_node_shapes_cbmi, getOptions().isTaxonomyColorizeNodeShapes() );
         customizeJMenuItem( _cycle_node_shape_mi );
         customizeJMenuItem( _cycle_node_fill_mi );
         customizeJMenuItem( _choose_node_size_mi );
@@ -1305,8 +1298,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 && _show_default_node_shapes_internal_cbmi.isSelected() );
         options.setShowDefaultNodeShapesExternal( ( _show_default_node_shapes_external_cbmi != null )
                 && _show_default_node_shapes_external_cbmi.isSelected() );
-        options.setTaxonomyColorizeNodeShapes( ( _taxonomy_colorize_node_shapes_cbmi != null )
-                && _taxonomy_colorize_node_shapes_cbmi.isSelected() );
         if ( ( _non_lined_up_cladograms_rbmi != null ) && ( _non_lined_up_cladograms_rbmi.isSelected() ) ) {
             options.setCladogramType( CLADOGRAM_TYPE.NON_LINED_UP );
         }
