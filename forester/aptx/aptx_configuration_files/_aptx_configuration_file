@@ -449,19 +449,34 @@ species_color: eukaryotes     0xFF0000
 #  Domain colors
 #  -------------
 
-domain_color: Cofilin_ADF   0xFC0FC0
-domain_color: TIR           0x900000
-domain_color: NACHT         0x202020
-domain_color: CARD          0xFF0000
-domain_color: Peptidase_C14 0x00FF00
-domain_color: Death         0x0000FF
-domain_color: DED           0x00FFFF
-domain_color: BIR           0xCCFF33
-domain_color: PAAD_DAPIN    0x9999CC
-domain_color: NB-ARC        0x500050
-domain_color: WD40          0x888888
-domain_color: RVT_1         0x999900
+domain_color: Cofilin_ADF     0xFC0FC0
+domain_color: TIR             0x900000
+domain_color: NACHT           0x202020
+domain_color: CARD            0xFF0000
+domain_color: Peptidase_C14   0x00FF00
+domain_color: Death           0x0000FF
+domain_color: DED             0x00FFFF
+domain_color: BIR             0xCCFF33
+domain_color: PAAD_DAPIN      0x9999CC
+domain_color: NB-ARC          0x500050
+domain_color: WD40            0x888888
+domain_color: RVT_1           0x999900
 
+domain_color: CBM_48          0xFF0000
+domain_color: Alpha-amylase   0x0000FF
+domain_color: Alpha-amylase_C 0x0080FF
+
+domain_color: CBM_48          0xFF0000
+domain_color: Alpha-amylase   0x0000FF
+domain_color: Alpha-amylase_C 0x0080FF
+
+domain_color: GDE_N           0x009000
+domain_color: GDE_C           0x00FF00
+domain_color: hGDE_N          0x990099
+domain_color: GDE_N_bis       0x007000
+domain_color: hGDE_central    0xFF8000
+domain_color: hGDE_amylase    0x0000EE
+domain_color: hDGE_amylase    0x0000EE
 
 
 #  Annotation colors
