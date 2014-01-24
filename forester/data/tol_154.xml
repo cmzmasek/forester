@@ -2273,9 +2273,10 @@
                                 <clade>
                                   <taxonomy>
                                     <id provider="uniprot">283909</id>
-                                    <code>CTEXX</code>
+                                    <code>CAPTE</code>
                                     <scientific_name>Capitella teleta</scientific_name>
                                     <authority>Blake, Grassle &amp; Eckelbarger, 2009</authority>
+                                    <common_name>Polychaete worm</common_name>
                                     <synonym>Capitella sp. I</synonym>
                                     <rank>species</rank>
                                     <uri>http://genome.jgi-psf.org/Capca1/capitella.jpg</uri>
