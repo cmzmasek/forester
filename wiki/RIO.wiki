@@ -41,8 +41,8 @@ Since the Java memory default allocation is too small for even moderately large 
 `rio gene_trees.nh species.xml outtable.tsv log.txt -f=0 -l=49`
 
 === Example files ===
-  * [http://forester.googlecode.com/files/gene_trees_rio.nh gene trees file]
-  * [http://forester.googlecode.com/files/species_tree_rio.xml species tree file]
+  * [https://forester.googlecode.com/svn/forester/examples/rio/gene_trees_rio.nh gene trees file]
+  * [https://forester.googlecode.com/svn/forester/examples/rio/species_tree_rio.xml species tree file]
   
 
 == References ==
