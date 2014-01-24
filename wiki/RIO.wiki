@@ -20,12 +20,12 @@ RIO (Resampled Inference of Orthologs) is a method for automated phylogenomics b
 
   
 ==== Gene trees ====
-The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN") ([http://forester.googlecode.com/files/gene_trees_rio.nh example]).
+The gene trees ideally are in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, with taxonomy and sequence data in appropriate fields; but can also be in New Hamphshire (Newick) or Nexus format, as long as species information can be extracted from the gene names (e.g. "HUMAN" from "BCL2_HUMAN") ([https://forester.googlecode.com/svn/forester/examples/rio/gene_trees_rio.nh example]).
 All gene trees must be *completely binary*.
 
 
 ==== Species tree ====
-The species tree ideally is in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, but can also be in New Hamphshire (Newick) or Nexus format  ([http://forester.googlecode.com/files/species_tree_rio.xml example]). 
+The species tree ideally is in [http://www.biomedcentral.com/1471-2105/10/356/ phyloXML] format, but can also be in New Hamphshire (Newick) or Nexus format  ([https://forester.googlecode.com/svn/forester/examples/rio/species_tree_rio.xml example]). 
 The species tree is allowed to have nodes with more than two descendants (polytomies), as long as the (slower) GSDIR ([GSDI GSDI] re-rooting) algorithm is used. 
 
 
