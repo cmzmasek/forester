@@ -2395,12 +2395,16 @@
                         </clade>
                         <clade>
                           <taxonomy>
-                            <id provider="uniprot">6085</id>
-                            <code>HMAXX</code>
-                            <scientific_name>Hydra magnipapillata</scientific_name>
-                            <authority>Ito, 1947</authority>
+                            <id provider="uniprot">6087</id>
+                            <code>HYDVU</code>
+                            <scientific_name>Hydra vulgaris</scientific_name>
+                            <authority>Pallas, 1766</authority>
+                            <common_name>Hydra</common_name>
+                            <synonym>Hydra attenuata</synonym>
+                            <synonym>Hydra magnipapillata</synonym>
                             <rank>species</rank>
-                            <uri>http://www.ncbi.nlm.nih.gov/UniGene/IMG/6085.gif</uri>
+                            <uri>http://www.nig.ac.jp/labs/OntoGen/A10.jpg</uri>
+                            <uri>http://upload.wikimedia.org/wikipedia/commons/1/15/Hydra_biology.jpg</uri>
                           </taxonomy>
                         </clade>
                       </clade>
@@ -2862,9 +2866,14 @@
                                                 <clade>
                                                   <taxonomy>
                                                     <id provider="uniprot">692275</id>
-                                                    <code>MPSXX</code>
-                                                    <scientific_name>Mycosphaerella populorum SO2202</scientific_name>
+                                                    <code>SPHMS</code>
+                                                    <scientific_name>Sphaerulina musiva (strain SO2202)</scientific_name>
+                                                    <common_name>Poplar stem canker fungus</common_name>
+                                                    <synonym>Septoria musiva</synonym>
+                                                    <synonym>Mycosphaerella populorum SO2202</synonym>
                                                     <synonym>Septoria musiva SO2202</synonym>
+                                                    <synonym>Sphaerulina musiva SO2202</synonym>
+                                                    <rank>strain</rank>
                                                     <uri>http://genome.jgi-psf.org/public/Sepmu1/Septoria-musiva-colony-abundantly-sporulating-2.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
