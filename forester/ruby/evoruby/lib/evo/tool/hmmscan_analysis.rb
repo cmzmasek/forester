@@ -23,7 +23,7 @@ module Evoruby
     PRG_NAME       = "hsa"
     PRG_VERSION    = "1.001"
     PRG_DESC       = "hmmscan analysis"
-    PRG_DATE       = "140127"
+    PRG_DATE       = "140128"
     COPYRIGHT      = "2014 Christian Zmasek"
     CONTACT        = "phyloxml@gmail.com"
     WWW            = "https://sites.google.com/site/cmzmasek/home/software/forester"
@@ -138,8 +138,7 @@ module Evoruby
       x_models = []
       if ( cla.is_option_set?( EXTRACTION ) )
         begin
-          x_models = cla.get_option_value( EXTRACTION ).split( "~" )
-          puts x_models
+          x_models = cla.get_option_value( EXTRACTION ).split( "/" )
         rescue ArgumentError => e
           Util.fatal_error( PRG_NAME, "error: " + e.to_s, STDOUT )
         end
@@ -168,6 +167,9 @@ module Evoruby
       title << "LENGTH" + "\t"
       title << "#DOMAINS" + "\t"
       title << "DOMAINS" + "\t"
+      unless x_models.empty?
+        title << "LINKERS" + "\t"
+      end
       title << "DA" + "\t"
       title << "DETAILED DA"
       puts title
@@ -209,8 +211,6 @@ module Evoruby
         x_models,
         msa,
         extraction_output )
-
-
 
       extraction_output_file = nil
       if extraction_output != nil
@@ -304,14 +304,13 @@ module Evoruby
               break
             end
           end
-
         end
       end
 
       if matched.length < target_hmms.length
         return
       end
-      if  hmmscan_results_per_protein_filtered.length < 1
+      if hmmscan_results_per_protein_filtered.length < 1
         return
       end
 
@@ -344,7 +343,7 @@ module Evoruby
       seq = get_sequence( query, msa  )
       species = get_species( seq )
       raise StandardError, "could not get species" if species == nil || species.empty?
-      if x_models != nil &&  x_models.length > 0
+      if x_models != nil && !x_models.empty?
         ll = extract_linker( hmmscan_results_per_protein_filtered, x_models, seq,  extraction_output_file )
       end
 
@@ -361,12 +360,13 @@ module Evoruby
         s << r.model + " "
       end
       s << "\t"
-      if msa != nil
-        if ll != nil
-          s << ll.to_s
-        end
+
+      if ll != nil
+        s << ll.to_s
         s << "\t"
       end
+
+
       s << make_overview_da( hmmscan_results_per_protein_filtered )
       s << "\t"
       s << make_detailed_da( hmmscan_results_per_protein_filtered, qlen )
@@ -489,7 +489,7 @@ module Evoruby
       puts
       puts "  options: -" + I_E_VALUE_THRESHOLD_OPTION  + ": i-E-value threshold, default is no threshold"
       puts "           -" + FS_E_VALUE_THRESHOLD_OPTION  + ": E-value threshold for full protein sequences, only for protein summary"
-      puts "           -" + TARGET_MODELS + ": target HMMs"
+      puts "           -" + TARGET_MODELS + ": target HMMs (separated by /)"
       puts "           -" + EXTRACTION + ": to extract matching sequences to [outputfile]"
       puts
     end
