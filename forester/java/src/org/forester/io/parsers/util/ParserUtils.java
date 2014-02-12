@@ -56,19 +56,19 @@ import org.forester.util.ForesterUtil;
 public final class ParserUtils {
 
     final public static String   TAX_CODE                        = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
+    final public static Pattern  TAXOMONY_CODE_PATTERN_A         = Pattern.compile( "(?:\\b|_)(" + TAX_CODE + ")\\b" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_PFR       = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
+                                                                         + TAX_CODE + ")\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN             = Pattern
                                                                          .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)\\b" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                          + TAX_CODE + ")/\\d+-\\d+\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_PFR       = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
-                                                                         + TAX_CODE + ")\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_A         = Pattern.compile( "(?:\\b|_)(" + TAX_CODE + ")\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_A   = Pattern.compile( "(?:\\b|_)(\\d{1,7})\\b" );
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS = Pattern
-                                                                         .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern
                                                                          .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_(\\d{1,7})\\b" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS = Pattern
+                                                                         .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
@@ -116,45 +116,6 @@ public final class ParserUtils {
             else if ( parser instanceof TolParser ) {
                 ( ( TolParser ) parser ).setZippedInputstream( true );
             }
-        }
-        return parser;
-    }
-
-    /**
-     * Return null if it can not guess the parser to use based on name suffix.
-     * 
-     * @param filename
-     * @return
-     */
-    final private static PhylogenyParser createParserDependingOnSuffix( final String filename,
-                                                                        final boolean phyloxml_validate_against_xsd ) {
-        PhylogenyParser parser = null;
-        final String filename_lc = filename.toLowerCase();
-        if ( filename_lc.endsWith( ".tol" ) || filename_lc.endsWith( ".tolxml" ) || filename_lc.endsWith( ".tol.zip" ) ) {
-            parser = new TolParser();
-        }
-        else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( "phyloxml" ) || filename_lc.endsWith( ".zip" ) ) {
-            parser = PhyloXmlParser.createPhyloXmlParser();
-            if ( phyloxml_validate_against_xsd ) {
-                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
-                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
-                if ( xsd_url != null ) {
-                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
-                }
-                else {
-                    if ( ForesterConstants.RELEASE ) {
-                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
-                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
-                    }
-                }
-            }
-        }
-        else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" ) ) {
-            parser = new NexusPhylogeniesParser();
-        }
-        else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" )
-                || filename_lc.endsWith( ".nwk" ) ) {
-            parser = new NHXParser();
         }
         return parser;
     }
@@ -328,5 +289,44 @@ public final class ParserUtils {
 
     public final static Phylogeny[] readPhylogenies( final String file_name ) throws FileNotFoundException, IOException {
         return readPhylogenies( new File( file_name ) );
+    }
+
+    /**
+     * Return null if it can not guess the parser to use based on name suffix.
+     * 
+     * @param filename
+     * @return
+     */
+    final private static PhylogenyParser createParserDependingOnSuffix( final String filename,
+                                                                        final boolean phyloxml_validate_against_xsd ) {
+        PhylogenyParser parser = null;
+        final String filename_lc = filename.toLowerCase();
+        if ( filename_lc.endsWith( ".tol" ) || filename_lc.endsWith( ".tolxml" ) || filename_lc.endsWith( ".tol.zip" ) ) {
+            parser = new TolParser();
+        }
+        else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( "phyloxml" ) || filename_lc.endsWith( ".zip" ) ) {
+            parser = PhyloXmlParser.createPhyloXmlParser();
+            if ( phyloxml_validate_against_xsd ) {
+                final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
+                final URL xsd_url = cl.getResource( ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE );
+                if ( xsd_url != null ) {
+                    ( ( PhyloXmlParser ) parser ).setValidateAgainstSchema( xsd_url.toString() );
+                }
+                else {
+                    if ( ForesterConstants.RELEASE ) {
+                        throw new RuntimeException( "failed to get URL for phyloXML XSD from jar file from ["
+                                + ForesterConstants.LOCAL_PHYLOXML_XSD_RESOURCE + "]" );
+                    }
+                }
+            }
+        }
+        else if ( filename_lc.endsWith( ".nexus" ) || filename_lc.endsWith( ".nex" ) || filename_lc.endsWith( ".nx" ) ) {
+            parser = new NexusPhylogeniesParser();
+        }
+        else if ( filename_lc.endsWith( ".nhx" ) || filename_lc.endsWith( ".nh" ) || filename_lc.endsWith( ".newick" )
+                || filename_lc.endsWith( ".nwk" ) ) {
+            parser = new NHXParser();
+        }
+        return parser;
     }
 }
