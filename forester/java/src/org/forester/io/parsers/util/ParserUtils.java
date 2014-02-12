@@ -109,6 +109,14 @@ public final class ParserUtils {
         if ( parser == null ) {
             parser = createParserDependingFileContents( file, phyloxml_validate_against_xsd );
         }
+        if ( ( parser != null ) && file.toString().toLowerCase().endsWith( ".zip" ) ) {
+            if ( parser instanceof PhyloXmlParser ) {
+                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
+            }
+            else if ( parser instanceof TolParser ) {
+                ( ( TolParser ) parser ).setZippedInputstream( true );
+            }
+        }
         return parser;
     }
 
@@ -118,15 +126,14 @@ public final class ParserUtils {
      * @param filename
      * @return
      */
-    final public static PhylogenyParser createParserDependingOnSuffix( final String filename,
-                                                                       final boolean phyloxml_validate_against_xsd ) {
+    final private static PhylogenyParser createParserDependingOnSuffix( final String filename,
+                                                                        final boolean phyloxml_validate_against_xsd ) {
         PhylogenyParser parser = null;
         final String filename_lc = filename.toLowerCase();
         if ( filename_lc.endsWith( ".tol" ) || filename_lc.endsWith( ".tolxml" ) || filename_lc.endsWith( ".tol.zip" ) ) {
             parser = new TolParser();
         }
-        else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( ".px" ) || filename_lc.endsWith( "phyloxml" )
-                || filename_lc.endsWith( ".zip" ) ) {
+        else if ( filename_lc.endsWith( ".xml" ) || filename_lc.endsWith( "phyloxml" ) || filename_lc.endsWith( ".zip" ) ) {
             parser = PhyloXmlParser.createPhyloXmlParser();
             if ( phyloxml_validate_against_xsd ) {
                 final ClassLoader cl = PhyloXmlParser.class.getClassLoader();
@@ -157,14 +164,6 @@ public final class ParserUtils {
             throws FileNotFoundException, IOException {
         final String lc_filename = url.getFile().toString().toLowerCase();
         PhylogenyParser parser = createParserDependingOnSuffix( lc_filename, phyloxml_validate_against_xsd );
-        if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
-            if ( parser instanceof PhyloXmlParser ) {
-                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
-            }
-            else if ( parser instanceof TolParser ) {
-                ( ( TolParser ) parser ).setZippedInputstream( true );
-            }
-        }
         if ( parser == null ) {
             final String first_line = ForesterUtil.getFirstLine( url ).trim().toLowerCase();
             if ( first_line.startsWith( "<" ) ) {
@@ -187,6 +186,14 @@ public final class ParserUtils {
             }
             else {
                 parser = new NHXParser();
+            }
+        }
+        if ( ( parser != null ) && lc_filename.endsWith( ".zip" ) ) {
+            if ( parser instanceof PhyloXmlParser ) {
+                ( ( PhyloXmlParser ) parser ).setZippedInputstream( true );
+            }
+            else if ( parser instanceof TolParser ) {
+                ( ( TolParser ) parser ).setZippedInputstream( true );
             }
         }
         return parser;
