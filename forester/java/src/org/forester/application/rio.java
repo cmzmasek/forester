@@ -29,6 +29,7 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class rio {
 
     final static private String PRG_NAME                 = "rio";
     final static private String PRG_VERSION              = "4.000 beta 10";
-    final static private String PRG_DATE                 = "130325";
+    final static private String PRG_DATE                 = "140211";
     final static private String E_MAIL                   = "phyloxml@gmail.com";
     final static private String WWW                      = "https://sites.google.com/site/cmzmasek/home/software/forester";
     final static private String HELP_OPTION_1            = "help";
@@ -489,8 +490,9 @@ public class rio {
     private static void writeTable( final File table_outfile, final int gene_trees_analyzed, final IntMatrix m )
             throws IOException {
         final EasyWriter w = ForesterUtil.createEasyWriter( table_outfile );
-        final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.###" );
+        final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.####" );
         df.setDecimalSeparatorAlwaysShown( false );
+        df.setRoundingMode( RoundingMode.HALF_UP );
         for( int i = 0; i < m.size(); ++i ) {
             w.print( "\t" );
             w.print( m.getLabel( i ) );
