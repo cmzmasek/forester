@@ -128,6 +128,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         for( int i = 0; i < l.size(); ++i ) {
             p[ i ] = l.get( i );
         }
+        System.out.println( "going to return:" );
+        for( Phylogeny phylogeny : p ) {
+            System.out.println( phylogeny.toString() );
+        }
         return p;
     }
 
@@ -165,14 +169,15 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 _my_source_charary = ( char[] ) _nhx_source;
                 break;
             case BUFFERED_READER:
-                if ( _my_source_br != null ) {
-                    try {
-                        _my_source_br.close();
-                    }
-                    catch ( final IOException e ) {
-                        //do nothing
-                    }
-                }
+                //never called:
+                //                if ( _my_source_br != null ) {
+                //                    try {
+                //                        _my_source_br.close();
+                //                    }
+                //                    catch ( final IOException e ) {
+                //                        //do nothing
+                //                    }
+                //                }
                 _my_source_br = ( BufferedReader ) _nhx_source;
                 break;
             default:
@@ -258,6 +263,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
 
     private final Phylogeny finishPhylogeny() throws PhylogenyParserException, NHXFormatException,
             PhyloXmlDataFormatException {
+        System.out.println( "finishPhylogeny()" + _current_phylogeny );
         if ( _current_phylogeny != null ) {
             parseNHX( _current_anotation != null ? _current_anotation.toString() : "",
                       _current_phylogeny.getRoot(),
@@ -325,6 +331,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     }
                 }
             }
+            System.out.print( c );
             if ( !_in_single_quote && !_in_double_quote ) {
                 if ( c == ':' ) {
                     _saw_colon = true;
@@ -700,6 +707,11 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 node_to_annotate.setDistanceToParent( bl );
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return "NN/NHX Parser";
     }
 
     public static enum TAXONOMY_EXTRACTION {

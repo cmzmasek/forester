@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTOFF;
+import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusBinaryStatesMatrixParser;
 import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
@@ -401,6 +403,27 @@ public final class Test {
     }
 
     public static void main( final String[] args ) {
+        try {
+            String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final URL u = new URL( s );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final PhylogenyParser parser = ParserUtils.createParserDependingOnUrlContents( u, true );
+            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            System.out.println( "results 1:" );
+            for( final Phylogeny phy : phys ) {
+                System.out.println( phy.toString() );
+            }
+            System.out.println( "" );
+            final Phylogeny[] phys3 = factory.create( "((a,b),c)", parser );
+            System.out.println( "results 3:" );
+            for( final Phylogeny phy : phys3 ) {
+                System.out.println( phy.toString() );
+            }
+        }
+        catch ( Exception e ) {
+            e.printStackTrace();
+        }
+        System.exit( 0 );
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
                 + "]" );
@@ -2586,10 +2609,6 @@ public final class Test {
     private static boolean testBasicTreeMethods() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny t1 = factory.create();
-            if ( !t1.isEmpty() ) {
-                return false;
-            }
             final Phylogeny t2 = factory.create( "((A:1,B:2)AB:1,(C:3,D:5)CD:3)ABCD:0.5", new NHXParser() )[ 0 ];
             if ( t2.getNumberOfExternalNodes() != 4 ) {
                 return false;

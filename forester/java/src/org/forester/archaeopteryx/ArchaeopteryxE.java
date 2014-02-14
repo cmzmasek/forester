@@ -446,45 +446,65 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         setConfiguration( configuration );
         setOptions( Options.createInstance( configuration ) );
         setupUI();
-        URL phys_url = null;
-        Phylogeny[] phys = null;
         final String tree_url_str = getParameter( Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+        if ( ForesterUtil.isEmpty( tree_url_str ) ) {
+            ForesterUtil.printErrorMessage( NAME, "could not get tree URL from "
+                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+            JOptionPane.showMessageDialog( this, NAME + ": could not get tree URL from "
+                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD, "Failed get URL", JOptionPane.ERROR_MESSAGE );
+            return;
+        }
         AptxUtil.printAppletMessage( NAME, "URL for phylogenies is " + tree_url_str );
         // Get URL to tree file
-        if ( tree_url_str != null ) {
-            try {
-                phys_url = new URL( tree_url_str );
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( NAME, "error: " + e );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + tree_url_str
-                        + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
-            }
+        URL phys_url = null;
+        try {
+            phys_url = new URL( tree_url_str );
+        }
+        catch ( final Exception e ) {
+            ForesterUtil.printErrorMessage( NAME, "error: " + e );
+            e.printStackTrace();
+            JOptionPane.showMessageDialog( this, NAME + ": Could not create URL from: \"" + tree_url_str
+                    + "\"\nException: " + e, "Failed to create URL", JOptionPane.ERROR_MESSAGE );
+        }
+        if ( phys_url == null ) {
+            ForesterUtil.printErrorMessage( NAME, "failed to get tree URL from "
+                    + Constants.APPLET_PARAM_NAME_FOR_URL_OF_TREE_TO_LOAD );
+            JOptionPane.showMessageDialog( this,
+                                           NAME + ": Could not create URL from: \"" + tree_url_str,
+                                           "Failed to create URL",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
         }
         // Load the tree from URL
-        if ( phys_url != null ) {
-            try {
-                phys = AptxUtil.readPhylogeniesFromUrl( phys_url,
-                                                        getConfiguration().isValidatePhyloXmlAgainstSchema(),
-                                                        getConfiguration().isReplaceUnderscoresInNhParsing(),
-                                                        getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
-                                                        getConfiguration().getTaxonomyExtraction(),
-                                                        getConfiguration().isMidpointReroot() );
-            }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( NAME, e.toString() );
-                e.printStackTrace();
-                JOptionPane.showMessageDialog( this,
-                                               NAME + ": Failed to read phylogenies: " + "\nException: " + e,
-                                               "Failed to read phylogenies",
-                                               JOptionPane.ERROR_MESSAGE );
-            }
+        Phylogeny[] phys = null;
+        try {
+            phys = AptxUtil.readPhylogeniesFromUrl( phys_url,
+                                                    getConfiguration().isValidatePhyloXmlAgainstSchema(),
+                                                    getConfiguration().isReplaceUnderscoresInNhParsing(),
+                                                    getConfiguration().isInternalNumberAreConfidenceForNhParsing(),
+                                                    getConfiguration().getTaxonomyExtraction(),
+                                                    getConfiguration().isMidpointReroot() );
         }
-        if ( ( phys == null ) || ( phys.length < 1 ) ) {
-            ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + phys_url + "] are null or empty" );
+        catch ( final Exception e ) {
+            ForesterUtil.printErrorMessage( NAME, e.toString() );
+            e.printStackTrace();
             JOptionPane.showMessageDialog( this,
-                                           NAME + ": phylogenies from [" + phys_url + "] are null or empty",
+                                           NAME + ": Failed to read phylogenies: " + "\nException: " + e,
+                                           "Failed to read phylogenies",
+                                           JOptionPane.ERROR_MESSAGE );
+        }
+        if ( phys == null ) {
+            ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + phys_url + "] are null" );
+            JOptionPane.showMessageDialog( this,
+                                           NAME + ": phylogenies from [" + phys_url + "] are null",
+                                           "Failed to read phylogenies",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        else if ( phys.length < 1 ) {
+            ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + phys_url + "] are empty" );
+            JOptionPane.showMessageDialog( this,
+                                           NAME + ": phylogenies from [" + phys_url + "] are empty",
                                            "Failed to read phylogenies",
                                            JOptionPane.ERROR_MESSAGE );
             return;
@@ -584,8 +604,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         setName( NAME );
         getMainPanel().getControlPanel().showWholeAll();
         getMainPanel().getControlPanel().showWhole();
-        System.gc();
-        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
         /* GUILHEM_BEG */
         getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
         for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
@@ -601,6 +619,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
         }
         /* GUILHEM_END */
+        System.gc();
+        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
         setVisible( true );
     }
 

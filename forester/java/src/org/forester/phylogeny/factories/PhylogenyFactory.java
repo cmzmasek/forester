@@ -26,7 +26,6 @@
 package org.forester.phylogeny.factories;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.forester.phylogeny.Phylogeny;
 
@@ -36,14 +35,6 @@ import org.forester.phylogeny.Phylogeny;
  * @author Christian M. Zmasek
  */
 public interface PhylogenyFactory {
-
-    /**
-     * This must be implemented in such a way that it returns an empty
-     * Phylogeny.
-     * 
-     * @return an empty Phylogeny
-     */
-    public Phylogeny create();
 
     /**
      * This must create a Phylogeny from source (e.g. an XML file, an alignment,
@@ -58,20 +49,4 @@ public interface PhylogenyFactory {
      * @throws IOException
      */
     public Phylogeny[] create( Object source, Object creator ) throws IOException;
-
-    /**
-     * This must create a Phylogeny from source (e.g. an XML file, an alignment,
-     * pairwise distances) by using creator (e.g. an XML file parser, an
-     * algorithm implementation) with parameters listed in parameters.
-     * 
-     * @param source
-     *            a source to create a Phylogeny from
-     * @param creator
-     *            a means to create a Phylogeny
-     * @param parameters
-     *            a List of parameters for Phylogeny creation
-     * @return a Phylogeny[] based on argument source
-     * @throws IOException
-     */
-    public Phylogeny[] create( Object source, Object creator, List<Object> parameters ) throws IOException;
-} // PhylogenyFactory
+}

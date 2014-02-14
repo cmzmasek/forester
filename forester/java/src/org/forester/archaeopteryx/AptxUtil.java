@@ -707,7 +707,11 @@ public final class AptxUtil {
                 nex.setIgnoreQuotes( false );
             }
         }
+        AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
         final Phylogeny[] phys = factory.create( url.openStream(), parser );
+        for( final Phylogeny phy : phys ) {
+            System.out.println( phy.toString() );
+        }
         if ( nhx_or_nexus && internal_numbers_are_confidences ) {
             for( final Phylogeny phy : phys ) {
                 PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );

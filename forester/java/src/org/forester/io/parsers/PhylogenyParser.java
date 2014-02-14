@@ -41,4 +41,6 @@ public interface PhylogenyParser {
     public Phylogeny[] parse() throws IOException;
 
     public void setSource( Object source ) throws PhylogenyParserException, IOException;
+
+    public String getName();
 }

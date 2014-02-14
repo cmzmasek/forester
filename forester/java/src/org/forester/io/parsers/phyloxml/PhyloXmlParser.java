@@ -311,4 +311,9 @@ public class PhyloXmlParser implements PhylogenyParser {
             _warning_messages.append( "[line: " + e.getLineNumber() + "] " + e.getMessage() );
         }
     }
+
+    @Override
+    public String getName() {
+        return "phyloXML Parser";
+    }
 }

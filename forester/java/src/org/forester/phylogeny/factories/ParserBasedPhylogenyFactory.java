@@ -27,14 +27,13 @@
 package org.forester.phylogeny.factories;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlParser;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.util.ForesterUtil;
 
-public class ParserBasedPhylogenyFactory extends BasicPhylogenyFactory {
+public class ParserBasedPhylogenyFactory implements PhylogenyFactory {
 
     private final static PhylogenyFactory _instance;
     static {
@@ -56,8 +55,7 @@ public class ParserBasedPhylogenyFactory extends BasicPhylogenyFactory {
     }
 
     @Override
-    public synchronized Phylogeny[] create( final Object source, final Object parser, final List<Object> parameters )
-            throws IOException {
+    public synchronized Phylogeny[] create( final Object source, final Object parser ) throws IOException {
         if ( !( parser instanceof PhylogenyParser ) ) {
             throw new IllegalArgumentException( "attempt to use object of type other than PhylogenyParser as creator for ParserBasedPhylogenyFactory" );
         }
@@ -66,10 +64,8 @@ public class ParserBasedPhylogenyFactory extends BasicPhylogenyFactory {
         return my_parser.parse();
     }
 
-    public synchronized Phylogeny[] create( final Object source,
-                                            final Object parser,
-                                            final String schema_location,
-                                            final List<Object> parameters ) throws IOException {
+    public synchronized Phylogeny[] create( final Object source, final Object parser, final String schema_location )
+            throws IOException {
         if ( !( parser instanceof PhylogenyParser ) ) {
             throw new IllegalArgumentException( "attempt to use object of type other than PhylogenyParser as creator for ParserBasedPhylogenyFactory." );
         }

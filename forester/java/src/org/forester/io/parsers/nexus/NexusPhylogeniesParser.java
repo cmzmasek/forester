@@ -371,4 +371,9 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private final static String removeWhiteSpaceBeforeSemicolon( final String s ) {
         return s.replaceAll( "\\s+;", ";" );
     }
+
+    @Override
+    public String getName() {
+        return "Nexus Phylogenies Parser";
+    }
 }
