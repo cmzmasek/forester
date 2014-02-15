@@ -50,7 +50,6 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser;
 import org.forester.io.parsers.HmmscanPerDomainTableParser.INDIVIDUAL_SCORE_CUTOFF;
-import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.nexus.NexusBinaryStatesMatrixParser;
 import org.forester.io.parsers.nexus.NexusCharactersParser;
 import org.forester.io.parsers.nexus.NexusPhylogeniesParser;
@@ -407,14 +406,14 @@ public final class Test {
             String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
             final URL u = new URL( s );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final PhylogenyParser parser = ParserUtils.createParserDependingOnUrlContents( u, true );
-            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            // final PhylogenyParser parser = new NHXParser();
+            final Phylogeny[] phys = factory.create( u.openStream(), new NHXParser() );
             System.out.println( "results 1:" );
             for( final Phylogeny phy : phys ) {
                 System.out.println( phy.toString() );
             }
             System.out.println( "" );
-            final Phylogeny[] phys3 = factory.create( "((a,b),c)", parser );
+            final Phylogeny[] phys3 = factory.create( "((a,b),c)", new NHXParser() );
             System.out.println( "results 3:" );
             for( final Phylogeny phy : phys3 ) {
                 System.out.println( phy.toString() );
