@@ -114,24 +114,26 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     public final Phylogeny next() throws NHXFormatException, IOException {
         final Phylogeny phy = _next;
         getNext();
+       
         return phy;
     }
 
     @Override
     public final Phylogeny[] parse() throws IOException {
-        reset();
+    
         final List<Phylogeny> l = new ArrayList<Phylogeny>();
+        int c = 0;
         while ( hasNext() ) {
+           
             l.add( next() );
+            c++;
         }
         final Phylogeny[] p = new Phylogeny[ l.size() ];
         for( int i = 0; i < l.size(); ++i ) {
             p[ i ] = l.get( i );
         }
-        System.out.println( "going to return:" );
-        for( Phylogeny phylogeny : p ) {
-            System.out.println( phylogeny.toString() );
-        }
+    
+        reset();
         return p;
     }
 
@@ -280,7 +282,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _current_phylogeny.setRooted( true );
                 }
             }
-            System.out.println( "finishPhylogeny()" + _current_phylogeny );
+        
             return _current_phylogeny;
         }
         return null;
@@ -331,7 +333,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     }
                 }
             }
-            System.out.print( c );
+       
             if ( !_in_single_quote && !_in_double_quote ) {
                 if ( c == ':' ) {
                     _saw_colon = true;
@@ -425,7 +427,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             throw new PhylogenyParserException( "error in NH (Newick) formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
         if ( _current_phylogeny != null ) {
-            System.out.println( "getNext() going to call  finishPhylogeny()" );
+          
             _next = finishPhylogeny();
             _current_phylogeny = null;
             _current_anotation = null;
@@ -508,7 +510,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         final PhylogenyNode new_node = new PhylogenyNode();
         if ( _clade_level == 0 ) {
             if ( _current_phylogeny != null ) {
-                System.out.println( "processOpenParen() going to call  finishPhylogeny()" );
+             
                 phy = finishPhylogeny();
             }
             _clade_level = 1;

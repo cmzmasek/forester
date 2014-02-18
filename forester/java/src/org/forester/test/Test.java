@@ -401,28 +401,43 @@ public final class Test {
         return ( ( Math.abs( a - b ) ) < Test.ZERO_DIFF );
     }
 
-    public static void main( final String[] args ) {
+    
+    public static final boolean testNHXparsingFromURL() {
         try {
             String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
             final URL u = new URL( s );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            // final PhylogenyParser parser = new NHXParser();
             final Phylogeny[] phys = factory.create( u.openStream(), new NHXParser() );
-            System.out.println( "results 1:" );
-            for( final Phylogeny phy : phys ) {
-                System.out.println( phy.toString() );
+           
+           
+            if ( phys == null || phys.length != 1  ) {
+                return false;
+                
             }
-            System.out.println( "" );
-            final Phylogeny[] phys3 = factory.create( "((a,b),c)", new NHXParser() );
-            System.out.println( "results 3:" );
-            for( final Phylogeny phy : phys3 ) {
-                System.out.println( phy.toString() );
+            if ( !phys[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+                System.out.println(phys[ 0 ].toNewHampshire() );
+                return false;
+            }
+            
+            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
+            if ( phys2 == null || phys2.length != 1  ) {
+                return false;
+                
+            }
+            if ( !phys2[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+                System.out.println(phys2[ 0 ].toNewHampshire() );
+                return false;
             }
         }
         catch ( Exception e ) {
             e.printStackTrace();
         }
-        System.exit( 0 );
+        return true;
+    }
+    
+    public static void main( final String[] args ) {
+       
+     
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
                 + "]" );
@@ -1223,6 +1238,18 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        
+       
+        System.out.print( "NHX parsing from URL: " );
+        if ( Test.testNHXparsingFromURL() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
