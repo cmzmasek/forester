@@ -113,18 +113,15 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     @Override
     public final Phylogeny next() throws NHXFormatException, IOException {
         final Phylogeny phy = _next;
-        getNext();
-       
+        parseNext();
         return phy;
     }
 
     @Override
     public final Phylogeny[] parse() throws IOException {
-    
         final List<Phylogeny> l = new ArrayList<Phylogeny>();
         int c = 0;
         while ( hasNext() ) {
-           
             l.add( next() );
             c++;
         }
@@ -132,7 +129,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         for( int i = 0; i < l.size(); ++i ) {
             p[ i ] = l.get( i );
         }
-    
         reset();
         return p;
     }
@@ -185,7 +181,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             default:
                 throw new RuntimeException( "unknown input type" );
         }
-        getNext();
+        parseNext();
     }
 
     public final void setGuessRootedness( final boolean guess_rootedness ) {
@@ -282,7 +278,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _current_phylogeny.setRooted( true );
                 }
             }
-        
             return _current_phylogeny;
         }
         return null;
@@ -297,7 +292,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         return _current_phylogeny;
     }
 
-    private final void getNext() throws IOException, NHXFormatException {
+    private final void parseNext() throws IOException, NHXFormatException {
         if ( _source == null ) {
             throw new IOException( "source is not set" );
         }
@@ -333,7 +328,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     }
                 }
             }
-       
             if ( !_in_single_quote && !_in_double_quote ) {
                 if ( c == ':' ) {
                     _saw_colon = true;
@@ -427,7 +421,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             throw new PhylogenyParserException( "error in NH (Newick) formatted data: most likely cause: number of open parens does not equal number of close parens" );
         }
         if ( _current_phylogeny != null ) {
-          
             _next = finishPhylogeny();
             _current_phylogeny = null;
             _current_anotation = null;
@@ -510,7 +503,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         final PhylogenyNode new_node = new PhylogenyNode();
         if ( _clade_level == 0 ) {
             if ( _current_phylogeny != null ) {
-             
                 phy = finishPhylogeny();
             }
             _clade_level = 1;
@@ -711,6 +703,16 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 node_to_annotate.setDistanceToParent( bl );
             }
         }
+    }
+
+    public final static NHXParser createInstance( final Object nhx_source ) throws NHXFormatException, IOException {
+        final NHXParser parser = new NHXParser();
+        parser.setSource( nhx_source );
+        return parser;
+    }
+
+    public final static Phylogeny[] parse( final Object nhx_source ) throws NHXFormatException, IOException {
+        return NHXParser.createInstance( nhx_source ).parse();
     }
 
     @Override

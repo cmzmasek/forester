@@ -401,43 +401,35 @@ public final class Test {
         return ( ( Math.abs( a - b ) ) < Test.ZERO_DIFF );
     }
 
-    
     public static final boolean testNHXparsingFromURL() {
         try {
-            String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
             final URL u = new URL( s );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny[] phys = factory.create( u.openStream(), new NHXParser() );
-           
-           
-            if ( phys == null || phys.length != 1  ) {
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
                 return false;
-                
             }
             if ( !phys[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
-                System.out.println(phys[ 0 ].toNewHampshire() );
+                System.out.println( phys[ 0 ].toNewHampshire() );
                 return false;
             }
-            
             final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
-            if ( phys2 == null || phys2.length != 1  ) {
+            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
                 return false;
-                
             }
             if ( !phys2[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
-                System.out.println(phys2[ 0 ].toNewHampshire() );
+                System.out.println( phys2[ 0 ].toNewHampshire() );
                 return false;
             }
         }
-        catch ( Exception e ) {
+        catch ( final Exception e ) {
             e.printStackTrace();
         }
         return true;
     }
-    
+
     public static void main( final String[] args ) {
-       
-     
         System.out.println( "[Java version: " + ForesterUtil.JAVA_VERSION + " " + ForesterUtil.JAVA_VENDOR + "]" );
         System.out.println( "[OS: " + ForesterUtil.OS_NAME + " " + ForesterUtil.OS_ARCH + " " + ForesterUtil.OS_VERSION
                 + "]" );
@@ -1238,8 +1230,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
-       
         System.out.print( "NHX parsing from URL: " );
         if ( Test.testNHXparsingFromURL() ) {
             System.out.println( "OK." );
@@ -1249,7 +1239,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
@@ -4802,14 +4791,15 @@ public final class Test {
     private static boolean testGetLCA2() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny p_a = factory.create( "(a)", new NHXParser() )[ 0 ];
+            // final Phylogeny p_a = factory.create( "(a)", new NHXParser() )[ 0 ];
+            final Phylogeny p_a = NHXParser.parse( "(a)" )[ 0 ];
             PhylogenyMethods.preOrderReId( p_a );
             final PhylogenyNode p_a_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_a.getNode( "a" ),
                                                                                               p_a.getNode( "a" ) );
             if ( !p_a_1.getName().equals( "a" ) ) {
                 return false;
             }
-            final Phylogeny p_b = factory.create( "((a)b)", new NHXParser() )[ 0 ];
+            final Phylogeny p_b = NHXParser.parse( "((a)b)" )[ 0 ];
             PhylogenyMethods.preOrderReId( p_b );
             final PhylogenyNode p_b_1 = PhylogenyMethods.calculateLCAonTreeWithIdsInPreOrder( p_b.getNode( "b" ),
                                                                                               p_b.getNode( "a" ) );
@@ -7866,6 +7856,67 @@ public final class Test {
                 return false;
             }
             if ( p.next() != null ) {
+                return false;
+            }
+            //
+            final String p30_str = "(A,B);(C,D)";
+            final NHXParser p30 = new NHXParser();
+            p30.setSource( p30_str );
+            if ( !p30.hasNext() ) {
+                return false;
+            }
+            Phylogeny phy30 = p30.next();
+            if ( !phy30.toNewHampshire().equals( "(A,B);" ) ) {
+                System.out.println( phy30.toNewHampshire() );
+                return false;
+            }
+            if ( !p30.hasNext() ) {
+                return false;
+            }
+            Phylogeny phy301 = p30.next();
+            if ( !phy301.toNewHampshire().equals( "(C,D);" ) ) {
+                System.out.println( phy301.toNewHampshire() );
+                return false;
+            }
+            if ( p30.hasNext() ) {
+                return false;
+            }
+            if ( p30.hasNext() ) {
+                return false;
+            }
+            if ( p30.next() != null ) {
+                return false;
+            }
+            if ( p30.next() != null ) {
+                return false;
+            }
+            p30.reset();
+            if ( !p30.hasNext() ) {
+                return false;
+            }
+            phy30 = p30.next();
+            if ( !phy30.toNewHampshire().equals( "(A,B);" ) ) {
+                System.out.println( phy30.toNewHampshire() );
+                return false;
+            }
+            if ( !p30.hasNext() ) {
+                return false;
+            }
+            phy301 = p30.next();
+            if ( !phy301.toNewHampshire().equals( "(C,D);" ) ) {
+                System.out.println( phy301.toNewHampshire() );
+                return false;
+            }
+            if ( p30.hasNext() ) {
+                return false;
+            }
+            if ( p30.hasNext() ) {
+                return false;
+            }
+            if ( p30.next() != null ) {
+                return false;
+            }
+            if ( p30.next() != null ) {
                 return false;
             }
         }
