@@ -25,11 +25,11 @@ package org.forester.io.parsers.nhx;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -151,31 +151,25 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _my_source_sbuff = null;
         _my_source_sbuil = null;
         _my_source_charary = null;
-        _my_source_br = null;
         determineSourceType( _source );
         switch ( _input_type ) {
             case STRING:
+                _my_source_br = null;
                 _my_source_str = ( String ) _nhx_source;
                 break;
             case STRING_BUFFER:
+                _my_source_br = null;
                 _my_source_sbuff = ( StringBuffer ) _nhx_source;
                 break;
             case STRING_BUILDER:
+                _my_source_br = null;
                 _my_source_sbuil = ( StringBuilder ) _nhx_source;
                 break;
             case CHAR_ARRAY:
+                _my_source_br = null;
                 _my_source_charary = ( char[] ) _nhx_source;
                 break;
             case BUFFERED_READER:
-                //never called:
-                //                if ( _my_source_br != null ) {
-                //                    try {
-                //                        _my_source_br.close();
-                //                    }
-                //                    catch ( final IOException e ) {
-                //                        //do nothing
-                //                    }
-                //                }
                 _my_source_br = ( BufferedReader ) _nhx_source;
                 break;
             default:
@@ -206,8 +200,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         _taxonomy_extraction = taxonomy_extraction;
     }
 
-    private final void determineSourceType( final Object nhx_source ) throws PhylogenyParserException,
-            FileNotFoundException {
+    private final void determineSourceType( final Object nhx_source ) throws IOException {
         if ( nhx_source == null ) {
             throw new PhylogenyParserException( getClass() + ": attempt to parse null object." );
         }
@@ -239,6 +232,13 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         else if ( nhx_source instanceof File ) {
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
+            if ( _my_source_br != null ) {
+                try {
+                    _my_source_br.close();
+                }
+                catch ( final IOException e ) {
+                }
+            }
             final File f = ( File ) nhx_source;
             final String error = ForesterUtil.isReadableFile( f );
             if ( !ForesterUtil.isEmpty( error ) ) {
@@ -246,15 +246,35 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             }
             _nhx_source = new BufferedReader( new FileReader( f ) );
         }
+        else if ( nhx_source instanceof URL ) {
+            _input_type = NHXParser.BUFFERED_READER;
+            _source_length = 0;
+            if ( _my_source_br != null ) {
+                try {
+                    _my_source_br.close();
+                }
+                catch ( final IOException e ) {
+                }
+            }
+            final InputStreamReader isr = new InputStreamReader( ( ( URL ) nhx_source ).openStream() );
+            _nhx_source = new BufferedReader( isr );
+        }
         else if ( nhx_source instanceof InputStream ) {
             _input_type = NHXParser.BUFFERED_READER;
             _source_length = 0;
+            if ( _my_source_br != null ) {
+                try {
+                    _my_source_br.close();
+                }
+                catch ( final IOException e ) {
+                }
+            }
             final InputStreamReader isr = new InputStreamReader( ( InputStream ) nhx_source );
             _nhx_source = new BufferedReader( isr );
         }
         else {
             throw new IllegalArgumentException( getClass() + " can only parse objects of type String,"
-                    + " StringBuffer, StringBuilder, char[], File," + " or InputStream "
+                    + " StringBuffer, StringBuilder, char[], File, InputStream, or URL "
                     + " [attempt to parse object of " + nhx_source.getClass() + "]." );
         }
     }

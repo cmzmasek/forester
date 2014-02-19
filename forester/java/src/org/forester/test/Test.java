@@ -128,305 +128,24 @@ import org.forester.ws.wabi.TxSearch.TAX_RANK;
 @SuppressWarnings( "unused")
 public final class Test {
 
-    private final static boolean PERFORM_DB_TESTS          = false;
-    private final static double  ZERO_DIFF                 = 1.0E-9;
-    private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
-                                                                   + ForesterUtil.getFileSeparator() + "test_data"
-                                                                   + ForesterUtil.getFileSeparator();
     private final static String  PATH_TO_RESOURCES         = System.getProperty( "user.dir" )
                                                                    + ForesterUtil.getFileSeparator() + "resources"
                                                                    + ForesterUtil.getFileSeparator();
-    private final static boolean USE_LOCAL_PHYLOXML_SCHEMA = true;
-    private static final String  PHYLOXML_REMOTE_XSD       = ForesterConstants.PHYLO_XML_LOCATION + "/"
-                                                                   + ForesterConstants.PHYLO_XML_VERSION + "/"
-                                                                   + ForesterConstants.PHYLO_XML_XSD;
+    private final static String  PATH_TO_TEST_DATA         = System.getProperty( "user.dir" )
+                                                                   + ForesterUtil.getFileSeparator() + "test_data"
+                                                                   + ForesterUtil.getFileSeparator();
+    private final static boolean PERFORM_DB_TESTS          = false;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
                                                                    + ForesterConstants.PHYLO_XML_VERSION + "/"
                                                                    + ForesterConstants.PHYLO_XML_XSD;
-
-    public static boolean testOverlapRemoval() {
-        try {
-            final Domain d0 = new BasicDomain( "d0", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d1 = new BasicDomain( "d1", ( short ) 7, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d2 = new BasicDomain( "d2", ( short ) 0, ( short ) 20, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d3 = new BasicDomain( "d3", ( short ) 9, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d4 = new BasicDomain( "d4", ( short ) 7, ( short ) 8, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<Boolean>();
-            covered.add( true ); // 0
-            covered.add( false ); // 1
-            covered.add( true ); // 2
-            covered.add( false ); // 3
-            covered.add( true ); // 4
-            covered.add( true ); // 5
-            covered.add( false ); // 6
-            covered.add( true ); // 7
-            covered.add( true ); // 8
-            if ( ForesterUtil.calculateOverlap( d0, covered ) != 3 ) {
-                return false;
-            }
-            if ( ForesterUtil.calculateOverlap( d1, covered ) != 2 ) {
-                return false;
-            }
-            if ( ForesterUtil.calculateOverlap( d2, covered ) != 6 ) {
-                return false;
-            }
-            if ( ForesterUtil.calculateOverlap( d3, covered ) != 0 ) {
-                return false;
-            }
-            if ( ForesterUtil.calculateOverlap( d4, covered ) != 2 ) {
-                return false;
-            }
-            final Domain a = new BasicDomain( "a", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 1, -1 );
-            final Domain b = new BasicDomain( "b", ( short ) 2, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, -1 );
-            final Protein ab = new BasicProtein( "ab", "varanus", 0 );
-            ab.addProteinDomain( a );
-            ab.addProteinDomain( b );
-            final Protein ab_s0 = ForesterUtil.removeOverlappingDomains( 3, false, ab );
-            if ( ab.getNumberOfProteinDomains() != 2 ) {
-                return false;
-            }
-            if ( ab_s0.getNumberOfProteinDomains() != 1 ) {
-                return false;
-            }
-            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().equals( "b" ) ) {
-                return false;
-            }
-            final Protein ab_s1 = ForesterUtil.removeOverlappingDomains( 4, false, ab );
-            if ( ab.getNumberOfProteinDomains() != 2 ) {
-                return false;
-            }
-            if ( ab_s1.getNumberOfProteinDomains() != 2 ) {
-                return false;
-            }
-            final Domain c = new BasicDomain( "c", ( short ) 20000, ( short ) 20500, ( short ) 1, ( short ) 1, 10, 1 );
-            final Domain d = new BasicDomain( "d",
-                                              ( short ) 10000,
-                                              ( short ) 10500,
-                                              ( short ) 1,
-                                              ( short ) 1,
-                                              0.0000001,
-                                              1 );
-            final Domain e = new BasicDomain( "e", ( short ) 5000, ( short ) 5500, ( short ) 1, ( short ) 1, 0.0001, 1 );
-            final Protein cde = new BasicProtein( "cde", "varanus", 0 );
-            cde.addProteinDomain( c );
-            cde.addProteinDomain( d );
-            cde.addProteinDomain( e );
-            final Protein cde_s0 = ForesterUtil.removeOverlappingDomains( 0, false, cde );
-            if ( cde.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( cde_s0.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            final Domain f = new BasicDomain( "f", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 10, 1 );
-            final Domain g = new BasicDomain( "g", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.01, 1 );
-            final Domain h = new BasicDomain( "h", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.0001, 1 );
-            final Domain i = new BasicDomain( "i", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.5, 1 );
-            final Domain i2 = new BasicDomain( "i", ( short ) 5, ( short ) 30, ( short ) 1, ( short ) 1, 0.5, 10 );
-            final Protein fghi = new BasicProtein( "fghi", "varanus", 0 );
-            fghi.addProteinDomain( f );
-            fghi.addProteinDomain( g );
-            fghi.addProteinDomain( h );
-            fghi.addProteinDomain( i );
-            fghi.addProteinDomain( i );
-            fghi.addProteinDomain( i );
-            fghi.addProteinDomain( i2 );
-            final Protein fghi_s0 = ForesterUtil.removeOverlappingDomains( 10, false, fghi );
-            if ( fghi.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            if ( fghi_s0.getNumberOfProteinDomains() != 1 ) {
-                return false;
-            }
-            if ( !fghi_s0.getProteinDomain( 0 ).getDomainId().equals( "h" ) ) {
-                return false;
-            }
-            final Protein fghi_s1 = ForesterUtil.removeOverlappingDomains( 11, false, fghi );
-            if ( fghi.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            if ( fghi_s1.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            final Domain j = new BasicDomain( "j", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 10, 1 );
-            final Domain k = new BasicDomain( "k", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.01, 1 );
-            final Domain l = new BasicDomain( "l", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.0001, 1 );
-            final Domain m = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 4, 0.5, 1 );
-            final Domain m0 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 2, ( short ) 4, 0.5, 1 );
-            final Domain m1 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 3, ( short ) 4, 0.5, 1 );
-            final Domain m2 = new BasicDomain( "m", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
-            final Protein jklm = new BasicProtein( "jklm", "varanus", 0 );
-            jklm.addProteinDomain( j );
-            jklm.addProteinDomain( k );
-            jklm.addProteinDomain( l );
-            jklm.addProteinDomain( m );
-            jklm.addProteinDomain( m0 );
-            jklm.addProteinDomain( m1 );
-            jklm.addProteinDomain( m2 );
-            final Protein jklm_s0 = ForesterUtil.removeOverlappingDomains( 10, false, jklm );
-            if ( jklm.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            if ( jklm_s0.getNumberOfProteinDomains() != 1 ) {
-                return false;
-            }
-            if ( !jklm_s0.getProteinDomain( 0 ).getDomainId().equals( "l" ) ) {
-                return false;
-            }
-            final Protein jklm_s1 = ForesterUtil.removeOverlappingDomains( 11, false, jklm );
-            if ( jklm.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            if ( jklm_s1.getNumberOfProteinDomains() != 7 ) {
-                return false;
-            }
-            final Domain only = new BasicDomain( "only", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
-            final Protein od = new BasicProtein( "od", "varanus", 0 );
-            od.addProteinDomain( only );
-            final Protein od_s0 = ForesterUtil.removeOverlappingDomains( 0, false, od );
-            if ( od.getNumberOfProteinDomains() != 1 ) {
-                return false;
-            }
-            if ( od_s0.getNumberOfProteinDomains() != 1 ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean testEngulfingOverlapRemoval() {
-        try {
-            final Domain d0 = new BasicDomain( "d0", 0, 8, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d1 = new BasicDomain( "d1", 0, 1, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d2 = new BasicDomain( "d2", 0, 2, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d3 = new BasicDomain( "d3", 7, 8, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d4 = new BasicDomain( "d4", 7, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d5 = new BasicDomain( "d4", 0, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain d6 = new BasicDomain( "d4", 4, 5, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final List<Boolean> covered = new ArrayList<Boolean>();
-            covered.add( true ); // 0
-            covered.add( false ); // 1
-            covered.add( true ); // 2
-            covered.add( false ); // 3
-            covered.add( true ); // 4
-            covered.add( true ); // 5
-            covered.add( false ); // 6
-            covered.add( true ); // 7
-            covered.add( true ); // 8
-            if ( ForesterUtil.isEngulfed( d0, covered ) ) {
-                return false;
-            }
-            if ( ForesterUtil.isEngulfed( d1, covered ) ) {
-                return false;
-            }
-            if ( ForesterUtil.isEngulfed( d2, covered ) ) {
-                return false;
-            }
-            if ( !ForesterUtil.isEngulfed( d3, covered ) ) {
-                return false;
-            }
-            if ( ForesterUtil.isEngulfed( d4, covered ) ) {
-                return false;
-            }
-            if ( ForesterUtil.isEngulfed( d5, covered ) ) {
-                return false;
-            }
-            if ( !ForesterUtil.isEngulfed( d6, covered ) ) {
-                return false;
-            }
-            final Domain a = new BasicDomain( "a", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain b = new BasicDomain( "b", 8, 20, ( short ) 1, ( short ) 1, 0.2, 1 );
-            final Domain c = new BasicDomain( "c", 15, 16, ( short ) 1, ( short ) 1, 0.3, 1 );
-            final Protein abc = new BasicProtein( "abc", "nemve", 0 );
-            abc.addProteinDomain( a );
-            abc.addProteinDomain( b );
-            abc.addProteinDomain( c );
-            final Protein abc_r1 = ForesterUtil.removeOverlappingDomains( 3, false, abc );
-            final Protein abc_r2 = ForesterUtil.removeOverlappingDomains( 3, true, abc );
-            if ( abc.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( abc_r1.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( abc_r2.getNumberOfProteinDomains() != 2 ) {
-                return false;
-            }
-            if ( !abc_r2.getProteinDomain( 0 ).getDomainId().equals( "a" ) ) {
-                return false;
-            }
-            if ( !abc_r2.getProteinDomain( 1 ).getDomainId().equals( "b" ) ) {
-                return false;
-            }
-            final Domain d = new BasicDomain( "d", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
-            final Domain e = new BasicDomain( "e", 8, 20, ( short ) 1, ( short ) 1, 0.3, 1 );
-            final Domain f = new BasicDomain( "f", 15, 16, ( short ) 1, ( short ) 1, 0.2, 1 );
-            final Protein def = new BasicProtein( "def", "nemve", 0 );
-            def.addProteinDomain( d );
-            def.addProteinDomain( e );
-            def.addProteinDomain( f );
-            final Protein def_r1 = ForesterUtil.removeOverlappingDomains( 5, false, def );
-            final Protein def_r2 = ForesterUtil.removeOverlappingDomains( 5, true, def );
-            if ( def.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( def_r1.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( def_r2.getNumberOfProteinDomains() != 3 ) {
-                return false;
-            }
-            if ( !def_r2.getProteinDomain( 0 ).getDomainId().equals( "d" ) ) {
-                return false;
-            }
-            if ( !def_r2.getProteinDomain( 1 ).getDomainId().equals( "f" ) ) {
-                return false;
-            }
-            if ( !def_r2.getProteinDomain( 2 ).getDomainId().equals( "e" ) ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
+    private static final String  PHYLOXML_REMOTE_XSD       = ForesterConstants.PHYLO_XML_LOCATION + "/"
+                                                                   + ForesterConstants.PHYLO_XML_VERSION + "/"
+                                                                   + ForesterConstants.PHYLO_XML_XSD;
+    private final static boolean USE_LOCAL_PHYLOXML_SCHEMA = true;
+    private final static double  ZERO_DIFF                 = 1.0E-9;
 
     public static boolean isEqual( final double a, final double b ) {
         return ( ( Math.abs( a - b ) ) < Test.ZERO_DIFF );
-    }
-
-    public static final boolean testNHXparsingFromURL() {
-        try {
-            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
-            final URL u = new URL( s );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), new NHXParser() );
-            if ( ( phys == null ) || ( phys.length != 1 ) ) {
-                return false;
-            }
-            if ( !phys[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
-                System.out.println( phys[ 0 ].toNewHampshire() );
-                return false;
-            }
-            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
-            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
-                return false;
-            }
-            if ( !phys2[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
-                System.out.println( phys2[ 0 ].toNewHampshire() );
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-        }
-        return true;
     }
 
     public static void main( final String[] args ) {
@@ -1255,6 +974,332 @@ public final class Test {
         else {
             System.out.println( "Not OK." );
         }
+    }
+
+    public static boolean testEngulfingOverlapRemoval() {
+        try {
+            final Domain d0 = new BasicDomain( "d0", 0, 8, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d1 = new BasicDomain( "d1", 0, 1, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d2 = new BasicDomain( "d2", 0, 2, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d3 = new BasicDomain( "d3", 7, 8, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d4 = new BasicDomain( "d4", 7, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d5 = new BasicDomain( "d4", 0, 9, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d6 = new BasicDomain( "d4", 4, 5, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final List<Boolean> covered = new ArrayList<Boolean>();
+            covered.add( true ); // 0
+            covered.add( false ); // 1
+            covered.add( true ); // 2
+            covered.add( false ); // 3
+            covered.add( true ); // 4
+            covered.add( true ); // 5
+            covered.add( false ); // 6
+            covered.add( true ); // 7
+            covered.add( true ); // 8
+            if ( ForesterUtil.isEngulfed( d0, covered ) ) {
+                return false;
+            }
+            if ( ForesterUtil.isEngulfed( d1, covered ) ) {
+                return false;
+            }
+            if ( ForesterUtil.isEngulfed( d2, covered ) ) {
+                return false;
+            }
+            if ( !ForesterUtil.isEngulfed( d3, covered ) ) {
+                return false;
+            }
+            if ( ForesterUtil.isEngulfed( d4, covered ) ) {
+                return false;
+            }
+            if ( ForesterUtil.isEngulfed( d5, covered ) ) {
+                return false;
+            }
+            if ( !ForesterUtil.isEngulfed( d6, covered ) ) {
+                return false;
+            }
+            final Domain a = new BasicDomain( "a", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain b = new BasicDomain( "b", 8, 20, ( short ) 1, ( short ) 1, 0.2, 1 );
+            final Domain c = new BasicDomain( "c", 15, 16, ( short ) 1, ( short ) 1, 0.3, 1 );
+            final Protein abc = new BasicProtein( "abc", "nemve", 0 );
+            abc.addProteinDomain( a );
+            abc.addProteinDomain( b );
+            abc.addProteinDomain( c );
+            final Protein abc_r1 = ForesterUtil.removeOverlappingDomains( 3, false, abc );
+            final Protein abc_r2 = ForesterUtil.removeOverlappingDomains( 3, true, abc );
+            if ( abc.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( abc_r1.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( abc_r2.getNumberOfProteinDomains() != 2 ) {
+                return false;
+            }
+            if ( !abc_r2.getProteinDomain( 0 ).getDomainId().equals( "a" ) ) {
+                return false;
+            }
+            if ( !abc_r2.getProteinDomain( 1 ).getDomainId().equals( "b" ) ) {
+                return false;
+            }
+            final Domain d = new BasicDomain( "d", 0, 10, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain e = new BasicDomain( "e", 8, 20, ( short ) 1, ( short ) 1, 0.3, 1 );
+            final Domain f = new BasicDomain( "f", 15, 16, ( short ) 1, ( short ) 1, 0.2, 1 );
+            final Protein def = new BasicProtein( "def", "nemve", 0 );
+            def.addProteinDomain( d );
+            def.addProteinDomain( e );
+            def.addProteinDomain( f );
+            final Protein def_r1 = ForesterUtil.removeOverlappingDomains( 5, false, def );
+            final Protein def_r2 = ForesterUtil.removeOverlappingDomains( 5, true, def );
+            if ( def.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( def_r1.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( def_r2.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( !def_r2.getProteinDomain( 0 ).getDomainId().equals( "d" ) ) {
+                return false;
+            }
+            if ( !def_r2.getProteinDomain( 1 ).getDomainId().equals( "f" ) ) {
+                return false;
+            }
+            if ( !def_r2.getProteinDomain( 2 ).getDomainId().equals( "e" ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    public static final boolean testNHXparsingFromURL() {
+        try {
+            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final URL u = new URL( s );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u, new NHXParser() );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+                System.out.println( phys[ 0 ].toNewHampshire() );
+                return false;
+            }
+            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
+            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys2[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+                System.out.println( phys2[ 0 ].toNewHampshire() );
+                return false;
+            }
+            final PhylogenyFactory factory2 = ParserBasedPhylogenyFactory.getInstance();
+            final NHXParser p = new NHXParser();
+            final URL u2 = new URL( s );
+            p.setSource( u2 );
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            if ( !p.next().toNewHampshire().equals( "((a,b),c);" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            if ( p.next() != null ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            if ( p.next() != null ) {
+                return false;
+            }
+            p.reset();
+            if ( !p.hasNext() ) {
+                return false;
+            }
+            if ( !p.next().toNewHampshire().equals( "((a,b),c);" ) ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            if ( p.next() != null ) {
+                return false;
+            }
+            if ( p.hasNext() ) {
+                return false;
+            }
+            if ( p.next() != null ) {
+                return false;
+            }
+            p.reset();
+            if ( !p.hasNext() ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static boolean testOverlapRemoval() {
+        try {
+            final Domain d0 = new BasicDomain( "d0", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d1 = new BasicDomain( "d1", ( short ) 7, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d2 = new BasicDomain( "d2", ( short ) 0, ( short ) 20, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d3 = new BasicDomain( "d3", ( short ) 9, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final Domain d4 = new BasicDomain( "d4", ( short ) 7, ( short ) 8, ( short ) 1, ( short ) 1, 0.1, 1 );
+            final List<Boolean> covered = new ArrayList<Boolean>();
+            covered.add( true ); // 0
+            covered.add( false ); // 1
+            covered.add( true ); // 2
+            covered.add( false ); // 3
+            covered.add( true ); // 4
+            covered.add( true ); // 5
+            covered.add( false ); // 6
+            covered.add( true ); // 7
+            covered.add( true ); // 8
+            if ( ForesterUtil.calculateOverlap( d0, covered ) != 3 ) {
+                return false;
+            }
+            if ( ForesterUtil.calculateOverlap( d1, covered ) != 2 ) {
+                return false;
+            }
+            if ( ForesterUtil.calculateOverlap( d2, covered ) != 6 ) {
+                return false;
+            }
+            if ( ForesterUtil.calculateOverlap( d3, covered ) != 0 ) {
+                return false;
+            }
+            if ( ForesterUtil.calculateOverlap( d4, covered ) != 2 ) {
+                return false;
+            }
+            final Domain a = new BasicDomain( "a", ( short ) 2, ( short ) 5, ( short ) 1, ( short ) 1, 1, -1 );
+            final Domain b = new BasicDomain( "b", ( short ) 2, ( short ) 10, ( short ) 1, ( short ) 1, 0.1, -1 );
+            final Protein ab = new BasicProtein( "ab", "varanus", 0 );
+            ab.addProteinDomain( a );
+            ab.addProteinDomain( b );
+            final Protein ab_s0 = ForesterUtil.removeOverlappingDomains( 3, false, ab );
+            if ( ab.getNumberOfProteinDomains() != 2 ) {
+                return false;
+            }
+            if ( ab_s0.getNumberOfProteinDomains() != 1 ) {
+                return false;
+            }
+            if ( !ab_s0.getProteinDomain( 0 ).getDomainId().equals( "b" ) ) {
+                return false;
+            }
+            final Protein ab_s1 = ForesterUtil.removeOverlappingDomains( 4, false, ab );
+            if ( ab.getNumberOfProteinDomains() != 2 ) {
+                return false;
+            }
+            if ( ab_s1.getNumberOfProteinDomains() != 2 ) {
+                return false;
+            }
+            final Domain c = new BasicDomain( "c", ( short ) 20000, ( short ) 20500, ( short ) 1, ( short ) 1, 10, 1 );
+            final Domain d = new BasicDomain( "d",
+                                              ( short ) 10000,
+                                              ( short ) 10500,
+                                              ( short ) 1,
+                                              ( short ) 1,
+                                              0.0000001,
+                                              1 );
+            final Domain e = new BasicDomain( "e", ( short ) 5000, ( short ) 5500, ( short ) 1, ( short ) 1, 0.0001, 1 );
+            final Protein cde = new BasicProtein( "cde", "varanus", 0 );
+            cde.addProteinDomain( c );
+            cde.addProteinDomain( d );
+            cde.addProteinDomain( e );
+            final Protein cde_s0 = ForesterUtil.removeOverlappingDomains( 0, false, cde );
+            if ( cde.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            if ( cde_s0.getNumberOfProteinDomains() != 3 ) {
+                return false;
+            }
+            final Domain f = new BasicDomain( "f", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 10, 1 );
+            final Domain g = new BasicDomain( "g", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.01, 1 );
+            final Domain h = new BasicDomain( "h", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.0001, 1 );
+            final Domain i = new BasicDomain( "i", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.5, 1 );
+            final Domain i2 = new BasicDomain( "i", ( short ) 5, ( short ) 30, ( short ) 1, ( short ) 1, 0.5, 10 );
+            final Protein fghi = new BasicProtein( "fghi", "varanus", 0 );
+            fghi.addProteinDomain( f );
+            fghi.addProteinDomain( g );
+            fghi.addProteinDomain( h );
+            fghi.addProteinDomain( i );
+            fghi.addProteinDomain( i );
+            fghi.addProteinDomain( i );
+            fghi.addProteinDomain( i2 );
+            final Protein fghi_s0 = ForesterUtil.removeOverlappingDomains( 10, false, fghi );
+            if ( fghi.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            if ( fghi_s0.getNumberOfProteinDomains() != 1 ) {
+                return false;
+            }
+            if ( !fghi_s0.getProteinDomain( 0 ).getDomainId().equals( "h" ) ) {
+                return false;
+            }
+            final Protein fghi_s1 = ForesterUtil.removeOverlappingDomains( 11, false, fghi );
+            if ( fghi.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            if ( fghi_s1.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            final Domain j = new BasicDomain( "j", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 10, 1 );
+            final Domain k = new BasicDomain( "k", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.01, 1 );
+            final Domain l = new BasicDomain( "l", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 1, 0.0001, 1 );
+            final Domain m = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 1, ( short ) 4, 0.5, 1 );
+            final Domain m0 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 2, ( short ) 4, 0.5, 1 );
+            final Domain m1 = new BasicDomain( "m", ( short ) 10, ( short ) 20, ( short ) 3, ( short ) 4, 0.5, 1 );
+            final Domain m2 = new BasicDomain( "m", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
+            final Protein jklm = new BasicProtein( "jklm", "varanus", 0 );
+            jklm.addProteinDomain( j );
+            jklm.addProteinDomain( k );
+            jklm.addProteinDomain( l );
+            jklm.addProteinDomain( m );
+            jklm.addProteinDomain( m0 );
+            jklm.addProteinDomain( m1 );
+            jklm.addProteinDomain( m2 );
+            final Protein jklm_s0 = ForesterUtil.removeOverlappingDomains( 10, false, jklm );
+            if ( jklm.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            if ( jklm_s0.getNumberOfProteinDomains() != 1 ) {
+                return false;
+            }
+            if ( !jklm_s0.getProteinDomain( 0 ).getDomainId().equals( "l" ) ) {
+                return false;
+            }
+            final Protein jklm_s1 = ForesterUtil.removeOverlappingDomains( 11, false, jklm );
+            if ( jklm.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            if ( jklm_s1.getNumberOfProteinDomains() != 7 ) {
+                return false;
+            }
+            final Domain only = new BasicDomain( "only", ( short ) 5, ( short ) 30, ( short ) 4, ( short ) 4, 0.5, 10 );
+            final Protein od = new BasicProtein( "od", "varanus", 0 );
+            od.addProteinDomain( only );
+            final Protein od_s0 = ForesterUtil.removeOverlappingDomains( 0, false, od );
+            if ( od.getNumberOfProteinDomains() != 1 ) {
+                return false;
+            }
+            if ( od_s0.getNumberOfProteinDomains() != 1 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
     }
 
     private final static Phylogeny createPhylogeny( final String nhx ) throws IOException {
@@ -2809,41 +2854,6 @@ public final class Test {
         return true;
     }
 
-    private static boolean testTreeCopy() {
-        try {
-            final String str_0 = "((((a,b),c),d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=animals]";
-            final Phylogeny t0 = Phylogeny.createInstanceFromNhxString( str_0 );
-            final Phylogeny t1 = t0.copy();
-            if ( !t1.toNewHampshireX().equals( t0.toNewHampshireX() ) ) {
-                return false;
-            }
-            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
-                return false;
-            }
-            t0.deleteSubtree( t0.getNode( "c" ), true );
-            t0.deleteSubtree( t0.getNode( "a" ), true );
-            t0.getRoot().getNodeData().getTaxonomy().setScientificName( "metazoa" );
-            t0.getNode( "b" ).setName( "Bee" );
-            if ( !t0.toNewHampshireX().equals( "((Bee,d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=metazoa]" ) ) {
-                return false;
-            }
-            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
-                return false;
-            }
-            t0.deleteSubtree( t0.getNode( "e" ), true );
-            t0.deleteSubtree( t0.getNode( "Bee" ), true );
-            t0.deleteSubtree( t0.getNode( "d" ), true );
-            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
     private static boolean testCreateBalancedPhylogeny() {
         try {
             final Phylogeny p0 = DevelopmentTools.createBalancedPhylogeny( 6, 5 );
@@ -3725,51 +3735,183 @@ public final class Test {
         return true;
     }
 
-    private static boolean testGenbankAccessorParsing() {
-        //The format for GenBank Accession numbers are:
-        //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
-        //Protein:    3 letters + 5 numerals
-        //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "AY423861" ).equals( "AY423861" ) ) {
-            return false;
+    private static boolean testEbiEntryRetrieval() {
+        try {
+            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainEntry( "AAK41263" );
+            if ( !entry.getAccession().equals( "AAK41263" ) ) {
+                System.out.println( entry.getAccession() );
+                return false;
+            }
+            if ( !entry.getTaxonomyScientificName().equals( "Sulfolobus solfataricus P2" ) ) {
+                System.out.println( entry.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry.getSequenceName()
+                    .equals( "Sulfolobus solfataricus P2 Glycogen debranching enzyme, hypothetical (treX-like)" ) ) {
+                System.out.println( entry.getSequenceName() );
+                return false;
+            }
+            // if ( !entry.getSequenceSymbol().equals( "" ) ) {
+            //     System.out.println( entry.getSequenceSymbol() );
+            //     return false;
+            // }
+            if ( !entry.getGeneName().equals( "treX-like" ) ) {
+                System.out.println( entry.getGeneName() );
+                return false;
+            }
+            if ( !entry.getTaxonomyIdentifier().equals( "273057" ) ) {
+                System.out.println( entry.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry.getAnnotations().first().getRefValue().equals( "3.2.1.33" ) ) {
+                System.out.println( entry.getAnnotations().first().getRefValue() );
+                return false;
+            }
+            if ( !entry.getAnnotations().first().getRefSource().equals( "EC" ) ) {
+                System.out.println( entry.getAnnotations().first().getRefSource() );
+                return false;
+            }
+            if ( entry.getCrossReferences().size() != 5 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry( "ABJ16409" );
+            if ( !entry1.getAccession().equals( "ABJ16409" ) ) {
+                return false;
+            }
+            if ( !entry1.getTaxonomyScientificName().equals( "Felis catus" ) ) {
+                System.out.println( entry1.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry1.getSequenceName().equals( "Felis catus (domestic cat) partial BCL2" ) ) {
+                System.out.println( entry1.getSequenceName() );
+                return false;
+            }
+            if ( !entry1.getTaxonomyIdentifier().equals( "9685" ) ) {
+                System.out.println( entry1.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry1.getGeneName().equals( "BCL2" ) ) {
+                System.out.println( entry1.getGeneName() );
+                return false;
+            }
+            if ( entry1.getCrossReferences().size() != 6 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry( "NM_184234" );
+            if ( !entry2.getAccession().equals( "NM_184234" ) ) {
+                return false;
+            }
+            if ( !entry2.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
+                System.out.println( entry2.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry2.getSequenceName()
+                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
+                System.out.println( entry2.getSequenceName() );
+                return false;
+            }
+            if ( !entry2.getTaxonomyIdentifier().equals( "9606" ) ) {
+                System.out.println( entry2.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry2.getGeneName().equals( "RBM39" ) ) {
+                System.out.println( entry2.getGeneName() );
+                return false;
+            }
+            if ( entry2.getCrossReferences().size() != 3 ) {
+                return false;
+            }
+            //
+            final SequenceDatabaseEntry entry3 = SequenceDbWsTools.obtainEntry( "HM043801" );
+            if ( !entry3.getAccession().equals( "HM043801" ) ) {
+                return false;
+            }
+            if ( !entry3.getTaxonomyScientificName().equals( "Bursaphelenchus xylophilus" ) ) {
+                System.out.println( entry3.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry3.getSequenceName().equals( "Bursaphelenchus xylophilus RAF gene, complete cds" ) ) {
+                System.out.println( entry3.getSequenceName() );
+                return false;
+            }
+            if ( !entry3.getTaxonomyIdentifier().equals( "6326" ) ) {
+                System.out.println( entry3.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry3.getSequenceSymbol().equals( "RAF" ) ) {
+                System.out.println( entry3.getSequenceSymbol() );
+                return false;
+            }
+            if ( !ForesterUtil.isEmpty( entry3.getGeneName() ) ) {
+                return false;
+            }
+            if ( entry3.getCrossReferences().size() != 8 ) {
+                return false;
+            }
+            //
+            //
+            final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
+            if ( !entry4.getAccession().equals( "AAA36557" ) ) {
+                return false;
+            }
+            if ( !entry4.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
+                System.out.println( entry4.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry4.getSequenceName().equals( "Homo sapiens (human) ras protein" ) ) {
+                System.out.println( entry4.getSequenceName() );
+                return false;
+            }
+            if ( !entry4.getTaxonomyIdentifier().equals( "9606" ) ) {
+                System.out.println( entry4.getTaxonomyIdentifier() );
+                return false;
+            }
+            if ( !entry4.getGeneName().equals( "ras" ) ) {
+                System.out.println( entry4.getGeneName() );
+                return false;
+            }
+            //   if ( !entry4.getChromosome().equals( "ras" ) ) {
+            //     System.out.println( entry4.getChromosome() );
+            //     return false;
+            // }
+            // if ( !entry4.getMap().equals( "ras" ) ) {
+            //     System.out.println( entry4.getMap() );
+            //     return false;
+            // }
+            //TODO FIXME gi...
+            //
+            //TODO fails:
+            //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
+            //            if ( !entry5.getAccession().equals( "HM043801" ) ) {
+            //                return false;
+            //            }
+            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "AAZ45343.1" );
+            if ( !entry5.getAccession().equals( "AAZ45343" ) ) {
+                return false;
+            }
+            if ( !entry5.getTaxonomyScientificName().equals( "Dechloromonas aromatica RCB" ) ) {
+                System.out.println( entry5.getTaxonomyScientificName() );
+                return false;
+            }
+            if ( !entry5.getSequenceName().equals( "Dechloromonas aromatica RCB 1,4-alpha-glucan branching enzyme" ) ) {
+                System.out.println( entry5.getSequenceName() );
+                return false;
+            }
+            if ( !entry5.getTaxonomyIdentifier().equals( "159087" ) ) {
+                System.out.println( entry5.getTaxonomyIdentifier() );
+                return false;
+            }
         }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( ".AY423861.2" ).equals( "AY423861.2" ) ) {
-            return false;
+        catch ( final IOException e ) {
+            System.out.println();
+            System.out.println( "the following might be due to absence internet connection:" );
+            e.printStackTrace( System.out );
+            return true;
         }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "345_.AY423861.24_345" ).equals( "AY423861.24" ) ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AAY423861" ) != null ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AY4238612" ) != null ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AAY4238612" ) != null ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "Y423861" ) != null ) {
-            return false;
-        }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "S12345" ).equals( "S12345" ) ) {
-            return false;
-        }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "|S12345|" ).equals( "S12345" ) ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "|S123456" ) != null ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "ABC123456" ) != null ) {
-            return false;
-        }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "ABC12345" ).equals( "ABC12345" ) ) {
-            return false;
-        }
-        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "&ABC12345&" ).equals( "ABC12345" ) ) {
-            return false;
-        }
-        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "ABCD12345" ) != null ) {
+        catch ( final Exception e ) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -4263,6 +4405,56 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testGenbankAccessorParsing() {
+        //The format for GenBank Accession numbers are:
+        //Nucleotide: 1 letter + 5 numerals OR 2 letters + 6 numerals
+        //Protein:    3 letters + 5 numerals
+        //http://www.ncbi.nlm.nih.gov/Sequin/acc.html
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "AY423861" ).equals( "AY423861" ) ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( ".AY423861.2" ).equals( "AY423861.2" ) ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "345_.AY423861.24_345" ).equals( "AY423861.24" ) ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AAY423861" ) != null ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AY4238612" ) != null ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "AAY4238612" ) != null ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "Y423861" ) != null ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "S12345" ).equals( "S12345" ) ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "|S12345|" ).equals( "S12345" ) ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "|S123456" ) != null ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "ABC123456" ) != null ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "ABC12345" ).equals( "ABC12345" ) ) {
+            return false;
+        }
+        if ( !SequenceAccessionTools.parseGenbankAccessorFromString( "&ABC12345&" ).equals( "ABC12345" ) ) {
+            return false;
+        }
+        if ( SequenceAccessionTools.parseGenbankAccessorFromString( "ABCD12345" ) != null ) {
             return false;
         }
         return true;
@@ -10078,6 +10270,191 @@ public final class Test {
         return true;
     }
 
+    private static boolean testSequenceDbWsTools1() {
+        try {
+            final PhylogenyNode n = new PhylogenyNode();
+            n.setName( "NP_001025424" );
+            Accession acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "340 0559 -- _NP_001025424_dsfdg15 05" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "NP_001025424.1" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            n.setName( "NM_001030253" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
+                    || !acc.getValue().equals( "NM_001030253" ) ) {
+                return false;
+            }
+            n.setName( "BCL2_HUMAN" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "BCL2_HUMAN" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "P10415" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( " P10415 " );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_P10415|" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
+                    || !acc.getValue().equals( "P10415" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AY695820" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AY695820" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AY695820_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AY695820" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AAA59452" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AAA59452_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "AAA59452.1" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "_AAA59452.1_" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAA59452.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "GI:94894583" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
+                    || !acc.getValue().equals( "94894583" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "gi|71845847|1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
+                    || !acc.getValue().equals( "71845847" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+            n.setName( "gi|71845847|gb|AAZ45343.1| 1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
+            acc = SequenceDbWsTools.obtainSeqAccession( n );
+            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
+                    || !acc.getValue().equals( "AAZ45343.1" ) ) {
+                System.out.println( acc.toString() );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testSequenceDbWsTools2() {
+        try {
+            final PhylogenyNode n1 = new PhylogenyNode( "NP_001025424" );
+            SequenceDbWsTools.obtainSeqInformation( n1 );
+            if ( !n1.getNodeData().getSequence().getName().equals( "Bcl2" ) ) {
+                return false;
+            }
+            if ( !n1.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
+                return false;
+            }
+            if ( !n1.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n1.getNodeData().getSequence().getAccession().getValue().equals( "NP_001025424" ) ) {
+                return false;
+            }
+            final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
+            SequenceDbWsTools.obtainSeqInformation( n2 );
+            if ( !n2.getNodeData().getSequence().getName()
+                    .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n2.getNodeData().getSequence().getAccession().getValue().equals( "NM_001030253" ) ) {
+                return false;
+            }
+            final PhylogenyNode n3 = new PhylogenyNode( "NM_184234.2" );
+            SequenceDbWsTools.obtainSeqInformation( n3 );
+            if ( !n3.getNodeData().getSequence().getName()
+                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getTaxonomy().getScientificName().equals( "Homo sapiens" ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
+                return false;
+            }
+            if ( !n3.getNodeData().getSequence().getAccession().getValue().equals( "NM_184234" ) ) {
+                return false;
+            }
+        }
+        catch ( final IOException e ) {
+            System.out.println();
+            System.out.println( "the following might be due to absence internet connection:" );
+            e.printStackTrace( System.out );
+            return true;
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testSequenceIdParsing() {
         try {
             Accession id = SequenceAccessionTools.parseAccessorFromString( "gb_ADF31344_segmented_worms_" );
@@ -11259,6 +11636,41 @@ public final class Test {
         return true;
     }
 
+    private static boolean testTreeCopy() {
+        try {
+            final String str_0 = "((((a,b),c),d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=animals]";
+            final Phylogeny t0 = Phylogeny.createInstanceFromNhxString( str_0 );
+            final Phylogeny t1 = t0.copy();
+            if ( !t1.toNewHampshireX().equals( t0.toNewHampshireX() ) ) {
+                return false;
+            }
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
+                return false;
+            }
+            t0.deleteSubtree( t0.getNode( "c" ), true );
+            t0.deleteSubtree( t0.getNode( "a" ), true );
+            t0.getRoot().getNodeData().getTaxonomy().setScientificName( "metazoa" );
+            t0.getNode( "b" ).setName( "Bee" );
+            if ( !t0.toNewHampshireX().equals( "((Bee,d)[&&NHX:S=lizards],e[&&NHX:S=reptiles])r[&&NHX:S=metazoa]" ) ) {
+                return false;
+            }
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
+                return false;
+            }
+            t0.deleteSubtree( t0.getNode( "e" ), true );
+            t0.deleteSubtree( t0.getNode( "Bee" ), true );
+            t0.deleteSubtree( t0.getNode( "d" ), true );
+            if ( !t1.toNewHampshireX().equals( str_0 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     private static boolean testTreeMethods() {
         try {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
@@ -11282,373 +11694,6 @@ public final class Test {
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testSequenceDbWsTools1() {
-        try {
-            final PhylogenyNode n = new PhylogenyNode();
-            n.setName( "NP_001025424" );
-            Accession acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
-                    || !acc.getValue().equals( "NP_001025424" ) ) {
-                return false;
-            }
-            n.setName( "340 0559 -- _NP_001025424_dsfdg15 05" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
-                    || !acc.getValue().equals( "NP_001025424" ) ) {
-                return false;
-            }
-            n.setName( "NP_001025424.1" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
-                    || !acc.getValue().equals( "NP_001025424" ) ) {
-                return false;
-            }
-            n.setName( "NM_001030253" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.REFSEQ.toString() )
-                    || !acc.getValue().equals( "NM_001030253" ) ) {
-                return false;
-            }
-            n.setName( "BCL2_HUMAN" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
-                    || !acc.getValue().equals( "BCL2_HUMAN" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "P10415" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
-                    || !acc.getValue().equals( "P10415" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( " P10415 " );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
-                    || !acc.getValue().equals( "P10415" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "_P10415|" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.UNIPROT.toString() )
-                    || !acc.getValue().equals( "P10415" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "AY695820" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AY695820" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "_AY695820_" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AY695820" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "AAA59452" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AAA59452" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "_AAA59452_" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AAA59452" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "AAA59452.1" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AAA59452.1" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "_AAA59452.1_" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AAA59452.1" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "GI:94894583" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
-                    || !acc.getValue().equals( "94894583" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "gi|71845847|1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.GI.toString() )
-                    || !acc.getValue().equals( "71845847" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-            n.setName( "gi|71845847|gb|AAZ45343.1| 1,4-alpha-glucan branching enzyme [Dechloromonas aromatica RCB]" );
-            acc = SequenceDbWsTools.obtainSeqAccession( n );
-            if ( ( acc == null ) || !acc.getSource().equals( Source.NCBI.toString() )
-                    || !acc.getValue().equals( "AAZ45343.1" ) ) {
-                System.out.println( acc.toString() );
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testSequenceDbWsTools2() {
-        try {
-            final PhylogenyNode n1 = new PhylogenyNode( "NP_001025424" );
-            SequenceDbWsTools.obtainSeqInformation( n1 );
-            if ( !n1.getNodeData().getSequence().getName().equals( "Bcl2" ) ) {
-                return false;
-            }
-            if ( !n1.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
-                return false;
-            }
-            if ( !n1.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
-                return false;
-            }
-            if ( !n1.getNodeData().getSequence().getAccession().getValue().equals( "NP_001025424" ) ) {
-                return false;
-            }
-            final PhylogenyNode n2 = new PhylogenyNode( "NM_001030253" );
-            SequenceDbWsTools.obtainSeqInformation( n2 );
-            if ( !n2.getNodeData().getSequence().getName()
-                    .equals( "Danio rerio B-cell leukemia/lymphoma 2 (bcl2), mRNA" ) ) {
-                return false;
-            }
-            if ( !n2.getNodeData().getTaxonomy().getScientificName().equals( "Danio rerio" ) ) {
-                return false;
-            }
-            if ( !n2.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
-                return false;
-            }
-            if ( !n2.getNodeData().getSequence().getAccession().getValue().equals( "NM_001030253" ) ) {
-                return false;
-            }
-            final PhylogenyNode n3 = new PhylogenyNode( "NM_184234.2" );
-            SequenceDbWsTools.obtainSeqInformation( n3 );
-            if ( !n3.getNodeData().getSequence().getName()
-                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
-                return false;
-            }
-            if ( !n3.getNodeData().getTaxonomy().getScientificName().equals( "Homo sapiens" ) ) {
-                return false;
-            }
-            if ( !n3.getNodeData().getSequence().getAccession().getSource().equals( Source.REFSEQ.toString() ) ) {
-                return false;
-            }
-            if ( !n3.getNodeData().getSequence().getAccession().getValue().equals( "NM_184234" ) ) {
-                return false;
-            }
-        }
-        catch ( final IOException e ) {
-            System.out.println();
-            System.out.println( "the following might be due to absence internet connection:" );
-            e.printStackTrace( System.out );
-            return true;
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean testEbiEntryRetrieval() {
-        try {
-            final SequenceDatabaseEntry entry = SequenceDbWsTools.obtainEntry( "AAK41263" );
-            if ( !entry.getAccession().equals( "AAK41263" ) ) {
-                System.out.println( entry.getAccession() );
-                return false;
-            }
-            if ( !entry.getTaxonomyScientificName().equals( "Sulfolobus solfataricus P2" ) ) {
-                System.out.println( entry.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry.getSequenceName()
-                    .equals( "Sulfolobus solfataricus P2 Glycogen debranching enzyme, hypothetical (treX-like)" ) ) {
-                System.out.println( entry.getSequenceName() );
-                return false;
-            }
-            // if ( !entry.getSequenceSymbol().equals( "" ) ) {
-            //     System.out.println( entry.getSequenceSymbol() );
-            //     return false;
-            // }
-            if ( !entry.getGeneName().equals( "treX-like" ) ) {
-                System.out.println( entry.getGeneName() );
-                return false;
-            }
-            if ( !entry.getTaxonomyIdentifier().equals( "273057" ) ) {
-                System.out.println( entry.getTaxonomyIdentifier() );
-                return false;
-            }
-            if ( !entry.getAnnotations().first().getRefValue().equals( "3.2.1.33" ) ) {
-                System.out.println( entry.getAnnotations().first().getRefValue() );
-                return false;
-            }
-            if ( !entry.getAnnotations().first().getRefSource().equals( "EC" ) ) {
-                System.out.println( entry.getAnnotations().first().getRefSource() );
-                return false;
-            }
-            if ( entry.getCrossReferences().size() != 5 ) {
-                return false;
-            }
-            //
-            final SequenceDatabaseEntry entry1 = SequenceDbWsTools.obtainEntry( "ABJ16409" );
-            if ( !entry1.getAccession().equals( "ABJ16409" ) ) {
-                return false;
-            }
-            if ( !entry1.getTaxonomyScientificName().equals( "Felis catus" ) ) {
-                System.out.println( entry1.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry1.getSequenceName().equals( "Felis catus (domestic cat) partial BCL2" ) ) {
-                System.out.println( entry1.getSequenceName() );
-                return false;
-            }
-            if ( !entry1.getTaxonomyIdentifier().equals( "9685" ) ) {
-                System.out.println( entry1.getTaxonomyIdentifier() );
-                return false;
-            }
-            if ( !entry1.getGeneName().equals( "BCL2" ) ) {
-                System.out.println( entry1.getGeneName() );
-                return false;
-            }
-            if ( entry1.getCrossReferences().size() != 6 ) {
-                return false;
-            }
-            //
-            final SequenceDatabaseEntry entry2 = SequenceDbWsTools.obtainEntry( "NM_184234" );
-            if ( !entry2.getAccession().equals( "NM_184234" ) ) {
-                return false;
-            }
-            if ( !entry2.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
-                System.out.println( entry2.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry2.getSequenceName()
-                    .equals( "Homo sapiens RNA binding motif protein 39 (RBM39), transcript variant 1, mRNA" ) ) {
-                System.out.println( entry2.getSequenceName() );
-                return false;
-            }
-            if ( !entry2.getTaxonomyIdentifier().equals( "9606" ) ) {
-                System.out.println( entry2.getTaxonomyIdentifier() );
-                return false;
-            }
-            if ( !entry2.getGeneName().equals( "RBM39" ) ) {
-                System.out.println( entry2.getGeneName() );
-                return false;
-            }
-            if ( entry2.getCrossReferences().size() != 3 ) {
-                return false;
-            }
-            //
-            final SequenceDatabaseEntry entry3 = SequenceDbWsTools.obtainEntry( "HM043801" );
-            if ( !entry3.getAccession().equals( "HM043801" ) ) {
-                return false;
-            }
-            if ( !entry3.getTaxonomyScientificName().equals( "Bursaphelenchus xylophilus" ) ) {
-                System.out.println( entry3.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry3.getSequenceName().equals( "Bursaphelenchus xylophilus RAF gene, complete cds" ) ) {
-                System.out.println( entry3.getSequenceName() );
-                return false;
-            }
-            if ( !entry3.getTaxonomyIdentifier().equals( "6326" ) ) {
-                System.out.println( entry3.getTaxonomyIdentifier() );
-                return false;
-            }
-            if ( !entry3.getSequenceSymbol().equals( "RAF" ) ) {
-                System.out.println( entry3.getSequenceSymbol() );
-                return false;
-            }
-            if ( !ForesterUtil.isEmpty( entry3.getGeneName() ) ) {
-                return false;
-            }
-            if ( entry3.getCrossReferences().size() != 8 ) {
-                return false;
-            }
-            //
-            //
-            final SequenceDatabaseEntry entry4 = SequenceDbWsTools.obtainEntry( "AAA36557.1" );
-            if ( !entry4.getAccession().equals( "AAA36557" ) ) {
-                return false;
-            }
-            if ( !entry4.getTaxonomyScientificName().equals( "Homo sapiens" ) ) {
-                System.out.println( entry4.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry4.getSequenceName().equals( "Homo sapiens (human) ras protein" ) ) {
-                System.out.println( entry4.getSequenceName() );
-                return false;
-            }
-            if ( !entry4.getTaxonomyIdentifier().equals( "9606" ) ) {
-                System.out.println( entry4.getTaxonomyIdentifier() );
-                return false;
-            }
-            if ( !entry4.getGeneName().equals( "ras" ) ) {
-                System.out.println( entry4.getGeneName() );
-                return false;
-            }
-            //   if ( !entry4.getChromosome().equals( "ras" ) ) {
-            //     System.out.println( entry4.getChromosome() );
-            //     return false;
-            // }
-            // if ( !entry4.getMap().equals( "ras" ) ) {
-            //     System.out.println( entry4.getMap() );
-            //     return false;
-            // }
-            //TODO FIXME gi...
-            //
-            //TODO fails:
-            //            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "M30539" );
-            //            if ( !entry5.getAccession().equals( "HM043801" ) ) {
-            //                return false;
-            //            }
-            final SequenceDatabaseEntry entry5 = SequenceDbWsTools.obtainEntry( "AAZ45343.1" );
-            if ( !entry5.getAccession().equals( "AAZ45343" ) ) {
-                return false;
-            }
-            if ( !entry5.getTaxonomyScientificName().equals( "Dechloromonas aromatica RCB" ) ) {
-                System.out.println( entry5.getTaxonomyScientificName() );
-                return false;
-            }
-            if ( !entry5.getSequenceName().equals( "Dechloromonas aromatica RCB 1,4-alpha-glucan branching enzyme" ) ) {
-                System.out.println( entry5.getSequenceName() );
-                return false;
-            }
-            if ( !entry5.getTaxonomyIdentifier().equals( "159087" ) ) {
-                System.out.println( entry5.getTaxonomyIdentifier() );
-                return false;
-            }
-        }
-        catch ( final IOException e ) {
-            System.out.println();
-            System.out.println( "the following might be due to absence internet connection:" );
-            e.printStackTrace( System.out );
-            return true;
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
             return false;
         }
         return true;
