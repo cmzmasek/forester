@@ -141,6 +141,15 @@ public class ArchaeopteryxA extends JApplet {
                     .isValidatePhyloXmlAgainstSchema(), configuration.isReplaceUnderscoresInNhParsing(), configuration
                     .isInternalNumberAreConfidenceForNhParsing(), configuration.getTaxonomyExtraction(), configuration
                     .isMidpointReroot() );
+            if ( phys == null ) {
+                ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + tree_url + "] are null" );
+            }
+            else if ( phys.length < 1 ) {
+                ForesterUtil.printErrorMessage( NAME, "phylogenies from [" + tree_url + "] are empty" );
+            }
+            else {
+                AptxUtil.printAppletMessage( NAME, "loaded " + phys.length + " phylogenies from: " + tree_url );
+            }
             AptxUtil.printAppletMessage( ArchaeopteryxA.NAME, "loaded " + phys.length + " phylogenies from: "
                     + tree_url );
             AptxUtil.addPhylogeniesToTabs( phys,

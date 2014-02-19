@@ -709,18 +709,17 @@ public final class AptxUtil {
         }
         AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
         final Phylogeny[] phys = factory.create( url.openStream(), parser );
-        for( final Phylogeny phy : phys ) {
-            System.out.println( phy.toString() );
-        }
-        if ( nhx_or_nexus && internal_numbers_are_confidences ) {
-            for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+        if ( phys != null ) {
+            if ( nhx_or_nexus && internal_numbers_are_confidences ) {
+                for( final Phylogeny phy : phys ) {
+                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                }
             }
-        }
-        if ( midpoint_reroot ) {
-            for( final Phylogeny phy : phys ) {
-                PhylogenyMethods.midpointRoot( phy );
-                PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+            if ( midpoint_reroot ) {
+                for( final Phylogeny phy : phys ) {
+                    PhylogenyMethods.midpointRoot( phy );
+                    PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+                }
             }
         }
         return phys;

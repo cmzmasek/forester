@@ -958,6 +958,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "phyloXML parsing from URL: " );
+        if ( Test.testPhyloXMLparsingFromURL() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
@@ -1071,6 +1080,22 @@ public final class Test {
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
             return false;
+        }
+        return true;
+    }
+
+    public static final boolean testPhyloXMLparsingFromURL() {
+        try {
+            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/archaeopteryx_a/apaf_bcl2.xml";
+            final URL u = new URL( s );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), PhyloXmlParser.createPhyloXmlParser() );
+            if ( ( phys == null ) || ( phys.length != 2 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
         }
         return true;
     }
