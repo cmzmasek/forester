@@ -78,6 +78,11 @@
 			          org/forester/test/**
 			          org/forester/tools/**"
 			          duplicate="fail" index="true">
+			<manifest>
+                <attribute name="Permissions" value="all-permissions" />
+                <attribute name="Codebase" value="*" />
+                <attribute name="Application-Name" value="Archaeopteryx" />
+            </manifest>
 		</jar>
 	</target>
 
