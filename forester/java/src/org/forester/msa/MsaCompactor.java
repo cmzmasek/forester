@@ -4,6 +4,10 @@ package org.forester.msa;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -90,7 +94,7 @@ public class MsaCompactor {
     }
 
     final private void mafft() throws IOException, InterruptedException {
-        final MsaInferrer mafft = Mafft.createInstance( "/home/czmasek/bin/mafft" );
+        final MsaInferrer mafft = Mafft.createInstance( "mafft" );
         final List<String> opts = new ArrayList<String>();
         // opts.add( "--maxiterate" );
         // opts.add( "1000" );
@@ -186,18 +190,30 @@ public class MsaCompactor {
     }
 
     final private DescriptiveStatistics[] calcStats() {
-        final DescriptiveStatistics stats[] = calc();
-        sort( stats );
-        for( final DescriptiveStatistics s : stats ) {
+        final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setDecimalSeparator( '.' );
+        final NumberFormat f = new DecimalFormat( "#.####", dfs );
+        f.setRoundingMode( RoundingMode.HALF_UP );
+        final DescriptiveStatistics stats[] = calcGapContribtions();
+        Arrays.sort( stats, new DescriptiveStatisticsComparator( false, SORT_BY.MEAN ) );
+        for( final DescriptiveStatistics stat : stats ) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append( stat.getDescription() );
+            sb.append( "\t" );
+            sb.append( f.format( stat.arithmeticMean() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.median() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.getMin() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.getMax() ) );
+            sb.append( "\t" );
+            System.out.println( sb );
         }
         return stats;
     }
 
-    private final static void sort( final DescriptiveStatistics stats[] ) {
-        Arrays.sort( stats, new DescriptiveStatisticsComparator( false, SORT_BY.MAX ) );
-    }
-
-    private final DescriptiveStatistics[] calc() {
+    private final DescriptiveStatistics[] calcGapContribtions() {
         final double gappiness[] = calcGappiness();
         final DescriptiveStatistics stats[] = new DescriptiveStatistics[ _msa.getNumberOfSequences() ];
         for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
@@ -212,9 +228,10 @@ public class MsaCompactor {
     }
 
     private final double[] calcGappiness() {
-        final double gappiness[] = new double[ _msa.getLength() ];
+        final int l = _msa.getLength();
+        final double gappiness[] = new double[ l ];
         final int seqs = _msa.getNumberOfSequences();
-        for( int i = 0; i < gappiness.length; ++i ) {
+        for( int i = 0; i < l; ++i ) {
             gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
         }
         return gappiness;

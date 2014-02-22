@@ -25,10 +25,10 @@ public class msa_compactor {
     final static private String REALIGN_OPTION                = "r";
     final static private String PRG_NAME                      = "msa_compactor";
     final static private String PRG_DESC                      = "multiple sequnce aligment compactor";
-    final static private String PRG_VERSION                   = "0.90";
-    final static private String PRG_DATE                      = "2012.07.13";
+    final static private String PRG_VERSION                   = "0.01";
+    final static private String PRG_DATE                      = "140221";
     final static private String E_MAIL                        = "phylosoft@gmail.com";
-    final static private String WWW                           = "www.phylosoft.org/forester/";
+    final static private String WWW                           = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
         try {
@@ -120,10 +120,6 @@ public class msa_compactor {
         System.out.println();
         System.out.println( " options: " );
         System.out.println();
-        //        System.out.println( "   -" + FROM_OPTION + "=<integer>: from (msa column)" );
-        //        System.out.println( "   -" + TO_OPTION + "=<integer>: to (msa column)" );
-        //        System.out.println( "    or" );
-        //        System.out.println( "   -" + WINDOW_OPTION + "=<integer>: window size (msa columns)" );
         System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION + "=<integer>: step size (msa columns)" );
         System.out.println();
         System.out.println();
