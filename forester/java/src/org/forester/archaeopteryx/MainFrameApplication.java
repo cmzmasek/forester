@@ -531,6 +531,9 @@ public final class MainFrameApplication extends MainFrame {
                 }
                 updateOptions( getOptions() );
             }
+            else if ( o == _allow_errors_in_distance_to_parent_cbmi ) {
+                updateOptions( getOptions() );
+            }
             else if ( o == _collapse_below_threshold ) {
                 if ( isSubtreeDisplayed() ) {
                     return;
@@ -937,6 +940,8 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu
                 .add( _internal_number_are_confidence_for_nh_parsing_cbmi = new JCheckBoxMenuItem( "Internal Node Names are Confidence Values" ) );
         _options_jmenu.add( _replace_underscores_cbmi = new JCheckBoxMenuItem( "Replace Underscores with Spaces" ) );
+        _options_jmenu
+                .add( _allow_errors_in_distance_to_parent_cbmi = new JCheckBoxMenuItem( "Ignore Distance Value Format Errors" ) );
         //
         _options_jmenu.add( _extract_taxonomy_no_rbmi = new JRadioButtonMenuItem( "No Taxonomy Extraction" ) );
         _options_jmenu
@@ -1009,6 +1014,8 @@ public final class MainFrameApplication extends MainFrame {
         customizeRadioButtonMenuItem( _extract_taxonomy_agressive_rbmi,
                                       getOptions().getTaxonomyExtraction() == TAXONOMY_EXTRACTION.AGGRESSIVE );
         customizeCheckBoxMenuItem( _replace_underscores_cbmi, getOptions().isReplaceUnderscoresInNhParsing() );
+        customizeCheckBoxMenuItem( _allow_errors_in_distance_to_parent_cbmi, getOptions()
+                .isReplaceUnderscoresInNhParsing() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
         customizeCheckBoxMenuItem( _graphics_export_visible_only_cbmi, getOptions().isGraphicsExportVisibleOnly() );
@@ -2338,6 +2345,7 @@ public final class MainFrameApplication extends MainFrame {
     private void setSpecialOptionsForNhxParser( final NHXParser nhx ) {
         nhx.setReplaceUnderscores( getOptions().isReplaceUnderscoresInNhParsing() );
         nhx.setTaxonomyExtraction( getOptions().getTaxonomyExtraction() );
+        nhx.setAllowErrorsInDistanceToParent( getOptions().isAllowErrorsInDistanceToParent() );
     }
 
     private void writeAllToFile() {

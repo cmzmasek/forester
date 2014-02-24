@@ -42,48 +42,49 @@ import org.forester.util.ForesterUtil;
 final public class Options {
 
     static final double                       MIN_CONFIDENCE_DEFAULT = 0.0;
-    private boolean                           _color_by_taxonomic_group;
-    private boolean                           _show_branch_length_values;
-    private boolean                           _internal_number_are_confidence_for_nh_parsing;
-    private boolean                           _show_scale;
-    private boolean                           _show_overview;
-    private boolean                           _antialias_screen;
+    private boolean                           _abbreviate_scientific_names;
+    private boolean                           _allow_errors_in_distance_to_parent;
     private boolean                           _antialias_print;
+    private boolean                           _antialias_screen;
+    private boolean                           _background_color_gradient;
+    private Font                              _base_font;
+    private CLADOGRAM_TYPE                    _cladogram_type;
+    private boolean                           _color_by_taxonomic_group;
+    private boolean                           _color_labels_same_as_parent_branch;
+    private NodeVisualization.NodeFill        _default_node_fill;
+    private NodeVisualization.NodeShape       _default_node_shape;
+    private short                             _default_node_shape_size;
+    private boolean                           _editable;
+    private NODE_DATA                         _ext_desc_data_to_return;
+    private boolean                           _graphics_export_using_actual_size;
     private boolean                           _graphics_export_visible_only;
+    private boolean                           _internal_number_are_confidence_for_nh_parsing;
+    private boolean                           _inverse_search_result;
+    private boolean                           _match_whole_terms_only;
+    private double                            _min_confidence_value;
+    private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
+    private boolean                           _nh_parsing_replace_underscores;
+    private NODE_LABEL_DIRECTION              _node_label_direction;
+    private short                             _number_of_digits_after_comma_for_branch_length_values;
+    private short                             _number_of_digits_after_comma_for_confidence_values;
+    private OVERVIEW_PLACEMENT_TYPE           _ov_placement;
+    private PHYLOGENY_GRAPHICS_TYPE           _phylogeny_graphics_type;
+    private boolean                           _print_black_and_white;
+    private float                             _print_line_width;
     private int                               _print_size_x;
     private int                               _print_size_y;
-    private double                            _min_confidence_value;
-    private boolean                           _print_black_and_white;
     private boolean                           _print_using_actual_size;
-    private boolean                           _graphics_export_using_actual_size;
-    private PHYLOGENY_GRAPHICS_TYPE           _phylogeny_graphics_type;
-    private CLADOGRAM_TYPE                    _cladogram_type;
-    private OVERVIEW_PLACEMENT_TYPE           _ov_placement;
-    private NODE_LABEL_DIRECTION              _node_label_direction;
-    private Font                              _base_font;
-    private boolean                           _match_whole_terms_only;
-    private boolean                           _search_case_sensitive;
-    private float                             _print_line_width;
-    private boolean                           _inverse_search_result;
     private double                            _scale_bar_length;
-    private short                             _number_of_digits_after_comma_for_confidence_values;
-    private short                             _number_of_digits_after_comma_for_branch_length_values;
-    private boolean                           _nh_parsing_replace_underscores;
-    private TAXONOMY_EXTRACTION               _taxonomy_extraction;
-    private boolean                           _editable;
-    private boolean                           _background_color_gradient;
-    private boolean                           _show_domain_labels;
+    private boolean                           _search_case_sensitive;
     private boolean                           _show_annotation_ref_source;
-    private boolean                           _color_labels_same_as_parent_branch;
-    private boolean                           _abbreviate_scientific_names;
-    private NodeVisualization.NodeShape       _default_node_shape;
-    private NodeVisualization.NodeFill        _default_node_fill;
-    private short                             _default_node_shape_size;
-    private boolean                           _show_default_node_shapes_internal;
-    private boolean                           _show_default_node_shapes_external;
+    private boolean                           _show_branch_length_values;
     private boolean                           _show_confidence_stddev;
-    private NH_CONVERSION_SUPPORT_VALUE_STYLE _nh_conversion_support_value_style;
-    private NODE_DATA                         _ext_desc_data_to_return;
+    private boolean                           _show_default_node_shapes_external;
+    private boolean                           _show_default_node_shapes_internal;
+    private boolean                           _show_domain_labels;
+    private boolean                           _show_overview;
+    private boolean                           _show_scale;
+    private TAXONOMY_EXTRACTION               _taxonomy_extraction;
 
     private Options() {
         init();
@@ -93,16 +94,24 @@ final public class Options {
         return _ext_desc_data_to_return;
     }
 
-    public final boolean isShowDomainLabels() {
-        return _show_domain_labels;
+    public boolean isAllowErrorsInDistanceToParent() {
+        return _allow_errors_in_distance_to_parent;
+    }
+
+    public boolean isAllowFontSizeChange() {
+        return true;
     }
 
     public final boolean isShowAnnotationRefSource() {
         return _show_annotation_ref_source;
     }
 
-    public final void setShowAnnotationRefSource( final boolean show_annotation_ref_source ) {
-        _show_annotation_ref_source = show_annotation_ref_source;
+    public final boolean isShowDomainLabels() {
+        return _show_domain_labels;
+    }
+
+    public final void setAllowErrorsInDistanceToParent( final boolean allow_errors_in_distance_to_parent ) {
+        _allow_errors_in_distance_to_parent = allow_errors_in_distance_to_parent;
     }
 
     public void setBackgroundColorGradient( final boolean background_color_gradient ) {
@@ -115,6 +124,10 @@ final public class Options {
 
     public void setExtDescNodeDataToReturn( final NODE_DATA ext_desc_data_to_return ) {
         _ext_desc_data_to_return = ext_desc_data_to_return;
+    }
+
+    public final void setShowAnnotationRefSource( final boolean show_annotation_ref_source ) {
+        _show_annotation_ref_source = show_annotation_ref_source;
     }
 
     public void setShowDomainLabels( final boolean show_domain_labels ) {
@@ -209,6 +222,10 @@ final public class Options {
         return _background_color_gradient;
     }
 
+    final boolean isColorByTaxonomicGroup() {
+        return _color_by_taxonomic_group;
+    }
+
     final boolean isColorLabelsSameAsParentBranch() {
         return _color_labels_same_as_parent_branch;
     }
@@ -257,10 +274,6 @@ final public class Options {
         return _show_branch_length_values;
     }
 
-    final boolean isColorByTaxonomicGroup() {
-        return _color_by_taxonomic_group;
-    }
-
     boolean isShowConfidenceStddev() {
         return _show_confidence_stddev;
     }
@@ -299,6 +312,10 @@ final public class Options {
 
     final void setCladogramType( final CLADOGRAM_TYPE cladogram_type ) {
         _cladogram_type = cladogram_type;
+    }
+
+    final void setColorByTaxonomicGroup( final boolean color_by_taxonomic_group ) {
+        _color_by_taxonomic_group = color_by_taxonomic_group;
     }
 
     final void setDefaultNodeFill( final NodeFill default_node_fill ) {
@@ -397,10 +414,6 @@ final public class Options {
 
     final void setShowBranchLengthValues( final boolean show_branch_length_values ) {
         _show_branch_length_values = show_branch_length_values;
-    }
-
-    final void setColorByTaxonomicGroup( final boolean color_by_taxonomic_group ) {
-        _color_by_taxonomic_group = color_by_taxonomic_group;
     }
 
     void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
@@ -548,6 +561,7 @@ final public class Options {
             if ( configuration.getExtDescNodeDataToReturn() != null ) {
                 instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
             }
+            instance.setAllowErrorsInDistanceToParent( false );
         }
         return instance;
     }
@@ -557,7 +571,7 @@ final public class Options {
     }
 
     public static enum CLADOGRAM_TYPE {
-        NON_LINED_UP, EXT_NODE_SUM_DEP, TOTAL_NODE_SUM_DEP;
+        EXT_NODE_SUM_DEP, NON_LINED_UP, TOTAL_NODE_SUM_DEP;
     }
 
     public static enum NODE_LABEL_DIRECTION {
@@ -565,14 +579,14 @@ final public class Options {
     }
 
     public static enum PHYLOGENY_GRAPHICS_TYPE {
-        RECTANGULAR, TRIANGULAR, EURO_STYLE, ROUNDED, CONVEX, CURVED, UNROOTED, CIRCULAR;
+        CIRCULAR, CONVEX, CURVED, EURO_STYLE, RECTANGULAR, ROUNDED, TRIANGULAR, UNROOTED;
     }
 
     static enum OVERVIEW_PLACEMENT_TYPE {
-        UPPER_LEFT( "upper left" ),
-        UPPER_RIGHT( "upper right" ),
         LOWER_LEFT( "lower left" ),
-        LOWER_RIGHT( "lower right" );
+        LOWER_RIGHT( "lower right" ),
+        UPPER_LEFT( "upper left" ),
+        UPPER_RIGHT( "upper right" );
 
         private final String _name;
 
@@ -588,9 +602,5 @@ final public class Options {
         public String toTag() {
             return toString().replaceAll( " ", "_" );
         }
-    }
-
-    public boolean isAllowFontSizeChange() {
-        return true;
     }
 }

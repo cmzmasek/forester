@@ -208,6 +208,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem        _extract_taxonomy_pfam_strict_rbmi;
     JRadioButtonMenuItem        _extract_taxonomy_pfam_relaxed_rbmi;
     JCheckBoxMenuItem           _replace_underscores_cbmi;
+    JCheckBoxMenuItem           _allow_errors_in_distance_to_parent_cbmi;
     JCheckBoxMenuItem           _use_brackets_for_conf_in_nh_export_cbmi;
     JCheckBoxMenuItem           _use_internal_names_for_conf_in_nh_export_cbmi;
     // _  search
@@ -1344,6 +1345,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         options.setReplaceUnderscoresInNhParsing( ( _replace_underscores_cbmi != null )
                 && _replace_underscores_cbmi.isSelected() );
+        options.setAllowErrorsInDistanceToParent( ( _allow_errors_in_distance_to_parent_cbmi != null )
+                && _allow_errors_in_distance_to_parent_cbmi.isSelected() );
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
                 && _search_whole_words_only_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )
