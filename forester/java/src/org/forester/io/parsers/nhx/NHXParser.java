@@ -678,7 +678,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                         node_to_annotate.getNodeData().getSequence().setName( s.substring( 3 ) );
                     }
                     else if ( s.indexOf( '=' ) < 0 ) {
-                        if ( node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
+                        if ( node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT
+                                && !allow_errors_in_distance_to_parent ) {
                             throw new NHXFormatException( "error in NHX formatted data: more than one distance to parent:"
                                     + "\"" + s + "\"" );
                         }
