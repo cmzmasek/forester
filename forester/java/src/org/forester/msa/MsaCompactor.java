@@ -23,84 +23,105 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    private static final boolean VERBOSE = true;
-
-    public static enum SORT_BY {
-        MAX, MEAN, MEDIAN;
+    final private static NumberFormat NF_3    = new DecimalFormat( "#.###" );
+    private static final boolean      VERBOSE = true;
+    private Msa                       _msa;
+    private final SortedSet<String>   _removed_seq_ids;
+    static {
+        NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
-    private Msa                     _msa;
-    private final SortedSet<String> _removed_seq_ids;
 
     private MsaCompactor( final Msa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
     }
 
-    final public SortedSet<String> getRemovedSeqIds() {
-        return _removed_seq_ids;
-    }
-
     final public Msa getMsa() {
         return _msa;
     }
 
-    public final static MsaCompactor removeWorstOffenders( final Msa msa,
-                                                           final int worst_offenders_to_remove,
-                                                           final boolean realign ) throws IOException,
-            InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
-        mc.removeWorstOffenders( worst_offenders_to_remove, 1, realign );
-        return mc;
+    final public SortedSet<String> getRemovedSeqIds() {
+        return _removed_seq_ids;
     }
 
-    public final static MsaCompactor reduceGapAverage( final Msa msa,
-                                                       final double max_gap_average,
-                                                       final int step,
-                                                       final boolean realign,
-                                                       final File out,
-                                                       final int minimal_effective_length ) throws IOException,
-            InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
-        mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
-        return mc;
+    final public void writeMsa( final File outfile, final MSA_FORMAT format, final String suffix ) throws IOException {
+        final Double gr = MsaMethods.calcGapRatio( _msa );
+        writeMsa( outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
+                          + ForesterUtil.roundToInt( gr * 100 ) + suffix,
+                  format );
     }
 
-    public final static MsaCompactor reduceLength( final Msa msa,
-                                                   final int length,
-                                                   final int step,
-                                                   final boolean realign ) throws IOException, InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
-        mc.removeViaLength( length, step, realign );
-        return mc;
+    private final DescriptiveStatistics[] calcGapContribtions() {
+        final double gappiness[] = calcGappiness();
+        final DescriptiveStatistics stats[] = new DescriptiveStatistics[ _msa.getNumberOfSequences() ];
+        for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
+            stats[ row ] = new BasicDescriptiveStatistics( _msa.getIdentifier( row ) );
+            for( int col = 0; col < _msa.getLength(); ++col ) {
+                if ( _msa.getResidueAt( row, col ) != Sequence.GAP ) {
+                    stats[ row ].addValue( gappiness[ col ] );
+                }
+            }
+        }
+        return stats;
+    }
+
+    private final double[] calcGappiness() {
+        final int l = _msa.getLength();
+        final double gappiness[] = new double[ l ];
+        final int seqs = _msa.getNumberOfSequences();
+        for( int i = 0; i < l; ++i ) {
+            gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
+        }
+        return gappiness;
+    }
+
+    final private DescriptiveStatistics[] calcStats() {
+        final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setDecimalSeparator( '.' );
+        final NumberFormat f = new DecimalFormat( "#.####", dfs );
+        f.setRoundingMode( RoundingMode.HALF_UP );
+        final DescriptiveStatistics stats[] = calcGapContribtions();
+        Arrays.sort( stats, new DescriptiveStatisticsComparator( false, SORT_BY.MEAN ) );
+        for( final DescriptiveStatistics stat : stats ) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append( stat.getDescription() );
+            sb.append( "\t" );
+            sb.append( f.format( stat.arithmeticMean() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.median() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.getMin() ) );
+            sb.append( "\t" );
+            sb.append( f.format( stat.getMax() ) );
+            sb.append( "\t" );
+            System.out.println( sb );
+        }
+        return stats;
+    }
+
+    final private void mafft() throws IOException, InterruptedException {
+        final MsaInferrer mafft = Mafft
+                .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
+        final List<String> opts = new ArrayList<String>();
+        opts.add( "--maxiterate" );
+        opts.add( "1000" );
+        opts.add( "--localpair" );
+        opts.add( "--quiet" );
+        _msa = mafft.infer( _msa.asSequenceList(), opts );
+    }
+
+    private StringBuilder msaStatsAsSB() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( _msa.getNumberOfSequences() );
+        sb.append( "\t" );
+        sb.append( _msa.getLength() );
+        sb.append( "\t" );
+        sb.append( NF_3.format( MsaMethods.calcGapRatio( _msa ) ) );
+        return sb;
     }
 
     final private void removeGapColumns() {
         _msa = MsaMethods.createInstance().removeGapColumns( 1, 0, _msa );
-    }
-
-    final private void removeWorstOffenders( final int to_remove, final int step, final boolean realign )
-            throws IOException, InterruptedException {
-        final DescriptiveStatistics stats[] = calcStats();
-        final List<String> to_remove_ids = new ArrayList<String>();
-        for( int j = 0; j < to_remove; ++j ) {
-            to_remove_ids.add( stats[ j ].getDescription() );
-            _removed_seq_ids.add( stats[ j ].getDescription() );
-        }
-        _msa = MsaMethods.removeSequences( _msa, to_remove_ids );
-        removeGapColumns();
-        if ( realign ) {
-            mafft();
-        }
-    }
-
-    final private void mafft() throws IOException, InterruptedException {
-        final MsaInferrer mafft = Mafft.createInstance( "mafft" );
-        final List<String> opts = new ArrayList<String>();
-        // opts.add( "--maxiterate" );
-        // opts.add( "1000" );
-        // opts.add( "--localpair" );
-        opts.add( "--quiet" );
-        _msa = mafft.infer( _msa.asSequenceList(), opts );
     }
 
     final private void removeViaGapAverage( final double mean_gapiness,
@@ -135,34 +156,12 @@ public class MsaCompactor {
             if ( VERBOSE ) {
                 System.out.println( counter + ": " + msaStatsAsSB() );
             }
-            write( outfile, gr );
+            //   write( outfile, gr );
             counter += step;
         } while ( gr > mean_gapiness );
         if ( VERBOSE ) {
             System.out.println( "final: " + msaStatsAsSB() );
         }
-    }
-
-    final private void write( final File outfile, final double gr ) throws IOException {
-        writeMsa( outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
-                + ForesterUtil.roundToInt( gr * 100 ) + ".fasta" );
-    }
-
-    final private void writeMsa( final String outfile ) throws IOException {
-        final Writer w = ForesterUtil.createBufferedWriter( outfile );
-        _msa.write( w, MSA_FORMAT.FASTA );
-        w.close();
-    }
-
-    final private StringBuilder msaStatsAsSB() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( _msa.getLength() );
-        sb.append( "\t" );
-        sb.append( _msa.getNumberOfSequences() );
-        sb.append( "\t" );
-        sb.append( ForesterUtil.round( MsaMethods.calcGapRatio( _msa ), 4 ) );
-        sb.append( "\t" );
-        return sb;
     }
 
     final private void removeViaLength( final int length, final int step, final boolean realign ) throws IOException,
@@ -189,52 +188,69 @@ public class MsaCompactor {
         }
     }
 
-    final private DescriptiveStatistics[] calcStats() {
-        final DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-        dfs.setDecimalSeparator( '.' );
-        final NumberFormat f = new DecimalFormat( "#.####", dfs );
-        f.setRoundingMode( RoundingMode.HALF_UP );
-        final DescriptiveStatistics stats[] = calcGapContribtions();
-        Arrays.sort( stats, new DescriptiveStatisticsComparator( false, SORT_BY.MEAN ) );
-        for( final DescriptiveStatistics stat : stats ) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append( stat.getDescription() );
-            sb.append( "\t" );
-            sb.append( f.format( stat.arithmeticMean() ) );
-            sb.append( "\t" );
-            sb.append( f.format( stat.median() ) );
-            sb.append( "\t" );
-            sb.append( f.format( stat.getMin() ) );
-            sb.append( "\t" );
-            sb.append( f.format( stat.getMax() ) );
-            sb.append( "\t" );
+    final private void removeWorstOffenders( final int to_remove, final int step, final boolean realign )
+            throws IOException, InterruptedException {
+        final DescriptiveStatistics stats[] = calcStats();
+        final List<String> to_remove_ids = new ArrayList<String>();
+        for( int j = 0; j < to_remove; ++j ) {
+            to_remove_ids.add( stats[ j ].getDescription() );
+            _removed_seq_ids.add( stats[ j ].getDescription() );
+        }
+        //TODO if verbose/interactve
+        for( final String id : to_remove_ids ) {
+            _msa = MsaMethods.removeSequence( _msa, id );
+            removeGapColumns();
+            System.out.print( id );
+            System.out.print( "\t" );
+            final StringBuilder sb = msaStatsAsSB();
             System.out.println( sb );
         }
-        return stats;
+        //TODO else:
+        //_msa = MsaMethods.removeSequences( _msa, to_remove_ids );
+        //removeGapColumns();
+        if ( realign ) {
+            mafft();
+        }
     }
 
-    private final DescriptiveStatistics[] calcGapContribtions() {
-        final double gappiness[] = calcGappiness();
-        final DescriptiveStatistics stats[] = new DescriptiveStatistics[ _msa.getNumberOfSequences() ];
-        for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
-            stats[ row ] = new BasicDescriptiveStatistics( _msa.getIdentifier( row ) );
-            for( int col = 0; col < _msa.getLength(); ++col ) {
-                if ( _msa.getResidueAt( row, col ) != Sequence.GAP ) {
-                    stats[ row ].addValue( gappiness[ col ] );
-                }
-            }
-        }
-        return stats;
+    final private void writeMsa( final String outfile, final MSA_FORMAT format ) throws IOException {
+        final Writer w = ForesterUtil.createBufferedWriter( outfile );
+        _msa.write( w, format );
+        w.close();
     }
 
-    private final double[] calcGappiness() {
-        final int l = _msa.getLength();
-        final double gappiness[] = new double[ l ];
-        final int seqs = _msa.getNumberOfSequences();
-        for( int i = 0; i < l; ++i ) {
-            gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
-        }
-        return gappiness;
+    public final static MsaCompactor reduceGapAverage( final Msa msa,
+                                                       final double max_gap_average,
+                                                       final int step,
+                                                       final boolean realign,
+                                                       final File out,
+                                                       final int minimal_effective_length ) throws IOException,
+            InterruptedException {
+        final MsaCompactor mc = new MsaCompactor( msa );
+        mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
+        return mc;
+    }
+
+    public final static MsaCompactor reduceLength( final Msa msa,
+                                                   final int length,
+                                                   final int step,
+                                                   final boolean realign ) throws IOException, InterruptedException {
+        final MsaCompactor mc = new MsaCompactor( msa );
+        mc.removeViaLength( length, step, realign );
+        return mc;
+    }
+
+    public final static MsaCompactor removeWorstOffenders( final Msa msa,
+                                                           final int worst_offenders_to_remove,
+                                                           final boolean realign ) throws IOException,
+            InterruptedException {
+        final MsaCompactor mc = new MsaCompactor( msa );
+        mc.removeWorstOffenders( worst_offenders_to_remove, 1, realign );
+        return mc;
+    }
+
+    public static enum SORT_BY {
+        MAX, MEAN, MEDIAN;
     }
 
     final static class DescriptiveStatisticsComparator implements Comparator<DescriptiveStatistics> {

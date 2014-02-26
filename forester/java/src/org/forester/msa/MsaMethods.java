@@ -72,6 +72,19 @@ public final class MsaMethods {
         return gap_rows;
     }
 
+    final public static Msa removeSequence( final Msa msa, final String to_remove_id ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_id.equals( msa.getIdentifier( row ) ) ) {
+                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+            }
+        }
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
+    }
+
     final public static Msa removeSequences( final Msa msa, final List<String> to_remove_ids ) {
         final List<Sequence> seqs = new ArrayList<Sequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {

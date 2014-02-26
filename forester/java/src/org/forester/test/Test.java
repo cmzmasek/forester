@@ -920,6 +920,9 @@ public final class Test {
         if ( !MsaInferrer.isInstalled( path ) ) {
             path = "/usr/local/bin/mafft";
         }
+        if ( !MsaInferrer.isInstalled( path ) ) {
+            path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft";
+        }
         if ( MsaInferrer.isInstalled( path ) ) {
             System.out.print( "MAFFT (external program): " );
             if ( Test.testMafft( path ) ) {

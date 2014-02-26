@@ -9,6 +9,7 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
+import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaCompactor;
 import org.forester.msa.MsaMethods;
 import org.forester.util.CommandLineArguments;
@@ -99,6 +100,7 @@ public class msa_compactor {
             for( final String id : mc.getRemovedSeqIds() ) {
                 System.out.println( id );
             }
+            mc.writeMsa( out, MSA_FORMAT.PHYLIP, ".aln" );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
