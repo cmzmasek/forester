@@ -10,26 +10,27 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
 import org.forester.msa.Msa.MSA_FORMAT;
-import org.forester.msa.MsaCompactor;
+import org.forester.msa_compactor.MsaCompactor;
 import org.forester.msa.MsaMethods;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 
 public class msa_compactor {
 
-    final static private String HELP_OPTION_1                 = "help";
-    final static private String HELP_OPTION_2                 = "h";
-    final static private String REMOVE_WORST_OFFENDERS_OPTION = "w";
-    final static private String AV_GAPINESS_OPTION            = "a";
-    final static private String STEP_OPTION                   = "s";
-    final static private String LENGTH_OPTION                 = "l";
-    final static private String REALIGN_OPTION                = "r";
-    final static private String PRG_NAME                      = "msa_compactor";
-    final static private String PRG_DESC                      = "multiple sequnce aligment compactor";
-    final static private String PRG_VERSION                   = "0.01";
-    final static private String PRG_DATE                      = "140221";
-    final static private String E_MAIL                        = "phylosoft@gmail.com";
-    final static private String WWW                           = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String HELP_OPTION_1                          = "help";
+    final static private String HELP_OPTION_2                          = "h";
+    final static private String REMOVE_WORST_OFFENDERS_OPTION          = "w";
+    final static private String AV_GAPINESS_OPTION                     = "a";
+    final static private String STEP_OPTION                            = "s";
+    final static private String LENGTH_OPTION                          = "l";
+    final static private String REALIGN_OPTION                         = "r";
+    final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
+    final static private String PRG_NAME                               = "msa_compactor";
+    final static private String PRG_DESC                               = "multiple sequnce aligment compactor";
+    final static private String PRG_VERSION                            = "0.01";
+    final static private String PRG_DATE                               = "140221";
+    final static private String E_MAIL                                 = "phylosoft@gmail.com";
+    final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
         try {
@@ -45,11 +46,13 @@ public class msa_compactor {
             int length = -1;
             int step = 1;
             boolean realign = false;
+            boolean norm = true;
             final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( REMOVE_WORST_OFFENDERS_OPTION );
             allowed_options.add( AV_GAPINESS_OPTION );
             allowed_options.add( LENGTH_OPTION );
             allowed_options.add( REALIGN_OPTION );
+            allowed_options.add( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION );
             allowed_options.add( STEP_OPTION );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
@@ -70,6 +73,9 @@ public class msa_compactor {
             if ( cla.isOptionSet( REALIGN_OPTION ) ) {
                 realign = true;
             }
+            if ( cla.isOptionSet( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION ) ) {
+                norm = false;
+            }
             //            else if ( cla.isOptionSet( STEP_OPTION ) && cla.isOptionSet( WINDOW_OPTION ) ) {
             //                step = cla.getOptionValueAsInt( STEP_OPTION );
             //                window = cla.getOptionValueAsInt( WINDOW_OPTION );
@@ -88,7 +94,7 @@ public class msa_compactor {
             }
             MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
-                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign );
+                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign, norm );
             }
             else if ( av > 0 ) {
                 mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, out, 50 );

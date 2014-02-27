@@ -49,6 +49,8 @@ public interface Sequence {
 
     public abstract char getResidueAt( final int position );
 
+    public abstract boolean isGapAt( final int position );
+
     public abstract TYPE getType();
 
     public enum TYPE {

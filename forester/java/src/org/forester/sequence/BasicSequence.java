@@ -155,4 +155,9 @@ public class BasicSequence implements Sequence {
     public String getMolecularSequenceAsString() {
         return new String( getMolecularSequence() );
     }
+
+    @Override
+    public boolean isGapAt( final int position ) {
+        return getResidueAt( position ) == GAP;
+    }
 }

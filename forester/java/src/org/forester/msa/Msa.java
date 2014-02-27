@@ -48,6 +48,8 @@ public interface Msa {
 
     public char getResidueAt( int row, int col );
 
+    public boolean isGapAt( int row, int col );
+
     public List<Character> getColumnAt( int col );
 
     public Sequence getSequence( final String id );

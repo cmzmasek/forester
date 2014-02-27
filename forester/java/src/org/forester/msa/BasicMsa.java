@@ -218,4 +218,9 @@ public class BasicMsa implements Msa {
         }
         return column;
     }
+
+    @Override
+    public boolean isGapAt( final int row, final int col ) {
+        return getResidueAt( row, col ) == Sequence.GAP;
+    }
 }

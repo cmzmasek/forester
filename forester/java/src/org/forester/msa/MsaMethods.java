@@ -65,7 +65,7 @@ public final class MsaMethods {
     public static int calcGapSumPerColumn( final Msa msa, final int col ) {
         int gap_rows = 0;
         for( int j = 0; j < msa.getNumberOfSequences(); ++j ) {
-            if ( msa.getResidueAt( j, col ) == Sequence.GAP ) {
+            if ( msa.isGapAt( j, col ) ) {
                 gap_rows++;
             }
         }

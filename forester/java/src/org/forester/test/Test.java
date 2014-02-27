@@ -912,16 +912,13 @@ public final class Test {
             path = "C:\\Program Files\\mafft-win\\mafft.bat";
         }
         else {
-            path = "/home/czmasek/bin/mafft";
-        }
-        if ( !MsaInferrer.isInstalled( path ) ) {
             path = "mafft";
-        }
-        if ( !MsaInferrer.isInstalled( path ) ) {
-            path = "/usr/local/bin/mafft";
-        }
-        if ( !MsaInferrer.isInstalled( path ) ) {
-            path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft";
+            if ( !MsaInferrer.isInstalled( path ) ) {
+                path = "/usr/bin/mafft";
+            }
+            if ( !MsaInferrer.isInstalled( path ) ) {
+                path = "/usr/local/bin/mafft";
+            }
         }
         if ( MsaInferrer.isInstalled( path ) ) {
             System.out.print( "MAFFT (external program): " );
@@ -1109,18 +1106,22 @@ public final class Test {
             final URL u = new URL( s );
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny[] phys = factory.create( u, new NHXParser() );
-            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+            if ( ( phys == null ) || ( phys.length != 5 ) ) {
                 return false;
             }
-            if ( !phys[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+            if ( !phys[ 0 ].toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
                 System.out.println( phys[ 0 ].toNewHampshire() );
                 return false;
             }
-            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
-            if ( ( phys2 == null ) || ( phys2.length != 1 ) ) {
+            if ( !phys[ 1 ].toNewHampshire().equals( "((1,2,3),(4,5,6),(7,8,9));" ) ) {
+                System.out.println( phys[ 1 ].toNewHampshire() );
                 return false;
             }
-            if ( !phys2[ 0 ].toNewHampshire().equals( "((a,b),c);" ) ) {
+            final Phylogeny[] phys2 = factory.create( u.openStream(), new NHXParser() );
+            if ( ( phys2 == null ) || ( phys2.length != 5 ) ) {
+                return false;
+            }
+            if ( !phys2[ 0 ].toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
                 System.out.println( phys2[ 0 ].toNewHampshire() );
                 return false;
             }
@@ -1131,42 +1132,30 @@ public final class Test {
             if ( !p.hasNext() ) {
                 return false;
             }
-            if ( !p.next().toNewHampshire().equals( "((a,b),c);" ) ) {
+            if ( !p.next().toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
                 return false;
             }
-            if ( p.hasNext() ) {
-                return false;
-            }
-            if ( p.next() != null ) {
-                return false;
-            }
-            if ( p.hasNext() ) {
-                return false;
-            }
-            if ( p.next() != null ) {
+            if ( !p.hasNext() ) {
                 return false;
             }
             p.reset();
             if ( !p.hasNext() ) {
                 return false;
             }
-            if ( !p.next().toNewHampshire().equals( "((a,b),c);" ) ) {
+            if ( !p.next().toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
                 return false;
             }
-            if ( p.hasNext() ) {
-                return false;
-            }
-            if ( p.next() != null ) {
-                return false;
-            }
-            if ( p.hasNext() ) {
-                return false;
-            }
-            if ( p.next() != null ) {
+            if ( !p.next().toNewHampshire().equals( "((1,2,3),(4,5,6),(7,8,9));" ) ) {
                 return false;
             }
             p.reset();
             if ( !p.hasNext() ) {
+                return false;
+            }
+            if ( !p.next().toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
+                return false;
+            }
+            if ( !p.next().toNewHampshire().equals( "((1,2,3),(4,5,6),(7,8,9));" ) ) {
                 return false;
             }
         }
