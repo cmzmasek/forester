@@ -9,7 +9,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -20,8 +19,6 @@ import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.sequence.Sequence;
-import org.forester.util.BasicDescriptiveStatistics;
-import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
@@ -66,26 +63,6 @@ public class MsaCompactor {
         return ng;
     }
 
-    private final DescriptiveStatistics[] calcGapContribtionsX( final boolean normalize_for_effective_seq_length ) {
-        final double gappiness[] = calcGappiness();
-        final DescriptiveStatistics stats[] = new DescriptiveStatistics[ _msa.getNumberOfSequences() ];
-        for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
-            stats[ row ] = new BasicDescriptiveStatistics( _msa.getIdentifier( row ) );
-            final double l = calculateEffectiveLengthRatio( row );
-            for( int col = 0; col < _msa.getLength(); ++col ) {
-                if ( !_msa.isGapAt( row, col ) ) {
-                    if ( normalize_for_effective_seq_length ) {
-                        stats[ row ].addValue( gappiness[ col ] / l );
-                    }
-                    else {
-                        stats[ row ].addValue( gappiness[ col ] );
-                    }
-                }
-            }
-        }
-        return stats;
-    }
-
     private final GapContribution[] calcGapContribtions( final boolean normalize_for_effective_seq_length ) {
         final double gappiness[] = calcGappiness();
         final GapContribution stats[] = new GapContribution[ _msa.getNumberOfSequences() ];
@@ -97,10 +74,10 @@ public class MsaCompactor {
                 }
             }
             if ( normalize_for_effective_seq_length ) {
-                stats[ row ].divideValue( calculateEffectiveLengthRatio( row ) );
+                stats[ row ].divideValue( calcNonGapResidues( _msa.getSequence( row ) ) );
             }
             else {
-                // 
+                stats[ row ].divideValue( _msa.getLength() );
             }
         }
         return stats;
@@ -134,10 +111,6 @@ public class MsaCompactor {
             gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
         }
         return gappiness;
-    }
-
-    private double calculateEffectiveLengthRatio( final int row ) {
-        return ( double ) calcNonGapResidues( _msa.getSequence( row ) ) / _msa.getLength();
     }
 
     final private void mafft() throws IOException, InterruptedException {
@@ -291,52 +264,5 @@ public class MsaCompactor {
         final MsaCompactor mc = new MsaCompactor( msa );
         mc.removeWorstOffenders( worst_offenders_to_remove, 1, realign, norm );
         return mc;
-    }
-
-    public static enum SORT_BY {
-        MAX, MEAN, MEDIAN;
-    }
-
-    final static class DescriptiveStatisticsComparator implements Comparator<DescriptiveStatistics> {
-
-        final private boolean _ascending;
-        final private SORT_BY _sort_by;
-
-        public DescriptiveStatisticsComparator( final boolean ascending, final SORT_BY sort_by ) {
-            _ascending = ascending;
-            _sort_by = sort_by;
-        }
-
-        @Override
-        public final int compare( final DescriptiveStatistics s0, final DescriptiveStatistics s1 ) {
-            switch ( _sort_by ) {
-                case MAX:
-                    if ( s0.getMax() < s1.getMax() ) {
-                        return _ascending ? -1 : 1;
-                    }
-                    else if ( s0.getMax() > s1.getMax() ) {
-                        return _ascending ? 1 : -1;
-                    }
-                    return 0;
-                case MEAN:
-                    if ( s0.arithmeticMean() < s1.arithmeticMean() ) {
-                        return _ascending ? -1 : 1;
-                    }
-                    else if ( s0.arithmeticMean() > s1.arithmeticMean() ) {
-                        return _ascending ? 1 : -1;
-                    }
-                    return 0;
-                case MEDIAN:
-                    if ( s0.median() < s1.median() ) {
-                        return _ascending ? -1 : 1;
-                    }
-                    else if ( s0.median() > s1.median() ) {
-                        return _ascending ? 1 : -1;
-                    }
-                    return 0;
-                default:
-                    return 0;
-            }
-        }
     }
 }
