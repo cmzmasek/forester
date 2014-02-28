@@ -13,12 +13,23 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.archaeopteryx.Archaeopteryx;
+import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.distance.PairwiseDistanceCalculator;
+import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
+import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
+import org.forester.evoinference.tools.BootstrapResampler;
+import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
+import org.forester.msa.ResampleableMsa;
+import org.forester.phylogeny.Phylogeny;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.sequence.Sequence;
+import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
@@ -202,10 +213,50 @@ public class MsaCompactor {
         }
     }
 
+    Phylogeny pi() {
+        final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa );
+        final int seed = 15;
+        final int n = 100;
+        final ResampleableMsa resampleable_msa = new ResampleableMsa( ( BasicMsa ) _msa );
+        final int[][] resampled_column_positions = BootstrapResampler.createResampledColumnPositions( _msa.getLength(),
+                                                                                                      n,
+                                                                                                      seed );
+        final Phylogeny[] eval_phys = new Phylogeny[ n ];
+        for( int i = 0; i < n; ++i ) {
+            resampleable_msa.resample( resampled_column_positions[ i ] );
+            eval_phys[ i ] = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, resampleable_msa );
+        }
+        ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
+        PhylogenyMethods.extractFastaInformation( master_phy );
+        return master_phy;
+    }
+
+    private Phylogeny inferNJphylogeny( PWD_DISTANCE_METHOD pwd_distance_method, final Msa msa ) {
+        BasicSymmetricalDistanceMatrix m = null;
+        switch ( pwd_distance_method ) {
+            case KIMURA_DISTANCE:
+                m = PairwiseDistanceCalculator.calcKimuraDistances( msa );
+                break;
+            case POISSON_DISTANCE:
+                m = PairwiseDistanceCalculator.calcPoissonDistances( msa );
+                break;
+            case FRACTIONAL_DISSIMILARITY:
+                m = PairwiseDistanceCalculator.calcFractionalDissimilarities( msa );
+                break;
+            default:
+                throw new IllegalArgumentException( "invalid pwd method" );
+        }
+        final NeighborJoining nj = NeighborJoining.createInstance();
+        final Phylogeny phy = nj.execute( m );
+        return phy;
+    }
+
     final private void removeWorstOffenders( final int to_remove,
                                              final int step,
                                              final boolean realign,
                                              final boolean norm ) throws IOException, InterruptedException {
+        final Phylogeny a = pi();
+        Archaeopteryx.createApplication( a );
         final GapContribution stats[] = calcGapContribtionsStats( norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         for( int j = 0; j < to_remove; ++j ) {
@@ -227,6 +278,8 @@ public class MsaCompactor {
         if ( realign ) {
             mafft();
         }
+        final Phylogeny b = pi();
+        Archaeopteryx.createApplication( b );
     }
 
     final private void writeMsa( final String outfile, final MSA_FORMAT format ) throws IOException {

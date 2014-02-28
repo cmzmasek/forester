@@ -30,7 +30,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import javax.swing.JOptionPane;
 
@@ -39,7 +38,6 @@ import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
-import org.forester.io.parsers.FastaParser;
 import org.forester.msa.BasicMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
@@ -48,9 +46,7 @@ import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.msa.ResampleableMsa;
 import org.forester.phylogeny.Phylogeny;
-import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Accession;
-import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
+import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
@@ -148,7 +144,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
         }
         final NeighborJoining nj = NeighborJoining.createInstance();
         final Phylogeny phy = nj.execute( m );
-        PhylogeneticInferrer.extractFastaInformation( phy );
+        PhylogenyMethods.extractFastaInformation( phy );
         return phy;
     }
 
@@ -290,38 +286,6 @@ public class PhylogeneticInferrer extends RunnableProcess {
             }
             catch ( final Exception e ) {
                 System.out.println( "Error: " + e.getMessage() );
-            }
-        }
-    }
-
-    public static void extractFastaInformation( final Phylogeny phy ) {
-        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
-            final PhylogenyNode node = iter.next();
-            if ( !ForesterUtil.isEmpty( node.getName() ) ) {
-                final Matcher name_m = FastaParser.FASTA_DESC_LINE.matcher( node.getName() );
-                if ( name_m.lookingAt() ) {
-                    System.out.println();
-                    // System.out.println( name_m.group( 1 ) );
-                    // System.out.println( name_m.group( 2 ) );
-                    // System.out.println( name_m.group( 3 ) );
-                    // System.out.println( name_m.group( 4 ) );
-                    final String acc_source = name_m.group( 1 );
-                    final String acc = name_m.group( 2 );
-                    final String seq_name = name_m.group( 3 );
-                    final String tax_sn = name_m.group( 4 );
-                    if ( !ForesterUtil.isEmpty( acc_source ) && !ForesterUtil.isEmpty( acc ) ) {
-                        ForesterUtil.ensurePresenceOfSequence( node );
-                        node.getNodeData().getSequence( 0 ).setAccession( new Accession( acc, acc_source ) );
-                    }
-                    if ( !ForesterUtil.isEmpty( seq_name ) ) {
-                        ForesterUtil.ensurePresenceOfSequence( node );
-                        node.getNodeData().getSequence( 0 ).setName( seq_name );
-                    }
-                    if ( !ForesterUtil.isEmpty( tax_sn ) ) {
-                        ForesterUtil.ensurePresenceOfTaxonomy( node );
-                        node.getNodeData().getTaxonomy( 0 ).setScientificName( tax_sn );
-                    }
-                }
             }
         }
     }
