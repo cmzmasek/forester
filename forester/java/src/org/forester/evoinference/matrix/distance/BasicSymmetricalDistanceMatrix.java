@@ -110,6 +110,9 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
 
     @Override
     public final void setValue( final int col, final int row, final double d ) {
+        if ( d < 0 ) {
+            throw new IllegalArgumentException( "negative distance value" );
+        }
         if ( ( col == row ) && ( d != 0.0 ) ) {
             throw new IllegalArgumentException( "attempt to set a non-zero value on the diagonal of a symmetrical distance matrix" );
         }

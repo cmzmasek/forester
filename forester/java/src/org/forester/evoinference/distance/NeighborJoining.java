@@ -58,9 +58,9 @@ public final class NeighborJoining {
             if ( ( i == otu1 ) || ( i == otu2 ) ) {
                 continue;
             }
-            //  _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
-            i_m = _mappings[ i ];
-            _d_values[ otu1_m ][ i_m ] = ( ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] ) - 2 ) / 2;
+            _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            //i_m = _mappings[ i ];
+            //_d_values[ otu1_m ][ i_m ] = ( ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] ) - 2 ) / 2;
         }
     }
 
@@ -71,8 +71,8 @@ public final class NeighborJoining {
             d = 0;
             i_m = _mappings[ i ];
             for( int n = 0; n < _n; ++n ) {
-                d += _d_values[ i_m ][ _mappings[ n ] ];
-                //d += getValueFromD( i, n );
+                //d += _d_values[ i_m ][ _mappings[ n ] ];
+                d += getValueFromD( i, n );
             }
             _r[ i ] = d;
         }
@@ -101,7 +101,7 @@ public final class NeighborJoining {
             // It is a condition that otu1 < otu2.
             if ( DEBUG ) {
                 if ( otu1 > otu2 ) {
-                    throw new RuntimeException( "NJ code is faulty: otu1 > otu2" );
+                    throw new RuntimeException( "faulty NJ code: otu1 > otu2" );
                 }
             }
             final PhylogenyNode node = new PhylogenyNode();
@@ -194,12 +194,15 @@ public final class NeighborJoining {
             r_j = _r[ j ];
             j_m = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
-                //  _m_values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + r_j ) / ( _n - 2 );
-                _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( ( _r[ i ] + r_j ) / ( _n_2 ) );
+                _m_values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + r_j ) / ( _n - 2 );
+                //_m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( ( _r[ i ] + r_j ) / ( _n_2 ) );
             }
         }
     }
 
+    //  private final double getValueFromD( final int otu1, final int otu2 ) {
+    //      return _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
+    // }
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {

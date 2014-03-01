@@ -128,9 +128,9 @@ public class MsaCompactor {
         final MsaInferrer mafft = Mafft
                 .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
         final List<String> opts = new ArrayList<String>();
-        // opts.add( "--maxiterate" );
-        // opts.add( "1000" );
-        // opts.add( "--localpair" );
+        opts.add( "--maxiterate" );
+        opts.add( "1000" );
+        opts.add( "--localpair" );
         opts.add( "--quiet" );
         _msa = mafft.infer( _msa.asSequenceList(), opts );
     }
@@ -213,8 +213,8 @@ public class MsaCompactor {
         }
     }
 
-    Phylogeny pi() {
-        final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa );
+    Phylogeny pi( String matrix ) {
+        final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
         final int seed = 15;
         final int n = 100;
         final ResampleableMsa resampleable_msa = new ResampleableMsa( ( BasicMsa ) _msa );
@@ -224,14 +224,17 @@ public class MsaCompactor {
         final Phylogeny[] eval_phys = new Phylogeny[ n ];
         for( int i = 0; i < n; ++i ) {
             resampleable_msa.resample( resampled_column_positions[ i ] );
-            eval_phys[ i ] = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, resampleable_msa );
+            eval_phys[ i ] = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, resampleable_msa, false, null );
         }
         ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
         PhylogenyMethods.extractFastaInformation( master_phy );
         return master_phy;
     }
 
-    private Phylogeny inferNJphylogeny( PWD_DISTANCE_METHOD pwd_distance_method, final Msa msa ) {
+    private Phylogeny inferNJphylogeny( PWD_DISTANCE_METHOD pwd_distance_method,
+                                        final Msa msa,
+                                        boolean write_matrix,
+                                        String matrix_name ) {
         BasicSymmetricalDistanceMatrix m = null;
         switch ( pwd_distance_method ) {
             case KIMURA_DISTANCE:
@@ -246,6 +249,15 @@ public class MsaCompactor {
             default:
                 throw new IllegalArgumentException( "invalid pwd method" );
         }
+        if ( write_matrix ) {
+            try {
+                m.write( ForesterUtil.createBufferedWriter( matrix_name ) );
+            }
+            catch ( IOException e ) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         final NeighborJoining nj = NeighborJoining.createInstance();
         final Phylogeny phy = nj.execute( m );
         return phy;
@@ -255,7 +267,7 @@ public class MsaCompactor {
                                              final int step,
                                              final boolean realign,
                                              final boolean norm ) throws IOException, InterruptedException {
-        final Phylogeny a = pi();
+        final Phylogeny a = pi( "a.pwd" );
         Archaeopteryx.createApplication( a );
         final GapContribution stats[] = calcGapContribtionsStats( norm );
         final List<String> to_remove_ids = new ArrayList<String>();
@@ -278,7 +290,7 @@ public class MsaCompactor {
         if ( realign ) {
             mafft();
         }
-        final Phylogeny b = pi();
+        final Phylogeny b = pi( "b.pwd" );
         Archaeopteryx.createApplication( b );
     }
 

@@ -46,6 +46,19 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
     private final boolean                            _calc_similarity_score;
     private final boolean                            _sort_by_species_count_first;
     private final boolean                            _treat_as_binary_comparison;
+    private final boolean                            _verbose;
+
+    public BasicDomainSimilarityCalculator( final DomainSimilarity.DomainSimilaritySortField sort,
+                                            final boolean sort_by_species_count_first,
+                                            final boolean treat_as_binary_comparison,
+                                            final boolean calc_similarity_score,
+                                            final boolean verbose ) {
+        _sort = sort;
+        _sort_by_species_count_first = sort_by_species_count_first;
+        _treat_as_binary_comparison = treat_as_binary_comparison;
+        _calc_similarity_score = calc_similarity_score;
+        _verbose = verbose;
+    }
 
     public BasicDomainSimilarityCalculator( final DomainSimilarity.DomainSimilaritySortField sort,
                                             final boolean sort_by_species_count_first,
@@ -55,6 +68,7 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         _sort_by_species_count_first = sort_by_species_count_first;
         _treat_as_binary_comparison = treat_as_binary_comparison;
         _calc_similarity_score = calc_similarity_score;
+        _verbose = false;
     }
 
     @Override
@@ -72,9 +86,13 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
         }
         final DecimalFormat pf = new java.text.DecimalFormat( "000000" );
         int counter = 1;
-        System.out.println( keys.size() );
+        if ( _verbose ) {
+            System.out.println( keys.size() );
+        }
         for( final String key : keys ) {
-            ForesterUtil.updateProgress( counter, pf );
+            if ( _verbose ) {
+                ForesterUtil.updateProgress( counter, pf );
+            }
             counter++;
             final List<CombinableDomains> same_id_cd_list = new ArrayList<CombinableDomains>( cdc_list.size() );
             final List<Species> species_with_key_id_domain = new ArrayList<Species>();
@@ -111,7 +129,9 @@ public class BasicDomainSimilarityCalculator implements DomainSimilarityCalculat
                 throw new RuntimeException( "this should not have happened" );
             }
         }
-        System.out.println();
+        if ( _verbose ) {
+            System.out.println();
+        }
         return similarities;
     }
 

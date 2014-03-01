@@ -139,7 +139,8 @@ public class PairwiseGenomeComparator {
                 final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( domain_similarity_sort_field,
                                                                                              sort_by_species_count_first,
                                                                                              true,
-                                                                                             calc_similarity_scores );
+                                                                                             calc_similarity_scores,
+                                                                                             true );
                 final SortedSet<DomainSimilarity> similarities = calc
                         .calculateSimilarities( pw_calc,
                                                 genome_pair,

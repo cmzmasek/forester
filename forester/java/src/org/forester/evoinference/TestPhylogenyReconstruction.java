@@ -33,6 +33,7 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
 
+import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
@@ -1941,7 +1942,13 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            nj.execute( m );
+            System.out.println( m.toString() );
+            final Phylogeny p2 = nj.execute( m );
+            p2.reRoot( p2.getNode( "Bovine" ) );
+            System.out.println( p2.toString() );
+            // from phylip Neighbor-Joining/UPGMA method version 3.69:
+            // ((((((Chimp:0.15167,Human:0.11753):0.03982,Gorilla:0.15393):0.02696,Orang:0.28469):0.04648,Gibbon:0.35793):0.42027,Mouse:0.76891):0.458845,Bovine:0.458845);
+            Archaeopteryx.createApplication( p2 );
             m = new BasicSymmetricalDistanceMatrix( 4 );
             m.setIdentifier( 0, "A" );
             m.setIdentifier( 1, "B" );

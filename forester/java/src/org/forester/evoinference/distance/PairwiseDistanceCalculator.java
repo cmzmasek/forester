@@ -27,12 +27,10 @@ package org.forester.evoinference.distance;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.msa.Msa;
-import org.forester.sequence.Sequence;
 
 public final class PairwiseDistanceCalculator {
 
-    public static final double DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA = 10;          // Felsenstein uses -1
-    private static final char  GAP                                                     = Sequence.GAP;
+    public static final double DEFAULT_VALUE_FOR_TOO_LARGE_DISTANCE_FOR_KIMURA_FORMULA = 10; // Felsenstein uses -1
     private final Msa          _msa;
     private final double       _value_for_too_large_distance_for_kimura_formula;
 
@@ -44,23 +42,12 @@ public final class PairwiseDistanceCalculator {
     private double calcFractionalDissimilarity( final int row_1, final int row_2 ) {
         final int length = _msa.getLength();
         int nd = 0;
-        int n = 0;
-        char aa_1;
-        char aa_2;
         for( int col = 0; col < length; ++col ) {
-            aa_1 = _msa.getResidueAt( row_1, col );
-            aa_2 = _msa.getResidueAt( row_2, col );
-            if ( ( aa_1 != GAP ) && ( aa_2 != GAP ) ) {
-                if ( aa_1 != aa_2 ) {
-                    nd++;
-                }
-                n++;
+            if ( _msa.getResidueAt( row_1, col ) != _msa.getResidueAt( row_2, col ) ) {
+                ++nd;
             }
         }
-        if ( n == 0 ) {
-            return 1;
-        }
-        return ( double ) nd / n;
+        return ( double ) nd / length;
     }
 
     /**

@@ -1817,7 +1817,8 @@ public class surfacing {
         final DomainSimilarityCalculator calc = new BasicDomainSimilarityCalculator( domain_similarity_sort_field,
                                                                                      sort_by_species_count_first,
                                                                                      number_of_genomes == 2,
-                                                                                     CALC_SIMILARITY_SCORES );
+                                                                                     CALC_SIMILARITY_SCORES,
+                                                                                     true );
         switch ( scoring ) {
             case COMBINATIONS:
                 pw_calc = new CombinationsBasedPairwiseDomainSimilarityCalculator();
