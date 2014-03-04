@@ -44,10 +44,32 @@ public final class NeighborJoining {
     private PhylogenyNode[]                _external_nodes;
     private int[]                          _mappings;
     private final boolean                  _verbose;
-    private final static boolean           DEBUG = false;
+    private final static boolean           DEBUG = true;
 
     private NeighborJoining( final boolean verbose ) {
         _verbose = verbose;
+    }
+
+    private final void printM() {
+        for( int i = 0; i < _m_values.length; i++ ) {
+            for( int j = 0; j < _m_values.length; j++ ) {
+                System.out.print( _m_values[ i ][ j ] );
+                System.out.print( " " );
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    private final void printD() {
+        for( int i = 0; i < _d_values.length; i++ ) {
+            for( int j = 0; j < _d_values.length; j++ ) {
+                System.out.print( _d_values[ i ][ j ] );
+                System.out.print( " " );
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
@@ -66,15 +88,35 @@ public final class NeighborJoining {
 
     private final void calculateNetDivergences() {
         double d;
-        int i_m;
+        //  int i_m;
         for( int i = 0; i < _n; ++i ) {
             d = 0;
-            i_m = _mappings[ i ];
+            //i_m = _mappings[ i ];
             for( int n = 0; n < _n; ++n ) {
                 //d += _d_values[ i_m ][ _mappings[ n ] ];
-                d += getValueFromD( i, n );
+                if ( i != n ) {
+                    if ( i < n ) {
+                        d += getValueFromD( i, n );
+                        System.out.print( "+" );
+                        System.out.print( getValueFromD( i, n ) );
+                    }
+                    else {
+                        d += getValueFromD( n, i );
+                        System.out.print( "+" );
+                        System.out.print( getValueFromD( n, i ) );
+                    }
+                }
+                else {
+                    if ( DEBUG ) {
+                        if ( getValueFromD( i, n ) != 0 ) {
+                            throw new RuntimeException( "faulty NJ code" );
+                        }
+                    }
+                }
             }
             _r[ i ] = d;
+            System.out.print( "=" );
+            System.out.println( d );
         }
     }
 
@@ -147,6 +189,10 @@ public final class NeighborJoining {
     }
 
     private final double getValueFromD( final int otu1, final int otu2 ) {
+        if ( otu1 > otu2 ) {
+            //throw new IllegalStateException();
+            return _d_values[ _mappings[ otu2 ] ][ _mappings[ otu1 ] ];
+        }
         return _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
     }
 
@@ -191,13 +237,15 @@ public final class NeighborJoining {
         int j_m;
         final int _n_2 = _n - 2;
         for( int j = 1; j < _n; ++j ) {
-            r_j = _r[ j ];
-            j_m = _mappings[ j ];
+            //r_j = _r[ j ];
+            // j_m = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
-                _m_values[ i ][ j ] = getValueFromD( i, j ) - ( _r[ i ] + r_j ) / ( _n - 2 );
+                _m_values[ i ][ j ] = getValueFromD( i, j ) - ( ( _r[ i ] + _r[ j ] ) / ( _n - 2 ) );
                 //_m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( ( _r[ i ] + r_j ) / ( _n_2 ) );
             }
         }
+        printM();
+        printD();
     }
 
     //  private final double getValueFromD( final int otu1, final int otu2 ) {
