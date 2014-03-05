@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.distance.NeighborJoiningX;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -71,7 +72,7 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "failed." );
         }
-        //timeNeighborJoining();
+        timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2501,6 +2502,19 @@ public class TestPhylogenyReconstruction {
             //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
             final long start_time = new Date().getTime();
             nj.execute( mt );
+            System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
+        }
+        final NeighborJoiningX njx = NeighborJoiningX.createInstance();
+        for( int n = 3; n <= 10; ++n ) {
+            final int x = ( int ) Math.pow( 2, n );
+            final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
+            mt.randomize( new Date().getTime() );
+            //  for( int i = 0; i < mt.getSize(); i++ ) {
+            //      mt.setIdentifier( i, i + "i" );
+            //  }
+            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
+            final long start_time = new Date().getTime();
+            njx.execute( mt );
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
     }
