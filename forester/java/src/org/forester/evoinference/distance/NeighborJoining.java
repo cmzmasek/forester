@@ -25,6 +25,8 @@
 
 package org.forester.evoinference.distance;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,6 @@ import org.forester.util.ForesterUtil;
 public final class NeighborJoining {
 
     private BasicSymmetricalDistanceMatrix _d;
-    // private BasicSymmetricalDistanceMatrix _m;
     private double[][]                     _d_values;
     private double[][]                     _m_values;
     private double[]                       _r;
@@ -44,16 +45,29 @@ public final class NeighborJoining {
     private PhylogenyNode[]                _external_nodes;
     private int[]                          _mappings;
     private final boolean                  _verbose;
-    private final static boolean           DEBUG = true;
+    private final DecimalFormat            _df;
 
-    private NeighborJoining( final boolean verbose ) {
+    private NeighborJoining() {
+        _verbose = false;
+        _df = null;
+    }
+
+    private NeighborJoining( final boolean verbose, final int maximum_fraction_digits_for_distances ) {
+        if ( ( maximum_fraction_digits_for_distances < 1 ) || ( maximum_fraction_digits_for_distances > 9 ) ) {
+            throw new IllegalArgumentException( "maximum fraction digits for distances is out of range: "
+                    + maximum_fraction_digits_for_distances );
+        }
         _verbose = verbose;
+        _df = new DecimalFormat();
+        _df.setMaximumFractionDigits( maximum_fraction_digits_for_distances );
+        _df.setRoundingMode( RoundingMode.HALF_UP );
     }
 
     private final void printM() {
-        for( int i = 0; i < _m_values.length; i++ ) {
+        System.out.println( "M:" );
+        for( final double[] _m_value : _m_values ) {
             for( int j = 0; j < _m_values.length; j++ ) {
-                System.out.print( _m_values[ i ][ j ] );
+                System.out.print( _m_value[ j ] );
                 System.out.print( " " );
             }
             System.out.println();
@@ -62,9 +76,10 @@ public final class NeighborJoining {
     }
 
     private final void printD() {
-        for( int i = 0; i < _d_values.length; i++ ) {
+        System.out.println( "D:" );
+        for( final double[] _d_value : _d_values ) {
             for( int j = 0; j < _d_values.length; j++ ) {
-                System.out.print( _d_values[ i ][ j ] );
+                System.out.print( _d_value[ j ] );
                 System.out.print( " " );
             }
             System.out.println();
@@ -73,14 +88,19 @@ public final class NeighborJoining {
     }
 
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
-        final int otu1_m = _mappings[ otu1 ];
-        final int otu2_m = _mappings[ otu2 ];
-        int i_m;
+        // final int otu1_m = _mappings[ otu1 ];
+        // final int otu2_m = _mappings[ otu2 ];
+        //  int i_m;
         for( int i = 0; i < _n; ++i ) {
             if ( ( i == otu1 ) || ( i == otu2 ) ) {
                 continue;
             }
-            _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            if ( otu1 < i ) {
+                _d_values[ _mappings[ otu1 ] ][ _mappings[ i ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            }
+            else {
+                _d_values[ _mappings[ i ] ][ _mappings[ otu1 ] ] = ( getValueFromD( otu1, i ) + getValueFromD( i, otu2 ) - d ) / 2;
+            }
             //i_m = _mappings[ i ];
             //_d_values[ otu1_m ][ i_m ] = ( ( _d_values[ otu1_m ][ i_m ] + _d_values[ i_m ][ otu2_m ] ) - 2 ) / 2;
         }
@@ -95,28 +115,10 @@ public final class NeighborJoining {
             for( int n = 0; n < _n; ++n ) {
                 //d += _d_values[ i_m ][ _mappings[ n ] ];
                 if ( i != n ) {
-                    if ( i < n ) {
-                        d += getValueFromD( i, n );
-                        System.out.print( "+" );
-                        System.out.print( getValueFromD( i, n ) );
-                    }
-                    else {
-                        d += getValueFromD( n, i );
-                        System.out.print( "+" );
-                        System.out.print( getValueFromD( n, i ) );
-                    }
-                }
-                else {
-                    if ( DEBUG ) {
-                        if ( getValueFromD( i, n ) != 0 ) {
-                            throw new RuntimeException( "faulty NJ code" );
-                        }
-                    }
+                    d += getValueFromD( i, n );
                 }
             }
             _r[ i ] = d;
-            System.out.print( "=" );
-            System.out.println( d );
         }
     }
 
@@ -128,9 +130,9 @@ public final class NeighborJoining {
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
             // could randomize this, so that any would be returned in a randomized fashion...
-            double minimum = Double.MAX_VALUE;
-            int otu1 = -1;
-            int otu2 = -1;
+            double minimum = _m_values[ 0 ][ 1 ];
+            int otu1 = 0;
+            int otu2 = 1;
             for( int j = 1; j < _n; ++j ) {
                 for( int i = 0; i < j; ++i ) {
                     if ( _m_values[ i ][ j ] < minimum ) {
@@ -141,17 +143,19 @@ public final class NeighborJoining {
                 }
             }
             // It is a condition that otu1 < otu2.
-            if ( DEBUG ) {
-                if ( otu1 > otu2 ) {
-                    throw new RuntimeException( "faulty NJ code: otu1 > otu2" );
-                }
-            }
             final PhylogenyNode node = new PhylogenyNode();
             final double d = getValueFromD( otu1, otu2 );
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
             final double d2 = d - d1;
-            getExternalPhylogenyNode( otu1 ).setDistanceToParent( d1 );
-            getExternalPhylogenyNode( otu2 ).setDistanceToParent( d2 );
+            if ( _df == null ) {
+                getExternalPhylogenyNode( otu1 ).setDistanceToParent( d1 );
+                getExternalPhylogenyNode( otu2 ).setDistanceToParent( d2 );
+            }
+            else {
+                // yes, yes, slow but only grows with n (and not n^2 or worse)...
+                getExternalPhylogenyNode( otu1 ).setDistanceToParent( Double.parseDouble( _df.format( d1 ) ) );
+                getExternalPhylogenyNode( otu2 ).setDistanceToParent( Double.parseDouble( _df.format( d2 ) ) );
+            }
             node.addAsChild( getExternalPhylogenyNode( otu1 ) );
             node.addAsChild( getExternalPhylogenyNode( otu2 ) );
             if ( _verbose ) {
@@ -163,8 +167,15 @@ public final class NeighborJoining {
             --_n;
         }
         final double d = getValueFromD( 0, 1 ) / 2;
-        getExternalPhylogenyNode( 0 ).setDistanceToParent( d );
-        getExternalPhylogenyNode( 1 ).setDistanceToParent( d );
+        if ( _df == null ) {
+            getExternalPhylogenyNode( 0 ).setDistanceToParent( d );
+            getExternalPhylogenyNode( 1 ).setDistanceToParent( d );
+        }
+        else {
+            final double dd = Double.parseDouble( _df.format( d ) );
+            getExternalPhylogenyNode( 0 ).setDistanceToParent( dd );
+            getExternalPhylogenyNode( 1 ).setDistanceToParent( dd );
+        }
         final PhylogenyNode root = new PhylogenyNode();
         root.addAsChild( getExternalPhylogenyNode( 0 ) );
         root.addAsChild( getExternalPhylogenyNode( 1 ) );
@@ -190,7 +201,6 @@ public final class NeighborJoining {
 
     private final double getValueFromD( final int otu1, final int otu2 ) {
         if ( otu1 > otu2 ) {
-            //throw new IllegalStateException();
             return _d_values[ _mappings[ otu2 ] ][ _mappings[ otu1 ] ];
         }
         return _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
@@ -233,8 +243,8 @@ public final class NeighborJoining {
 
     private final void updateM() {
         calculateNetDivergences();
-        double r_j;
-        int j_m;
+        final double r_j;
+        final int j_m;
         final int _n_2 = _n - 2;
         for( int j = 1; j < _n; ++j ) {
             //r_j = _r[ j ];
@@ -244,13 +254,8 @@ public final class NeighborJoining {
                 //_m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ j_m ] - ( ( _r[ i ] + r_j ) / ( _n_2 ) );
             }
         }
-        printM();
-        printD();
     }
 
-    //  private final double getValueFromD( final int otu1, final int otu2 ) {
-    //      return _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
-    // }
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
@@ -259,10 +264,11 @@ public final class NeighborJoining {
     }
 
     public final static NeighborJoining createInstance() {
-        return new NeighborJoining( false );
+        return new NeighborJoining();
     }
 
-    public final static NeighborJoining createInstance( final boolean verbose ) {
-        return new NeighborJoining( verbose );
+    public final static NeighborJoining createInstance( final boolean verbose,
+                                                        final int maximum_fraction_digits_for_distances ) {
+        return new NeighborJoining( verbose, maximum_fraction_digits_for_distances );
     }
 }

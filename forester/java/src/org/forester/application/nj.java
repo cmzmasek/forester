@@ -119,7 +119,7 @@ public class nj {
                     + matrices[ 0 ].getSize() );
         }
         final List<Phylogeny> ps = new ArrayList<Phylogeny>();
-        final NeighborJoining nj = NeighborJoining.createInstance( verbose );
+        final NeighborJoining nj = NeighborJoining.createInstance( verbose, 6 );
         final long start_time = new Date().getTime();
         for( final DistanceMatrix matrix : matrices ) {
             ps.add( nj.execute( ( BasicSymmetricalDistanceMatrix ) matrix ) );

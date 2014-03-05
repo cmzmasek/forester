@@ -10,8 +10,8 @@ import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
 import org.forester.msa.Msa.MSA_FORMAT;
-import org.forester.msa_compactor.MsaCompactor;
 import org.forester.msa.MsaMethods;
+import org.forester.msa_compactor.MsaCompactor;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
 

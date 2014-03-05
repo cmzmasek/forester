@@ -213,7 +213,7 @@ public class MsaCompactor {
         }
     }
 
-    Phylogeny pi( String matrix ) {
+    Phylogeny pi( final String matrix ) {
         final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
         final int seed = 15;
         final int n = 100;
@@ -231,10 +231,10 @@ public class MsaCompactor {
         return master_phy;
     }
 
-    private Phylogeny inferNJphylogeny( PWD_DISTANCE_METHOD pwd_distance_method,
+    private Phylogeny inferNJphylogeny( final PWD_DISTANCE_METHOD pwd_distance_method,
                                         final Msa msa,
-                                        boolean write_matrix,
-                                        String matrix_name ) {
+                                        final boolean write_matrix,
+                                        final String matrix_name ) {
         BasicSymmetricalDistanceMatrix m = null;
         switch ( pwd_distance_method ) {
             case KIMURA_DISTANCE:
@@ -253,7 +253,7 @@ public class MsaCompactor {
             try {
                 m.write( ForesterUtil.createBufferedWriter( matrix_name ) );
             }
-            catch ( IOException e ) {
+            catch ( final IOException e ) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
