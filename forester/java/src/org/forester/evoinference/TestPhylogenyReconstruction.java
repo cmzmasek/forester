@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.NeighborJoiningX;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
@@ -1922,6 +1923,36 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testNeighborJoining() {
         try {
+            final NeighborJoiningF njf = NeighborJoiningF.createInstance();
+            final BasicSymmetricalDistanceMatrix m0f = new BasicSymmetricalDistanceMatrix( 4 );
+            m0f.setIdentifier( 0, "A" );
+            m0f.setIdentifier( 1, "B" );
+            m0f.setIdentifier( 2, "C" );
+            m0f.setIdentifier( 3, "D" );
+            m0f.setRow( "5 ", 1 );
+            m0f.setRow( "3 6 ", 2 );
+            m0f.setRow( "7.5 10.5 5.5", 3 );
+            final Phylogeny p0f = njf.execute( m0f );
+            p0f.reRoot( p0f.getNode( "D" ) );
+            if ( isUnequal( p0f.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            //
             NeighborJoining nj = NeighborJoining.createInstance();
             final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
             m0.setIdentifier( 0, "A" );
@@ -2491,6 +2522,19 @@ public class TestPhylogenyReconstruction {
     }
 
     private static void timeNeighborJoining() {
+        final NeighborJoiningF njf = NeighborJoiningF.createInstance();
+        for( int n = 3; n <= 10; ++n ) {
+            final int x = ( int ) Math.pow( 2, n );
+            final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
+            mt.randomize( new Date().getTime() );
+            //  for( int i = 0; i < mt.getSize(); i++ ) {
+            //      mt.setIdentifier( i, i + "i" );
+            //  }
+            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
+            final long start_time = new Date().getTime();
+            njf.execute( mt );
+            System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
+        }
         final NeighborJoining nj = NeighborJoining.createInstance();
         for( int n = 3; n <= 10; ++n ) {
             final int x = ( int ) Math.pow( 2, n );

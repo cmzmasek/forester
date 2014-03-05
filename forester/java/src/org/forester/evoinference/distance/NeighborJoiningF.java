@@ -34,24 +34,24 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.util.ForesterUtil;
 
-public final class NeighborJoining {
+public final class NeighborJoiningF {
 
     private BasicSymmetricalDistanceMatrix _d;
-    private double[][]                     _d_values;
+    private float[][]                      _d_values;
     private final DecimalFormat            _df;
     private PhylogenyNode[]                _external_nodes;
-    private double[][]                     _m_values;
+    private float[][]                      _m_values;
     private int[]                          _mappings;
     private int                            _n;
-    private double[]                       _r;
+    private float[]                        _r;
     private final boolean                  _verbose;
 
-    private NeighborJoining() {
+    private NeighborJoiningF() {
         _verbose = false;
         _df = null;
     }
 
-    private NeighborJoining( final boolean verbose, final int maximum_fraction_digits_for_distances ) {
+    private NeighborJoiningF( final boolean verbose, final int maximum_fraction_digits_for_distances ) {
         if ( ( maximum_fraction_digits_for_distances < 1 ) || ( maximum_fraction_digits_for_distances > 9 ) ) {
             throw new IllegalArgumentException( "maximum fraction digits for distances is out of range: "
                     + maximum_fraction_digits_for_distances );
@@ -84,9 +84,9 @@ public final class NeighborJoining {
             }
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
-            final double d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
-            final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
-            final double d2 = d - d1;
+            final float d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
+            final float d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
+            final float d2 = d - d1;
             if ( _df == null ) {
                 getExternalPhylogenyNode( otu1 ).setDistanceToParent( d1 );
                 getExternalPhylogenyNode( otu2 ).setDistanceToParent( d2 );
@@ -135,7 +135,7 @@ public final class NeighborJoining {
         return pl;
     }
 
-    private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
+    private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final float d ) {
         final int m_otu1 = _mappings[ otu1 ];
         final int m_otu2 = _mappings[ otu2 ];
         for( int i = 0; i < _n; ++i ) {
@@ -163,7 +163,7 @@ public final class NeighborJoining {
     }
 
     private final void calculateNetDivergences() {
-        double d;
+        float d;
         for( int i = 0; i < _n; ++i ) {
             d = 0;
             final int m_i = _mappings[ i ];
@@ -201,30 +201,6 @@ public final class NeighborJoining {
         }
     }
 
-    private final void printD() {
-        System.out.println( "D:" );
-        for( final double[] _d_value : _d_values ) {
-            for( int j = 0; j < _d_values.length; j++ ) {
-                System.out.print( _d_value[ j ] );
-                System.out.print( " " );
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
-    private final void printM() {
-        System.out.println( "M:" );
-        for( final double[] _m_value : _m_values ) {
-            for( int j = 0; j < _m_values.length; j++ ) {
-                System.out.print( _m_value[ j ] );
-                System.out.print( " " );
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
     private final void printProgress( final int otu1, final int otu2 ) {
         final PhylogenyNode n1 = getExternalPhylogenyNode( otu1 );
         final PhylogenyNode n2 = getExternalPhylogenyNode( otu2 );
@@ -237,10 +213,15 @@ public final class NeighborJoining {
     private final void reset( final BasicSymmetricalDistanceMatrix distances ) {
         _n = distances.getSize();
         _d = distances;
-        _r = new double[ _n ];
+        _r = new float[ _n ];
         _mappings = new int[ _n ];
-        _d_values = _d.getValues();
-        _m_values = new double[ _n ][ _n ];
+        _d_values = new float[ distances.getSize() ][ distances.getSize() ];
+        for( int i = 0; i < distances.getSize(); ++i ) {
+            for( int j = 0; j < distances.getSize(); ++j ) {
+                _d_values[ i ][ j ] = ( float ) distances.getValue( i, j );
+            }
+        }
+        _m_values = new float[ _n ][ _n ];
         initExternalNodes();
     }
 
@@ -248,7 +229,7 @@ public final class NeighborJoining {
         calculateNetDivergences();
         final int n_minus_2 = _n - 2;
         for( int j = 1; j < _n; ++j ) {
-            final double r_j = _r[ j ];
+            final float r_j = _r[ j ];
             final int m_j = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
                 _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ m_j ] - ( ( _r[ i ] + r_j ) / n_minus_2 );
@@ -263,12 +244,12 @@ public final class NeighborJoining {
         }
     }
 
-    public final static NeighborJoining createInstance() {
-        return new NeighborJoining();
+    public final static NeighborJoiningF createInstance() {
+        return new NeighborJoiningF();
     }
 
-    public final static NeighborJoining createInstance( final boolean verbose,
-                                                        final int maximum_fraction_digits_for_distances ) {
-        return new NeighborJoining( verbose, maximum_fraction_digits_for_distances );
+    public final static NeighborJoiningF createInstance( final boolean verbose,
+                                                         final int maximum_fraction_digits_for_distances ) {
+        return new NeighborJoiningF( verbose, maximum_fraction_digits_for_distances );
     }
 }
