@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.NeighborJoiningF;
-import org.forester.evoinference.distance.NeighborJoiningX;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -125,27 +124,6 @@ public class TestPhylogenyReconstruction {
             return false;
         }
         System.out.println( "OK." );
-        return true;
-    }
-
-    private static boolean testDistanceCalculationMethods( final File test_dir ) {
-        try {
-            final Msa msa0 = GeneralMsaParser.parse( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
-                    + "bcl.aln" ) );
-            final BasicSymmetricalDistanceMatrix pwd0 = PairwiseDistanceCalculator.calcKimuraDistances( msa0 );
-            if ( pwd0.getSize() != 120 ) {
-                return false;
-            }
-            for( int i = 0; i < pwd0.getSize(); ++i ) {
-                if ( !isEqual( pwd0.getValue( i, i ), 0.0 ) ) {
-                    return false;
-                }
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace( System.out );
-            return false;
-        }
         return true;
     }
 
@@ -415,6 +393,27 @@ public class TestPhylogenyReconstruction {
             if ( !matrix_0_phylip.toString()
                     .equals( matrix_0.toStringBuffer( DistanceMatrix.Format.PHYLIP ).toString() ) ) {
                 return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testDistanceCalculationMethods( final File test_dir ) {
+        try {
+            final Msa msa0 = GeneralMsaParser.parse( new FileInputStream( test_dir + ForesterUtil.FILE_SEPARATOR
+                    + "bcl.aln" ) );
+            final BasicSymmetricalDistanceMatrix pwd0 = PairwiseDistanceCalculator.calcKimuraDistances( msa0 );
+            if ( pwd0.getSize() != 120 ) {
+                return false;
+            }
+            for( int i = 0; i < pwd0.getSize(); ++i ) {
+                if ( !isEqual( pwd0.getValue( i, i ), 0.0 ) ) {
+                    return false;
+                }
             }
         }
         catch ( final Exception e ) {
@@ -1923,36 +1922,6 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testNeighborJoining() {
         try {
-            final NeighborJoiningF njf = NeighborJoiningF.createInstance();
-            final BasicSymmetricalDistanceMatrix m0f = new BasicSymmetricalDistanceMatrix( 4 );
-            m0f.setIdentifier( 0, "A" );
-            m0f.setIdentifier( 1, "B" );
-            m0f.setIdentifier( 2, "C" );
-            m0f.setIdentifier( 3, "D" );
-            m0f.setRow( "5 ", 1 );
-            m0f.setRow( "3 6 ", 2 );
-            m0f.setRow( "7.5 10.5 5.5", 3 );
-            final Phylogeny p0f = njf.execute( m0f );
-            p0f.reRoot( p0f.getNode( "D" ) );
-            if ( isUnequal( p0f.getNode( "A" ).getDistanceToParent(), 1 ) ) {
-                return false;
-            }
-            if ( isUnequal( p0f.getNode( "B" ).getDistanceToParent(), 4 ) ) {
-                return false;
-            }
-            if ( isUnequal( p0f.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
-                return false;
-            }
-            if ( isUnequal( p0f.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
-                return false;
-            }
-            if ( isUnequal( p0f.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
-                return false;
-            }
-            if ( isUnequal( p0f.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
-                return false;
-            }
-            //
             NeighborJoining nj = NeighborJoining.createInstance();
             final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
             m0.setIdentifier( 0, "A" );
@@ -2150,9 +2119,96 @@ public class TestPhylogenyReconstruction {
             if ( isUnequal( p3.getNode( "A" ).getParent().getParent().getDistanceToParent(), 0.05 ) ) {
                 return false;
             }
-            //if ( TIME ) {
-            //    timeNeighborJoining();
-            //}
+            //
+            NeighborJoiningF njf = NeighborJoiningF.createInstance();
+            final BasicSymmetricalDistanceMatrix m0f = new BasicSymmetricalDistanceMatrix( 4 );
+            m0f.setIdentifier( 0, "A" );
+            m0f.setIdentifier( 1, "B" );
+            m0f.setIdentifier( 2, "C" );
+            m0f.setIdentifier( 3, "D" );
+            m0f.setRow( "5 ", 1 );
+            m0f.setRow( "3 6 ", 2 );
+            m0f.setRow( "7.5 10.5 5.5", 3 );
+            final Phylogeny p0f = njf.execute( m0f );
+            p0f.reRoot( p0f.getNode( "D" ) );
+            if ( isUnequal( p0f.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0f.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            //
+            m = new BasicSymmetricalDistanceMatrix( 7 );
+            m.setIdentifier( 0, "Bovine" );
+            m.setIdentifier( 1, "Mouse" );
+            m.setIdentifier( 2, "Gibbon" );
+            m.setIdentifier( 3, "Orang" );
+            m.setIdentifier( 4, "Gorilla" );
+            m.setIdentifier( 5, "Chimp" );
+            m.setIdentifier( 6, "Human" );
+            m.setRow( "0.00000 1.68660 1.71980 1.66060 1.52430 1.60430 1.59050", 0 );
+            m.setRow( "1.68660 0.00000 1.52320 1.48410 1.44650 1.43890 1.46290", 1 );
+            m.setRow( "1.71980 1.52320 0.00000 0.71150 0.59580 0.61790 0.55830", 2 );
+            m.setRow( "1.66060 1.48410 0.71150 0.00000 0.46310 0.50610 0.47100", 3 );
+            m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
+            m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
+            m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
+            njf = NeighborJoiningF.createInstance( false, 5 );
+            final Phylogeny p2f = njf.execute( m );
+            p2f.reRoot( p2f.getNode( "Bovine" ) );
+            if ( isUnequal( p2f.getNode( "Chimp" ).getDistanceToParent(), 0.15168 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Human" ).getDistanceToParent(), 0.11752 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Gorilla" ).getDistanceToParent(), 0.15393 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Orang" ).getDistanceToParent(), 0.28469 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Gibbon" ).getDistanceToParent(), 0.35793 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Mouse" ).getDistanceToParent(), 0.76891 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Bovine" ).getDistanceToParent(), 0.458845 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getDistanceToParent(), 0.03982 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Human" ).getParent().getDistanceToParent(), 0.03982 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getDistanceToParent(), 0.02696 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getDistanceToParent(), 0.04648 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent()
+                    .getDistanceToParent(), 0.42027 ) ) {
+                return false;
+            }
+            if ( isUnequal( p2f.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
+                    .getDistanceToParent(), 0.458845 ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -2523,42 +2579,21 @@ public class TestPhylogenyReconstruction {
 
     private static void timeNeighborJoining() {
         final NeighborJoiningF njf = NeighborJoiningF.createInstance();
-        for( int n = 3; n <= 10; ++n ) {
+        for( int n = 3; n <= 8; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
-            //  for( int i = 0; i < mt.getSize(); i++ ) {
-            //      mt.setIdentifier( i, i + "i" );
-            //  }
-            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
             final long start_time = new Date().getTime();
             njf.execute( mt );
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
         final NeighborJoining nj = NeighborJoining.createInstance();
-        for( int n = 3; n <= 10; ++n ) {
+        for( int n = 3; n <= 8; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
-            //  for( int i = 0; i < mt.getSize(); i++ ) {
-            //      mt.setIdentifier( i, i + "i" );
-            //  }
-            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
             final long start_time = new Date().getTime();
             nj.execute( mt );
-            System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
-        }
-        final NeighborJoiningX njx = NeighborJoiningX.createInstance();
-        for( int n = 3; n <= 10; ++n ) {
-            final int x = ( int ) Math.pow( 2, n );
-            final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
-            mt.randomize( new Date().getTime() );
-            //  for( int i = 0; i < mt.getSize(); i++ ) {
-            //      mt.setIdentifier( i, i + "i" );
-            //  }
-            //  System.out.println( mt.toStringBuffer( Format.PHYLIP ) );
-            final long start_time = new Date().getTime();
-            njx.execute( mt );
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
     }

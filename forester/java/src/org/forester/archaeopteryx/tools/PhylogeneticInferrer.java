@@ -34,7 +34,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import org.forester.archaeopteryx.MainFrameApplication;
-import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
@@ -142,7 +142,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
                 e.printStackTrace();
             }
         }
-        final NeighborJoining nj = NeighborJoining.createInstance();
+        final NeighborJoiningF nj = NeighborJoiningF.createInstance( false, 5 );
         final Phylogeny phy = nj.execute( m );
         PhylogenyMethods.extractFastaInformation( phy );
         return phy;

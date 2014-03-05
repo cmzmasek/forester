@@ -39,16 +39,12 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
 
     // NumberFormat                      nf1              = NumberFormat.getInstance();
     private final static NumberFormat PHYLIP_FORMATTER = new DecimalFormat( "0.000000" );
-    final double[][]                  _values;
     final String[]                    _identifiers;
+    final double[][]                  _values;
 
     public BasicSymmetricalDistanceMatrix( final int size ) {
         _values = new double[ size ][ size ];
         _identifiers = new String[ size ];
-    }
-
-    public final double[][] getValues() {
-        return _values;
     }
 
     @Override
@@ -83,6 +79,10 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
             return _values[ row ][ col ];
         }
         return _values[ col ][ row ];
+    }
+
+    public final double[][] getValues() {
+        return _values;
     }
 
     public final void randomize( final long seed ) {
@@ -120,6 +120,21 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
             _values[ row ][ col ] = d;
         }
         _values[ col ][ row ] = d;
+    }
+
+    @Override
+    public final String toString() {
+        return toPhylip().toString();
+    }
+
+    @Override
+    public final StringBuffer toStringBuffer( final Format format ) {
+        switch ( format ) {
+            case PHYLIP:
+                return toPhylip();
+            default:
+                throw new IllegalArgumentException( "Unknown format:" + format );
+        }
     }
 
     public final void write( final Writer w ) throws IOException {
@@ -178,20 +193,5 @@ public final class BasicSymmetricalDistanceMatrix implements DistanceMatrix {
             }
         }
         return sb;
-    }
-
-    @Override
-    public final String toString() {
-        return toPhylip().toString();
-    }
-
-    @Override
-    public final StringBuffer toStringBuffer( final Format format ) {
-        switch ( format ) {
-            case PHYLIP:
-                return toPhylip();
-            default:
-                throw new IllegalArgumentException( "Unknown format:" + format );
-        }
     }
 }

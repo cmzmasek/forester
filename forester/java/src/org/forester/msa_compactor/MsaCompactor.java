@@ -14,7 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.forester.archaeopteryx.Archaeopteryx;
-import org.forester.evoinference.distance.NeighborJoining;
+import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
@@ -258,7 +258,7 @@ public class MsaCompactor {
                 e.printStackTrace();
             }
         }
-        final NeighborJoining nj = NeighborJoining.createInstance();
+        final NeighborJoiningF nj = NeighborJoiningF.createInstance( false, 5 );
         final Phylogeny phy = nj.execute( m );
         return phy;
     }

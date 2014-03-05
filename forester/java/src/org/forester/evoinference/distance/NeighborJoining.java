@@ -201,30 +201,6 @@ public final class NeighborJoining {
         }
     }
 
-    private final void printD() {
-        System.out.println( "D:" );
-        for( final double[] _d_value : _d_values ) {
-            for( int j = 0; j < _d_values.length; j++ ) {
-                System.out.print( _d_value[ j ] );
-                System.out.print( " " );
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
-    private final void printM() {
-        System.out.println( "M:" );
-        for( final double[] _m_value : _m_values ) {
-            for( int j = 0; j < _m_values.length; j++ ) {
-                System.out.print( _m_value[ j ] );
-                System.out.print( " " );
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
     private final void printProgress( final int otu1, final int otu2 ) {
         final PhylogenyNode n1 = getExternalPhylogenyNode( otu1 );
         final PhylogenyNode n2 = getExternalPhylogenyNode( otu2 );

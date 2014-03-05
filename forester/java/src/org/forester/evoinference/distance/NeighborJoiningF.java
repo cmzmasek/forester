@@ -209,7 +209,6 @@ public final class NeighborJoiningF {
     }
 
     // only the values in the lower triangle are used.
-    // !matrix values will be changed!
     private final void reset( final BasicSymmetricalDistanceMatrix distances ) {
         _n = distances.getSize();
         _d = distances;
