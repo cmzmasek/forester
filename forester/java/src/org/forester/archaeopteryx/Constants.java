@@ -82,8 +82,8 @@ public final class Constants {
     final static String         APTX_REFERENCE                                                = "Zmasek...";                                                         //TODO
     final static String         PHYLOXML_REFERENCE                                            = ForesterConstants.PHYLO_XML_REFERENCE;
     final static String         PHYLOXML_REFERENCE_SHORT                                      = "Han MV and Zmasek CM (2009), BMC Bioinformatics, 10:356";
-    final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 7;
-    final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT    = 1;
+    final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 3;
+    final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_CONFIDENCE_VALUES_DEFAULT    = 2;
     public static final boolean NH_PARSING_IGNORE_QUOTES_DEFAULT                              = false;
     static final CLADOGRAM_TYPE CLADOGRAM_TYPE_DEFAULT                                        = CLADOGRAM_TYPE.EXT_NODE_SUM_DEP;
     final static boolean        VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT                  = true;
