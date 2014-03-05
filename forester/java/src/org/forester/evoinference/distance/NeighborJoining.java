@@ -40,11 +40,12 @@ public final class NeighborJoining {
     private double[][]                     _d_values;
     private final DecimalFormat            _df;
     private PhylogenyNode[]                _external_nodes;
-    private double[][]                     _m_values;
     private int[]                          _mappings;
     private int                            _n;
     private double[]                       _r;
     private final boolean                  _verbose;
+    private int                            _min_i;
+    private int                            _min_j;
 
     private NeighborJoining() {
         _verbose = false;
@@ -66,22 +67,11 @@ public final class NeighborJoining {
         reset( distance );
         final Phylogeny phylogeny = new Phylogeny();
         while ( _n > 2 ) {
-            updateM();
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
-            // could randomize this, so that any would be returned in a randomized fashion...
-            double minimum = _m_values[ 0 ][ 1 ];
-            int otu1 = 0;
-            int otu2 = 1;
-            for( int j = 1; j < _n; ++j ) {
-                for( int i = 0; i < j; ++i ) {
-                    if ( _m_values[ i ][ j ] < minimum ) {
-                        minimum = _m_values[ i ][ j ];
-                        otu1 = i;
-                        otu2 = j;
-                    }
-                }
-            }
+            updateM();
+            final int otu1 = _min_i;
+            final int otu2 = _min_j;
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
             final double d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
@@ -216,18 +206,25 @@ public final class NeighborJoining {
         _r = new double[ _n ];
         _mappings = new int[ _n ];
         _d_values = _d.getValues();
-        _m_values = new double[ _n ][ _n ];
         initExternalNodes();
     }
 
     private final void updateM() {
         calculateNetDivergences();
+        Double min = Double.MAX_VALUE;
+        _min_i = -1;
+        _min_j = -1;
         final int n_minus_2 = _n - 2;
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
             for( int i = 0; i < j; ++i ) {
-                _m_values[ i ][ j ] = _d_values[ _mappings[ i ] ][ m_j ] - ( ( _r[ i ] + r_j ) / n_minus_2 );
+                final double m = _d_values[ _mappings[ i ] ][ m_j ] - ( ( _r[ i ] + r_j ) / n_minus_2 );
+                if ( m < min ) {
+                    min = m;
+                    _min_i = i;
+                    _min_j = j;
+                }
             }
         }
     }

@@ -2579,7 +2579,7 @@ public class TestPhylogenyReconstruction {
 
     private static void timeNeighborJoining() {
         final NeighborJoiningF njf = NeighborJoiningF.createInstance();
-        for( int n = 3; n <= 8; ++n ) {
+        for( int n = 3; n <= 9; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
@@ -2588,7 +2588,7 @@ public class TestPhylogenyReconstruction {
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
         final NeighborJoining nj = NeighborJoining.createInstance();
-        for( int n = 3; n <= 8; ++n ) {
+        for( int n = 3; n <= 9; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
