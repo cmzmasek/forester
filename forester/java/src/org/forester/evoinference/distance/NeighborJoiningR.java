@@ -80,7 +80,7 @@ public final class NeighborJoiningR {
             final int otu2 = _min_j;
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
-            final double d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
+            final double d = getDvalue( otu1, otu2 );
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
             final double d2 = d - d1;
             if ( _df == null ) {
@@ -102,7 +102,7 @@ public final class NeighborJoiningR {
             updateMappings( otu2 );
             --_n;
         }
-        final double d = _d_values[ _mappings[ 0 ] ][ _mappings[ 1 ] ] / 2;
+        final double d = getDvalue( 0, 1 ) / 2;
         if ( _df == null ) {
             getExternalPhylogenyNode( 0 ).setDistanceToParent( d );
             getExternalPhylogenyNode( 1 ).setDistanceToParent( d );
@@ -132,30 +132,30 @@ public final class NeighborJoiningR {
     }
 
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
-        final int m_otu1 = _mappings[ otu1 ];
-        final int m_otu2 = _mappings[ otu2 ];
         for( int i = 0; i < _n; ++i ) {
             if ( ( i == otu1 ) || ( i == otu2 ) ) {
                 continue;
             }
-            final int m_i = _mappings[ i ];
-            if ( otu1 < i ) {
-                if ( otu2 > i ) {
-                    _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                }
-                else {
-                    _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                }
-            }
-            else {
-                if ( otu2 > i ) {
-                    _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                }
-                else {
-                    _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                }
-            }
+            updateDvalue( otu1, otu2, i, d );
         }
+    }
+
+    private final void updateDvalue( final int otu1, final int otu2, final int i, final double d ) {
+        setDvalue( otu1, i, ( getDvalue( otu1, i ) + getDvalue( i, otu2 ) - d ) / 2 );
+    }
+
+    private void setDvalue( final int i, final int j, final double d ) {
+        if ( i < j ) {
+            _d_values[ _mappings[ i ] ][ _mappings[ j ] ] = d;
+        }
+        _d_values[ _mappings[ j ] ][ _mappings[ i ] ] = d;
+    }
+
+    private double getDvalue( final int i, final int j ) {
+        if ( i < j ) {
+            return _d_values[ _mappings[ i ] ][ _mappings[ j ] ];
+        }
+        return _d_values[ _mappings[ j ] ][ _mappings[ i ] ];
     }
 
     private final void calculateNetDivergences() {
@@ -166,15 +166,9 @@ public final class NeighborJoiningR {
 
     private double calculateNetDivergence( final int i ) {
         double d = 0;
-        final int m_i = _mappings[ i ];
         for( int n = 0; n < _n; ++n ) {
             if ( i != n ) {
-                if ( i > n ) {
-                    d += _d_values[ _mappings[ n ] ][ m_i ];
-                }
-                else {
-                    d += _d_values[ m_i ][ _mappings[ n ] ];
-                }
+                d += getDvalue( n, i );
             }
         }
         return d;
@@ -264,8 +258,24 @@ public final class NeighborJoiningR {
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
+            final SortedMap<Double, SortedSet<Integer>> s_j = _s.get( m_j );
+            for( final Entry<Double, SortedSet<Integer>> entry : s_j.entrySet() ) {
+                //Double key = entry.getKey();
+                final SortedSet<Integer> value = entry.getValue();
+                for( final Integer sorted_i : value ) {
+                    System.out.print( sorted_i + " " );
+                    //                    final double m = _d_values[ _mappings[ sorted_i ] ][ m_j ]
+                    //                            - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                    //                    if ( m < min ) {
+                    //                        min = m;
+                    //                        _min_i = sorted_i;
+                    //                        _min_j = j;
+                    //                    }
+                }
+            }
+            System.out.println();
             for( int i = 0; i < j; ++i ) {
-                final double m = _d_values[ _mappings[ i ] ][ m_j ] - ( ( _r[ i ] + r_j ) / n_minus_2 );
+                final double m = getDvalue( i, j ) - ( ( _r[ i ] + r_j ) / n_minus_2 );
                 if ( m < min ) {
                     min = m;
                     _min_i = i;

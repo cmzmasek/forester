@@ -2238,6 +2238,25 @@ public class TestPhylogenyReconstruction {
             m0.setRow( "3 6 ", 2 );
             m0.setRow( "7.5 10.5 5.5", 3 );
             final Phylogeny p0 = nj.execute( m0 );
+            p0.reRoot( p0.getNode( "D" ) );
+            if ( isUnequal( p0.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
             BasicSymmetricalDistanceMatrix m = new BasicSymmetricalDistanceMatrix( 6 );
             m.setRow( "5", 1 );
             m.setRow( "4 7", 2 );
@@ -2252,6 +2271,43 @@ public class TestPhylogenyReconstruction {
             m.setIdentifier( 5, "F" );
             nj = NeighborJoiningR.createInstance();
             final Phylogeny p1 = nj.execute( m );
+            p1.reRoot( p1.getNode( "F" ) );
+            if ( isUnequal( p1.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "C" ).getDistanceToParent(), 2 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "D" ).getDistanceToParent(), 3 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "E" ).getDistanceToParent(), 2 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "F" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "B" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "D" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "E" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
