@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.NeighborJoiningF;
+import org.forester.evoinference.distance.NeighborJoiningR;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -66,13 +67,21 @@ public class TestPhylogenyReconstruction {
     }
 
     public static void main( final String[] args ) {
+        System.out.println( "NJ" );
         if ( testNeighborJoining() ) {
-            System.out.println( "OK." );
+            System.out.println( "  OK." );
         }
         else {
-            System.out.println( "failed." );
+            System.out.println( "  failed." );
         }
-        timeNeighborJoining();
+        System.out.println( "NJR" );
+        if ( testNeighborJoiningR() ) {
+            System.out.println( "  OK." );
+        }
+        else {
+            System.out.println( "  failed." );
+        }
+        //timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2209,6 +2218,40 @@ public class TestPhylogenyReconstruction {
                     .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testNeighborJoiningR() {
+        try {
+            NeighborJoiningR nj = NeighborJoiningR.createInstance();
+            final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
+            m0.setIdentifier( 0, "A" );
+            m0.setIdentifier( 1, "B" );
+            m0.setIdentifier( 2, "C" );
+            m0.setIdentifier( 3, "D" );
+            m0.setRow( "5 ", 1 );
+            m0.setRow( "3 6 ", 2 );
+            m0.setRow( "7.5 10.5 5.5", 3 );
+            final Phylogeny p0 = nj.execute( m0 );
+            BasicSymmetricalDistanceMatrix m = new BasicSymmetricalDistanceMatrix( 6 );
+            m.setRow( "5", 1 );
+            m.setRow( "4 7", 2 );
+            m.setRow( "7 10 7", 3 );
+            m.setRow( "6 9 6 5", 4 );
+            m.setRow( "8 11 8 9 8", 5 );
+            m.setIdentifier( 0, "A" );
+            m.setIdentifier( 1, "B" );
+            m.setIdentifier( 2, "C" );
+            m.setIdentifier( 3, "D" );
+            m.setIdentifier( 4, "E" );
+            m.setIdentifier( 5, "F" );
+            nj = NeighborJoiningR.createInstance();
+            final Phylogeny p1 = nj.execute( m );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
