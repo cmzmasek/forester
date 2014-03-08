@@ -20,14 +20,9 @@ public class S {
         _data = new ArrayList<SortedMap<Double, SortedSet<Integer>>>();
     }
 
-    void initialize( final BasicSymmetricalDistanceMatrix d ) {
-        for( int j = 0; j < d.getSize(); ++j ) {
-            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
-            _data.add( map );
-            for( int i = 0; i < j; ++i ) {
-                addValue( d.getValues()[ i ][ j ], i, map );
-            }
-        }
+    void addValue( final double key, final int value, final int j ) {
+        final SortedMap<Double, SortedSet<Integer>> m = _data.get( j );
+        addValue( key, value, m );
     }
 
     SortedMap<Double, SortedSet<Integer>> getS( final int j ) {
@@ -38,14 +33,19 @@ public class S {
         return _data.get( j ).entrySet();
     }
 
-    void addValue( double key, int value, int j ) {
-        SortedMap<Double, SortedSet<Integer>> m = _data.get( j );
-        addValue( key, value, m );
+    void initialize( final BasicSymmetricalDistanceMatrix d ) {
+        for( int j = 0; j < d.getSize(); ++j ) {
+            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
+            _data.add( map );
+            for( int i = 0; i < j; ++i ) {
+                addValue( d.getValues()[ i ][ j ], i, map );
+            }
+        }
     }
 
-    static void addValue( double key, int value, SortedMap<Double, SortedSet<Integer>> m ) {
+    static void addValue( final double key, final int value, final SortedMap<Double, SortedSet<Integer>> m ) {
         if ( !m.containsKey( key ) ) {
-            TreeSet<Integer> x = new TreeSet<Integer>();
+            final TreeSet<Integer> x = new TreeSet<Integer>();
             x.add( value );
             m.put( key, x );
         }
