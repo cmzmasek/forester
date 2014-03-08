@@ -2230,7 +2230,7 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testNeighborJoiningR() {
         try {
-            NeighborJoiningR nj = NeighborJoiningR.createInstance();
+            final NeighborJoiningR nj = NeighborJoiningR.createInstance();
             //            final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
             //            m0.setIdentifier( 0, "A" );
             //            m0.setIdentifier( 1, "B" );
@@ -2328,7 +2328,7 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            NeighborJoiningR njr = NeighborJoiningR.createInstance( true, 6 );
+            final NeighborJoiningR njr = NeighborJoiningR.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny p2 = njr.execute( m );
             //  Archaeopteryx.createApplication( p2 );
