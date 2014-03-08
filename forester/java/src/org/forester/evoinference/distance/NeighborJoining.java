@@ -72,6 +72,7 @@ public final class NeighborJoining {
             updateM();
             final int otu1 = _min_i;
             final int otu2 = _min_j;
+            System.out.println( _min_i + " " + _min_j );
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
             final double d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
@@ -192,10 +193,24 @@ public final class NeighborJoining {
     }
 
     private final void printProgress( final int otu1, final int otu2 ) {
-        final PhylogenyNode n1 = getExternalPhylogenyNode( otu1 );
-        final PhylogenyNode n2 = getExternalPhylogenyNode( otu2 );
-        System.out.println( "Node " + ( ForesterUtil.isEmpty( n1.getName() ) ? n1.getId() : n1.getName() ) + " joins "
-                + ( ForesterUtil.isEmpty( n2.getName() ) ? n2.getId() : n2.getName() ) );
+        System.out.println( "Node " + printProgressNodeToString( getExternalPhylogenyNode( otu1 ) ) + " joins "
+                + ( printProgressNodeToString( getExternalPhylogenyNode( otu2 ) ) ) );
+    }
+
+    private final String printProgressNodeToString( final PhylogenyNode n ) {
+        if ( n.isExternal() ) {
+            if ( ForesterUtil.isEmpty( n.getName() ) ) {
+                return Long.toString( n.getId() );
+            }
+            return n.getName();
+        }
+        return n.getId()
+                + " ("
+                + ( ForesterUtil.isEmpty( n.getChildNode1().getName() ) ? n.getChildNode1().getId() : n.getChildNode1()
+                        .getName() )
+                + "+"
+                + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
+                        .getName() ) + ")";
     }
 
     // only the values in the lower triangle are used.

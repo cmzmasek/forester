@@ -29,10 +29,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.phylogeny.Phylogeny;
@@ -41,17 +38,19 @@ import org.forester.util.ForesterUtil;
 
 public final class NeighborJoiningR {
 
-    private BasicSymmetricalDistanceMatrix              _d;
-    private double[][]                                  _d_values;
-    private final DecimalFormat                         _df;
-    private PhylogenyNode[]                             _external_nodes;
-    private int[]                                       _mappings;
-    private int                                         _n;
-    private double[]                                    _r;
-    private final boolean                               _verbose;
-    private int                                         _min_i;
-    private int                                         _min_j;
-    private List<SortedMap<Double, SortedSet<Integer>>> _s;
+    private final static DecimalFormat     DF = new DecimalFormat( "0.00" );
+    private BasicSymmetricalDistanceMatrix _d;
+    private double[][]                     _d_values;
+    private final DecimalFormat            _df;
+    private PhylogenyNode[]                _external_nodes;
+    private int[]                          _mappings;
+    private int                            _n;
+    private double[]                       _r;
+    private final boolean                  _verbose;
+    private int                            _min_i;
+    private int                            _min_j;
+    private S                              _s;
+    private double                         _d_min;                          //TODO remove me
 
     private NeighborJoiningR() {
         _verbose = false;
@@ -73,11 +72,14 @@ public final class NeighborJoiningR {
         reset( distance );
         final Phylogeny phylogeny = new Phylogeny();
         while ( _n > 2 ) {
+            System.out.println( "N=" + _n );
+            System.out.println();
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
-            updateM();
+            final double m = updateM();
             final int otu1 = _min_i;
             final int otu2 = _min_j;
+            System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
             final double d = getDvalue( otu1, otu2 );
@@ -101,6 +103,8 @@ public final class NeighborJoiningR {
             _external_nodes[ _mappings[ otu1 ] ] = node;
             updateMappings( otu2 );
             --_n;
+            System.out.println( "-------------------------------------------------------------" );
+            System.out.println( "" );
         }
         final double d = getDvalue( 0, 1 ) / 2;
         if ( _df == null ) {
@@ -158,6 +162,13 @@ public final class NeighborJoiningR {
         return _d_values[ _mappings[ j ] ][ _mappings[ i ] ];
     }
 
+    private double getDvalueUnmapped( final int i, final int j ) {
+        if ( i < j ) {
+            return _d_values[ i ][ j ];
+        }
+        return _d_values[ j ][ i ];
+    }
+
     private final void calculateNetDivergences() {
         for( int i = 0; i < _n; ++i ) {
             _r[ i ] = calculateNetDivergence( i );
@@ -195,10 +206,24 @@ public final class NeighborJoiningR {
     }
 
     private final void printProgress( final int otu1, final int otu2 ) {
-        final PhylogenyNode n1 = getExternalPhylogenyNode( otu1 );
-        final PhylogenyNode n2 = getExternalPhylogenyNode( otu2 );
-        System.out.println( "Node " + ( ForesterUtil.isEmpty( n1.getName() ) ? n1.getId() : n1.getName() ) + " joins "
-                + ( ForesterUtil.isEmpty( n2.getName() ) ? n2.getId() : n2.getName() ) );
+        System.out.println( "Node " + printProgressNodeToString( getExternalPhylogenyNode( otu1 ) ) + " joins "
+                + ( printProgressNodeToString( getExternalPhylogenyNode( otu2 ) ) ) );
+    }
+
+    private final String printProgressNodeToString( final PhylogenyNode n ) {
+        if ( n.isExternal() ) {
+            if ( ForesterUtil.isEmpty( n.getName() ) ) {
+                return Long.toString( n.getId() );
+            }
+            return n.getName();
+        }
+        return n.getId()
+                + " ("
+                + ( ForesterUtil.isEmpty( n.getChildNode1().getName() ) ? n.getChildNode1().getId() : n.getChildNode1()
+                        .getName() )
+                + "+"
+                + ( ForesterUtil.isEmpty( n.getChildNode2().getName() ) ? n.getChildNode2().getId() : n.getChildNode2()
+                        .getName() ) + ")";
     }
 
     // only the values in the lower triangle are used.
@@ -209,17 +234,8 @@ public final class NeighborJoiningR {
         _r = new double[ _n ];
         _mappings = new int[ _n ];
         _d_values = _d.getValues();
-        _s = new ArrayList<SortedMap<Double, SortedSet<Integer>>>();
-        for( int j = 0; j < _n; ++j ) {
-            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
-            for( int i = 0; i < j; ++i ) {
-                if ( !map.containsKey( _d_values[ i ][ j ] ) ) {
-                    map.put( _d_values[ i ][ j ], new TreeSet<Integer>() );
-                }
-                map.get( _d_values[ i ][ j ] ).add( i );
-            }
-            _s.add( map );
-        }
+        _s = new S();
+        _s.initialize( distances );
         initExternalNodes();
         printM();
     }
@@ -227,14 +243,14 @@ public final class NeighborJoiningR {
     final private void printM() {
         for( int j = 1; j < _n; ++j ) {
             for( int i = 0; i < _n; ++i ) {
-                System.out.print( _d_values[ i ][ j ] );
+                System.out.print( DF.format( _d_values[ _mappings[ i ] ][ _mappings[ j ] ] ) );
                 System.out.print( " " );
             }
             System.out.print( "    " );
-            for( final Entry<Double, SortedSet<Integer>> entry : _s.get( j ).entrySet() ) {
+            for( final Entry<Double, SortedSet<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
                 final double key = entry.getKey();
                 final SortedSet<Integer> value = entry.getValue();
-                System.out.print( key + "=" );
+                System.out.print( DF.format( key ) + "=" );
                 boolean first = true;
                 for( final Integer v : value ) {
                     if ( !first ) {
@@ -249,7 +265,8 @@ public final class NeighborJoiningR {
         }
     }
 
-    private final void updateM() {
+    private final double updateM() {
+        printM();
         calculateNetDivergences();
         Double min = Double.MAX_VALUE;
         _min_i = -1;
@@ -258,31 +275,42 @@ public final class NeighborJoiningR {
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            final SortedMap<Double, SortedSet<Integer>> s_j = _s.get( m_j );
-            for( final Entry<Double, SortedSet<Integer>> entry : s_j.entrySet() ) {
-                //Double key = entry.getKey();
-                final SortedSet<Integer> value = entry.getValue();
-                for( final Integer sorted_i : value ) {
-                    System.out.print( sorted_i + " " );
-                    //                    final double m = _d_values[ _mappings[ sorted_i ] ][ m_j ]
-                    //                            - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
-                    //                    if ( m < min ) {
-                    //                        min = m;
-                    //                        _min_i = sorted_i;
-                    //                        _min_j = j;
-                    //                    }
+            int counter = 0;
+            int counter_all = 0;
+            X: for( final Entry<Double, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                for( final int sorted_i : entry.getValue() ) {
+                    //if ( counter_all >= j ) {
+                    //    break X;
+                    //}
+                    if ( _mappings[ counter ] == counter_all ) {
+                        System.out.print( sorted_i + " " );
+                        System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
+                        final double m = getDvalueUnmapped( sorted_i, m_j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                        if ( m < min ) {
+                            _d_min = getDvalueUnmapped( sorted_i, m_j );
+                            min = m;
+                            _min_i = sorted_i;
+                            _min_j = j;
+                        }
+                        ++counter;
+                    }
+                    ++counter_all;
                 }
             }
             System.out.println();
+            /*
             for( int i = 0; i < j; ++i ) {
                 final double m = getDvalue( i, j ) - ( ( _r[ i ] + r_j ) / n_minus_2 );
                 if ( m < min ) {
                     min = m;
+                    _d_min = getDvalue( i, j );
                     _min_i = i;
                     _min_j = j;
                 }
-            }
+            }*/
         }
+        System.out.println();
+        return min;
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.
