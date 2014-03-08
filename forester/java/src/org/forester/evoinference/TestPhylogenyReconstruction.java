@@ -2230,7 +2230,7 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testNeighborJoiningR() {
         try {
-            final NeighborJoiningR nj = NeighborJoiningR.createInstance();
+            //            final NeighborJoiningR nj0 = NeighborJoiningR.createInstance();
             //            final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
             //            m0.setIdentifier( 0, "A" );
             //            m0.setIdentifier( 1, "B" );
@@ -2239,7 +2239,7 @@ public class TestPhylogenyReconstruction {
             //            m0.setRow( "5 ", 1 );
             //            m0.setRow( "3 6 ", 2 );
             //            m0.setRow( "7.5 10.5 5.5", 3 );
-            //            final Phylogeny p0 = nj.execute( m0 );
+            //            final Phylogeny p0 = nj0.execute( m0 );
             //            p0.reRoot( p0.getNode( "D" ) );
             //            //  Archaeopteryx.createApplication( p0 );
             //            if ( isUnequal( p0.getNode( "A" ).getDistanceToParent(), 1 ) ) {
@@ -2272,8 +2272,8 @@ public class TestPhylogenyReconstruction {
             //            m.setIdentifier( 3, "D" );
             //            m.setIdentifier( 4, "E" );
             //            m.setIdentifier( 5, "F" );
-            //            nj = NeighborJoiningR.createInstance();
-            //            final Phylogeny p1 = nj.execute( m );
+            //            final NeighborJoiningR nj1 = NeighborJoiningR.createInstance();
+            //            final Phylogeny p1 = nj1.execute( m );
             //            p1.reRoot( p1.getNode( "F" ) );
             //            Archaeopteryx.createApplication( p1 );
             //            if ( isUnequal( p1.getNode( "A" ).getDistanceToParent(), 1 ) ) {
@@ -2328,9 +2328,9 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            final NeighborJoiningR njr = NeighborJoiningR.createInstance( true, 6 );
+            final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
-            final Phylogeny p2 = njr.execute( m );
+            final Phylogeny p2 = nj2.execute( m );
             //  Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
             if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
