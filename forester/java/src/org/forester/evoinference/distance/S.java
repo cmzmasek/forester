@@ -13,19 +13,88 @@ import java.util.TreeSet;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 
-public class S {
+public final class S {
 
+    private final static boolean                              DEBUG = true;
     private final List<SortedMap<Double, SortedSet<Integer>>> _data;
 
-    S() {
+    public S() {
         _data = new ArrayList<SortedMap<Double, SortedSet<Integer>>>();
     }
 
+    final public void addPairing( final double key, final int value, final int j ) {
+        addPairing( key, value, getS( j ) );
+    }
+
+    final public SortedMap<Double, SortedSet<Integer>> getS( final int j ) {
+        return _data.get( j );
+    }
+
+    final public SortedSet<Integer> getValues( final double key, final int j ) {
+        return getS( j ).get( key );
+    }
+
+    final public void initialize( final BasicSymmetricalDistanceMatrix d ) {
+        for( int j = 0; j < d.getSize(); ++j ) {
+            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
+            _data.add( map );
+            for( int i = 0; i < j; ++i ) {
+                addPairing( d.getValues()[ i ][ j ], i, map );
+            }
+        }
+        System.out.println( toString() );
+    }
+
+    final public void initialize( final int size ) {
+        for( int j = 0; j < size; ++j ) {
+            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
+            _data.add( map );
+        }
+    }
+
+    final public void removePairing( final double key, final int value, final int j ) {
+        final SortedMap<Double, SortedSet<Integer>> m = _data.get( j );
+        final SortedSet<Integer> x = m.get( key );
+        if ( x.size() == 1 ) {
+            if ( DEBUG ) {
+                if ( !x.contains( value ) ) {
+                    throw new IllegalArgumentException( "pairing " + key + " -> " + value + " does not exist for row "
+                            + j );
+                }
+            }
+            m.remove( key );
+        }
+        else if ( x.size() > 1 ) {
+            if ( DEBUG ) {
+                if ( !x.remove( value ) ) {
+                    throw new IllegalArgumentException( "pairing " + key + " -> " + value
+                            + " does not exist (could not be removed) for row " + j );
+                }
+            }
+            else {
+                x.remove( value );
+            }
+        }
+        else if ( DEBUG ) {
+            throw new IllegalStateException();
+        }
+    }
+
+    final public int size() {
+        return _data.size();
+    }
+
+    // Slow, only for testing
+    @SuppressWarnings( "unchecked")
+    final public SortedSet<Integer>[] toArray( final int j ) {
+        return _data.get( j ).values().toArray( new SortedSet[ _data.get( j ).size() ] );
+    }
+
     @Override
-    public String toString() {
+    final public String toString() {
         final DecimalFormat df = new DecimalFormat( "0.00" );
         final StringBuilder sb = new StringBuilder();
-        for( int j = 1; j < size(); ++j ) {
+        for( int j = 0; j < size(); ++j ) {
             for( final Entry<Double, SortedSet<Integer>> entry : getSentrySet( j ) ) {
                 final double key = entry.getKey();
                 final SortedSet<Integer> values = entry.getValue();
@@ -45,67 +114,23 @@ public class S {
         return sb.toString();
     }
 
-    void addPairing( final double key, final int value, final int j ) {
-        final SortedMap<Double, SortedSet<Integer>> m = getS( j );
-        addPairing( key, value, m );
-    }
-
-    SortedMap<Double, SortedSet<Integer>> getS( final int j ) {
-        return _data.get( j );
-    }
-
-    Set<Entry<Double, SortedSet<Integer>>> getSentrySet( final int j ) {
+    final Set<Entry<Double, SortedSet<Integer>>> getSentrySet( final int j ) {
         return getS( j ).entrySet();
     }
 
-    void initialize( final BasicSymmetricalDistanceMatrix d ) {
-        for( int j = 0; j < d.getSize(); ++j ) {
-            final TreeMap<Double, SortedSet<Integer>> map = new TreeMap<Double, SortedSet<Integer>>();
-            _data.add( map );
-            for( int i = 0; i < j; ++i ) {
-                addPairing( d.getValues()[ i ][ j ], i, map );
-            }
-        }
-        System.out.println( toString() );
-    }
-
-    void removePairing( final double key, final int value, final int j ) {
-        final SortedMap<Double, SortedSet<Integer>> m = _data.get( j );
-        final SortedSet<Integer> x = m.get( key );
-        if ( x.size() == 1 ) {
-            if ( !x.contains( value ) ) {
-                //TODO remove me later
-                throw new IllegalStateException( "pairing " + key + " -> " + value + " does not exist" );
-            }
-            m.remove( key );
-        }
-        else if ( x.size() > 1 ) {
-            final boolean removed = x.remove( value );
-            if ( !removed ) {
-                //TODO remove me later
-                throw new IllegalStateException( "pairing " + key + " -> " + value + " does not exist/was not removed" );
-            }
-        }
-        else {
-            //TODO remove me later
-            throw new IllegalStateException( "empty" );
-        }
-    }
-
-    int size() {
-        return _data.size();
-    }
-
-    private static void addPairing( final double key, final int value, final SortedMap<Double, SortedSet<Integer>> m ) {
+    final private static void addPairing( final double key,
+                                          final int value,
+                                          final SortedMap<Double, SortedSet<Integer>> m ) {
         if ( !m.containsKey( key ) ) {
             final TreeSet<Integer> x = new TreeSet<Integer>();
             x.add( value );
             m.put( key, x );
         }
         else {
-            if ( m.get( key ).contains( value ) ) {
-                //TODO remove me later
-                throw new IllegalStateException( "pairing " + key + " -> " + value + " already exists" );
+            if ( DEBUG ) {
+                if ( m.get( key ).contains( value ) ) {
+                    throw new IllegalArgumentException( "pairing " + key + " -> " + value + " already exists" );
+                }
             }
             m.get( key ).add( value );
         }
