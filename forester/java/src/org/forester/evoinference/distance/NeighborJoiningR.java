@@ -81,6 +81,9 @@ public final class NeighborJoiningR {
             final int otu2 = _min_j;
             System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
             // It is a condition that otu1 < otu2.
+            //for( int j = 0; j < _s.size(); ++j ) {
+            _s.removePairing( _d_min, _min_i, 1 );
+            // }
             final PhylogenyNode node = new PhylogenyNode();
             final double d = getDvalue( otu1, otu2 );
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
@@ -145,7 +148,9 @@ public final class NeighborJoiningR {
     }
 
     private final void updateDvalue( final int otu1, final int otu2, final int i, final double d ) {
-        setDvalue( otu1, i, ( getDvalue( otu1, i ) + getDvalue( i, otu2 ) - d ) / 2 );
+        final double new_d = ( getDvalue( otu1, i ) + getDvalue( i, otu2 ) - d ) / 2;
+        _s.addPairing( new_d, otu1, i );
+        setDvalue( otu1, i, new_d );
     }
 
     private void setDvalue( final int i, final int j, final double d ) {
@@ -247,10 +252,10 @@ public final class NeighborJoiningR {
                 System.out.print( " " );
             }
             System.out.print( "    " );
-            for( final Entry<Double, SortedSet<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
+            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
                 final double key = entry.getKey();
                 final SortedSet<Integer> value = entry.getValue();
-                System.out.print( DF.format( key ) + "=" );
+                System.out.print( DF.format( key / S.FACTOR ) + "=" );
                 boolean first = true;
                 for( final Integer v : value ) {
                     if ( !first ) {
@@ -277,17 +282,17 @@ public final class NeighborJoiningR {
             final int m_j = _mappings[ j ];
             int counter = 0;
             int counter_all = 0;
-            X: for( final Entry<Double, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     //if ( counter_all >= j ) {
                     //    break X;
                     //}
                     if ( _mappings[ counter ] == counter_all ) {
                         System.out.print( sorted_i + " " );
-                        System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
-                        final double m = getDvalueUnmapped( sorted_i, m_j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
-                        if ( m < min ) {
-                            _d_min = getDvalueUnmapped( sorted_i, m_j );
+                        System.out.print( "(" + DF.format( getDvalue( sorted_i, j ) ) + ") " );
+                        final double m = getDvalue( sorted_i, j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                        if ( ( m < min ) && ( sorted_i != j ) ) {
+                            _d_min = getDvalue( sorted_i, j );
                             min = m;
                             _min_i = sorted_i;
                             _min_j = j;

@@ -2248,10 +2248,7 @@ public class TestPhylogenyReconstruction {
             final S s0 = new S();
             s0.initialize( 1 );
             s0.addPairing( 0, 1, 0 );
-            s0.addPairing( 7.0000001, 8, 0 );
-            s0.addPairing( 7.00000011, 9, 0 );
-            s0.addPairing( 7.000000111, 10, 0 );
-            s0.addPairing( 7.000000111, 101, 0 );
+            s0.addPairing( 7, 8, 0 );
             s0.addPairing( 4, 55, 0 );
             s0.addPairing( 2, 3, 0 );
             s0.addPairing( 4, 5, 0 );
@@ -2265,7 +2262,7 @@ public class TestPhylogenyReconstruction {
             if ( s0.size() != 1 ) {
                 return false;
             }
-            if ( s0.getS( 0 ).size() != 10 ) {
+            if ( s0.getS( 0 ).size() != 8 ) {
                 return false;
             }
             if ( s0.getValues( 0, 0 ).size() != 1 ) {
@@ -2289,13 +2286,7 @@ public class TestPhylogenyReconstruction {
             if ( s0.getValues( 6, 0 ).size() != 1 ) {
                 return false;
             }
-            if ( s0.getValues( 7.0000001, 0 ).size() != 1 ) {
-                return false;
-            }
-            if ( s0.getValues( 7.00000011, 0 ).size() != 1 ) {
-                return false;
-            }
-            if ( s0.getValues( 7.000000111, 0 ).size() != 2 ) {
+            if ( s0.getValues( 7, 0 ).size() != 1 ) {
                 return false;
             }
             if ( !s0.getValues( 0, 0 ).contains( 1 ) ) {
@@ -2328,15 +2319,15 @@ public class TestPhylogenyReconstruction {
             if ( s0.getValues( 5, 0 ).size() != 1 ) {
                 return false;
             }
-            if ( s0.getS( 0 ).size() != 10 ) {
+            if ( s0.getS( 0 ).size() != 8 ) {
                 return false;
             }
             s0.removePairing( 5, 6, 0 );
-            if ( s0.getS( 0 ).size() != 9 ) {
+            if ( s0.getS( 0 ).size() != 7 ) {
                 return false;
             }
             s0.addPairing( 5, 6, 0 );
-            if ( s0.getS( 0 ).size() != 10 ) {
+            if ( s0.getS( 0 ).size() != 8 ) {
                 return false;
             }
             if ( s0.getValues( 5, 0 ).size() != 1 ) {
@@ -2352,9 +2343,9 @@ public class TestPhylogenyReconstruction {
             if ( !s0.getValues( 5, 0 ).contains( 403 ) ) {
                 return false;
             }
-            s0.addPairing( 693.539324, 100, 0 );
-            s0.addPairing( 693.539324, 101, 0 );
-            if ( s0.getValues( 693.539324, 0 ).size() != 2 ) {
+            s0.addPairing( 693, 100, 0 );
+            s0.addPairing( 693, 101, 0 );
+            if ( s0.getValues( 693, 0 ).size() != 2 ) {
                 return false;
             }
             s0.addPairing( 2, 33, 0 );
@@ -2379,39 +2370,6 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             if ( !a[ 2 ].contains( 333 ) ) {
-                return false;
-            }
-            if ( a[ 2 ].size() != 3 ) {
-                return false;
-            }
-            if ( a[ 8 ].size() != 1 ) {
-                return false;
-            }
-            if ( !a[ 8 ].contains( 9 ) ) {
-                return false;
-            }
-            if ( a[ 9 ].size() != 2 ) {
-                return false;
-            }
-            if ( !a[ 9 ].contains( 10 ) ) {
-                return false;
-            }
-            if ( !a[ 9 ].contains( 101 ) ) {
-                return false;
-            }
-            if ( !a[ 10 ].contains( 100 ) ) {
-                return false;
-            }
-            if ( !a[ 10 ].contains( 101 ) ) {
-                return false;
-            }
-            if ( a[ 4 ].size() != 2 ) {
-                return false;
-            }
-            if ( !a[ 4 ].contains( 5 ) ) {
-                return false;
-            }
-            if ( !a[ 4 ].contains( 55 ) ) {
                 return false;
             }
         }
