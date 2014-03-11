@@ -38,7 +38,7 @@ import org.forester.util.ForesterUtil;
 
 public final class NeighborJoiningR {
 
-    private final static DecimalFormat     DF = new DecimalFormat( "0.00" );
+    private final static DecimalFormat     DF = new DecimalFormat( "0.00000" );
     private BasicSymmetricalDistanceMatrix _d;
     private double[][]                     _d_values;
     private final DecimalFormat            _df;
@@ -50,7 +50,7 @@ public final class NeighborJoiningR {
     private int                            _min_i;
     private int                            _min_j;
     private S                              _s;
-    private double                         _d_min;                          //TODO remove me
+    private double                         _d_min;                             //TODO remove me
 
     private NeighborJoiningR() {
         _verbose = false;
@@ -81,9 +81,6 @@ public final class NeighborJoiningR {
             final int otu2 = _min_j;
             System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
             // It is a condition that otu1 < otu2.
-            //for( int j = 0; j < _s.size(); ++j ) {
-            _s.removePairing( _d_min, _min_i, 1 );
-            // }
             final PhylogenyNode node = new PhylogenyNode();
             final double d = getDvalue( otu1, otu2 );
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
@@ -100,13 +97,16 @@ public final class NeighborJoiningR {
             node.addAsChild( getExternalPhylogenyNode( otu1 ) );
             node.addAsChild( getExternalPhylogenyNode( otu2 ) );
             if ( _verbose ) {
-                printProgress( otu1, otu2 );
+                printProgress( otu1, otu2, node );
             }
+            System.out.println( "otu1=" + otu1 );
+            System.out.println( "otu2=" + otu2 );
             calculateDistancesFromNewNode( otu1, otu2, d );
             _external_nodes[ _mappings[ otu1 ] ] = node;
             updateMappings( otu2 );
             --_n;
-            System.out.println( "-------------------------------------------------------------" );
+            System.out.println( "" );
+            System.out.println( "----------------------------------------------------------------------------------" );
             System.out.println( "" );
         }
         final double d = getDvalue( 0, 1 ) / 2;
@@ -123,7 +123,7 @@ public final class NeighborJoiningR {
         root.addAsChild( getExternalPhylogenyNode( 0 ) );
         root.addAsChild( getExternalPhylogenyNode( 1 ) );
         if ( _verbose ) {
-            printProgress( 0, 1 );
+            printProgress( 0, 1, root );
         }
         phylogeny.setRoot( root );
         phylogeny.setRooted( false );
@@ -139,18 +139,25 @@ public final class NeighborJoiningR {
     }
 
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
-        for( int i = 0; i < _n; ++i ) {
-            if ( ( i == otu1 ) || ( i == otu2 ) ) {
+        System.out.print( "new D values: " );
+        for( int j = 0; j < _n; ++j ) {
+            if ( ( j == otu1 ) || ( j == otu2 ) ) {
                 continue;
             }
-            updateDvalue( otu1, otu2, i, d );
+            updateDvalue( otu1, otu2, j, d );
         }
+        System.out.println();
     }
 
-    private final void updateDvalue( final int otu1, final int otu2, final int i, final double d ) {
-        final double new_d = ( getDvalue( otu1, i ) + getDvalue( i, otu2 ) - d ) / 2;
-        _s.addPairing( new_d, otu1, i );
-        setDvalue( otu1, i, new_d );
+    private final void updateDvalue( final int otu1, final int otu2, final int j, final double d ) {
+        final double new_d = ( getDvalue( otu1, j ) + getDvalue( j, otu2 ) - d ) / 2;
+        System.out.print( DF.format( new_d ) + " " );
+        System.out.println( "going to remove: " + getDvalue( otu1, j ) + ", " + otu1 + ", " + _mappings[ j ] );
+        _s.removePairing( getDvalue( otu1, j ), _mappings[ otu1 ], _mappings[ j ] );
+        System.out.println( "going to remove: " + getDvalue( j, otu2 ) + ", " + otu2 + ", " + _mappings[ j ] );
+        _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], _mappings[ j ] );
+        _s.addPairing( new_d, otu1, _mappings[ j ] );
+        setDvalue( otu1, j, new_d );
     }
 
     private void setDvalue( final int i, final int j, final double d ) {
@@ -210,9 +217,10 @@ public final class NeighborJoiningR {
         }
     }
 
-    private final void printProgress( final int otu1, final int otu2 ) {
+    private final void printProgress( final int otu1, final int otu2, final PhylogenyNode node ) {
         System.out.println( "Node " + printProgressNodeToString( getExternalPhylogenyNode( otu1 ) ) + " joins "
-                + ( printProgressNodeToString( getExternalPhylogenyNode( otu2 ) ) ) );
+                + ( printProgressNodeToString( getExternalPhylogenyNode( otu2 ) ) ) + " [resulting in node "
+                + ( printProgressNodeToString( node ) ) + "]" );
     }
 
     private final String printProgressNodeToString( final PhylogenyNode n ) {
@@ -242,22 +250,26 @@ public final class NeighborJoiningR {
         _s = new S();
         _s.initialize( distances );
         initExternalNodes();
+        System.out.println();
         printM();
+        System.out.println( "----------------------------------------------------------------------------------" );
+        System.out.println();
+        System.out.println();
     }
 
     final private void printM() {
-        for( int j = 1; j < _n; ++j ) {
+        for( int j = 0; j < _n; ++j ) {
+            System.out.print( getExternalPhylogenyNode( j ) );
+            System.out.print( "\t\t" );
             for( int i = 0; i < _n; ++i ) {
                 System.out.print( DF.format( _d_values[ _mappings[ i ] ][ _mappings[ j ] ] ) );
                 System.out.print( " " );
             }
-            System.out.print( "    " );
+            System.out.print( "\t\t" );
             for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
-                final double key = entry.getKey();
-                final SortedSet<Integer> value = entry.getValue();
-                System.out.print( DF.format( key / S.FACTOR ) + "=" );
+                System.out.print( DF.format( ( double ) entry.getKey() / S.FACTOR ) + "=" );
                 boolean first = true;
-                for( final Integer v : value ) {
+                for( final int v : entry.getValue() ) {
                     if ( !first ) {
                         System.out.print( "," );
                     }
@@ -271,35 +283,26 @@ public final class NeighborJoiningR {
     }
 
     private final double updateM() {
-        printM();
         calculateNetDivergences();
         Double min = Double.MAX_VALUE;
         _min_i = -1;
         _min_j = -1;
         final int n_minus_2 = _n - 2;
+        printM();
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            int counter = 0;
-            int counter_all = 0;
             for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
-                    //if ( counter_all >= j ) {
-                    //    break X;
-                    //}
-                    if ( _mappings[ counter ] == counter_all ) {
-                        System.out.print( sorted_i + " " );
-                        System.out.print( "(" + DF.format( getDvalue( sorted_i, j ) ) + ") " );
-                        final double m = getDvalue( sorted_i, j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
-                        if ( ( m < min ) && ( sorted_i != j ) ) {
-                            _d_min = getDvalue( sorted_i, j );
-                            min = m;
-                            _min_i = sorted_i;
-                            _min_j = j;
-                        }
-                        ++counter;
+                    System.out.print( sorted_i + " " );
+                    System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
+                    final double m = getDvalue( sorted_i, j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                    if ( ( m < min ) && ( sorted_i != j ) ) {
+                        _d_min = getDvalueUnmapped( sorted_i, m_j );
+                        min = m;
+                        _min_i = sorted_i;
+                        _min_j = j;
                     }
-                    ++counter_all;
                 }
             }
             System.out.println();

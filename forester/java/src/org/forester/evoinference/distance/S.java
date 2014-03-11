@@ -66,6 +66,9 @@ public final class S {
         final SortedSet<Integer> x = m.get( key );
         if ( DEBUG ) {
             if ( x == null ) {
+                System.out.println();
+                System.out
+                        .println( "________________________________________________________________________________________" );
                 System.out.println( toString() );
                 throw new IllegalArgumentException( "key " + key + " (->" + value + ") does not exist for row " + j );
             }
@@ -73,6 +76,10 @@ public final class S {
         if ( x.size() == 1 ) {
             if ( DEBUG ) {
                 if ( !x.contains( value ) ) {
+                    System.out.println();
+                    System.out
+                            .println( "________________________________________________________________________________________" );
+                    System.out.println( toString() );
                     throw new IllegalArgumentException( "pairing " + key + "->" + value + " does not exist for row "
                             + j );
                 }
@@ -107,9 +114,11 @@ public final class S {
 
     @Override
     final public String toString() {
-        final DecimalFormat df = new DecimalFormat( "0.00" );
+        final DecimalFormat df = new DecimalFormat( "0.0000" );
         final StringBuilder sb = new StringBuilder();
         for( int j = 0; j < size(); ++j ) {
+            sb.append( j );
+            sb.append( ": " );
             for( final Entry<Integer, SortedSet<Integer>> entry : getSentrySet( j ) ) {
                 final double key = entry.getKey();
                 final SortedSet<Integer> values = entry.getValue();
