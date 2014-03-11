@@ -2196,16 +2196,17 @@ public class surfacing {
         System.out.println( DA_ANALYSIS_OPTION + ": to perform DA analysis" );
         System.out.println( PERFORM_DOMAIN_LENGTH_ANALYSIS_OPTION + ": to perform domain length analysis" );
         System.out.println();
-        System.out.println( "Example 1: java -Xms128m -Xmx512m -cp path/to/forester.jar"
-                + " org.forester.application.surfacing p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
+        System.out.println( "Example 1: surfacing -p2g=pfam2go_2012_02_07.txt -dufs -cos=Pfam_260_NC1"
                 + " -no_eo -mo=0 -genomes=eukaryotes.txt -out_dir=out -o=o "
                 + " -species_tree=tol.xml -obo=gene_ontology_2012_02_07.obo -pos_filter=f.txt -all_prot" );
         System.out.println();
-        System.out.println( "Example 2: java -Xms128m -Xmx512m -cp path/to/forester.jar"
-                + " org.forester.application.surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
+        System.out.println( "Example 2: surfacing -detail=punctilious -o=TEST.html -pwc=TEST"
                 + " -cos=Pfam_ls_22_TC2 -p2g=pfam2go -obo=gene_ontology_edit.obo "
                 + "-dc_sort=dom -ignore_with_self -no_singles -ie=0.001 -mo=1 -no_eo -genomes=eukaryotes.txt "
                 + "-ds_output=detailed_html -scoring=domains -sort=alpha " );
+        System.out.println();
+        System.out
+                .println( "Example 3: surfacing -p2g=pfam2go_130621.txt -obo=gene_onotology_130621.obo -species_tree=tol_155.xml -last -detail=punctilious -ignore_viral_ids -no_eo -ie=1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=1 -out_dir=_tf1_e1_ape1 -o=tf1_e1_ape1" );
         System.out.println();
     }
 }
