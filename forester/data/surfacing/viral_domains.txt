@@ -25,6 +25,7 @@ gpD
 gpW
 Gypsy
 HDPD
+Herpes_Helicase
 Hemagglutinin
 Hema_stalk
 HN
@@ -40,6 +41,8 @@ REV
 Rhabdo_glycop
 Rhabdo_ncap
 RnaseH
+rve
+RVT_1
 Rz1
 Terminase_1
 Terminase_2
