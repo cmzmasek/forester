@@ -36,7 +36,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.util.ForesterUtil;
 
-public final class NeighborJoiningR {
+public final class CopyOfNeighborJoiningR {
 
     private final static DecimalFormat     DF = new DecimalFormat( "0.00000" );
     private BasicSymmetricalDistanceMatrix _d;
@@ -52,12 +52,12 @@ public final class NeighborJoiningR {
     private S                              _s;
     private double                         _d_min;                             //TODO remove me
 
-    private NeighborJoiningR() {
+    private CopyOfNeighborJoiningR() {
         _verbose = false;
         _df = null;
     }
 
-    private NeighborJoiningR( final boolean verbose, final int maximum_fraction_digits_for_distances ) {
+    private CopyOfNeighborJoiningR( final boolean verbose, final int maximum_fraction_digits_for_distances ) {
         if ( ( maximum_fraction_digits_for_distances < 1 ) || ( maximum_fraction_digits_for_distances > 9 ) ) {
             throw new IllegalArgumentException( "maximum fraction digits for distances is out of range: "
                     + maximum_fraction_digits_for_distances );
@@ -84,22 +84,23 @@ public final class NeighborJoiningR {
             System.out.println( "mapped 1 " + _mappings[ otu1 ] );
             System.out.println( "mapped 2 " + _mappings[ otu2 ] );
             final PhylogenyNode node = new PhylogenyNode();
-            final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
+            final double d = getDvalue( otu1, otu2 );
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
             final double d2 = d - d1;
             if ( _df == null ) {
-                _external_nodes[ otu1 ].setDistanceToParent( d1 );
+                getExternalPhylogenyNode( otu1 ).setDistanceToParent( d1 );
                 getExternalPhylogenyNode( otu2 ).setDistanceToParent( d2 );
             }
             else {
                 // yes, yes, slow but only grows with n (and not n^2 or worse)...
-                _external_nodes[ otu1 ].setDistanceToParent( Double.parseDouble( _df.format( d1 ) ) );
+                getExternalPhylogenyNode( otu1 ).setDistanceToParent( Double.parseDouble( _df.format( d1 ) ) );
                 getExternalPhylogenyNode( otu2 ).setDistanceToParent( Double.parseDouble( _df.format( d2 ) ) );
             }
-            node.addAsChild( _external_nodes[ otu1 ] );
+            node.addAsChild( getExternalPhylogenyNode( otu1 ) );
             node.addAsChild( getExternalPhylogenyNode( otu2 ) );
             if ( _verbose ) {
                 printProgress( otu1, otu2, node );
+                printProgress( _mappings[ otu1 ], _mappings[ otu2 ], node );
             }
             System.out.println( "otu1=" + otu1 );
             System.out.println( "otu2=" + otu2 );
@@ -143,34 +144,32 @@ public final class NeighborJoiningR {
     private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
         System.out.print( "new D values: " );
         for( int j = 0; j < _n; ++j ) {
-            if ( j == otu2 ) {
+            if ( ( j == otu1 ) || ( j == otu2 ) ) {
                 continue;
             }
-            if ( _mappings[ j ] > _mappings[ otu1 ] ) {
-                updateDvalue( otu1, otu2, j, d );
-            }
+            updateDvalue( otu1, otu2, j, d );
         }
         System.out.println();
     }
 
     private final void updateDvalue( final int otu1, final int otu2, final int j, final double d ) {
-        final double new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
+        final double new_d = ( getDvalue( otu1, j ) + getDvalue( j, otu2 ) - d ) / 2;
         System.out.print( DF.format( new_d ) + " " );
-        System.out.println( "going to remove: " + getDvalueUnmapped( otu1, _mappings[ j ] ) + ", " + otu1 + ", "
+        System.out.println( "going to remove: " + getDvalue( otu1, j ) + ", " + _mappings[ otu1 ] + ", "
                 + _mappings[ j ] );
-        _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), otu1, _mappings[ j ] );
+        _s.removePairing( getDvalue( otu1, j ), _mappings[ otu1 ], _mappings[ j ] );
         System.out.println( "going to remove: " + getDvalue( j, otu2 ) + ", " + _mappings[ otu2 ] + ", "
                 + _mappings[ j ] );
         _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], _mappings[ j ] );
         _s.addPairing( new_d, otu1, _mappings[ j ] );
-        setDvalueU( otu1, j, new_d );
+        setDvalue( otu1, j, new_d );
     }
 
-    private void setDvalueU( final int i, final int j, final double d ) {
-        if ( i < _mappings[ j ] ) {
-            _d_values[ i ][ _mappings[ j ] ] = d;
+    private void setDvalue( final int i, final int j, final double d ) {
+        if ( i < j ) {
+            _d_values[ _mappings[ i ] ][ _mappings[ j ] ] = d;
         }
-        _d_values[ j ][ _mappings[ i ] ] = d;
+        _d_values[ _mappings[ j ] ][ _mappings[ i ] ] = d;
     }
 
     private double getDvalue( final int i, final int j ) {
@@ -224,7 +223,7 @@ public final class NeighborJoiningR {
     }
 
     private final void printProgress( final int otu1, final int otu2, final PhylogenyNode node ) {
-        System.out.println( "Node " + printProgressNodeToString( _external_nodes[ otu1 ] ) + " joins "
+        System.out.println( "Node " + printProgressNodeToString( getExternalPhylogenyNode( otu1 ) ) + " joins "
                 + ( printProgressNodeToString( getExternalPhylogenyNode( otu2 ) ) ) + " [resulting in node "
                 + ( printProgressNodeToString( node ) ) + "]" );
     }
@@ -299,7 +298,7 @@ public final class NeighborJoiningR {
 
     private final double updateM() {
         calculateNetDivergences();
-        Double min_m = Double.MAX_VALUE;
+        Double min = Double.MAX_VALUE;
         _min_i = -1;
         _min_j = -1;
         final int n_minus_2 = _n - 2;
@@ -307,15 +306,14 @@ public final class NeighborJoiningR {
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
             for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     System.out.print( sorted_i + " " );
                     System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
-                    final double m = getDvalueUnmapped( sorted_i, m_j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
-                    if ( ( m < min_m ) && ( sorted_i != j ) ) {
+                    final double m = getDvalue( sorted_i, j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                    if ( ( m < min ) && ( sorted_i != j ) ) {
                         _d_min = getDvalueUnmapped( sorted_i, m_j );
-                        min_m = m;
+                        min = m;
                         _min_i = sorted_i;
                         _min_j = j;
                     }
@@ -334,27 +332,22 @@ public final class NeighborJoiningR {
             }*/
         }
         System.out.println();
-        return min_m;
+        return min;
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
-            System.out.print( _mappings[ i ] );
             _mappings[ i ] = _mappings[ i + 1 ];
-            System.out.println( "----->" + _mappings[ i ] );
-        }
-        for( int i = 0; i < _mappings.length; ++i ) {
-            System.out.println( i + "-->" + _mappings[ i ] );
         }
     }
 
-    public final static NeighborJoiningR createInstance() {
-        return new NeighborJoiningR();
+    public final static CopyOfNeighborJoiningR createInstance() {
+        return new CopyOfNeighborJoiningR();
     }
 
-    public final static NeighborJoiningR createInstance( final boolean verbose,
+    public final static CopyOfNeighborJoiningR createInstance( final boolean verbose,
                                                          final int maximum_fraction_digits_for_distances ) {
-        return new NeighborJoiningR( verbose, maximum_fraction_digits_for_distances );
+        return new CopyOfNeighborJoiningR( verbose, maximum_fraction_digits_for_distances );
     }
 }

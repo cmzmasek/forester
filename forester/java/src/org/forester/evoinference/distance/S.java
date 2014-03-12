@@ -73,20 +73,20 @@ public final class S {
                 throw new IllegalArgumentException( "key " + key + " (->" + value + ") does not exist for row " + j );
             }
         }
-        if ( x.size() == 1 ) {
-            if ( DEBUG ) {
-                if ( !x.contains( value ) ) {
-                    System.out.println();
-                    System.out
-                            .println( "________________________________________________________________________________________" );
-                    System.out.println( toString() );
-                    throw new IllegalArgumentException( "pairing " + key + "->" + value + " does not exist for row "
-                            + j );
-                }
-            }
-            m.remove( key );
-        }
-        else if ( x.size() > 1 ) {
+        //        if ( x.size() == 1 ) {
+        //            if ( DEBUG ) {
+        //                if ( !x.contains( value ) ) {
+        //                    System.out.println();
+        //                    System.out
+        //                            .println( "________________________________________________________________________________________" );
+        //                    System.out.println( toString() );
+        //                    throw new IllegalArgumentException( "pairing " + key + "->" + value + " does not exist for row "
+        //                            + j );
+        //                }
+        //            }
+        //            m.remove( key );
+        //        }
+        else if ( x.size() >= 1 ) {
             if ( DEBUG ) {
                 if ( !x.remove( value ) ) {
                     throw new IllegalArgumentException( "pairing " + key + "->" + value
