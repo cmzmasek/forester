@@ -152,6 +152,9 @@ public final class NeighborJoiningR {
             if ( otu1 < _mappings[ j ] ) {
                 updateDvalue( otu1, otu2, j, d );
             }
+            //  else if ( otu1 > _mappings[ j ] ) {
+            //     updateDvalue( otu2, otu1, j, d );
+            // }
         }
         System.out.println();
     }
