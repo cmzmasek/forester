@@ -138,24 +138,21 @@ public final class NeighborJoining {
             if ( otu1 < i ) {
                 if ( otu2 > i ) {
                     _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                   System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] )  );
+                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
                 else {
                     _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] )  );
-                    
+                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
             }
             else {
                 if ( otu2 > i ) {
                     _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                    System.out.print( DF.format(  _d_values[ m_i ][ m_otu1 ] )  );
-                    
+                    System.out.print( DF.format( _d_values[ m_i ][ m_otu1 ] ) );
                 }
                 else {
                     _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] )  );
-                    
+                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
             }
             System.out.print( " " );

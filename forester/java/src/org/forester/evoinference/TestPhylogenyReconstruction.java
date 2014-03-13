@@ -91,7 +91,7 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "  failed." );
         }
-       // timeNeighborJoining();
+        // timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2504,7 +2504,7 @@ public class TestPhylogenyReconstruction {
             final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny p2 = nj2.execute( m );
-              Archaeopteryx.createApplication( p2 );
+            Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
             if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
                 return false;

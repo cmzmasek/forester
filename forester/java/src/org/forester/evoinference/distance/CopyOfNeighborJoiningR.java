@@ -347,7 +347,7 @@ public final class CopyOfNeighborJoiningR {
     }
 
     public final static CopyOfNeighborJoiningR createInstance( final boolean verbose,
-                                                         final int maximum_fraction_digits_for_distances ) {
+                                                               final int maximum_fraction_digits_for_distances ) {
         return new CopyOfNeighborJoiningR( verbose, maximum_fraction_digits_for_distances );
     }
 }
