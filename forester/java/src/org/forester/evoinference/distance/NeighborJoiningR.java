@@ -81,10 +81,11 @@ public final class NeighborJoiningR {
             final int otu2 = _min_j;
             System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
             // It is a condition that otu1 < otu2.
-            System.out.println( "mapped 1 " + _mappings[ otu1 ] );
-            System.out.println( "mapped 2 " + _mappings[ otu2 ] );
+            //System.out.println( "mapped 1 " + _mappings[ otu1 ] );
+            System.out.println( "mapped otu 2 " + _mappings[ otu2 ] );
             final PhylogenyNode node = new PhylogenyNode();
-            final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
+            //final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
+            final double d = _d_values[ otu1 ][ _mappings[ otu2 ] ];
             final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
             final double d2 = d - d1;
             if ( _df == null ) {
@@ -104,7 +105,8 @@ public final class NeighborJoiningR {
             System.out.println( "otu1=" + otu1 );
             System.out.println( "otu2=" + otu2 );
             calculateDistancesFromNewNode( otu1, otu2, d );
-            _external_nodes[ _mappings[ otu1 ] ] = node;
+            // _external_nodes[ _mappings[ otu1 ] ] = node;
+            _external_nodes[ otu1 ] = node;
             updateMappings( otu2 );
             --_n;
             System.out.println( "" );
@@ -313,12 +315,21 @@ public final class NeighborJoiningR {
                     System.out.print( sorted_i + " " );
                     System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
                     final double m = getDvalueUnmapped( sorted_i, m_j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
-                    if ( ( m < min_m ) && ( sorted_i != j ) ) {
+                    if ( ( m < min_m ) ) {
                         _d_min = getDvalueUnmapped( sorted_i, m_j );
                         min_m = m;
                         _min_i = sorted_i;
                         _min_j = j;
                     }
+                }
+            }
+            System.out.println();
+            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                for( final int sorted_i : entry.getValue() ) {
+                    System.out.print( sorted_i );
+                    System.out.print( "->" );
+                    System.out.print( DF.format( _r[ sorted_i ] ) );
+                    System.out.print( "  " );
                 }
             }
             System.out.println();

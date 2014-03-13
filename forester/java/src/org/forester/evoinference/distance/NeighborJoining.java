@@ -36,6 +36,7 @@ import org.forester.util.ForesterUtil;
 
 public final class NeighborJoining {
 
+    private final static DecimalFormat     DF = new DecimalFormat( "0.00000" );
     private BasicSymmetricalDistanceMatrix _d;
     private double[][]                     _d_values;
     private final DecimalFormat            _df;
@@ -242,12 +243,28 @@ public final class NeighborJoining {
                 }
             }
         }
+        for( int j = 1; j < _n; ++j ) {
+            final double r_j = _r[ j ];
+            final int m_j = _mappings[ j ];
+            for( int i = 0; i < j; ++i ) {
+                System.out.print( i );
+                System.out.print( "->" );
+                System.out.print( DF.format( _r[ i ] ) );
+                System.out.print( "  " );
+            }
+            System.out.println();
+        }
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
+            System.out.print( _mappings[ i ] );
             _mappings[ i ] = _mappings[ i + 1 ];
+            System.out.println( "----->" + _mappings[ i ] );
+        }
+        for( int i = 0; i < _mappings.length; ++i ) {
+            System.out.println( i + "-->" + _mappings[ i ] );
         }
     }
 

@@ -2480,6 +2480,25 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
+            final NeighborJoining nj = NeighborJoining.createInstance( true, 6 );
+            //nj = NeighborJoining.createInstance( true, 6 );
+            final Phylogeny pnj = nj.execute( m );
+            //
+            m = new BasicSymmetricalDistanceMatrix( 7 );
+            m.setIdentifier( 0, "Bovine" );
+            m.setIdentifier( 1, "Mouse" );
+            m.setIdentifier( 2, "Gibbon" );
+            m.setIdentifier( 3, "Orang" );
+            m.setIdentifier( 4, "Gorilla" );
+            m.setIdentifier( 5, "Chimp" );
+            m.setIdentifier( 6, "Human" );
+            m.setRow( "0.00000 1.68660 1.71980 1.66060 1.52430 1.60430 1.59050", 0 );
+            m.setRow( "1.68660 0.00000 1.52320 1.48410 1.44650 1.43890 1.46290", 1 );
+            m.setRow( "1.71980 1.52320 0.00000 0.71150 0.59580 0.61790 0.55830", 2 );
+            m.setRow( "1.66060 1.48410 0.71150 0.00000 0.46310 0.50610 0.47100", 3 );
+            m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
+            m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
+            m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
             final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny p2 = nj2.execute( m );
@@ -2895,6 +2914,15 @@ public class TestPhylogenyReconstruction {
     }
 
     private static void timeNeighborJoining() {
+        final NeighborJoiningR njr = NeighborJoiningR.createInstance();
+        for( int n = 3; n <= 9; ++n ) {
+            final int x = ( int ) Math.pow( 2, n );
+            final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
+            mt.randomize( new Date().getTime() );
+            final long start_time = new Date().getTime();
+            njr.execute( mt );
+            System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
+        }
         final NeighborJoiningF njf = NeighborJoiningF.createInstance();
         for( int n = 3; n <= 9; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
