@@ -87,7 +87,7 @@ public final class NeighborJoiningR {
             final PhylogenyNode node = new PhylogenyNode();
             //final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
             final double d = _d_values[ otu1 ][ _mappings[ otu2 ] ];
-            final double d1 = ( d / 2 ) + ( ( _r[ otu1 ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
+            final double d1 = ( d / 2 ) + ( ( _r[  _rev_mappings[ otu1 ] ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
             final double d2 = d - d1;
             if ( _df == null ) {
                 _external_nodes[ otu1 ].setDistanceToParent( d1 );
@@ -149,7 +149,7 @@ public final class NeighborJoiningR {
             if ( j == otu2 ) {
                 continue;
             }
-            if ( _mappings[ j ] > _mappings[ otu1 ] ) {
+            if ( otu1  < _mappings[ j ]    ) {
                 updateDvalue( otu1, otu2, j, d );
             }
         }
@@ -159,12 +159,28 @@ public final class NeighborJoiningR {
     private final void updateDvalue( final int otu1, final int otu2, final int j, final double d ) {
         final double new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
         System.out.print( DF.format( new_d ) + " " );
-        System.out.println( "going to remove: " + getDvalueUnmapped( otu1, _mappings[ j ] ) + ", " + otu1 + ", "
-                + _mappings[ j ] );
-        _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), otu1, _mappings[ j ] );
-        System.out.println( "going to remove: " + getDvalue( j, otu2 ) + ", " + _mappings[ otu2 ] + ", "
-                + _mappings[ j ] );
-        _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], _mappings[ j ] );
+       // System.out.println( "going to remove: " + getDvalueUnmapped( otu1, _mappings[ j ] ) + ", " + otu1 + ", "
+       //         + _mappings[ j ] );
+        
+        if (  otu1< _mappings[ j ] ) {
+            _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), otu1, _mappings[ j ] );
+        }
+        else {
+            _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), _mappings[ j ] ,  otu1 );
+        }
+        
+       
+      //  System.out.println( "going to remove: " + getDvalue( j, otu2 ) + ", " +_mappings[ otu2 ] + ", "
+      //          + _mappings[ j ] );
+        
+        if (   _mappings[ otu2  ] < _mappings[ j ] ) {
+            _s.removePairing( getDvalue( j, otu2 ),    _mappings[ otu2  ] , _mappings[ j ] );
+        }
+        else {
+            _s.removePairing( getDvalue( j, otu2 )   , _mappings[ j ],   _mappings[ otu2  ] );
+            
+        }
+       
         _s.addPairing( new_d, otu1, _mappings[ j ] );
         setDvalueU( otu1, j, new_d );
     }
@@ -173,7 +189,7 @@ public final class NeighborJoiningR {
         if ( i < _mappings[ j ] ) {
             _d_values[ i ][ _mappings[ j ] ] = d;
         }
-        _d_values[ j ][ _mappings[ i ] ] = d;
+        _d_values[_mappings[ j] ][  i  ] = d;
     }
 
     private double getDvalue( final int i, final int j ) {
