@@ -51,6 +51,7 @@ public final class NeighborJoiningR {
     private int                            _min_j;
     private S                              _s;
     private double                         _d_min;                             //TODO remove me
+    private int[]                          _rev_mappings;
 
     private NeighborJoiningR() {
         _verbose = false;
@@ -222,6 +223,7 @@ public final class NeighborJoiningR {
                 _external_nodes[ i ].setName( Integer.toString( i ) );
             }
             _mappings[ i ] = i;
+            _rev_mappings[ i ] = i;
         }
     }
 
@@ -254,6 +256,7 @@ public final class NeighborJoiningR {
         _d = distances;
         _r = new double[ _n ];
         _mappings = new int[ _n ];
+        _rev_mappings = new int[ _n ];
         _d_values = _d.getValues();
         _s = new S();
         _s.initialize( distances );
@@ -314,7 +317,8 @@ public final class NeighborJoiningR {
                 for( final int sorted_i : entry.getValue() ) {
                     System.out.print( sorted_i + " " );
                     System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
-                    final double m = getDvalueUnmapped( sorted_i, m_j ) - ( ( _r[ sorted_i ] + r_j ) / n_minus_2 );
+                    final double m = getDvalueUnmapped( sorted_i, m_j )
+                            - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     if ( ( m < min_m ) ) {
                         _d_min = getDvalueUnmapped( sorted_i, m_j );
                         min_m = m;
@@ -357,6 +361,9 @@ public final class NeighborJoiningR {
         }
         for( int i = 0; i < _mappings.length; ++i ) {
             System.out.println( i + "-->" + _mappings[ i ] );
+        }
+        for( int i = 0; i < _n; ++i ) {
+            _rev_mappings[ _mappings[ i ] ] = i;
         }
     }
 
