@@ -149,7 +149,7 @@ public final class NeighborJoiningR {
             if ( j == otu2 ) {
                 continue;
             }
-            if ( otu1  < _mappings[ j ]    ) {
+            if ( otu1  < _mappings[ j ] ) {
                 updateDvalue( otu1, otu2, j, d );
             }
         }
