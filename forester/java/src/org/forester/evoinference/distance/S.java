@@ -23,7 +23,7 @@ public final class S {
         _data = new ArrayList<SortedMap<Integer, SortedSet<Integer>>>();
     }
 
-    final public void addPairing( final double key, final int value, final int j ) {
+    final public void addPairing( final float key, final int value, final int j ) {
         addPairing( ( int ) ( FACTOR * key ), value, getS( j ) );
     }
 
@@ -57,7 +57,7 @@ public final class S {
         }
     }
 
-    final public void removePairing( final double key, final int value, final int j ) {
+    final public void removePairing( final float key, final int value, final int j ) {
         removePairing( ( int ) ( key * FACTOR ), value, j );
     }
 

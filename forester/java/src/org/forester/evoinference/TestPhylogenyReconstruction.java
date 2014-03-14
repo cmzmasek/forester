@@ -91,7 +91,7 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "  failed." );
         }
-        // timeNeighborJoining();
+        //timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2484,6 +2484,7 @@ public class TestPhylogenyReconstruction {
             final NeighborJoining nj = NeighborJoining.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny pnj = nj.execute( m );
+            pnj.reRoot( pnj.getNode( "Bovine" ) );
             Archaeopteryx.createApplication( pnj );
             //
             m = new BasicSymmetricalDistanceMatrix( 7 );
@@ -2504,21 +2505,21 @@ public class TestPhylogenyReconstruction {
             final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
             //nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny p2 = nj2.execute( m );
-            Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
-            if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
+            Archaeopteryx.createApplication( p2 );
+            if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.15168 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Human" ).getDistanceToParent(), 0.117525 ) ) {
+            if ( isUnequal( p2.getNode( "Human" ).getDistanceToParent(), 0.11752 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Gorilla" ).getDistanceToParent(), 0.153932 ) ) {
+            if ( isUnequal( p2.getNode( "Gorilla" ).getDistanceToParent(), 0.15393 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Orang" ).getDistanceToParent(), 0.284694 ) ) {
+            if ( isUnequal( p2.getNode( "Orang" ).getDistanceToParent(), 0.28469 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Gibbon" ).getDistanceToParent(), 0.357931 ) ) {
+            if ( isUnequal( p2.getNode( "Gibbon" ).getDistanceToParent(), 0.35793 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Mouse" ).getDistanceToParent(), 0.76891 ) ) {
@@ -2527,20 +2528,20 @@ public class TestPhylogenyReconstruction {
             if ( isUnequal( p2.getNode( "Bovine" ).getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getDistanceToParent(), 0.039819 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getDistanceToParent(), 0.03982 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Human" ).getParent().getDistanceToParent(), 0.039819 ) ) {
+            if ( isUnequal( p2.getNode( "Human" ).getParent().getDistanceToParent(), 0.03982 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getDistanceToParent(), 0.026956 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getDistanceToParent(), 0.02696 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getDistanceToParent(), 0.046481 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getDistanceToParent(), 0.04648 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getDistanceToParent(),
-                            0.420269 ) ) {
+                            0.42027 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
