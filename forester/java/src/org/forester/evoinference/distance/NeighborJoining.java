@@ -73,7 +73,7 @@ public final class NeighborJoining {
             updateM();
             final int otu1 = _min_i;
             final int otu2 = _min_j;
-            System.out.println( _min_i + " " + _min_j );
+            //System.out.println( _min_i + " " + _min_j );
             // It is a condition that otu1 < otu2.
             final PhylogenyNode node = new PhylogenyNode();
             final double d = _d_values[ _mappings[ otu1 ] ][ _mappings[ otu2 ] ];
@@ -138,24 +138,24 @@ public final class NeighborJoining {
             if ( otu1 < i ) {
                 if ( otu2 > i ) {
                     _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
+                    //System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
                 else {
                     _d_values[ m_otu1 ][ m_i ] = ( _d_values[ m_otu1 ][ m_i ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
+                    //System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
             }
             else {
                 if ( otu2 > i ) {
                     _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_i ][ m_otu2 ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_i ][ m_otu1 ] ) );
+                    //System.out.print( DF.format( _d_values[ m_i ][ m_otu1 ] ) );
                 }
                 else {
                     _d_values[ m_i ][ m_otu1 ] = ( _d_values[ m_i ][ m_otu1 ] + _d_values[ m_otu2 ][ m_i ] - d ) / 2;
-                    System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
+                    // System.out.print( DF.format( _d_values[ m_otu1 ][ m_i ] ) );
                 }
             }
-            System.out.print( " " );
+            //System.out.print( " " );
         }
     }
 
@@ -248,28 +248,23 @@ public final class NeighborJoining {
                 }
             }
         }
-        for( int j = 1; j < _n; ++j ) {
-            final double r_j = _r[ j ];
-            final int m_j = _mappings[ j ];
-            for( int i = 0; i < j; ++i ) {
-                System.out.print( i );
-                System.out.print( "->" );
-                System.out.print( DF.format( _r[ i ] ) );
-                System.out.print( "  " );
-            }
-            System.out.println();
-        }
+        //        for( int j = 1; j < _n; ++j ) {
+        //            final double r_j = _r[ j ];
+        //            final int m_j = _mappings[ j ];
+        //            for( int i = 0; i < j; ++i ) {
+        //                System.out.print( i );
+        //                System.out.print( "->" );
+        //                System.out.print( DF.format( _r[ i ] ) );
+        //                System.out.print( "  " );
+        //            }
+        //            System.out.println();
+        //        }
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
-            System.out.print( _mappings[ i ] );
             _mappings[ i ] = _mappings[ i + 1 ];
-            System.out.println( "----->" + _mappings[ i ] );
-        }
-        for( int i = 0; i < _mappings.length; ++i ) {
-            System.out.println( i + "-->" + _mappings[ i ] );
         }
     }
 

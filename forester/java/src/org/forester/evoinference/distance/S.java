@@ -114,7 +114,7 @@ public final class S {
 
     @Override
     final public String toString() {
-        final DecimalFormat df = new DecimalFormat( "0.0000" );
+        final DecimalFormat df = new DecimalFormat( "0.000000" );
         final StringBuilder sb = new StringBuilder();
         for( int j = 0; j < size(); ++j ) {
             sb.append( j );

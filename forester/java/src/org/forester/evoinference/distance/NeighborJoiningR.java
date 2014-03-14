@@ -155,25 +155,25 @@ public final class NeighborJoiningR {
 
     private final void updateDvalue( final int otu1, final int otu2, final int j, final float d ) {
         final float new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
-        System.out.println( "\nnew d value: " + DF.format( new_d ) );
+        // System.out.println( "\nnew d value: " + DF.format( new_d ) );
         if ( otu1 < _mappings[ j ] ) {
-            System.out.println( " otu1=" + otu1 );
-            System.out.println( " otu2=" + otu2 );
-            System.out.println( "motu1=" + _mappings[ otu1 ] );
-            System.out.println( "motu2=" + _mappings[ otu2 ] );
-            System.out.println( " j=" + j );
-            System.out.println( "mj=" + _mappings[ j ] );
-            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
+            //            System.out.println( " otu1=" + otu1 );
+            //            System.out.println( " otu2=" + otu2 );
+            //            System.out.println( "motu1=" + _mappings[ otu1 ] );
+            //            System.out.println( "motu2=" + _mappings[ otu2 ] );
+            //            System.out.println( " j=" + j );
+            //            System.out.println( "mj=" + _mappings[ j ] );
+            //            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
             _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), otu1, _mappings[ j ] );
         }
         else {
-            System.out.println( " otu1=" + otu1 );
-            System.out.println( " otu2=" + otu2 );
-            System.out.println( "motu1=" + _mappings[ otu1 ] );
-            System.out.println( "motu2=" + _mappings[ otu2 ] );
-            System.out.println( " j=" + j );
-            System.out.println( "mj=" + _mappings[ j ] );
-            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
+            //            System.out.println( " otu1=" + otu1 );
+            //            System.out.println( " otu2=" + otu2 );
+            //            System.out.println( "motu1=" + _mappings[ otu1 ] );
+            //            System.out.println( "motu2=" + _mappings[ otu2 ] );
+            //            System.out.println( " j=" + j );
+            //            System.out.println( "mj=" + _mappings[ j ] );
+            //            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
             _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), _mappings[ j ], otu1 );
         }
         if ( _mappings[ otu2 ] < _mappings[ j ] ) {
@@ -364,16 +364,6 @@ public final class NeighborJoiningR {
                 }
             }
             System.out.println();
-            /*
-            for( int i = 0; i < j; ++i ) {
-                final double m = getDvalue( i, j ) - ( ( _r[ i ] + r_j ) / n_minus_2 );
-                if ( m < min ) {
-                    min = m;
-                    _d_min = getDvalue( i, j );
-                    _min_i = i;
-                    _min_j = j;
-                }
-            }*/
         }
         System.out.println();
         return min_m;
@@ -382,13 +372,13 @@ public final class NeighborJoiningR {
     // otu2 will, in effect, be "deleted" from the matrix.
     private final void updateMappings( final int otu2 ) {
         for( int i = otu2; i < ( _mappings.length - 1 ); ++i ) {
-            System.out.print( _mappings[ i ] );
+            //System.out.print( _mappings[ i ] );
             _mappings[ i ] = _mappings[ i + 1 ];
-            System.out.println( "----->" + _mappings[ i ] );
+            //System.out.println( "----->" + _mappings[ i ] );
         }
-        for( int i = 0; i < _mappings.length; ++i ) {
-            System.out.println( i + "-->" + _mappings[ i ] );
-        }
+        // for( int i = 0; i < _mappings.length; ++i ) {
+        //     System.out.println( i + "-->" + _mappings[ i ] );
+        // }
         for( int i = 0; i < _n; ++i ) {
             _rev_mappings[ _mappings[ i ] ] = i;
         }

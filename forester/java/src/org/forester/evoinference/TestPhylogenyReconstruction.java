@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.NeighborJoiningR;
@@ -70,13 +69,13 @@ public class TestPhylogenyReconstruction {
     }
 
     public static void main( final String[] args ) {
-        //        System.out.println( "NJ" );
-        //        if ( testNeighborJoining() ) {
-        //            System.out.println( "  OK." );
-        //        }
-        //        else {
-        //            System.out.println( "  failed." );
-        //        }
+        System.out.println( "NJ" );
+        if ( testNeighborJoining() ) {
+            System.out.println( "  OK." );
+        }
+        else {
+            System.out.println( "  failed." );
+        }
         System.out.println( "S" );
         if ( testS() ) {
             System.out.println( "  OK." );
@@ -2192,7 +2191,7 @@ public class TestPhylogenyReconstruction {
             m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
             m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
             m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            njf = NeighborJoiningF.createInstance( false, 5 );
+            njf = NeighborJoiningF.createInstance( true, 5 );
             final Phylogeny p2f = njf.execute( m );
             p2f.reRoot( p2f.getNode( "Bovine" ) );
             if ( isUnequal( p2f.getNode( "Chimp" ).getDistanceToParent(), 0.15168 ) ) {
@@ -2383,143 +2382,117 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testNeighborJoiningR() {
         try {
-            //            final NeighborJoiningR nj0 = NeighborJoiningR.createInstance();
-            //            final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
-            //            m0.setIdentifier( 0, "A" );
-            //            m0.setIdentifier( 1, "B" );
-            //            m0.setIdentifier( 2, "C" );
-            //            m0.setIdentifier( 3, "D" );
-            //            m0.setRow( "5 ", 1 );
-            //            m0.setRow( "3 6 ", 2 );
-            //            m0.setRow( "7.5 10.5 5.5", 3 );
-            //            final Phylogeny p0 = nj0.execute( m0 );
-            //            p0.reRoot( p0.getNode( "D" ) );
-            //            //  Archaeopteryx.createApplication( p0 );
-            //            if ( isUnequal( p0.getNode( "A" ).getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p0.getNode( "B" ).getDistanceToParent(), 4 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p0.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p0.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p0.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p0.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
-            //                return false;
-            //            }
-            BasicSymmetricalDistanceMatrix m = new BasicSymmetricalDistanceMatrix( 6 );
-            //            m.setRow( "5", 1 );
-            //            m.setRow( "4 7", 2 );
-            //            m.setRow( "7 10 7", 3 );
-            //            m.setRow( "6 9 6 5", 4 );
-            //            m.setRow( "8 11 8 9 8", 5 );
-            //            m.setIdentifier( 0, "A" );
-            //            m.setIdentifier( 1, "B" );
-            //            m.setIdentifier( 2, "C" );
-            //            m.setIdentifier( 3, "D" );
-            //            m.setIdentifier( 4, "E" );
-            //            m.setIdentifier( 5, "F" );
-            //            final NeighborJoiningR nj1 = NeighborJoiningR.createInstance();
-            //            final Phylogeny p1 = nj1.execute( m );
-            //            p1.reRoot( p1.getNode( "F" ) );
-            //            Archaeopteryx.createApplication( p1 );
-            //            if ( isUnequal( p1.getNode( "A" ).getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "B" ).getDistanceToParent(), 4 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "C" ).getDistanceToParent(), 2 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "D" ).getDistanceToParent(), 3 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "E" ).getDistanceToParent(), 2 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "F" ).getDistanceToParent(), 2.5 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "A" ).getParent().getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getParent().getDistanceToParent(), 2.5 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "B" ).getParent().getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "D" ).getParent().getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            //            if ( isUnequal( p1.getNode( "E" ).getParent().getDistanceToParent(), 1 ) ) {
-            //                return false;
-            //            }
-            ///////////////
-            m = new BasicSymmetricalDistanceMatrix( 7 );
-            m.setIdentifier( 0, "Bovine" );
-            m.setIdentifier( 1, "Mouse" );
-            m.setIdentifier( 2, "Gibbon" );
-            m.setIdentifier( 3, "Orang" );
-            m.setIdentifier( 4, "Gorilla" );
-            m.setIdentifier( 5, "Chimp" );
-            m.setIdentifier( 6, "Human" );
-            m.setRow( "0.00000 1.68660 1.71980 1.66060 1.52430 1.60430 1.59050", 0 );
-            m.setRow( "1.68660 0.00000 1.52320 1.48410 1.44650 1.43890 1.46290", 1 );
-            m.setRow( "1.71980 1.52320 0.00000 0.71150 0.59580 0.61790 0.55830", 2 );
-            m.setRow( "1.66060 1.48410 0.71150 0.00000 0.46310 0.50610 0.47100", 3 );
-            m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
-            m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
-            m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
-            final NeighborJoining nj = NeighborJoining.createInstance( true, 6 );
-            //nj = NeighborJoining.createInstance( true, 6 );
-            final Phylogeny pnj = nj.execute( m );
-            pnj.reRoot( pnj.getNode( "Bovine" ) );
-            Archaeopteryx.createApplication( pnj );
-            //
-            m = new BasicSymmetricalDistanceMatrix( 7 );
-            m.setIdentifier( 0, "Bovine" );
-            m.setIdentifier( 1, "Mouse" );
-            m.setIdentifier( 2, "Gibbon" );
-            m.setIdentifier( 3, "Orang" );
-            m.setIdentifier( 4, "Gorilla" );
-            m.setIdentifier( 5, "Chimp" );
-            m.setIdentifier( 6, "Human" );
-            m.setRow( "0.00000 1.68660 1.71980 1.66060 1.52430 1.60430 1.59050", 0 );
-            m.setRow( "1.68660 0.00000 1.52320 1.48410 1.44650 1.43890 1.46290", 1 );
-            m.setRow( "1.71980 1.52320 0.00000 0.71150 0.59580 0.61790 0.55830", 2 );
-            m.setRow( "1.66060 1.48410 0.71150 0.00000 0.46310 0.50610 0.47100", 3 );
-            m.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
-            m.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
-            m.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
+            final NeighborJoiningR nj0 = NeighborJoiningR.createInstance();
+            final BasicSymmetricalDistanceMatrix m0 = new BasicSymmetricalDistanceMatrix( 4 );
+            m0.setIdentifier( 0, "A" );
+            m0.setIdentifier( 1, "B" );
+            m0.setIdentifier( 2, "C" );
+            m0.setIdentifier( 3, "D" );
+            m0.setRow( "5 ", 1 );
+            m0.setRow( "3 6 ", 2 );
+            m0.setRow( "7.5 10.5 5.5", 3 );
+            final Phylogeny p0 = nj0.execute( m0 );
+            p0.reRoot( p0.getNode( "D" ) );
+            if ( isUnequal( p0.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "C" ).getDistanceToParent(), 0.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "D" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "A" ).getParent().getDistanceToParent(), 1.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p0.getNode( "A" ).getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            final BasicSymmetricalDistanceMatrix m1 = new BasicSymmetricalDistanceMatrix( 6 );
+            m1.setRow( "5", 1 );
+            m1.setRow( "4 7", 2 );
+            m1.setRow( "7 10 7", 3 );
+            m1.setRow( "6 9 6 5", 4 );
+            m1.setRow( "8 11 8 9 8", 5 );
+            m1.setIdentifier( 0, "A" );
+            m1.setIdentifier( 1, "B" );
+            m1.setIdentifier( 2, "C" );
+            m1.setIdentifier( 3, "D" );
+            m1.setIdentifier( 4, "E" );
+            m1.setIdentifier( 5, "F" );
+            final NeighborJoiningR nj1 = NeighborJoiningR.createInstance();
+            final Phylogeny p1 = nj1.execute( m1 );
+            p1.reRoot( p1.getNode( "F" ) );
+            if ( isUnequal( p1.getNode( "A" ).getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "B" ).getDistanceToParent(), 4 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "C" ).getDistanceToParent(), 2 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "D" ).getDistanceToParent(), 3 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "E" ).getDistanceToParent(), 2 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "F" ).getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "A" ).getParent().getParent().getParent().getDistanceToParent(), 2.5 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "B" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "D" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            if ( isUnequal( p1.getNode( "E" ).getParent().getDistanceToParent(), 1 ) ) {
+                return false;
+            }
+            final BasicSymmetricalDistanceMatrix m2 = new BasicSymmetricalDistanceMatrix( 7 );
+            m2.setIdentifier( 0, "Bovine" );
+            m2.setIdentifier( 1, "Mouse" );
+            m2.setIdentifier( 2, "Gibbon" );
+            m2.setIdentifier( 3, "Orang" );
+            m2.setIdentifier( 4, "Gorilla" );
+            m2.setIdentifier( 5, "Chimp" );
+            m2.setIdentifier( 6, "Human" );
+            m2.setRow( "0.00000 1.68660 1.71980 1.66060 1.52430 1.60430 1.59050", 0 );
+            m2.setRow( "1.68660 0.00000 1.52320 1.48410 1.44650 1.43890 1.46290", 1 );
+            m2.setRow( "1.71980 1.52320 0.00000 0.71150 0.59580 0.61790 0.55830", 2 );
+            m2.setRow( "1.66060 1.48410 0.71150 0.00000 0.46310 0.50610 0.47100", 3 );
+            m2.setRow( "1.52430 1.44650 0.59580 0.46310 0.00000 0.34840 0.30830", 4 );
+            m2.setRow( "1.60430 1.43890 0.61790 0.50610 0.34840 0.00000 0.26920", 5 );
+            m2.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
             final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
-            //nj = NeighborJoining.createInstance( true, 6 );
-            final Phylogeny p2 = nj2.execute( m );
+            final Phylogeny p2 = nj2.execute( m2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
-            Archaeopteryx.createApplication( p2 );
-            if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.15168 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Human" ).getDistanceToParent(), 0.11752 ) ) {
+            if ( isUnequal( p2.getNode( "Human" ).getDistanceToParent(), 0.117525 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Gorilla" ).getDistanceToParent(), 0.15393 ) ) {
+            if ( isUnequal( p2.getNode( "Gorilla" ).getDistanceToParent(), 0.153931 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Orang" ).getDistanceToParent(), 0.28469 ) ) {
+            if ( isUnequal( p2.getNode( "Orang" ).getDistanceToParent(), 0.284694 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Gibbon" ).getDistanceToParent(), 0.35793 ) ) {
+            if ( isUnequal( p2.getNode( "Gibbon" ).getDistanceToParent(), 0.357931 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Mouse" ).getDistanceToParent(), 0.76891 ) ) {
@@ -2528,26 +2501,90 @@ public class TestPhylogenyReconstruction {
             if ( isUnequal( p2.getNode( "Bovine" ).getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getDistanceToParent(), 0.03982 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getDistanceToParent(), 0.039819 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Human" ).getParent().getDistanceToParent(), 0.03982 ) ) {
+            if ( isUnequal( p2.getNode( "Human" ).getParent().getDistanceToParent(), 0.039819 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getDistanceToParent(), 0.02696 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getDistanceToParent(), 0.026956 ) ) {
                 return false;
             }
-            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getDistanceToParent(), 0.04648 ) ) {
+            if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getDistanceToParent(), 0.046481 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getDistanceToParent(),
-                            0.42027 ) ) {
+                            0.420269 ) ) {
                 return false;
             }
             if ( isUnequal( p2.getNode( "Chimp" ).getParent().getParent().getParent().getParent().getParent()
                     .getDistanceToParent(), 0.458845 ) ) {
                 return false;
             }
+            //
+            final BasicSymmetricalDistanceMatrix m3 = new BasicSymmetricalDistanceMatrix( 20 );
+            m3.setIdentifier( 0, "F_MOUSE" );
+            m3.setIdentifier( 1, "11_RAT" );
+            m3.setIdentifier( 2, "A_CAVPO" );
+            m3.setIdentifier( 3, "D_HUMAN" );
+            m3.setIdentifier( 4, "E_HUMAN" );
+            m3.setIdentifier( 5, "F_HUMAN" );
+            m3.setIdentifier( 6, "C_HUMAN" );
+            m3.setIdentifier( 7, "6_FELCA" );
+            m3.setIdentifier( 8, "D_MOUSE" );
+            m3.setIdentifier( 9, "E_MOUSE" );
+            m3.setIdentifier( 10, "E_RAT " );
+            m3.setIdentifier( 11, "C_MOUSE" );
+            m3.setIdentifier( 12, "10_RAT" );
+            m3.setIdentifier( 13, "3_TAEGU" );
+            m3.setIdentifier( 14, "2_SACKO" );
+            m3.setIdentifier( 15, "2_PANTR" );
+            m3.setIdentifier( 16, "3_CANFA" );
+            m3.setIdentifier( 17, "9_HUMAN" );
+            m3.setIdentifier( 18, "A_HUMAN" );
+            m3.setIdentifier( 19, "B_HUMAN" );
+            m3.setRow( "0.000000  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000010  0.000010  0.000010  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376 ",
+                       0 );
+            m3.setRow( "0.000010  0.000000  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000010  0.000010  0.000010  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       1 );
+            m3.setRow( "0.020875  0.020875  0.000000  0.031503  0.031503  0.031503  0.031503  0.031477  0.020875  0.020875  0.020875  0.020875  0.020875  0.096983  0.768150  0.031503  0.031503  0.031503  0.031503  0.031503",
+                       2 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000000  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000010",
+                       3 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000000  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000010",
+                       4 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000000  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000010",
+                       5 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000000  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000010",
+                       6 );
+            m3.setRow( "0.010368  0.010368  0.031477  0.010375  0.010375  0.010375  0.010375  0.000000  0.010368  0.010368  0.010368  0.010368  0.010368  0.098591  0.745047  0.010375  0.010375  0.010375  0.010375  0.010375",
+                       7 );
+            m3.setRow( "0.000010  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000000  0.000010  0.000010  0.000010  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       8 );
+            m3.setRow( "0.000010  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000000  0.000010  0.000010  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       9 );
+            m3.setRow( "0.000010  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000010  0.000000  0.000010  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       10 );
+            m3.setRow( "0.000010  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000010  0.000010  0.000000  0.000010  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       11 );
+            m3.setRow( "0.000010  0.000010  0.020875  0.010376  0.010376  0.010376  0.010376  0.010368  0.000010  0.000010  0.000010  0.000010  0.000000  0.087165  0.743570  0.010376  0.010376  0.010376  0.010376  0.010376",
+                       12 );
+            m3.setRow( "0.087165  0.087165  0.096983  0.098678  0.098678  0.098678  0.098678  0.098591  0.087165  0.087165  0.087165  0.087165  0.087165  0.000000  0.720387  0.098678  0.098678  0.098678  0.098678  0.098678",
+                       13 );
+            m3.setRow( "0.743570  0.743570  0.768150  0.741282  0.741282  0.741282  0.741282  0.745047  0.743570  0.743570  0.743570  0.743570  0.743570  0.720387  0.000000  0.741282  0.741282  0.741282  0.741282  0.741282",
+                       14 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000000  0.000010  0.000010  0.000010  0.000010",
+                       15 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000000  0.000010  0.000010  0.000010",
+                       16 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000000  0.000010  0.000010",
+                       17 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000000  0.000010",
+                       18 );
+            m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000000",
+                       19 );
+            final NeighborJoiningR nj3 = NeighborJoiningR.createInstance( true, 6 );
+            final Phylogeny p3 = nj3.execute( m3 );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
