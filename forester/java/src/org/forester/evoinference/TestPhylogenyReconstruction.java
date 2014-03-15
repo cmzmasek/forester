@@ -90,7 +90,7 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "  failed." );
         }
-        //timeNeighborJoining();
+        timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2583,8 +2583,19 @@ public class TestPhylogenyReconstruction {
                        18 );
             m3.setRow( "0.010376  0.010376  0.031503  0.000010  0.000010  0.000010  0.000010  0.010375  0.010376  0.010376  0.010376  0.010376  0.010376  0.098678  0.741282  0.000010  0.000010  0.000010  0.000010  0.000000",
                        19 );
-            final NeighborJoiningR nj3 = NeighborJoiningR.createInstance( true, 6 );
+            final NeighborJoiningR nj3 = NeighborJoiningR.createInstance( false, 6 );
             final Phylogeny p3 = nj3.execute( m3 );
+            //Archaeopteryx.createApplication( p3 );
+            ////
+            final int size = 100;
+            for( int n = 0; n <= 100; ++n ) {
+                final NeighborJoiningR njn = NeighborJoiningR.createInstance( false, 6 );
+                final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( size );
+                mt.randomize( new Date().getTime() );
+                final long start_time = new Date().getTime();
+                njn.execute( mt );
+                System.out.println( "Size: " + size + " -> " + ( new Date().getTime() - start_time ) + "ms" );
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

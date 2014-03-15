@@ -40,17 +40,17 @@ public final class NeighborJoiningR {
 
     private final static DecimalFormat     DF = new DecimalFormat( "0.00000" );
     private BasicSymmetricalDistanceMatrix _d;
-    private float[][]                      _d_values;
+    private double[][]                     _d_values;
     private final DecimalFormat            _df;
     private PhylogenyNode[]                _external_nodes;
     private int[]                          _mappings;
     private int                            _n;
-    private float[]                        _r;
+    private double[]                       _r;
     private final boolean                  _verbose;
     private int                            _min_i;
     private int                            _min_j;
     private S                              _s;
-    private float                          _d_min;                             //TODO remove me
+    private double                         _d_min;                             //TODO remove me
     private int[]                          _rev_mappings;
 
     private NeighborJoiningR() {
@@ -73,22 +73,26 @@ public final class NeighborJoiningR {
         reset( distance );
         final Phylogeny phylogeny = new Phylogeny();
         while ( _n > 2 ) {
-            System.out.println( "N=" + _n );
-            System.out.println();
+            if ( _verbose ) {
+                System.out.println( "N=" + _n );
+                System.out.println();
+            }
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
             final double m = updateM();
             final int otu1 = _min_i;
             final int otu2 = _min_j;
-            System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
-            // It is a condition that otu1 < otu2.
-            //System.out.println( "mapped 1 " + _mappings[ otu1 ] );
-            System.out.println( "mapped otu 2 " + _mappings[ otu2 ] );
+            if ( _verbose ) {
+                System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
+                // It is a condition that otu1 < otu2.
+                //System.out.println( "mapped 1 " + _mappings[ otu1 ] );
+                System.out.println( "mapped otu 2 " + _mappings[ otu2 ] );
+            }
             final PhylogenyNode node = new PhylogenyNode();
             //final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
-            final float d = _d_values[ otu1 ][ _mappings[ otu2 ] ];
-            final float d1 = ( d / 2 ) + ( ( _r[ _rev_mappings[ otu1 ] ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
-            final float d2 = d - d1;
+            final double d = _d_values[ otu1 ][ _mappings[ otu2 ] ];
+            final double d1 = ( d / 2 ) + ( ( _r[ _rev_mappings[ otu1 ] ] - _r[ otu2 ] ) / ( 2 * ( _n - 2 ) ) );
+            final double d2 = d - d1;
             if ( _df == null ) {
                 _external_nodes[ otu1 ].setDistanceToParent( d1 );
                 getExternalPhylogenyNode( otu2 ).setDistanceToParent( d2 );
@@ -103,24 +107,29 @@ public final class NeighborJoiningR {
             if ( _verbose ) {
                 printProgress( otu1, otu2, node );
             }
-            System.out.println( "otu1=" + otu1 );
-            System.out.println( "otu2=" + otu2 );
+            if ( _verbose ) {
+                System.out.println( "otu1=" + otu1 );
+                System.out.println( "otu2=" + otu2 );
+            }
             calculateDistancesFromNewNode( otu1, otu2, d );
             // _external_nodes[ _mappings[ otu1 ] ] = node;
             _external_nodes[ otu1 ] = node;
             updateMappings( otu2 );
             --_n;
-            System.out.println( "" );
-            System.out.println( "----------------------------------------------------------------------------------" );
-            System.out.println( "" );
+            if ( _verbose ) {
+                System.out.println( "" );
+                System.out
+                        .println( "----------------------------------------------------------------------------------" );
+                System.out.println( "" );
+            }
         }
-        final float d = getDvalue( 0, 1 ) / 2;
+        final double d = getDvalue( 0, 1 ) / 2;
         if ( _df == null ) {
             getExternalPhylogenyNode( 0 ).setDistanceToParent( d );
             getExternalPhylogenyNode( 1 ).setDistanceToParent( d );
         }
         else {
-            final float dd = Float.parseFloat( _df.format( d ) );
+            final double dd = Double.parseDouble( _df.format( d ) );
             getExternalPhylogenyNode( 0 ).setDistanceToParent( dd );
             getExternalPhylogenyNode( 1 ).setDistanceToParent( dd );
         }
@@ -143,69 +152,55 @@ public final class NeighborJoiningR {
         return pl;
     }
 
-    private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final float d ) {
+    private final void calculateDistancesFromNewNode( final int otu1, final int otu2, final double d ) {
         for( int j = 0; j < _n; ++j ) {
             if ( ( j == otu2 ) || ( j == _rev_mappings[ otu1 ] ) ) {
                 continue;
             }
             updateDvalue( otu1, otu2, j, d );
         }
-        System.out.println();
+        if ( _verbose ) {
+            System.out.println();
+        }
     }
 
-    private final void updateDvalue( final int otu1, final int otu2, final int j, final float d ) {
-        final float new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
+    private final void updateDvalue( final int otu1, final int otu2, final int j, final double d ) {
+        final int mj = _mappings[ j ];
+        //  final double new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
         // System.out.println( "\nnew d value: " + DF.format( new_d ) );
-        if ( otu1 < _mappings[ j ] ) {
-            //            System.out.println( " otu1=" + otu1 );
-            //            System.out.println( " otu2=" + otu2 );
-            //            System.out.println( "motu1=" + _mappings[ otu1 ] );
-            //            System.out.println( "motu2=" + _mappings[ otu2 ] );
-            //            System.out.println( " j=" + j );
-            //            System.out.println( "mj=" + _mappings[ j ] );
-            //            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
-            _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), otu1, _mappings[ j ] );
+        if ( otu1 < mj ) {
+            _s.removePairing( getDvalueUnmapped( otu1, mj ), otu1, mj );
         }
         else {
-            //            System.out.println( " otu1=" + otu1 );
-            //            System.out.println( " otu2=" + otu2 );
-            //            System.out.println( "motu1=" + _mappings[ otu1 ] );
-            //            System.out.println( "motu2=" + _mappings[ otu2 ] );
-            //            System.out.println( " j=" + j );
-            //            System.out.println( "mj=" + _mappings[ j ] );
-            //            System.out.println( "d=" + DF.format( getDvalueUnmapped( otu1, _mappings[ j ] ) ) );
-            _s.removePairing( getDvalueUnmapped( otu1, _mappings[ j ] ), _mappings[ j ], otu1 );
+            _s.removePairing( getDvalueUnmapped( otu1, mj ), mj, otu1 );
         }
-        if ( _mappings[ otu2 ] < _mappings[ j ] ) {
-            _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], _mappings[ j ] );
+        if ( _mappings[ otu2 ] < mj ) {
+            _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], mj );
         }
         else {
-            _s.removePairing( getDvalue( j, otu2 ), _mappings[ j ], _mappings[ otu2 ] );
+            _s.removePairing( getDvalue( j, otu2 ), mj, _mappings[ otu2 ] );
         }
-        if ( otu1 < _mappings[ j ] ) {
-            _s.addPairing( new_d, otu1, _mappings[ j ] );
+        double new_d;
+        if ( otu1 < mj ) {
+            new_d = ( _d_values[ otu1 ][ mj ] + getDvalue( j, otu2 ) - d ) / 2;
+            _s.addPairing( new_d, otu1, mj );
+            _d_values[ otu1 ][ mj ] = new_d;
         }
         else {
-            _s.addPairing( new_d, _mappings[ j ], otu1 );
+            new_d = ( _d_values[ mj ][ otu1 ] + getDvalue( j, otu2 ) - d ) / 2;
+            _s.addPairing( new_d, mj, otu1 );
+            _d_values[ mj ][ otu1 ] = new_d;
         }
-        setDvalueU( otu1, j, new_d );
     }
 
-    private void setDvalueU( final int i, final int j, final float d ) {
-        if ( i < _mappings[ j ] ) {
-            _d_values[ i ][ _mappings[ j ] ] = d;
-        }
-        _d_values[ _mappings[ j ] ][ i ] = d;
-    }
-
-    private float getDvalue( final int i, final int j ) {
+    private double getDvalue( final int i, final int j ) {
         if ( i < j ) {
             return _d_values[ _mappings[ i ] ][ _mappings[ j ] ];
         }
         return _d_values[ _mappings[ j ] ][ _mappings[ i ] ];
     }
 
-    private float getDvalueUnmapped( final int i, final int j ) {
+    private double getDvalueUnmapped( final int i, final int j ) {
         if ( i < j ) {
             return _d_values[ i ][ j ];
         }
@@ -218,7 +213,7 @@ public final class NeighborJoiningR {
         }
     }
 
-    private float calculateNetDivergence( final int i ) {
+    private double calculateNetDivergence( final int i ) {
         float d = 0;
         for( int n = 0; n < _n; ++n ) {
             if ( i != n ) {
@@ -276,23 +271,20 @@ public final class NeighborJoiningR {
     private final void reset( final BasicSymmetricalDistanceMatrix distances ) {
         _n = distances.getSize();
         _d = distances;
-        _r = new float[ _n ];
+        _r = new double[ _n ];
         _mappings = new int[ _n ];
         _rev_mappings = new int[ _n ];
-        _d_values = new float[ distances.getSize() ][ distances.getSize() ];
-        for( int i = 0; i < distances.getSize(); ++i ) {
-            for( int j = 0; j < distances.getSize(); ++j ) {
-                _d_values[ i ][ j ] = ( float ) distances.getValue( i, j );
-            }
-        }
+        _d_values = distances.getValues();
         _s = new S();
         _s.initialize( distances );
         initExternalNodes();
-        System.out.println();
-        printM();
-        System.out.println( "----------------------------------------------------------------------------------" );
-        System.out.println();
-        System.out.println();
+        if ( _verbose ) {
+            System.out.println();
+            printM();
+            System.out.println( "----------------------------------------------------------------------------------" );
+            System.out.println();
+            System.out.println();
+        }
     }
 
     final private void printM() {
@@ -335,37 +327,45 @@ public final class NeighborJoiningR {
         _min_i = -1;
         _min_j = -1;
         final int n_minus_2 = _n - 2;
-        printM();
+        if ( _verbose ) {
+            printM();
+        }
         for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
+            if ( _verbose ) {
+                System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
+            }
             for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
-                    System.out.print( sorted_i + " " );
-                    System.out.print( "(" + DF.format( getDvalueUnmapped( sorted_i, m_j ) ) + ") " );
-                    final double m = getDvalueUnmapped( sorted_i, m_j )
+                    final double m = _d_values[ sorted_i ][ m_j ]
                             - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
+                    //final double m = getDvalueUnmapped( sorted_i, m_j )
+                    //        - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     if ( ( m < min_m ) ) {
-                        _d_min = getDvalueUnmapped( sorted_i, m_j );
+                        // _d_min = getDvalueUnmapped( sorted_i, m_j );
                         min_m = m;
                         _min_i = sorted_i;
                         _min_j = j;
                     }
                 }
             }
-            System.out.println();
-            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
-                for( final int sorted_i : entry.getValue() ) {
-                    System.out.print( sorted_i );
-                    System.out.print( "->" );
-                    System.out.print( DF.format( _r[ sorted_i ] ) );
-                    System.out.print( "  " );
+            if ( _verbose ) {
+                System.out.println();
+                for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                    for( final int sorted_i : entry.getValue() ) {
+                        System.out.print( sorted_i );
+                        System.out.print( "->" );
+                        System.out.print( DF.format( _r[ sorted_i ] ) );
+                        System.out.print( "  " );
+                    }
                 }
+                System.out.println();
             }
+        }
+        if ( _verbose ) {
             System.out.println();
         }
-        System.out.println();
         return min_m;
     }
 
