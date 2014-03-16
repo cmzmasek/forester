@@ -52,6 +52,7 @@ public final class NeighborJoiningR {
     private S                              _s;
     private double                         _d_min;                             //TODO remove me
     private int[]                          _rev_mappings;
+    private double _umax;
 
     private NeighborJoiningR() {
         _verbose = false;
@@ -169,10 +170,10 @@ public final class NeighborJoiningR {
         //  final double new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
         // System.out.println( "\nnew d value: " + DF.format( new_d ) );
         if ( otu1 < mj ) {
-            _s.removePairing( getDvalueUnmapped( otu1, mj ), otu1, mj );
+            _s.removePairing( _d_values[ otu1][ mj ] , otu1, mj );
         }
         else {
-            _s.removePairing( getDvalueUnmapped( otu1, mj ), mj, otu1 );
+            _s.removePairing( _d_values[ mj ][ otu1 ], mj, otu1 );
         }
         if ( _mappings[ otu2 ] < mj ) {
             _s.removePairing( getDvalue( j, otu2 ), _mappings[ otu2 ], mj );
@@ -200,17 +201,15 @@ public final class NeighborJoiningR {
         return _d_values[ _mappings[ j ] ][ _mappings[ i ] ];
     }
 
-    private double getDvalueUnmapped( final int i, final int j ) {
-        if ( i < j ) {
-            return _d_values[ i ][ j ];
-        }
-        return _d_values[ j ][ i ];
-    }
-
     private final void calculateNetDivergences() {
+        _umax = -1000;
         for( int i = 0; i < _n; ++i ) {
             _r[ i ] = calculateNetDivergence( i );
+            if ( _r[i  ] > _umax ) {
+                _umax = _r[i ];
+            }
         }
+      //  System.out.println( "umax=" + _umax );
     }
 
     private double calculateNetDivergence( final int i ) {
@@ -336,12 +335,19 @@ public final class NeighborJoiningR {
             if ( _verbose ) {
                 System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
             }
-            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+            X: for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     final double m = _d_values[ sorted_i ][ m_j ]
                             - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     //final double m = getDvalueUnmapped( sorted_i, m_j )
                     //        - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
+                    
+                    if ( m  - r_j - _umax >  min_m  ) {
+                        System.out.println( m );
+                        continue X;
+                    }
+                    
+                    
                     if ( ( m < min_m ) ) {
                         // _d_min = getDvalueUnmapped( sorted_i, m_j );
                         min_m = m;
