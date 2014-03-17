@@ -3,13 +3,13 @@ package org.forester.evoinference.distance;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 
@@ -17,10 +17,10 @@ public final class S {
 
     public final static int                                    FACTOR = 1000000;
     private final static boolean                               DEBUG  = true;
-    private final List<SortedMap<Integer, SortedSet<Integer>>> _data;
+    private final List<SortedMap<Integer, Set<Integer>>> _data;
 
     public S() {
-        _data = new ArrayList<SortedMap<Integer, SortedSet<Integer>>>();
+        _data = new ArrayList<SortedMap<Integer, Set<Integer>>>();
     }
 
     final public void addPairing( final double key, final int value, final int j ) {
@@ -31,17 +31,17 @@ public final class S {
         addPairing( key, value, getS( j ) );
     }
 
-    final public SortedMap<Integer, SortedSet<Integer>> getS( final int j ) {
+    final public SortedMap<Integer, Set<Integer>> getS( final int j ) {
         return _data.get( j );
     }
 
-    final public SortedSet<Integer> getValues( final int key, final int j ) {
+    final public Set<Integer> getValues( final int key, final int j ) {
         return getS( j ).get( key );
     }
 
     final public void initialize( final BasicSymmetricalDistanceMatrix d ) {
         for( int j = 0; j < d.getSize(); ++j ) {
-            final TreeMap<Integer, SortedSet<Integer>> map = new TreeMap<Integer, SortedSet<Integer>>();
+            final TreeMap<Integer, Set<Integer>> map = new TreeMap<Integer, Set<Integer>>();
             _data.add( map );
             for( int i = 0; i < j; ++i ) {
                 addPairing( ( int ) ( FACTOR * d.getValues()[ i ][ j ] ), i, map );
@@ -52,7 +52,7 @@ public final class S {
 
     final public void initialize( final int size ) {
         for( int j = 0; j < size; ++j ) {
-            final TreeMap<Integer, SortedSet<Integer>> map = new TreeMap<Integer, SortedSet<Integer>>();
+            final TreeMap<Integer, Set<Integer>> map = new TreeMap<Integer, Set<Integer>>();
             _data.add( map );
         }
     }
@@ -62,8 +62,8 @@ public final class S {
     }
 
     final public void removePairing( final int key, final int value, final int j ) {
-        final SortedMap<Integer, SortedSet<Integer>> m = _data.get( j );
-        final SortedSet<Integer> x = m.get( key );
+        final SortedMap<Integer, Set<Integer>> m = _data.get( j );
+        final Set<Integer> x = m.get( key );
         if ( DEBUG ) {
             if ( x == null ) {
                 System.out.println();
@@ -108,8 +108,8 @@ public final class S {
 
     // Slow, only for testing
     @SuppressWarnings( "unchecked")
-    final public SortedSet<Integer>[] toArray( final int j ) {
-        return _data.get( j ).values().toArray( new SortedSet[ _data.get( j ).size() ] );
+    final public Set<Integer>[] toArray( final int j ) {
+        return _data.get( j ).values().toArray( new Set[ _data.get( j ).size() ] );
     }
 
     @Override
@@ -119,9 +119,9 @@ public final class S {
         for( int j = 0; j < size(); ++j ) {
             sb.append( j );
             sb.append( ": " );
-            for( final Entry<Integer, SortedSet<Integer>> entry : getSentrySet( j ) ) {
+            for( final Entry<Integer, Set<Integer>> entry : getSentrySet( j ) ) {
                 final double key = entry.getKey();
-                final SortedSet<Integer> values = entry.getValue();
+                final Set<Integer> values = entry.getValue();
                 sb.append( df.format( key / FACTOR ) + "->" );
                 boolean first = true;
                 for( final int v : values ) {
@@ -138,13 +138,13 @@ public final class S {
         return sb.toString();
     }
 
-    final Set<Entry<Integer, SortedSet<Integer>>> getSentrySet( final int j ) {
+    final Set<Entry<Integer, Set<Integer>>> getSentrySet( final int j ) {
         return getS( j ).entrySet();
     }
 
-    final private static void addPairing( final int key, final int value, final SortedMap<Integer, SortedSet<Integer>> m ) {
+    final private static void addPairing( final int key, final int value, final SortedMap<Integer, Set<Integer>> m ) {
         if ( !m.containsKey( key ) ) {
-            final TreeSet<Integer> x = new TreeSet<Integer>();
+            final HashSet<Integer> x = new HashSet<Integer>();
             x.add( value );
             m.put( key, x );
         }

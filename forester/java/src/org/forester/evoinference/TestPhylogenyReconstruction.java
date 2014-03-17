@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.forester.evoinference.distance.NeighborJoining;
@@ -2350,7 +2351,7 @@ public class TestPhylogenyReconstruction {
             }
             s0.addPairing( 2, 33, 0 );
             s0.addPairing( 2, 333, 0 );
-            final SortedSet<Integer>[] a = s0.toArray( 0 );
+            final Set<Integer>[] a = s0.toArray( 0 );
             if ( !a[ 0 ].contains( 1 ) ) {
                 return false;
             }
@@ -2522,6 +2523,7 @@ public class TestPhylogenyReconstruction {
                 return false;
             }
             //
+            System.exit(1);
             final BasicSymmetricalDistanceMatrix m3 = new BasicSymmetricalDistanceMatrix( 20 );
             m3.setIdentifier( 0, "F_MOUSE" );
             m3.setIdentifier( 1, "11_RAT" );

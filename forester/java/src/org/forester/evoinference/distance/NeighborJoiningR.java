@@ -29,7 +29,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.SortedSet;
+import java.util.Set;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.phylogeny.Phylogeny;
@@ -205,7 +205,7 @@ public final class NeighborJoiningR {
         _umax = -1000;
         for( int i = 0; i < _n; ++i ) {
             _r[ i ] = calculateNetDivergence( i );
-            if ( _r[i  ] > _umax ) {
+            if ( _r[ i ] > _umax ) {
                 _umax = _r[i ];
             }
         }
@@ -304,7 +304,7 @@ public final class NeighborJoiningR {
                 System.out.print( " " );
             }
             System.out.print( "\t\t" );
-            for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
+            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
                 System.out.print( DF.format( ( double ) entry.getKey() / S.FACTOR ) + "=" );
                 boolean first = true;
                 for( final int v : entry.getValue() ) {
@@ -329,22 +329,27 @@ public final class NeighborJoiningR {
         if ( _verbose ) {
             printM();
         }
-        for( int j = 1; j < _n; ++j ) {
+        J: for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
             if ( _verbose ) {
                 System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
             }
-            X: for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     final double m = _d_values[ sorted_i ][ m_j ]
                             - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     //final double m = getDvalueUnmapped( sorted_i, m_j )
                     //        - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     
-                    if ( m  - r_j - _umax >  min_m  ) {
-                        System.out.println( m );
-                        continue X;
+                    System.out.println( "m=" + m );
+                    System.out.println( "r_j=" + r_j );
+                    System.out.println( "umax=" + _umax );
+                    System.out.println( "  =" + (  m  - r_j - _umax  ) );
+                    System.out.println( "  min_m=" + min_m );
+                    if ( ( m  - r_j - _umax ) >  min_m  ) {
+                        System.out.println(">>>>>>>>>>>>>>>>>>>>>>" +  m );
+                        continue J;
                     }
                     
                     
@@ -358,7 +363,7 @@ public final class NeighborJoiningR {
             }
             if ( _verbose ) {
                 System.out.println();
-                for( final Entry<Integer, SortedSet<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
                     for( final int sorted_i : entry.getValue() ) {
                         System.out.print( sorted_i );
                         System.out.print( "->" );
