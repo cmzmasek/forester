@@ -52,7 +52,8 @@ public final class NeighborJoiningR {
     private S                              _s;
     private double                         _d_min;                             //TODO remove me
     private int[]                          _rev_mappings;
-    private double _umax;
+    private double                         _umax;
+    private double                         _rmax;
 
     private NeighborJoiningR() {
         _verbose = false;
@@ -80,15 +81,15 @@ public final class NeighborJoiningR {
             }
             // Calculates the minimal distance.
             // If more than one minimal distances, always the first found is used
-            final double m = updateM();
+            updateM();
             final int otu1 = _min_i;
             final int otu2 = _min_j;
-            if ( _verbose ) {
-                System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
-                // It is a condition that otu1 < otu2.
-                //System.out.println( "mapped 1 " + _mappings[ otu1 ] );
-                System.out.println( "mapped otu 2 " + _mappings[ otu2 ] );
-            }
+            //if ( _verbose ) {
+            //   System.out.println( _min_i + " " + _min_j + " => " + DF.format( m ) + " (" + DF.format( _d_min ) + ")" );
+            // It is a condition that otu1 < otu2.
+            //System.out.println( "mapped 1 " + _mappings[ otu1 ] );
+            //  System.out.println( "mapped otu 2 " + _mappings[ otu2 ] );
+            //  }
             final PhylogenyNode node = new PhylogenyNode();
             //final double d = getDvalueUnmapped( otu1, _mappings[ otu2 ] );
             final double d = _d_values[ otu1 ][ _mappings[ otu2 ] ];
@@ -170,7 +171,7 @@ public final class NeighborJoiningR {
         //  final double new_d = ( getDvalueUnmapped( otu1, _mappings[ j ] ) + getDvalue( j, otu2 ) - d ) / 2;
         // System.out.println( "\nnew d value: " + DF.format( new_d ) );
         if ( otu1 < mj ) {
-            _s.removePairing( _d_values[ otu1][ mj ] , otu1, mj );
+            _s.removePairing( _d_values[ otu1 ][ mj ], otu1, mj );
         }
         else {
             _s.removePairing( _d_values[ mj ][ otu1 ], mj, otu1 );
@@ -202,14 +203,13 @@ public final class NeighborJoiningR {
     }
 
     private final void calculateNetDivergences() {
-        _umax = -1000;
+        _rmax = -Double.MAX_VALUE;
         for( int i = 0; i < _n; ++i ) {
             _r[ i ] = calculateNetDivergence( i );
-            if ( _r[ i ] > _umax ) {
-                _umax = _r[i ];
+            if ( _r[ i ] > _rmax ) {
+                _rmax = _r[ i ];
             }
         }
-      //  System.out.println( "umax=" + _umax );
     }
 
     private double calculateNetDivergence( final int i ) {
@@ -320,7 +320,7 @@ public final class NeighborJoiningR {
         }
     }
 
-    private final double updateM() {
+    private final void updateM() {
         calculateNetDivergences();
         Double min_m = Double.MAX_VALUE;
         _min_i = -1;
@@ -329,32 +329,41 @@ public final class NeighborJoiningR {
         if ( _verbose ) {
             printM();
         }
-        J: for( int j = 1; j < _n; ++j ) {
+        //
+        X: for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            if ( _verbose ) {
-                System.out.print( "j=" + j + "  mj=" + m_j + ":  " );
-            }
             for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     final double m = _d_values[ sorted_i ][ m_j ]
                             - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
-                    //final double m = getDvalueUnmapped( sorted_i, m_j )
-                    //        - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
-                    
-                    System.out.println( "m=" + m );
-                    System.out.println( "r_j=" + r_j );
-                    System.out.println( "umax=" + _umax );
-                    System.out.println( "  =" + (  m  - r_j - _umax  ) );
-                    System.out.println( "  min_m=" + min_m );
-                    if ( ( m  - r_j - _umax ) >  min_m  ) {
-                        System.out.println(">>>>>>>>>>>>>>>>>>>>>>" +  m );
+                    if ( ( m < min_m ) ) {
+                        min_m = m;
+                        _min_i = sorted_i;
+                        _min_j = j;
+                    }
+                }
+                continue X;
+            }
+        }
+        //
+        J: for( int j = 1; j < _n; ++j ) {
+            //System.out.println( "~~~~~~~~~~~~~  min_m=" + min_m );
+            final double r_j = _r[ j ];
+            final int m_j = _mappings[ j ];
+            boolean first = true;
+            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                if ( first ) {
+                    first = false;
+                    continue;
+                }
+                for( final int sorted_i : entry.getValue() ) {
+                    final double d = _d_values[ sorted_i ][ m_j ];
+                    if ( ( d - ( ( _umax + r_j ) / n_minus_2 ) ) > min_m ) {
                         continue J;
                     }
-                    
-                    
+                    final double m = d - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
                     if ( ( m < min_m ) ) {
-                        // _d_min = getDvalueUnmapped( sorted_i, m_j );
                         min_m = m;
                         _min_i = sorted_i;
                         _min_j = j;
@@ -377,7 +386,6 @@ public final class NeighborJoiningR {
         if ( _verbose ) {
             System.out.println();
         }
-        return min_m;
     }
 
     // otu2 will, in effect, be "deleted" from the matrix.

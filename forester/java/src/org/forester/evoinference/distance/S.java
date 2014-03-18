@@ -8,15 +8,14 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 
 public final class S {
 
-    public final static int                                    FACTOR = 1000000;
-    private final static boolean                               DEBUG  = true;
+    public final static int                              FACTOR = 1000000;
+    private final static boolean                         DEBUG  = true;
     private final List<SortedMap<Integer, Set<Integer>>> _data;
 
     public S() {
