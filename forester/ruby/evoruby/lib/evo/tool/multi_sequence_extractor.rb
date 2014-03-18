@@ -1,10 +1,9 @@
 #
 # = lib/evo/apps/multi_sequence_extractor.rb - MultiSequenceExtractor class
 #
-# Copyright::  Copyright (C) 2006-2008 Christian M. Zmasek
+# Copyright::  Copyright (C) 2014 Christian M. Zmasek
 # License::    GNU Lesser General Public License (LGPL)
 #
-# $Id: multi_sequence_extractor.rb,v 1.10 2010/12/13 19:00:11 cmzmasek Exp $
 
 
 require 'lib/evo/util/constants'
@@ -16,18 +15,16 @@ require 'lib/evo/io/parser/fasta_parser'
 require 'lib/evo/io/writer/fasta_writer'
 require 'lib/evo/util/command_line_arguments'
 
-
-
 module Evoruby
 
   class MultiSequenceExtractor
 
     PRG_NAME                           = "mse"
-    PRG_VERSION                        = "1.03"
+    PRG_VERSION                        = "1.04"
     PRG_DESC                           = "extraction of sequences by name from multiple multi-sequence ('fasta') files"
-    PRG_DATE                           = "131127"
-    COPYRIGHT                          = "2008-2013 Christian M Zmasek"
-    CONTACT                            = "phylosoft@gmail.com"
+    PRG_DATE                           = "140318"
+    COPYRIGHT                          = "2014 Christian M Zmasek"
+    CONTACT                            = "phyloxml@gmail.com"
     WWW                                = "https://sites.google.com/site/cmzmasek/home/software/forester"
     HELP_OPTION_1                      = 'help'
     HELP_OPTION_2                      = 'h'
@@ -71,7 +68,7 @@ module Evoruby
         exit( 0 )
       end
 
-      if ( cla.get_number_of_files != 4 && cla.get_number_of_files != 5 )
+      if ( cla.get_number_of_files != 5 )
         print_help
         exit( -1 )
       end
@@ -91,15 +88,12 @@ module Evoruby
       input_dir              = cla.get_file_name( 1 )
       out_dir                = cla.get_file_name( 2 )
       out_dir_doms           = cla.get_file_name( 3 )
-      mapping_file            = nil
+      mapping_file           = cla.get_file_name( 4 )
 
-      if ( cla.get_number_of_files == 5 )
-        mapping_file = cla.get_file_name( 4 )
-        begin
-          Util.check_file_for_readability( mapping_file )
-        rescue ArgumentError => e
-          Util.fatal_error( PRG_NAME, "error: " + e.to_s )
-        end
+      begin
+        Util.check_file_for_readability( mapping_file )
+      rescue ArgumentError => e
+        Util.fatal_error( PRG_NAME, "error: " + e.to_s )
       end
 
       extension = 0
@@ -115,25 +109,31 @@ module Evoruby
         extract_linkers = true
       end
 
-      if  !File.exist?( input_dir )
-        Util.fatal_error( PRG_NAME, "error: input directory [#{input_dir}] does not exist" )
+      unless File.exist?( out_dir )
+        Dir.mkdir( out_dir )
       end
-      if  !File.exist?( out_dir )
-        Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir}] does not exist" )
-      end
-      if  !File.exist?( out_dir_doms )
-        Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir_doms}] does not exist" )
-      end
-      if !File.directory?( input_dir )
-        Util.fatal_error( PRG_NAME, "error: [#{input_dir}] is not a directory" )
-      end
-      if !File.directory?( out_dir )
-        Util.fatal_error( PRG_NAME, "error:  [#{out_dir}] is not a directory" )
-      end
-      if !File.directory?( out_dir_doms )
-        Util.fatal_error( PRG_NAME, "error:  [#{out_dir_doms}] is not a directory" )
+      unless File.exist?( out_dir_doms )
+        Dir.mkdir( out_dir_doms )
       end
 
+      unless File.exist?( input_dir )
+        Util.fatal_error( PRG_NAME, "error: input directory [#{input_dir}] does not exist" )
+      end
+      unless File.exist?( out_dir )
+        Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir}] does not exist" )
+      end
+      unless File.exist?( out_dir_doms )
+        Util.fatal_error( PRG_NAME, "error: output directory [#{out_dir_doms}] does not exist" )
+      end
+      unless File.directory?( input_dir )
+        Util.fatal_error( PRG_NAME, "error: [#{input_dir}] is not a directory" )
+      end
+      unless File.directory?( out_dir )
+        Util.fatal_error( PRG_NAME, "error:  [#{out_dir}] is not a directory" )
+      end
+      unless File.directory?( out_dir_doms )
+        Util.fatal_error( PRG_NAME, "error:  [#{out_dir_doms}] is not a directory" )
+      end
 
       log = String.new
 
@@ -150,10 +150,8 @@ module Evoruby
       log << "Output dir                 : " + out_dir + ld
       puts( "Output dir domains         : " + out_dir_doms )
       log << "Output dir domains         : " + out_dir_doms + ld
-      if ( mapping_file != nil )
-        puts( "Mapping file               : " + mapping_file )
-        log << "Mapping file               : " + mapping_file + ld
-      end
+      puts( "Mapping file               : " + mapping_file )
+      log << "Mapping file               : " + mapping_file + ld
       if extension > 0
         puts( "Extension                  : " + extension.to_s )
         log << "Extension                  : " + extension.to_s + ld
@@ -165,9 +163,7 @@ module Evoruby
       log << "Date                       : " + Time.now.to_s + ld
       puts
 
-      if ( mapping_file != nil )
-        species_codes_to_paths = extract_mappings( mapping_file )
-      end
+      species_codes_to_paths = extract_mappings( mapping_file )
 
       input_files = obtain_inputfiles( input_dir, seq_names_files_suffix )
 
@@ -495,19 +491,19 @@ module Evoruby
               if ( species_code_to_path.has_value?( path ) )
                 Util.fatal_error( PRG_NAME, "error: path [#{path}] is not unique" )
               end
-              if ( !File.exist?( path ) )
+              unless ( File.exist?( path ) )
                 Util.fatal_error( PRG_NAME, "error: file [#{path}] does not exist" )
               end
-              if ( !File.file?( path ) )
+              unless ( File.file?( path ) )
                 Util.fatal_error( PRG_NAME, "error: [#{path}] is not a regular file" )
               end
-              if ( !File.readable?( path ) )
+              unless ( File.readable?( path ) )
                 Util.fatal_error( PRG_NAME, "error: file [#{path}] is not readable" )
               end
-              if ( File.size( path ) < 10000 )
+              if ( File.size( path ) < 1000 )
                 Util.fatal_error( PRG_NAME, "error: file [#{path}] appears too small" )
               end
-              if ( !Util.looks_like_fasta?( path ) )
+              unless ( Util.looks_like_fasta?( path ) )
                 Util.fatal_error( PRG_NAME, "error: file [#{path}] does not appear to be a fasta file" )
               end
               species_code_to_path[ species ] = path
@@ -547,9 +543,8 @@ module Evoruby
     def print_help()
       puts( "Usage:" )
       puts()
-      puts( "  " + PRG_NAME + ".rb <sequence names file suffix> <input dir containing sequence names files " +
-         "and possibly genome multiple-sequence ('fasta') files> <output directory for sequences> <output directory for domains> [mapping file for " +
-         "genome multiple-sequence ('fasta') files not in input dir]" )
+      puts( "  " + PRG_NAME + ".rb <sequence id ('prot') files suffix> <dir containing sequence id ('prot') files>" +
+         " <output directory for protein sequences> <output directory for domain sequences> <genome locations file>" )
       puts()
       puts( "  option: -" + EXT_OPTION  + "=<int>: to extend extracted domains" )
       puts( "          -" + EXTRACT_LINKERS_OPTION  + "      : to extract linkers" )
