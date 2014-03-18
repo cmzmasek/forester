@@ -39,7 +39,8 @@ import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.NeighborJoiningR;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
-import org.forester.evoinference.distance.S;
+import org.forester.evoinference.distance.Sarray;
+import org.forester.evoinference.distance.Sset;
 import org.forester.evoinference.matrix.character.BasicCharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix.BinaryStates;
@@ -84,6 +85,13 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "  failed." );
         }
+        System.out.println( "Sarray" );
+        if ( testSarray() ) {
+            System.out.println( "  OK." );
+        }
+        else {
+            System.out.println( "  failed." );
+        }
         System.out.println( "NJR" );
         if ( testNeighborJoiningR() ) {
             System.out.println( "  OK." );
@@ -91,7 +99,7 @@ public class TestPhylogenyReconstruction {
         else {
             System.out.println( "  failed." );
         }
-        // timeNeighborJoining();
+        timeNeighborJoining();
     }
 
     public static boolean test( final File test_dir ) {
@@ -2246,7 +2254,7 @@ public class TestPhylogenyReconstruction {
 
     private static boolean testS() {
         try {
-            final S s0 = new S();
+            final Sset s0 = new Sset();
             s0.initialize( 1 );
             s0.addPairing( 0, 1, 0 );
             s0.addPairing( 7, 8, 0 );
@@ -2373,6 +2381,147 @@ public class TestPhylogenyReconstruction {
             if ( !a[ 2 ].contains( 333 ) ) {
                 return false;
             }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testSarray() {
+        try {
+            final Sarray s0 = new Sarray();
+            s0.initialize( 1 );
+            s0.addPairing( 0, 1, 0 );
+            s0.addPairing( 7, 8, 0 );
+            s0.addPairing( 4, 55, 0 );
+            s0.addPairing( 2, 3, 0 );
+            s0.addPairing( 4, 5, 0 );
+            s0.addPairing( 5, 6666, 0 );
+            s0.addPairing( 5, 666, 0 );
+            s0.addPairing( 5, 66, 0 );
+            s0.addPairing( 5, 6, 0 );
+            s0.addPairing( 6, 7, 0 );
+            s0.addPairing( 3, 4, 0 );
+            s0.addPairing( 1, 2, 0 );
+            if ( s0.size() != 1 ) {
+                return false;
+            }
+            if ( s0.getS( 0 ).size() != 8 ) {
+                return false;
+            }
+            if ( s0.getValues( 0, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 1, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 2, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 3, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 4, 0 ).length != 2 ) {
+                return false;
+            }
+            if ( s0.getValues( 5, 0 ).length != 4 ) {
+                return false;
+            }
+            if ( s0.getValues( 6, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 7, 0 ).length != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 0, 0 )[ 0 ] != 1 ) {
+                return false;
+            }
+            if ( s0.getValues( 5, 0 )[ 3 ] != 6 ) {
+                return false;
+            }
+            if ( s0.getValues( 5, 0 )[ 2 ] != 66 ) {
+                return false;
+            }
+            if ( s0.getValues( 5, 0 )[ 1 ] != 666 ) {
+                return false;
+            }
+            if ( s0.getValues( 5, 0 )[ 0 ] != 6666 ) {
+                return false;
+            }
+            s0.removePairing( 5, 6666, 0 );
+            if ( s0.getValues( 5, 0 ).length != 3 ) {
+                System.out.println( s0.getValues( 5, 0 ).length );
+                return false;
+            }
+            //            if ( s0.getValues( 5, 0 ).contains( 6666 ) ) {
+            //                return false;
+            //            }
+            //            s0.removePairing( 5, 666, 0 );
+            //            if ( s0.getValues( 5, 0 ).contains( 666 ) ) {
+            //                return false;
+            //            }
+            //            s0.removePairing( 5, 66, 0 );
+            //            if ( s0.getValues( 5, 0 ).contains( 66 ) ) {
+            //                return false;
+            //            }
+            //            if ( s0.getValues( 5, 0 ).size() != 1 ) {
+            //                return false;
+            //            }
+            //            if ( s0.getS( 0 ).size() != 8 ) {
+            //                return false;
+            //            }
+            //            s0.removePairing( 5, 6, 0 );
+            //            if ( s0.getS( 0 ).size() != 7 ) {
+            //                return false;
+            //            }
+            //            s0.addPairing( 5, 6, 0 );
+            //            if ( s0.getS( 0 ).size() != 8 ) {
+            //                return false;
+            //            }
+            //            if ( s0.getValues( 5, 0 ).size() != 1 ) {
+            //                return false;
+            //            }
+            //            if ( !s0.getValues( 5, 0 ).contains( 6 ) ) {
+            //                return false;
+            //            }
+            //            s0.addPairing( 5, 403, 0 );
+            //            if ( s0.getValues( 5, 0 ).size() != 2 ) {
+            //                return false;
+            //            }
+            //            if ( !s0.getValues( 5, 0 ).contains( 403 ) ) {
+            //                return false;
+            //            }
+            //            s0.addPairing( 693, 100, 0 );
+            //            s0.addPairing( 693, 101, 0 );
+            //            if ( s0.getValues( 693, 0 ).size() != 2 ) {
+            //                return false;
+            //            }
+            //            s0.addPairing( 2, 33, 0 );
+            //            s0.addPairing( 2, 333, 0 );
+            //            final Set<Integer>[] a = s0.toArray( 0 );
+            //            if ( !a[ 0 ].contains( 1 ) ) {
+            //                return false;
+            //            }
+            //            if ( a[ 0 ].size() != 1 ) {
+            //                return false;
+            //            }
+            //            if ( !a[ 1 ].contains( 2 ) ) {
+            //                return false;
+            //            }
+            //            if ( a[ 1 ].size() != 1 ) {
+            //                return false;
+            //            }
+            //            if ( !a[ 2 ].contains( 3 ) ) {
+            //                return false;
+            //            }
+            //            if ( !a[ 2 ].contains( 33 ) ) {
+            //                return false;
+            //            }
+            //            if ( !a[ 2 ].contains( 333 ) ) {
+            //                return false;
+            //            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -2970,7 +3119,7 @@ public class TestPhylogenyReconstruction {
 
     private static void timeNeighborJoining() {
         final NeighborJoiningR njr = NeighborJoiningR.createInstance();
-        for( int n = 3; n <= 9; ++n ) {
+        for( int n = 3; n <= 10; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
@@ -2979,7 +3128,7 @@ public class TestPhylogenyReconstruction {
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
         final NeighborJoiningF njf = NeighborJoiningF.createInstance();
-        for( int n = 3; n <= 9; ++n ) {
+        for( int n = 3; n <= 10; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );
@@ -2988,7 +3137,7 @@ public class TestPhylogenyReconstruction {
             System.out.println( "Size: " + x + " -> " + ( new Date().getTime() - start_time ) + "ms" );
         }
         final NeighborJoining nj = NeighborJoining.createInstance();
-        for( int n = 3; n <= 9; ++n ) {
+        for( int n = 3; n <= 10; ++n ) {
             final int x = ( int ) Math.pow( 2, n );
             final BasicSymmetricalDistanceMatrix mt = new BasicSymmetricalDistanceMatrix( x );
             mt.randomize( new Date().getTime() );

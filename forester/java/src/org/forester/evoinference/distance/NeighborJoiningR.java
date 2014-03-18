@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.phylogeny.Phylogeny;
@@ -49,7 +48,7 @@ public final class NeighborJoiningR {
     private final boolean                  _verbose;
     private int                            _min_i;
     private int                            _min_j;
-    private S                              _s;
+    private Sarray                         _s;
     private double                         _d_min;                             //TODO remove me
     private int[]                          _rev_mappings;
     private double                         _umax;
@@ -274,7 +273,7 @@ public final class NeighborJoiningR {
         _mappings = new int[ _n ];
         _rev_mappings = new int[ _n ];
         _d_values = distances.getValues();
-        _s = new S();
+        _s = new Sarray();
         _s.initialize( distances );
         initExternalNodes();
         if ( _verbose ) {
@@ -304,8 +303,8 @@ public final class NeighborJoiningR {
                 System.out.print( " " );
             }
             System.out.print( "\t\t" );
-            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( _mappings[ j ] ) ) {
-                System.out.print( DF.format( ( double ) entry.getKey() / S.FACTOR ) + "=" );
+            for( final Entry<Integer, int[]> entry : _s.getSentrySet( _mappings[ j ] ) ) {
+                System.out.print( DF.format( ( double ) entry.getKey() / Sarray.FACTOR ) + "=" );
                 boolean first = true;
                 for( final int v : entry.getValue() ) {
                     if ( !first ) {
@@ -333,7 +332,7 @@ public final class NeighborJoiningR {
         X: for( int j = 1; j < _n; ++j ) {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
-            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
+            for( final Entry<Integer, int[]> entry : _s.getSentrySet( m_j ) ) {
                 for( final int sorted_i : entry.getValue() ) {
                     final double m = _d_values[ sorted_i ][ m_j ]
                             - ( ( _r[ _rev_mappings[ sorted_i ] ] + r_j ) / n_minus_2 );
@@ -352,7 +351,7 @@ public final class NeighborJoiningR {
             final double r_j = _r[ j ];
             final int m_j = _mappings[ j ];
             boolean first = true;
-            for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
+            for( final Entry<Integer, int[]> entry : _s.getSentrySet( m_j ) ) {
                 if ( first ) {
                     first = false;
                     continue;
@@ -372,7 +371,7 @@ public final class NeighborJoiningR {
             }
             if ( _verbose ) {
                 System.out.println();
-                for( final Entry<Integer, Set<Integer>> entry : _s.getSentrySet( m_j ) ) {
+                for( final Entry<Integer, int[]> entry : _s.getSentrySet( m_j ) ) {
                     for( final int sorted_i : entry.getValue() ) {
                         System.out.print( sorted_i );
                         System.out.print( "->" );

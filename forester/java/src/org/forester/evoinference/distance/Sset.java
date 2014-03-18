@@ -12,13 +12,13 @@ import java.util.TreeMap;
 
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 
-public final class S {
+public final class Sset {
 
     public final static int                              FACTOR = 1000000;
     private final static boolean                         DEBUG  = true;
     private final List<SortedMap<Integer, Set<Integer>>> _data;
 
-    public S() {
+    public Sset() {
         _data = new ArrayList<SortedMap<Integer, Set<Integer>>>();
     }
 
