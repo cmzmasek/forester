@@ -73,10 +73,10 @@ public final class Sarray {
             m.remove( key );
         }
         else {
-            int[] xnew = new int[ x.length - 1 ];
+            final int[] xnew = new int[ x.length - 1 ];
             int xc = 0;
             for( int i = 0; ++i < x.length; ++i ) {
-                int xv = x[ i ];
+                final int xv = x[ i ];
                 if ( xv != value ) {
                     xnew[ xc++ ] = xv;
                 }

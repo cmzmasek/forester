@@ -35,7 +35,7 @@ import org.forester.util.ForesterUtil;
 
 public class BasicBinaryDomainCombination implements BinaryDomainCombination {
 
-    final static boolean                                            VERBOSE = true;
+    final static boolean                                            VERBOSE = false;
     final private static Map<Integer, BasicBinaryDomainCombination> DC_POOL = new HashMap<Integer, BasicBinaryDomainCombination>();
     final private static Map<Integer, String>                       S_POOL  = new HashMap<Integer, String>();
     short                                                           _id0;
