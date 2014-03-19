@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
 <phylogeny rooted="true" rerootable="false">
-  <name>tol_154.xml</name>
+  <name>tol_156</name>
   <clade>
     <taxonomy>
       <id provider="uniprot">131567</id>
