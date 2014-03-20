@@ -1031,44 +1031,97 @@
                                             </taxonomy>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">8353</id>
-                                                <scientific_name>Xenopus</scientific_name>
-                                                <rank>genus</rank>
+                                                <id provider="uniprot">8342</id>
+                                                <scientific_name>Anura</scientific_name>
+                                                <rank>order</rank>
                                               </taxonomy>
                                               <clade>
                                                 <taxonomy>
-                                                  <id provider="uniprot">8355</id>
-                                                  <code>XENLA</code>
-                                                  <scientific_name>Xenopus laevis</scientific_name>
-                                                  <authority>Daudin, 1802</authority>
-                                                  <common_name>African clawed frog</common_name>
-                                                  <synonym>Bufo laevis</synonym>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/e/e3/Xenopus_laevis.jpg</uri>
+                                                  <id provider="uniprot">8353</id>
+                                                  <scientific_name>Xenopus</scientific_name>
+                                                  <rank>genus</rank>
                                                 </taxonomy>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">8355</id>
+                                                    <code>XENLA</code>
+                                                    <scientific_name>Xenopus laevis</scientific_name>
+                                                    <authority>Daudin, 1802</authority>
+                                                    <common_name>African clawed frog</common_name>
+                                                    <synonym>Bufo laevis</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://upload.wikimedia.org/wikipedia/commons/e/e3/Xenopus_laevis.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">8364</id>
+                                                    <code>XENTR</code>
+                                                    <scientific_name>Xenopus tropicalis</scientific_name>
+                                                    <common_name>Western clawed frog</common_name>
+                                                    <synonym>Silurana tropicalis</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://genoweb.univ-rennes1.fr/OGP/xenopus%20tropicalis.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
                                               </clade>
                                               <clade>
                                                 <taxonomy>
-                                                  <id provider="uniprot">8364</id>
-                                                  <code>XENTR</code>
-                                                  <scientific_name>Xenopus tropicalis</scientific_name>
-                                                  <common_name>Western clawed frog</common_name>
-                                                  <synonym>Silurana tropicalis</synonym>
+                                                  <id provider="uniprot">8384</id>
+                                                  <code>BUFBU</code>
+                                                  <scientific_name>Bufo bufo</scientific_name>
+                                                  <common_name>European toad</common_name>
                                                   <rank>species</rank>
-                                                  <uri>http://genoweb.univ-rennes1.fr/OGP/xenopus%20tropicalis.jpg</uri>
+                                                  <uri>http://www.naturephoto-cz.com/photos/others/common-toad-22611.jpg</uri>
                                                 </taxonomy>
                                               </clade>
                                             </clade>
                                             <clade>
                                               <taxonomy>
-                                                <id provider="uniprot">54263</id>
-                                                <code>MESAL</code>
-                                                <scientific_name>Mesotriton alpestris</scientific_name>
-                                                <common_name>Alpine newt</common_name>
-                                                <synonym>Ichthyosaura alpestris</synonym>
-                                                <rank>species</rank>
-                                                <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0403/0436.jpeg</uri>
+                                                <id provider="uniprot">8293</id>
+                                                <scientific_name>Caudata</scientific_name>
+                                                <rank>order</rank>
                                               </taxonomy>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">1331674</id>
+                                                  <scientific_name>Pleurodelinae</scientific_name>
+                                                  <rank>subfamily</rank>
+                                                </taxonomy>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">54263</id>
+                                                    <code>MESAL</code>
+                                                    <scientific_name>Mesotriton alpestris</scientific_name>
+                                                    <common_name>Alpine newt</common_name>
+                                                    <synonym>Ichthyosaura alpestris</synonym>
+                                                    <synonym>Mesotriton alpestris</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://calphotos.berkeley.edu/imgs/512x768/0000_0000/0403/0436.jpeg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">8316</id>
+                                                    <code>NOTVI</code>
+                                                    <scientific_name>Notophthalmus viridescens</scientific_name>
+                                                    <common_name>Eastern newt</common_name>
+                                                    <synonym>Triturus viridescens</synonym>
+                                                    <rank>species</rank>
+                                                    <uri>http://www.jeffpippen.com/herps/enewt120908-9654sandybottomz.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">8341</id>
+                                                  <code>SIRIN</code>
+                                                  <scientific_name>Siren intermedia</scientific_name>
+                                                  <common_name>Lesser siren</common_name>
+                                                  <rank>species</rank>
+                                                  <uri>http://us.i1.yimg.com/us.yimg.com/i/ligans/animals/m/ar0181_1m.jpg</uri>
+                                                </taxonomy>
+                                              </clade>
                                             </clade>
                                           </clade>
                                           <clade>
@@ -1930,7 +1983,7 @@
                                               <id provider="uniprot">568273</id>
                                               <scientific_name>Machilis germanica</scientific_name>
                                               <rank>species</rank>
-                                              <uri>http://www.naturefg.com/images/c-animals/machilis.jpg</uri>
+                                              <uri>http://www.lucianabartolini.net/Immagini/Microcoryphia/Machilis-sp-02.jpg</uri>
                                             </taxonomy>
                                           </clade>
                                         </clade>
@@ -2250,7 +2303,7 @@
                                           <code>CAEEL</code>
                                           <scientific_name>Caenorhabditis elegans</scientific_name>
                                           <rank>species</rank>
-                                          <uri>http://homepages.ed.ac.uk/mbx/C_elegans/N2_picture.gif</uri>
+                                          <uri>http://www.easternct.edu/~adams/images/celegansmain.jpg</uri>
                                         </taxonomy>
                                       </clade>
                                     </clade>
@@ -2519,7 +2572,7 @@
                               <scientific_name>Acropora digitifera</scientific_name>
                               <common_name>Staghorn coral</common_name>
                               <rank>species</rank>
-                              <uri>http://www.botany.hawaii.edu/basch/uhnpscesu/htms/NPSAcorl/images/acropori/acrdigitif7.jpg</uri>
+                              <uri>http://mygenomix.files.wordpress.com/2011/07/sn-coral.jpg</uri>
                             </taxonomy>
                           </clade>
                           <clade>
@@ -3493,7 +3546,7 @@
                                                             <common_name>Inky cap fungus</common_name>
                                                             <synonym>Hormographiella aspergillata</synonym>
                                                             <rank>strain</rank>
-                                                            <uri>http://upload.wikimedia.org/wikipedia/commons/e/e9/Coprinopsis.cinerea.-.lindsey.jpg</uri>
+                                                            <uri>http://www.pnas.org/content/107/26/cover-expansion.medium.gif</uri>
                                                           </taxonomy>
                                                         </clade>
                                                       </clade>
