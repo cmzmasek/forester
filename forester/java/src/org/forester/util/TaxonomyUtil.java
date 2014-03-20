@@ -26,6 +26,9 @@ public final class TaxonomyUtil {
     }
     private final static Map<String, String>  _default_taxcode_taxgroup_map = new HashMap<String, String>();
     static {
+        put( "BUFBU", "deuterostomia" );
+        put( "NOTVI", "deuterostomia" );
+        put( "SIRIN", "deuterostomia" );
         put( "ASTMX", "deuterostomia" );
         put( "CALMI", "deuterostomia" );
         put( "FICAL", "deuterostomia" );
