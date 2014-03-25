@@ -1579,9 +1579,13 @@
                                           <taxonomy>
                                             <id provider="uniprot">50557</id>
                                             <scientific_name>Insecta</scientific_name>
-                                            <common_name>true insects</common_name>
                                             <rank>class</rank>
                                           </taxonomy>
+                                          <reference doi="10.1146/annurev-ento-120710-100538">
+                                            <desc>Advances in Insect Phylogeny at the Dawn of the Postgenomic Era</desc>
+                                          </reference>
+                                          <reference>
+                                          </reference>
                                           <clade>
                                             <taxonomy>
                                               <id provider="uniprot">33340</id>
@@ -1592,12 +1596,18 @@
                                               <taxonomy>
                                                 <id provider="uniprot">33392</id>
                                                 <scientific_name>Endopterygota</scientific_name>
+                                                <synonym>Holometabola</synonym>
                                                 <rank>infraclass</rank>
                                               </taxonomy>
                                               <clade>
-                                                <name>Hymenoptera &amp; Lepidoptera &amp; Diptera</name>
+                                                <name>Mecopterida &amp; Neuropteroidea</name>
                                                 <clade>
-                                                  <name>Lepidoptera &amp; Diptera</name>
+                                                  <taxonomy>
+                                                    <scientific_name>Mecopterida</scientific_name>
+                                                  </taxonomy>
+                                                  <reference>
+                                                    <desc>The position of the Hymenoptera within the Holometabola as inferred from the mitochondrial genome of Perga condei</desc>
+                                                  </reference>
                                                   <clade>
                                                     <taxonomy>
                                                       <id provider="uniprot">7147</id>
@@ -1812,8 +1822,8 @@
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">104431</id>
-                                                      <scientific_name>Obtectomera</scientific_name>
+                                                      <id provider="uniprot">37567</id>
+                                                      <scientific_name>Ditrysia</scientific_name>
                                                     </taxonomy>
                                                     <clade>
                                                       <taxonomy>
@@ -1840,97 +1850,176 @@
                                                 </clade>
                                                 <clade>
                                                   <taxonomy>
-                                                    <id provider="uniprot">7400</id>
-                                                    <scientific_name>Apocrita</scientific_name>
-                                                    <common_name>wasps, ants and bees</common_name>
+                                                    <id provider="uniprot">41088</id>
+                                                    <scientific_name>Cucujiformia</scientific_name>
+                                                    <rank>infraorder</rank>
                                                   </taxonomy>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">7434</id>
-                                                      <scientific_name>Aculeata</scientific_name>
-                                                      <rank>suborder</rank>
+                                                      <id provider="uniprot">217634</id>
+                                                      <code>ANOGL</code>
+                                                      <scientific_name>Anoplophora glabripennis</scientific_name>
+                                                      <common_name>Asian longhorn beetle</common_name>
+                                                      <synonym>Anoplophora nobilis</synonym>
+                                                      <rank>species</rank>
+                                                      <uri>http://bugguide.net/images/cache/WZMLBZXL2Z2HTH4HHR2H3H2HJH9H9Z5LJH5LWZ7LAZSLTH4HPZXHDHKLVZEH9ZEHRRPHJH7LAZPHZR4L3H7H3H9HZR.jpg</uri>
                                                     </taxonomy>
-                                                    <clade>
-                                                      <taxonomy>
-                                                        <id provider="uniprot">36668</id>
-                                                        <scientific_name>Formicidae</scientific_name>
-                                                        <common_name>ants</common_name>
-                                                        <rank>family</rank>
-                                                      </taxonomy>
-                                                      <clade>
-                                                        <taxonomy>
-                                                          <id provider="uniprot">143999</id>
-                                                          <scientific_name>Attini</scientific_name>
-                                                          <rank>tribe</rank>
-                                                        </taxonomy>
-                                                        <clade>
-                                                          <taxonomy>
-                                                            <id provider="uniprot">12957</id>
-                                                            <code>ATTCE</code>
-                                                            <scientific_name>Atta cephalotes</scientific_name>
-                                                            <authority>Linnaeus, 1758</authority>
-                                                            <common_name>Leafcutter ant</common_name>
-                                                            <rank>species</rank>
-                                                            <uri>http://upload.wikimedia.org/wikipedia/commons/4/4e/Leaf-cutting_ant.jpg</uri>
-                                                          </taxonomy>
-                                                        </clade>
-                                                        <clade>
-                                                          <taxonomy>
-                                                            <id provider="uniprot">103372</id>
-                                                            <code>ACREC</code>
-                                                            <scientific_name>Acromyrmex echinatior</scientific_name>
-                                                            <authority>Forel, 1899</authority>
-                                                            <common_name>Panamanian leafcutter ant</common_name>
-                                                            <synonym>Acromyrmex octospinosus echinatior</synonym>
-                                                            <rank>species</rank>
-                                                            <uri>http://hymenopteragenome.org/acromyrmex/sites/hymenopteragenome.org.acromyrmex/files/Acromyrmex_echinatior2.jpg</uri>
-                                                          </taxonomy>
-                                                        </clade>
-                                                      </clade>
-                                                      <clade>
-                                                        <taxonomy>
-                                                          <id provider="uniprot">104421</id>
-                                                          <code>CAMFO</code>
-                                                          <scientific_name>Camponotus floridanus</scientific_name>
-                                                          <authority>Buckley, 1866</authority>
-                                                          <common_name>Florida carpenter ant</common_name>
-                                                          <rank>species</rank>
-                                                          <uri>http://bugguide.net/images/cache/5RLH6RRHXRALZZ9LZZ6L3LBLXZBL2RFZHZ9L7ZKH4RDZ3L3Z2RZHKZCLMZKH4R0H6R3Z6RSHMZBL5RRH5ROLKZELLZ.jpg</uri>
-                                                        </taxonomy>
-                                                      </clade>
-                                                    </clade>
-                                                    <clade>
-                                                      <taxonomy>
-                                                        <id provider="uniprot">7460</id>
-                                                        <code>APIME</code>
-                                                        <scientific_name>Apis mellifera</scientific_name>
-                                                        <common_name>Honeybee</common_name>
-                                                        <rank>species</rank>
-                                                        <uri>http://www.floridanature.org/photos/Apis_mellifera_6b_&amp;_Trifolium_sp.,_TBP,_Tallahassee,_20030323.jpg</uri>
-                                                      </taxonomy>
-                                                    </clade>
                                                   </clade>
                                                   <clade>
                                                     <taxonomy>
-                                                      <id provider="uniprot">7425</id>
-                                                      <code>NASVI</code>
-                                                      <scientific_name>Nasonia vitripennis</scientific_name>
-                                                      <common_name>Parasitic wasp</common_name>
+                                                      <id provider="uniprot">7070</id>
+                                                      <code>TRICA</code>
+                                                      <scientific_name>Tribolium castaneum</scientific_name>
+                                                      <common_name>Red flour beetle</common_name>
                                                       <rank>species</rank>
-                                                      <uri>http://www.freshpond.org/nasonia.jpg</uri>
+                                                      <uri>http://upload.wikimedia.org/wikipedia/commons/d/da/Tribolium_castaneum.jpg</uri>
                                                     </taxonomy>
                                                   </clade>
                                                 </clade>
                                               </clade>
                                               <clade>
                                                 <taxonomy>
-                                                  <id provider="uniprot">7070</id>
-                                                  <code>TRICA</code>
-                                                  <scientific_name>Tribolium castaneum</scientific_name>
-                                                  <common_name>Red flour beetle</common_name>
-                                                  <rank>species</rank>
-                                                  <uri>http://upload.wikimedia.org/wikipedia/commons/d/da/Tribolium_castaneum.jpg</uri>
+                                                  <id provider="uniprot">7400</id>
+                                                  <scientific_name>Apocrita</scientific_name>
+                                                  <common_name>wasps, ants and bees</common_name>
                                                 </taxonomy>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">7434</id>
+                                                    <scientific_name>Aculeata</scientific_name>
+                                                    <rank>suborder</rank>
+                                                  </taxonomy>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">36668</id>
+                                                      <scientific_name>Formicidae</scientific_name>
+                                                      <rank>family</rank>
+                                                    </taxonomy>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">34695</id>
+                                                        <scientific_name>Myrmicinae</scientific_name>
+                                                        <rank>subfamily</rank>
+                                                      </taxonomy>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">12957</id>
+                                                          <code>ATTCE</code>
+                                                          <scientific_name>Atta cephalotes</scientific_name>
+                                                          <authority>Linnaeus, 1758</authority>
+                                                          <common_name>Leafcutter ant</common_name>
+                                                          <rank>species</rank>
+                                                          <uri>http://upload.wikimedia.org/wikipedia/commons/4/4e/Leaf-cutting_ant.jpg</uri>
+                                                        </taxonomy>
+                                                      </clade>
+                                                      <clade>
+                                                        <taxonomy>
+                                                          <id provider="uniprot">103372</id>
+                                                          <code>ACREC</code>
+                                                          <scientific_name>Acromyrmex echinatior</scientific_name>
+                                                          <authority>Forel, 1899</authority>
+                                                          <common_name>Panamanian leafcutter ant</common_name>
+                                                          <synonym>Acromyrmex octospinosus echinatior</synonym>
+                                                          <rank>species</rank>
+                                                          <uri>http://hymenopteragenome.org/acromyrmex/sites/hymenopteragenome.org.acromyrmex/files/Acromyrmex_echinatior2.jpg</uri>
+                                                        </taxonomy>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <taxonomy>
+                                                        <id provider="uniprot">104421</id>
+                                                        <code>CAMFO</code>
+                                                        <scientific_name>Camponotus floridanus</scientific_name>
+                                                        <authority>Buckley, 1866</authority>
+                                                        <common_name>Florida carpenter ant</common_name>
+                                                        <rank>species</rank>
+                                                        <uri>http://bugguide.net/images/cache/5RLH6RRHXRALZZ9LZZ6L3LBLXZBL2RFZHZ9L7ZKH4RDZ3L3Z2RZHKZCLMZKH4R0H6R3Z6RSHMZBL5RRH5ROLKZELLZ.jpg</uri>
+                                                      </taxonomy>
+                                                    </clade>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">7460</id>
+                                                      <code>APIME</code>
+                                                      <scientific_name>Apis mellifera</scientific_name>
+                                                      <common_name>Honeybee</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://www.floridanature.org/photos/Apis_mellifera_6b_&amp;_Trifolium_sp.,_TBP,_Tallahassee,_20030323.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">7425</id>
+                                                    <code>NASVI</code>
+                                                    <scientific_name>Nasonia vitripennis</scientific_name>
+                                                    <common_name>Parasitic wasp</common_name>
+                                                    <rank>species</rank>
+                                                    <uri>http://www.freshpond.org/nasonia.jpg</uri>
+                                                  </taxonomy>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <taxonomy>
+                                                  <id provider="uniprot">33341</id>
+                                                  <scientific_name>Orthopteroidea</scientific_name>
+                                                  <rank>infraclass</rank>
+                                                </taxonomy>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">6970</id>
+                                                    <scientific_name>Dictyoptera</scientific_name>
+                                                    <rank>superorder</rank>
+                                                  </taxonomy>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">6973</id>
+                                                      <code>BLAGE</code>
+                                                      <scientific_name>Blattella germanica</scientific_name>
+                                                      <common_name>German cockroach</common_name>
+                                                      <synonym>Blatta germanica</synonym>
+                                                      <rank>species</rank>
+                                                      <uri>http://www.biopix.com/photosmedium/Blattella%20germanica%2000017.JPG</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">136037</id>
+                                                      <code>ZOONE</code>
+                                                      <scientific_name>Zootermopsis nevadensis</scientific_name>
+                                                      <common_name>Dampwood termite</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://bugguide.net/images/cache/GQA0PQ10VQPK4KAKRKWKSKEKLKWKPQZS5KBK1QCK7KJ05KOK8KAKRK9K4QUK6Q10RKWKHKT02QWKSKEK5Q9KPQD0PQ.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
+                                                    <id provider="uniprot">6993</id>
+                                                    <scientific_name>Orthoptera</scientific_name>
+                                                    <rank>order</rank>
+                                                  </taxonomy>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">7009</id>
+                                                      <code>SCHAM</code>
+                                                      <scientific_name>Schistocerca americana</scientific_name>
+                                                      <common_name>American grasshopper</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://bugguide.net/images/cache/BH7HOHIHZRZLAZXLVZQL4ZKL4Z4H6Z4HRRNHLR5HZR2HAHGHAHSLAHKL1H7HDH7H3HUH1ZXLUZGL3H2HAHZLAHXH.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">51074</id>
+                                                      <code>GRYPE</code>
+                                                      <scientific_name>Gryllus pennsylvanicus</scientific_name>
+                                                      <common_name>Field cricket</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://bugguide.net/images/raw/GL9Z5L9Z8LJHWHHR6HRREHVZUHCHIH8Z7HVHMHGZ7HTHQL6ZXHOHWH3H5LUZ7L9ZRLVH5HDHQL.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
                                               </clade>
                                             </clade>
                                             <clade>
@@ -1947,22 +2036,38 @@
                                                 </taxonomy>
                                                 <clade>
                                                   <taxonomy>
+                                                    <id provider="uniprot">33351</id>
+                                                    <scientific_name>Panheteroptera</scientific_name>
+                                                  </taxonomy>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">7536</id>
+                                                      <code>ONCFA</code>
+                                                      <scientific_name>Oncopeltus fasciatus</scientific_name>
+                                                      <common_name>Large milkweed bug</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://bugguide.net/images/cache/309QLSWQT0IKUKSK2KSKUKRKUKGKBKRKNK6QD05QC05Q6KZKPKGQD00K9KGQ2KLKWK8QV0KKO0EQV0EQNK8Q2KGQ10.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                  <clade>
+                                                    <taxonomy>
+                                                      <id provider="uniprot">13249</id>
+                                                      <code>RHOPR</code>
+                                                      <scientific_name>Rhodnius prolixus</scientific_name>
+                                                      <common_name>Triatomid bug</common_name>
+                                                      <rank>species</rank>
+                                                      <uri>http://upload.wikimedia.org/wikipedia/commons/b/b9/Rhodnius_prolixus.jpg</uri>
+                                                    </taxonomy>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <taxonomy>
                                                     <id provider="uniprot">7029</id>
                                                     <code>ACYPI</code>
                                                     <scientific_name>Acyrthosiphon pisum</scientific_name>
                                                     <common_name>Pea aphid</common_name>
                                                     <rank>species</rank>
                                                     <uri>http://www.agroatlas.ru/content/pests/Acyrthosiphon_pisum/Acyrthosiphon_pisum.jpg</uri>
-                                                  </taxonomy>
-                                                </clade>
-                                                <clade>
-                                                  <taxonomy>
-                                                    <id provider="uniprot">13249</id>
-                                                    <code>RHOPR</code>
-                                                    <scientific_name>Rhodnius prolixus</scientific_name>
-                                                    <common_name>Triatomid bug</common_name>
-                                                    <rank>species</rank>
-                                                    <uri>http://upload.wikimedia.org/wikipedia/commons/b/b9/Rhodnius_prolixus.jpg</uri>
                                                   </taxonomy>
                                                 </clade>
                                               </clade>
