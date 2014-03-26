@@ -52,17 +52,17 @@ public class NodeData implements PhylogenyData {
         TAXONOMY_CODE,
         UNKNOWN;
     }
-    private String                  _node_name;
-    private Event                   _event;
-    private List<Sequence>          _sequences;
-    private List<Taxonomy>          _taxonomies;
-    private List<Distribution>      _distributions;
-    private Date                    _date;
-    private BinaryCharacters        _binary_characters;
-    private PropertiesMap           _properties;
-    private List<Reference>         _references;
-    private List<Double>            _vector;
-    private NodeVisualData          _node_visual_data;
+    private String             _node_name;
+    private Event              _event;
+    private List<Sequence>     _sequences;
+    private List<Taxonomy>     _taxonomies;
+    private List<Distribution> _distributions;
+    private Date               _date;
+    private BinaryCharacters   _binary_characters;
+    private PropertiesMap      _properties;
+    private List<Reference>    _references;
+    private List<Double>       _vector;
+    private NodeVisualData     _node_visual_data;
 
     public NodeData() {
         init();
@@ -71,15 +71,15 @@ public class NodeData implements PhylogenyData {
     private void init() {
         _node_name = "";
         _event = null;
-        _sequences= null;
-         _taxonomies= null;
-            _distributions= null;
-                    _date= null;
-           _binary_characters= null;
-                 _properties= null;
-               _references= null;
-                   _vector= null;
-                 _node_visual_data= null;
+        _sequences = null;
+        _taxonomies = null;
+        _distributions = null;
+        _date = null;
+        _binary_characters = null;
+        _properties = null;
+        _references = null;
+        _vector = null;
+        _node_visual_data = null;
     }
 
     public void addDistribution( final Distribution distribution ) {
@@ -162,7 +162,7 @@ public class NodeData implements PhylogenyData {
                 }
             }
         }
-        if ( getNodeVisualData() != null && !getNodeVisualData().isEmpty() ) {
+        if ( ( getNodeVisualData() != null ) && !getNodeVisualData().isEmpty() ) {
             new_data.setNodeVisualData( ( NodeVisualData ) getNodeVisualData().copy() );
         }
         if ( isHasDate() ) {
