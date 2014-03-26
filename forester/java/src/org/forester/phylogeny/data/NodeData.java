@@ -62,7 +62,7 @@ public class NodeData implements PhylogenyData {
     private PropertiesMap           _properties;
     private List<Reference>         _references;
     private List<Double>            _vector;
-    private List<NodeVisualization> _node_visualizations;
+    private NodeVisualData          _node_visual_data;
 
     public NodeData() {
         init();
@@ -70,6 +70,16 @@ public class NodeData implements PhylogenyData {
 
     private void init() {
         _node_name = "";
+        _event = null;
+        _sequences= null;
+         _taxonomies= null;
+            _distributions= null;
+                    _date= null;
+           _binary_characters= null;
+                 _properties= null;
+               _references= null;
+                   _vector= null;
+                 _node_visual_data= null;
     }
 
     public void addDistribution( final Distribution distribution ) {
@@ -152,13 +162,8 @@ public class NodeData implements PhylogenyData {
                 }
             }
         }
-        if ( ( getNodeVisualizations() != null ) && ( getNodeVisualizations().size() > 0 ) ) {
-            new_data.setNodeVisualizations( new ArrayList<NodeVisualization>() );
-            for( final NodeVisualization v : getNodeVisualizations() ) {
-                if ( v != null ) {
-                    new_data.getNodeVisualizations().add( ( NodeVisualization ) v.copy() );
-                }
-            }
+        if ( getNodeVisualData() != null && !getNodeVisualData().isEmpty() ) {
+            new_data.setNodeVisualData( ( NodeVisualData ) getNodeVisualData().copy() );
         }
         if ( isHasDate() ) {
             new_data.setDate( ( Date ) getDate().copy() );
@@ -523,11 +528,11 @@ public class NodeData implements PhylogenyData {
         _node_name = node_name;
     }
 
-    public void setNodeVisualizations( final List<NodeVisualization> _node_visualizations ) {
-        this._node_visualizations = _node_visualizations;
+    public void setNodeVisualData( final NodeVisualData node_visual_data ) {
+        _node_visual_data = node_visual_data;
     }
 
-    public List<NodeVisualization> getNodeVisualizations() {
-        return _node_visualizations;
+    public NodeVisualData getNodeVisualData() {
+        return _node_visual_data;
     }
 }

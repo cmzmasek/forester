@@ -112,9 +112,9 @@ import org.forester.phylogeny.data.BranchColor;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
-import org.forester.phylogeny.data.NodeVisualization;
-import org.forester.phylogeny.data.NodeVisualization.NodeFill;
-import org.forester.phylogeny.data.NodeVisualization.NodeShape;
+import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -3813,11 +3813,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() - d );
         _polygon.lineTo( node.getXcoord() + 1, node.getYcoord() + d );
         _polygon.closePath();
-        if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
+        if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
             g.setColor( c );
             g.fill( _polygon );
         }
-        else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
+        else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.NONE ) {
             g.setColor( getBackground() );
             g.fill( _polygon );
             g.setColor( c );
@@ -3994,17 +3994,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       background,
                                       outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
                     g.setColor( outline_color );
                     drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                 }
             }
-            else if ( getOptions().getDefaultNodeShape() == NodeVisualization.NodeShape.RECTANGLE ) {
-                if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.GRADIENT ) {
+            else if ( getOptions().getDefaultNodeShape() == NodeVisualData.NodeShape.RECTANGLE ) {
+                if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.GRADIENT ) {
                     drawRectGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
                             : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.NONE ) {
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.NONE ) {
                     Color background = getBackground();
                     if ( to_pdf ) {
                         background = Color.WHITE;
@@ -4018,7 +4018,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       background,
                                       outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualization.NodeFill.SOLID ) {
+                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
                     g.setColor( outline_color );
                     drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                 }

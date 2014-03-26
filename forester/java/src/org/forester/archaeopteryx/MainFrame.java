@@ -65,8 +65,9 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
-import org.forester.phylogeny.data.NodeVisualization.NodeFill;
-import org.forester.phylogeny.data.NodeVisualization.NodeShape;
+
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;

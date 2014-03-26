@@ -31,9 +31,9 @@ import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.NodeData;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
-import org.forester.phylogeny.data.NodeVisualization;
-import org.forester.phylogeny.data.NodeVisualization.NodeFill;
-import org.forester.phylogeny.data.NodeVisualization.NodeShape;
+import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.util.ForesterUtil;
 
 /*
@@ -51,8 +51,8 @@ final public class Options {
     private CLADOGRAM_TYPE                    _cladogram_type;
     private boolean                           _color_by_taxonomic_group;
     private boolean                           _color_labels_same_as_parent_branch;
-    private NodeVisualization.NodeFill        _default_node_fill;
-    private NodeVisualization.NodeShape       _default_node_shape;
+    private NodeVisualData.NodeFill        _default_node_fill;
+    private NodeVisualData.NodeShape       _default_node_shape;
     private short                             _default_node_shape_size;
     private boolean                           _editable;
     private NODE_DATA                         _ext_desc_data_to_return;

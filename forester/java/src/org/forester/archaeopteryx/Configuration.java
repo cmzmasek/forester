@@ -48,9 +48,9 @@ import org.forester.archaeopteryx.Options.OVERVIEW_PLACEMENT_TYPE;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
-import org.forester.phylogeny.data.NodeVisualization;
-import org.forester.phylogeny.data.NodeVisualization.NodeFill;
-import org.forester.phylogeny.data.NodeVisualization.NodeShape;
+import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeVisualData.NodeFill;
+import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.util.ForesterUtil;
 
 public final class Configuration {
@@ -1391,13 +1391,13 @@ public final class Configuration {
         }
         else if ( key.equals( "default_node_fill" ) ) {
             final String fill_str = ( ( String ) st.nextElement() ).trim();
-            if ( fill_str.equalsIgnoreCase( NodeVisualization.NodeFill.NONE.toString() ) ) {
+            if ( fill_str.equalsIgnoreCase( NodeVisualData.NodeFill.NONE.toString() ) ) {
                 setDefaultNodeFill( NodeFill.NONE );
             }
-            else if ( fill_str.equalsIgnoreCase( NodeVisualization.NodeFill.GRADIENT.toString() ) ) {
+            else if ( fill_str.equalsIgnoreCase( NodeVisualData.NodeFill.GRADIENT.toString() ) ) {
                 setDefaultNodeFill( NodeFill.GRADIENT );
             }
-            else if ( fill_str.equalsIgnoreCase( NodeVisualization.NodeFill.SOLID.toString() ) ) {
+            else if ( fill_str.equalsIgnoreCase( NodeVisualData.NodeFill.SOLID.toString() ) ) {
                 setDefaultNodeFill( NodeFill.SOLID );
             }
             else {
@@ -1407,10 +1407,10 @@ public final class Configuration {
         }
         else if ( key.equals( "default_node_shape" ) ) {
             final String shape_str = ( ( String ) st.nextElement() ).trim();
-            if ( shape_str.equalsIgnoreCase( NodeVisualization.NodeShape.CIRCLE.toString() ) ) {
+            if ( shape_str.equalsIgnoreCase( NodeVisualData.NodeShape.CIRCLE.toString() ) ) {
                 setDefaultNodeShape( NodeShape.CIRCLE );
             }
-            else if ( shape_str.equalsIgnoreCase( NodeVisualization.NodeShape.RECTANGLE.toString() ) ) {
+            else if ( shape_str.equalsIgnoreCase( NodeVisualData.NodeShape.RECTANGLE.toString() ) ) {
                 setDefaultNodeShape( NodeShape.RECTANGLE );
             }
             else {
