@@ -55,30 +55,37 @@ import org.forester.util.ForesterUtil;
 
 public final class Configuration {
 
-    final static int                        add_new_node                                           = 14;
-    final static int                        blast                                                  = 9;
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-            { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" },
-            { "Colorize Subtree/Node(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+            { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree(s)", "display" },
+            { "Colorize Node Font", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
             { "Open Taxonomy DB", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
             { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
             { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
             { "Return", "display" }, { "Select Node(s)", "display" }                              };
+    final static int                        display_node_data                                      = 0;
     final static int                        collapse_uncollapse                                    = 1;
-    final static int                        color_according_to_annotation                          = 19;
-    final static int                        color_according_to_species                             = 6;
-    final static int                        color_branches                                         = 7;
+    final static int                        reroot                                                 = 2;
+    final static int                        subtree                                                = 3;
+    final static int                        swap                                                   = 4;
     final static int                        color_subtree                                          = 5;
-    final static int                        copy_subtree                                           = 11;
-    final static int                        cut_subtree                                            = 10;
-    final static int                        delete_subtree_or_node                                 = 13;
-    final static int                        display_as_phylogram                                   = 0;
-    final static int                        display_internal_data                                  = 15;
+    final static int                        color_node_font                                        = 6;
+    final static int                        open_seq_web                                           = 7;
+    final static int                        open_pdb_web                                           = 8;
+    final static int                        open_tax_web                                           = 9;
+    final static int                        blast                                                  = 10;
+    final static int                        cut_subtree                                            = 11;
+    final static int                        copy_subtree                                           = 12;
+    final static int                        paste_subtree                                          = 13;
+    final static int                        delete_subtree_or_node                                 = 14;
+    final static int                        add_new_node                                           = 15;
+    final static int                        edit_node_data                                         = 16;
+    final static int                        sort_descendents                                       = 17;
+    final static int                        get_ext_desc_data                                      = 18;
+    final static int                        select_nodes                                           = 19;
     // ------------------
     // Click-to options
     // ------------------
-    final static int                        display_node_data                                      = 0;
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
@@ -93,40 +100,34 @@ public final class Configuration {
             { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
             { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
             { "Properties", "nodisplay", "no" }, { "Gene Name", "display", "yes" }                };
-    final static int                        dynamically_hide_data                                  = 16;
-    final static int                        edit_node_data                                         = 15;
-    final static int                        get_ext_desc_data                                      = 17;
-    final static int                        node_data_popup                                        = 21;
-    final static int                        open_pdb_web                                           = 7;
-    final static int                        open_seq_web                                           = 6;
-    final static int                        open_tax_web                                           = 8;
-    final static int                        paste_subtree                                          = 12;
-    final static int                        reroot                                                 = 2;
-    final static int                        select_nodes                                           = 18;
-    final static int                        show_annotation                                        = 3;
-    final static int                        show_binary_character_counts                           = 12;
-    final static int                        show_binary_characters                                 = 11;
-    final static int                        show_custom_node_shapes                                = 9;
-    final static int                        show_domain_architectures                              = 10;
-    final static int                        show_gene_names                                        = 26;
+    final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
-    final static int                        show_properties                                        = 25;
-    final static int                        show_relation_confidence                               = 22;
-    final static int                        show_seq_names                                         = 13;
-    final static int                        show_seq_symbols                                       = 20;
-    final static int                        show_sequence_acc                                      = 14;
     final static int                        show_tax_code                                          = 2;
-    final static int                        show_taxonomy_common_names                             = 18;
-    final static int                        show_taxonomy_images                                   = 24;
-    final static int                        show_taxonomy_scientific_names                         = 17;
-    final static int                        show_vector_data                                       = 23;
-    final static int                        sort_descendents                                       = 16;
-    final static int                        subtree                                                = 3;
-    final static int                        swap                                                   = 4;
-    static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
-    final static int                        width_branches                                         = 8;
+    final static int                        show_annotation                                        = 3;
     final static int                        write_confidence_values                                = 4;
     final static int                        write_events                                           = 5;
+    final static int                        color_according_to_species                             = 6;
+    final static int                        color_branches                                         = 7;
+    final static int                        width_branches                                         = 8;
+    final static int                        show_custom_node_shapes                                = 9;
+    final static int                        show_domain_architectures                              = 10;
+    final static int                        show_binary_characters                                 = 11;
+    final static int                        show_binary_character_counts                           = 12;
+    final static int                        show_seq_names                                         = 13;
+    final static int                        show_sequence_acc                                      = 14;
+    final static int                        display_internal_data                                  = 15;
+    final static int                        dynamically_hide_data                                  = 16;
+    final static int                        show_taxonomy_scientific_names                         = 17;
+    final static int                        show_taxonomy_common_names                             = 18;
+    final static int                        color_according_to_annotation                          = 19;
+    final static int                        show_seq_symbols                                       = 20;
+    final static int                        node_data_popup                                        = 21;
+    final static int                        show_relation_confidence                               = 22;
+    final static int                        show_vector_data                                       = 23;
+    final static int                        show_taxonomy_images                                   = 24;
+    final static int                        show_properties                                        = 25;
+    final static int                        show_gene_names                                        = 26;
+    static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     // ----------------
     // Function colors
     // ----------------

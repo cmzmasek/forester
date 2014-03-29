@@ -2430,6 +2430,35 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         repaint();
     }
 
+    final private void colorizeNodes( final Color c,
+                                      final PhylogenyNode node,
+                                      final List<PhylogenyNode> additional_nodes ) {
+        _control_panel.setColorBranches( true );
+        if ( _control_panel.getColorBranchesCb() != null ) {
+            _control_panel.getColorBranchesCb().setSelected( true );
+        }
+        if ( node != null ) {
+            colorizeNodesHelper( c, node );
+        }
+        if ( additional_nodes != null ) {
+            for( final PhylogenyNode n : additional_nodes ) {
+                colorizeNodesHelper( c, n );
+            }
+        }
+        repaint();
+    }
+
+    private final static void colorizeNodesHelper( final Color c, final PhylogenyNode node ) {
+        NodeVisualData v;
+        if ( node.getNodeData().getNodeVisualData() != null ) {
+            v = node.getNodeData().getNodeVisualData();
+        }
+        else {
+            v = new NodeVisualData();
+        }
+        v.setFontColor( new Color( c.getRed(), c.getGreen(), c.getBlue() ) );
+    }
+
     final private void colorSubtree( final PhylogenyNode node ) {
         if ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) {
             JOptionPane.showMessageDialog( this,
@@ -2450,6 +2479,25 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final JDialog dialog = JColorChooser
                 .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
         dialog.setVisible( true );
+    }
+
+    private void colorNodeFont( PhylogenyNode node ) {
+        _color_chooser.setPreviewPanel( new JPanel() );
+        NodeColorizationActionListener al;
+        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
+            final List<PhylogenyNode> additional_nodes = getFoundNodes0AsListOfPhylogenyNodes();
+            al = new NodeColorizationActionListener( _color_chooser, node, additional_nodes );
+        }
+        else {
+            al = new NodeColorizationActionListener( _color_chooser, node );
+        }
+        final JDialog dialog = JColorChooser
+                .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
+        dialog.setVisible( true );
+    }
+
+    private void changeNodeFont( PhylogenyNode node ) {
+        // TODO Auto-generated method stub
     }
 
     final private void copySubtree( final PhylogenyNode node ) {
@@ -2893,6 +2941,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 break;
             case COLOR_SUBTREE:
                 colorSubtree( node );
+                break;
+            case COLOR_NODE_FONT:
+                colorNodeFont( node );
+                break;
+            case CHANGE_NODE_FONT:
+                changeNodeFont( node );
                 break;
             case OPEN_SEQ_WEB:
                 openSeqWeb( node );
@@ -5739,6 +5793,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             final Color c = _chooser.getColor();
             if ( c != null ) {
                 colorizeSubtree( c, _node, _additional_nodes );
+            }
+        }
+    }
+
+    final private class NodeColorizationActionListener implements ActionListener {
+
+        List<PhylogenyNode> _additional_nodes = null;
+        JColorChooser       _chooser          = null;
+        PhylogenyNode       _node             = null;
+
+        NodeColorizationActionListener( final JColorChooser chooser, final PhylogenyNode node ) {
+            _chooser = chooser;
+            _node = node;
+        }
+
+        NodeColorizationActionListener( final JColorChooser chooser,
+                                        final PhylogenyNode node,
+                                        final List<PhylogenyNode> additional_nodes ) {
+            _chooser = chooser;
+            _node = node;
+            _additional_nodes = additional_nodes;
+        }
+
+        @Override
+        public void actionPerformed( final ActionEvent e ) {
+            final Color c = _chooser.getColor();
+            if ( c != null ) {
+                colorizeNodes( c, _node, _additional_nodes );
             }
         }
     }

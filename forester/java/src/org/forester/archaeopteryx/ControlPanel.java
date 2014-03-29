@@ -116,6 +116,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _open_pdb_item;
     private int                  _open_seq_web_item;
     private int                  _open_tax_web_item;
+    private int                  _color_node_font_item;
     private JButton              _order;
     private boolean              _order_of_appearance;
     private int                  _paste_subtree_item;
@@ -1166,6 +1167,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         else if ( action == _open_pdb_item ) {
             setActionWhenNodeClicked( NodeClickAction.OPEN_PDB_WEB );
         }
+        else if ( action == _color_node_font_item ) {
+            setActionWhenNodeClicked( NodeClickAction.COLOR_NODE_FONT );
+        }
         else {
             throw new RuntimeException( "unknown action: " + action );
         }
@@ -1894,6 +1898,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
+        if ( _configuration.doDisplayClickToOption( Configuration.color_node_font ) ) {
+            _color_node_font_item = cb_index;
+            addClickToOption( Configuration.color_node_font,
+                              _configuration.getClickToTitle( Configuration.color_node_font ) );
+            if ( default_option == Configuration.color_node_font ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
         if ( _configuration.doDisplayClickToOption( Configuration.open_seq_web ) ) {
             _open_seq_web_item = cb_index;
             addClickToOption( Configuration.open_seq_web, _configuration.getClickToTitle( Configuration.open_seq_web ) );
@@ -2231,6 +2244,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         SHOW_DATA,
         SORT_DESCENDENTS,
         SUBTREE,
-        SWAP;
+        SWAP,
+        CHANGE_NODE_FONT,
+        COLOR_NODE_FONT;
     }
 }
