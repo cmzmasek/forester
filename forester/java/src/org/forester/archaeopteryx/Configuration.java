@@ -58,7 +58,7 @@ public final class Configuration {
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree(s)", "display" },
-            { "Colorize Node Font", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+            { "Colorize Node", "display" },  { "Change Node Font", "display" }, { "Open Sequence DB", "display" }, { "Go to PDB", "display" },
             { "Open Taxonomy DB", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
             { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
             { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
@@ -70,19 +70,20 @@ public final class Configuration {
     final static int                        swap                                                   = 4;
     final static int                        color_subtree                                          = 5;
     final static int                        color_node_font                                        = 6;
-    final static int                        open_seq_web                                           = 7;
-    final static int                        open_pdb_web                                           = 8;
-    final static int                        open_tax_web                                           = 9;
-    final static int                        blast                                                  = 10;
-    final static int                        cut_subtree                                            = 11;
-    final static int                        copy_subtree                                           = 12;
-    final static int                        paste_subtree                                          = 13;
-    final static int                        delete_subtree_or_node                                 = 14;
-    final static int                        add_new_node                                           = 15;
-    final static int                        edit_node_data                                         = 16;
-    final static int                        sort_descendents                                       = 17;
-    final static int                        get_ext_desc_data                                      = 18;
-    final static int                        select_nodes                                           = 19;
+    final static int                        change_node_font                                        = 7;
+    final static int                        open_seq_web                                           = 8;
+    final static int                        open_pdb_web                                           = 9;
+    final static int                        open_tax_web                                           = 10;
+    final static int                        blast                                                  = 11;
+    final static int                        cut_subtree                                            = 12;
+    final static int                        copy_subtree                                           = 13;
+    final static int                        paste_subtree                                          = 14;
+    final static int                        delete_subtree_or_node                                 = 15;
+    final static int                        add_new_node                                           = 16;
+    final static int                        edit_node_data                                         = 17;
+    final static int                        sort_descendents                                       = 18;
+    final static int                        get_ext_desc_data                                      = 19;
+    final static int                        select_nodes                                           = 20;
     // ------------------
     // Click-to options
     // ------------------
@@ -877,6 +878,20 @@ public final class Configuration {
         else if ( name.equals( "color_subtree" ) ) {
             index = Configuration.color_subtree;
         }
+        
+        else if ( name.equals( "change_node_font" ) ) {
+            index = Configuration.change_node_font;
+        }
+        
+        else if ( name.equals( "color_node_font" ) ) {
+            index = Configuration.color_node_font;
+        }
+        
+        else if ( name.equals( "color_subtree" ) ) {
+            index = Configuration.color_subtree;
+        }
+        
+        
         return index;
     }
 
