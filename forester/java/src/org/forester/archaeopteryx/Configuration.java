@@ -58,11 +58,11 @@ public final class Configuration {
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree(s)", "display" },
-            { "Colorize Node", "display" },  { "Change Node Font", "display" }, { "Open Sequence DB", "display" }, { "Go to PDB", "display" },
-            { "Open Taxonomy DB", "display" }, { "Blast", "display" }, { "Cut Subtree", "display" },
-            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
-            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
-            { "Return", "display" }, { "Select Node(s)", "display" }                              };
+            { "Colorize Node", "display" }, { "Change Node Font", "display" }, { "Open Sequence DB", "display" },
+            { "Go to PDB", "display" }, { "Open Taxonomy DB", "display" }, { "Blast", "display" },
+            { "Cut Subtree", "display" }, { "Copy Subtree", "display" }, { "Paste Subtree", "display" },
+            { "Delete Subtree/Node", "display" }, { "Add New Node", "display" }, { "Edit Node Data", "display" },
+            { "Sort Descendants", "display" }, { "Return", "display" }, { "Select Node(s)", "display" } };
     final static int                        display_node_data                                      = 0;
     final static int                        collapse_uncollapse                                    = 1;
     final static int                        reroot                                                 = 2;
@@ -70,7 +70,7 @@ public final class Configuration {
     final static int                        swap                                                   = 4;
     final static int                        color_subtree                                          = 5;
     final static int                        color_node_font                                        = 6;
-    final static int                        change_node_font                                        = 7;
+    final static int                        change_node_font                                       = 7;
     final static int                        open_seq_web                                           = 8;
     final static int                        open_pdb_web                                           = 9;
     final static int                        open_tax_web                                           = 10;
@@ -878,20 +878,15 @@ public final class Configuration {
         else if ( name.equals( "color_subtree" ) ) {
             index = Configuration.color_subtree;
         }
-        
         else if ( name.equals( "change_node_font" ) ) {
             index = Configuration.change_node_font;
         }
-        
         else if ( name.equals( "color_node_font" ) ) {
             index = Configuration.color_node_font;
         }
-        
         else if ( name.equals( "color_subtree" ) ) {
             index = Configuration.color_subtree;
         }
-        
-        
         return index;
     }
 

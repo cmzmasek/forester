@@ -95,6 +95,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private boolean              _color_branches;
     private JCheckBox            _color_branches_cb;
     private int                  _color_subtree_cb_item;
+    private int                  _change_node_font_item;
     // The settings from the conf file
     private final Configuration  _configuration;
     private int                  _copy_subtree_item;
@@ -1170,6 +1171,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         else if ( action == _color_node_font_item ) {
             setActionWhenNodeClicked( NodeClickAction.COLOR_NODE_FONT );
         }
+        else if ( action == _change_node_font_item ) {
+            setActionWhenNodeClicked( NodeClickAction.CHANGE_NODE_FONT );
+        }
         else {
             throw new RuntimeException( "unknown action: " + action );
         }
@@ -1903,6 +1907,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             addClickToOption( Configuration.color_node_font,
                               _configuration.getClickToTitle( Configuration.color_node_font ) );
             if ( default_option == Configuration.color_node_font ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.change_node_font ) ) {
+            _change_node_font_item = cb_index;
+            addClickToOption( Configuration.change_node_font,
+                              _configuration.getClickToTitle( Configuration.change_node_font ) );
+            if ( default_option == Configuration.change_node_font ) {
                 selected_index = cb_index;
             }
             cb_index++;

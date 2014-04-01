@@ -2,6 +2,7 @@
 package org.forester.phylogeny.data;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -177,6 +178,26 @@ public final class NodeVisualData implements PhylogenyData {
 
     public final void setTransparancy( final float transparancy ) {
         _transparancy = transparancy;
+    }
+
+    public final int getFontStyle() {
+        if ( getFontType() == FontType.BOLD ) {
+            return Font.BOLD;
+        }
+        else if ( getFontType() == FontType.ITALIC ) {
+            return Font.ITALIC;
+        }
+        else if ( getFontType() == FontType.BOLD_ITALIC ) {
+            return Font.BOLD & Font.ITALIC;
+        }
+        return Font.PLAIN;
+    }
+
+    public final Font getFontObject() {
+        if ( !ForesterUtil.isEmpty( getFont() ) ) {
+            return new Font( getFont(), getFontStyle(), getFontSize() );
+        }
+        return null;
     }
 
     @Override

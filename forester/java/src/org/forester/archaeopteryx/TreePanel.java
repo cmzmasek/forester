@@ -113,6 +113,7 @@ import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualData;
+import org.forester.phylogeny.data.NodeVisualData.FontType;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
@@ -2481,7 +2482,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         dialog.setVisible( true );
     }
 
-    private void colorNodeFont( PhylogenyNode node ) {
+    private void colorNodeFont( final PhylogenyNode node ) {
         _color_chooser.setPreviewPanel( new JPanel() );
         NodeColorizationActionListener al;
         if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
@@ -2496,8 +2497,37 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         dialog.setVisible( true );
     }
 
-    private void changeNodeFont( PhylogenyNode node ) {
-        // TODO Auto-generated method stub
+    private void changeNodeFont( final PhylogenyNode node ) {
+        final FontChooser fc = new FontChooser();
+        Font f = null;
+        if ( node.getNodeData().getNodeVisualData() != null && !node.getNodeData().getNodeVisualData().isEmpty() ) {
+            f = node.getNodeData().getNodeVisualData().getFontObject();
+        }
+        if ( f != null ) {
+            fc.setFont( f );
+        }
+        else {
+            fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
+        }
+        fc.showDialog( this, "Select Font" );
+        if ( fc.getFont() != null ) {
+            NodeVisualData v = node.getNodeData().getNodeVisualData();
+            Font ff = fc.getFont();
+            v.setFont( ff.getFamily() );
+            v.setFontSize( ( byte ) ( ff.getSize() ) );
+            if ( ff.getStyle() == Font.BOLD && ff.getStyle() == Font.ITALIC ) {
+                v.setFontType( FontType.BOLD_ITALIC );
+            }
+            else if ( ff.getStyle() == Font.ITALIC ) {
+                v.setFontType( FontType.ITALIC );
+            }
+            else if ( ff.getStyle() == Font.BOLD ) {
+                v.setFontType( FontType.BOLD );
+            }
+            else {
+                v.setFontType( FontType.NORMAL );
+            }
+        }
     }
 
     final private void copySubtree( final PhylogenyNode node ) {
