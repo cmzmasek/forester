@@ -113,7 +113,6 @@ import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.NodeData.NODE_DATA;
 import org.forester.phylogeny.data.NodeVisualData;
-import org.forester.phylogeny.data.NodeVisualData.FontType;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
@@ -2500,8 +2499,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void changeNodeFont( final PhylogenyNode node ) {
         final FontChooser fc = new FontChooser();
         Font f = null;
-        if ( node.getNodeData().getNodeVisualData() != null && !node.getNodeData().getNodeVisualData().isEmpty() ) {
-            f = node.getNodeData().getNodeVisualData().getFontObject();
+        if ( ( node.getNodeData().getNodeVisualData() != null ) && !node.getNodeData().getNodeVisualData().isEmpty() ) {
+            f = node.getNodeData().getNodeVisualData().getFont();
         }
         if ( f != null ) {
             fc.setFont( f );
@@ -2510,23 +2509,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             fc.setFont( getMainPanel().getTreeFontSet().getLargeFont() );
         }
         fc.showDialog( this, "Select Font" );
-        if ( fc.getFont() != null ) {
-            NodeVisualData v = node.getNodeData().getNodeVisualData();
-            Font ff = fc.getFont();
-            v.setFont( ff.getFamily() );
-            v.setFontSize( ( byte ) ( ff.getSize() ) );
-            if ( ff.getStyle() == Font.BOLD && ff.getStyle() == Font.ITALIC ) {
-                v.setFontType( FontType.BOLD_ITALIC );
+        if ( ( fc.getFont() != null ) && !ForesterUtil.isEmpty( fc.getFont().getFamily().trim() ) ) {
+            if ( node.getNodeData().getNodeVisualData() == null ) {
+                node.getNodeData().setNodeVisualData( new NodeVisualData() );
             }
-            else if ( ff.getStyle() == Font.ITALIC ) {
-                v.setFontType( FontType.ITALIC );
+            final NodeVisualData vd = node.getNodeData().getNodeVisualData();
+            final Font ff = fc.getFont();
+            vd.setFontName( ff.getFamily().trim() );
+            int s = ff.getSize();
+            if ( s < 0 ) {
+                s = 0;
             }
-            else if ( ff.getStyle() == Font.BOLD ) {
-                v.setFontType( FontType.BOLD );
+            if ( s > Byte.MAX_VALUE ) {
+                s = Byte.MAX_VALUE;
             }
-            else {
-                v.setFontType( FontType.NORMAL );
-            }
+            vd.setFontSize( s );
+            vd.setFontStyle( ff.getStyle() );
         }
     }
 
@@ -4219,7 +4217,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             _sb.append( propertiesToString( node ) );
         }
-        g.setFont( getTreeFontSet().getLargeFont() );
+        if ( getControlPanel().isColorBranches() && ( node.getNodeData().getNodeVisualData() != null ) ) {
+            final Font f = node.getNodeData().getNodeVisualData().getFont();
+            g.setFont( f != null ? f : getTreeFontSet().getLargeFont() );
+        }
+        else {
+            g.setFont( getTreeFontSet().getLargeFont() );
+        }
         if ( is_in_found_nodes ) {
             g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
         }

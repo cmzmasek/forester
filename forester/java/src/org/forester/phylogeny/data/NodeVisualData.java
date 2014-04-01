@@ -21,20 +21,21 @@ public final class NodeVisualData implements PhylogenyData {
     private Color              _border_color;
     private Color              _fill_color;
     private NodeFill           _fill_type;
-    private String             _font;
+    private String             _font_name;
     private Color              _font_color;
     private byte               _font_size;
-    private FontType           _font_type;
+    private FontType           _font_style;
     private NodeShape          _shape;
     private float              _size;
     private float              _transparancy;
+    private Font               _font;
 
     public NodeVisualData() {
         init();
     }
 
-    public NodeVisualData( final String font,
-                           final FontType font_type,
+    public NodeVisualData( final String font_name,
+                           final FontType font_style,
                            final byte font_size,
                            final Color font_color,
                            final NodeShape shape,
@@ -43,8 +44,8 @@ public final class NodeVisualData implements PhylogenyData {
                            final Color fill_color,
                            final float size,
                            final float transparancy ) {
-        setFont( font );
-        setFontType( font_type );
+        setFontName( font_name );
+        setFontStyle( font_style );
         setFontSize( font_size );
         setFontColor( font_color );
         setShape( shape );
@@ -68,8 +69,8 @@ public final class NodeVisualData implements PhylogenyData {
 
     @Override
     public final PhylogenyData copy() {
-        return new NodeVisualData( !ForesterUtil.isEmpty( getFont() ) ? new String( getFont() ) : null,
-                                   getFontType(),
+        return new NodeVisualData( !ForesterUtil.isEmpty( getFontName() ) ? new String( getFontName() ) : null,
+                                   getFontStyle(),
                                    getFontSize(),
                                    getFontColor() != null ? new Color( getFontColor().getRed(), getFontColor()
                                            .getGreen(), getFontColor().getBlue() ) : null,
@@ -95,8 +96,8 @@ public final class NodeVisualData implements PhylogenyData {
         return _fill_type;
     }
 
-    public final String getFont() {
-        return _font;
+    public final String getFontName() {
+        return _font_name;
     }
 
     public final Color getFontColor() {
@@ -107,8 +108,8 @@ public final class NodeVisualData implements PhylogenyData {
         return _font_size;
     }
 
-    public final FontType getFontType() {
-        return _font_type;
+    public final FontType getFontStyle() {
+        return _font_style;
     }
 
     public final NodeShape getShape() {
@@ -124,7 +125,7 @@ public final class NodeVisualData implements PhylogenyData {
     }
 
     public final boolean isEmpty() {
-        return ( ForesterUtil.isEmpty( getFont() ) && ( getFontType() == FontType.NORMAL )
+        return ( ForesterUtil.isEmpty( getFontName() ) && ( getFontStyle() == FontType.PLAIN )
                 && ( getFontSize() == DEFAULT_FONT_SIZE ) && ( getFontColor() == null )
                 && ( getShape() == NodeShape.DEFAULT ) && ( getFillType() == NodeFill.DEFAULT )
                 && ( getBorderColor() == null ) && ( getFillColor() == null ) && ( getSize() == DEFAULT_SIZE ) && ( getTransparancy() == DEFAULT_TRANSPARANCY ) );
@@ -147,25 +148,49 @@ public final class NodeVisualData implements PhylogenyData {
         _fill_type = fill_type;
     }
 
-    public final void setFont( final String font ) {
-        if ( !ForesterUtil.isEmpty( font ) ) {
-            _font = font;
+    public final void setFontName( final String font_name ) {
+        if ( !ForesterUtil.isEmpty( font_name ) ) {
+            _font_name = font_name;
         }
         else {
-            _font = null;
+            _font_name = null;
         }
+        _font = null;
     }
 
     public final void setFontColor( final Color font_color ) {
         _font_color = font_color;
     }
 
-    public final void setFontSize( final byte font_size ) {
-        _font_size = font_size;
+    public final void setFontSize( final int font_size ) {
+        if ( ( font_size != DEFAULT_FONT_SIZE ) && ( font_size < 0 ) ) {
+            throw new IllegalArgumentException( "negative font size: " + font_size );
+        }
+        else if ( font_size > Byte.MAX_VALUE ) {
+            throw new IllegalArgumentException( "font size is too large: " + font_size );
+        }
+        _font_size = ( byte ) font_size;
+        _font = null;
     }
 
-    public final void setFontType( final FontType font_type ) {
-        _font_type = font_type;
+    public final void setFontStyle( final FontType font_style ) {
+        _font_style = font_style;
+        _font = null;
+    }
+
+    public final void setFontStyle( final int font_style ) {
+        if ( ( font_style == ( Font.BOLD + Font.ITALIC ) ) ) {
+            setFontStyle( FontType.BOLD_ITALIC );
+        }
+        else if ( font_style == Font.ITALIC ) {
+            setFontStyle( FontType.ITALIC );
+        }
+        else if ( font_style == Font.BOLD ) {
+            setFontStyle( FontType.BOLD );
+        }
+        else {
+            setFontStyle( FontType.PLAIN );
+        }
     }
 
     public final void setShape( final NodeShape shape ) {
@@ -180,22 +205,26 @@ public final class NodeVisualData implements PhylogenyData {
         _transparancy = transparancy;
     }
 
-    public final int getFontStyle() {
-        if ( getFontType() == FontType.BOLD ) {
+    public final int getFontStyleInt() {
+        if ( getFontStyle() == FontType.BOLD ) {
             return Font.BOLD;
         }
-        else if ( getFontType() == FontType.ITALIC ) {
+        else if ( getFontStyle() == FontType.ITALIC ) {
             return Font.ITALIC;
         }
-        else if ( getFontType() == FontType.BOLD_ITALIC ) {
-            return Font.BOLD & Font.ITALIC;
+        else if ( getFontStyle() == FontType.BOLD_ITALIC ) {
+            return Font.BOLD + Font.ITALIC;
         }
         return Font.PLAIN;
     }
 
-    public final Font getFontObject() {
-        if ( !ForesterUtil.isEmpty( getFont() ) ) {
-            return new Font( getFont(), getFontStyle(), getFontSize() );
+    public final Font getFont() {
+        if ( _font != null ) {
+            return _font;
+        }
+        else if ( !ForesterUtil.isEmpty( getFontName() ) ) {
+            _font = new Font( getFontName(), getFontStyleInt(), getFontSize() );
+            return _font;
         }
         return null;
     }
@@ -216,8 +245,8 @@ public final class NodeVisualData implements PhylogenyData {
     }
 
     private final void init() {
-        setFont( null );
-        setFontType( FontType.NORMAL );
+        setFontName( null );
+        setFontStyle( FontType.PLAIN );
         setFontSize( DEFAULT_FONT_SIZE );
         setFontColor( null );
         setShape( NodeShape.DEFAULT );
@@ -226,6 +255,7 @@ public final class NodeVisualData implements PhylogenyData {
         setFillColor( null );
         setSize( DEFAULT_SIZE );
         setTransparancy( DEFAULT_TRANSPARANCY );
+        _font = null;
     }
 
     private final List<Property> toProperties() {
@@ -240,7 +270,7 @@ public final class NodeVisualData implements PhylogenyData {
     }
 
     public enum FontType {
-        BOLD, BOLD_ITALIC, ITALIC, NORMAL
+        BOLD, BOLD_ITALIC, ITALIC, PLAIN
     }
 
     public enum NodeFill {
