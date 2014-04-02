@@ -59,6 +59,7 @@ import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
+import org.forester.phylogeny.data.Property.AppliesTo;
 import org.forester.phylogeny.data.Reference;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
@@ -325,11 +326,17 @@ public final class PhyloXmlHandler extends DefaultHandler {
             else if ( qualified_name.equals( PhyloXmlMapping.PROPERTY ) ) {
                 final Property prop = ( Property ) PropertyParser.getInstance().parse( element );
                 if ( prop.getRef().startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
-                    if ( node.getNodeData().getNodeVisualData() == null ) {
-                        node.getNodeData().setNodeVisualData( new NodeVisualData() );
+                    if ( prop.getAppliesTo() == AppliesTo.NODE ) {
+                        if ( node.getNodeData().getNodeVisualData() == null ) {
+                            node.getNodeData().setNodeVisualData( new NodeVisualData() );
+                        }
+                        final NodeVisualData vd = node.getNodeData().getNodeVisualData();
+                        vd.parseProperty( prop );
                     }
-                    final NodeVisualData vd = node.getNodeData().getNodeVisualData();
-                    vd.parseProperty( prop );
+                    else {
+                        System.err.println( "Do not know how to handle " + NodeVisualData.APTX_VISUALIZATION_REF
+                                + " property applied to " + prop.getAppliesTo() );
+                    }
                 }
                 else {
                     if ( !node.getNodeData().isHasProperties() ) {

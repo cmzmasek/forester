@@ -215,6 +215,43 @@ public final class NodeVisualData implements PhylogenyData {
                 return;
             }
         }
+        //
+        else if ( prop.getRef().equals( NODE_SIZE_REF ) ) {
+            int s = -1;
+            try {
+                s = Integer.parseInt( prop.getValue() );
+            }
+            catch ( final NumberFormatException e ) {
+                return;
+            }
+            if ( s >= 0 ) {
+                setSize( s );
+            }
+        }
+        else if ( prop.getRef().equals( NODE_FILL_COLOR_REF ) ) {
+            try {
+                setFillColor( Color.decode( prop.getValue() ) );
+            }
+            catch ( final NumberFormatException e ) {
+                return;
+            }
+        }
+        else if ( prop.getRef().equals( NODE_BORDER_COLOR_REF ) ) {
+            try {
+                setBorderColor( Color.decode( prop.getValue() ) );
+            }
+            catch ( final NumberFormatException e ) {
+                return;
+            }
+        }
+        else if ( prop.getRef().equals( NODE_SHAPE_REF ) ) {
+            try {
+                setShape( prop.getValue() );
+            }
+            catch ( final NumberFormatException e ) {
+                return;
+            }
+        }
     }
 
     public final void setBorderColor( final Color border_color ) {
@@ -293,7 +330,22 @@ public final class NodeVisualData implements PhylogenyData {
         _shape = shape;
     }
 
+    public final void setShape( final String shape ) {
+        if ( shape.equalsIgnoreCase( NODE_SHAPE_CIRCLE ) ) {
+            setShape( NodeShape.CIRCLE );
+        }
+        else if ( shape.equalsIgnoreCase( NODE_SHAPE_RECTANGLE ) ) {
+            setShape( NodeShape.RECTANGLE );
+        }
+        else {
+            setShape( NodeShape.DEFAULT );
+        }
+    }
+
     public final void setSize( final float size ) {
+        if ( ( size != DEFAULT_SIZE ) && ( size < 0 ) ) {
+            throw new IllegalArgumentException( "negative size: " + size );
+        }
         _size = size;
     }
 
@@ -371,7 +423,6 @@ public final class NodeVisualData implements PhylogenyData {
                                           FONT_COLOR_TYPE,
                                           AppliesTo.NODE ) );
         }
-        //
         if ( getShape() != NodeShape.DEFAULT ) {
             String shape = null;
             if ( getShape() == NodeShape.RECTANGLE ) {
