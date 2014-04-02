@@ -488,6 +488,9 @@ public class NodeData implements PhylogenyData {
         if ( isHasProperties() ) {
             getProperties().toPhyloXML( writer, level, indentation.substring( 0, indentation.length() - 2 ) );
         }
+        if ( ( level == 0 ) && ( getNodeVisualData() != null ) && !getNodeVisualData().isEmpty() ) {
+            getNodeVisualData().toPhyloXML( writer, level, indentation.substring( 0, indentation.length() - 2 ) );
+        }
         if ( ( getVector() != null )
                 && !getVector().isEmpty()
                 && ( ( getProperties() == null ) || getProperties()

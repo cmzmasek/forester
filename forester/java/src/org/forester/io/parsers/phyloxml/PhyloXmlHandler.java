@@ -55,6 +55,7 @@ import org.forester.phylogeny.data.Date;
 import org.forester.phylogeny.data.Distribution;
 import org.forester.phylogeny.data.Event;
 import org.forester.phylogeny.data.Identifier;
+import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.PropertiesMap;
 import org.forester.phylogeny.data.Property;
@@ -322,11 +323,20 @@ public final class PhyloXmlHandler extends DefaultHandler {
                 node.getNodeData().setEvent( ( Event ) EventParser.getInstance().parse( element ) );
             }
             else if ( qualified_name.equals( PhyloXmlMapping.PROPERTY ) ) {
-                if ( !node.getNodeData().isHasProperties() ) {
-                    node.getNodeData().setProperties( new PropertiesMap() );
+                final Property prop = ( Property ) PropertyParser.getInstance().parse( element );
+                if ( prop.getRef().startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
+                    if ( node.getNodeData().getNodeVisualData() == null ) {
+                        node.getNodeData().setNodeVisualData( new NodeVisualData() );
+                    }
+                    final NodeVisualData vd = node.getNodeData().getNodeVisualData();
+                    vd.parseProperty( prop );
                 }
-                node.getNodeData().getProperties()
-                        .addProperty( ( Property ) PropertyParser.getInstance().parse( element ) );
+                else {
+                    if ( !node.getNodeData().isHasProperties() ) {
+                        node.getNodeData().setProperties( new PropertiesMap() );
+                    }
+                    node.getNodeData().getProperties().addProperty( prop );
+                }
             }
         }
     }

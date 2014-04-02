@@ -13,22 +13,31 @@ import org.forester.util.ForesterUtil;
 
 public final class NodeVisualData implements PhylogenyData {
 
-    public static final String SIZE_REF             = "aptx_visualiation:node_size";
-    public static final String SIZE_TYPE            = "xsd:decimal";
-    private static final byte  DEFAULT_FONT_SIZE    = -1;
-    private static final int   DEFAULT_SIZE         = -1;
-    private static final int   DEFAULT_TRANSPARANCY = -1;
+    public static final String APTX_VISUALIZATION_REF = "aptx_visualization:";
+    public static final String FONT_REF               = APTX_VISUALIZATION_REF + "node_font";
+    public static final String FONT_SIZE_REF          = APTX_VISUALIZATION_REF + "node_font_size";
+    public static final String FONT_SIZE_TYPE         = "xsd:unsignedByte";
+    public static final String FONT_STYLE_BOLD        = "bold";
+    public static final String FONT_STYLE_BOLD_ITALIC = "bold_italic";
+    public static final String FONT_STYLE_ITALIC      = "italic";
+    public static final String FONT_STYLE_PLAIN       = "plain";
+    public static final String FONT_STYLE_REF         = APTX_VISUALIZATION_REF + "node_font_style";
+    public static final String FONT_STYLE_TYPE        = "xsd:token";
+    public static final String FONT_TYPE              = "xsd:token";
+    private static final byte  DEFAULT_FONT_SIZE      = -1;
+    private static final int   DEFAULT_SIZE           = -1;
+    private static final int   DEFAULT_TRANSPARANCY   = -1;
     private Color              _border_color;
     private Color              _fill_color;
     private NodeFill           _fill_type;
-    private String             _font_name;
+    private Font               _font;
     private Color              _font_color;
+    private String             _font_name;
     private byte               _font_size;
     private FontType           _font_style;
     private NodeShape          _shape;
     private float              _size;
     private float              _transparancy;
-    private Font               _font;
 
     public NodeVisualData() {
         init();
@@ -96,12 +105,23 @@ public final class NodeVisualData implements PhylogenyData {
         return _fill_type;
     }
 
-    public final String getFontName() {
-        return _font_name;
+    public final Font getFont() {
+        if ( _font != null ) {
+            return _font;
+        }
+        else if ( !ForesterUtil.isEmpty( getFontName() ) ) {
+            _font = new Font( getFontName(), getFontStyleInt(), getFontSize() );
+            return _font;
+        }
+        return null;
     }
 
     public final Color getFontColor() {
         return _font_color;
+    }
+
+    public final String getFontName() {
+        return _font_name;
     }
 
     public final byte getFontSize() {
@@ -110,6 +130,19 @@ public final class NodeVisualData implements PhylogenyData {
 
     public final FontType getFontStyle() {
         return _font_style;
+    }
+
+    public final int getFontStyleInt() {
+        if ( getFontStyle() == FontType.BOLD ) {
+            return Font.BOLD;
+        }
+        else if ( getFontStyle() == FontType.ITALIC ) {
+            return Font.ITALIC;
+        }
+        else if ( getFontStyle() == FontType.BOLD_ITALIC ) {
+            return Font.BOLD + Font.ITALIC;
+        }
+        return Font.PLAIN;
     }
 
     public final NodeShape getShape() {
@@ -136,6 +169,27 @@ public final class NodeVisualData implements PhylogenyData {
         throw new UnsupportedOperationException();
     }
 
+    public void parseProperty( final Property prop ) {
+        if ( prop.getRef().equals( FONT_REF ) ) {
+            setFontName( prop.getValue().trim() );
+        }
+        else if ( prop.getRef().equals( FONT_SIZE_REF ) ) {
+            int s = -1;
+            try {
+                s = Integer.parseInt( prop.getValue() );
+            }
+            catch ( final NumberFormatException e ) {
+                return;
+            }
+            if ( ( s >= 0 ) && ( s < Byte.MAX_VALUE ) ) {
+                setFontSize( s );
+            }
+        }
+        else if ( prop.getRef().equals( FONT_STYLE_REF ) ) {
+            setFontStyle( prop.getValue() );
+        }
+    }
+
     public final void setBorderColor( final Color border_color ) {
         _border_color = border_color;
     }
@@ -148,6 +202,10 @@ public final class NodeVisualData implements PhylogenyData {
         _fill_type = fill_type;
     }
 
+    public final void setFontColor( final Color font_color ) {
+        _font_color = font_color;
+    }
+
     public final void setFontName( final String font_name ) {
         if ( !ForesterUtil.isEmpty( font_name ) ) {
             _font_name = font_name;
@@ -156,10 +214,6 @@ public final class NodeVisualData implements PhylogenyData {
             _font_name = null;
         }
         _font = null;
-    }
-
-    public final void setFontColor( final Color font_color ) {
-        _font_color = font_color;
     }
 
     public final void setFontSize( final int font_size ) {
@@ -193,6 +247,21 @@ public final class NodeVisualData implements PhylogenyData {
         }
     }
 
+    public final void setFontStyle( final String font_style ) {
+        if ( font_style.equalsIgnoreCase( FONT_STYLE_BOLD ) ) {
+            setFontStyle( FontType.BOLD );
+        }
+        else if ( font_style.equalsIgnoreCase( FONT_STYLE_ITALIC ) ) {
+            setFontStyle( FontType.ITALIC );
+        }
+        else if ( font_style.equalsIgnoreCase( FONT_STYLE_BOLD_ITALIC ) ) {
+            setFontStyle( FontType.BOLD_ITALIC );
+        }
+        else {
+            setFontStyle( FontType.PLAIN );
+        }
+    }
+
     public final void setShape( final NodeShape shape ) {
         _shape = shape;
     }
@@ -205,30 +274,6 @@ public final class NodeVisualData implements PhylogenyData {
         _transparancy = transparancy;
     }
 
-    public final int getFontStyleInt() {
-        if ( getFontStyle() == FontType.BOLD ) {
-            return Font.BOLD;
-        }
-        else if ( getFontStyle() == FontType.ITALIC ) {
-            return Font.ITALIC;
-        }
-        else if ( getFontStyle() == FontType.BOLD_ITALIC ) {
-            return Font.BOLD + Font.ITALIC;
-        }
-        return Font.PLAIN;
-    }
-
-    public final Font getFont() {
-        if ( _font != null ) {
-            return _font;
-        }
-        else if ( !ForesterUtil.isEmpty( getFontName() ) ) {
-            _font = new Font( getFontName(), getFontStyleInt(), getFontSize() );
-            return _font;
-        }
-        return null;
-    }
-
     @Override
     public final StringBuffer toNHX() {
         throw new UnsupportedOperationException();
@@ -236,7 +281,9 @@ public final class NodeVisualData implements PhylogenyData {
 
     @Override
     public final void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
-        throw new UnsupportedOperationException();
+        for( final Property p : toProperties() ) {
+            p.toPhyloXML( writer, level, indentation );
+        }
     }
 
     @Override
@@ -260,12 +307,29 @@ public final class NodeVisualData implements PhylogenyData {
 
     private final List<Property> toProperties() {
         final List<Property> properties = new ArrayList<Property>();
-        properties.add( new Property( SIZE_REF, String.valueOf( getSize() ), "", SIZE_TYPE, AppliesTo.NODE ) );
-        properties.add( new Property( SIZE_REF, String.valueOf( getShape() ), "", SIZE_TYPE, AppliesTo.NODE ) );
-        properties.add( new Property( SIZE_REF, String.valueOf( getFillType() ), "", SIZE_TYPE, AppliesTo.NODE ) );
-        properties.add( new Property( SIZE_REF, String.valueOf( getTransparancy() ), "", SIZE_TYPE, AppliesTo.NODE ) );
-        properties.add( new Property( SIZE_REF, String.valueOf( getFillColor() ), "", SIZE_TYPE, AppliesTo.NODE ) );
-        properties.add( new Property( SIZE_REF, String.valueOf( getBorderColor() ), "", SIZE_TYPE, AppliesTo.NODE ) );
+        if ( !ForesterUtil.isEmpty( getFontName() ) ) {
+            properties.add( new Property( FONT_REF, getFontName(), "", FONT_TYPE, AppliesTo.NODE ) );
+        }
+        if ( getFontSize() != DEFAULT_FONT_SIZE ) {
+            properties.add( new Property( FONT_SIZE_REF,
+                                          String.valueOf( getFontSize() ),
+                                          "",
+                                          FONT_SIZE_TYPE,
+                                          AppliesTo.NODE ) );
+        }
+        if ( getFontStyle() != FontType.PLAIN ) {
+            String font_style = FONT_STYLE_PLAIN;
+            if ( getFontStyle() == FontType.ITALIC ) {
+                font_style = FONT_STYLE_ITALIC;
+            }
+            else if ( getFontStyle() == FontType.BOLD ) {
+                font_style = FONT_STYLE_BOLD;
+            }
+            else if ( getFontStyle() == FontType.BOLD_ITALIC ) {
+                font_style = FONT_STYLE_BOLD_ITALIC;
+            }
+            properties.add( new Property( FONT_STYLE_REF, font_style, "", FONT_STYLE_TYPE, AppliesTo.NODE ) );
+        }
         return properties;
     }
 
