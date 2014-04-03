@@ -869,8 +869,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         final int colorizations = TreePanelUtil.colorPhylogenyAccordingToRanks( _phylogeny, rank, this );
         if ( colorizations > 0 ) {
             _control_panel.setColorBranches( true );
-            if ( _control_panel.getColorBranchesCb() != null ) {
-                _control_panel.getColorBranchesCb().setSelected( true );
+            if ( _control_panel.getUseVisualStylesCb() != null ) {
+                _control_panel.getUseVisualStylesCb().setSelected( true );
             }
             if ( _control_panel.getColorAccSpeciesCb() != null ) {
                 _control_panel.getColorAccSpeciesCb().setSelected( false );
@@ -914,8 +914,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         AptxUtil.removeBranchColors( _phylogeny );
         TreePanelUtil.colorPhylogenyAccordingToConfidenceValues( _phylogeny, this );
         _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
+        if ( _control_panel.getUseVisualStylesCb() != null ) {
+            _control_panel.getUseVisualStylesCb().setSelected( true );
         }
         setArrowCursor();
         repaint();
@@ -981,7 +981,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     final Color getGraphicsForNodeBoxWithColorForParentBranch( final PhylogenyNode node ) {
-        if ( getControlPanel().isColorBranches() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
+        if ( getControlPanel().isUseVisualStyles() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             return ( PhylogenyMethods.getBranchColorValue( node ) );
         }
         else {
@@ -2063,8 +2063,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         setWaitCursor();
         TreePanelUtil.colorPhylogenyAccordingToExternalTaxonomy( _phylogeny, this );
         _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
+        if ( _control_panel.getUseVisualStylesCb() != null ) {
+            _control_panel.getUseVisualStylesCb().setSelected( true );
         }
         setEdited( true );
         setArrowCursor();
@@ -2263,7 +2263,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && !to_graphics_file && getCopiedAndPastedNodes().contains( node.getId() ) ) {
             g.setColor( getTreeColorSet().getFoundColor0() );
         }
-        else if ( getControlPanel().isColorBranches() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
+        else if ( getControlPanel().isUseVisualStyles() && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
         }
         else if ( to_pdf ) {
@@ -2414,8 +2414,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                         final PhylogenyNode node,
                                         final List<PhylogenyNode> additional_nodes ) {
         _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
+        if ( _control_panel.getUseVisualStylesCb() != null ) {
+            _control_panel.getUseVisualStylesCb().setSelected( true );
         }
         if ( node != null ) {
             for( final PreorderTreeIterator it = new PreorderTreeIterator( node ); it.hasNext(); ) {
@@ -2434,8 +2434,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       final PhylogenyNode node,
                                       final List<PhylogenyNode> additional_nodes ) {
         _control_panel.setColorBranches( true );
-        if ( _control_panel.getColorBranchesCb() != null ) {
-            _control_panel.getColorBranchesCb().setSelected( true );
+        if ( _control_panel.getUseVisualStylesCb() != null ) {
+            _control_panel.getUseVisualStylesCb().setSelected( true );
         }
         if ( node != null ) {
             colorizeNodesHelper( c, node );
@@ -2449,14 +2449,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final static void colorizeNodesHelper( final Color c, final PhylogenyNode node ) {
-        NodeVisualData v;
-        if ( node.getNodeData().getNodeVisualData() != null ) {
-            v = node.getNodeData().getNodeVisualData();
+        if ( node.getNodeData().getNodeVisualData() == null ) {
+            node.getNodeData().setNodeVisualData( new NodeVisualData() );
         }
-        else {
-            v = new NodeVisualData();
-        }
-        v.setFontColor( new Color( c.getRed(), c.getGreen(), c.getBlue() ) );
+        node.getNodeData().getNodeVisualData().setFontColor( new Color( c.getRed(), c.getGreen(), c.getBlue() ) );
     }
 
     final private void colorSubtree( final PhylogenyNode node ) {
@@ -2469,8 +2465,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         _color_chooser.setPreviewPanel( new JPanel() );
         SubtreeColorizationActionListener al;
-        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodes0AsListOfPhylogenyNodes();
+        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
             al = new SubtreeColorizationActionListener( _color_chooser, node, additional_nodes );
         }
         else {
@@ -2484,15 +2480,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void colorNodeFont( final PhylogenyNode node ) {
         _color_chooser.setPreviewPanel( new JPanel() );
         NodeColorizationActionListener al;
-        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
-            final List<PhylogenyNode> additional_nodes = getFoundNodes0AsListOfPhylogenyNodes();
+        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+            final List<PhylogenyNode> additional_nodes = getFoundNodesAsListOfPhylogenyNodes();
             al = new NodeColorizationActionListener( _color_chooser, node, additional_nodes );
         }
         else {
             al = new NodeColorizationActionListener( _color_chooser, node );
         }
-        final JDialog dialog = JColorChooser
-                .createDialog( this, "Subtree colorization", true, _color_chooser, al, null );
+        final JDialog dialog = JColorChooser.createDialog( this, "Node colorization", true, _color_chooser, al, null );
         dialog.setVisible( true );
     }
 
@@ -2510,22 +2505,33 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         fc.showDialog( this, "Select Font" );
         if ( ( fc.getFont() != null ) && !ForesterUtil.isEmpty( fc.getFont().getFamily().trim() ) ) {
-            if ( node.getNodeData().getNodeVisualData() == null ) {
-                node.getNodeData().setNodeVisualData( new NodeVisualData() );
+            List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+            if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+                nodes = getFoundNodesAsListOfPhylogenyNodes();
             }
-            final NodeVisualData vd = node.getNodeData().getNodeVisualData();
-            final Font ff = fc.getFont();
-            vd.setFontName( ff.getFamily().trim() );
-            int s = ff.getSize();
-            if ( s < 0 ) {
-                s = 0;
+            nodes.add( node );
+            for( final PhylogenyNode n : nodes ) {
+                if ( n.getNodeData().getNodeVisualData() == null ) {
+                    n.getNodeData().setNodeVisualData( new NodeVisualData() );
+                }
+                final NodeVisualData vd = n.getNodeData().getNodeVisualData();
+                final Font ff = fc.getFont();
+                vd.setFontName( ff.getFamily().trim() );
+                int s = ff.getSize();
+                if ( s < 0 ) {
+                    s = 0;
+                }
+                if ( s > Byte.MAX_VALUE ) {
+                    s = Byte.MAX_VALUE;
+                }
+                vd.setFontSize( s );
+                vd.setFontStyle( ff.getStyle() );
             }
-            if ( s > Byte.MAX_VALUE ) {
-                s = Byte.MAX_VALUE;
+            if ( _control_panel.getUseVisualStylesCb() != null ) {
+                getControlPanel().getUseVisualStylesCb().setSelected( true );
             }
-            vd.setFontSize( s );
-            vd.setFontStyle( ff.getStyle() );
         }
+        repaint();
     }
 
     final private void copySubtree( final PhylogenyNode node ) {
@@ -2840,18 +2846,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getMainPanel().getCutOrCopiedTree();
     }
 
-    private List<PhylogenyNode> getFoundNodes0AsListOfPhylogenyNodes() {
+    private List<PhylogenyNode> getFoundNodesAsListOfPhylogenyNodes() {
         final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
-        for( final Long id : getFoundNodes0() ) {
-            additional_nodes.add( _phylogeny.getNode( id ) );
+        if ( getFoundNodes0() != null ) {
+            for( final Long id : getFoundNodes0() ) {
+                additional_nodes.add( _phylogeny.getNode( id ) );
+            }
         }
-        return additional_nodes;
-    }
-
-    private List<PhylogenyNode> getFoundNodes1AsListOfPhylogenyNodes() {
-        final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
-        for( final Long id : getFoundNodes1() ) {
-            additional_nodes.add( _phylogeny.getNode( id ) );
+        if ( getFoundNodes1() != null ) {
+            for( final Long id : getFoundNodes1() ) {
+                if ( ( getFoundNodes0() == null ) || !getFoundNodes0().contains( id ) ) {
+                    additional_nodes.add( _phylogeny.getNode( id ) );
+                }
+            }
         }
         return additional_nodes;
     }
@@ -3870,7 +3877,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             c = getTaxonomyBasedColor( node );
         }
-        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
+        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             c = PhylogenyMethods.getBranchColorValue( node );
         }
@@ -4146,6 +4153,10 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( is_in_found_nodes ) {
             g.setColor( getColorForFoundNode( node ) );
         }
+        else if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null )
+                && ( node.getNodeData().getNodeVisualData().getFontColor() != null ) ) {
+            g.setColor( node.getNodeData().getNodeVisualData().getFontColor() );
+        }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
         }
@@ -4154,7 +4165,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         .getNodeData().getSequence().getAnnotations().isEmpty() ) ) ) {
             g.setColor( calculateColorForAnnotation( node.getNodeData().getSequence().getAnnotations() ) );
         }
-        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
+        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
         }
@@ -4217,7 +4228,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             _sb.append( propertiesToString( node ) );
         }
-        if ( getControlPanel().isColorBranches() && ( node.getNodeData().getNodeVisualData() != null ) ) {
+        if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null ) ) {
             final Font f = node.getNodeData().getNodeVisualData().getFont();
             g.setFont( f != null ? f : getTreeFontSet().getLargeFont() );
         }
@@ -4875,7 +4886,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
         }
-        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isColorBranches()
+        else if ( getOptions().isColorLabelsSameAsParentBranch() && getControlPanel().isUseVisualStyles()
                 && ( PhylogenyMethods.getBranchColorValue( node ) != null ) ) {
             g.setColor( PhylogenyMethods.getBranchColorValue( node ) );
         }
@@ -5291,15 +5302,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private void showExtDescNodeData( final PhylogenyNode node ) {
         final List<String> data = new ArrayList<String>();
         final List<PhylogenyNode> nodes = node.getAllExternalDescendants();
-        if ( ( getFoundNodes0() != null ) && !getFoundNodes0().isEmpty() ) {
-            for( final PhylogenyNode n : getFoundNodes0AsListOfPhylogenyNodes() ) {
-                if ( !nodes.contains( n ) ) {
-                    nodes.add( n );
-                }
-            }
-        }
-        if ( ( getFoundNodes1() != null ) && !getFoundNodes1().isEmpty() ) {
-            for( final PhylogenyNode n : getFoundNodes1AsListOfPhylogenyNodes() ) {
+        if ( ( getFoundNodes0() != null ) || ( getFoundNodes1() != null ) ) {
+            for( final PhylogenyNode n : getFoundNodesAsListOfPhylogenyNodes() ) {
                 if ( !nodes.contains( n ) ) {
                     nodes.add( n );
                 }

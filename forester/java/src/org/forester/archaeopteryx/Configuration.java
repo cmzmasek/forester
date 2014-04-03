@@ -58,7 +58,7 @@ public final class Configuration {
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
             { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree(s)", "display" },
-            { "Colorize Node", "display" }, { "Change Node Font", "display" }, { "Open Sequence DB", "display" },
+            { "Colorize Node(s)", "display" }, { "Change Node Font", "display" }, { "Open Sequence DB", "display" },
             { "Go to PDB", "display" }, { "Open Taxonomy DB", "display" }, { "Blast", "display" },
             { "Cut Subtree", "display" }, { "Copy Subtree", "display" }, { "Paste Subtree", "display" },
             { "Delete Subtree/Node", "display" }, { "Add New Node", "display" }, { "Edit Node Data", "display" },
@@ -91,7 +91,7 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
-            { "Use Branch Colors", "display", "no" }, { "Use Branch Widths", "display", "no" },
+            { "Use Visual Styles", "display", "no" }, { "Use Branch Widths", "display", "no" },
             { "Show Custom Nodes", "display", "yes" }, { "Protein Domains", "nodisplay", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
             { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
@@ -108,7 +108,7 @@ public final class Configuration {
     final static int                        write_confidence_values                                = 4;
     final static int                        write_events                                           = 5;
     final static int                        color_according_to_species                             = 6;
-    final static int                        color_branches                                         = 7;
+    final static int                        use_style                                              = 7;
     final static int                        width_branches                                         = 8;
     final static int                        show_custom_node_shapes                                = 9;
     final static int                        show_domain_architectures                              = 10;
@@ -417,7 +417,7 @@ public final class Configuration {
     }
 
     public void setColorizeBranches( final boolean b ) {
-        display_options[ color_branches ][ 2 ] = b ? "yes" : "no";
+        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
     }
 
     public void setColorLabelsSameAsParentBranch( final boolean color_labels_same_as_parent_branch ) {
@@ -1522,8 +1522,8 @@ public final class Configuration {
             else if ( key.equals( "write_events" ) ) {
                 key_index = Configuration.write_events;
             }
-            else if ( key.equals( "color_branches" ) ) {
-                key_index = Configuration.color_branches;
+            else if ( key.equals( "use_visual_styles" ) ) {
+                key_index = Configuration.use_style;
             }
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;

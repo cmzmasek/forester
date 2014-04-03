@@ -93,7 +93,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _color_acc_species;
     private JCheckBox            _color_according_to_annotation;
     private boolean              _color_branches;
-    private JCheckBox            _color_branches_cb;
+    private JCheckBox            _use_visual_styles_cb;
     private int                  _color_subtree_cb_item;
     private int                  _change_node_font_item;
     // The settings from the conf file
@@ -311,8 +311,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _color_acc_species;
     }
 
-    public JCheckBox getColorBranchesCb() {
-        return _color_branches_cb;
+    public JCheckBox getUseVisualStylesCb() {
+        return _use_visual_styles_cb;
     }
 
     public JCheckBox getDisplayAsPhylogramCb() {
@@ -593,10 +593,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( getShowEventsCb(), ch_panel );
                 add( ch_panel );
                 break;
-            case Configuration.color_branches:
-                _color_branches_cb = new JCheckBox( title );
-                getColorBranchesCb().setToolTipText( "To use branch color values, if present" );
-                addJCheckBox( getColorBranchesCb(), ch_panel );
+            case Configuration.use_style:
+                _use_visual_styles_cb = new JCheckBox( title );
+                getUseVisualStylesCb().setToolTipText( "To use visual styles (colors, fonts), if present" );
+                addJCheckBox( getUseVisualStylesCb(), ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.width_branches:
@@ -802,8 +802,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( _color_acc_species != null ) && _color_acc_species.isSelected() );
     }
 
-    boolean isColorBranches() {
-        return ( ( ( getColorBranchesCb() != null ) && getColorBranchesCb().isSelected() ) || ( ( getColorBranchesCb() == null ) && _color_branches ) );
+    boolean isUseVisualStyles() {
+        return ( ( ( getUseVisualStylesCb() != null ) && getUseVisualStylesCb().isSelected() ) || ( ( getUseVisualStylesCb() == null ) && _color_branches ) );
     }
 
     boolean isDrawPhylogram() {
@@ -1032,9 +1032,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     getShowEventsCb().setSelected( state );
                 }
                 break;
-            case Configuration.color_branches:
-                if ( getColorBranchesCb() != null ) {
-                    getColorBranchesCb().setSelected( state );
+            case Configuration.use_style:
+                if ( getUseVisualStylesCb() != null ) {
+                    getUseVisualStylesCb().setSelected( state );
                 }
                 break;
             case Configuration.width_branches:
@@ -2106,9 +2106,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.color_according_to_annotation,
                          _configuration.doCheckOption( Configuration.color_according_to_annotation ) );
         }
-        if ( _configuration.doDisplayOption( Configuration.color_branches ) ) {
-            addCheckbox( Configuration.color_branches, _configuration.getDisplayTitle( Configuration.color_branches ) );
-            setCheckbox( Configuration.color_branches, _configuration.doCheckOption( Configuration.color_branches ) );
+        if ( _configuration.doDisplayOption( Configuration.use_style ) ) {
+            addCheckbox( Configuration.use_style, _configuration.getDisplayTitle( Configuration.use_style ) );
+            setCheckbox( Configuration.use_style, _configuration.doCheckOption( Configuration.use_style ) );
         }
         if ( _configuration.doDisplayOption( Configuration.width_branches ) ) {
             addCheckbox( Configuration.width_branches, _configuration.getDisplayTitle( Configuration.width_branches ) );

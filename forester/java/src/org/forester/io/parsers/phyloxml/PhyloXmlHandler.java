@@ -325,18 +325,12 @@ public final class PhyloXmlHandler extends DefaultHandler {
             }
             else if ( qualified_name.equals( PhyloXmlMapping.PROPERTY ) ) {
                 final Property prop = ( Property ) PropertyParser.getInstance().parse( element );
-                if ( prop.getRef().startsWith( NodeVisualData.APTX_VISUALIZATION_REF ) ) {
-                    if ( prop.getAppliesTo() == AppliesTo.NODE ) {
-                        if ( node.getNodeData().getNodeVisualData() == null ) {
-                            node.getNodeData().setNodeVisualData( new NodeVisualData() );
-                        }
-                        final NodeVisualData vd = node.getNodeData().getNodeVisualData();
-                        vd.parseProperty( prop );
+                if ( prop.getRef().startsWith( NodeVisualData.APTX_VISUALIZATION_REF )
+                        && ( prop.getAppliesTo() == AppliesTo.NODE ) ) {
+                    if ( node.getNodeData().getNodeVisualData() == null ) {
+                        node.getNodeData().setNodeVisualData( new NodeVisualData() );
                     }
-                    else {
-                        System.err.println( "Do not know how to handle " + NodeVisualData.APTX_VISUALIZATION_REF
-                                + " property applied to " + prop.getAppliesTo() );
-                    }
+                    node.getNodeData().getNodeVisualData().parseProperty( prop );
                 }
                 else {
                     if ( !node.getNodeData().isHasProperties() ) {
