@@ -107,17 +107,7 @@ public class msa_compactor {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                     path_to_mafft = MsaCompactor.guessPathToMafft();
                 }
-                if ( !ForesterUtil.isEmpty( path_to_mafft ) && MsaInferrer.isInstalled( path_to_mafft ) ) {
-                    ForesterUtil.programMessage( PRG_NAME, "using MAFFT at \"" + path_to_mafft + "\""  );
-                }
-                else {
-                    if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
-                        ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable found, use -\"" + PATH_TO_MAFFT_OPTION + "=<path to MAFFT>\" option" );
-                    }
-                    else {
-                        ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable at \""  + path_to_mafft + "\""  );
-                    }
-                }
+                checkPathToMafft( path_to_mafft );
             }
             
             MsaCompactor mc = null;
@@ -139,6 +129,20 @@ public class msa_compactor {
         catch ( final Exception e ) {
             e.printStackTrace();
             ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+        }
+    }
+
+    private static void checkPathToMafft( String path_to_mafft ) {
+        if ( !ForesterUtil.isEmpty( path_to_mafft ) && MsaInferrer.isInstalled( path_to_mafft ) ) {
+            ForesterUtil.programMessage( PRG_NAME, "using MAFFT at \"" + path_to_mafft + "\""  );
+        }
+        else {
+            if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable found, use -\"" + PATH_TO_MAFFT_OPTION + "=<path to MAFFT>\" option" );
+            }
+            else {
+                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable at \""  + path_to_mafft + "\""  );
+            }
         }
     }
 
