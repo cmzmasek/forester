@@ -28,7 +28,7 @@ public class msa_compactor {
     final static private String PRG_NAME                               = "msa_compactor";
     final static private String PRG_DESC                               = "multiple sequnce aligment compactor";
     final static private String PRG_VERSION                            = "0.01";
-    final static private String PRG_DATE                               = "140221";
+    final static private String PRG_DATE                               = "140314";
     final static private String E_MAIL                                 = "phylosoft@gmail.com";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
@@ -128,7 +128,8 @@ public class msa_compactor {
         System.out.println();
         System.out.println( " options: " );
         System.out.println();
-        System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION + "=<integer>: step size (msa columns)" );
+        System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION + "=<integer>  number of sequences to remove" );
+        System.out.println( "   -" + REALIGN_OPTION + " to realign using " );
         System.out.println();
         System.out.println();
         System.out.println();
