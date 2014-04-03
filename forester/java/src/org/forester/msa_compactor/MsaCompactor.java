@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
@@ -30,6 +29,8 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
+import org.forester.util.BasicDescriptiveStatistics;
+import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
@@ -39,7 +40,7 @@ public class MsaCompactor {
     private static final boolean      VERBOSE = true;
     private Msa                       _msa;
     private final SortedSet<String>   _removed_seq_ids;
-    private String _path_to_mafft;
+    private String                    _path_to_mafft;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -98,19 +99,27 @@ public class MsaCompactor {
     final private GapContribution[] calcGapContribtionsStats( final boolean norm ) {
         final GapContribution stats[] = calcGapContribtions( norm );
         Arrays.sort( stats );
-        for( final GapContribution stat : stats ) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append( stat.getId() );
-            sb.append( "\t" );
-            sb.append( NF_4.format( stat.getValue() ) );
-            sb.append( "\t" );
-            //            sb.append( NF_4.format( stat.median() ) );
-            //            sb.append( "\t" );
-            //            sb.append( NF_4.format( stat.getMin() ) );
-            //            sb.append( "\t" );
-            //            sb.append( NF_4.format( stat.getMax() ) );
-            //sb.append( "\t" );
-            System.out.println( sb );
+        // for( final GapContribution stat : stats ) {
+        //  final StringBuilder sb = new StringBuilder();
+        //  sb.append( stat.getId() );
+        //  sb.append( "\t" );
+        //  sb.append( NF_4.format( stat.getValue() ) );
+        //  sb.append( "\t" );
+        //            sb.append( NF_4.format( stat.median() ) );
+        //            sb.append( "\t" );
+        //            sb.append( NF_4.format( stat.getMin() ) );
+        //            sb.append( "\t" );
+        //            sb.append( NF_4.format( stat.getMax() ) );
+        //sb.append( "\t" );
+        //System.out.println( sb );
+        // }
+        return stats;
+    }
+
+    private static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( int c = from; c <= to; ++c ) {
+            stats.addValue( MsaMethods.calculateIdentityRatio( msa, c ) );
         }
         return stats;
     }
@@ -124,7 +133,7 @@ public class MsaCompactor {
         }
         return gappiness;
     }
-    
+
     // Returns null if not path found.
     final public static String guessPathToMafft() {
         String path;
@@ -133,7 +142,6 @@ public class MsaCompactor {
             if ( MsaInferrer.isInstalled( path ) ) {
                 return path;
             }
-            
         }
         path = "/usr/local/bin/mafft";
         if ( MsaInferrer.isInstalled( path ) ) {
@@ -153,16 +161,11 @@ public class MsaCompactor {
         }
         return null;
     }
-    
 
     final private void mafft() throws IOException, InterruptedException {
-      //  final MsaInferrer mafft = Mafft
+        //  final MsaInferrer mafft = Mafft
         //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
-      
-        final MsaInferrer mafft = Mafft
-                .createInstance( _path_to_mafft );
-      
-        
+        final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
         final List<String> opts = new ArrayList<String>();
         opts.add( "--maxiterate" );
         opts.add( "1000" );
@@ -178,6 +181,8 @@ public class MsaCompactor {
         sb.append( _msa.getLength() );
         sb.append( "\t" );
         sb.append( NF_3.format( MsaMethods.calcGapRatio( _msa ) ) );
+        sb.append( "\t" );
+        sb.append( NF_3.format( calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
         return sb;
     }
 
@@ -303,19 +308,20 @@ public class MsaCompactor {
                                              final int step,
                                              final boolean realign,
                                              final boolean norm ) throws IOException, InterruptedException {
-        final Phylogeny a = pi( "a.pwd" );
-        Archaeopteryx.createApplication( a );
+        //final Phylogeny a = pi( "a.pwd" );
+        //Archaeopteryx.createApplication( a );
         final GapContribution stats[] = calcGapContribtionsStats( norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         for( int j = 0; j < to_remove; ++j ) {
             to_remove_ids.add( stats[ j ].getId() );
             _removed_seq_ids.add( stats[ j ].getId() );
         }
-        //TODO if verbose/interactve
+        //TODO if verbose/interactive
         for( final String id : to_remove_ids ) {
             _msa = MsaMethods.removeSequence( _msa, id );
             removeGapColumns();
-            System.out.print( id );
+            //System.out.print( id );
+            System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
             System.out.print( "\t" );
             final StringBuilder sb = msaStatsAsSB();
             System.out.println( sb );
@@ -326,8 +332,8 @@ public class MsaCompactor {
         if ( realign ) {
             mafft();
         }
-        final Phylogeny b = pi( "b.pwd" );
-        Archaeopteryx.createApplication( b );
+        //final Phylogeny b = pi( "b.pwd" );
+        //Archaeopteryx.createApplication( b );
     }
 
     final private void writeMsa( final String outfile, final MSA_FORMAT format ) throws IOException {
@@ -345,7 +351,7 @@ public class MsaCompactor {
                                                        final String path_to_mafft ) throws IOException,
             InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
-        if ( realign) {
+        if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
         mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
@@ -356,9 +362,10 @@ public class MsaCompactor {
                                                    final int length,
                                                    final int step,
                                                    final boolean realign,
-                                                   final String path_to_mafft ) throws IOException, InterruptedException {
+                                                   final String path_to_mafft ) throws IOException,
+            InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
-        if ( realign) {
+        if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
         mc.removeViaLength( length, step, realign );
@@ -372,7 +379,7 @@ public class MsaCompactor {
                                                            final String path_to_mafft ) throws IOException,
             InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
-        if ( realign) {
+        if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
         mc.removeWorstOffenders( worst_offenders_to_remove, 1, realign, norm );
@@ -381,6 +388,5 @@ public class MsaCompactor {
 
     private void setPathToMafft( final String path_to_mafft ) {
         _path_to_mafft = path_to_mafft;
-        
     }
 }

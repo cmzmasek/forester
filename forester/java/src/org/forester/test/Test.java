@@ -5698,10 +5698,10 @@ public final class Test {
 
     private static boolean testMsaQualityMethod() {
         try {
-            final Sequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJ" );
-            final Sequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJ" );
-            final Sequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJ" );
-            final Sequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ" );
+            final Sequence s0 = BasicSequence.createAaSequence( "a", "ABAXEFGHIJJE-" );
+            final Sequence s1 = BasicSequence.createAaSequence( "b", "ABBXEFGHIJJBB" );
+            final Sequence s2 = BasicSequence.createAaSequence( "c", "AXCXEFGHIJJ--" );
+            final Sequence s3 = BasicSequence.createAaSequence( "d", "AXDDEFGHIJ---" );
             final List<Sequence> l = new ArrayList<Sequence>();
             l.add( s0 );
             l.add( s1 );
@@ -5718,6 +5718,15 @@ public final class Test {
                 return false;
             }
             if ( !isEqual( 0.75, MsaMethods.calculateIdentityRatio( msa, 3 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.75, MsaMethods.calculateIdentityRatio( msa, 10 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.25, MsaMethods.calculateIdentityRatio( msa, 11 ) ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.25, MsaMethods.calculateIdentityRatio( msa, 12 ) ) ) {
                 return false;
             }
         }

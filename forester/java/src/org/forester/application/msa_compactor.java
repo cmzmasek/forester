@@ -9,9 +9,8 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
-import org.forester.msa.MsaInferrer;
 import org.forester.msa.Msa.MSA_FORMAT;
-import org.forester.msa.MsaMethods;
+import org.forester.msa.MsaInferrer;
 import org.forester.msa_compactor.MsaCompactor;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.ForesterUtil;
@@ -20,11 +19,11 @@ public class msa_compactor {
 
     final static private String HELP_OPTION_1                          = "help";
     final static private String HELP_OPTION_2                          = "h";
-    final static private String REMOVE_WORST_OFFENDERS_OPTION          = "w";
-    final static private String AV_GAPINESS_OPTION                     = "a";
+    final static private String REMOVE_WORST_OFFENDERS_OPTION          = "r";
+    final static private String AV_GAPINESS_OPTION                     = "g";
     final static private String STEP_OPTION                            = "s";
     final static private String LENGTH_OPTION                          = "l";
-    final static private String REALIGN_OPTION                         = "r";
+    final static private String REALIGN_OPTION                         = "a";
     final static private String PATH_TO_MAFFT_OPTION                   = "mafft";
     final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String PRG_NAME                               = "msa_compactor";
@@ -94,15 +93,12 @@ public class msa_compactor {
             //                printHelp();
             //                System.exit( 0 );
             //            }
-            
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                     path_to_mafft = MsaCompactor.guessPathToMafft();
                 }
                 checkPathToMafft( path_to_mafft );
             }
-            
-            
             Msa msa = null;
             final FileInputStream is = new FileInputStream( in );
             if ( FastaParser.isLikelyFasta( in ) ) {
@@ -111,9 +107,6 @@ public class msa_compactor {
             else {
                 msa = GeneralMsaParser.parse( is );
             }
-            
-          
-            
             MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
                 mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign, norm, path_to_mafft );
@@ -124,10 +117,10 @@ public class msa_compactor {
             else if ( length > 0 ) {
                 mc = MsaCompactor.reduceLength( msa, length, step, realign, path_to_mafft );
             }
-            System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
-            for( final String id : mc.getRemovedSeqIds() ) {
-                System.out.println( id );
-            }
+            //System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
+            // for( final String id : mc.getRemovedSeqIds() ) {
+            //     System.out.println( id );
+            //}
             mc.writeMsa( out, MSA_FORMAT.PHYLIP, ".aln" );
         }
         catch ( final Exception e ) {
@@ -136,16 +129,17 @@ public class msa_compactor {
         }
     }
 
-    private static void checkPathToMafft( String path_to_mafft ) {
+    private static void checkPathToMafft( final String path_to_mafft ) {
         if ( !ForesterUtil.isEmpty( path_to_mafft ) && MsaInferrer.isInstalled( path_to_mafft ) ) {
-            ForesterUtil.programMessage( PRG_NAME, "using MAFFT at \"" + path_to_mafft + "\""  );
+            ForesterUtil.programMessage( PRG_NAME, "using MAFFT at \"" + path_to_mafft + "\"" );
         }
         else {
             if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
-                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable found, use -\"" + PATH_TO_MAFFT_OPTION + "=<path to MAFFT>\" option" );
+                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable found, use -\"" + PATH_TO_MAFFT_OPTION
+                        + "=<path to MAFFT>\" option" );
             }
             else {
-                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable at \""  + path_to_mafft + "\""  );
+                ForesterUtil.fatalError( PRG_NAME, "no MAFFT executable at \"" + path_to_mafft + "\"" );
             }
         }
     }
@@ -161,20 +155,20 @@ public class msa_compactor {
         final String path_to_mafft = MsaCompactor.guessPathToMafft();
         String mafft_comment;
         if ( !ForesterUtil.isEmpty( path_to_mafft ) ) {
-            mafft_comment = " (" + path_to_mafft + ")";
+            mafft_comment = " (using " + path_to_mafft + ")";
         }
         else {
             mafft_comment = " (no path to MAFFT found, use -\"" + PATH_TO_MAFFT_OPTION + "=<path to MAFFT>\" option";
         }
-        
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( PRG_NAME + " <options> <msa input file>" );
+        System.out.println( PRG_NAME + " <options> <msa input file> <output file>" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println();
-        System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION + "=<integer>  number of sequences to remove" );
-        System.out.println( "   -" + REALIGN_OPTION + " to realign using MAFFT" + mafft_comment );
+        System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION
+                + "=<integer>  number of worst offender sequences to remove" );
+        System.out.println( "   -" + REALIGN_OPTION + "            to realign using MAFFT" + mafft_comment );
         System.out.println();
         System.out.println();
         System.out.println();

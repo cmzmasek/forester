@@ -175,11 +175,13 @@ public final class MsaMethods {
     public static SortedMap<Character, Integer> calculateResidueDestributionPerColumn( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> map = new TreeMap<Character, Integer>();
         for( final Character r : msa.getColumnAt( column ) ) {
-            if ( !map.containsKey( r ) ) {
-                map.put( r, 1 );
-            }
-            else {
-                map.put( r, map.get( r ) + 1 );
+            if ( r != Sequence.GAP ) {
+                if ( !map.containsKey( r ) ) {
+                    map.put( r, 1 );
+                }
+                else {
+                    map.put( r, map.get( r ) + 1 );
+                }
             }
         }
         return map;
