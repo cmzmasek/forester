@@ -225,7 +225,7 @@ show_taxonomy_images:           display   no
 show_annotations:               display   no
 write_confidence_values:        display   ?
 write_events:                   display   ?
-color_branches:                 display   no
+use_visual_styles:              display   no
 width_branches:                 display   no
 show_domain_architectures:      display   no
 show_binary_characters:         display   no
