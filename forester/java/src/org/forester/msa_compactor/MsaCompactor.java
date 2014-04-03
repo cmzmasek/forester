@@ -39,6 +39,7 @@ public class MsaCompactor {
     private static final boolean      VERBOSE = true;
     private Msa                       _msa;
     private final SortedSet<String>   _removed_seq_ids;
+    private String _path_to_mafft;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -155,8 +156,13 @@ public class MsaCompactor {
     
 
     final private void mafft() throws IOException, InterruptedException {
+      //  final MsaInferrer mafft = Mafft
+        //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
+      
         final MsaInferrer mafft = Mafft
-                .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
+                .createInstance( _path_to_mafft );
+      
+        
         final List<String> opts = new ArrayList<String>();
         opts.add( "--maxiterate" );
         opts.add( "1000" );
@@ -335,9 +341,13 @@ public class MsaCompactor {
                                                        final int step,
                                                        final boolean realign,
                                                        final File out,
-                                                       final int minimal_effective_length ) throws IOException,
+                                                       final int minimal_effective_length,
+                                                       final String path_to_mafft ) throws IOException,
             InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
+        if ( realign) {
+            mc.setPathToMafft( path_to_mafft );
+        }
         mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
         return mc;
     }
@@ -345,8 +355,12 @@ public class MsaCompactor {
     public final static MsaCompactor reduceLength( final Msa msa,
                                                    final int length,
                                                    final int step,
-                                                   final boolean realign ) throws IOException, InterruptedException {
+                                                   final boolean realign,
+                                                   final String path_to_mafft ) throws IOException, InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
+        if ( realign) {
+            mc.setPathToMafft( path_to_mafft );
+        }
         mc.removeViaLength( length, step, realign );
         return mc;
     }
@@ -354,10 +368,19 @@ public class MsaCompactor {
     public final static MsaCompactor removeWorstOffenders( final Msa msa,
                                                            final int worst_offenders_to_remove,
                                                            final boolean realign,
-                                                           final boolean norm ) throws IOException,
+                                                           final boolean norm,
+                                                           final String path_to_mafft ) throws IOException,
             InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
+        if ( realign) {
+            mc.setPathToMafft( path_to_mafft );
+        }
         mc.removeWorstOffenders( worst_offenders_to_remove, 1, realign, norm );
         return mc;
+    }
+
+    private void setPathToMafft( final String path_to_mafft ) {
+        _path_to_mafft = path_to_mafft;
+        
     }
 }

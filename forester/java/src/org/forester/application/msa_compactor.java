@@ -94,6 +94,15 @@ public class msa_compactor {
             //                printHelp();
             //                System.exit( 0 );
             //            }
+            
+            if ( realign ) {
+                if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
+                    path_to_mafft = MsaCompactor.guessPathToMafft();
+                }
+                checkPathToMafft( path_to_mafft );
+            }
+            
+            
             Msa msa = null;
             final FileInputStream is = new FileInputStream( in );
             if ( FastaParser.isLikelyFasta( in ) ) {
@@ -103,22 +112,17 @@ public class msa_compactor {
                 msa = GeneralMsaParser.parse( is );
             }
             
-            if ( realign ) {
-                if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
-                    path_to_mafft = MsaCompactor.guessPathToMafft();
-                }
-                checkPathToMafft( path_to_mafft );
-            }
+          
             
             MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
-                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign, norm );
+                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign, norm, path_to_mafft );
             }
             else if ( av > 0 ) {
-                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, out, 50 );
+                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, out, 50, path_to_mafft );
             }
             else if ( length > 0 ) {
-                mc = MsaCompactor.reduceLength( msa, length, step, realign );
+                mc = MsaCompactor.reduceLength( msa, length, step, realign, path_to_mafft );
             }
             System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
             for( final String id : mc.getRemovedSeqIds() ) {
