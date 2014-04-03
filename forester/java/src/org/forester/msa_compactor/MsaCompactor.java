@@ -123,6 +123,36 @@ public class MsaCompactor {
         }
         return gappiness;
     }
+    
+    // Returns null if not path found.
+    final public static String guessPathToMafft() {
+        String path;
+        if ( ForesterUtil.OS_NAME.toLowerCase().indexOf( "win" ) >= 0 ) {
+            path = "C:\\Program Files\\mafft-win\\mafft.bat";
+            if ( MsaInferrer.isInstalled( path ) ) {
+                return path;
+            }
+            
+        }
+        path = "/usr/local/bin/mafft";
+        if ( MsaInferrer.isInstalled( path ) ) {
+            return path;
+        }
+        path = "/usr/bin/mafft";
+        if ( MsaInferrer.isInstalled( path ) ) {
+            return path;
+        }
+        path = "/bin/mafft";
+        if ( MsaInferrer.isInstalled( path ) ) {
+            return path;
+        }
+        path = "mafft";
+        if ( MsaInferrer.isInstalled( path ) ) {
+            return path;
+        }
+        return null;
+    }
+    
 
     final private void mafft() throws IOException, InterruptedException {
         final MsaInferrer mafft = Mafft
