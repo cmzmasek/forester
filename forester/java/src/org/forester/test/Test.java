@@ -4066,6 +4066,16 @@ public final class Test {
                     .equals( "Mus musculus" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_123" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -8421,8 +8431,8 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n13 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12345/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
-            if ( !n13.getName().equals( "blah_12345/1-2" ) ) {
+                    .createInstanceFromNhxString( "BLAH_12345/1-2", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !n13.getName().equals( "BLAH_12345/1-2" ) ) {
                 return false;
             }
             if ( PhylogenyMethods.getSpecies( n13 ).equals( "12345" ) ) {
@@ -8487,7 +8497,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n19 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_1-roejojoej", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAH_1-roejojoej", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n19.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1" ) ) {
                 return false;
             }
@@ -8495,7 +8505,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n30 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_1234567-roejojoej",
+                    .createInstanceFromNhxString( "BLAH_1234567-roejojoej",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n30.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "1234567" ) ) {
                 return false;
@@ -8504,7 +8514,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n31 = PhylogenyNode
-                    .createInstanceFromNhxString( "blah_12345678-roejojoej",
+                    .createInstanceFromNhxString( "BLAH_12345678-roejojoej",
                                                   NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n31.getNodeData().isHasTaxonomy() ) {
                 return false;
@@ -8515,7 +8525,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n40 = PhylogenyNode
-                    .createInstanceFromNhxString( "bcl2_12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BCL2_12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n40.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
                 return false;
             }
@@ -11576,7 +11586,7 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n3 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_12345", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n3.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
                 System.out.println( n3.toString() );
                 return false;
@@ -11594,43 +11604,43 @@ public final class Test {
                 return false;
             }
             final PhylogenyNode n6 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag-12345-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG-12345-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n6.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n6.toString() );
                 return false;
             }
             final PhylogenyNode n7 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag-12345_blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG-12345_blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n7.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n7.toString() );
                 return false;
             }
             final PhylogenyNode n8 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_12345-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_12345-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n8.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
                 System.out.println( n8.toString() );
                 return false;
             }
             final PhylogenyNode n9 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_12345/blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_12345/blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n9.getNodeData().getTaxonomy().getIdentifier().getValue().equals( "12345" ) ) {
                 System.out.println( n9.toString() );
                 return false;
             }
             final PhylogenyNode n10x = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_12X45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_12X45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n10x.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n10x.toString() );
                 return false;
             }
             final PhylogenyNode n10xx = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_1YX45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_1YX45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( n10xx.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n10xx.toString() );
                 return false;
             }
             final PhylogenyNode n10 = PhylogenyNode
-                    .createInstanceFromNhxString( "blag_9YX45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+                    .createInstanceFromNhxString( "BLAG_9YX45-blag", NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
             if ( !n10.getNodeData().getTaxonomy().getTaxonomyCode().equals( "9YX45" ) ) {
                 System.out.println( n10.toString() );
                 return false;

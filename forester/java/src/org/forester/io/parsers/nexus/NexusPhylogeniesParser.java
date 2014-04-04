@@ -149,16 +149,16 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                                         final boolean is_rooted ) throws IOException {
         _next = null;
         final NHXParser pars = new NHXParser();
-        if ( ( _taxlabels.size() < 1 ) && ( _translate_map.size() < 1 ) ) {
-            pars.setTaxonomyExtraction( _taxonomy_extraction );
-            pars.setReplaceUnderscores( _replace_underscores );
-            pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
-        }
-        else {
-            pars.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
-            pars.setReplaceUnderscores( false );
-            pars.setIgnoreQuotes( false );
-        }
+        // if ( ( _taxlabels.size() < 1 ) && ( _translate_map.size() < 1 ) ) {
+        pars.setTaxonomyExtraction( _taxonomy_extraction );
+        pars.setReplaceUnderscores( _replace_underscores );
+        pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
+        //}
+        //else {
+        //    pars.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
+        //    pars.setReplaceUnderscores( false );
+        //    pars.setIgnoreQuotes( false );
+        //}
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }

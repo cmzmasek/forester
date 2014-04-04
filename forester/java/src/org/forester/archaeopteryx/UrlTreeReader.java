@@ -245,7 +245,7 @@ public class UrlTreeReader implements Runnable {
                 try {
                     JOptionPane.showMessageDialog( null,
                                                    ForesterUtil.wordWrap( "Successfully read in " + trees.length
-                                                           + " evolutionry tree(s) from [" + url + "]", 80 ),
+                                                           + " tree(s) from [" + url + "]", 80 ),
                                                    "Success",
                                                    JOptionPane.INFORMATION_MESSAGE );
                 }
@@ -253,6 +253,10 @@ public class UrlTreeReader implements Runnable {
                     // Not important if this fails, do nothing.
                 }
                 _main_frame.getContentPane().repaint();
+            }
+            else {
+                JOptionPane.showMessageDialog( null, ForesterUtil.wordWrap( "Failed to read in tree(s) from [" + url
+                        + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
             }
         }
         _main_frame.activateSaveAllIfNeeded();

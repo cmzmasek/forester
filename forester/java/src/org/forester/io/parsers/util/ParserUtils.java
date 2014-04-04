@@ -62,11 +62,13 @@ public final class ParserUtils {
                                                                          + TAX_CODE + ")\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN             = Pattern
                                                                          .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)\\b" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SN          = Pattern
+                                                                         .compile( "\\b([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)(?:\\b|_)" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                          + TAX_CODE + ")/\\d+-\\d+\\b" );
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_A   = Pattern.compile( "(?:\\b|_)(\\d{1,7})\\b" );
+    // final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_A   = Pattern.compile( "(?:\\b|(?:[A-Z]_))(\\d{1,7})\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern
-                                                                         .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_(\\d{1,7})\\b" );
+                                                                         .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS = Pattern
                                                                          .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
 
@@ -199,6 +201,10 @@ public final class ParserUtils {
         if ( m.find() ) {
             return m.group( 1 ).replace( '_', ' ' );
         }
+        final Matcher m_sn = TAXOMONY_SN_PATTERN_SN.matcher( name );
+        if ( m_sn.find() ) {
+            return m_sn.group( 1 ).replace( '_', ' ' );
+        }
         return null;
     }
 
@@ -273,12 +279,12 @@ public final class ParserUtils {
             if ( m.find() ) {
                 return m.group( 1 );
             }
-            else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
-                m = TAXOMONY_UNIPROT_ID_PATTERN_A.matcher( name );
-                if ( m.find() ) {
-                    return m.group( 1 );
-                }
-            }
+            //else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
+            //    m = TAXOMONY_UNIPROT_ID_PATTERN_A.matcher( name );
+            //    if ( m.find() ) {
+            //        return m.group( 1 );
+            //    }
+            //}
         }
         return null;
     }
