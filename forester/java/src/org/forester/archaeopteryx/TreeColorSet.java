@@ -67,7 +67,7 @@ public final class TreeColorSet {
     private final Color[][]    _color_schemes             = { { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 100, 100 ), // background_color_gradient_bottom
             new Color( 230, 230, 230 ), // sequence  __ Default (same as Black)
-            new Color( 255, 220, 220 ), // taxonomy
+            new Color( 180, 180, 180 ), // taxonomy
             new Color( 56, 176, 255 ), // support  
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
@@ -86,7 +86,7 @@ public final class TreeColorSet {
             }, { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 255, 255 ), // background_color_gradient_bottom    
             new Color( 230, 230, 230 ), // sequence  __ Black
-            new Color( 255, 220, 220 ), // taxonomy
+            new Color( 180, 180, 180 ), // taxonomy
             new Color( 56, 176, 255 ), // support  
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color

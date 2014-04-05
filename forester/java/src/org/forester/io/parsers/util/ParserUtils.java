@@ -66,7 +66,6 @@ public final class ParserUtils {
                                                                          .compile( "\\b([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)(?:\\b|_)" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                          + TAX_CODE + ")/\\d+-\\d+\\b" );
-    // final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_A   = Pattern.compile( "(?:\\b|(?:[A-Z]_))(\\d{1,7})\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern
                                                                          .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS = Pattern

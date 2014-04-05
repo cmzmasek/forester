@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.forester.archaeopteryx.webservices.WebservicesManager.WsPhylogenyFormat;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
-import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyNode;
@@ -42,22 +41,21 @@ import org.forester.util.ForesterUtil;
 
 public final class WebserviceUtil {
 
-    public static final String TAX_CODE_TO_SCI_NAME = "tax_code_to_sci_name";
-    public static final String TREE_FAM_INST        = "tree_fam";
-    public static final String PFAM_INST            = "pfam";
-    public static final String TOL_WEBSERVER        = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id="
-                                                            + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER;
-    public static final String TOL_NAME             = "Tree of Life";
-    public static final String TREE_BASE_NAME       = "TreeBASE";
-    public static final String TREE_FAM_NAME        = "TreeFam";
-    public static final String PFAM_NAME            = "Pfam";
-    public static final String PFAM_SERVER          = "http://pfam.janelia.org";
+    public static final String TREE_FAM_INST  = "tree_fam";
+    public static final String PFAM_INST      = "pfam";
+    public static final String TOL_WEBSERVER  = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id="
+                                                      + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER;
+    public static final String TOL_NAME       = "Tree of Life";
+    public static final String TREE_BASE_NAME = "TreeBASE";
+    public static final String TREE_FAM_NAME  = "TreeFam";
+    public static final String PFAM_NAME      = "Pfam";
+    public static final String PFAM_SERVER    = "http://pfam.janelia.org";
 
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
         clients.add( new BasicPhylogeniesWebserviceClient( TOL_NAME,
                                                            "Read Tree from Tree of Life...",
-                                                           "Use ToL webservice to obtain a phylogeny",
+                                                           "Use ToL webservice to obtain a evolutionary tree",
                                                            "Please enter a Tree of Life node identifier\n(Examples: "
                                                                    + "19386 for Cephalopoda, 2461 for Cnidaria, 2466 for Deuterostomia)",
                                                            WsPhylogenyFormat.TOL_XML_RESPONSE,
@@ -68,48 +66,37 @@ public final class WebserviceUtil {
                                                            null ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
-                                                           "Use TreeBASE to obtain a phylogeny",
+                                                           "Use TreeBASE to obtain a evolutionary tree",
                                                            "Please enter a TreeBASE tree identifier\n(Examples: 2654, 825, 4931, 2518, 2406, 4934)",
-                                                           WsPhylogenyFormat.NEXUS,
-                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           WsPhylogenyFormat.TREEBASE,
+                                                           null,
                                                            "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr"
                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
                                                                    + "?format=nexus",
                                                            true,
-                                                           "http://treebase.nescent.org",
+                                                           "http://www.treebase.org",
                                                            null ) );
         clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
                                                            "Read Gene Tree from Pfam...",
-                                                           "Use  Pfam to obtain a (full) gene tree",
+                                                           "Use  Pfam to obtain gene trees for seed alignments",
                                                            "Please enter a Pfam (PF) accession number\n(Examples: 01849 for NAC, 00452 for Bcl-2, 00046 for Homeobox)",
                                                            WsPhylogenyFormat.PFAM,
                                                            null,
-                                                           PFAM_SERVER + "/family/tree/download?alnType=full&acc=PF"
-                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER,
+                                                           PFAM_SERVER + "/family/PF"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "/tree/download",
                                                            false,
                                                            PFAM_SERVER,
                                                            PFAM_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
-                                                           "Read Full Gene Tree from TreeFam...",
-                                                           "Use TreeFam to obtain a (full) gene tree",
+                                                           "Read Gene Tree from TreeFam...",
+                                                           "Use TreeFam to obtain a gene tree",
                                                            "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
                                                            WsPhylogenyFormat.NHX,
                                                            null,
-                                                           "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
+                                                           "http://www.treefam.org/family/TF"
                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                   + "&f=full.nhx",
-                                                           true,
-                                                           "http://www.treefam.org",
-                                                           TREE_FAM_INST ) );
-        clients.add( new BasicPhylogeniesWebserviceClient( TREE_FAM_NAME,
-                                                           "Read Clean Gene Tree from TreeFam...",
-                                                           "Use TreeFam to obtain a (\"clean\") gene tree",
-                                                           "Please enter a TreeFam (TF) accession number\n(Examples: 101004 for Cyclin D, 315938 for Hox, 105310 for Wnt)",
-                                                           WsPhylogenyFormat.NHX,
-                                                           null,
-                                                           "http://www.treefam.org/cgi-bin/getdata.pl?ac=TF"
-                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
-                                                                   + "&f=clean.nhx",
+                                                                   + "/tree/newick",
                                                            true,
                                                            "http://www.treefam.org",
                                                            TREE_FAM_INST ) );
@@ -138,13 +125,8 @@ public final class WebserviceUtil {
 
     public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny )
             throws PhyloXmlDataFormatException {
-        if ( client.getProcessingInstructions().equals( WebserviceUtil.TAX_CODE_TO_SCI_NAME ) ) {
-            WebserviceUtil.transferTaxonomyCodeToScientificName( phylogeny );
-        }
-        else if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
-            WebserviceUtil.transferInternalTaxonomyCodeToScientificName( phylogeny );
-            WebserviceUtil.transferExternalScientificNameToTaxonomyCode( phylogeny );
-            WebserviceUtil.transferSequenceNameToSequenceAccession( phylogeny, "ensembl" );
+        if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
+            WebserviceUtil.removeEventsInExternalNodes( phylogeny );
             WebserviceUtil.setTaxonomyIdentifierType( phylogeny, "ncbi" );
         }
         else if ( client.getProcessingInstructions().equals( WebserviceUtil.PFAM_INST ) ) {
@@ -164,59 +146,11 @@ public final class WebserviceUtil {
         }
     }
 
-    static void transferExternalScientificNameToTaxonomyCode( final Phylogeny phy ) throws PhyloXmlDataFormatException {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+    static void removeEventsInExternalNodes( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorExternalForward();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
-            if ( n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
-                final String name = n.getNodeData().getTaxonomy().getScientificName();
-                if ( !ForesterUtil.isEmpty( name ) && PhyloXmlUtil.TAXOMONY_CODE_PATTERN.matcher( name ).matches() ) {
-                    n.getNodeData().getTaxonomy().setScientificName( "" );
-                    n.getNodeData().getTaxonomy().setTaxonomyCode( name );
-                }
-            }
-        }
-    }
-
-    static void transferInternalTaxonomyCodeToScientificName( final Phylogeny phy ) throws PhyloXmlDataFormatException {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( !n.isExternal() && n.getNodeData().isHasTaxonomy() ) {
-                final String name = n.getNodeData().getTaxonomy().getTaxonomyCode();
-                if ( !ForesterUtil.isEmpty( name ) ) {
-                    n.getNodeData().getTaxonomy().setScientificName( name );
-                    n.getNodeData().getTaxonomy().setTaxonomyCode( "" );
-                }
-            }
-        }
-    }
-
-    static void transferSequenceNameToSequenceAccession( final Phylogeny phy, final String source ) {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( n.getNodeData().isHasSequence() ) {
-                final String name = n.getNodeData().getSequence().getName();
-                if ( !ForesterUtil.isEmpty( name ) ) {
-                    n.getNodeData().getSequence().setName( "" );
-                    n.getNodeData().getSequence().setAccession( new Accession( name, source ) );
-                }
-            }
-        }
-    }
-
-    static void transferTaxonomyCodeToScientificName( final Phylogeny phy ) throws PhyloXmlDataFormatException {
-        final PhylogenyNodeIterator it = phy.iteratorPostorder();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            if ( n.getNodeData().isHasTaxonomy() ) {
-                final String name = n.getNodeData().getTaxonomy().getTaxonomyCode();
-                if ( !ForesterUtil.isEmpty( name ) ) {
-                    n.getNodeData().getTaxonomy().setScientificName( name );
-                    n.getNodeData().getTaxonomy().setTaxonomyCode( "" );
-                }
-            }
+            n.getNodeData().setEvent( null );
         }
     }
 }

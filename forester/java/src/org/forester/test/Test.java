@@ -967,6 +967,15 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.out.print( "TreeBase parsing from URL: " );
+        if ( Test.testTreeBaseReading() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
         final long free_memory = rt.freeMemory() / 1000000;
@@ -1091,6 +1100,24 @@ public final class Test {
             final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
             final Phylogeny[] phys = factory.create( u.openStream(), PhyloXmlParser.createPhyloXmlParser() );
             if ( ( phys == null ) || ( phys.length != 2 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static final boolean testTreeBaseReading() {
+        try {
+            final String s = "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr825?format=nexus";
+            final URL u = new URL( s );
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            parser.setReplaceUnderscores( true );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
                 return false;
             }
         }
@@ -6727,7 +6754,7 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            ////
+            //
             p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_3.nex" );
             if ( !p.hasNext() ) {
                 return false;
@@ -6774,15 +6801,12 @@ public final class Test {
             if ( phy != null ) {
                 return false;
             }
-            ////
+            //
             p.setSource( Test.PATH_TO_TEST_DATA + "nexus_test_4_1.nex" );
-            //            if ( phylogenies.length != 18 ) {
-            //                return false;
-            //            }
-            //0
             if ( !p.hasNext() ) {
                 return false;
             }
+            //0
             phy = p.next();
             if ( phy == null ) {
                 return false;
@@ -6816,6 +6840,7 @@ public final class Test {
                 return false;
             }
             if ( phy.getNumberOfExternalNodes() != 3 ) {
+                System.out.println( phy.toString() );
                 return false;
             }
             if ( !phy.getName().equals( "" ) ) {

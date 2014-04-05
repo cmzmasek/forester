@@ -56,52 +56,47 @@ import org.forester.util.ForesterUtil;
 
 public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParser {
 
-    public final static Pattern             MB_BL_PATTERN                              = Pattern
-                                                                                               .compile( "length_median=([^,]+)" );
-    public final static Pattern             MB_PROB_PATTERN                            = Pattern
-                                                                                               .compile( "prob=([^,]+)" );
-    public final static Pattern             MB_PROB_SD_PATTERN                         = Pattern
-                                                                                               .compile( "prob_stddev=([^,]+)" );
-    public final static Pattern             NUMBERS_ONLY_PATTERN                       = Pattern
-                                                                                               .compile( "^[0-9\\.]+$" );
-    final static public boolean             REPLACE_UNDERSCORES_DEFAULT                = false;
-    public static final TAXONOMY_EXTRACTION TAXONOMY_EXTRACTION_DEFAULT                = TAXONOMY_EXTRACTION.NO;
-    private static final boolean            ALLOW_ERRORS_IN_DISTANCE_TO_PARENT_DEFAULT = false;
-    final static private byte               BUFFERED_READER                            = 3;
-    final static private byte               CHAR_ARRAY                                 = 2;
-    final static private boolean            GUESS_IF_SUPPORT_VALUES                    = true;
-    final static private boolean            GUESS_ROOTEDNESS_DEFAULT                   = true;
-    final static private boolean            IGNORE_QUOTES_DEFAULT                      = false;
-    final static private byte               STRING                                     = 0;
-    final static private byte               STRING_BUFFER                              = 1;
-    final static private byte               STRING_BUILDER                             = 4;
-    private boolean                         _allow_errors_in_distance_to_parent;
-    private int                             _clade_level;
-    private StringBuilder                   _current_anotation;
-    private PhylogenyNode                   _current_node;
-    private Phylogeny                       _current_phylogeny;
-    private boolean                         _guess_rootedness;
-    private int                             _i;
-    private boolean                         _ignore_quotes;
-    private boolean                         _in_comment                                = false;
-    private boolean                         _in_double_quote                           = false;
-    private boolean                         _in_open_bracket                           = false;
-    private boolean                         _in_single_quote                           = false;
-    private byte                            _input_type;
-    private BufferedReader                  _my_source_br                              = null;
-    private char[]                          _my_source_charary                         = null;
-    private StringBuffer                    _my_source_sbuff                           = null;
-    private StringBuilder                   _my_source_sbuil                           = null;
-    private String                          _my_source_str                             = null;
-    private Phylogeny                       _next;
-    private Object                          _nhx_source;
-    private boolean                         _replace_underscores;
-    private boolean                         _saw_closing_paren;
-    private boolean                         _saw_colon                                 = false;
-    private boolean                         _saw_open_bracket                          = false;
-    private Object                          _source;
-    private int                             _source_length;
-    private TAXONOMY_EXTRACTION             _taxonomy_extraction;
+    public final static Pattern  MB_BL_PATTERN                              = Pattern.compile( "length_median=([^,]+)" );
+    public final static Pattern  MB_PROB_PATTERN                            = Pattern.compile( "prob=([^,]+)" );
+    public final static Pattern  MB_PROB_SD_PATTERN                         = Pattern.compile( "prob_stddev=([^,]+)" );
+    public final static Pattern  NUMBERS_ONLY_PATTERN                       = Pattern.compile( "^[0-9\\.]+$" );
+    final static public boolean  REPLACE_UNDERSCORES_DEFAULT                = false;
+    private static final boolean ALLOW_ERRORS_IN_DISTANCE_TO_PARENT_DEFAULT = false;
+    final static private byte    BUFFERED_READER                            = 3;
+    final static private byte    CHAR_ARRAY                                 = 2;
+    final static private boolean GUESS_IF_SUPPORT_VALUES                    = true;
+    final static private boolean GUESS_ROOTEDNESS_DEFAULT                   = true;
+    final static private boolean IGNORE_QUOTES_DEFAULT                      = false;
+    final static private byte    STRING                                     = 0;
+    final static private byte    STRING_BUFFER                              = 1;
+    final static private byte    STRING_BUILDER                             = 4;
+    private boolean              _allow_errors_in_distance_to_parent;
+    private int                  _clade_level;
+    private StringBuilder        _current_anotation;
+    private PhylogenyNode        _current_node;
+    private Phylogeny            _current_phylogeny;
+    private boolean              _guess_rootedness;
+    private int                  _i;
+    private boolean              _ignore_quotes;
+    private boolean              _in_comment                                = false;
+    private boolean              _in_double_quote                           = false;
+    private boolean              _in_open_bracket                           = false;
+    private boolean              _in_single_quote                           = false;
+    private byte                 _input_type;
+    private BufferedReader       _my_source_br                              = null;
+    private char[]               _my_source_charary                         = null;
+    private StringBuffer         _my_source_sbuff                           = null;
+    private StringBuilder        _my_source_sbuil                           = null;
+    private String               _my_source_str                             = null;
+    private Phylogeny            _next;
+    private Object               _nhx_source;
+    private boolean              _replace_underscores;
+    private boolean              _saw_closing_paren;
+    private boolean              _saw_colon                                 = false;
+    private boolean              _saw_open_bracket                          = false;
+    private Object               _source;
+    private int                  _source_length;
+    private TAXONOMY_EXTRACTION  _taxonomy_extraction;
 
     public NHXParser() {
         init();
@@ -333,7 +328,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     }
 
     private final void init() {
-        setTaxonomyExtraction( TAXONOMY_EXTRACTION_DEFAULT );
+        setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
         setReplaceUnderscores( REPLACE_UNDERSCORES_DEFAULT );
         setGuessRootedness( GUESS_ROOTEDNESS_DEFAULT );
         setIgnoreQuotes( IGNORE_QUOTES_DEFAULT );

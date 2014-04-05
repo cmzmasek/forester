@@ -65,7 +65,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     private Map<String, String>  _translate_map;
     private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
     private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
-    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = NHXParser.TAXONOMY_EXTRACTION_DEFAULT;
+    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
     private Phylogeny            _next;
     private BufferedReader       _br;
     private boolean              _in_trees_block;
@@ -92,7 +92,6 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
 
     @Override
     public final Phylogeny[] parse() throws IOException {
-        reset();
         final List<Phylogeny> l = new ArrayList<Phylogeny>();
         while ( hasNext() ) {
             l.add( next() );
@@ -101,6 +100,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         for( int i = 0; i < l.size(); ++i ) {
             p[ i ] = l.get( i );
         }
+        reset();
         return p;
     }
 
@@ -149,16 +149,9 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                                         final boolean is_rooted ) throws IOException {
         _next = null;
         final NHXParser pars = new NHXParser();
-        // if ( ( _taxlabels.size() < 1 ) && ( _translate_map.size() < 1 ) ) {
         pars.setTaxonomyExtraction( _taxonomy_extraction );
         pars.setReplaceUnderscores( _replace_underscores );
         pars.setIgnoreQuotes( _ignore_quotes_in_nh_data );
-        //}
-        //else {
-        //    pars.setTaxonomyExtraction( TAXONOMY_EXTRACTION.NO );
-        //    pars.setReplaceUnderscores( false );
-        //    pars.setIgnoreQuotes( false );
-        //}
         if ( rooted_info_present ) {
             pars.setGuessRootedness( false );
         }
@@ -192,14 +185,6 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                 }
                 if ( !_replace_underscores && ( ( _taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
                     ParserUtils.extractTaxonomyDataFromNodeName( node, _taxonomy_extraction );
-                    //                    final String tax = ParserUtils.extractTaxonomyCodeFromNodeName( node.getName(),
-                    //                                                                                    getTaxonomyExtraction() );
-                    //                    if ( !ForesterUtil.isEmpty( tax ) ) {
-                    //                        if ( !node.getNodeData().isHasTaxonomy() ) {
-                    //                            node.getNodeData().setTaxonomy( new Taxonomy() );
-                    //                        }
-                    //                        node.getNodeData().getTaxonomy().setTaxonomyCode( tax );
-                    //                    }
                 }
             }
         }

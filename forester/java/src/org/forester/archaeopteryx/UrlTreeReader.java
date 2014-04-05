@@ -93,6 +93,7 @@ public class UrlTreeReader implements Runnable {
                 }
                 identifier = id + "";
             }
+            boolean exception = false;
             try {
                 String url_str = client.getUrl();
                 url_str = url_str.replaceFirst( PhylogeniesWebserviceClient.QUERY_PLACEHOLDER, identifier );
@@ -105,6 +106,11 @@ public class UrlTreeReader implements Runnable {
                     case NEXUS:
                         parser = new NexusPhylogeniesParser();
                         ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( true );
+                        break;
+                    case TREEBASE:
+                        parser = new NexusPhylogeniesParser();
+                        ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( true );
+                        ( ( NexusPhylogeniesParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
                         break;
                     case NH:
                         parser = new NHXParser();
@@ -147,24 +153,28 @@ public class UrlTreeReader implements Runnable {
                 trees = factory.create( url.openStream(), parser );
             }
             catch ( final MalformedURLException e ) {
+                exception = true;
                 JOptionPane.showMessageDialog( _main_frame,
                                                "Malformed URL: " + url + "\n" + e.getLocalizedMessage(),
                                                "Malformed URL",
                                                JOptionPane.ERROR_MESSAGE );
             }
             catch ( final IOException e ) {
+                exception = true;
                 JOptionPane.showMessageDialog( _main_frame,
                                                "Could not read from " + url + "\n" + e.getLocalizedMessage(),
                                                "Failed to read tree from " + client.getName() + " for " + identifier,
                                                JOptionPane.ERROR_MESSAGE );
             }
             catch ( final NumberFormatException e ) {
+                exception = true;
                 JOptionPane.showMessageDialog( _main_frame,
                                                "Could not read from " + url + "\n" + e.getLocalizedMessage(),
                                                "Failed to read tree from " + client.getName() + " for " + identifier,
                                                JOptionPane.ERROR_MESSAGE );
             }
             catch ( final Exception e ) {
+                exception = true;
                 e.printStackTrace();
                 JOptionPane.showMessageDialog( _main_frame,
                                                e.getLocalizedMessage(),
@@ -185,11 +195,6 @@ public class UrlTreeReader implements Runnable {
                         if ( client.getName().equals( WebserviceUtil.TREE_FAM_NAME ) ) {
                             phylogeny.setRerootable( false );
                             phylogeny.setRooted( true );
-                        }
-                        if ( client.getName().equals( WebserviceUtil.PFAM_NAME ) ) {
-                            phylogeny.setRerootable( false );
-                            phylogeny.setRooted( true );
-                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny );
                         }
                         if ( client.getProcessingInstructions() != null ) {
                             try {
@@ -240,6 +245,10 @@ public class UrlTreeReader implements Runnable {
                     }
                 }
             }
+            else if ( !exception ) {
+                JOptionPane.showMessageDialog( null, ForesterUtil.wordWrap( "Failed to read in tree(s) from [" + url
+                        + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
+            }
             _main_frame.getContentPane().repaint();
             if ( ( ( trees != null ) && ( trees.length > 0 ) ) && ( ( new Date().getTime() - start_time ) > 20000 ) ) {
                 try {
@@ -253,10 +262,6 @@ public class UrlTreeReader implements Runnable {
                     // Not important if this fails, do nothing.
                 }
                 _main_frame.getContentPane().repaint();
-            }
-            else {
-                JOptionPane.showMessageDialog( null, ForesterUtil.wordWrap( "Failed to read in tree(s) from [" + url
-                        + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
             }
         }
         _main_frame.activateSaveAllIfNeeded();
