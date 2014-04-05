@@ -274,7 +274,7 @@ default_click_to: display_node_data
 display_color: background                 0x000000
 display_color: background_gradient_bottom 0x0000FF
 display_color: sequence                   0xE6E6E6
-display_color: taxonomy                   0xFFDCDC
+display_color: taxonomy                   0xB4B4B4
 display_color: confidence                 0x38B0FF
 display_color: branch_length              0x8C8C8C
 display_color: branch                     0xFFFFFF
