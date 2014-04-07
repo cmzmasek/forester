@@ -1223,7 +1223,7 @@ public final class MainFrameApplication extends MainFrame {
             if ( ( phys != null ) && ( phys.length > 0 ) ) {
                 if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
                     for( final Phylogeny phy : phys ) {
-                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
                     }
                 }
                 AptxUtil.addPhylogeniesToTabs( phys,
@@ -2189,7 +2189,7 @@ public final class MainFrameApplication extends MainFrame {
                         if ( nhx_or_nexus ) {
                             for( final Phylogeny phy : phys ) {
                                 if ( getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
-                                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
                                 }
                                 if ( PhylogenyMethods.getMinimumDescendentsPerInternalNodes( phy ) == 1 ) {
                                     one_desc = true;

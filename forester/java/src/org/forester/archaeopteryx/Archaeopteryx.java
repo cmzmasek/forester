@@ -102,7 +102,7 @@ public final class Archaeopteryx {
                     phylogenies = PhylogenyMethods.readPhylogenies( p, f );
                     if ( nhx_or_nexus && conf.isInternalNumberAreConfidenceForNhParsing() ) {
                         for( final Phylogeny phy : phylogenies ) {
-                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                            PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
                         }
                     }
                 }

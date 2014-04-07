@@ -712,7 +712,7 @@ public final class AptxUtil {
         if ( phys != null ) {
             if ( nhx_or_nexus && internal_numbers_are_confidences ) {
                 for( final Phylogeny phy : phys ) {
-                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy );
+                    PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
                 }
             }
             if ( midpoint_reroot ) {

@@ -126,31 +126,29 @@ public final class WebserviceUtil {
     public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny )
             throws PhyloXmlDataFormatException {
         if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
-            WebserviceUtil.removeEventsInExternalNodes( phylogeny );
-            WebserviceUtil.setTaxonomyIdentifierType( phylogeny, "ncbi" );
+            
+            WebserviceUtil.processTreeFamTrees( phylogeny );
         }
         else if ( client.getProcessingInstructions().equals( WebserviceUtil.PFAM_INST ) ) {
             WebserviceUtil.extractSpTremblAccFromNodeName( phylogeny, "sptrembl" );
-        }
+            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny, "bootstrap" );        }
     }
 
-    static void setTaxonomyIdentifierType( final Phylogeny phy, final String type ) {
+    static void processTreeFamTrees( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
+            if ( n.isExternal() ) {
+                n.getNodeData().setEvent( null );
+            }
+            
             if ( n.getNodeData().isHasTaxonomy() && ( n.getNodeData().getTaxonomy().getIdentifier() != null ) ) {
                 n.getNodeData()
                         .getTaxonomy()
-                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(), type ) );
+                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(), "ncbi" ) );
             }
         }
     }
 
-    static void removeEventsInExternalNodes( final Phylogeny phy ) {
-        final PhylogenyNodeIterator it = phy.iteratorExternalForward();
-        while ( it.hasNext() ) {
-            final PhylogenyNode n = it.next();
-            n.getNodeData().setEvent( null );
-        }
-    }
+    
 }

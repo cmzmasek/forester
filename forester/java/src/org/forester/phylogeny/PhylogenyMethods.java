@@ -1516,7 +1516,7 @@ public class PhylogenyMethods {
         }
     }
 
-    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy ) {
+    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy, final String confidence_type ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
@@ -1530,7 +1530,7 @@ public class PhylogenyMethods {
                         d = -1.0;
                     }
                     if ( d >= 0.0 ) {
-                        n.getBranchData().addConfidence( new Confidence( d, "" ) );
+                        n.getBranchData().addConfidence( new Confidence( d, confidence_type ) );
                         n.setName( "" );
                     }
                 }
