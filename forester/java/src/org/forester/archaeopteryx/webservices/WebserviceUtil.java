@@ -35,21 +35,25 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Identifier;
 import org.forester.phylogeny.data.Sequence;
+import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.phylogeny.iterators.PreorderTreeIterator;
 import org.forester.util.ForesterUtil;
+import org.forester.util.SequenceAccessionTools;
 
 public final class WebserviceUtil {
 
-    public static final String TREE_FAM_INST  = "tree_fam";
     public static final String PFAM_INST      = "pfam";
-    public static final String TOL_WEBSERVER  = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id="
-                                                      + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER;
-    public static final String TOL_NAME       = "Tree of Life";
-    public static final String TREE_BASE_NAME = "TreeBASE";
-    public static final String TREE_FAM_NAME  = "TreeFam";
     public static final String PFAM_NAME      = "Pfam";
     public static final String PFAM_SERVER    = "http://pfam.janelia.org";
+    public static final String TOL_NAME       = "Tree of Life";
+    public static final String TOL_WEBSERVER  = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id="
+                                                      + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER;
+    public static final String TREE_BASE_DESC = "This data set was downloaded from TreeBASE, a relational database of phylogenetic knowledge. TreeBASE has been supported by the NSF, Harvard University, Yale University, SDSC and UC Davis. Please do not remove this acknowledgment.";
+    public static final String TREE_BASE_INST = "treebase";
+    public static final String TREE_BASE_NAME = "TreeBASE";
+    public static final String TREE_FAM_INST  = "tree_fam";
+    public static final String TREE_FAM_NAME  = "TreeFam";
 
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
@@ -65,17 +69,29 @@ public final class WebserviceUtil {
                                                            "http://tolweb.org",
                                                            null ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
+                                                           "Read Tree(s) from TreeBASE Study...",
+                                                           "Use TreeBASE to obtain evolutionary tree(s) from a study",
+                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 15613, 15632, 14525, 14909)",
+                                                           WsPhylogenyFormat.TREEBASE_STUDY,
+                                                           null,
+                                                           "http://purl.org/phylo/treebase/phylows/study/TB2:S"
+                                                                   + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
+                                                                   + "?format=nexus",
+                                                           true,
+                                                           "http://www.treebase.org",
+                                                           TREE_BASE_INST ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
                                                            "Use TreeBASE to obtain a evolutionary tree",
-                                                           "Please enter a TreeBASE tree identifier\n(Examples: 2654, 825, 4931, 2518, 2406, 4934)",
-                                                           WsPhylogenyFormat.TREEBASE,
+                                                           "Please enter a TreeBASE tree (\"Tr\") identifier (without the \"Tr\")\n(Examples: 422, 2654, 825, 4931, 2518, 2406, 4934)",
+                                                           WsPhylogenyFormat.TREEBASE_TREE,
                                                            null,
                                                            "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr"
                                                                    + PhylogeniesWebserviceClient.QUERY_PLACEHOLDER
                                                                    + "?format=nexus",
                                                            true,
                                                            "http://www.treebase.org",
-                                                           null ) );
+                                                           TREE_BASE_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
                                                            "Read Gene Tree from Pfam...",
                                                            "Use  Pfam to obtain gene trees for seed alignments",
@@ -103,6 +119,23 @@ public final class WebserviceUtil {
         return clients;
     }
 
+    public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny )
+            throws PhyloXmlDataFormatException {
+        if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
+            WebserviceUtil.processTreeFamTrees( phylogeny );
+        }
+        else if ( client.getProcessingInstructions().equals( WebserviceUtil.PFAM_INST ) ) {
+            WebserviceUtil.extractSpTremblAccFromNodeName( phylogeny, "sptrembl" );
+            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny, "bootstrap" );
+        }
+        else if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_BASE_INST ) ) {
+            if ( PhylogenyMethods.isInternalNamesLookLikeConfidences( phylogeny ) ) {
+                PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny, "" );
+            }
+            WebserviceUtil.processTreeBaseTrees( phylogeny );
+        }
+    }
+
     static void extractSpTremblAccFromNodeName( final Phylogeny phy, final String source ) {
         final PreorderTreeIterator it = new PreorderTreeIterator( phy );
         while ( it.hasNext() ) {
@@ -123,15 +156,24 @@ public final class WebserviceUtil {
         }
     }
 
-    public static void processInstructions( final PhylogeniesWebserviceClient client, final Phylogeny phylogeny )
-            throws PhyloXmlDataFormatException {
-        if ( client.getProcessingInstructions().equals( WebserviceUtil.TREE_FAM_INST ) ) {
-            
-            WebserviceUtil.processTreeFamTrees( phylogeny );
+    static void processTreeBaseTrees( final Phylogeny phy ) {
+        phy.setDescription( TREE_BASE_DESC );
+        final PhylogenyNodeIterator it = phy.iteratorExternalForward();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                final Accession acc = SequenceAccessionTools.parseAccessorFromString( n.getName() );
+                if ( acc != null ) {
+                    if ( !n.getNodeData().isHasSequence() ) {
+                        n.getNodeData().addSequence( new Sequence() );
+                    }
+                    final Sequence s = n.getNodeData().getSequence();
+                    if ( s.getAccession() == null ) {
+                        s.setAccession( acc );
+                    }
+                }
+            }
         }
-        else if ( client.getProcessingInstructions().equals( WebserviceUtil.PFAM_INST ) ) {
-            WebserviceUtil.extractSpTremblAccFromNodeName( phylogeny, "sptrembl" );
-            PhylogenyMethods.transferInternalNodeNamesToConfidence( phylogeny, "bootstrap" );        }
     }
 
     static void processTreeFamTrees( final Phylogeny phy ) {
@@ -140,15 +182,41 @@ public final class WebserviceUtil {
             final PhylogenyNode n = it.next();
             if ( n.isExternal() ) {
                 n.getNodeData().setEvent( null );
+                if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                    final Accession acc = SequenceAccessionTools.parseAccessorFromString( n.getName() );
+                    if ( acc != null ) {
+                        if ( !n.getNodeData().isHasSequence() ) {
+                            n.getNodeData().addSequence( new Sequence() );
+                        }
+                        final Sequence s = n.getNodeData().getSequence();
+                        if ( s.getAccession() == null ) {
+                            s.setAccession( acc );
+                        }
+                    }
+                }
             }
-            
+            else {
+                if ( ( n.getBranchData() != null ) && n.getBranchData().isHasConfidences()
+                        && ( n.getBranchData().getConfidence( 0 ) != null ) ) {
+                    n.getBranchData().getConfidence( 0 ).setType( "bootstrap" );
+                }
+                if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                    if ( !n.getNodeData().isHasTaxonomy() ) {
+                        n.getNodeData().addTaxonomy( new Taxonomy() );
+                    }
+                    final Taxonomy t = n.getNodeData().getTaxonomy();
+                    if ( ForesterUtil.isEmpty( t.getScientificName() ) ) {
+                        t.setScientificName( n.getName() );
+                        n.setName( "" );
+                    }
+                }
+            }
             if ( n.getNodeData().isHasTaxonomy() && ( n.getNodeData().getTaxonomy().getIdentifier() != null ) ) {
                 n.getNodeData()
                         .getTaxonomy()
-                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(), "ncbi" ) );
+                        .setIdentifier( new Identifier( n.getNodeData().getTaxonomy().getIdentifier().getValue(),
+                                                        "ncbi" ) );
             }
         }
     }
-
-    
 }

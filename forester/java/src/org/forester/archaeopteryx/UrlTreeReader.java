@@ -107,7 +107,12 @@ public class UrlTreeReader implements Runnable {
                         parser = new NexusPhylogeniesParser();
                         ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( true );
                         break;
-                    case TREEBASE:
+                    case TREEBASE_TREE:
+                        parser = new NexusPhylogeniesParser();
+                        ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( true );
+                        ( ( NexusPhylogeniesParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
+                        break;
+                    case TREEBASE_STUDY:
                         parser = new NexusPhylogeniesParser();
                         ( ( NexusPhylogeniesParser ) parser ).setReplaceUnderscores( true );
                         ( ( NexusPhylogeniesParser ) parser ).setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );

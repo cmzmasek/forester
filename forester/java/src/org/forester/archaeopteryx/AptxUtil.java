@@ -48,8 +48,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -71,7 +69,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
-import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -84,10 +81,6 @@ public final class AptxUtil {
 
     private final static String[] AVAILABLE_FONT_FAMILIES_SORTED = GraphicsEnvironment.getLocalGraphicsEnvironment()
                                                                          .getAvailableFontFamilyNames();
-    private final static Pattern  seq_identifier_pattern_1       = Pattern
-                                                                         .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})\\s*$" );
-    private final static Pattern  seq_identifier_pattern_2       = Pattern
-                                                                         .compile( "^([A-Za-z]{2,5})[|=:]([0-9A-Za-z_\\.]{5,40})[|,; ].*$" );
     static {
         Arrays.sort( AVAILABLE_FONT_FAMILIES_SORTED );
     }
@@ -189,28 +182,6 @@ public final class AptxUtil {
             }
         }
         return tax_set;
-    }
-
-    public final static Accession obtainSequenceAccessionFromName( final String sequence_name ) {
-        final String n = sequence_name.trim();
-        final Matcher matcher1 = seq_identifier_pattern_1.matcher( n );
-        String group1 = "";
-        String group2 = "";
-        if ( matcher1.matches() ) {
-            group1 = matcher1.group( 1 );
-            group2 = matcher1.group( 2 );
-        }
-        else {
-            final Matcher matcher2 = seq_identifier_pattern_2.matcher( n );
-            if ( matcher2.matches() ) {
-                group1 = matcher2.group( 1 );
-                group2 = matcher2.group( 2 );
-            }
-        }
-        if ( ForesterUtil.isEmpty( group1 ) || ForesterUtil.isEmpty( group2 ) ) {
-            return null;
-        }
-        return new Accession( group2, group1 );
     }
 
     public final static void printWarningMessage( final String name, final String message ) {

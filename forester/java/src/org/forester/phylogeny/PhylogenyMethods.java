@@ -1516,23 +1516,48 @@ public class PhylogenyMethods {
         }
     }
 
-    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy, final String confidence_type ) {
+    final static public boolean isInternalNamesLookLikeConfidences( final Phylogeny phy ) {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             final PhylogenyNode n = it.next();
-            if ( !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
+            if ( !n.isExternal() && !n.isRoot() ) {
                 if ( !ForesterUtil.isEmpty( n.getName() ) ) {
-                    double d = -1.0;
+                    double value = -1;
                     try {
-                        d = Double.parseDouble( n.getName() );
+                        value = Double.parseDouble( n.getName() );
                     }
-                    catch ( final Exception e ) {
-                        d = -1.0;
+                    catch ( final NumberFormatException e ) {
+                        return false;
                     }
-                    if ( d >= 0.0 ) {
-                        n.getBranchData().addConfidence( new Confidence( d, confidence_type ) );
-                        n.setName( "" );
+                    if ( ( value < 0.0 ) || ( value > 100 ) ) {
+                        return false;
                     }
+                }
+            }
+        }
+        return true;
+    }
+
+    final static public void transferInternalNodeNamesToConfidence( final Phylogeny phy, final String confidence_type ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            transferInternalNodeNameToConfidence( confidence_type, it.next() );
+        }
+    }
+
+    private static void transferInternalNodeNameToConfidence( final String confidence_type, final PhylogenyNode n ) {
+        if ( !n.isExternal() && !n.getBranchData().isHasConfidences() ) {
+            if ( !ForesterUtil.isEmpty( n.getName() ) ) {
+                double d = -1.0;
+                try {
+                    d = Double.parseDouble( n.getName() );
+                }
+                catch ( final Exception e ) {
+                    d = -1.0;
+                }
+                if ( d >= 0.0 ) {
+                    n.getBranchData().addConfidence( new Confidence( d, confidence_type ) );
+                    n.setName( "" );
                 }
             }
         }

@@ -6656,6 +6656,35 @@ public final class Test {
             if ( phylogenies[ 17 ].getNumberOfExternalNodes() != 10 ) {
                 return false;
             }
+            final NexusPhylogeniesParser p2 = new NexusPhylogeniesParser();
+            phylogenies = null;
+            phylogenies = factory.create( Test.PATH_TO_TEST_DATA + "S15613.nex", p2 );
+            if ( phylogenies.length != 9 ) {
+                return false;
+            }
+            if ( !isEqual( 0.48039661496919533, phylogenies[ 0 ].getNode( "Diadocidia_spinosula" )
+                    .getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.3959796191512233, phylogenies[ 0 ].getNode( "Diadocidia_stanfordensis" )
+                    .getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( !phylogenies[ 0 ].getName().equals( "Family Diadocidiidae MLT (Imported_tree_0)" ) ) {
+                return false;
+            }
+            if ( !phylogenies[ 1 ].getName().equals( "Family Diadocidiidae BAT (con_50_majrule)" ) ) {
+                return false;
+            }
+            if ( !phylogenies[ 2 ].getName().equals( "Family Diadocidiidae BAT (con_50_majrule)" ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.065284, phylogenies[ 7 ].getNode( "Bradysia_amoena" ).getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.065284, phylogenies[ 8 ].getNode( "Bradysia_amoena" ).getDistanceToParent() ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -7216,6 +7245,82 @@ public final class Test {
                 return false;
             }
             if ( phy.isRooted() ) {
+                return false;
+            }
+            //
+            final NexusPhylogeniesParser p2 = new NexusPhylogeniesParser();
+            p2.setSource( Test.PATH_TO_TEST_DATA + "S15613.nex" );
+            // 0
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            if ( !isEqual( 0.48039661496919533, phy.getNode( "Diadocidia_spinosula" ).getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.3959796191512233, phy.getNode( "Diadocidia_stanfordensis" ).getDistanceToParent() ) ) {
+                return false;
+            }
+            // 1
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 2
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 3
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 4
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 5
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 6
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 7
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            // 8
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            if ( !isEqual( 0.065284, phy.getNode( "Bradysia_amoena" ).getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            if ( phy != null ) {
+                return false;
+            }
+            // 0
+            p2.reset();
+            if ( !p2.hasNext() ) {
+                return false;
+            }
+            phy = p2.next();
+            if ( !isEqual( 0.48039661496919533, phy.getNode( "Diadocidia_spinosula" ).getDistanceToParent() ) ) {
+                return false;
+            }
+            if ( !isEqual( 0.3959796191512233, phy.getNode( "Diadocidia_stanfordensis" ).getDistanceToParent() ) ) {
                 return false;
             }
         }

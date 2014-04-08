@@ -40,7 +40,7 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
     final private String _value;
 
     public enum Source {
-        NCBI, REFSEQ, UNIPROT, GI, EMBL, UNKNOWN;
+        NCBI, REFSEQ, UNIPROT, GI, EMBL, ENSEMBL, UNKNOWN;
 
         @Override
         public String toString() {
@@ -55,6 +55,8 @@ public final class Accession implements PhylogenyData, Comparable<Accession> {
                     return "gi";
                 case EMBL:
                     return "embl";
+                case ENSEMBL:
+                    return "ensembl";
                 case UNKNOWN:
                     return "unknown";
                 default:

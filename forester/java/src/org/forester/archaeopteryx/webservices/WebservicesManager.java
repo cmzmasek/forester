@@ -58,6 +58,6 @@ public final class WebservicesManager {
     }
 
     public enum WsPhylogenyFormat {
-        NH, NHX, NEXUS, TOL_XML_RESPONSE, PHYLOXML, NH_EXTRACT_TAXONOMY, PFAM, TREEBASE
+        NEXUS, NH, NH_EXTRACT_TAXONOMY, NHX, PFAM, PHYLOXML, TOL_XML_RESPONSE, TREEBASE_STUDY, TREEBASE_TREE
     }
 }

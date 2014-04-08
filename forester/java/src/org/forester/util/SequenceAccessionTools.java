@@ -64,6 +64,7 @@ public final class SequenceAccessionTools {
                                                                .compile( "(?:\\b|_)(?:sp|tr)[\\.|\\-_=/\\\\]([A-Z][0-9][A-Z0-9]{3}[0-9])(?:\\b|_)" );
     public final static Pattern  UNIPROT_KB_PATTERN_2  = Pattern
                                                                .compile( "(?:\\b|_)(?:[A-Z0-9]{2,5}|(?:[A-Z][0-9][A-Z0-9]{3}[0-9]))_(([A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA)(?:\\b|_)" );
+    public final static Pattern  ENSEMBL_PATTERN       = Pattern.compile( "(?:\\b|_)(ENS[A-Z]*[0-9]+)(?:\\b|_)" );
     // RefSeq accession numbers can be distinguished from GenBank accessions 
     // by their distinct prefix format of 2 characters followed by an
     // underscore character ('_'). For example, a RefSeq protein accession is NP_015325. 
@@ -243,6 +244,10 @@ public final class SequenceAccessionTools {
             if ( !ForesterUtil.isEmpty( v ) ) {
                 return new Accession( v, Source.GI );
             }
+            v = parseEnsemlAccessorFromString( s );
+            if ( !ForesterUtil.isEmpty( v ) ) {
+                return new Accession( v, Source.ENSEMBL );
+            }
         }
         return null;
     }
@@ -281,6 +286,14 @@ public final class SequenceAccessionTools {
 
     public final static String parseGInumberFromString( final String s ) {
         final Matcher m = GI_PATTERN.matcher( s );
+        if ( m.find() ) {
+            return m.group( 1 );
+        }
+        return null;
+    }
+
+    public final static String parseEnsemlAccessorFromString( final String s ) {
+        final Matcher m = ENSEMBL_PATTERN.matcher( s );
         if ( m.find() ) {
             return m.group( 1 );
         }

@@ -51,32 +51,40 @@ import org.forester.util.ForesterUtil;
 public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, PhylogenyParser {
 
     final private static String  begin_trees               = NexusConstants.BEGIN_TREES.toLowerCase();
-    final private static String  taxlabels                 = NexusConstants.TAXLABELS.toLowerCase();
-    final private static String  translate                 = NexusConstants.TRANSLATE.toLowerCase();
-    final private static String  tree                      = NexusConstants.TREE.toLowerCase();
-    final private static String  utree                     = NexusConstants.UTREE.toLowerCase();
     final private static String  end                       = NexusConstants.END.toLowerCase();
     final private static String  endblock                  = "endblock";
+    final private static Pattern ROOTEDNESS_PATTERN        = Pattern.compile( ".+=\\s*\\[&([R|U])\\].*" );
+    final private static String  taxlabels                 = NexusConstants.TAXLABELS.toLowerCase();
+    final private static Pattern TITLE_PATTERN             = Pattern.compile( "TITLE.?\\s+([^;]+)",
+                                                                              Pattern.CASE_INSENSITIVE );
+    final private static String  translate                 = NexusConstants.TRANSLATE.toLowerCase();
+    final private static String  tree                      = NexusConstants.TREE.toLowerCase();
     final private static Pattern TREE_NAME_PATTERN         = Pattern.compile( "\\s*.?Tree\\s+(.+?)\\s*=.+",
                                                                               Pattern.CASE_INSENSITIVE );
-    final private static Pattern ROOTEDNESS_PATTERN        = Pattern.compile( ".+=\\s*\\[&([R|U])\\].*" );
-    private Object               _nexus_source;
-    private List<String>         _taxlabels;
-    private Map<String, String>  _translate_map;
-    private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
-    private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
-    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
-    private Phylogeny            _next;
+    final private static String  utree                     = NexusConstants.UTREE.toLowerCase();
     private BufferedReader       _br;
-    private boolean              _in_trees_block;
-    private StringBuilder        _nh;
-    private String               _name;
-    private StringBuilder        _translate_sb;
+    private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
     private boolean              _in_taxalabels;
     private boolean              _in_translate;
-    private boolean              _is_rooted;
-    private boolean              _rooted_info_present;
     private boolean              _in_tree;
+    private boolean              _in_trees_block;
+    private boolean              _is_rooted;
+    private String               _name;
+    private Phylogeny            _next;
+    private Object               _nexus_source;
+    private StringBuilder        _nh;
+    private boolean              _replace_underscores      = NHXParser.REPLACE_UNDERSCORES_DEFAULT;
+    private boolean              _rooted_info_present;
+    private List<String>         _taxlabels;
+    private TAXONOMY_EXTRACTION  _taxonomy_extraction      = TAXONOMY_EXTRACTION.NO;
+    private String               _title;
+    private Map<String, String>  _translate_map;
+    private StringBuilder        _translate_sb;
+
+    @Override
+    public String getName() {
+        return "Nexus Phylogenies Parser";
+    }
 
     @Override
     public final boolean hasNext() {
@@ -110,7 +118,8 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _translate_map = new HashMap<String, String>();
         _nh = new StringBuilder();
         _name = "";
-        _translate_sb = new StringBuilder();
+        _title = "";
+        _translate_sb = null;
         _next = null;
         _in_trees_block = false;
         _in_taxalabels = false;
@@ -143,7 +152,8 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         _taxonomy_extraction = taxonomy_extraction;
     }
 
-    private final void createPhylogeny( final String name,
+    private final void createPhylogeny( final String title,
+                                        final String name,
                                         final StringBuilder nhx,
                                         final boolean rooted_info_present,
                                         final boolean is_rooted ) throws IOException {
@@ -160,7 +170,19 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         if ( p == null ) {
             throw new PhylogenyParserException( "failed to create phylogeny" );
         }
-        p.setName( name );
+        String myname = null;
+        if ( !ForesterUtil.isEmpty( title ) && !ForesterUtil.isEmpty( name ) ) {
+            myname = title.replace( '_', ' ' ).trim() + " (" + name.trim() + ")";
+        }
+        else if ( !ForesterUtil.isEmpty( title ) ) {
+            myname = title.replace( '_', ' ' ).trim();
+        }
+        else if ( !ForesterUtil.isEmpty( name ) ) {
+            myname = name.trim();
+        }
+        if ( !ForesterUtil.isEmpty( myname ) ) {
+            p.setName( myname );
+        }
         if ( rooted_info_present ) {
             p.setRooted( is_rooted );
         }
@@ -186,6 +208,11 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                 if ( !_replace_underscores && ( ( _taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
                     ParserUtils.extractTaxonomyDataFromNodeName( node, _taxonomy_extraction );
                 }
+                else if ( _replace_underscores ) {
+                    if ( !ForesterUtil.isEmpty( node.getName() ) ) {
+                        node.setName( node.getName().replace( '_', ' ' ).trim() );
+                    }
+                }
             }
         }
         _next = p;
@@ -204,6 +231,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     _in_trees_block = true;
                     _in_taxalabels = false;
                     _in_translate = false;
+                    _title = "";
                 }
                 else if ( line_lc.startsWith( taxlabels ) ) {
                     _in_trees_block = false;
@@ -211,20 +239,25 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                     _in_translate = false;
                 }
                 else if ( line_lc.startsWith( translate ) ) {
+                    _translate_sb = new StringBuilder();
                     _in_taxalabels = false;
                     _in_translate = true;
                 }
                 else if ( _in_trees_block ) {
-                    //FIXME TODO need to work on this "title" and "link"
-                    if ( line_lc.startsWith( "title" ) || line_lc.startsWith( "link" ) ) {
-                        // Do nothing.
+                    if ( line_lc.startsWith( "title" ) ) {
+                        final Matcher title_m = TITLE_PATTERN.matcher( line );
+                        if ( title_m.lookingAt() ) {
+                            _title = title_m.group( 1 );
+                        }
+                    }
+                    else if ( line_lc.startsWith( "link" ) ) {
                     }
                     else if ( line_lc.startsWith( end ) || line_lc.startsWith( endblock ) ) {
                         _in_trees_block = false;
                         _in_tree = false;
                         _in_translate = false;
                         if ( _nh.length() > 0 ) {
-                            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                            createPhylogeny( _title, _name, _nh, _rooted_info_present, _is_rooted );
                             _nh = new StringBuilder();
                             _name = "";
                             _rooted_info_present = false;
@@ -238,7 +271,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                         boolean might = false;
                         if ( _nh.length() > 0 ) {
                             might = true;
-                            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                            createPhylogeny( _title, _name, _nh, _rooted_info_present, _is_rooted );
                             _nh = new StringBuilder();
                             _name = "";
                             _rooted_info_present = false;
@@ -271,7 +304,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
                             && !line_lc.startsWith( end ) && !line_lc.startsWith( endblock ) && line_lc.endsWith( ";" ) ) {
                         _in_tree = false;
                         _in_translate = false;
-                        createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+                        createPhylogeny( _title, _name, _nh, _rooted_info_present, _is_rooted );
                         _nh = new StringBuilder();
                         _name = "";
                         _rooted_info_present = false;
@@ -316,7 +349,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
             }
         }
         if ( _nh.length() > 0 ) {
-            createPhylogeny( _name, _nh, _rooted_info_present, _is_rooted );
+            createPhylogeny( _title, _name, _nh, _rooted_info_present, _is_rooted );
             if ( _next != null ) {
                 return;
             }
@@ -331,10 +364,10 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         for( final String pair : s.split( "," ) ) {
             final String[] kv = pair.trim().split( "\\s+" );
             if ( ( kv.length < 2 ) || ( kv.length > 3 ) ) {
-                throw new IOException( "ill-formatted translate values: " + translate_sb );
+                throw new IOException( "ill-formatted translate values: " + pair );
             }
             if ( ( kv.length == 3 ) && !kv[ 0 ].toLowerCase().trim().equals( translate ) ) {
-                throw new IOException( "ill-formatted translate values: " + translate_sb );
+                throw new IOException( "ill-formatted translate values: " + pair );
             }
             String key = "";
             String value = "";
@@ -355,10 +388,5 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
 
     private final static String removeWhiteSpaceBeforeSemicolon( final String s ) {
         return s.replaceAll( "\\s+;", ";" );
-    }
-
-    @Override
-    public String getName() {
-        return "Nexus Phylogenies Parser";
     }
 }
