@@ -304,9 +304,4 @@ public final class MainFrameApplet extends MainFrame {
     JApplet getApplet() {
         return _applet;
     }
-
-    @Override
-    void readPhylogeniesFromURL() {
-        throw new NoSuchMethodError( "not implemented" );
-    }
 }

@@ -40,7 +40,9 @@ import org.forester.archaeopteryx.MainFrameApplication;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.archaeopteryx.tools.AncestralTaxonomyInferrer;
 import org.forester.archaeopteryx.tools.RunnableProcess;
+import org.forester.io.parsers.nhx.NHXParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Identifier;
@@ -245,7 +247,10 @@ public final class TaxonomyDataManager extends RunnableProcess {
             if ( ( ( tax != null ) && ( isHasAppropriateId( tax ) || !ForesterUtil.isEmpty( tax.getScientificName() )
                     || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil.isEmpty( tax.getCommonName() ) ) )
                     || ( allow_to_use_basic_node_names && !ForesterUtil.isEmpty( node.getName() ) ) ) {
-                if ( tax != null ) {
+                if ( ( ( tax != null ) && ( isHasAppropriateId( tax )
+                        || !ForesterUtil.isEmpty( tax.getScientificName() )
+                        || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil
+                        .isEmpty( tax.getCommonName() ) ) ) ) {
                     uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
                 }
                 else {
@@ -255,7 +260,6 @@ public final class TaxonomyDataManager extends RunnableProcess {
                     if ( tax == null ) {
                         tax = new Taxonomy();
                         node.getNodeData().addTaxonomy( tax );
-                        node.setName( "" );
                     }
                     updateTaxonomy( qt, node, tax, uniprot_tax );
                 }
@@ -322,16 +326,40 @@ public final class TaxonomyDataManager extends RunnableProcess {
         if ( ForesterUtil.isEmpty( simple_name ) ) {
             throw new IllegalArgumentException( "illegal attempt to use empty simple name" );
         }
-        qt = QUERY_TYPE.SN;
-        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), simple_name, qt );
-        if ( ut == null ) {
+        UniProtTaxonomy ut = null;
+        final String code = ParserUtils.extractTaxonomyCodeFromNodeName( simple_name,
+                                                                         NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+        if ( !ForesterUtil.isEmpty( code ) ) {
             qt = QUERY_TYPE.CODE;
-            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), simple_name, qt );
+            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), code, qt );
         }
         if ( ut == null ) {
-            qt = QUERY_TYPE.CN;
-            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), simple_name, qt );
+            final String sn = ParserUtils.extractScientificNameFromNodeName( simple_name );
+            if ( !ForesterUtil.isEmpty( sn ) ) {
+                qt = QUERY_TYPE.SN;
+                ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), sn, qt );
+            }
         }
+        if ( ut == null ) {
+            final String id = ParserUtils
+                    .extractUniprotTaxonomyIdFromNodeName( simple_name,
+                                                           NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_RELAXED );
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                qt = QUERY_TYPE.ID;
+                ut = obtainTaxonomy( TaxonomyDataManager.getIdTaxCacheMap(), id, qt );
+            }
+        }
+        //
+        //        qt = QUERY_TYPE.SN;
+        //        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), simple_name, qt );
+        //        if ( ut == null ) {
+        //            qt = QUERY_TYPE.CODE;
+        //            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), simple_name, qt );
+        //        }
+        //        if ( ut == null ) {
+        //            qt = QUERY_TYPE.CN;
+        //            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), simple_name, qt );
+        //        }
         return ut;
     }
 

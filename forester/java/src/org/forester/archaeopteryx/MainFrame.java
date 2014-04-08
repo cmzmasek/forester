@@ -140,7 +140,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _lineage_inference;
     // file menu:
     JMenuItem                   _open_item;
-    JMenuItem                   _open_url_item;
     JMenuItem                   _save_item;
     JMenuItem                   _save_all_item;
     JMenuItem                   _close_item;
@@ -269,10 +268,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 applet = getCurrentTreePanel().obtainApplet();
             }
         }
-        if ( o == _open_url_item ) {
-            readPhylogeniesFromURL();
-        }
-        else if ( o == _exit_item ) {
+        if ( o == _exit_item ) {
             close();
         }
         else if ( o == _gsdi_item ) {
@@ -594,10 +590,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildFileMenu() {
         _file_jmenu = createMenu( "File", getConfiguration() );
-        _file_jmenu.add( _open_url_item = new JMenuItem( "Read tree from URL/webservice..." ) );
-        _file_jmenu.addSeparator();
         _file_jmenu.add( _exit_item = new JMenuItem( "Exit" ) );
-        customizeJMenuItem( _open_url_item );
         customizeJMenuItem( _exit_item );
         _jmenubar.add( _file_jmenu );
     }
@@ -1146,8 +1139,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             _mainpanel.getCurrentTreePanel().midpointRoot();
         }
     }
-
-    abstract void readPhylogeniesFromURL();
 
     void readPhylogeniesFromWebservice( final int i ) {
         final UrlTreeReader reader = new UrlTreeReader( this, i );

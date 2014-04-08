@@ -61,6 +61,7 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
     final private static String  tree                      = NexusConstants.TREE.toLowerCase();
     final private static Pattern TREE_NAME_PATTERN         = Pattern.compile( "\\s*.?Tree\\s+(.+?)\\s*=.+",
                                                                               Pattern.CASE_INSENSITIVE );
+    final private static Pattern TRANSLATE_PATTERN         = Pattern.compile( "([0-9A-Za-z]+)\\s+(.+)" );
     final private static String  utree                     = NexusConstants.UTREE.toLowerCase();
     private BufferedReader       _br;
     private boolean              _ignore_quotes_in_nh_data = Constants.NH_PARSING_IGNORE_QUOTES_DEFAULT;
@@ -361,23 +362,20 @@ public final class NexusPhylogeniesParser implements IteratingPhylogenyParser, P
         if ( s.endsWith( ";" ) ) {
             s = s.substring( 0, s.length() - 1 ).trim();
         }
-        for( final String pair : s.split( "," ) ) {
-            final String[] kv = pair.trim().split( "\\s+" );
-            if ( ( kv.length < 2 ) || ( kv.length > 3 ) ) {
-                throw new IOException( "ill-formatted translate values: " + pair );
-            }
-            if ( ( kv.length == 3 ) && !kv[ 0 ].toLowerCase().trim().equals( translate ) ) {
-                throw new IOException( "ill-formatted translate values: " + pair );
-            }
+        for( String pair : s.split( "," ) ) {
             String key = "";
             String value = "";
-            if ( kv.length == 3 ) {
-                key = kv[ 1 ];
-                value = kv[ 2 ];
+            final int ti = pair.toLowerCase().indexOf( "translate" );
+            if ( ti > -1 ) {
+                pair = pair.substring( ti + 9 );
+            }
+            final Matcher m = TRANSLATE_PATTERN.matcher( pair );
+            if ( m.find() ) {
+                key = m.group( 1 );
+                value = m.group( 2 ).replaceAll( "\'", "" ).replaceAll( "\"", "" ).trim();
             }
             else {
-                key = kv[ 0 ];
-                value = kv[ 1 ];
+                throw new IOException( "ill-formatted translate values: " + pair );
             }
             if ( value.endsWith( ";" ) ) {
                 value = value.substring( 0, value.length() - 1 );

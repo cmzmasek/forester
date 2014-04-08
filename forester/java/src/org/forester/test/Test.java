@@ -7577,6 +7577,10 @@ public final class Test {
                     .equals( "Aranaeus" ) ) {
                 return false;
             }
+            phylogenies = factory.create( Test.PATH_TO_TEST_DATA + "S14117.nex", parser );
+            if ( phylogenies.length != 3 ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -11890,6 +11894,57 @@ public final class Test {
                     .createInstanceFromNhxString( "BLAG_Mus_musculus1", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
             if ( n13.getNodeData().isHasTaxonomy() ) {
                 System.out.println( n13.toString() );
+                return false;
+            }
+            final PhylogenyNode n14 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus_musculus_392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n14.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
+                System.out.println( n14.toString() );
+                return false;
+            }
+            final PhylogenyNode n15 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus_musculus_K392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n15.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
+                System.out.println( n15.toString() );
+                return false;
+            }
+            final PhylogenyNode n16 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus musculus 392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n16.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
+                System.out.println( n16.toString() );
+                return false;
+            }
+            final PhylogenyNode n17 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus musculus K392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n17.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus" ) ) {
+                System.out.println( n17.toString() );
+                return false;
+            }
+            //
+            final PhylogenyNode n18 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus_musculus_musculus_392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n18.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
+                System.out.println( n18.toString() );
+                return false;
+            }
+            final PhylogenyNode n19 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus_musculus_musculus_K392",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n19.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
+                System.out.println( n19.toString() );
+                return false;
+            }
+            final PhylogenyNode n20 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus musculus musculus 392", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n20.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
+                System.out.println( n20.toString() );
+                return false;
+            }
+            final PhylogenyNode n21 = PhylogenyNode
+                    .createInstanceFromNhxString( "Mus musculus musculus K392",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n21.getNodeData().getTaxonomy().getScientificName().equals( "Mus musculus musculus" ) ) {
+                System.out.println( n21.toString() );
                 return false;
             }
         }
