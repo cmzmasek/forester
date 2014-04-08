@@ -41,6 +41,7 @@ import java.util.SortedSet;
 
 import org.forester.application.support_transfer;
 import org.forester.archaeopteryx.TreePanelUtil;
+import org.forester.archaeopteryx.webservices.WebserviceUtil;
 import org.forester.development.DevelopmentTools;
 import org.forester.evoinference.TestPhylogenyReconstruction;
 import org.forester.evoinference.matrix.character.CharacterStateMatrix;
@@ -135,6 +136,7 @@ public final class Test {
                                                                    + ForesterUtil.getFileSeparator() + "test_data"
                                                                    + ForesterUtil.getFileSeparator();
     private final static boolean PERFORM_DB_TESTS          = false;
+    private static final boolean PERFORM_WEB_TREE_ACCESS   = true;
     private static final String  PHYLOXML_LOCAL_XSD        = PATH_TO_RESOURCES + "phyloxml_schema/"
                                                                    + ForesterConstants.PHYLO_XML_VERSION + "/"
                                                                    + ForesterConstants.PHYLO_XML_XSD;
@@ -256,31 +258,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        if ( PERFORM_DB_TESTS ) {
-            System.out.print( "Ebi Entry Retrieval: " );
-            if ( Test.testEbiEntryRetrieval() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-        }
-        // System.exit( 0 );
-        if ( PERFORM_DB_TESTS ) {
-            System.out.print( "Sequence DB tools 2: " );
-            if ( testSequenceDbWsTools2() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-                System.exit( -1 );
-            }
-        }
-        // System.exit( 0 );
         System.out.print( "Hmmscan output parser: " );
         if ( testHmmscanOutputParser() ) {
             System.out.println( "OK." );
@@ -290,7 +267,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        //
         System.out.print( "Overlap removal: " );
         if ( !org.forester.test.Test.testOverlapRemoval() ) {
             System.out.println( "failed." );
@@ -309,7 +285,6 @@ public final class Test {
             succeeded++;
         }
         System.out.println( "OK." );
-        //
         System.out.print( "Taxonomy code extraction: " );
         if ( Test.testExtractTaxonomyCodeFromNodeName() ) {
             System.out.println( "OK." );
@@ -880,29 +855,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        if ( PERFORM_DB_TESTS ) {
-            System.out.print( "Uniprot Entry Retrieval: " );
-            if ( Test.testUniprotEntryRetrieval() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-        }
-        if ( PERFORM_DB_TESTS ) {
-            System.out.print( "Uniprot Taxonomy Search: " );
-            if ( Test.testUniprotTaxonomySearch() ) {
-                System.out.println( "OK." );
-                succeeded++;
-            }
-            else {
-                System.out.println( "failed." );
-                failed++;
-            }
-        }
-        //----
         String path = "";
         final String os = ForesterUtil.OS_NAME.toLowerCase();
         if ( ( os.indexOf( "mac" ) >= 0 ) && ( os.indexOf( "os" ) > 0 ) ) {
@@ -930,7 +882,6 @@ public final class Test {
                 System.out.println( "failed [will not count towards failed tests]" );
             }
         }
-        //----
         System.out.print( "Next nodes with collapsed: " );
         if ( Test.testNextNodeWithCollapsing() ) {
             System.out.println( "OK." );
@@ -949,32 +900,104 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.out.print( "NHX parsing from URL: " );
-        if ( Test.testNHXparsingFromURL() ) {
-            System.out.println( "OK." );
-            succeeded++;
+        if ( PERFORM_DB_TESTS ) {
+            System.out.print( "Uniprot Entry Retrieval: " );
+            if ( Test.testUniprotEntryRetrieval() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            System.out.print( "Ebi Entry Retrieval: " );
+            if ( Test.testEbiEntryRetrieval() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            System.out.print( "Sequence DB tools 2: " );
+            if ( testSequenceDbWsTools2() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+                System.exit( -1 );
+            }
+            System.out.print( "Uniprot Taxonomy Search: " );
+            if ( Test.testUniprotTaxonomySearch() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
         }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "phyloXML parsing from URL: " );
-        if ( Test.testPhyloXMLparsingFromURL() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
-        }
-        System.out.print( "TreeBase parsing from URL: " );
-        if ( Test.testTreeBaseReading() ) {
-            System.out.println( "OK." );
-            succeeded++;
-        }
-        else {
-            System.out.println( "failed." );
-            failed++;
+        if ( PERFORM_WEB_TREE_ACCESS ) {
+            System.out.print( "NHX parsing from URL: " );
+            if ( Test.testNHXparsingFromURL() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            System.out.print( "phyloXML parsing from URL: " );
+            if ( Test.testPhyloXMLparsingFromURL() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            System.out.print( "TreeBase acccess: " );
+            if ( Test.testTreeBaseReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            //
+            System.out.print( "ToL access: " );
+            if ( Test.testToLReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            //
+            System.out.print( "TreeFam access: " );
+            if ( Test.testTreeFamReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
+            //
+            //
+            System.out.print( "Pfam tree access: " );
+            if ( Test.testPfamTreeReading() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
         }
         System.out.println();
         final Runtime rt = java.lang.Runtime.getRuntime();
@@ -1089,40 +1112,6 @@ public final class Test {
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
             return false;
-        }
-        return true;
-    }
-
-    public static final boolean testPhyloXMLparsingFromURL() {
-        try {
-            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/archaeopteryx_a/apaf_bcl2.xml";
-            final URL u = new URL( s );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), PhyloXmlParser.createPhyloXmlParser() );
-            if ( ( phys == null ) || ( phys.length != 2 ) ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static final boolean testTreeBaseReading() {
-        try {
-            final String s = "http://purl.org/phylo/treebase/phylows/tree/TB2:Tr825?format=nexus";
-            final URL u = new URL( s );
-            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
-            parser.setReplaceUnderscores( true );
-            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
-            final Phylogeny[] phys = factory.create( u.openStream(), parser );
-            if ( ( phys == null ) || ( phys.length != 1 ) ) {
-                return false;
-            }
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
         }
         return true;
     }
@@ -1342,6 +1331,115 @@ public final class Test {
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
             return false;
+        }
+        return true;
+    }
+
+    public static final boolean testPfamTreeReading() {
+        try {
+            final URL u = new URL( WebserviceUtil.PFAM_SERVER + "/family/PF" + "01849" + "/tree/download" );
+            final NHXParser parser = new NHXParser();
+            parser.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.PFAM_STYLE_STRICT );
+            parser.setReplaceUnderscores( false );
+            parser.setGuessRootedness( true );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            if ( phys[ 0 ].getNumberOfExternalNodes() < 10 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static final boolean testPhyloXMLparsingFromURL() {
+        try {
+            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/archaeopteryx_a/apaf_bcl2.xml";
+            final URL u = new URL( s );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), PhyloXmlParser.createPhyloXmlParser() );
+            if ( ( phys == null ) || ( phys.length != 2 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static final boolean testToLReading() {
+        try {
+            final URL u = new URL( WebserviceUtil.TOL_URL_BASE + "15079" );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), new TolParser() );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys[ 0 ].getRoot().getNodeData().getTaxonomy().getIdentifier().getValue().equals( "15079" ) ) {
+                return false;
+            }
+            if ( !phys[ 0 ].getRoot().getNodeData().getTaxonomy().getScientificName().equals( "Protacanthopterygii" ) ) {
+                return false;
+            }
+            if ( phys[ 0 ].getNumberOfExternalNodes() < 5 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static final boolean testTreeBaseReading() {
+        try {
+            final URL u = new URL( WebserviceUtil.TREEBASE_PHYLOWS_TREE_URL_BASE + "825?format=nexus" );
+            final NexusPhylogeniesParser parser = new NexusPhylogeniesParser();
+            parser.setReplaceUnderscores( true );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            final URL u2 = new URL( WebserviceUtil.TREEBASE_PHYLOWS_STUDY_URL_BASE + "15613?format=nexus" );
+            final NexusPhylogeniesParser parser2 = new NexusPhylogeniesParser();
+            parser2.setReplaceUnderscores( true );
+            final PhylogenyFactory factory2 = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys2 = factory2.create( u2.openStream(), parser2 );
+            if ( ( phys2 == null ) || ( phys2.length != 9 ) ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static final boolean testTreeFamReading() {
+        try {
+            final URL u = new URL( WebserviceUtil.TREE_FAM_URL_BASE + "101004" + "/tree/newick" );
+            final NHXParser parser = new NHXParser();
+            parser.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
+            parser.setReplaceUnderscores( false );
+            parser.setGuessRootedness( true );
+            final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+            final Phylogeny[] phys = factory.create( u.openStream(), parser );
+            if ( ( phys == null ) || ( phys.length != 1 ) ) {
+                return false;
+            }
+            if ( phys[ 0 ].getNumberOfExternalNodes() < 10 ) {
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
         }
         return true;
     }

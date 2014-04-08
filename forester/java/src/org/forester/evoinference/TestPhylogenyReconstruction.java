@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.forester.archaeopteryx.Archaeopteryx;
 import org.forester.evoinference.distance.NeighborJoining;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.NeighborJoiningR;
@@ -2082,7 +2081,7 @@ public class TestPhylogenyReconstruction {
             //NeighborJoiningR njr = NeighborJoiningR.createInstance( true, 6 );
             nj = NeighborJoining.createInstance( true, 6 );
             final Phylogeny p2 = nj.execute( m );
-            Archaeopteryx.createApplication( p2 );
+            //Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
             if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
                 return false;
@@ -2629,7 +2628,7 @@ public class TestPhylogenyReconstruction {
             m2.setRow( "1.59050 1.46290 0.55830 0.47100 0.30830 0.26920 0.00000", 6 );
             final NeighborJoiningR nj2 = NeighborJoiningR.createInstance( true, 6 );
             final Phylogeny p2 = nj2.execute( m2 );
-            Archaeopteryx.createApplication( p2 );
+            // Archaeopteryx.createApplication( p2 );
             p2.reRoot( p2.getNode( "Bovine" ) );
             if ( isUnequal( p2.getNode( "Chimp" ).getDistanceToParent(), 0.151675 ) ) {
                 System.out.println( p2.getNode( "Chimp" ).getDistanceToParent() );
