@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 
 import javax.swing.JOptionPane;
 
@@ -349,17 +350,17 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 ut = obtainTaxonomy( TaxonomyDataManager.getIdTaxCacheMap(), id, qt );
             }
         }
-        //
-        //        qt = QUERY_TYPE.SN;
-        //        UniProtTaxonomy ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), simple_name, qt );
-        //        if ( ut == null ) {
-        //            qt = QUERY_TYPE.CODE;
-        //            ut = obtainTaxonomy( TaxonomyDataManager.getCodeTaxCacheMap(), simple_name, qt );
-        //        }
-        //        if ( ut == null ) {
-        //            qt = QUERY_TYPE.CN;
-        //            ut = obtainTaxonomy( TaxonomyDataManager.getCnTaxCacheMap(), simple_name, qt );
-        //        }
+        if ( ut == null ) {
+            String sn = "";
+            final Matcher m = ParserUtils.TAXOMONY_SN_PATTERN_I.matcher( simple_name );
+            if ( m.matches() ) {
+                sn = m.group( 1 );
+            }
+            if ( !ForesterUtil.isEmpty( sn ) ) {
+                qt = QUERY_TYPE.SN;
+                ut = obtainTaxonomy( TaxonomyDataManager.getSnTaxCacheMap(), sn, qt );
+            }
+        }
         return ut;
     }
 

@@ -255,7 +255,7 @@ public class UrlTreeReader implements Runnable {
                         + "]", 80 ), "Error", JOptionPane.ERROR_MESSAGE );
             }
             _main_frame.getContentPane().repaint();
-            if ( ( ( trees != null ) && ( trees.length > 0 ) ) && ( ( new Date().getTime() - start_time ) > 20000 ) ) {
+            if ( ( trees != null ) && ( trees.length > 0 ) ) {
                 try {
                     JOptionPane.showMessageDialog( null,
                                                    ForesterUtil.wordWrap( "Successfully read in " + trees.length

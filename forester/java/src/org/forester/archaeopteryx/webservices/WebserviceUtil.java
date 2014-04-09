@@ -73,9 +73,9 @@ public final class WebserviceUtil {
                                                            "http://tolweb.org",
                                                            null ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
-                                                           "Read Tree(s) from TreeBASE study...",
+                                                           "Read Tree(s) from TreeBASE Study...",
                                                            "Use TreeBASE to obtain evolutionary tree(s) from a study",
-                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 15613, 15632, 14525, 14909)",
+                                                           "Please enter a TreeBASE study (\"S\") identifier (without the \"S\")\n(Examples: 14909, 14525, 15613, 15632)",
                                                            WsPhylogenyFormat.TREEBASE_STUDY,
                                                            null,
                                                            TREEBASE_PHYLOWS_STUDY_URL_BASE
@@ -87,7 +87,7 @@ public final class WebserviceUtil {
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree from TreeBASE...",
                                                            "Use TreeBASE to obtain a evolutionary tree",
-                                                           "Please enter a TreeBASE tree (\"Tr\") identifier (without the \"Tr\")\n(Examples: 422, 2654, 825, 4931, 2518, 2406, 4934)",
+                                                           "Please enter a TreeBASE tree (\"Tr\") identifier (without the \"Tr\")\n(Examples: 2406, 422, 2654, 825, 4931, 2518, 4934)",
                                                            WsPhylogenyFormat.TREEBASE_TREE,
                                                            null,
                                                            TREEBASE_PHYLOWS_TREE_URL_BASE

@@ -7581,6 +7581,10 @@ public final class Test {
             if ( phylogenies.length != 3 ) {
                 return false;
             }
+            if ( !isEqual( phylogenies[ 2 ].getNode( "Aloysia lycioides 251-76-02169" ).getDistanceToParent(),
+                           0.00100049 ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
