@@ -72,7 +72,7 @@ public final class TreeColorSet {
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
-            new Color( 255, 255, 0 ), // collapesed_fill_color
+            new Color( 255, 255, 255 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color 0
             new Color( 255, 0, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
@@ -91,7 +91,7 @@ public final class TreeColorSet {
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 255, 255, 255 ), // branch_color
             new Color( 255, 255, 255 ), // box_color
-            new Color( 255, 255, 0 ), // collapesed_fill_color
+            new Color( 255, 255, 255 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color 0
             new Color( 255, 0, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
@@ -129,7 +129,7 @@ public final class TreeColorSet {
             new Color( 140, 140, 140 ), // branch_length_color
             new Color( 240, 240, 240 ), // branch_color
             new Color( 140, 140, 140 ), // box_color
-            new Color( 140, 140, 140 ), // collapesed_fill_color
+            new Color( 240, 240, 240 ), // collapesed_fill_color
             new Color( 255, 0, 0 ), // found_color 0
             new Color( 0, 255, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
@@ -148,7 +148,7 @@ public final class TreeColorSet {
             new Color( 0, 100, 0 ), // branch_length_color
             new Color( 0, 155, 0 ), // branch_color
             new Color( 0, 255, 0 ), // box_color
-            new Color( 0, 255, 0 ), // collapesed_fill_color
+            new Color( 0, 155, 0 ), // collapesed_fill_color
             new Color( 255, 0, 0 ), // found_color 0
             new Color( 0, 255, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
@@ -167,7 +167,7 @@ public final class TreeColorSet {
             new Color( 70, 70, 0 ), // branch_length_color
             new Color( 0, 20, 200 ), // branch_color
             new Color( 0, 20, 200 ), // box_color
-            new Color( 255, 255, 0 ), // collapesed_fill_color
+            new Color( 0, 20, 200 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color 0
             new Color( 255, 0, 0 ), // found_color 1
             new Color( 0, 0, 255 ), // found_color 0 + 1
@@ -186,7 +186,7 @@ public final class TreeColorSet {
             new Color( 200, 200, 200 ), // branch_length_color
             new Color( 0, 255, 255 ), // branch_color
             new Color( 0, 255, 255 ), // box_color
-            new Color( 255, 255, 0 ), // collapesed_fill_color
+            new Color( 0, 255, 255 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color 0
             new Color( 0, 0, 255 ), // found_color 1
             new Color( 0, 255, 255 ), // found_color 0 + 1
@@ -205,7 +205,7 @@ public final class TreeColorSet {
             new Color( 255, 200, 0 ), // branch_length_color
             new Color( 255, 200, 0 ), // branch_color
             new Color( 255, 200, 0 ), // box_color
-            new Color( 255, 255, 255 ), // collapesed_fill_color
+            new Color( 255, 200, 0 ), // collapesed_fill_color
             new Color( 255, 255, 0 ), // found_color 0
             new Color( 0, 255, 255 ), // found_color 1
             new Color( 255, 255, 255 ), // found_color 0 + 1
@@ -224,7 +224,7 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // branch_length_color
             new Color( 255, 0, 0 ), // branch_color
             new Color( 255, 0, 0 ), // box_color
-            new Color( 0, 0, 0 ), // collapesed_fill_color
+            new Color( 255, 0, 0 ), // collapesed_fill_color
             new Color( 0, 255, 0 ), // found_color
             new Color( 255, 0, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 1 + 2
@@ -243,7 +243,7 @@ public final class TreeColorSet {
             new Color( 0, 191, 255 ), // branch_length_color
             new Color( 0, 191, 255 ), // branch_color
             new Color( 0, 191, 255 ), // box_color
-            new Color( 255, 255, 255 ), // collapesed_fill_color
+            new Color( 0, 191, 255 ), // collapesed_fill_color
             new Color( 255, 0, 0 ), // found_color 0
             new Color( 0, 255, 0 ), // found_color 1
             new Color( 255, 255, 0 ), // found_color 0 + 1
@@ -262,7 +262,7 @@ public final class TreeColorSet {
             new Color( 77, 77, 255 ), // branch_length_color
             new Color( 234, 173, 234 ), // branch_color
             new Color( 77, 77, 255 ), // box_color
-            new Color( 77, 77, 255 ), // collapsed_fill_color
+            new Color( 234, 173, 234 ), // collapsed_fill_color
             new Color( 243, 243, 21 ), // found_color 0
             new Color( 255, 20, 147 ), // found_color 1
             new Color( 255, 255, 255 ), // found_color 1 + 2

@@ -48,19 +48,12 @@ public final class TreeFontSet {
     private Font                _base_font;
     private Font                _small_font_system;
     private Font                _large_font_system;
-    private Font                _small_italic_font_system;
-    private Font                _large_italic_font_system;
     private Font                _small_font_memory;
     private Font                _large_font_memory;
-    private Font                _small_italic_font_memory;
-    private Font                _large_italic_font_memory;
     // Handy holders for font metrics
     public FontMetrics          _fm_small;
     FontMetrics                 _fm_large;
-    FontMetrics                 _fm_small_italic;
-    FontMetrics                 _fm_small_italic_bold;
-    FontMetrics                 _fm_large_italic;
-    FontMetrics                 _fm_large_italic_bold;
+    FontMetrics                 _fm_large_bold;
     // hold font measurements
     int                         _small_max_descent        = 0;
     int                         _small_max_ascent         = 0;
@@ -83,15 +76,11 @@ public final class TreeFontSet {
         if ( decreased_size_by_system && !isDecreasedSizeBySystem() ) {
             _small_font_memory = _small_font;
             _large_font_memory = _large_font;
-            _small_italic_font_memory = _small_italic_font;
-            _large_italic_font_memory = _large_italic_font;
         }
         setDecreasedSizeBySystem( decreased_size_by_system );
         if ( _large_font.getSize() >= min ) {
             _small_font = _small_font.deriveFont( _small_font.getSize() - FONT_SIZE_CHANGE_STEP );
             _large_font = _large_font.deriveFont( _large_font.getSize() - FONT_SIZE_CHANGE_STEP );
-            _small_italic_font = _small_italic_font.deriveFont( _small_italic_font.getSize() - FONT_SIZE_CHANGE_STEP );
-            _large_italic_font = _large_italic_font.deriveFont( _large_italic_font.getSize() - FONT_SIZE_CHANGE_STEP );
             setupFontMetrics();
         }
     }
@@ -108,31 +97,13 @@ public final class TreeFontSet {
         return _large_font;
     }
 
-    Font getLargeItalicFont() {
-        return _large_italic_font;
-    }
-
-    Font getLargeItalicFontSystem() {
-        return _large_italic_font_system;
-    }
-
     Font getSmallFontSystem() {
         return _small_font_system;
-    }
-
-    Font getSmallItalicFont() {
-        return _small_italic_font;
-    }
-
-    Font getSmallItalicFontSystem() {
-        return _small_italic_font_system;
     }
 
     void increaseFontSize() {
         _small_font = _small_font.deriveFont( _small_font.getSize() + FONT_SIZE_CHANGE_STEP );
         _large_font = _large_font.deriveFont( _large_font.getSize() + FONT_SIZE_CHANGE_STEP );
-        _small_italic_font = _small_italic_font.deriveFont( _small_italic_font.getSize() + FONT_SIZE_CHANGE_STEP );
-        _large_italic_font = _large_italic_font.deriveFont( _large_italic_font.getSize() + FONT_SIZE_CHANGE_STEP );
         setupFontMetrics();
     }
 
@@ -144,8 +115,6 @@ public final class TreeFontSet {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( 12f );
         _large_font = _large_font.deriveFont( 14f );
-        _small_italic_font = _small_italic_font.deriveFont( 12f );
-        _large_italic_font = _large_italic_font.deriveFont( 14f );
         setupFontMetrics();
     }
 
@@ -153,8 +122,6 @@ public final class TreeFontSet {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( 8f );
         _large_font = _large_font.deriveFont( 10f );
-        _small_italic_font = _small_italic_font.deriveFont( 8f );
-        _large_italic_font = _large_italic_font.deriveFont( 10f );
         setupFontMetrics();
     }
 
@@ -171,8 +138,6 @@ public final class TreeFontSet {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( SMALL_FONTS_BASE - 1 );
         _large_font = _large_font.deriveFont( SMALL_FONTS_BASE );
-        _small_italic_font = _small_italic_font.deriveFont( SMALL_FONTS_BASE - 1 );
-        _large_italic_font = _large_italic_font.deriveFont( SMALL_FONTS_BASE );
         setupFontMetrics();
     }
 
@@ -180,8 +145,6 @@ public final class TreeFontSet {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( 2f );
         _large_font = _large_font.deriveFont( 3f );
-        _small_italic_font = _small_italic_font.deriveFont( 2f );
-        _large_italic_font = _large_italic_font.deriveFont( 3f );
         setupFontMetrics();
     }
 
@@ -189,8 +152,6 @@ public final class TreeFontSet {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( 5f );
         _large_font = _large_font.deriveFont( 6f );
-        _small_italic_font = _small_italic_font.deriveFont( 5f );
-        _large_italic_font = _large_italic_font.deriveFont( 6f );
         setupFontMetrics();
     }
 
@@ -206,16 +167,10 @@ public final class TreeFontSet {
         }
         _small_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
         _large_font = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_italic_font = new Font( getBaseFont().getFontName(), italic, small_size );
-        _large_italic_font = new Font( getBaseFont().getFontName(), italic, getBaseFont().getSize() );
         _small_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), small_size );
         _large_font_system = new Font( getBaseFont().getFontName(), getBaseFont().getStyle(), getBaseFont().getSize() );
-        _small_italic_font_system = new Font( getBaseFont().getFontName(), italic, small_size );
-        _large_italic_font_system = new Font( getBaseFont().getFontName(), italic, getBaseFont().getSize() );
         _small_font_memory = _small_font;
         _large_font_memory = _large_font;
-        _small_italic_font_memory = _small_italic_font;
-        _large_italic_font_memory = _large_italic_font;
         setupFontMetrics();
     }
 
@@ -226,10 +181,7 @@ public final class TreeFontSet {
     private void setupFontMetrics() {
         _fm_small = _owner.getFontMetrics( _small_font );
         _fm_large = _owner.getFontMetrics( _large_font );
-        _fm_small_italic = _owner.getFontMetrics( _small_italic_font );
-        _fm_small_italic_bold = _owner.getFontMetrics( _small_italic_font.deriveFont( Font.BOLD ) );
-        _fm_large_italic = _owner.getFontMetrics( _large_italic_font );
-        _fm_large_italic_bold = _owner.getFontMetrics( _large_italic_font.deriveFont( Font.BOLD ) );
+        _fm_large_bold = _owner.getFontMetrics( _large_font.deriveFont( Font.BOLD ) );
         _small_max_descent = _fm_small.getMaxDescent();
         _small_max_ascent = _fm_small.getMaxAscent() + 1;
     }

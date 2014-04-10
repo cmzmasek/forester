@@ -640,14 +640,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( node.getNodeData().isHasTaxonomy() ) {
                 final Taxonomy tax = node.getNodeData().getTaxonomy();
                 if ( getControlPanel().isShowTaxonomyCode() && !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-                    sum += getTreeFontSet()._fm_large_italic.stringWidth( tax.getTaxonomyCode() + " " );
+                    sum += getTreeFontSet()._fm_large.stringWidth( tax.getTaxonomyCode() + " " );
                 }
                 if ( getControlPanel().isShowTaxonomyScientificNames()
                         && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
-                    sum += getTreeFontSet()._fm_large_italic.stringWidth( tax.getScientificName() + " " );
+                    sum += getTreeFontSet()._fm_large.stringWidth( tax.getScientificName() + " " );
                 }
                 if ( getControlPanel().isShowTaxonomyCommonNames() && !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-                    sum += getTreeFontSet()._fm_large_italic.stringWidth( tax.getCommonName() + " ()" );
+                    sum += getTreeFontSet()._fm_large.stringWidth( tax.getCommonName() + " ()" );
                 }
             }
             if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
@@ -4201,28 +4201,18 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             _sb.append( propertiesToString( node ) );
         }
-        Font visual_font = null;
-        if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null ) ) {
-            visual_font = node.getNodeData().getNodeVisualData().getFont();
-            g.setFont( visual_font != null ? visual_font : getTreeFontSet().getLargeFont() );
-        }
-        else {
-            g.setFont( getTreeFontSet().getLargeFont() );
-        }
-        if ( is_in_found_nodes ) {
-            g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
-        }
+        final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         double down_shift_factor = 3.0;
         if ( !node.isExternal() && ( node.getNumberOfDescendants() == 1 ) ) {
             down_shift_factor = 1;
         }
         final double pos_x = node.getXcoord() + x + 2 + half_box_size;
         double pos_y;
-        if ( visual_font == null ) {
+        if ( !using_visual_font ) {
             pos_y = ( node.getYcoord() + ( getTreeFontSet()._fm_large.getAscent() / down_shift_factor ) );
         }
         else {
-            pos_y = ( node.getYcoord() + ( getFontMetrics( visual_font ).getAscent() / down_shift_factor ) );
+            pos_y = ( node.getYcoord() + ( getFontMetrics( getFont() ).getAscent() / down_shift_factor ) );
         }
         final String sb_str = _sb.toString();
         // GUILHEM_BEG ______________
@@ -4346,6 +4336,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    private boolean setFont( final Graphics2D g, final PhylogenyNode node, final boolean is_in_found_nodes ) {
+        Font visual_font = null;
+        if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null ) ) {
+            visual_font = node.getNodeData().getNodeVisualData().getFont();
+            g.setFont( visual_font != null ? visual_font : getTreeFontSet().getLargeFont() );
+        }
+        else if ( is_in_found_nodes ) {
+            g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
+        }
+        else {
+            g.setFont( getTreeFontSet().getLargeFont() );
+        }
+        return visual_font != null;
+    }
+
     private void setColor( final Graphics2D g,
                            final PhylogenyNode node,
                            final boolean to_graphics_file,
@@ -4462,10 +4467,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 _sb.append( node.getNodeData().getSequence().getName() );
             }
         }
-        g.setFont( getTreeFontSet().getLargeFont() );
-        if ( is_in_found_nodes ) {
-            g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
-        }
+        final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
+        //g.setFont( getTreeFontSet().getLargeFont() );
+        //if ( is_in_found_nodes ) {
+        //    g.setFont( getTreeFontSet().getLargeFont().deriveFont( Font.BOLD ) );
+        // }
         if ( _sb.length() > 1 ) {
             final String sb_str = _sb.toString();
             double m = 0;
@@ -4680,19 +4686,19 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     if ( node.getNodeData().isHasTaxonomy() ) {
                         if ( getControlPanel().isShowTaxonomyCode()
                                 && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
-                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getTaxonomy()
                                     .getTaxonomyCode()
                                     + " " );
                         }
                         if ( getControlPanel().isShowTaxonomyScientificNames()
                                 && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getScientificName() ) ) ) {
-                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getTaxonomy()
                                     .getScientificName()
                                     + " " );
                         }
                         if ( getControlPanel().isShowTaxonomyCommonNames()
                                 && ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) ) {
-                            x += getTreeFontSet()._fm_large_italic.stringWidth( node.getNodeData().getTaxonomy()
+                            x += getTreeFontSet()._fm_large.stringWidth( node.getNodeData().getTaxonomy()
                                     .getCommonName()
                                     + " " );
                         }
@@ -4748,7 +4754,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     my_node = getPhylogeny().getFirstExternalNode();
                 }
                 if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( my_node ).length() > 0 ) ) {
-                    x += getTreeFontSet()._fm_large_italic.stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
+                    x += getTreeFontSet()._fm_large.stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
                 }
                 if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
                     x += getTreeFontSet()._fm_large.stringWidth( my_node.getName() + " " );
@@ -4875,24 +4881,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                      final boolean to_graphics_file,
                                      final double x_shift ) {
         final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
-        Font visual_font = null;
-        if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null ) ) {
-            visual_font = node.getNodeData().getNodeVisualData().getFont();
-            g.setFont( visual_font != null ? visual_font : getTreeFontSet().getLargeItalicFont() );
-        }
-        else {
-            g.setFont( getTreeFontSet().getLargeItalicFont() );
-        }
+        final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getTaxonomyColor() );
         final double start_x = node.getXcoord() + 3 + ( getOptions().getDefaultNodeShapeSize() / 2 ) + x_shift;
         double start_y;
-        if ( visual_font == null ) {
+        if ( !using_visual_font ) {
             start_y = node.getYcoord()
                     + ( getTreeFontSet()._fm_large.getAscent() / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0 ) );
         }
         else {
             start_y = node.getYcoord()
-                    + ( getFontMetrics( visual_font ).getAscent() / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0 ) );
+                    + ( getFontMetrics( getFont() ).getAscent() / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0 ) );
         }
         _sb.setLength( 0 );
         if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
@@ -4961,13 +4960,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         /* GUILHEM_END */
         TreePanel.drawString( label, start_x, start_y, g );
         if ( is_in_found_nodes ) {
-            return getTreeFontSet()._fm_large_italic_bold.stringWidth( label );
+            return getTreeFontSet()._fm_large_bold.stringWidth( label );
         }
         else {
-            if ( visual_font == null ) {
-                return getTreeFontSet()._fm_large_italic.stringWidth( label );
+            if ( !using_visual_font ) {
+                return getTreeFontSet()._fm_large.stringWidth( label );
             }
-            return getFontMetrics( visual_font ).stringWidth( label );
+            return getFontMetrics( getFont() ).stringWidth( label );
         }
     }
 
