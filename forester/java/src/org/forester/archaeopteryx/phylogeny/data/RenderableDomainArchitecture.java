@@ -201,7 +201,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                     g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
                     g.setColor( getConfiguration().getDomainStructureFontColor() );
                     PhylogenyDataUtil.drawString( d.getName(), xa, y1
-                            + tree_panel.getMainPanel().getTreeFontSet()._fm_small.getAscent() + 6, g );
+                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent() + 6, g );
                 }
                 drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
             }

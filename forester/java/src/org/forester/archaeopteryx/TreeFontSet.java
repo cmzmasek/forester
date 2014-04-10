@@ -36,30 +36,29 @@ import java.awt.FontMetrics;
  */
 public final class TreeFontSet {
 
+    static final int            BOLD_AND_ITALIC           = Font.BOLD + Font.ITALIC;
+    final static float          FONT_SIZE_CHANGE_STEP     = 1.0f;
     final static float          SMALL_FONTS_BASE          = 8;
     private final static String DEFAULT_FONT              = "Verdana";
-    final static float          FONT_SIZE_CHANGE_STEP     = 1.0f;
-    static final int            BOLD_AND_ITALIC           = Font.BOLD + Font.ITALIC;
+    private Font                _base_font;
+    private boolean             _decreased_size_by_system = false;
+    private FontMetrics         _fm_large;
+    // Handy holders for font metrics
+    private FontMetrics         _fm_small;
+    private Font                _large_font;
+    private Font                _large_font_memory;
+    private Font                _large_font_system;
+    private final int           _max;
+    private final int           _min;
     // the owner (needed to get font metrics)
     private final MainPanel     _owner;
     // The fonts
     private Font                _small_font;
-    private Font                _large_font;
-    private Font                _base_font;
-    private Font                _small_font_system;
-    private Font                _large_font_system;
     private Font                _small_font_memory;
-    private Font                _large_font_memory;
-    // Handy holders for font metrics
-    public FontMetrics          _fm_small;
-    FontMetrics                 _fm_large;
-    FontMetrics                 _fm_large_bold;
+    private Font                _small_font_system;
+    private int                 _small_max_ascent         = 0;
     // hold font measurements
-    int                         _small_max_descent        = 0;
-    int                         _small_max_ascent         = 0;
-    private final int           _min;
-    private final int           _max;
-    private boolean             _decreased_size_by_system = false;
+    private int                 _small_max_descent        = 0;
 
     TreeFontSet( final MainPanel owner ) {
         _owner = owner;
@@ -68,8 +67,24 @@ public final class TreeFontSet {
         setBaseFont( new Font( DEFAULT_FONT, Font.PLAIN, 10 ) );
     }
 
+    public FontMetrics getFontMetricsLarge() {
+        return _fm_large;
+    }
+
+    public FontMetrics getFontMetricsSmall() {
+        return _fm_small;
+    }
+
     public Font getSmallFont() {
         return _small_font;
+    }
+
+    public int getSmallMaxAscent() {
+        return _small_max_ascent;
+    }
+
+    public int getSmallMaxDescent() {
+        return _small_max_descent;
     }
 
     void decreaseFontSize( final int min, final boolean decreased_size_by_system ) {
@@ -85,16 +100,16 @@ public final class TreeFontSet {
         }
     }
 
-    Font getLargeFontMemory() {
-        return _large_font_memory;
-    }
-
     Font getBaseFont() {
         return _base_font;
     }
 
     Font getLargeFont() {
         return _large_font;
+    }
+
+    Font getLargeFontMemory() {
+        return _large_font_memory;
     }
 
     Font getSmallFontSystem() {
@@ -181,7 +196,6 @@ public final class TreeFontSet {
     private void setupFontMetrics() {
         _fm_small = _owner.getFontMetrics( _small_font );
         _fm_large = _owner.getFontMetrics( _large_font );
-        _fm_large_bold = _owner.getFontMetrics( _large_font.deriveFont( Font.BOLD ) );
         _small_max_descent = _fm_small.getMaxDescent();
         _small_max_ascent = _fm_small.getMaxAscent() + 1;
     }
