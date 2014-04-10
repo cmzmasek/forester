@@ -45,8 +45,6 @@ public final class TreeFontSet {
     // The fonts
     private Font                _small_font;
     private Font                _large_font;
-    private Font                _small_italic_font;
-    private Font                _large_italic_font;
     private Font                _base_font;
     private Font                _small_font_system;
     private Font                _large_font_system;

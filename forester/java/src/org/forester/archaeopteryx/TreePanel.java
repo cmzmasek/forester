@@ -4143,78 +4143,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         .getUris().isEmpty() ) ) {
             x += drawTaxonomyImage( node.getXcoord() + 2 + half_box_size, node.getYcoord(), node, g );
         }
-        //if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
-        //      .isShowTaxonomyCommonNames() ) && node.getNodeData().isHasTaxonomy() ) {
-        // x += paintTaxonomy( g, node, is_in_found_nodes, to_pdf, to_graphics_file, x );
-        // }
-        setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
-        //
-        if ( node.getNodeData().isHasTaxonomy() ) {
-            final Taxonomy taxonomy = node.getNodeData().getTaxonomy();
-            if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
-                _sb.append( taxonomy.getTaxonomyCode() );
-                _sb.append( " " );
-            }
-            if ( _control_panel.isShowTaxonomyScientificNames() && _control_panel.isShowTaxonomyCommonNames() ) {
-                if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() )
-                        && !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                    if ( getOptions().isAbbreviateScientificTaxonNames()
-                            && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                        abbreviateScientificName( taxonomy.getScientificName() );
-                    }
-                    else {
-                        _sb.append( taxonomy.getScientificName() );
-                    }
-                    _sb.append( " (" );
-                    _sb.append( taxonomy.getCommonName() );
-                    _sb.append( ") " );
-                }
-                else if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
-                    if ( getOptions().isAbbreviateScientificTaxonNames()
-                            && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                        abbreviateScientificName( taxonomy.getScientificName() );
-                    }
-                    else {
-                        _sb.append( taxonomy.getScientificName() );
-                    }
-                    _sb.append( " " );
-                }
-                else if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                    _sb.append( taxonomy.getCommonName() );
-                    _sb.append( " " );
-                }
-            }
-            else if ( _control_panel.isShowTaxonomyScientificNames() ) {
-                if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
-                    if ( getOptions().isAbbreviateScientificTaxonNames()
-                            && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                        abbreviateScientificName( taxonomy.getScientificName() );
-                    }
-                    else {
-                        _sb.append( taxonomy.getScientificName() );
-                    }
-                    _sb.append( " " );
-                }
-            }
-            else if ( _control_panel.isShowTaxonomyCommonNames() ) {
-                if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                    _sb.append( taxonomy.getCommonName() );
-                    _sb.append( " " );
-                }
-            }
+        if ( ( getControlPanel().isShowTaxonomyCode() || getControlPanel().isShowTaxonomyScientificNames() || getControlPanel()
+                .isShowTaxonomyCommonNames() ) && node.getNodeData().isHasTaxonomy() ) {
+            x += paintTaxonomy( g, node, is_in_found_nodes, to_pdf, to_graphics_file, x );
         }
-        //
+        setColor( g, node, to_graphics_file, to_pdf, is_in_found_nodes, getTreeColorSet().getSequenceColor() );
         if ( node.isCollapse() && ( ( !node.isRoot() && !node.getParent().isCollapse() ) || node.isRoot() ) ) {
             if ( _sb.length() > 0 ) {
-                //_sb.setLength( 0 );
+                _sb.setLength( 0 );
                 _sb.append( " (" );
                 _sb.append( node.getAllExternalDescendants().size() );
                 _sb.append( ")" );
             }
         }
-        //else {
-        //_sb.setLength( 0 );
-        //}
+        else {
+            _sb.setLength( 0 );
+        }
         if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
             if ( _sb.length() > 0 ) {
                 _sb.append( " " );
