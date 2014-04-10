@@ -61,17 +61,6 @@ public final class WebserviceUtil {
 
     public static List<PhylogeniesWebserviceClient> createDefaultClients() {
         final List<PhylogeniesWebserviceClient> clients = new ArrayList<PhylogeniesWebserviceClient>();
-        clients.add( new BasicPhylogeniesWebserviceClient( TOL_NAME,
-                                                           "Read Tree from Tree of Life (ToL)...",
-                                                           "Use ToL webservice to obtain a evolutionary tree",
-                                                           "Please enter a Tree of Life node identifier\n(Examples: "
-                                                                   + "14923 for ray-finned fishes, 19386 for Cephalopoda, 2461 for Cnidaria)",
-                                                           WsPhylogenyFormat.TOL_XML_RESPONSE,
-                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
-                                                           WebserviceUtil.TOL_WEBSERVER,
-                                                           true,
-                                                           "http://tolweb.org",
-                                                           null ) );
         clients.add( new BasicPhylogeniesWebserviceClient( TREE_BASE_NAME,
                                                            "Read Tree(s) from TreeBASE Study...",
                                                            "Use TreeBASE to obtain evolutionary tree(s) from a study",
@@ -120,6 +109,17 @@ public final class WebserviceUtil {
                                                            true,
                                                            "http://www.treefam.org",
                                                            TREE_FAM_INST ) );
+        clients.add( new BasicPhylogeniesWebserviceClient( TOL_NAME,
+                                                           "Read Tree from Tree of Life (ToL)...",
+                                                           "Use ToL webservice to obtain a evolutionary tree",
+                                                           "Please enter a Tree of Life node identifier\n(Examples: "
+                                                                   + "14923 for ray-finned fishes, 19386 for Cephalopoda, 2461 for Cnidaria)",
+                                                           WsPhylogenyFormat.TOL_XML_RESPONSE,
+                                                           PhylogenyMethods.PhylogenyNodeField.TAXONOMY_SCIENTIFIC_NAME,
+                                                           WebserviceUtil.TOL_WEBSERVER,
+                                                           true,
+                                                           "http://tolweb.org",
+                                                           null ) );
         return clients;
     }
 
