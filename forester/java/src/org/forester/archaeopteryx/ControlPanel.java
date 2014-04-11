@@ -595,7 +595,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case Configuration.use_style:
                 _use_visual_styles_cb = new JCheckBox( title );
-                getUseVisualStylesCb().setToolTipText( "To use visual styles (colors, fonts), if present" );
+                getUseVisualStylesCb()
+                        .setToolTipText( "To use visual styles (node colors, fonts) and branch colors, if present" );
                 addJCheckBox( getUseVisualStylesCb(), ch_panel );
                 add( ch_panel );
                 break;
@@ -1894,14 +1895,6 @@ final class ControlPanel extends JPanel implements ActionListener {
             }
             cb_index++;
         }
-        if ( _configuration.doDisplayClickToOption( Configuration.color_subtree ) ) {
-            _color_subtree_cb_item = cb_index;
-            addClickToOption( Configuration.color_subtree, _configuration.getClickToTitle( Configuration.color_subtree ) );
-            if ( default_option == Configuration.color_subtree ) {
-                selected_index = cb_index;
-            }
-            cb_index++;
-        }
         if ( _configuration.doDisplayClickToOption( Configuration.color_node_font ) ) {
             _color_node_font_item = cb_index;
             addClickToOption( Configuration.color_node_font,
@@ -1916,6 +1909,14 @@ final class ControlPanel extends JPanel implements ActionListener {
             addClickToOption( Configuration.change_node_font,
                               _configuration.getClickToTitle( Configuration.change_node_font ) );
             if ( default_option == Configuration.change_node_font ) {
+                selected_index = cb_index;
+            }
+            cb_index++;
+        }
+        if ( _configuration.doDisplayClickToOption( Configuration.color_subtree ) ) {
+            _color_subtree_cb_item = cb_index;
+            addClickToOption( Configuration.color_subtree, _configuration.getClickToTitle( Configuration.color_subtree ) );
+            if ( default_option == Configuration.color_subtree ) {
                 selected_index = cb_index;
             }
             cb_index++;

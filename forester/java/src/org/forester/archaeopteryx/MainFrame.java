@@ -159,6 +159,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _move_node_names_to_seq_names_jmi;
     JMenuItem                   _extract_tax_code_from_node_names_jmi;
     JMenuItem                   _annotate_item;
+    JMenuItem                   _remove_branch_color_item;
+    JMenuItem                   _remove_visual_styles_item;
     // font size menu:
     JMenuItem                   _super_tiny_fonts_item;
     JMenuItem                   _tiny_fonts_item;
@@ -243,7 +245,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     Container                   _contentpane;
     final LinkedList<TextFrame> _textframes                             = new LinkedList<TextFrame>();                                                                                                                                         ;
     Configuration               _configuration;
-    JMenuItem                   _remove_branch_color_item;
     Options                     _options;
     private Phylogeny           _species_tree;
     InferenceManager            _inference_manager;
@@ -305,6 +306,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             removeBranchColors();
+        }
+        else if ( o == _remove_visual_styles_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            removeVisualStyles();
         }
         else if ( o == _midpoint_root_item ) {
             if ( isSubtreeDisplayed() ) {
@@ -1558,6 +1565,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    private void removeVisualStyles() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeVisualStyles( getMainPanel().getCurrentPhylogeny() );
+        }
+    }
+
     private void setPreviousNodeAnnotationReference( final String previous_node_annotation_ref ) {
         _previous_node_annotation_ref = previous_node_annotation_ref;
     }
@@ -1737,15 +1750,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     static void setTextColorChooseMenuItem( final JMenuItem mi, final TreePanel tree_panel ) {
         if ( ( tree_panel != null ) && ( tree_panel.getTreeColorSet() != null ) ) {
-            mi.setText( "Select Colors... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName() + ")" );
+            mi.setText( "Select Color Scheme... (current: " + tree_panel.getTreeColorSet().getCurrentColorSchemeName()
+                    + ")" );
         }
         else {
-            mi.setText( "Select Colors..." );
+            mi.setText( "Select Color Scheme..." );
         }
     }
 
     static void setTextForFontChooserMenuItem( final JMenuItem mi, final String font_desc ) {
-        mi.setText( "Select Font... (current: " + font_desc + ")" );
+        mi.setText( "Select Default Font... (current: " + font_desc + ")" );
     }
 
     static void setTextMinSupportMenuItem( final JMenuItem mi, final Options options, final TreePanel current_tree_panel ) {

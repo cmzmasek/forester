@@ -603,60 +603,21 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( node.isCollapse() ) {
                 continue;
             }
-            if ( getControlPanel().isShowNodeNames() ) {
-                sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getName() + " " );
-            }
-            if ( node.getNodeData().isHasSequence() ) {
-                if ( getControlPanel().isShowSequenceAcc()
-                        && ( node.getNodeData().getSequence().getAccession() != null ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getSequence()
-                            .getAccession().getValue()
-                            + " " );
-                }
-                if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getSequence().getName()
-                            + " " );
-                }
-                if ( getControlPanel().isShowSeqSymbols()
-                        && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getSequence()
-                            .getSymbol()
-                            + " " );
-                }
-                if ( getControlPanel().isShowGeneNames()
-                        && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getSequence()
-                            .getGeneName()
-                            + " " );
-                }
-                if ( getControlPanel().isShowAnnotation()
-                        && ( node.getNodeData().getSequence().getAnnotations() != null )
-                        && !node.getNodeData().getSequence().getAnnotations().isEmpty() ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( TreePanelUtil.createAnnotationString( node
-                            .getNodeData().getSequence().getAnnotations(), getOptions().isShowAnnotationRefSource() )
-                            + " " );
-                }
-                if ( getControlPanel().isShowDomainArchitectures()
-                        && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
-                    sum += ( ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture() )
-                            .getRenderingSize().getWidth();
-                }
-            }
+            final StringBuilder sb = new StringBuilder();
+            nodeDataAsSB( node, sb );
             if ( node.getNodeData().isHasTaxonomy() ) {
-                final Taxonomy tax = node.getNodeData().getTaxonomy();
-                if ( getControlPanel().isShowTaxonomyCode() && !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( tax.getTaxonomyCode() + " " );
-                }
-                if ( getControlPanel().isShowTaxonomyScientificNames()
-                        && !ForesterUtil.isEmpty( tax.getScientificName() ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( tax.getScientificName() + " " );
-                }
-                if ( getControlPanel().isShowTaxonomyCommonNames() && !ForesterUtil.isEmpty( tax.getCommonName() ) ) {
-                    sum += getFontMetricsForLargeDefaultFont().stringWidth( tax.getCommonName() + " ()" );
-                }
+                nodeTaxonomyDataAsSB( node.getNodeData().getTaxonomy(), sb );
             }
-            if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
-                sum += getFontMetricsForLargeDefaultFont().stringWidth( propertiesToString( node ).toString() );
+            boolean use_vis = false;
+            final Graphics2D g = ( Graphics2D ) getGraphics();
+            if ( getControlPanel().isUseVisualStyles() ) {
+                use_vis = setFont( g, node, false );
+            }
+            if ( !use_vis ) {
+                sum = getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() );
+            }
+            else {
+                sum = getFontMetrics( g.getFont() ).stringWidth( sb.toString() );
             }
             if ( getControlPanel().isShowBinaryCharacters() && node.getNodeData().isHasBinaryCharacters() ) {
                 sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getBinaryCharacters()
@@ -2178,14 +2139,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private void abbreviateScientificName( final String sn ) {
+    private void abbreviateScientificName( final String sn, final StringBuilder sb ) {
         final String[] a = sn.split( "\\s+" );
-        _sb.append( a[ 0 ].substring( 0, 1 ) );
-        _sb.append( a[ 1 ].substring( 0, 2 ) );
+        sb.append( a[ 0 ].substring( 0, 1 ) );
+        sb.append( a[ 1 ].substring( 0, 2 ) );
         if ( a.length > 2 ) {
             for( int i = 2; i < a.length; i++ ) {
-                _sb.append( " " );
-                _sb.append( a[ i ] );
+                sb.append( " " );
+                sb.append( a[ i ] );
             }
         }
     }
@@ -2701,22 +2662,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.fill( _ellipse );
     }
 
-    final private void drawOvalGradient( final double x,
-                                         final double y,
-                                         final double width,
-                                         final double heigth,
+    final private void drawOvalGradient( final float x,
+                                         final float y,
+                                         final float width,
+                                         final float heigth,
                                          final Graphics2D g,
                                          final Color color_1,
                                          final Color color_2,
                                          final Color color_border ) {
         _ellipse.setFrame( x, y, width, heigth );
-        g.setPaint( new GradientPaint( ( float ) x,
-                                       ( float ) y,
-                                       color_1,
-                                       ( float ) ( x + width ),
-                                       ( float ) ( y + heigth ),
-                                       color_2,
-                                       false ) );
+        g.setPaint( new GradientPaint( x, y, color_1, ( x + width ), ( y + heigth ), color_2, false ) );
         g.fill( _ellipse );
         if ( color_border != null ) {
             g.setPaint( color_border );
@@ -2738,22 +2693,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         g.fill( _rectangle );
     }
 
-    final private void drawRectGradient( final double x,
-                                         final double y,
-                                         final double width,
-                                         final double heigth,
+    final private void drawRectGradient( final float x,
+                                         final float y,
+                                         final float width,
+                                         final float heigth,
                                          final Graphics2D g,
                                          final Color color_1,
                                          final Color color_2,
                                          final Color color_border ) {
         _rectangle.setFrame( x, y, width, heigth );
-        g.setPaint( new GradientPaint( ( float ) x,
-                                       ( float ) y,
-                                       color_1,
-                                       ( float ) ( x + width ),
-                                       ( float ) ( y + heigth ),
-                                       color_2,
-                                       false ) );
+        g.setPaint( new GradientPaint( x, y, color_1, ( x + width ), ( y + heigth ), color_2, false ) );
         g.fill( _rectangle );
         if ( color_border != null ) {
             g.setPaint( color_border );
@@ -3430,6 +3379,105 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
+    private final void nodeDataAsSB( final PhylogenyNode node, final StringBuilder sb ) {
+        if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
+            if ( sb.length() > 0 ) {
+                sb.append( " " );
+            }
+            sb.append( node.getName() );
+        }
+        if ( node.getNodeData().isHasSequence() ) {
+            if ( getControlPanel().isShowSeqSymbols() && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
+                if ( sb.length() > 0 ) {
+                    sb.append( " " );
+                }
+                sb.append( node.getNodeData().getSequence().getSymbol() );
+            }
+            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
+                if ( sb.length() > 0 ) {
+                    sb.append( " " );
+                }
+                sb.append( node.getNodeData().getSequence().getGeneName() );
+            }
+            if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+                if ( sb.length() > 0 ) {
+                    sb.append( " " );
+                }
+                sb.append( node.getNodeData().getSequence().getName() );
+            }
+            if ( getControlPanel().isShowSequenceAcc() && ( node.getNodeData().getSequence().getAccession() != null ) ) {
+                if ( sb.length() > 0 ) {
+                    sb.append( " " );
+                }
+                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
+                    sb.append( node.getNodeData().getSequence().getAccession().getSource() );
+                    sb.append( ":" );
+                }
+                sb.append( node.getNodeData().getSequence().getAccession().getValue() );
+            }
+        }
+        if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
+            if ( sb.length() > 0 ) {
+                sb.append( " " );
+            }
+            sb.append( propertiesToString( node ) );
+        }
+    }
+
+    private final void nodeTaxonomyDataAsSB( final Taxonomy taxonomy, final StringBuilder sb ) {
+        if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
+            sb.append( taxonomy.getTaxonomyCode() );
+            sb.append( " " );
+        }
+        if ( _control_panel.isShowTaxonomyScientificNames() && _control_panel.isShowTaxonomyCommonNames() ) {
+            if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() )
+                    && !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
+                if ( getOptions().isAbbreviateScientificTaxonNames()
+                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
+                    abbreviateScientificName( taxonomy.getScientificName(), sb );
+                }
+                else {
+                    sb.append( taxonomy.getScientificName() );
+                }
+                sb.append( " (" );
+                sb.append( taxonomy.getCommonName() );
+                sb.append( ") " );
+            }
+            else if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
+                if ( getOptions().isAbbreviateScientificTaxonNames()
+                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
+                    abbreviateScientificName( taxonomy.getScientificName(), sb );
+                }
+                else {
+                    sb.append( taxonomy.getScientificName() );
+                }
+                sb.append( " " );
+            }
+            else if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
+                sb.append( taxonomy.getCommonName() );
+                sb.append( " " );
+            }
+        }
+        else if ( _control_panel.isShowTaxonomyScientificNames() ) {
+            if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
+                if ( getOptions().isAbbreviateScientificTaxonNames()
+                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
+                    abbreviateScientificName( taxonomy.getScientificName(), sb );
+                }
+                else {
+                    sb.append( taxonomy.getScientificName() );
+                }
+                sb.append( " " );
+            }
+        }
+        else if ( _control_panel.isShowTaxonomyCommonNames() ) {
+            if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
+                sb.append( taxonomy.getCommonName() );
+                sb.append( " " );
+            }
+        }
+    }
+
     private final String obtainTitleForExtDescNodeData() {
         switch ( getOptions().getExtDescNodeDataToReturn() ) {
             case NODE_NAME:
@@ -4019,8 +4067,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
      * @param node
      * @param g
      */
-    final private void paintNodeBox( final double x,
-                                     final double y,
+    final private void paintNodeBox( final float x,
+                                     final float y,
                                      final PhylogenyNode node,
                                      final Graphics2D g,
                                      final boolean to_pdf,
@@ -4038,18 +4086,39 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) )
                 || ( getOptions().isShowDefaultNodeShapesExternal() && node.isExternal() )
                 || ( getOptions().isShowDefaultNodeShapesInternal() && node.isInternal() )
+                || ( getControlPanel().isUseVisualStyles() && ( ( node.getNodeData().getNodeVisualData() != null ) && ( ( node
+                        .getNodeData().getNodeVisualData().getNodeColor() != null )
+                        || ( node.getNodeData().getNodeVisualData().getSize() != NodeVisualData.DEFAULT_SIZE )
+                        || ( node.getNodeData().getNodeVisualData().getFillType() != NodeFill.DEFAULT ) || ( node
+                        .getNodeData().getNodeVisualData().getShape() != NodeShape.DEFAULT ) ) ) )
                 || ( getControlPanel().isEvents() && node.isHasAssignedEvent() && ( node.getNodeData().getEvent()
                         .isDuplication()
                         || node.getNodeData().getEvent().isSpeciation() || node.getNodeData().getEvent()
                         .isSpeciationOrDuplication() ) ) ) {
-            final double box_size = getOptions().getDefaultNodeShapeSize();
-            final double half_box_size = box_size / 2.0;
+            NodeVisualData vis = null;
+            if ( getControlPanel().isUseVisualStyles() && ( node.getNodeData().getNodeVisualData() != null )
+                    && ( !node.getNodeData().getNodeVisualData().isEmpty() ) ) {
+                vis = node.getNodeData().getNodeVisualData();
+            }
+            float box_size = getOptions().getDefaultNodeShapeSize();
+            if ( ( vis != null ) && ( vis.getSize() != NodeVisualData.DEFAULT_SIZE ) ) {
+                box_size = vis.getSize();
+            }
+            final float half_box_size = box_size / 2.0f;
             Color outline_color = null;
             if ( ( to_pdf || to_graphics_file ) && getOptions().isPrintBlackAndWhite() ) {
                 outline_color = Color.BLACK;
             }
             else if ( isInFoundNodes( node ) || isInCurrentExternalNodes( node ) ) {
                 outline_color = getColorForFoundNode( node );
+            }
+            else if ( vis != null ) {
+                if ( vis.getNodeColor() != null ) {
+                    outline_color = vis.getNodeColor();
+                }
+                else if ( vis.getFontColor() != null ) {
+                    outline_color = vis.getFontColor();
+                }
             }
             else if ( getControlPanel().isEvents() && TreePanelUtil.isHasAssignedEvent( node ) ) {
                 final Event event = node.getNodeData().getEvent();
@@ -4063,18 +4132,62 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     outline_color = getTreeColorSet().getDuplicationOrSpeciationColor();
                 }
             }
-            else {
+            if ( outline_color == null ) {
                 outline_color = getGraphicsForNodeBoxWithColorForParentBranch( node );
                 if ( to_pdf && ( outline_color == getTreeColorSet().getBranchColor() ) ) {
                     outline_color = getTreeColorSet().getBranchColorForPdf();
                 }
             }
-            if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
-                if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+            NodeShape shape = null;
+            if ( vis != null ) {
+                if ( vis.getShape() == NodeShape.CIRCLE ) {
+                    shape = NodeShape.CIRCLE;
+                }
+                else if ( vis.getShape() == NodeShape.RECTANGLE ) {
+                    shape = NodeShape.RECTANGLE;
+                }
+            }
+            if ( shape == null ) {
+                if ( getOptions().getDefaultNodeShape() == NodeShape.CIRCLE ) {
+                    shape = NodeShape.CIRCLE;
+                }
+                else if ( getOptions().getDefaultNodeShape() == NodeShape.RECTANGLE ) {
+                    shape = NodeShape.RECTANGLE;
+                }
+            }
+            NodeFill fill = null;
+            if ( vis != null ) {
+                if ( vis.getFillType() == NodeFill.SOLID ) {
+                    fill = NodeFill.SOLID;
+                }
+                else if ( vis.getFillType() == NodeFill.NONE ) {
+                    fill = NodeFill.NONE;
+                }
+                else if ( vis.getFillType() == NodeFill.GRADIENT ) {
+                    fill = NodeFill.GRADIENT;
+                }
+            }
+            if ( fill == null ) {
+                if ( getOptions().getDefaultNodeFill() == NodeFill.SOLID ) {
+                    fill = NodeFill.SOLID;
+                }
+                else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                    fill = NodeFill.NONE;
+                }
+                else if ( getOptions().getDefaultNodeFill() == NodeFill.GRADIENT ) {
+                    fill = NodeFill.GRADIENT;
+                }
+            }
+            Color vis_fill_color = null;
+            if ( ( vis != null ) && ( vis.getNodeColor() != null ) ) {
+                vis_fill_color = vis.getNodeColor();
+            }
+            if ( shape == NodeShape.CIRCLE ) {
+                if ( fill == NodeFill.GRADIENT ) {
                     drawOvalGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
                             : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeFill.NONE ) {
+                else if ( fill == NodeFill.NONE ) {
                     Color background = getBackground();
                     if ( to_pdf ) {
                         background = Color.WHITE;
@@ -4088,17 +4201,22 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       background,
                                       outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
-                    g.setColor( outline_color );
+                else if ( fill == NodeVisualData.NodeFill.SOLID ) {
+                    if ( vis_fill_color != null ) {
+                        g.setColor( vis_fill_color );
+                    }
+                    else {
+                        g.setColor( outline_color );
+                    }
                     drawOvalFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                 }
             }
-            else if ( getOptions().getDefaultNodeShape() == NodeVisualData.NodeShape.RECTANGLE ) {
-                if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.GRADIENT ) {
+            else if ( shape == NodeVisualData.NodeShape.RECTANGLE ) {
+                if ( fill == NodeVisualData.NodeFill.GRADIENT ) {
                     drawRectGradient( x - half_box_size, y - half_box_size, box_size, box_size, g, to_pdf ? Color.WHITE
                             : outline_color, to_pdf ? outline_color : getBackground(), outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.NONE ) {
+                else if ( fill == NodeVisualData.NodeFill.NONE ) {
                     Color background = getBackground();
                     if ( to_pdf ) {
                         background = Color.WHITE;
@@ -4112,8 +4230,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                       background,
                                       outline_color );
                 }
-                else if ( getOptions().getDefaultNodeFill() == NodeVisualData.NodeFill.SOLID ) {
-                    g.setColor( outline_color );
+                else if ( fill == NodeVisualData.NodeFill.SOLID ) {
+                    if ( vis_fill_color != null ) {
+                        g.setColor( vis_fill_color );
+                    }
+                    else {
+                        g.setColor( outline_color );
+                    }
                     drawRectFilled( x - half_box_size, y - half_box_size, box_size, box_size, g );
                 }
             }
@@ -4164,48 +4287,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else {
             _sb.setLength( 0 );
         }
-        if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
-            if ( _sb.length() > 0 ) {
-                _sb.append( " " );
-            }
-            _sb.append( node.getName() );
-        }
-        if ( node.getNodeData().isHasSequence() ) {
-            if ( getControlPanel().isShowSeqSymbols() && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
-                if ( _sb.length() > 0 ) {
-                    _sb.append( " " );
-                }
-                _sb.append( node.getNodeData().getSequence().getSymbol() );
-            }
-            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
-                if ( _sb.length() > 0 ) {
-                    _sb.append( " " );
-                }
-                _sb.append( node.getNodeData().getSequence().getGeneName() );
-            }
-            if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
-                if ( _sb.length() > 0 ) {
-                    _sb.append( " " );
-                }
-                _sb.append( node.getNodeData().getSequence().getName() );
-            }
-            if ( getControlPanel().isShowSequenceAcc() && ( node.getNodeData().getSequence().getAccession() != null ) ) {
-                if ( _sb.length() > 0 ) {
-                    _sb.append( " " );
-                }
-                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
-                    _sb.append( node.getNodeData().getSequence().getAccession().getSource() );
-                    _sb.append( ":" );
-                }
-                _sb.append( node.getNodeData().getSequence().getAccession().getValue() );
-            }
-        }
-        if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
-            if ( _sb.length() > 0 ) {
-                _sb.append( " " );
-            }
-            _sb.append( propertiesToString( node ) );
-        }
+        nodeDataAsSB( node, _sb );
         final boolean using_visual_font = setFont( g, node, is_in_found_nodes );
         float down_shift_factor = 3.0f;
         if ( !node.isExternal() && ( node.getNumberOfDescendants() == 1 ) ) {
@@ -4818,57 +4900,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     + ( getFontMetrics( g.getFont() ).getAscent() / ( node.getNumberOfDescendants() == 1 ? 1 : 3.0f ) );
         }
         _sb.setLength( 0 );
-        if ( _control_panel.isShowTaxonomyCode() && !ForesterUtil.isEmpty( taxonomy.getTaxonomyCode() ) ) {
-            _sb.append( taxonomy.getTaxonomyCode() );
-            _sb.append( " " );
-        }
-        if ( _control_panel.isShowTaxonomyScientificNames() && _control_panel.isShowTaxonomyCommonNames() ) {
-            if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() )
-                    && !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                if ( getOptions().isAbbreviateScientificTaxonNames()
-                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                    abbreviateScientificName( taxonomy.getScientificName() );
-                }
-                else {
-                    _sb.append( taxonomy.getScientificName() );
-                }
-                _sb.append( " (" );
-                _sb.append( taxonomy.getCommonName() );
-                _sb.append( ") " );
-            }
-            else if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
-                if ( getOptions().isAbbreviateScientificTaxonNames()
-                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                    abbreviateScientificName( taxonomy.getScientificName() );
-                }
-                else {
-                    _sb.append( taxonomy.getScientificName() );
-                }
-                _sb.append( " " );
-            }
-            else if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                _sb.append( taxonomy.getCommonName() );
-                _sb.append( " " );
-            }
-        }
-        else if ( _control_panel.isShowTaxonomyScientificNames() ) {
-            if ( !ForesterUtil.isEmpty( taxonomy.getScientificName() ) ) {
-                if ( getOptions().isAbbreviateScientificTaxonNames()
-                        && ( taxonomy.getScientificName().indexOf( ' ' ) > 0 ) ) {
-                    abbreviateScientificName( taxonomy.getScientificName() );
-                }
-                else {
-                    _sb.append( taxonomy.getScientificName() );
-                }
-                _sb.append( " " );
-            }
-        }
-        else if ( _control_panel.isShowTaxonomyCommonNames() ) {
-            if ( !ForesterUtil.isEmpty( taxonomy.getCommonName() ) ) {
-                _sb.append( taxonomy.getCommonName() );
-                _sb.append( " " );
-            }
-        }
+        nodeTaxonomyDataAsSB( taxonomy, _sb );
         final String label = _sb.toString();
         /* GUILHEM_BEG */
         if ( _control_panel.isShowSequenceRelations() && ( label.length() > 0 )

@@ -96,6 +96,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _phyloxml_ref_item;
     private JMenuItem                   _aptx_ref_item;
     private JMenuItem                   _remove_branch_color_item;
+    private JMenuItem                   _remove_visual_styles_item;
     private JCheckBoxMenuItem           _show_domain_labels;
     private JCheckBoxMenuItem           _show_annotation_ref_source;
     private JCheckBoxMenuItem           _color_labels_same_as_parent_branch;
@@ -163,6 +164,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
         else if ( o == _remove_branch_color_item ) {
             removeBranchColors();
+        }
+        else if ( o == _remove_visual_styles_item ) {
+            removeVisualStyles();
         }
         else if ( o == _switch_colors_mi ) {
             switchColors();
@@ -805,8 +809,13 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         customizeJMenuItem( _confcolor_item );
         _tools_menu.add( _taxcolor_item = new JMenuItem( "Taxonomy Colorize Branches" ) );
         customizeJMenuItem( _taxcolor_item );
-        _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete Branch Colors" ) );
-        _remove_branch_color_item.setToolTipText( "To delete branch color values from the current phylogeny." );
+        _tools_menu.addSeparator();
+        _tools_menu.add( _remove_visual_styles_item = new JMenuItem( "Delete All Visual Styles From Nodes" ) );
+        _remove_visual_styles_item
+                .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
+        customizeJMenuItem( _remove_visual_styles_item );
+        _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete All Colors From Branches" ) );
+        _remove_branch_color_item.setToolTipText( "To remove all branch color values from the current phylogeny." );
         customizeJMenuItem( _remove_branch_color_item );
         _tools_menu.addSeparator();
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
@@ -1483,6 +1492,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private void removeBranchColors() {
         if ( getMainPanel().getCurrentPhylogeny() != null ) {
             AptxUtil.removeBranchColors( getMainPanel().getCurrentPhylogeny() );
+        }
+    }
+
+    private void removeVisualStyles() {
+        if ( getMainPanel().getCurrentPhylogeny() != null ) {
+            AptxUtil.removeVisualStyles( getMainPanel().getCurrentPhylogeny() );
         }
     }
 

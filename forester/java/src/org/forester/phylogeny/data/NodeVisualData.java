@@ -14,6 +14,7 @@ import org.forester.util.ForesterUtil;
 public final class NodeVisualData implements PhylogenyData {
 
     public static final String APTX_VISUALIZATION_REF = "style:";
+    public static final int    DEFAULT_SIZE           = -1;
     public static final String FONT_COLOR_REF         = APTX_VISUALIZATION_REF + "font_color";
     public static final String FONT_COLOR_TYPE        = "xsd:token";
     public static final String FONT_REF               = APTX_VISUALIZATION_REF + "font";
@@ -26,16 +27,14 @@ public final class NodeVisualData implements PhylogenyData {
     public static final String FONT_STYLE_REF         = APTX_VISUALIZATION_REF + "font_style";
     public static final String FONT_STYLE_TYPE        = "xsd:token";
     public static final String FONT_TYPE              = "xsd:token";
-    public static final String NODE_BORDER_COLOR_REF  = APTX_VISUALIZATION_REF + "node_border_color";
-    public static final String NODE_BORDER_COLOR_TYPE = "xsd:token";
-    public static final String NODE_FILL_COLOR_REF    = APTX_VISUALIZATION_REF + "node_fill_color";
-    public static final String NODE_FILL_COLOR_TYPE   = "xsd:token";
+    public static final String NODE_COLOR_REF         = APTX_VISUALIZATION_REF + "node_color";
+    public static final String NODE_COLOR_TYPE        = "xsd:token";
     public static final String NODE_FILL_GRADIENT     = "gradient";
     public static final String NODE_FILL_NONE         = "none";
     public static final String NODE_FILL_SOLID        = "solid";
     public static final String NODE_FILL_TYPE_REF     = APTX_VISUALIZATION_REF + "node_fill_type";
     public static final String NODE_FILL_TYPE_TYPE    = "xsd:token";
-    public static final String NODE_SHAPE_CIRCLE      = "cicle";
+    public static final String NODE_SHAPE_CIRCLE      = "circle";
     public static final String NODE_SHAPE_RECTANGLE   = "rectangle";
     public static final String NODE_SHAPE_REF         = APTX_VISUALIZATION_REF + "node_shape";
     public static final String NODE_SHAPE_TYPE        = "xsd:token";
@@ -44,16 +43,14 @@ public final class NodeVisualData implements PhylogenyData {
     public static final String NODE_TRANSPARENCY_REF  = APTX_VISUALIZATION_REF + "node_transparency";
     public static final String NODE_TRANSPARENCY_TYPE = "xsd:float";
     private static final byte  DEFAULT_FONT_SIZE      = -1;
-    private static final int   DEFAULT_SIZE           = -1;
     private static final int   DEFAULT_TRANSPARENCY   = -1;
-    private Color              _border_color;
-    private Color              _fill_color;
     private NodeFill           _fill_type;
     private Font               _font;
     private Color              _font_color;
     private String             _font_name;
     private byte               _font_size;
     private FontType           _font_style;
+    private Color              _node_color;
     private NodeShape          _shape;
     private float              _size;
     private float              _transparency;
@@ -68,8 +65,7 @@ public final class NodeVisualData implements PhylogenyData {
                            final Color font_color,
                            final NodeShape shape,
                            final NodeFill fill_type,
-                           final Color border_color,
-                           final Color fill_color,
+                           final Color node_color,
                            final float size,
                            final float transparency ) {
         setFontName( font_name );
@@ -78,8 +74,7 @@ public final class NodeVisualData implements PhylogenyData {
         setFontColor( font_color );
         setShape( shape );
         setFillType( fill_type );
-        setBorderColor( border_color );
-        setFillColor( fill_color );
+        setNodeColor( node_color );
         setSize( size );
         setTransparency( transparency );
     }
@@ -104,20 +99,10 @@ public final class NodeVisualData implements PhylogenyData {
                                            .getGreen(), getFontColor().getBlue() ) : null,
                                    getShape(),
                                    getFillType(),
-                                   getBorderColor() != null ? new Color( getBorderColor().getRed(), getBorderColor()
-                                           .getGreen(), getBorderColor().getBlue() ) : null,
-                                   getFillColor() != null ? new Color( getFillColor().getRed(), getFillColor()
-                                           .getGreen(), getFillColor().getBlue() ) : null,
+                                   getNodeColor() != null ? new Color( getNodeColor().getRed(), getNodeColor()
+                                           .getGreen(), getNodeColor().getBlue() ) : null,
                                    getSize(),
                                    getTransparency() );
-    }
-
-    public final Color getBorderColor() {
-        return _border_color;
-    }
-
-    public final Color getFillColor() {
-        return _fill_color;
     }
 
     public final NodeFill getFillType() {
@@ -164,6 +149,10 @@ public final class NodeVisualData implements PhylogenyData {
         return Font.PLAIN;
     }
 
+    public final Color getNodeColor() {
+        return _node_color;
+    }
+
     public final NodeShape getShape() {
         return _shape;
     }
@@ -180,7 +169,7 @@ public final class NodeVisualData implements PhylogenyData {
         return ( ForesterUtil.isEmpty( getFontName() ) && ( getFontStyle() == FontType.PLAIN )
                 && ( getFontSize() == DEFAULT_FONT_SIZE ) && ( getFontColor() == null )
                 && ( getShape() == NodeShape.DEFAULT ) && ( getFillType() == NodeFill.DEFAULT )
-                && ( getBorderColor() == null ) && ( getFillColor() == null ) && ( getSize() == DEFAULT_SIZE ) && ( getTransparency() == DEFAULT_TRANSPARENCY ) );
+                && ( getNodeColor() == null ) && ( getSize() == DEFAULT_SIZE ) && ( getTransparency() == DEFAULT_TRANSPARENCY ) );
     }
 
     @Override
@@ -215,11 +204,10 @@ public final class NodeVisualData implements PhylogenyData {
                 return;
             }
         }
-        //
         else if ( prop.getRef().equals( NODE_SIZE_REF ) ) {
-            int s = -1;
+            float s = -1.0f;
             try {
-                s = Integer.parseInt( prop.getValue() );
+                s = Float.parseFloat( prop.getValue() );
             }
             catch ( final NumberFormatException e ) {
                 return;
@@ -228,42 +216,39 @@ public final class NodeVisualData implements PhylogenyData {
                 setSize( s );
             }
         }
-        else if ( prop.getRef().equals( NODE_FILL_COLOR_REF ) ) {
+        else if ( prop.getRef().equals( NODE_COLOR_REF ) ) {
             try {
-                setFillColor( Color.decode( prop.getValue() ) );
-            }
-            catch ( final NumberFormatException e ) {
-                return;
-            }
-        }
-        else if ( prop.getRef().equals( NODE_BORDER_COLOR_REF ) ) {
-            try {
-                setBorderColor( Color.decode( prop.getValue() ) );
+                setNodeColor( Color.decode( prop.getValue() ) );
             }
             catch ( final NumberFormatException e ) {
                 return;
             }
         }
         else if ( prop.getRef().equals( NODE_SHAPE_REF ) ) {
-            try {
-                setShape( prop.getValue() );
-            }
-            catch ( final NumberFormatException e ) {
-                return;
-            }
+            setShape( prop.getValue() );
         }
-    }
-
-    public final void setBorderColor( final Color border_color ) {
-        _border_color = border_color;
-    }
-
-    public final void setFillColor( final Color fill_color ) {
-        _fill_color = fill_color;
+        else if ( prop.getRef().equals( NODE_FILL_TYPE_REF ) ) {
+            setFillType( prop.getValue() );
+        }
     }
 
     public final void setFillType( final NodeFill fill_type ) {
         _fill_type = fill_type;
+    }
+
+    public final void setFillType( final String fill ) {
+        if ( fill.equalsIgnoreCase( NODE_FILL_NONE ) ) {
+            setFillType( NodeFill.NONE );
+        }
+        else if ( fill.equalsIgnoreCase( NODE_FILL_SOLID ) ) {
+            setFillType( NodeFill.SOLID );
+        }
+        else if ( fill.equalsIgnoreCase( NODE_FILL_GRADIENT ) ) {
+            setFillType( NodeFill.GRADIENT );
+        }
+        else {
+            setFillType( NodeFill.DEFAULT );
+        }
     }
 
     public final void setFontColor( final Color font_color ) {
@@ -326,6 +311,10 @@ public final class NodeVisualData implements PhylogenyData {
         }
     }
 
+    public final void setNodeColor( final Color node_color ) {
+        _node_color = node_color;
+    }
+
     public final void setShape( final NodeShape shape ) {
         _shape = shape;
     }
@@ -381,8 +370,7 @@ public final class NodeVisualData implements PhylogenyData {
         setFontColor( null );
         setShape( NodeShape.DEFAULT );
         setFillType( NodeFill.DEFAULT );
-        setBorderColor( null );
-        setFillColor( null );
+        setNodeColor( null );
         setSize( DEFAULT_SIZE );
         setTransparency( DEFAULT_TRANSPARENCY );
         _font = null;
@@ -443,18 +431,11 @@ public final class NodeVisualData implements PhylogenyData {
                                           NODE_SIZE_TYPE,
                                           AppliesTo.NODE ) );
         }
-        if ( getFillColor() != null ) {
-            properties.add( new Property( NODE_FILL_COLOR_REF,
-                                          colorToHex( getFillColor() ),
+        if ( getNodeColor() != null ) {
+            properties.add( new Property( NODE_COLOR_REF,
+                                          colorToHex( getNodeColor() ),
                                           "",
-                                          NODE_FILL_COLOR_TYPE,
-                                          AppliesTo.NODE ) );
-        }
-        if ( getBorderColor() != null ) {
-            properties.add( new Property( NODE_BORDER_COLOR_REF,
-                                          colorToHex( getBorderColor() ),
-                                          "",
-                                          NODE_BORDER_COLOR_TYPE,
+                                          NODE_COLOR_TYPE,
                                           AppliesTo.NODE ) );
         }
         if ( getFillType() != NodeFill.DEFAULT ) {

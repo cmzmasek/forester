@@ -57,20 +57,21 @@ public final class Configuration {
 
     final static String                     clickto_options[][]                                    = {
             { "Display Node Data", "display" }, { "Collapse/Uncollapse", "display" }, { "Root/Reroot", "display" },
-            { "Sub/Super Tree", "display" }, { "Swap Descendants", "display" }, { "Colorize Subtree(s)", "display" },
-            { "Colorize Node(s)", "display" }, { "Change Node Font", "display" }, { "Open Sequence DB", "display" },
-            { "Go to PDB", "display" }, { "Open Taxonomy DB", "display" }, { "Blast", "display" },
-            { "Cut Subtree", "display" }, { "Copy Subtree", "display" }, { "Paste Subtree", "display" },
-            { "Delete Subtree/Node", "display" }, { "Add New Node", "display" }, { "Edit Node Data", "display" },
-            { "Sort Descendants", "display" }, { "Return", "display" }, { "Select Node(s)", "display" } };
+            { "Go to Sub-/Super-Tree", "display" }, { "Swap Descendants", "display" },
+            { "Colorize Node(s)", "display" }, { "Change Node Font(s)", "display" },
+            { "Colorize Subtree(s)", "display" }, { "Open Sequence DB", "display" }, { "Open PDB", "display" },
+            { "Open Taxonomy DB", "display" }, { "Launch BLAST", "display" }, { "Cut Subtree", "display" },
+            { "Copy Subtree", "display" }, { "Paste Subtree", "display" }, { "Delete Subtree/Node", "display" },
+            { "Add New Node", "display" }, { "Edit Node Data", "display" }, { "Sort Descendants", "display" },
+            { "Return", "display" }, { "Select Node(s)", "display" }                              };
     final static int                        display_node_data                                      = 0;
     final static int                        collapse_uncollapse                                    = 1;
     final static int                        reroot                                                 = 2;
     final static int                        subtree                                                = 3;
     final static int                        swap                                                   = 4;
-    final static int                        color_subtree                                          = 5;
-    final static int                        color_node_font                                        = 6;
-    final static int                        change_node_font                                       = 7;
+    final static int                        color_node_font                                        = 5;
+    final static int                        change_node_font                                       = 6;
+    final static int                        color_subtree                                          = 7;
     final static int                        open_seq_web                                           = 8;
     final static int                        open_pdb_web                                           = 9;
     final static int                        open_tax_web                                           = 10;
@@ -91,7 +92,7 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
-            { "Use Visual Styles", "display", "no" }, { "Use Branch Widths", "display", "no" },
+            { "Visual Styles/Branch Colors", "display", "no" }, { "Branch Widths", "display", "no" },
             { "Show Custom Nodes", "display", "yes" }, { "Protein Domains", "nodisplay", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
             { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },

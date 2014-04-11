@@ -702,6 +702,12 @@ public final class AptxUtil {
         }
     }
 
+    final static void removeVisualStyles( final Phylogeny phy ) {
+        for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
+            it.next().getNodeData().setNodeVisualData( null );
+        }
+    }
+
     final static void unexpectedError( final Error e ) {
         System.err.println();
         e.printStackTrace( System.err );

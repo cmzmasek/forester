@@ -289,8 +289,13 @@ public final class MainFrameApplet extends MainFrame {
         customizeJMenuItem( _confcolor_item );
         _tools_menu.add( _taxcolor_item = new JMenuItem( "Taxonomy Colorize Branches" ) );
         customizeJMenuItem( _taxcolor_item );
-        _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete Branch Colors" ) );
-        _remove_branch_color_item.setToolTipText( "To delete branch color values from the current phylogeny." );
+        _tools_menu.addSeparator();
+        _tools_menu.add( _remove_visual_styles_item = new JMenuItem( "Delete All Visual Styles From Nodes" ) );
+        _remove_visual_styles_item
+                .setToolTipText( "To remove all node visual styles (fonts, colors) from the current phylogeny." );
+        customizeJMenuItem( _remove_visual_styles_item );
+        _tools_menu.add( _remove_branch_color_item = new JMenuItem( "Delete All Colors From Branches" ) );
+        _remove_branch_color_item.setToolTipText( "To remove all branch color values from the current phylogeny." );
         customizeJMenuItem( _remove_branch_color_item );
         _tools_menu.addSeparator();
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
