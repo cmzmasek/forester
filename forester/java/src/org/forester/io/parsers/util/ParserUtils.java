@@ -61,10 +61,14 @@ public final class ParserUtils {
     final public static Pattern  TAXOMONY_CODE_PATTERN_PFR       = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
                                                                          + TAX_CODE + ")\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN             = Pattern
-                                                                         .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]+_[a-z]{2,}(?:_[a-z][a-z0-9_]+)?)\\b" );
+                                                                         .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]+_[a-z]{2,30}(?:_[a-z][a-z0-9_]+)?)\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SN          = Pattern
-                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,}(?:[_ ][a-z]+)?)(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_I           = Pattern.compile( "([A-Z][a-z]{2,})" );
+                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}(?:[_ ][a-z]{2,30})?)(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1    = Pattern
+                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}[_ ](?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2    = Pattern
+                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS       = Pattern.compile( "([A-Z][a-z]{2,})" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                          + TAX_CODE + ")/\\d+-\\d+\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern
@@ -200,6 +204,14 @@ public final class ParserUtils {
         final Matcher m = TAXOMONY_SN_PATTERN.matcher( name );
         if ( m.find() ) {
             return m.group( 1 ).replace( '_', ' ' );
+        }
+        final Matcher m_str1 = TAXOMONY_SN_PATTERN_STRAIN_1.matcher( name );
+        if ( m_str1.find() ) {
+            return m_str1.group( 1 ).replace( '_', ' ' );
+        }
+        final Matcher m_str2 = TAXOMONY_SN_PATTERN_STRAIN_2.matcher( name );
+        if ( m_str2.find() ) {
+            return m_str2.group( 1 ).replace( '_', ' ' );
         }
         final Matcher m_sn = TAXOMONY_SN_PATTERN_SN.matcher( name );
         if ( m_sn.find() ) {

@@ -352,7 +352,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
         }
         if ( ut == null ) {
             String sn = "";
-            final Matcher m = ParserUtils.TAXOMONY_SN_PATTERN_I.matcher( simple_name );
+            final Matcher m = ParserUtils.TAXOMONY_SN_PATTERN_GENUS.matcher( simple_name );
             if ( m.matches() ) {
                 sn = m.group( 1 );
             }

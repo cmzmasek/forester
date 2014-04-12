@@ -312,6 +312,7 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.exit( -1 );
         System.out.print( "Uri for Aptx web sequence accession: " );
         if ( Test.testCreateUriForSeqWeb() ) {
             System.out.println( "OK." );
@@ -4198,7 +4199,56 @@ public final class Test {
                     .equals( "Mus musculus musculus" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus_bcl2" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_123" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_strain_K12/DH10B" )
+                    .equals( "Escherichia coli strain K12/DH10B" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_str_K12/DH10B" )
+                    .equals( "Escherichia coli str K12/DH10B" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli str. K12/DH10B" )
+                    .equals( "Escherichia coli str. K12/DH10B" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis_lyrata_subsp_lyrata" )
+                    .equals( "Arabidopsis lyrata subsp lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp. lyrata" )
+                    .equals( "Arabidopsis lyrata subsp. lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp. lyrata 395" )
+                    .equals( "Arabidopsis lyrata subsp. lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp. lyrata bcl2" )
+                    .equals( "Arabidopsis lyrata subsp. lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp lyrata bcl2" )
+                    .equals( "Arabidopsis lyrata subsp lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subspecies lyrata bcl2" )
+                    .equals( "Arabidopsis lyrata subspecies lyrata" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Verbascum sinuatum var. adenosepalum bcl2" )
+                    .equals( "Verbascum sinuatum var. adenosepalum" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12) " )
+                    .equals( "Escherichia coli (strain K12)" ) ) {
+                System.out.println( ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12)" ) );
                 return false;
             }
         }
