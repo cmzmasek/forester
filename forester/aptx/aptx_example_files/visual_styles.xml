@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <clade>
+    <branch_length>0.30159</branch_length>
+    <confidence type="bootstrap">97</confidence>
+    <events>
+      <duplications>1</duplications>
+    </events>
+    <clade>
+      <branch_length>0.15021</branch_length>
+      <confidence type="bootstrap">69</confidence>
+      <events>
+        <duplications>1</duplications>
+      </events>
+      <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+      <property ref="style:node_size" datatype="xsd:float" applies_to="node">12.0</property>
+      <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+      <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+      <clade>
+        <branch_length>0.04885</branch_length>
+        <confidence type="bootstrap">68</confidence>
+        <events>
+          <speciations>1</speciations>
+        </events>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">11.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ee</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+        <clade>
+          <branch_length>0.04633</branch_length>
+          <confidence type="bootstrap">59</confidence>
+          <events>
+            <speciations>1</speciations>
+          </events>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">10.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00dd</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+          <clade>
+            <branch_length>0.18918</branch_length>
+            <confidence type="bootstrap">100</confidence>
+            <events>
+              <speciations>1</speciations>
+            </events>
+            <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+            <property ref="style:node_size" datatype="xsd:float" applies_to="node">9.0</property>
+            <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00cc</property>
+            <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+            <clade>
+              <branch_length>0.07518</branch_length>
+              <confidence type="bootstrap">97</confidence>
+              <events>
+                <speciations>1</speciations>
+              </events>
+              <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+              <property ref="style:node_size" datatype="xsd:float" applies_to="node">8.0</property>
+              <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00bb</property>
+              <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+              <clade>
+                <branch_length>0.0073</branch_length>
+                <confidence type="bootstrap">100</confidence>
+                <events>
+                  <speciations>1</speciations>
+                </events>
+                <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+                <property ref="style:node_size" datatype="xsd:float" applies_to="node">7.0</property>
+                <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff0099</property>
+                <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+                <clade>
+                  <branch_length>0.0036</branch_length>
+                  <confidence type="bootstrap">91</confidence>
+                  <events>
+                    <speciations>1</speciations>
+                  </events>
+                  <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+                  <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+                  <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff0088</property>
+                  <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+                  <clade>
+                    <name>NP_001025424.1</name>
+                    <branch_length>1.0E-5</branch_length>
+                    <taxonomy>
+                      <id provider="uniprot">7955</id>
+                      <code>DANRE</code>
+                      <scientific_name>Danio rerio</scientific_name>
+                      <common_name>Zebrafish</common_name>
+                      <synonym>Brachydanio rerio</synonym>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <property ref="style:font" datatype="xsd:token" applies_to="node">Courier</property>
+                    <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+                    <property ref="style:font_color" datatype="xsd:token" applies_to="node">#00ffff</property>
+                    <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+                    <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff0000</property>
+                    <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+                  </clade>
+                  <clade>
+                    <branch_length>0.00327</branch_length>
+                    <taxonomy>
+                      <id provider="uniprot">9685</id>
+                      <code>FELCA</code>
+                      <scientific_name>Felis catus</scientific_name>
+                      <common_name>Cat</common_name>
+                      <synonym>Felis silvestris catus</synonym>
+                      <rank>species</rank>
+                    </taxonomy>
+                    <sequence>
+                      <accession source="ncbi">ABJ16409.1</accession>
+                      <name>BCL2</name>
+                    </sequence>
+                    <property ref="style:font" datatype="xsd:token" applies_to="node">Monospaced</property>
+                    <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+                    <property ref="style:font_style" datatype="xsd:token" applies_to="node">bold</property>
+                    <property ref="style:font_color" datatype="xsd:token" applies_to="node">#00ccff</property>
+                    <property ref="style:node_size" datatype="xsd:float" applies_to="node">5.0</property>
+                    <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+                    <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.00962</branch_length>
+                  <taxonomy>
+                    <id provider="uniprot">8355</id>
+                    <code>XENLA</code>
+                    <scientific_name>Xenopus laevis</scientific_name>
+                    <common_name>African clawed frog</common_name>
+                    <rank>species</rank>
+                  </taxonomy>
+                  <sequence>
+                    <name>AB427203</name>
+                  </sequence>
+                  <property ref="style:font" datatype="xsd:token" applies_to="node">Century Schoolbook L</property>
+                  <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">6</property>
+                  <property ref="style:font_style" datatype="xsd:token" applies_to="node">bold</property>
+                  <property ref="style:font_color" datatype="xsd:token" applies_to="node">#0099ff</property>
+                  <property ref="style:node_size" datatype="xsd:float" applies_to="node">7.0</property>
+                  <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffffff</property>
+                  <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+                </clade>
+              </clade>
+              <clade>
+                <name>BAH28834</name>
+                <branch_length>0.28745</branch_length>
+                <taxonomy>
+                  <id provider="uniprot">8355</id>
+                  <code>XENLA</code>
+                  <scientific_name>Xenopus laevis</scientific_name>
+                  <common_name>African clawed frog</common_name>
+                  <rank>species</rank>
+                </taxonomy>
+                <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+                <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">14</property>
+                <property ref="style:font_color" datatype="xsd:token" applies_to="node">#0033ff</property>
+                <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+                <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffffff</property>
+                <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.12824</branch_length>
+              <sequence>
+                <name>BCL2_CRIGR</name>
+              </sequence>
+              <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+              <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">10</property>
+              <property ref="style:font_style" datatype="xsd:token" applies_to="node">italic</property>
+              <property ref="style:font_color" datatype="xsd:token" applies_to="node">#3300ff</property>
+              <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+              <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+              <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffffff</property>
+              <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.38499</branch_length>
+            <taxonomy>
+              <id provider="uniprot">10029</id>
+              <code>CRIGR</code>
+              <scientific_name>Cricetulus griseus</scientific_name>
+              <common_name>Chinese hamster</common_name>
+              <synonym>Cricetulus barabensis griseus</synonym>
+              <rank>species</rank>
+            </taxonomy>
+            <sequence>
+              <mol_seq is_aligned="false">-maqagrtgydnreivmkyihyklsqrgyewdvgdvdaaplgaaptpgifsfqpesnptpavhrdmaartsplrpivattgptlspvppvvhltlrragddfsrryrrdfaemssqlhltpftargrfatvveelfrdgvnwgrivaffefggvmcvesvnremsplvdnialwmteylnrhlhtwiqdnggwdafvelygpsvrplfdfswlslktllslalvgacitlgtylghk</mol_seq>
+            </sequence>
+            <property ref="style:font" datatype="xsd:token" applies_to="node">SansSerif</property>
+            <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">10</property>
+            <property ref="style:font_color" datatype="xsd:token" applies_to="node">#6600ff</property>
+            <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+            <property ref="style:node_size" datatype="xsd:float" applies_to="node">5.5</property>
+            <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+            <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.37118</branch_length>
+          <confidence type="bootstrap">100</confidence>
+          <events>
+            <speciations>1</speciations>
+          </events>
+          <clade>
+            <branch_length>0.29315</branch_length>
+            <taxonomy>
+              <id provider="uniprot">9606</id>
+              <code>HUMAN</code>
+              <scientific_name>Homo sapiens</scientific_name>
+              <common_name>Human</common_name>
+              <rank>species</rank>
+            </taxonomy>
+            <sequence>
+              <accession source="bootstrap">_O95417_</accession>
+              <name>neuroendocrine-specific Golgi protein p55</name>
+            </sequence>
+            <property ref="style:font" datatype="xsd:token" applies_to="node">Serif</property>
+            <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+            <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+            <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+            <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+            <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+            <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+          </clade>
+          <clade>
+            <branch_length>0.18816</branch_length>
+            <taxonomy>
+              <id provider="uniprot">9606</id>
+              <code>HUMAN</code>
+              <scientific_name>Homo sapiens</scientific_name>
+              <common_name>Human</common_name>
+              <rank>species</rank>
+            </taxonomy>
+            <sequence>
+              <accession source="bootstrap">AAD11804</accession>
+              <name>neuroendocrine-specific Golgi protein p55</name>
+            </sequence>
+            <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+            <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">12</property>
+            <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ff0099</property>
+            <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+            <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+            <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+            <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">solid</property>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.4337</branch_length>
+        <confidence type="bootstrap">100</confidence>
+        <events>
+          <speciations>1</speciations>
+        </events>
+        <clade>
+          <branch_length>0.02104</branch_length>
+          <taxonomy>
+            <id provider="uniprot">9606</id>
+            <code>HUMAN</code>
+            <scientific_name>Homo sapiens</scientific_name>
+            <common_name>Human</common_name>
+            <rank>species</rank>
+          </taxonomy>
+          <sequence>
+            <accession source="bootstrap">4206780</accession>
+            <name>neuroendocrine-specific Golgi protein p55</name>
+          </sequence>
+          <reference>
+            <desc>Molecular characterization of XL2, a neuroendocrine-specific luminal Golgi-resident protein</desc>
+          </reference>
+          <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+          <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">13</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ff0000</property>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffff00</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+        </clade>
+        <clade>
+          <name>ceClcn_CE29336</name>
+          <branch_length>0.00466</branch_length>
+          <taxonomy>
+            <scientific_name>CAEEL</scientific_name>
+          </taxonomy>
+          <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+          <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">14</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ff6600</property>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">rectangle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ff00ff</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">none</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.27675</branch_length>
+      <confidence type="bootstrap">100</confidence>
+      <width>1.0</width>
+      <events>
+        <speciations>1</speciations>
+      </events>
+      <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+      <property ref="style:node_size" datatype="xsd:float" applies_to="node">12.0</property>
+      <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffff00</property>
+      <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+      <clade>
+        <branch_length>0.16193</branch_length>
+        <confidence type="bootstrap">100</confidence>
+        <width>6.0</width>
+        <events>
+          <speciations>1</speciations>
+        </events>
+        <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+        <property ref="style:node_size" datatype="xsd:float" applies_to="node">10.0</property>
+        <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffee00</property>
+        <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+        <clade>
+          <branch_length>0.06936</branch_length>
+          <confidence type="bootstrap">98</confidence>
+          <width>4.0</width>
+          <color>
+            <red>255</red>
+            <green>51</green>
+            <blue>0</blue>
+          </color>
+          <events>
+            <speciations>1</speciations>
+          </events>
+          <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+          <property ref="style:node_size" datatype="xsd:float" applies_to="node">8.0</property>
+          <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffdd00</property>
+          <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+          <clade>
+            <branch_length>0.03192</branch_length>
+            <confidence type="bootstrap">100</confidence>
+            <width>3.0</width>
+            <color>
+              <red>255</red>
+              <green>51</green>
+              <blue>0</blue>
+            </color>
+            <events>
+              <speciations>1</speciations>
+            </events>
+            <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+            <property ref="style:node_size" datatype="xsd:float" applies_to="node">6.0</property>
+            <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffdd00</property>
+            <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+            <clade>
+              <branch_length>0.02482</branch_length>
+              <confidence type="bootstrap">99</confidence>
+              <width>2.0</width>
+              <color>
+                <red>255</red>
+                <green>51</green>
+                <blue>0</blue>
+              </color>
+              <events>
+                <speciations>1</speciations>
+              </events>
+              <property ref="style:node_shape" datatype="xsd:token" applies_to="node">circle</property>
+              <property ref="style:node_size" datatype="xsd:float" applies_to="node">4.0</property>
+              <property ref="style:node_color" datatype="xsd:token" applies_to="node">#ffdd00</property>
+              <property ref="style:node_fill_type" datatype="xsd:token" applies_to="node">gradient</property>
+              <clade>
+                <name>rnClcn6</name>
+                <branch_length>0.01157</branch_length>
+                <color>
+                  <red>255</red>
+                  <green>51</green>
+                  <blue>0</blue>
+                </color>
+                <taxonomy>
+                  <scientific_name>RAT</scientific_name>
+                </taxonomy>
+                <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+                <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">15</property>
+                <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ffcc00</property>
+              </clade>
+              <clade>
+                <name>mmClcn6</name>
+                <branch_length>0.00537</branch_length>
+                <color>
+                  <red>255</red>
+                  <green>51</green>
+                  <blue>0</blue>
+                </color>
+                <taxonomy>
+                  <scientific_name>MOUSE</scientific_name>
+                </taxonomy>
+                <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+                <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">16</property>
+                <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ffff00</property>
+              </clade>
+            </clade>
+            <clade>
+              <name>hsCLCN6</name>
+              <branch_length>0.00234</branch_length>
+              <color>
+                <red>255</red>
+                <green>51</green>
+                <blue>0</blue>
+              </color>
+              <taxonomy>
+                <scientific_name>HUMAN</scientific_name>
+              </taxonomy>
+              <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+              <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">10</property>
+              <property ref="style:font_style" datatype="xsd:token" applies_to="node">bold</property>
+              <property ref="style:font_color" datatype="xsd:token" applies_to="node">#ccff00</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>ggClcn6</name>
+            <branch_length>0.08378</branch_length>
+            <color>
+              <red>255</red>
+              <green>51</green>
+              <blue>0</blue>
+            </color>
+            <taxonomy>
+              <scientific_name>CHICK</scientific_name>
+            </taxonomy>
+            <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+            <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">10</property>
+            <property ref="style:font_style" datatype="xsd:token" applies_to="node">italic</property>
+            <property ref="style:font_color" datatype="xsd:token" applies_to="node">#33ff00</property>
+          </clade>
+        </clade>
+        <clade>
+          <name>frClcn_g153343</name>
+          <branch_length>0.23936</branch_length>
+          <taxonomy>
+            <scientific_name>FUGRU</scientific_name>
+          </taxonomy>
+          <property ref="style:font" datatype="xsd:token" applies_to="node">Dialog</property>
+          <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">10</property>
+          <property ref="style:font_style" datatype="xsd:token" applies_to="node">bold_italic</property>
+          <property ref="style:font_color" datatype="xsd:token" applies_to="node">#00ff99</property>
+        </clade>
+      </clade>
+      <clade>
+        <name>ciClc_139586</name>
+        <branch_length>0.35537</branch_length>
+        <taxonomy>
+          <scientific_name>CIOIN</scientific_name>
+        </taxonomy>
+        <property ref="style:font" datatype="xsd:token" applies_to="node">Utopia</property>
+        <property ref="style:font_size" datatype="xsd:unsignedByte" applies_to="node">20</property>
+        <property ref="style:font_color" datatype="xsd:token" applies_to="node">#33ffcc</property>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

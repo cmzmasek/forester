@@ -249,7 +249,7 @@ display_color: confidence                 0x38B0DE
 display_color: branch_length              0x8C8C8C
 display_color: branch                     0xFFFFFF
 display_color: node_box                   0xFFFFFF
-display_color: collapsed                  0xFFFF00
+display_color: collapsed                  0xFFFFFF
 display_color: matching_a                 0x00FF00
 display_color: matching_b                 0xFF0000
 display_color: matching_a_and_b           0xFFFF00
