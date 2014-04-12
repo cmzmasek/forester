@@ -67,8 +67,8 @@ public final class ParserUtils {
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1    = Pattern
                                                                          .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}[_ ](?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2    = Pattern
-                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS       = Pattern.compile( "([A-Z][a-z]{2,})" );
+                                                                         .compile( "\\b([A-Z][a-z]+[_ ][a-z]{2,30}[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))(?:\\b|_)?" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS       = Pattern.compile( "([A-Z][a-z]{2,30})" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                          + TAX_CODE + ")/\\d+-\\d+\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern

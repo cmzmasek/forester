@@ -4246,9 +4246,12 @@ public final class Test {
                     .equals( "Verbascum sinuatum var. adenosepalum" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12) " )
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12)" )
                     .equals( "Escherichia coli (strain K12)" ) ) {
-                System.out.println( ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12)" ) );
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (strain K12) bcl2" )
+                    .equals( "Escherichia coli (strain K12)" ) ) {
                 return false;
             }
         }
