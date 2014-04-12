@@ -4254,6 +4254,14 @@ public final class Test {
                     .equals( "Escherichia coli (strain K12)" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (str. K12)" )
+                    .equals( "Escherichia coli (str. K12)" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (str. K12) bcl2" )
+                    .equals( "Escherichia coli (str. K12)" ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
