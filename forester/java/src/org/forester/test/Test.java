@@ -4206,6 +4206,9 @@ public final class Test {
             if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_123" ).equals( "Mus musculus" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Pilostyles mexicana Mexico Breedlove 27233" ).equals( "Pilostyles mexicana" ) ) {
+                return false;
+            }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_strain_K12/DH10B" )
                     .equals( "Escherichia coli strain K12/DH10B" ) ) {
                 return false;
@@ -4260,6 +4263,28 @@ public final class Test {
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (str. K12) bcl2" )
                     .equals( "Escherichia coli (str. K12)" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp." )
+                    .equals( "Macrocera sp." ) ) {
+                
+                 return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. 123" )
+                    .equals( "Macrocera sp." ) ) {
+                
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. K12" )
+                    .equals( "Macrocera sp." ) ) {
+                
+                
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "something Macrocera sp. K12" )
+                    .equals( "Macrocera sp." ) ) {
+                
+                
                 return false;
             }
         }
