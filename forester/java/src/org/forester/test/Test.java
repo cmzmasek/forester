@@ -4286,6 +4286,11 @@ public final class Test {
                 
                 
                 return false;
+            } if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" )
+                    .equals( "Macrocera sp" ) ) {
+                
+                
+                return false;
             }
         }
         catch ( final Exception e ) {
