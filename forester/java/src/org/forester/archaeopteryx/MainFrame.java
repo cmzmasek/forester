@@ -1407,8 +1407,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             if ( !ForesterUtil.isEmpty( _mainpanel.getCurrentPhylogeny().getName() ) ) {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
-            showTextFrame( _mainpanel.getCurrentPhylogeny()
-                                   .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
+            showTextFrame( _mainpanel.getCurrentPhylogeny().toNewHampshire( getOptions()
+                                   .getNhConversionSupportValueStyle() ),
                            title );
         }
     }

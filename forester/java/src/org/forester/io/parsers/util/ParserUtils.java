@@ -55,29 +55,43 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final public static String   TAX_CODE                        = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
-    final public static Pattern  TAXOMONY_CODE_PATTERN_A         = Pattern.compile( "(?:\\b|_)(" + TAX_CODE + ")\\b" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
-    final public static Pattern  TAXOMONY_CODE_PATTERN_PFR       = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
-                                                                         + TAX_CODE + ")\\b" );
-    final public static Pattern  TAXOMONY_SN_PATTERN             = Pattern
-                                                                         .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]{2,30}_[a-z]{3,30}(?:_[a-z][a-z0-9_]+)?)\\b" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_SN          = Pattern
-                                                                         .compile( "\\b([A-Z][a-z]{2,30}[_ ][a-z]{3,30}(?:[_ ][a-z]{3,30})?)(?:\\b|_)?" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1    = Pattern
-                                                                         .compile( "\\b([A-Z][a-z]{2,30}[_ ][a-z]{3,30}[_ ](?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2    = Pattern
-                                                                         .compile( "\\b([A-Z][a-z]{2,30}[_ ][a-z]{3,30}[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))(?:\\b|_)?" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_SP    = Pattern
-            .compile( "\\b([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
-
-    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS       = Pattern.compile( "([A-Z][a-z]{2,30})" );
-    final private static Pattern TAXOMONY_CODE_PATTERN_PFS       = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
-                                                                         + TAX_CODE + ")/\\d+-\\d+\\b" );
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR = Pattern
-                                                                         .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
-    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS = Pattern
-                                                                         .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
+    final public static String   TAX_CODE                             = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
+    final private static String  SN_BN                                = "[A-Z][a-z]{2,30}[_ ][a-z]{3,30}";
+    final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
+                                                                              + ")\\b" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED      = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_PFR            = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
+                                                                              + TAX_CODE + ")\\b" );
+    // final public static Pattern  TAXOMONY_SN_PATTERN                  = Pattern
+    //                                                                            .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]{2,30}_[a-z]{3,30}(?:_[a-z][a-z0-9_]+)?)\\b" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SN               = Pattern.compile( "(?:\\b|_)(" + SN_BN
+                                                                              + ")(?:(\\s*$)|([_ ][a-z]*[A-Z0-9]))" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SNS              = Pattern.compile( "(?:\\b|_)(" + SN_BN
+                                                                              + "[_ ][a-z]{3,30}"
+                                                                              + ")[_ ][a-z]*[A-Z0-9]" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SNS2             = Pattern.compile( "[A-Z0-9][a-z]*[_ ](" + SN_BN
+                                                                              + "[_ ][a-z]{3,30}" + ")\\s*$" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1         = Pattern
+                                                                              .compile( "(?:\\b|_)("
+                                                                                      + SN_BN
+                                                                                      + "[_ ](?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2         = Pattern
+                                                                              .compile( "(?:\\b|_)("
+                                                                                      + SN_BN
+                                                                                      + "[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_SUBSTRAIN = Pattern
+                                                                              .compile( "(?:\\b|_)("
+                                                                                      + SN_BN
+                                                                                      + "[_ ]str[a-z]{0,3}\\.?[_ ]\\S{1,60}[_ ]substr[a-z]{0,3}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SP               = Pattern
+                                                                              .compile( "(?:\\b|_)([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS            = Pattern.compile( "([A-Z][a-z]{2,30})" );
+    final private static Pattern TAXOMONY_CODE_PATTERN_PFS            = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
+                                                                              + TAX_CODE + ")/\\d+-\\d+\\b" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR      = Pattern
+                                                                              .compile( "(?:\\b|_)[A-Z0-9]{1,}_(\\d{1,7})\\b" );
+    final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFS      = Pattern
+                                                                              .compile( "(?:\\b|_)[A-Z0-9]{4,}_(\\d{1,7})/\\d+-\\d+\\b" );
 
     final public static PhylogenyParser createParserDependingFileContents( final File file,
                                                                            final boolean phyloxml_validate_against_xsd )
@@ -204,26 +218,62 @@ public final class ParserUtils {
     }
 
     public final static String extractScientificNameFromNodeName( final String name ) {
-        final Matcher m = TAXOMONY_SN_PATTERN.matcher( name );
-        if ( m.find() ) {
-            return m.group( 1 ).replace( '_', ' ' );
+        //  final Matcher m = TAXOMONY_SN_PATTERN.matcher( name );
+        //  if ( m.find() ) {
+        //      return m.group( 1 ).replace( '_', ' ' );
+        //  }
+        final Matcher m_ss = TAXOMONY_SN_PATTERN_STRAIN_SUBSTRAIN.matcher( name );
+        if ( m_ss.find() ) {
+            String s = m_ss.group( 1 ).replace( '_', ' ' );
+            if ( s.indexOf( " str " ) > 4 ) {
+                s = s.replaceFirst( " str ", " str. " );
+            }
+            if ( s.indexOf( " substr " ) > 4 ) {
+                s = s.replaceFirst( " substr ", " substr. " );
+            }
+            return s;
         }
         final Matcher m_str1 = TAXOMONY_SN_PATTERN_STRAIN_1.matcher( name );
         if ( m_str1.find() ) {
-            return m_str1.group( 1 ).replace( '_', ' ' );
+            String s = m_str1.group( 1 ).replace( '_', ' ' );
+            if ( s.indexOf( " str " ) > 4 ) {
+                s = s.replaceFirst( " str ", " str. " );
+            }
+            else if ( s.indexOf( " subsp " ) > 4 ) {
+                s = s.replaceFirst( " subsp ", " subsp. " );
+            }
+            else if ( s.indexOf( " var " ) > 4 ) {
+                s = s.replaceFirst( " var ", " var. " );
+            }
+            return s;
         }
         final Matcher m_str2 = TAXOMONY_SN_PATTERN_STRAIN_2.matcher( name );
         if ( m_str2.find() ) {
-            return m_str2.group( 1 ).replace( '_', ' ' );
+            String s = m_str2.group( 1 ).replace( '_', ' ' );
+            if ( s.indexOf( " (str " ) > 4 ) {
+                s = s.replaceFirst( " \\(str ", " (str. " );
+            }
+            else if ( s.indexOf( " (subsp " ) > 4 ) {
+                s = s.replaceFirst( " \\(subsp ", " (subsp. " );
+            }
+            else if ( s.indexOf( " (var " ) > 4 ) {
+                s = s.replaceFirst( " \\(var ", " (var. " );
+            }
+            return s;
+        }
+        final Matcher m_sns = TAXOMONY_SN_PATTERN_SNS.matcher( name );
+        if ( m_sns.find() ) {
+            return m_sns.group( 1 ).replace( '_', ' ' );
+        }
+        final Matcher m_sns2 = TAXOMONY_SN_PATTERN_SNS2.matcher( name );
+        if ( m_sns2.find() ) {
+            return m_sns2.group( 1 ).replace( '_', ' ' );
         }
         final Matcher m_sn = TAXOMONY_SN_PATTERN_SN.matcher( name );
-       
         if ( m_sn.find() ) {
             return m_sn.group( 1 ).replace( '_', ' ' );
         }
-        
         final Matcher m_sp = TAXOMONY_SN_PATTERN_SP.matcher( name );
-        
         if ( m_sp.find() ) {
             return m_sp.group( 1 ).replace( '_', ' ' );
         }

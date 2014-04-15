@@ -72,7 +72,6 @@ public final class PhylogenyWriter {
     private PhylogenyNode               _root;
     private boolean                     _has_next;
     private Stack<PostOrderStackObject> _stack;
-    private boolean                     _simple_nh;
     private boolean                     _nh_write_distance_to_parent;
     NH_CONVERSION_SUPPORT_VALUE_STYLE   _nh_conversion_support_style;
     private boolean                     _indent_phyloxml;
@@ -202,10 +201,6 @@ public final class PhylogenyWriter {
         return _saw_comma;
     }
 
-    private boolean isSimpleNH() {
-        return _simple_nh;
-    }
-
     private boolean isWriteDistanceToParentInNH() {
         return _nh_write_distance_to_parent;
     }
@@ -307,10 +302,6 @@ public final class PhylogenyWriter {
         _saw_comma = saw_comma;
     }
 
-    private void setSimpleNH( final boolean simple_nh ) {
-        _simple_nh = simple_nh;
-    }
-
     private void setStack( final Stack<PostOrderStackObject> stack ) {
         _stack = stack;
     }
@@ -324,62 +315,53 @@ public final class PhylogenyWriter {
     }
 
     public void toNewHampshire( final List<Phylogeny> trees,
-                                final boolean simple_nh,
                                 final boolean write_distance_to_parent,
                                 final File out_file,
                                 final String separator ) throws IOException {
         final Iterator<Phylogeny> it = trees.iterator();
         final StringBuffer sb = new StringBuffer();
         while ( it.hasNext() ) {
-            sb.append( toNewHampshire( it.next(), simple_nh, write_distance_to_parent ) );
+            sb.append( toNewHampshire( it.next(), write_distance_to_parent ) );
             sb.append( separator );
         }
         writeToFile( sb, out_file );
     }
 
     public StringBuffer toNewHampshire( final Phylogeny tree,
-                                        final boolean simple_nh,
                                         final boolean nh_write_distance_to_parent,
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) throws IOException {
         setOutputFormt( FORMAT.NH );
         setNhConversionSupportStyle( svs );
-        setSimpleNH( simple_nh );
         setWriteDistanceToParentInNH( nh_write_distance_to_parent );
         return getOutput( tree );
     }
 
-    public StringBuffer toNewHampshire( final Phylogeny tree,
-                                        final boolean simple_nh,
-                                        final boolean nh_write_distance_to_parent ) throws IOException {
+    public StringBuffer toNewHampshire( final Phylogeny tree, final boolean nh_write_distance_to_parent )
+            throws IOException {
         setOutputFormt( FORMAT.NH );
-        setSimpleNH( simple_nh );
         setWriteDistanceToParentInNH( nh_write_distance_to_parent );
         return getOutput( tree );
     }
 
-    public void toNewHampshire( final Phylogeny tree,
-                                final boolean simple_nh,
-                                final boolean write_distance_to_parent,
-                                final File out_file ) throws IOException {
-        writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent ), out_file );
+    public void toNewHampshire( final Phylogeny tree, final boolean write_distance_to_parent, final File out_file )
+            throws IOException {
+        writeToFile( toNewHampshire( tree, write_distance_to_parent ), out_file );
     }
 
     public void toNewHampshire( final Phylogeny tree,
-                                final boolean simple_nh,
                                 final boolean write_distance_to_parent,
                                 final NH_CONVERSION_SUPPORT_VALUE_STYLE svs,
                                 final File out_file ) throws IOException {
-        writeToFile( toNewHampshire( tree, simple_nh, write_distance_to_parent, svs ), out_file );
+        writeToFile( toNewHampshire( tree, write_distance_to_parent, svs ), out_file );
     }
 
     public void toNewHampshire( final Phylogeny[] trees,
-                                final boolean simple_nh,
                                 final boolean write_distance_to_parent,
                                 final File out_file,
                                 final String separator ) throws IOException {
         final StringBuffer sb = new StringBuffer();
         for( final Phylogeny element : trees ) {
-            sb.append( toNewHampshire( element, simple_nh, write_distance_to_parent ) );
+            sb.append( toNewHampshire( element, write_distance_to_parent ) );
             sb.append( separator );
         }
         writeToFile( sb, out_file );
@@ -575,9 +557,7 @@ public final class PhylogenyWriter {
             getBuffer().append( node.toNewHampshireX() );
         }
         else if ( getOutputFormt() == FORMAT.NH ) {
-            getBuffer().append( node.toNewHampshire( isSimpleNH(),
-                                                     isWriteDistanceToParentInNH(),
-                                                     getNhConversionSupportStyle() ) );
+            getBuffer().append( node.toNewHampshire( isWriteDistanceToParentInNH(), getNhConversionSupportStyle() ) );
         }
     }
 
@@ -754,7 +734,7 @@ public final class PhylogenyWriter {
             else {
                 writer.write( "[&U]" );
             }
-            writer.write( phylogeny.toNewHampshire( false, svs ) );
+            writer.write( phylogeny.toNewHampshire( svs ) );
             writer.write( ForesterUtil.LINE_SEPARATOR );
             i++;
         }

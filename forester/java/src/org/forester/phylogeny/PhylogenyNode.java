@@ -86,7 +86,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     private PhylogenyNode( final String nhx,
                            final NHXParser.TAXONOMY_EXTRACTION taxonomy_extraction,
                            final boolean replace_underscores ) throws NHXFormatException, PhyloXmlDataFormatException {
-        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores, false );
+        NHXParser.parseNHX( nhx, this, taxonomy_extraction, replace_underscores, false, false );
         setId( PhylogenyNode.getNodeCount() );
         PhylogenyNode.increaseNodeCount();
         setSumExtNodes( 1 ); // For ext node, this number is 1 (not 0!!).
@@ -887,8 +887,7 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     // ---------------------------------------------------------
     // Writing of Nodes to Strings
     // ---------------------------------------------------------
-    final public String toNewHampshire( final boolean simple_nh,
-                                        final boolean write_distance_to_parent,
+    final public String toNewHampshire( final boolean write_distance_to_parent,
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
         final StringBuilder sb = new StringBuilder();
         String data = "";
@@ -922,11 +921,9 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
                 data = getNodeData().getSequence().getName();
             }
         }
+        data = data.trim();
         if ( data.length() > 0 ) {
-            data = ForesterUtil.replaceIllegalNhCharacters( data );
-            if ( simple_nh && ( data.length() > 10 ) ) {
-                data = data.substring( 0, 11 );
-            }
+            data = data.replaceAll( "'", "_" );
             if ( ForesterUtil.isContainsParanthesesableNhCharacter( data ) ) {
                 sb.append( '\'' );
                 sb.append( data );
@@ -960,7 +957,8 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
         final StringBuffer sb = new StringBuffer();
         final StringBuffer s_nhx = new StringBuffer();
         if ( !ForesterUtil.isEmpty( getName() ) ) {
-            final String name = ForesterUtil.replaceIllegalNhCharacters( getName() );
+            //final String name = ForesterUtil.replaceIllegalNhCharacters( getName() );
+            final String name = getName().trim();
             if ( ForesterUtil.isContainsParanthesesableNhCharacter( name ) ) {
                 sb.append( '\'' );
                 sb.append( name );

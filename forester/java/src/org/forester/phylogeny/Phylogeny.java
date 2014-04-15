@@ -1098,14 +1098,12 @@ public class Phylogeny {
     }
 
     public String toNewHampshire() {
-        return toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
+        return toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE );
     }
 
-    public String toNewHampshire( final boolean simple_nh,
-                                  final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_style ) {
+    public String toNewHampshire( final NH_CONVERSION_SUPPORT_VALUE_STYLE nh_conversion_support_style ) {
         try {
-            return new PhylogenyWriter().toNewHampshire( this, simple_nh, true, nh_conversion_support_style )
-                    .toString();
+            return new PhylogenyWriter().toNewHampshire( this, true, nh_conversion_support_style ).toString();
         }
         catch ( final IOException e ) {
             throw new Error( "this should not have happend: " + e.getMessage() );

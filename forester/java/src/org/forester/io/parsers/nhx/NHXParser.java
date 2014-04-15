@@ -70,6 +70,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
     final static private byte    STRING                                     = 0;
     final static private byte    STRING_BUFFER                              = 1;
     final static private byte    STRING_BUILDER                             = 4;
+    final static private char    BELL                                       = 7;
     private boolean              _allow_errors_in_distance_to_parent;
     private int                  _clade_level;
     private StringBuilder        _current_anotation;
@@ -296,7 +297,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       _current_phylogeny.getRoot(),
                       getTaxonomyExtraction(),
                       isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent() );
+                      isAllowErrorsInDistanceToParent(),
+                      true );
             if ( GUESS_IF_SUPPORT_VALUES ) {
                 if ( isBranchLengthsLikeBootstrapValues( _current_phylogeny ) ) {
                     moveBranchLengthsToConfidenceValues( _current_phylogeny );
@@ -321,7 +323,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                   new_node,
                   getTaxonomyExtraction(),
                   isReplaceUnderscores(),
-                  isAllowErrorsInDistanceToParent() );
+                  isAllowErrorsInDistanceToParent(),
+                  true );
         _current_phylogeny = new Phylogeny();
         _current_phylogeny.setRoot( new_node );
         return _current_phylogeny;
@@ -418,7 +421,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _in_double_quote = false;
                 }
                 else {
-                    _current_anotation.append( c );
+                    _current_anotation.append( c != ':' ? c : BELL );
                 }
             }
             else if ( c == '"' ) {
@@ -429,7 +432,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _in_single_quote = false;
                 }
                 else {
-                    _current_anotation.append( c );
+                    _current_anotation.append( c != ':' ? c : BELL );
                 }
             }
             else if ( c == 39 ) {
@@ -505,7 +508,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       new_node,
                       getTaxonomyExtraction(),
                       isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent() );
+                      isAllowErrorsInDistanceToParent(),
+                      true );
             _current_anotation = new StringBuilder();
             _current_node.addAsChild( new_node );
         }
@@ -514,7 +518,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       _current_node.getLastChildNode(),
                       getTaxonomyExtraction(),
                       isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent() );
+                      isAllowErrorsInDistanceToParent(),
+                      true );
             _current_anotation = new StringBuilder();
         }
         if ( !_current_node.isRoot() ) {
@@ -530,7 +535,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       new_node,
                       getTaxonomyExtraction(),
                       isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent() );
+                      isAllowErrorsInDistanceToParent(),
+                      true );
             if ( _current_node == null ) {
                 throw new NHXFormatException( "format might not be NH or NHX" );
             }
@@ -541,7 +547,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                       _current_node.getLastChildNode(),
                       getTaxonomyExtraction(),
                       isReplaceUnderscores(),
-                      isAllowErrorsInDistanceToParent() );
+                      isAllowErrorsInDistanceToParent(),
+                      true );
         }
         _current_anotation = new StringBuilder();
         _saw_closing_paren = false;
@@ -583,7 +590,8 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                                        final PhylogenyNode node_to_annotate,
                                        final TAXONOMY_EXTRACTION taxonomy_extraction,
                                        final boolean replace_underscores,
-                                       final boolean allow_errors_in_distance_to_parent ) throws NHXFormatException,
+                                       final boolean allow_errors_in_distance_to_parent,
+                                       final boolean replace_bell ) throws NHXFormatException,
             PhyloXmlDataFormatException {
         if ( ( taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) && replace_underscores ) {
             throw new IllegalArgumentException( "cannot extract taxonomies and replace under scores at the same time" );
@@ -592,6 +600,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             if ( replace_underscores ) {
                 s = s.replaceAll( "_+", " " );
             }
+            s = s.replaceAll( "\\s+", " " ).trim();
             boolean is_nhx = false;
             final int ob = s.indexOf( "[" );
             if ( ob > -1 ) {
@@ -623,14 +632,30 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
             final StringTokenizer t = new StringTokenizer( s, ":" );
             if ( t.countTokens() > 0 ) {
                 if ( !s.startsWith( ":" ) ) {
-                    node_to_annotate.setName( t.nextToken() );
+                    if ( ( s.indexOf( BELL ) <= -1 ) || !replace_bell ) {
+                        node_to_annotate.setName( t.nextToken() );
+                    }
+                    else {
+                        node_to_annotate.setName( t.nextToken().replace( BELL, ':' ) );
+                    }
                     if ( !replace_underscores && ( !is_nhx && ( taxonomy_extraction != TAXONOMY_EXTRACTION.NO ) ) ) {
                         ParserUtils.extractTaxonomyDataFromNodeName( node_to_annotate, taxonomy_extraction );
                     }
                 }
                 while ( t.hasMoreTokens() ) {
                     s = t.nextToken();
-                    if ( s.startsWith( NHXtags.SPECIES_NAME ) ) {
+                    if ( ( s.indexOf( BELL ) > -1 ) && replace_bell ) {
+                        s = s.replace( BELL, ':' );
+                    }
+                    if ( s.indexOf( '=' ) < 0 ) {
+                        if ( ( node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT )
+                                && !allow_errors_in_distance_to_parent ) {
+                            throw new NHXFormatException( "error in NHX formatted data: more than one distance to parent:"
+                                    + "\"" + s + "\"" );
+                        }
+                        node_to_annotate.setDistanceToParent( doubleValue( s, allow_errors_in_distance_to_parent ) );
+                    }
+                    else if ( s.startsWith( NHXtags.SPECIES_NAME ) ) {
                         if ( !node_to_annotate.getNodeData().isHasTaxonomy() ) {
                             node_to_annotate.getNodeData().setTaxonomy( new Taxonomy() );
                         }
@@ -671,14 +696,6 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                             node_to_annotate.getNodeData().setSequence( new Sequence() );
                         }
                         node_to_annotate.getNodeData().getSequence().setName( s.substring( 3 ) );
-                    }
-                    else if ( s.indexOf( '=' ) < 0 ) {
-                        if ( ( node_to_annotate.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT )
-                                && !allow_errors_in_distance_to_parent ) {
-                            throw new NHXFormatException( "error in NHX formatted data: more than one distance to parent:"
-                                    + "\"" + s + "\"" );
-                        }
-                        node_to_annotate.setDistanceToParent( doubleValue( s, allow_errors_in_distance_to_parent ) );
                     }
                 } // while ( t.hasMoreTokens() ) 
             }

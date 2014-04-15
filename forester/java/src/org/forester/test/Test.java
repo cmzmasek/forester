@@ -312,7 +312,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.exit( -1 );
         System.out.print( "Uri for Aptx web sequence accession: " );
         if ( Test.testCreateUriForSeqWeb() ) {
             System.out.println( "OK." );
@@ -385,6 +384,7 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
+        System.exit( 0 );
         System.out.print( "Nexus characters parsing: " );
         if ( Test.testNexusCharactersParsing() ) {
             System.out.println( "OK." );
@@ -3468,7 +3468,7 @@ public final class Test {
             if ( t4.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            String s = w.toNewHampshire( t4, false, true ).toString();
+            String s = w.toNewHampshire( t4, true ).toString();
             if ( !s.equals( "((A,(B11,B12)),(C,D));" ) ) {
                 return false;
             }
@@ -3489,7 +3489,7 @@ public final class Test {
             if ( !n.getName().equals( "D" ) ) {
                 return false;
             }
-            s = w.toNewHampshire( t4, false, true ).toString();
+            s = w.toNewHampshire( t4, true ).toString();
             if ( !s.equals( "((A,B12),D);" ) ) {
                 return false;
             }
@@ -3498,7 +3498,7 @@ public final class Test {
             if ( t5.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t5, false, true ).toString();
+            s = w.toNewHampshire( t5, true ).toString();
             if ( !s.equals( "(((B11,B12),B2),(C,D));" ) ) {
                 return false;
             }
@@ -3507,7 +3507,7 @@ public final class Test {
             if ( t6.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t6, false, false ).toString();
+            s = w.toNewHampshire( t6, false ).toString();
             if ( !s.equals( "((A,(B12,B2)),(C,D));" ) ) {
                 return false;
             }
@@ -3516,7 +3516,7 @@ public final class Test {
             if ( t7.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t7, false, true ).toString();
+            s = w.toNewHampshire( t7, true ).toString();
             if ( !s.equals( "((A,(B11,B2)),(C,D));" ) ) {
                 return false;
             }
@@ -3525,7 +3525,7 @@ public final class Test {
             if ( t8.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t8, false, false ).toString();
+            s = w.toNewHampshire( t8, false ).toString();
             if ( !s.equals( "((A,(B11,B12)),(C,D));" ) ) {
                 return false;
             }
@@ -3534,7 +3534,7 @@ public final class Test {
             if ( t9.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t9, false, true ).toString();
+            s = w.toNewHampshire( t9, true ).toString();
             if ( !s.equals( "((A,((B11,B12),B2)),D);" ) ) {
                 return false;
             }
@@ -3543,7 +3543,7 @@ public final class Test {
             if ( t10.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t10, false, true ).toString();
+            s = w.toNewHampshire( t10, true ).toString();
             if ( !s.equals( "((A,((B11,B12),B2)),C);" ) ) {
                 return false;
             }
@@ -3552,7 +3552,7 @@ public final class Test {
             if ( t11.getNumberOfExternalNodes() != 2 ) {
                 return false;
             }
-            s = w.toNewHampshire( t11, false, true ).toString();
+            s = w.toNewHampshire( t11, true ).toString();
             if ( !s.equals( "(B,C);" ) ) {
                 return false;
             }
@@ -3560,7 +3560,7 @@ public final class Test {
             if ( t11.getNumberOfExternalNodes() != 1 ) {
                 return false;
             }
-            s = w.toNewHampshire( t11, false, false ).toString();
+            s = w.toNewHampshire( t11, false ).toString();
             if ( !s.equals( "B;" ) ) {
                 return false;
             }
@@ -3569,7 +3569,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 8 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "((A1,A2,A3),(B1,B3),(C1,C2,C3));" ) ) {
                 return false;
             }
@@ -3577,7 +3577,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 7 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "((A1,A2,A3),B1,(C1,C2,C3));" ) ) {
                 return false;
             }
@@ -3585,7 +3585,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 6 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "((A1,A2,A3),B1,(C1,C2));" ) ) {
                 return false;
             }
@@ -3593,7 +3593,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "((A2,A3),B1,(C1,C2));" ) ) {
                 return false;
             }
@@ -3601,7 +3601,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 4 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "((A2,A3),(C1,C2));" ) ) {
                 return false;
             }
@@ -3609,7 +3609,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 3 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "(A2,(C1,C2));" ) ) {
                 return false;
             }
@@ -3617,7 +3617,7 @@ public final class Test {
             if ( t12.getNumberOfExternalNodes() != 2 ) {
                 return false;
             }
-            s = w.toNewHampshire( t12, false, true ).toString();
+            s = w.toNewHampshire( t12, true ).toString();
             if ( !s.equals( "(C1,C2);" ) ) {
                 return false;
             }
@@ -3626,7 +3626,7 @@ public final class Test {
             if ( t13.getNumberOfExternalNodes() != 4 ) {
                 return false;
             }
-            s = w.toNewHampshire( t13, false, true ).toString();
+            s = w.toNewHampshire( t13, true ).toString();
             if ( !s.equals( "(A,B,C,E:5.0);" ) ) {
                 return false;
             }
@@ -3635,7 +3635,7 @@ public final class Test {
             if ( t14.getNumberOfExternalNodes() != 5 ) {
                 return false;
             }
-            s = w.toNewHampshire( t14, false, true ).toString();
+            s = w.toNewHampshire( t14, true ).toString();
             if ( !s.equals( "((A,B,C,D:1.1),F);" ) ) {
                 return false;
             }
@@ -4177,25 +4177,95 @@ public final class Test {
             if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus" ).equals( "Mus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus_musculus" )
+            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2 Mus musculus" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_BCDO2" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus musculus musculus BCDO2" )
                     .equals( "Mus musculus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2_Mus_musculus_musculus-12" )
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus_BCDO2" )
                     .equals( "Mus musculus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( " -XS12_Mus_musculus-12" ).equals( "Mus musculus" ) ) {
+            if ( !ParserUtils.extractScientificNameFromNodeName( "BCDO2 Mus musculus musculus" )
+                    .equals( "Mus musculus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( " -1234_Mus_musculus-12 affrre e" )
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Bcl Mus musculus musculus" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "vcl Mus musculus musculus" ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "could_be_anything_Mus_musculus_musculus_BCDO2" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "could_be_anything_Mus_musculus_musculus_Musculus" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "could_be_anything_Mus_musculus_musculus_musculus" ) != null ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "musculus" ) != null ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "mus_musculus" ) != null ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "mus_musculus_musculus" ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus_1" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_1" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_bcl" ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_BCL" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( ParserUtils.extractScientificNameFromNodeName( "Mus musculus bcl" ) != null ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus musculus BCL" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus musculus xBCL" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus musculus x1" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( " -XS12_Mus_musculus_12" ).equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( " -1234_Mus_musculus_12 affrre e" )
+                    .equals( "Mus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( " -1234_Mus_musculus_12_affrre_e" )
                     .equals( "Mus musculus" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus" ).equals( "Mus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus" )
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus_2bcl2" )
+                    .equals( "Mus musculus musculus" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_musculus_2bcl2" )
                     .equals( "Mus musculus musculus" ) ) {
                 return false;
             }
@@ -4206,7 +4276,8 @@ public final class Test {
             if ( !ParserUtils.extractScientificNameFromNodeName( "Mus_musculus_123" ).equals( "Mus musculus" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Pilostyles mexicana Mexico Breedlove 27233" ).equals( "Pilostyles mexicana" ) ) {
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Pilostyles mexicana Mexico Breedlove 27233" )
+                    .equals( "Pilostyles mexicana" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_strain_K12/DH10B" )
@@ -4214,7 +4285,7 @@ public final class Test {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_str_K12/DH10B" )
-                    .equals( "Escherichia coli str K12/DH10B" ) ) {
+                    .equals( "Escherichia coli str. K12/DH10B" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli str. K12/DH10B" )
@@ -4222,7 +4293,7 @@ public final class Test {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis_lyrata_subsp_lyrata" )
-                    .equals( "Arabidopsis lyrata subsp lyrata" ) ) {
+                    .equals( "Arabidopsis lyrata subsp. lyrata" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp. lyrata" )
@@ -4238,7 +4309,7 @@ public final class Test {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subsp lyrata bcl2" )
-                    .equals( "Arabidopsis lyrata subsp lyrata" ) ) {
+                    .equals( "Arabidopsis lyrata subsp. lyrata" ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Arabidopsis lyrata subspecies lyrata bcl2" )
@@ -4261,35 +4332,63 @@ public final class Test {
                     .equals( "Escherichia coli (str. K12)" ) ) {
                 return false;
             }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (str K12)" )
+                    .equals( "Escherichia coli (str. K12)" ) ) {
+                return false;
+            }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (str. K12) bcl2" )
                     .equals( "Escherichia coli (str. K12)" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp." )
-                    .equals( "Macrocera sp." ) ) {
-                
-                 return false;
-            }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. 123" )
-                    .equals( "Macrocera sp." ) ) {
-                
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli (var K12) bcl2" )
+                    .equals( "Escherichia coli (var. K12)" ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. K12" )
-                    .equals( "Macrocera sp." ) ) {
-                
-                
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli str. K-12 substr. MG1655star" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli str K-12 substr MG1655star" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils
+                    .extractScientificNameFromNodeName( "could be anything Escherichia coli str K-12 substr MG1655star" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia coli str K-12 substr MG1655star gene1" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils
+                    .extractScientificNameFromNodeName( "could be anything Escherichia coli str K-12 substr MG1655star GENE1" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_str_K-12_substr_MG1655star" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Escherichia_coli_str_K-12_substr_MG1655star" )
+                    .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
+                return false;
+            }
+            //
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp." ).equals( "Macrocera sp." ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. 123" ).equals( "Macrocera sp." ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp. K12" ).equals( "Macrocera sp." ) ) {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "something Macrocera sp. K12" )
                     .equals( "Macrocera sp." ) ) {
-                
-                
                 return false;
-            } if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" )
-                    .equals( "Macrocera sp" ) ) {
-                
-                
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" ).equals( "Macrocera sp" ) ) {
                 return false;
             }
         }
@@ -7695,10 +7794,10 @@ public final class Test {
             nhxp.setTaxonomyExtraction( NHXParser.TAXONOMY_EXTRACTION.NO );
             nhxp.setReplaceUnderscores( true );
             final Phylogeny uc0 = factory.create( "(A__A_,_B_B)", nhxp )[ 0 ];
-            if ( !uc0.getRoot().getChildNode( 0 ).getName().equals( "A A " ) ) {
+            if ( !uc0.getRoot().getChildNode( 0 ).getName().equals( "A A" ) ) {
                 return false;
             }
-            if ( !uc0.getRoot().getChildNode( 1 ).getName().equals( " B B" ) ) {
+            if ( !uc0.getRoot().getChildNode( 1 ).getName().equals( "B B" ) ) {
                 return false;
             }
             final Phylogeny p1b = factory
@@ -7989,14 +8088,14 @@ public final class Test {
             if ( p50.getNode( "A" ) == null ) {
                 return false;
             }
-            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
+            if ( !p50.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
                     .equals( "((A,B)ab:2.0[88],C);" ) ) {
                 return false;
             }
-            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE ).equals( "((A,B)ab:2.0,C);" ) ) {
+            if ( !p50.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.NONE ).equals( "((A,B)ab:2.0,C);" ) ) {
                 return false;
             }
-            if ( !p50.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES )
+            if ( !p50.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES )
                     .equals( "((A,B)88:2.0,C);" ) ) {
                 return false;
             }
@@ -8014,13 +8113,39 @@ public final class Test {
             if ( p53.getNode( "B (x (a' ,b) f(x);" ) == null ) {
                 return false;
             }
-            // 
             final Phylogeny p54 = factory.create( new StringBuffer( "((A,B):[88],C)" ), new NHXParser() )[ 0 ];
             if ( p54.getNode( "A" ) == null ) {
                 return false;
             }
-            if ( !p54.toNewHampshire( false, NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
-                    .equals( "((A,B)[88],C);" ) ) {
+            if ( !p54.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ).equals( "((A,B)[88],C);" ) ) {
+                return false;
+            }
+            // 
+            final Phylogeny p55 = factory
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1  s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1x\":0.0798012);" ),
+                             new NHXParser() )[ 0 ];
+            if ( !p55
+                    .toNewHampshire()
+                    .equals( "(('lcl|HPV32_L1.:1 s':0.195593,'lcl|HPV30_L1.1|;a':0.114237):0.0359322,'lcl|HPV56_L1.1|,d':0.0727412,lcl|HPV66_L1.1x:0.0798012);" ) ) {
+                System.out.println( p55.toNewHampshire() );
+                return false;
+            }
+            final Phylogeny p56 = factory
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ),
+                             new NHXParser() )[ 0 ];
+            if ( !p56
+                    .toNewHampshire()
+                    .equals( "(('lcl|HPV32_L1.:1 s':0.195593,'lcl|HPV30_L1.1|;a':0.114237):0.0359322,'lcl|HPV56_L1.1|,d':0.0727412,'lcl|HPV66_L1.1:x':0.0798012);" ) ) {
+                System.out.println( p56.toNewHampshire() );
+                return false;
+            }
+            final Phylogeny p57 = factory
+                    .create( new StringBuffer( "((\"lcl|HPV32_L1.:1      s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114\n237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1:x\":0.0798012);" ),
+                             new NHXParser() )[ 0 ];
+            if ( !p57
+                    .toNewHampshire()
+                    .equals( "(('lcl|HPV32_L1.:1 s':0.195593,'lcl|HPV30_L1.1|;a':0.114237):0.0359322,'lcl|HPV56_L1.1|,d':0.0727412,'lcl|HPV66_L1.1:x':0.0798012);" ) ) {
+                System.out.println( p56.toNewHampshire() );
                 return false;
             }
         }

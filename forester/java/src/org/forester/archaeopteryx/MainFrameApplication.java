@@ -2326,7 +2326,7 @@ public final class MainFrameApplication extends MainFrame {
     private boolean writeAsNewHampshire( final Phylogeny t, boolean exception, final File file ) {
         try {
             final PhylogenyWriter writer = new PhylogenyWriter();
-            writer.toNewHampshire( t, false, true, getOptions().getNhConversionSupportValueStyle(), file );
+            writer.toNewHampshire( t, true, getOptions().getNhConversionSupportValueStyle(), file );
         }
         catch ( final Exception e ) {
             exception = true;

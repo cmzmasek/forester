@@ -186,7 +186,6 @@ public class count_support {
                     }
                     else {
                         w.toNewHampshire( evaluator_phylogenies_above_threshold,
-                                          true,
                                           branch_lengths_in_ev_out,
                                           evaluators_outfile,
                                           ";" + ForesterUtil.getLineSeparator() );
@@ -200,7 +199,7 @@ public class count_support {
                                            ";" + ForesterUtil.getLineSeparator() );
                     }
                     else {
-                        w.toNewHampshire( Arrays.asList( ev ), true, branch_lengths_in_ev_out, evaluators_outfile, ";"
+                        w.toNewHampshire( Arrays.asList( ev ), branch_lengths_in_ev_out, evaluators_outfile, ";"
                                 + ForesterUtil.getLineSeparator() );
                     }
                 }

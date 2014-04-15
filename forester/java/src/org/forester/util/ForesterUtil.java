@@ -80,7 +80,7 @@ public final class ForesterUtil {
     public final static String       OS_ARCH                          = System.getProperty( "os.arch" );
     public final static String       OS_NAME                          = System.getProperty( "os.name" );
     public final static String       OS_VERSION                       = System.getProperty( "os.version" );
-    public final static Pattern      PARANTHESESABLE_NH_CHARS_PATTERN = Pattern.compile( "[(),;\\s]" );
+    public final static Pattern      PARANTHESESABLE_NH_CHARS_PATTERN = Pattern.compile( "[(),;\\s:\\[\\]'\"]" );
     public final static double       ZERO_DIFF                        = 1.0E-9;
     public static final BigDecimal   NULL_BD                          = new BigDecimal( 0 );
     public static final NumberFormat FORMATTER_9;
@@ -958,18 +958,11 @@ public final class ForesterUtil {
         return s;
     }
 
-    final public static String replaceIllegalNhCharacters( final String nh ) {
-        if ( nh == null ) {
-            return "";
-        }
-        return nh.trim().replaceAll( "[\\[\\]:]+", "_" );
-    }
-
     final public static String replaceIllegalNhxCharacters( final String nhx ) {
         if ( nhx == null ) {
             return "";
         }
-        return nhx.trim().replaceAll( "[\\[\\](),:;\\s]+", "_" );
+        return nhx.trim().replaceAll( "[\\[\\]']+", "_" );
     }
 
     final public static double round( final double value, final int decimal_place ) {

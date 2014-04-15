@@ -1411,8 +1411,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             if ( !ForesterUtil.isEmpty( getMainPanel().getCurrentPhylogeny().getName() ) ) {
                 title = "\"" + getMainPanel().getCurrentPhylogeny().getName() + "\" in " + title;
             }
-            showTextFrame( getMainPanel().getCurrentPhylogeny()
-                                   .toNewHampshire( false, getOptions().getNhConversionSupportValueStyle() ),
+            showTextFrame( getMainPanel().getCurrentPhylogeny().toNewHampshire( getOptions()
+                                   .getNhConversionSupportValueStyle() ),
                            title );
         }
     }
