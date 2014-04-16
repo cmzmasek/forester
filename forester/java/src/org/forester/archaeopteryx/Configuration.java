@@ -1526,6 +1526,12 @@ public final class Configuration {
             else if ( key.equals( "use_visual_styles" ) ) {
                 key_index = Configuration.use_style;
             }
+            else if ( key.equals( "color_branches" ) ) {
+                key_index = Configuration.use_style;
+                ForesterUtil
+                        .printWarningMessage( Constants.PRG_NAME,
+                                              "configuration key [color_branches] is deprecated, use [use_visual_styles] instead" );
+            }
             else if ( key.equals( "width_branches" ) ) {
                 key_index = Configuration.width_branches;
             }
