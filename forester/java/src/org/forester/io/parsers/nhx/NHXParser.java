@@ -403,12 +403,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                 }
             }
             // \n\t is always ignored,
-            // as is " (34) and ' (39) (space is 32):
-            if ( ( isIgnoreQuotes() && ( ( c < 33 ) || ( c > 126 ) || ( c == 34 ) || ( c == 39 ) || ( ( _clade_level == 0 ) && ( c == ';' ) ) ) )
-                    || ( !isIgnoreQuotes() && ( ( c < 32 ) || ( c > 126 ) || ( ( _clade_level == 0 ) && ( c == ';' ) ) ) ) ) {
-                //do nothing
-            }
-            else if ( ( c == 32 ) && ( !_in_single_quote && !_in_double_quote ) ) {
+            // "=34  '=39 space=32
+            if ( ( c < 32 ) || ( c > 126 ) || ( isIgnoreQuotes() && ( ( c == 32 ) || ( c == 34 ) || ( c == 39 ) ) )
+                    || ( ( c == 32 ) && ( !_in_single_quote && !_in_double_quote ) )
+                    || ( ( _clade_level == 0 ) && ( c == ';' ) && ( !_in_single_quote && !_in_double_quote ) ) ) {
                 //do nothing
             }
             else if ( _in_comment ) {
@@ -421,10 +419,10 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _in_double_quote = false;
                 }
                 else {
-                    _current_anotation.append( c != ':' ? c : BELL );
+                    _current_anotation.append( changeCharInParens( c ) );
                 }
             }
-            else if ( c == '"' ) {
+            else if ( ( c == '"' ) && !_in_single_quote ) {
                 _in_double_quote = true;
             }
             else if ( _in_single_quote ) {
@@ -432,7 +430,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
                     _in_single_quote = false;
                 }
                 else {
-                    _current_anotation.append( c != ':' ? c : BELL );
+                    _current_anotation.append( changeCharInParens( c ) );
                 }
             }
             else if ( c == 39 ) {
@@ -494,6 +492,19 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         else {
             _next = null;
         }
+    }
+
+    private final static char changeCharInParens( char c ) {
+        if ( c == ':' ) {
+            c = BELL;
+        }
+        else if ( c == '[' ) {
+            c = '{';
+        }
+        else if ( c == ']' ) {
+            c = '}';
+        }
+        return c;
     }
 
     private final void processCloseParen() throws PhylogenyParserException, NHXFormatException,

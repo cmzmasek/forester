@@ -62,8 +62,6 @@ public final class ParserUtils {
     final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED      = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_PFR            = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
                                                                               + TAX_CODE + ")\\b" );
-    // final public static Pattern  TAXOMONY_SN_PATTERN                  = Pattern
-    //                                                                            .compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_([A-Z][a-z]{2,30}_[a-z]{3,30}(?:_[a-z][a-z0-9_]+)?)\\b" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SN               = Pattern.compile( "(?:\\b|_)(" + SN_BN
                                                                               + ")(?:(\\s*$)|([_ ][a-z]*[A-Z0-9]))" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SNS              = Pattern.compile( "(?:\\b|_)(" + SN_BN
@@ -218,10 +216,6 @@ public final class ParserUtils {
     }
 
     public final static String extractScientificNameFromNodeName( final String name ) {
-        //  final Matcher m = TAXOMONY_SN_PATTERN.matcher( name );
-        //  if ( m.find() ) {
-        //      return m.group( 1 ).replace( '_', ' ' );
-        //  }
         final Matcher m_ss = TAXOMONY_SN_PATTERN_STRAIN_SUBSTRAIN.matcher( name );
         if ( m_ss.find() ) {
             String s = m_ss.group( 1 ).replace( '_', ' ' );
@@ -275,7 +269,11 @@ public final class ParserUtils {
         }
         final Matcher m_sp = TAXOMONY_SN_PATTERN_SP.matcher( name );
         if ( m_sp.find() ) {
-            return m_sp.group( 1 ).replace( '_', ' ' );
+            String s = m_sp.group( 1 ).replace( '_', ' ' );
+            if ( s.endsWith( " sp" ) ) {
+                s = s + ".";
+            }
+            return s;
         }
         return null;
     }

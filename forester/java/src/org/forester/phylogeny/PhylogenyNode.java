@@ -889,7 +889,6 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
     // ---------------------------------------------------------
     final public String toNewHampshire( final boolean write_distance_to_parent,
                                         final NH_CONVERSION_SUPPORT_VALUE_STYLE svs ) {
-        final StringBuilder sb = new StringBuilder();
         String data = "";
         if ( ( svs == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES ) && !isExternal() ) {
             if ( getBranchData().isHasConfidences()
@@ -912,27 +911,19 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
             else if ( !ForesterUtil.isEmpty( getNodeData().getTaxonomy().getCommonName() ) ) {
                 data = getNodeData().getTaxonomy().getCommonName();
             }
-            else if ( getNodeData().getTaxonomy().getTaxonomyCode() != null ) {
-                data = getNodeData().getTaxonomy().getTaxonomyCode();
-            }
         }
         else if ( getNodeData().isHasSequence() ) {
             if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getName() ) ) {
                 data = getNodeData().getSequence().getName();
             }
-        }
-        data = data.trim();
-        if ( data.length() > 0 ) {
-            data = data.replaceAll( "'", "_" );
-            if ( ForesterUtil.isContainsParanthesesableNhCharacter( data ) ) {
-                sb.append( '\'' );
-                sb.append( data );
-                sb.append( '\'' );
+            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getSymbol() ) ) {
+                data = getNodeData().getSequence().getSymbol();
             }
-            else {
-                sb.append( data );
+            else if ( !ForesterUtil.isEmpty( getNodeData().getSequence().getGeneName() ) ) {
+                data = getNodeData().getSequence().getGeneName();
             }
         }
+        final StringBuilder sb = ForesterUtil.santitizeStringForNH( data );
         if ( write_distance_to_parent && ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
             sb.append( ":" );
             sb.append( getDistanceToParent() );
@@ -954,19 +945,10 @@ public final class PhylogenyNode implements Comparable<PhylogenyNode> {
      * representation.
      */
     final public String toNewHampshireX() {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         final StringBuffer s_nhx = new StringBuffer();
         if ( !ForesterUtil.isEmpty( getName() ) ) {
-            //final String name = ForesterUtil.replaceIllegalNhCharacters( getName() );
-            final String name = getName().trim();
-            if ( ForesterUtil.isContainsParanthesesableNhCharacter( name ) ) {
-                sb.append( '\'' );
-                sb.append( name );
-                sb.append( '\'' );
-            }
-            else {
-                sb.append( name );
-            }
+            sb.append( ForesterUtil.santitizeStringForNH( getName() ) );
         }
         if ( getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) {
             sb.append( ":" );

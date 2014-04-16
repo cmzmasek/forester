@@ -384,7 +384,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.exit( 0 );
         System.out.print( "Nexus characters parsing: " );
         if ( Test.testNexusCharactersParsing() ) {
             System.out.println( "OK." );
@@ -4388,7 +4387,7 @@ public final class Test {
                     .equals( "Macrocera sp." ) ) {
                 return false;
             }
-            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" ).equals( "Macrocera sp" ) ) {
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" ).equals( "Macrocera sp." ) ) {
                 return false;
             }
         }
@@ -8120,7 +8119,6 @@ public final class Test {
             if ( !p54.toNewHampshire( NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ).equals( "((A,B)[88],C);" ) ) {
                 return false;
             }
-            // 
             final Phylogeny p55 = factory
                     .create( new StringBuffer( "((\"lcl|HPV32_L1.:1  s\":0.195593,\"lcl|HPV30_L1.1|;a\":0.114237):0.0359322,\"lcl|HPV56_L1.1|,d\":0.0727412,\"lcl|HPV66_L1.1x\":0.0798012);" ),
                              new NHXParser() )[ 0 ];
@@ -8146,6 +8144,31 @@ public final class Test {
                     .toNewHampshire()
                     .equals( "(('lcl|HPV32_L1.:1 s':0.195593,'lcl|HPV30_L1.1|;a':0.114237):0.0359322,'lcl|HPV56_L1.1|,d':0.0727412,'lcl|HPV66_L1.1:x':0.0798012);" ) ) {
                 System.out.println( p56.toNewHampshire() );
+                return false;
+            }
+            final String s58 = "('Homo \"man\" sapiens:1',\"Homo 'man' sapiens;\")';root \"1_ )';";
+            final Phylogeny p58 = factory.create( new StringBuffer( s58 ), new NHXParser() )[ 0 ];
+            if ( !p58.toNewHampshire().equals( s58 ) ) {
+                System.out.println( p58.toNewHampshire() );
+                return false;
+            }
+            final String s59 = "('Homo \"man sapiens:1',\"Homo 'man sapiens\")\"root; '1_ )\";";
+            final Phylogeny p59 = factory.create( new StringBuffer( s59 ), new NHXParser() )[ 0 ];
+            if ( !p59.toNewHampshire().equals( s59 ) ) {
+                System.out.println( p59.toNewHampshire() );
+                return false;
+            }
+            final String s60 = "('\" ;,:\":\"',\"'abc def' g's_\",'=:0.45+,.:%~`!@#$%^&*()_-+={} | ;,');";
+            final Phylogeny p60 = factory.create( new StringBuffer( s60 ), new NHXParser() )[ 0 ];
+            if ( !p60.toNewHampshire().equals( s60 ) ) {
+                System.out.println( p60.toNewHampshire() );
+                return false;
+            }
+            final String s61 = "('H[omo] \"man\" sapiens:1',\"H[omo] 'man' sapiens;\",H[omo] sapiens)';root \"1_ )';";
+            final Phylogeny p61 = factory.create( new StringBuffer( s61 ), new NHXParser() )[ 0 ];
+            if ( !p61.toNewHampshire()
+                    .equals( "('H{omo} \"man\" sapiens:1',\"H{omo} 'man' sapiens;\",Hsapiens)';root \"1_ )';" ) ) {
+                System.out.println( p61.toNewHampshire() );
                 return false;
             }
         }
@@ -8636,6 +8659,14 @@ public final class Test {
                 System.out.println( n6.toNewHampshireX() );
                 return false;
             }
+            final PhylogenyNode n7 = new PhylogenyNode();
+            n7.setName( "   gks:dr-m4 \"    '    `@:[]sadq04 " );
+            if ( !n7.toNewHampshire( true, PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS )
+                    .equals( "'gks:dr-m4 \" ` `@:[]sadq04'" ) ) {
+                System.out.println( n7
+                        .toNewHampshire( true, PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS ) );
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -9072,6 +9103,12 @@ public final class Test {
             if ( !p10.toNewHampshireX().equals( "((A:0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
                 return false;
             }
+            final Phylogeny p11 = factory
+                    .create( " [79]   ( ('A: \" ' [co mment] :0 .2[comment],B:0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],C: 0.1)[comment]root:0.1[100] [comment]",
+                             new NHXParser() )[ 0 ];
+            if ( !p11.toNewHampshireX().equals( "(('A: \"':0.2,B:0.3):0.5[&&NHX:B=91],C:0.1)root:0.1[&&NHX:B=100]" ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
@@ -9162,13 +9199,13 @@ public final class Test {
             if ( phy.getNodes( "'single quotes' inside double quotes" ).size() != 1 ) {
                 return false;
             }
-            if ( phy.getNodes( "double quotes inside single quotes" ).size() != 1 ) {
+            if ( phy.getNodes( "\"double quotes\" inside single quotes" ).size() != 1 ) {
                 return false;
             }
             if ( phy.getNodes( "noquotes" ).size() != 1 ) {
                 return false;
             }
-            if ( phy.getNodes( "A   (  B    C '" ).size() != 1 ) {
+            if ( phy.getNodes( "A ( B C '" ).size() != 1 ) {
                 return false;
             }
             final NHXParser p1p = new NHXParser();
@@ -9198,7 +9235,7 @@ public final class Test {
             final Phylogeny p10 = factory
                     .create( " [79]   ( (\"A \n\tB \" [co mment] :0 .2[comment],'B':0.3[com])[com ment]: 0. 5 \t[ 9 1 ][ comment],'C (or D?\\//;,))': 0.1)[comment]'\nroot is here (cool,  was! ) ':0.1[100] [comment]",
                              new NHXParser() )[ 0 ];
-            final String p10_clean_str = "(('A B':0.2,B:0.3):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100]";
+            final String p10_clean_str = "(('A B':0.2,B:0.3):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool, was! )':0.1[&&NHX:B=100]";
             if ( !p10.toNewHampshireX().equals( p10_clean_str ) ) {
                 return false;
             }
@@ -9206,11 +9243,10 @@ public final class Test {
             if ( !p11.toNewHampshireX().equals( p10_clean_str ) ) {
                 return false;
             }
-            //
             final Phylogeny p12 = factory
                     .create( " [79]   ( (\"A \n\tB \" [[][] :0 .2[comment][\t&\t&\n N\tH\tX:S=mo\tnkey !],'\tB\t\b\t\n\f\rB B ':0.0\b3[])\t[com ment]: 0. 5 \t[ 9 1 ][ \ncomment],'C\t (or D?\\//;,))': 0.\b1)[comment]'\nroot \tis here (cool, \b\t\n\f\r was! ) ':0.1[100] [comment]",
                              new NHXParser() )[ 0 ];
-            final String p12_clean_str = "(('A B':0.2[&&NHX:S=monkey!],'BB B':0.03):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1[&&NHX:B=100]";
+            final String p12_clean_str = "(('A B':0.2[&&NHX:S=monkey!],'BB B':0.03):0.5[&&NHX:B=91],'C (or D?\\//;,))':0.1)'root is here (cool, was! )':0.1[&&NHX:B=100]";
             if ( !p12.toNewHampshireX().equals( p12_clean_str ) ) {
                 return false;
             }
@@ -9218,7 +9254,7 @@ public final class Test {
             if ( !p13.toNewHampshireX().equals( p12_clean_str ) ) {
                 return false;
             }
-            final String p12_clean_str_nh = "(('A B':0.2,'BB B':0.03):0.5,'C (or D?\\//;,))':0.1)'root is here (cool,  was! )':0.1;";
+            final String p12_clean_str_nh = "(('A B':0.2,'BB B':0.03):0.5,'C (or D?\\//;,))':0.1)'root is here (cool, was! )':0.1;";
             if ( !p13.toNewHampshire().equals( p12_clean_str_nh ) ) {
                 return false;
             }

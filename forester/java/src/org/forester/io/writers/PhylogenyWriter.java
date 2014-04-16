@@ -688,19 +688,19 @@ public final class PhylogenyWriter {
                 else if ( !ForesterUtil.isEmpty( node.getNodeData().getTaxonomy().getCommonName() ) ) {
                     data = node.getNodeData().getTaxonomy().getCommonName();
                 }
-                else if ( node.getNodeData().getTaxonomy().getTaxonomyCode() != null ) {
-                    data = node.getNodeData().getTaxonomy().getTaxonomyCode();
-                }
             }
             else if ( node.getNodeData().isHasSequence() ) {
                 if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getName() ) ) {
                     data = node.getNodeData().getSequence().getName();
                 }
+                else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getSymbol() ) ) {
+                    data = node.getNodeData().getSequence().getSymbol();
+                }
+                else if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getGeneName() ) ) {
+                    data = node.getNodeData().getSequence().getGeneName();
+                }
             }
-            if ( data.length() > 0 ) {
-                data = data.replaceAll( " ", "_" );
-            }
-            writer.write( data );
+            writer.write( ForesterUtil.santitizeStringForNH( data ).toString() );
         }
         writer.write( ";" );
         writer.write( ForesterUtil.LINE_SEPARATOR );
