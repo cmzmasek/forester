@@ -93,15 +93,15 @@ public final class Configuration {
             { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
             { "Visual Styles/Branch Colors", "display", "no" }, { "Branch Widths", "display", "no" },
-            { "Show Custom Nodes", "display", "yes" }, { "Protein Domains", "nodisplay", "no" },
-            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
-            { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
-            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
-            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
-            { "Colorize by Annotation", "nodisplay", "no" }, { "Seq Symbol", "display", "yes" },
-            { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
-            { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
-            { "Properties", "nodisplay", "no" }, { "Gene Name", "display", "yes" }                };
+            { "Protein Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
+            { "Binary Char Counts", "nodisplay", "no" }, { "Seq Name", "display", "yes" },
+            { "Seq Accession", "display", "no" }, { "Show Internal Data", "display", "yes" },
+            { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
+            { "Taxonomy Common", "display", "no" }, { "Colorize by Annotation", "nodisplay", "no" },
+            { "Seq Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
+            { "Relation Confidence", "nodisplay", "no" }, { "Vector Data", "nodisplay", "no" },
+            { "Taxonomy Images", "display", "no" }, { "Properties", "nodisplay", "no" },
+            { "Gene Name", "display", "yes" }                                                     };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -111,24 +111,23 @@ public final class Configuration {
     final static int                        color_according_to_species                             = 6;
     final static int                        use_style                                              = 7;
     final static int                        width_branches                                         = 8;
-    final static int                        show_custom_node_shapes                                = 9;
-    final static int                        show_domain_architectures                              = 10;
-    final static int                        show_binary_characters                                 = 11;
-    final static int                        show_binary_character_counts                           = 12;
-    final static int                        show_seq_names                                         = 13;
-    final static int                        show_sequence_acc                                      = 14;
-    final static int                        display_internal_data                                  = 15;
-    final static int                        dynamically_hide_data                                  = 16;
-    final static int                        show_taxonomy_scientific_names                         = 17;
-    final static int                        show_taxonomy_common_names                             = 18;
-    final static int                        color_according_to_annotation                          = 19;
-    final static int                        show_seq_symbols                                       = 20;
-    final static int                        node_data_popup                                        = 21;
-    final static int                        show_relation_confidence                               = 22;
-    final static int                        show_vector_data                                       = 23;
-    final static int                        show_taxonomy_images                                   = 24;
-    final static int                        show_properties                                        = 25;
-    final static int                        show_gene_names                                        = 26;
+    final static int                        show_domain_architectures                              = 9;
+    final static int                        show_binary_characters                                 = 10;
+    final static int                        show_binary_character_counts                           = 11;
+    final static int                        show_seq_names                                         = 12;
+    final static int                        show_sequence_acc                                      = 13;
+    final static int                        display_internal_data                                  = 14;
+    final static int                        dynamically_hide_data                                  = 15;
+    final static int                        show_taxonomy_scientific_names                         = 16;
+    final static int                        show_taxonomy_common_names                             = 17;
+    final static int                        color_according_to_annotation                          = 18;
+    final static int                        show_seq_symbols                                       = 19;
+    final static int                        node_data_popup                                        = 20;
+    final static int                        show_relation_confidence                               = 21;
+    final static int                        show_vector_data                                       = 22;
+    final static int                        show_taxonomy_images                                   = 23;
+    final static int                        show_properties                                        = 24;
+    final static int                        show_gene_names                                        = 25;
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     // ----------------
     // Function colors
@@ -1585,9 +1584,6 @@ public final class Configuration {
             }
             else if ( key.equals( "show_relation_confidence" ) ) {
                 key_index = Configuration.show_relation_confidence;
-            }
-            else if ( key.equals( "show_custom_node_shapes" ) ) {
-                key_index = Configuration.show_custom_node_shapes;
             }
             // If we've found the key, set the values
             if ( key_index >= 0 ) {
