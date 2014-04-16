@@ -250,30 +250,6 @@ public class MsaCompactor {
         }
     }
 
-    final private void removeViaLength( final int length, final int step, final boolean realign ) throws IOException,
-            InterruptedException {
-        if ( step < 1 ) {
-            throw new IllegalArgumentException( "step cannot be less than 1" );
-        }
-        if ( length < 11 ) {
-            throw new IllegalArgumentException( "target length cannot be less than 1" );
-        }
-        if ( VERBOSE ) {
-            System.out.println( "orig: " + msaStatsAsSB() );
-        }
-        int counter = step;
-        while ( _msa.getLength() > length ) {
-            removeWorstOffenders( step, 1, false, false, false );
-            if ( realign ) {
-                realignWithMafft();
-            }
-            if ( VERBOSE ) {
-                System.out.println( counter + ": " + msaStatsAsSB() );
-            }
-            counter += step;
-        }
-    }
-
     final private void removeWorstOffenders( final int to_remove,
                                              final int step,
                                              final boolean realign,
@@ -308,6 +284,44 @@ public class MsaCompactor {
             if ( verbose ) {
                 System.out.println();
             }
+        }
+    }
+
+    final private void removeViaLength( final int length,
+                                        final int step,
+                                        final boolean realign,
+                                        final boolean norm,
+                                        final boolean verbose ) throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final List<String> to_remove_ids = new ArrayList<String>();
+        for( final GapContribution gap_gontribution : stats ) {
+            to_remove_ids.add( gap_gontribution.getId() );
+        }
+        int i = 0;
+        while ( _msa.getLength() > length ) {
+            final String id = to_remove_ids.get( i );
+            _msa = MsaMethods.removeSequence( _msa, id );
+            removeGapColumns();
+            if ( verbose ) {
+                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
+                System.out.print( "\t" );
+                final StringBuilder sb = msaStatsAsSB();
+                System.out.print( sb );
+                System.out.print( "\t" );
+            }
+            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( _msa.getLength() <= length ) ) {
+                if ( realign ) {
+                    realignWithMafft();
+                }
+                final String s = writeOutfile();
+                if ( verbose ) {
+                    System.out.print( "-> " + s );
+                }
+            }
+            if ( verbose ) {
+                System.out.println();
+            }
+            ++i;
         }
     }
 
@@ -375,6 +389,7 @@ public class MsaCompactor {
                                                    final int length,
                                                    final int step,
                                                    final boolean realign,
+                                                   final boolean norm,
                                                    final String path_to_mafft,
                                                    final File out ) throws IOException, InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
@@ -382,7 +397,7 @@ public class MsaCompactor {
             mc.setPathToMafft( path_to_mafft );
         }
         mc.setOutFileBase( out );
-        mc.removeViaLength( length, step, realign );
+        mc.removeViaLength( length, step, realign, norm, true );
         return mc;
     }
 
