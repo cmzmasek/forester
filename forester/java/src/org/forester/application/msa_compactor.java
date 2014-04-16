@@ -111,7 +111,7 @@ public class msa_compactor {
                 mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
             }
             else if ( av > 0 ) {
-                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, 50, path_to_mafft, out );
+                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, norm, path_to_mafft, out );
             }
             else if ( length > 0 ) {
                 if ( length >= msa.getLength() ) {

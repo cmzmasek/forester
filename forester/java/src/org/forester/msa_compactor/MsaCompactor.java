@@ -213,8 +213,46 @@ public class MsaCompactor {
     final private void removeViaGapAverage( final double mean_gapiness,
                                             final int step,
                                             final boolean realign,
-                                            final File outfile,
-                                            final int minimal_effective_length ) throws IOException,
+                                            final boolean norm,
+                                            final boolean verbose ) throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final List<String> to_remove_ids = new ArrayList<String>();
+        for( final GapContribution gap_gontribution : stats ) {
+            to_remove_ids.add( gap_gontribution.getId() );
+        }
+        int i = 0;
+        while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
+            final String id = to_remove_ids.get( i );
+            _msa = MsaMethods.removeSequence( _msa, id );
+            removeGapColumns();
+            if ( verbose ) {
+                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
+                System.out.print( "\t" );
+                final StringBuilder sb = msaStatsAsSB();
+                System.out.print( sb );
+                System.out.print( "\t" );
+            }
+            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
+                if ( realign ) {
+                    realignWithMafft();
+                }
+                final String s = writeOutfile();
+                if ( verbose ) {
+                    System.out.print( "-> " + s );
+                }
+            }
+            if ( verbose ) {
+                System.out.println();
+            }
+            ++i;
+        }
+    }
+
+    final private void removeViaGapAverageOLD( final double mean_gapiness,
+                                               final int step,
+                                               final boolean realign,
+                                               final File outfile,
+                                               final int minimal_effective_length ) throws IOException,
             InterruptedException {
         if ( step < 1 ) {
             throw new IllegalArgumentException( "step cannot be less than 1" );
@@ -247,43 +285,6 @@ public class MsaCompactor {
         } while ( gr > mean_gapiness );
         if ( VERBOSE ) {
             System.out.println( "final: " + msaStatsAsSB() );
-        }
-    }
-
-    final private void removeWorstOffenders( final int to_remove,
-                                             final int step,
-                                             final boolean realign,
-                                             final boolean norm,
-                                             final boolean verbose ) throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
-        final List<String> to_remove_ids = new ArrayList<String>();
-        for( int j = 0; j < to_remove; ++j ) {
-            to_remove_ids.add( stats[ j ].getId() );
-            _removed_seq_ids.add( stats[ j ].getId() );
-        }
-        for( int i = 0; i < to_remove_ids.size(); ++i ) {
-            final String id = to_remove_ids.get( i );
-            _msa = MsaMethods.removeSequence( _msa, id );
-            removeGapColumns();
-            if ( verbose ) {
-                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
-                System.out.print( "\t" );
-                final StringBuilder sb = msaStatsAsSB();
-                System.out.print( sb );
-                System.out.print( "\t" );
-            }
-            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
-                if ( realign ) {
-                    realignWithMafft();
-                }
-                final String s = writeOutfile();
-                if ( verbose ) {
-                    System.out.print( "-> " + s );
-                }
-            }
-            if ( verbose ) {
-                System.out.println();
-            }
         }
     }
 
@@ -322,6 +323,43 @@ public class MsaCompactor {
                 System.out.println();
             }
             ++i;
+        }
+    }
+
+    final private void removeWorstOffenders( final int to_remove,
+                                             final int step,
+                                             final boolean realign,
+                                             final boolean norm,
+                                             final boolean verbose ) throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final List<String> to_remove_ids = new ArrayList<String>();
+        for( int j = 0; j < to_remove; ++j ) {
+            to_remove_ids.add( stats[ j ].getId() );
+            _removed_seq_ids.add( stats[ j ].getId() );
+        }
+        for( int i = 0; i < to_remove_ids.size(); ++i ) {
+            final String id = to_remove_ids.get( i );
+            _msa = MsaMethods.removeSequence( _msa, id );
+            removeGapColumns();
+            if ( verbose ) {
+                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
+                System.out.print( "\t" );
+                final StringBuilder sb = msaStatsAsSB();
+                System.out.print( sb );
+                System.out.print( "\t" );
+            }
+            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
+                if ( realign ) {
+                    realignWithMafft();
+                }
+                final String s = writeOutfile();
+                if ( verbose ) {
+                    System.out.print( "-> " + s );
+                }
+            }
+            if ( verbose ) {
+                System.out.println();
+            }
         }
     }
 
@@ -373,7 +411,7 @@ public class MsaCompactor {
                                                        final double max_gap_average,
                                                        final int step,
                                                        final boolean realign,
-                                                       final int minimal_effective_length,
+                                                       final boolean norm,
                                                        final String path_to_mafft,
                                                        final File out ) throws IOException, InterruptedException {
         final MsaCompactor mc = new MsaCompactor( msa );
@@ -381,7 +419,7 @@ public class MsaCompactor {
             mc.setPathToMafft( path_to_mafft );
         }
         mc.setOutFileBase( out );
-        mc.removeViaGapAverage( max_gap_average, step, realign, out, minimal_effective_length );
+        mc.removeViaGapAverage( max_gap_average, step, realign, norm, true );
         return mc;
     }
 
