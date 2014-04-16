@@ -55,13 +55,17 @@ import org.forester.util.ForesterUtil;
 
 public final class ParserUtils {
 
-    final public static String   TAX_CODE                             = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
     final private static String  SN_BN                                = "[A-Z][a-z]{2,30}[_ ][a-z]{3,30}";
+    final public static String   TAX_CODE                             = "(?:[A-Z9][A-Z]{2}[A-Z0-9]{2})|RAT|PIG|PEA";
+    final public static String   TAX_CODE_LO                          = "(?:[A-Z]{5})|RAT|PIG|PEA";
     final public static Pattern  TAXOMONY_CODE_PATTERN_A              = Pattern.compile( "(?:\\b|_)(" + TAX_CODE
-                                                                              + ")\\b" );
+                                                                              + ")(?:\\b|_)" );
+    final public static Pattern  TAXOMONY_CODE_PATTERN_A_LO           = Pattern.compile( "(?:\\b|_)(" + TAX_CODE_LO
+                                                                              + ")(?:\\b|_)" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_BRACKETED      = Pattern.compile( "\\[(" + TAX_CODE + ")\\]" );
     final public static Pattern  TAXOMONY_CODE_PATTERN_PFR            = Pattern.compile( "(?:\\b|_)[a-zA-Z0-9]{3,}_("
                                                                               + TAX_CODE + ")\\b" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS            = Pattern.compile( "([A-Z][a-z]{2,30})" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SN               = Pattern.compile( "(?:\\b|_)(" + SN_BN
                                                                               + ")(?:(\\s*$)|([_ ][a-z]*[A-Z0-9]))" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SNS              = Pattern.compile( "(?:\\b|_)(" + SN_BN
@@ -69,6 +73,8 @@ public final class ParserUtils {
                                                                               + ")[_ ][a-z]*[A-Z0-9]" );
     final public static Pattern  TAXOMONY_SN_PATTERN_SNS2             = Pattern.compile( "[A-Z0-9][a-z]*[_ ](" + SN_BN
                                                                               + "[_ ][a-z]{3,30}" + ")\\s*$" );
+    final public static Pattern  TAXOMONY_SN_PATTERN_SP               = Pattern
+                                                                              .compile( "(?:\\b|_)([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1         = Pattern
                                                                               .compile( "(?:\\b|_)("
                                                                                       + SN_BN
@@ -81,9 +87,6 @@ public final class ParserUtils {
                                                                               .compile( "(?:\\b|_)("
                                                                                       + SN_BN
                                                                                       + "[_ ]str[a-z]{0,3}\\.?[_ ]\\S{1,60}[_ ]substr[a-z]{0,3}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_SP               = Pattern
-                                                                              .compile( "(?:\\b|_)([A-Z][a-z]{2,30}[_ ]sp\\.?)(?:\\b|_)?" );
-    final public static Pattern  TAXOMONY_SN_PATTERN_GENUS            = Pattern.compile( "([A-Z][a-z]{2,30})" );
     final private static Pattern TAXOMONY_CODE_PATTERN_PFS            = Pattern.compile( "(?:\\b|_)[A-Z0-9]{4,}_("
                                                                               + TAX_CODE + ")/\\d+-\\d+\\b" );
     final private static Pattern TAXOMONY_UNIPROT_ID_PATTERN_PFR      = Pattern
@@ -327,23 +330,29 @@ public final class ParserUtils {
             return id;
         }
         else {
-            final String code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
+            String code = null;
+            if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
+                code = extractTaxonomyCodeFromNodeNameLettersOnly( node.getName() );
+                if ( ForesterUtil.isEmpty( code ) ) {
+                    final String sn = extractScientificNameFromNodeName( node.getName() );
+                    if ( !ForesterUtil.isEmpty( sn ) ) {
+                        if ( !node.getNodeData().isHasTaxonomy() ) {
+                            node.getNodeData().setTaxonomy( new Taxonomy() );
+                        }
+                        node.getNodeData().getTaxonomy().setScientificName( sn );
+                        return sn;
+                    }
+                }
+            }
+            if ( ForesterUtil.isEmpty( code ) ) {
+                code = extractTaxonomyCodeFromNodeName( node.getName(), taxonomy_extraction );
+            }
             if ( !ForesterUtil.isEmpty( code ) ) {
                 if ( !node.getNodeData().isHasTaxonomy() ) {
                     node.getNodeData().setTaxonomy( new Taxonomy() );
                 }
                 node.getNodeData().getTaxonomy().setTaxonomyCode( code );
                 return code;
-            }
-            else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
-                final String sn = extractScientificNameFromNodeName( node.getName() );
-                if ( !ForesterUtil.isEmpty( sn ) ) {
-                    if ( !node.getNodeData().isHasTaxonomy() ) {
-                        node.getNodeData().setTaxonomy( new Taxonomy() );
-                    }
-                    node.getNodeData().getTaxonomy().setScientificName( sn );
-                    return sn;
-                }
             }
         }
         return null;
@@ -361,12 +370,6 @@ public final class ParserUtils {
             if ( m.find() ) {
                 return m.group( 1 );
             }
-            //else if ( taxonomy_extraction == TAXONOMY_EXTRACTION.AGGRESSIVE ) {
-            //    m = TAXOMONY_UNIPROT_ID_PATTERN_A.matcher( name );
-            //    if ( m.find() ) {
-            //        return m.group( 1 );
-            //    }
-            //}
         }
         return null;
     }
@@ -416,5 +419,13 @@ public final class ParserUtils {
             parser = new NHXParser();
         }
         return parser;
+    }
+
+    private final static String extractTaxonomyCodeFromNodeNameLettersOnly( final String name ) {
+        final Matcher m = TAXOMONY_CODE_PATTERN_A_LO.matcher( name );
+        if ( m.find() ) {
+            return m.group( 1 );
+        }
+        return null;
     }
 }

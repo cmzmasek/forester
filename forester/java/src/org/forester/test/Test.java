@@ -12218,6 +12218,47 @@ public final class Test {
                 System.out.println( n21.toString() );
                 return false;
             }
+            final PhylogenyNode n22 = PhylogenyNode
+                    .createInstanceFromNhxString( "NEMVE_Nematostella_vectensis",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n22.getNodeData().getTaxonomy().getTaxonomyCode().equals( "NEMVE" ) ) {
+                System.out.println( n22.toString() );
+                return false;
+            }
+            final PhylogenyNode n23 = PhylogenyNode
+                    .createInstanceFromNhxString( "9EMVE_Nematostella_vectensis",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n23.getNodeData().getTaxonomy().getScientificName().equals( "Nematostella vectensis" ) ) {
+                System.out.println( n23.toString() );
+                return false;
+            }
+            final PhylogenyNode n24 = PhylogenyNode
+                    .createInstanceFromNhxString( "9EMVE_Nematostella", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n24.getNodeData().getTaxonomy().getTaxonomyCode().equals( "9EMVE" ) ) {
+                System.out.println( n24.toString() );
+                return false;
+            }
+            //
+            final PhylogenyNode n25 = PhylogenyNode
+                    .createInstanceFromNhxString( "Nematostella_vectensis_NEMVE",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n25.getNodeData().getTaxonomy().getTaxonomyCode().equals( "NEMVE" ) ) {
+                System.out.println( n25.toString() );
+                return false;
+            }
+            final PhylogenyNode n26 = PhylogenyNode
+                    .createInstanceFromNhxString( "Nematostella_vectensis_9EMVE",
+                                                  NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n26.getNodeData().getTaxonomy().getScientificName().equals( "Nematostella vectensis" ) ) {
+                System.out.println( n26.toString() );
+                return false;
+            }
+            final PhylogenyNode n27 = PhylogenyNode
+                    .createInstanceFromNhxString( "Nematostella_9EMVE", NHXParser.TAXONOMY_EXTRACTION.AGGRESSIVE );
+            if ( !n27.getNodeData().getTaxonomy().getTaxonomyCode().equals( "9EMVE" ) ) {
+                System.out.println( n27.toString() );
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

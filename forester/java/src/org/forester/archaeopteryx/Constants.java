@@ -43,7 +43,7 @@ public final class Constants {
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.988 SR";
-    final static String         PRG_DATE                                                      = "140415";
+    final static String         PRG_DATE                                                      = "140416";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
             "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
