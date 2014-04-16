@@ -72,11 +72,11 @@ public final class ParserUtils {
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_1         = Pattern
                                                                               .compile( "(?:\\b|_)("
                                                                                       + SN_BN
-                                                                                      + "[_ ](?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
+                                                                                      + "[_ ](?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60})(?:\\b|_)" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_2         = Pattern
                                                                               .compile( "(?:\\b|_)("
                                                                                       + SN_BN
-                                                                                      + "[_ ]\\((?:str|subsp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))" );
+                                                                                      + "[_ ]\\((?:str|subsp|ssp|var)[a-z]{0,5}\\.?[_ ]\\S{1,60}\\))" );
     final public static Pattern  TAXOMONY_SN_PATTERN_STRAIN_SUBSTRAIN = Pattern
                                                                               .compile( "(?:\\b|_)("
                                                                                       + SN_BN
@@ -236,6 +236,12 @@ public final class ParserUtils {
             else if ( s.indexOf( " subsp " ) > 4 ) {
                 s = s.replaceFirst( " subsp ", " subsp. " );
             }
+            else if ( s.indexOf( " ssp " ) > 4 ) {
+                s = s.replaceFirst( " ssp ", " subsp. " );
+            }
+            else if ( s.indexOf( " ssp. " ) > 4 ) {
+                s = s.replaceFirst( " ssp. ", " subsp. " );
+            }
             else if ( s.indexOf( " var " ) > 4 ) {
                 s = s.replaceFirst( " var ", " var. " );
             }
@@ -249,6 +255,12 @@ public final class ParserUtils {
             }
             else if ( s.indexOf( " (subsp " ) > 4 ) {
                 s = s.replaceFirst( " \\(subsp ", " (subsp. " );
+            }
+            else if ( s.indexOf( " (ssp " ) > 4 ) {
+                s = s.replaceFirst( " \\(ssp ", " (subsp. " );
+            }
+            else if ( s.indexOf( " (ssp. " ) > 4 ) {
+                s = s.replaceFirst( " \\(ssp. ", " (subsp. " );
             }
             else if ( s.indexOf( " (var " ) > 4 ) {
                 s = s.replaceFirst( " \\(var ", " (var. " );

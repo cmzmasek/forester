@@ -4373,7 +4373,6 @@ public final class Test {
                     .equals( "Escherichia coli str. K-12 substr. MG1655star" ) ) {
                 return false;
             }
-            //
             if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp." ).equals( "Macrocera sp." ) ) {
                 return false;
             }
@@ -4388,6 +4387,22 @@ public final class Test {
                 return false;
             }
             if ( !ParserUtils.extractScientificNameFromNodeName( "Macrocera sp" ).equals( "Macrocera sp." ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Sesamum rigidum ssp merenskyanum 07 48" )
+                    .equals( "Sesamum rigidum subsp. merenskyanum" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Sesamum rigidum ssp. merenskyanum" )
+                    .equals( "Sesamum rigidum subsp. merenskyanum" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Sesamum rigidum (ssp. merenskyanum)" )
+                    .equals( "Sesamum rigidum (subsp. merenskyanum)" ) ) {
+                return false;
+            }
+            if ( !ParserUtils.extractScientificNameFromNodeName( "Sesamum rigidum (ssp merenskyanum)" )
+                    .equals( "Sesamum rigidum (subsp. merenskyanum)" ) ) {
                 return false;
             }
         }
