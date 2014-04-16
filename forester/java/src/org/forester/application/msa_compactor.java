@@ -9,7 +9,6 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.Msa;
-import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa_compactor.MsaCompactor;
 import org.forester.util.CommandLineArguments;
@@ -109,19 +108,19 @@ public class msa_compactor {
             }
             MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
-                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, realign, norm, path_to_mafft );
+                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
             }
             else if ( av > 0 ) {
-                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, out, 50, path_to_mafft );
+                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, 50, path_to_mafft, out );
             }
             else if ( length > 0 ) {
-                mc = MsaCompactor.reduceLength( msa, length, step, realign, path_to_mafft );
+                mc = MsaCompactor.reduceLength( msa, length, step, realign, path_to_mafft, out );
             }
             //System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
             // for( final String id : mc.getRemovedSeqIds() ) {
             //     System.out.println( id );
             //}
-            mc.writeMsa( out, MSA_FORMAT.PHYLIP, ".aln" );
+            //mc.writeMsa( out, MSA_FORMAT.PHYLIP, ".aln" );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -168,6 +167,9 @@ public class msa_compactor {
         System.out.println();
         System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION
                 + "=<integer>  number of worst offender sequences to remove" );
+        System.out.println( "   -" + LENGTH_OPTION + "=<integer>  length" );
+        System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>  gap %" );
+        System.out.println( "   -" + STEP_OPTION + "=<decimal>  step" );
         System.out.println( "   -" + REALIGN_OPTION + "            to realign using MAFFT" + mafft_comment );
         System.out.println();
         System.out.println();
