@@ -64,9 +64,17 @@ public class msa_compactor {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );
             }
             if ( cla.isOptionSet( AV_GAPINESS_OPTION ) ) {
+                if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
+                    printHelp();
+                    System.exit( 0 );
+                }
                 av = cla.getOptionValueAsDouble( AV_GAPINESS_OPTION );
             }
             if ( cla.isOptionSet( LENGTH_OPTION ) ) {
+                if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) || cla.isOptionSet( AV_GAPINESS_OPTION ) ) {
+                    printHelp();
+                    System.exit( 0 );
+                }
                 length = cla.getOptionValueAsInt( LENGTH_OPTION );
             }
             if ( cla.isOptionSet( STEP_OPTION ) ) {
@@ -98,12 +106,11 @@ public class msa_compactor {
             else {
                 msa = GeneralMsaParser.parse( is );
             }
-            MsaCompactor mc = null;
             if ( worst_remove > 0 ) {
-                mc = MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
+                MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
             }
             else if ( av > 0 ) {
-                mc = MsaCompactor.reduceGapAverage( msa, av, step, realign, norm, path_to_mafft, out );
+                MsaCompactor.reduceGapAverage( msa, av, step, realign, norm, path_to_mafft, out );
             }
             else if ( length > 0 ) {
                 if ( length >= msa.getLength() ) {
@@ -111,7 +118,7 @@ public class msa_compactor {
                             + ") is greater than or equal to MSA original length (" + msa.getLength() + ")" );
                 }
                 // TODO if < shortest seq -> error
-                mc = MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
+                MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
             }
         }
         catch ( final Exception e ) {

@@ -35,12 +35,13 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3 = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4 = new DecimalFormat( "#.####" );
+    final private static NumberFormat NF_3         = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4         = new DecimalFormat( "#.####" );
     private Msa                       _msa;
     private File                      _out_file_base;
     private String                    _path_to_mafft;
     private final SortedSet<String>   _removed_seq_ids;
+    private final String              _maffts_opts = "--retree 1";
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -158,7 +159,6 @@ public class MsaCompactor {
                 m.write( ForesterUtil.createBufferedWriter( matrix_name ) );
             }
             catch ( final IOException e ) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -173,9 +173,9 @@ public class MsaCompactor {
         sb.append( "\t" );
         sb.append( _msa.getLength() );
         sb.append( "\t" );
-        sb.append( NF_3.format( MsaMethods.calcGapRatio( _msa ) ) );
+        sb.append( NF_4.format( MsaMethods.calcGapRatio( _msa ) ) );
         sb.append( "\t" );
-        sb.append( NF_3.format( calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
+        sb.append( NF_4.format( calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
         return sb;
     }
 
@@ -184,10 +184,13 @@ public class MsaCompactor {
         //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
         final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
         final List<String> opts = new ArrayList<String>();
-        opts.add( "--maxiterate" );
-        opts.add( "1000" );
-        opts.add( "--localpair" );
-        opts.add( "--quiet" );
+        for( final String o : _maffts_opts.split( "\\s" ) ) {
+            opts.add( o );
+        }
+        //opts.add( "--maxiterate" );
+        //opts.add( "1000" );
+        //opts.add( "--localpair" );
+        //opts.add( "--quiet" );
         _msa = mafft.infer( _msa.asSequenceList(), opts );
     }
 
@@ -204,6 +207,9 @@ public class MsaCompactor {
         final List<String> to_remove_ids = new ArrayList<String>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
+        }
+        if ( verbose ) {
+            printTableHeader();
         }
         int i = 0;
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
@@ -233,6 +239,20 @@ public class MsaCompactor {
         }
     }
 
+    private final static void printTableHeader() {
+        System.out.print( ForesterUtil.pad( "Id", 20, ' ', false ) );
+        System.out.print( "\t" );
+        System.out.print( "Seqs" );
+        System.out.print( "\t" );
+        System.out.print( "Length" );
+        System.out.print( "\t" );
+        System.out.print( "Gaps" );
+        System.out.print( "\t" );
+        System.out.print( "MSA qual" );
+        System.out.print( "\t" );
+        System.out.println();
+    }
+
     final private void removeViaLength( final int length,
                                         final int step,
                                         final boolean realign,
@@ -242,6 +262,9 @@ public class MsaCompactor {
         final List<String> to_remove_ids = new ArrayList<String>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
+        }
+        if ( verbose ) {
+            printTableHeader();
         }
         int i = 0;
         while ( _msa.getLength() > length ) {
@@ -281,6 +304,9 @@ public class MsaCompactor {
         for( int j = 0; j < to_remove; ++j ) {
             to_remove_ids.add( stats[ j ].getId() );
             _removed_seq_ids.add( stats[ j ].getId() );
+        }
+        if ( verbose ) {
+            printTableHeader();
         }
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
@@ -332,6 +358,10 @@ public class MsaCompactor {
             if ( MsaInferrer.isInstalled( path ) ) {
                 return path;
             }
+        }
+        path = "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft";
+        if ( MsaInferrer.isInstalled( path ) ) {
+            return path;
         }
         path = "/usr/local/bin/mafft";
         if ( MsaInferrer.isInstalled( path ) ) {
