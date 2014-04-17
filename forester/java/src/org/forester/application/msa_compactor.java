@@ -26,9 +26,9 @@ public class msa_compactor {
     final static private String PATH_TO_MAFFT_OPTION                   = "mafft";
     final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String PRG_NAME                               = "msa_compactor";
-    final static private String PRG_DESC                               = "multiple sequnce aligment compactor";
+    final static private String PRG_DESC                               = "multiple sequence aligment compactor";
     final static private String PRG_VERSION                            = "0.01";
-    final static private String PRG_DATE                               = "140314";
+    final static private String PRG_DATE                               = "140316";
     final static private String E_MAIL                                 = "phylosoft@gmail.com";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
@@ -84,14 +84,6 @@ public class msa_compactor {
             if ( cla.isOptionSet( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION ) ) {
                 norm = false;
             }
-            //            else if ( cla.isOptionSet( STEP_OPTION ) && cla.isOptionSet( WINDOW_OPTION ) ) {
-            //                step = cla.getOptionValueAsInt( STEP_OPTION );
-            //                window = cla.getOptionValueAsInt( WINDOW_OPTION );
-            //            }
-            //            else {
-            //                printHelp();
-            //                System.exit( 0 );
-            //            }
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                     path_to_mafft = MsaCompactor.guessPathToMafft();
@@ -121,11 +113,6 @@ public class msa_compactor {
                 // TODO if < shortest seq -> error
                 mc = MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
             }
-            //System.out.println( MsaMethods.calcGapRatio( mc.getMsa() ) );
-            // for( final String id : mc.getRemovedSeqIds() ) {
-            //     System.out.println( id );
-            //}
-            //mc.writeMsa( out, MSA_FORMAT.PHYLIP, ".aln" );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
@@ -173,8 +160,8 @@ public class msa_compactor {
         System.out.println( "   -" + REMOVE_WORST_OFFENDERS_OPTION
                 + "=<integer>  number of worst offender sequences to remove" );
         System.out.println( "   -" + LENGTH_OPTION + "=<integer>  target MSA length" );
-        System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>  gap %" );
-        System.out.println( "   -" + STEP_OPTION + "=<decimal>  step" );
+        System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>  target gap-ratio (0.0-1.0)" );
+        System.out.println( "   -" + STEP_OPTION + "=<integer>  step (for output and re-aligning)" );
         System.out.println( "   -" + REALIGN_OPTION + "            to realign using MAFFT" + mafft_comment );
         System.out.println();
         System.out.println();

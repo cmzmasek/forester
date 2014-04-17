@@ -35,9 +35,8 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3    = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4    = new DecimalFormat( "#.####" );
-    private static final boolean      VERBOSE = false;
+    final private static NumberFormat NF_3 = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4 = new DecimalFormat( "#.####" );
     private Msa                       _msa;
     private File                      _out_file_base;
     private String                    _path_to_mafft;
@@ -123,20 +122,6 @@ public class MsaCompactor {
     final private GapContribution[] calcGapContribtionsStats( final boolean norm ) {
         final GapContribution stats[] = calcGapContribtions( norm );
         Arrays.sort( stats );
-        // for( final GapContribution stat : stats ) {
-        //  final StringBuilder sb = new StringBuilder();
-        //  sb.append( stat.getId() );
-        //  sb.append( "\t" );
-        //  sb.append( NF_4.format( stat.getValue() ) );
-        //  sb.append( "\t" );
-        //            sb.append( NF_4.format( stat.median() ) );
-        //            sb.append( "\t" );
-        //            sb.append( NF_4.format( stat.getMin() ) );
-        //            sb.append( "\t" );
-        //            sb.append( NF_4.format( stat.getMax() ) );
-        //sb.append( "\t" );
-        //System.out.println( sb );
-        // }
         return stats;
     }
 
@@ -245,46 +230,6 @@ public class MsaCompactor {
                 System.out.println();
             }
             ++i;
-        }
-    }
-
-    final private void removeViaGapAverageOLD( final double mean_gapiness,
-                                               final int step,
-                                               final boolean realign,
-                                               final File outfile,
-                                               final int minimal_effective_length ) throws IOException,
-            InterruptedException {
-        if ( step < 1 ) {
-            throw new IllegalArgumentException( "step cannot be less than 1" );
-        }
-        if ( mean_gapiness < 0 ) {
-            throw new IllegalArgumentException( "target average gap ratio cannot be less than 0" );
-        }
-        if ( VERBOSE ) {
-            System.out.println( "orig: " + msaStatsAsSB() );
-        }
-        if ( minimal_effective_length > 1 ) {
-            _msa = MsaMethods.removeSequencesByMinimalLength( _msa, minimal_effective_length );
-            if ( VERBOSE ) {
-                System.out.println( "short seq removal: " + msaStatsAsSB() );
-            }
-        }
-        int counter = step;
-        double gr;
-        do {
-            removeWorstOffenders( step, 1, false, false, false );
-            if ( realign ) {
-                realignWithMafft();
-            }
-            gr = MsaMethods.calcGapRatio( _msa );
-            if ( VERBOSE ) {
-                System.out.println( counter + ": " + msaStatsAsSB() );
-            }
-            //   write( outfile, gr );
-            counter += step;
-        } while ( gr > mean_gapiness );
-        if ( VERBOSE ) {
-            System.out.println( "final: " + msaStatsAsSB() );
         }
     }
 
