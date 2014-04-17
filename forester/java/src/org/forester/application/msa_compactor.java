@@ -42,9 +42,9 @@ public class msa_compactor {
             final File in = cla.getFile( 0 );
             final File out = cla.getFile( 1 );
             int worst_remove = -1;
-            double av = -1;
+            double av_gap = -1;
             int length = -1;
-            int step = 1;
+            int step = -1;
             boolean realign = false;
             boolean norm = true;
             String path_to_mafft = null;
@@ -60,15 +60,30 @@ public class msa_compactor {
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
             }
+            Msa msa = null;
+            final FileInputStream is = new FileInputStream( in );
+            if ( FastaParser.isLikelyFasta( in ) ) {
+                msa = FastaParser.parseMsa( is );
+            }
+            else {
+                msa = GeneralMsaParser.parse( is );
+            }
             if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );
+                if ( ( worst_remove < 1 ) || ( worst_remove >= msa.getNumberOfSequences() - 1 ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "number of worst offender sequences to remove is out of range: "
+                            + worst_remove );
+                }
             }
             if ( cla.isOptionSet( AV_GAPINESS_OPTION ) ) {
                 if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                     printHelp();
                     System.exit( 0 );
                 }
-                av = cla.getOptionValueAsDouble( AV_GAPINESS_OPTION );
+                av_gap = cla.getOptionValueAsDouble( AV_GAPINESS_OPTION );
+                if ( ( av_gap < 0 ) || ( av_gap >= 1 ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "target gap-ratio is out of range: " + av_gap );
+                }
             }
             if ( cla.isOptionSet( LENGTH_OPTION ) ) {
                 if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) || cla.isOptionSet( AV_GAPINESS_OPTION ) ) {
@@ -76,9 +91,16 @@ public class msa_compactor {
                     System.exit( 0 );
                 }
                 length = cla.getOptionValueAsInt( LENGTH_OPTION );
+                if ( ( length < 2 ) || ( length >= msa.getLength() ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "target length is out of range: " + length );
+                }
             }
             if ( cla.isOptionSet( STEP_OPTION ) ) {
                 step = cla.getOptionValueAsInt( STEP_OPTION );
+                if ( ( step < 1 )
+                        || ( ( step > msa.getNumberOfSequences() ) || ( ( worst_remove > 0 ) && ( step > worst_remove ) ) ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "value for step is out of range: " + step );
+                }
             }
             if ( cla.isOptionSet( REALIGN_OPTION ) ) {
                 realign = true;
@@ -98,25 +120,13 @@ public class msa_compactor {
                 }
                 checkPathToMafft( path_to_mafft );
             }
-            Msa msa = null;
-            final FileInputStream is = new FileInputStream( in );
-            if ( FastaParser.isLikelyFasta( in ) ) {
-                msa = FastaParser.parseMsa( is );
-            }
-            else {
-                msa = GeneralMsaParser.parse( is );
-            }
             if ( worst_remove > 0 ) {
                 MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
             }
-            else if ( av > 0 ) {
-                MsaCompactor.reduceGapAverage( msa, av, step, realign, norm, path_to_mafft, out );
+            else if ( av_gap > 0 ) {
+                MsaCompactor.reduceGapAverage( msa, av_gap, step, realign, norm, path_to_mafft, out );
             }
             else if ( length > 0 ) {
-                if ( length >= msa.getLength() ) {
-                    ForesterUtil.fatalError( PRG_NAME, "target MSA length (" + length
-                            + ") is greater than or equal to MSA original length (" + msa.getLength() + ")" );
-                }
                 // TODO if < shortest seq -> error
                 MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
             }

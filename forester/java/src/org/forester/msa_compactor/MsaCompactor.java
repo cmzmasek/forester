@@ -37,11 +37,11 @@ public class MsaCompactor {
 
     final private static NumberFormat NF_3         = new DecimalFormat( "#.###" );
     final private static NumberFormat NF_4         = new DecimalFormat( "#.####" );
+    private final String              _maffts_opts = "--retree 1";
     private Msa                       _msa;
     private File                      _out_file_base;
     private String                    _path_to_mafft;
     private final SortedSet<String>   _removed_seq_ids;
-    private final String              _maffts_opts = "--retree 1";
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -179,6 +179,14 @@ public class MsaCompactor {
         return sb;
     }
 
+    private final void printMsaStats( final String id ) {
+        System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
+        System.out.print( "\t" );
+        final StringBuilder sb = msaStatsAsSB();
+        System.out.print( sb );
+        System.out.print( "\t" );
+    }
+
     final private void realignWithMafft() throws IOException, InterruptedException {
         //  final MsaInferrer mafft = Mafft
         //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
@@ -217,13 +225,10 @@ public class MsaCompactor {
             _msa = MsaMethods.removeSequence( _msa, id );
             removeGapColumns();
             if ( verbose ) {
-                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
-                System.out.print( "\t" );
-                final StringBuilder sb = msaStatsAsSB();
-                System.out.print( sb );
-                System.out.print( "\t" );
+                printMsaStats( id );
             }
-            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
+            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) )
+                    || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
                 if ( realign ) {
                     realignWithMafft();
                 }
@@ -237,20 +242,6 @@ public class MsaCompactor {
             }
             ++i;
         }
-    }
-
-    private final static void printTableHeader() {
-        System.out.print( ForesterUtil.pad( "Id", 20, ' ', false ) );
-        System.out.print( "\t" );
-        System.out.print( "Seqs" );
-        System.out.print( "\t" );
-        System.out.print( "Length" );
-        System.out.print( "\t" );
-        System.out.print( "Gaps" );
-        System.out.print( "\t" );
-        System.out.print( "MSA qual" );
-        System.out.print( "\t" );
-        System.out.println();
     }
 
     final private void removeViaLength( final int length,
@@ -272,13 +263,9 @@ public class MsaCompactor {
             _msa = MsaMethods.removeSequence( _msa, id );
             removeGapColumns();
             if ( verbose ) {
-                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
-                System.out.print( "\t" );
-                final StringBuilder sb = msaStatsAsSB();
-                System.out.print( sb );
-                System.out.print( "\t" );
+                printMsaStats( id );
             }
-            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( _msa.getLength() <= length ) ) {
+            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( _msa.getLength() <= length ) ) {
                 if ( realign ) {
                     realignWithMafft();
                 }
@@ -313,13 +300,9 @@ public class MsaCompactor {
             _msa = MsaMethods.removeSequence( _msa, id );
             removeGapColumns();
             if ( verbose ) {
-                System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
-                System.out.print( "\t" );
-                final StringBuilder sb = msaStatsAsSB();
-                System.out.print( sb );
-                System.out.print( "\t" );
+                printMsaStats( id );
             }
-            if ( ( ( ( i + 1 ) % step ) == 0 ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
+            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
                 if ( realign ) {
                     realignWithMafft();
                 }
@@ -436,5 +419,19 @@ public class MsaCompactor {
             stats.addValue( MsaMethods.calculateIdentityRatio( msa, c ) );
         }
         return stats;
+    }
+
+    private final static void printTableHeader() {
+        System.out.print( ForesterUtil.pad( "Id", 20, ' ', false ) );
+        System.out.print( "\t" );
+        System.out.print( "Seqs" );
+        System.out.print( "\t" );
+        System.out.print( "Length" );
+        System.out.print( "\t" );
+        System.out.print( "Gaps" );
+        System.out.print( "\t" );
+        System.out.print( "MSA qual" );
+        System.out.print( "\t" );
+        System.out.println();
     }
 }
