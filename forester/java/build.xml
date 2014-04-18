@@ -6,6 +6,7 @@
 	<property name="jars.dir" value="resources" />
 	<property name="itextjar" value="${jars.dir}/itextpdf-5.1.0.jar" />
 	<property name="commonscodecjar" value="${jars.dir}/commons-codec-1.5.jar" />
+	<property name="openchartjar" value="${jars.dir}/openchart.jar" />
 	<property name="forester_jar" value="forester.jar" />
 	<property name="archaeopteryx_applets_jar" value="archaeopteryx_applets.jar" />
 
@@ -27,7 +28,7 @@
 
 	<target name="compile" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.6" target="1.6" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar}">
+		<javac source="1.6" target="1.6" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
@@ -49,6 +50,12 @@
             </patternset>
         </unjar>
         <unjar src="${commonscodecjar}" dest="${classes.dir}">
+            <patternset>
+                <include name="**/*.class" />
+                <exclude name="**/*Test*.class" />
+            </patternset>
+        </unjar>
+        <unjar src="${openchartjar}" dest="${classes.dir}">
             <patternset>
                 <include name="**/*.class" />
                 <exclude name="**/*Test*.class" />
