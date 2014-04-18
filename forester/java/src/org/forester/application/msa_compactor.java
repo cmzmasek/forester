@@ -158,7 +158,7 @@ public class msa_compactor {
                 MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
             }
             else {
-                MsaCompactor.chart( msa, realign, norm, path_to_mafft );
+                MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
             }
         }
         catch ( final Exception e ) {

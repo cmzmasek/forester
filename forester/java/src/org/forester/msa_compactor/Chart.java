@@ -37,6 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import org.forester.util.ForesterUtil;
+
 import com.approximatrix.charting.coordsystem.BoxCoordSystem;
 import com.approximatrix.charting.model.MultiScatterDataModel;
 import com.approximatrix.charting.render.MultiScatterChartRenderer;
@@ -44,12 +46,12 @@ import com.approximatrix.charting.swing.ChartPanel;
 
 public final class Chart extends JDialog implements ActionListener {
 
-    private static final long serialVersionUID = -5292420246132943515L;
-    ChartPanel                _chart_panel     = null;
-    final JMenuItem           _m_exit          = new JMenuItem();
-    List<MsaProperties>       _msa_props;
+    private static final long   serialVersionUID = -5292420246132943515L;
+    private ChartPanel          _chart_panel     = null;
+    private final JMenuItem     _m_exit          = new JMenuItem();
+    private List<MsaProperties> _msa_props;
 
-    Chart( final List<MsaProperties> msa_props ) {
+    private Chart( final List<MsaProperties> msa_props ) {
         super();
         _msa_props = msa_props;
         setTitle( "msa compactor" );
@@ -98,23 +100,23 @@ public final class Chart extends JDialog implements ActionListener {
             }
             model.addData( seqs_length, "Length" );
             model.setSeriesLine( "Series " + "Length", true );
-            model.setSeriesMarker( "Series " + "Length", true );
-            //            final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
-            //            for( int i = 0; i < _msa_props.size(); ++i ) {
-            //                seqs_gaps[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
-            //                seqs_gaps[ i ][ 1 ] = _msa_props.get( i ).getGapRatio();
-            //            }
-            //            model.addData( seqs_gaps, "Gaps" );
-            //            model.setSeriesLine( "Series " + "Gaps", true );
-            //            model.setSeriesMarker( "Series " + "Gaps", true );
-            //            final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
-            //            for( int i = 0; i < _msa_props.size(); ++i ) {
-            //                seqs_identity[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
-            //                seqs_identity[ i ][ 1 ] = _msa_props.get( i ).getAverageIdentityRatio();
-            //            }
-            //            model.addData( seqs_identity, "Id" );
-            //            model.setSeriesLine( "Series " + "Id", false );
-            //            model.setSeriesMarker( "Series " + "Id", true );
+            model.setSeriesMarker( "Series " + "Length", false );
+            final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
+            for( int i = 0; i < _msa_props.size(); ++i ) {
+                seqs_gaps[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
+                seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 100 );
+            }
+            model.addData( seqs_gaps, "Gaps" );
+            model.setSeriesLine( "Series " + "Gaps", true );
+            model.setSeriesMarker( "Series " + "Gaps", false );
+            final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
+            for( int i = 0; i < _msa_props.size(); ++i ) {
+                seqs_identity[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
+                seqs_identity[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 100 );
+            }
+            model.addData( seqs_identity, "Id" );
+            model.setSeriesLine( "Series " + "Id", true );
+            model.setSeriesMarker( "Series " + "Id", false );
             final BoxCoordSystem coord = new BoxCoordSystem( model );
             coord.setUnitFont( coord.getUnitFont().deriveFont( 20.0f ) );
             coord.setXAxisUnit( "Number of Sequences" );
