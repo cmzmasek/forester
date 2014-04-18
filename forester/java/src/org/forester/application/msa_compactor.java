@@ -1,3 +1,26 @@
+// $Id:
+// FORESTER -- software libraries and applications
+// for evolutionary biology research and applications.
+//
+// Copyright (C) 2014 Christian M. Zmasek
+// Copyright (C) 2014 Sanford-Burnham Medical Research Institute
+// All rights reserved
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+//
+// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.application;
 
@@ -35,12 +58,16 @@ public class msa_compactor {
     public static void main( final String args[] ) {
         try {
             final CommandLineArguments cla = new CommandLineArguments( args );
-            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 ) || ( cla.getNumberOfNames() != 2 ) ) {
+            if ( cla.isOptionSet( HELP_OPTION_1 ) || cla.isOptionSet( HELP_OPTION_2 )
+                    || ( ( cla.getNumberOfNames() < 1 ) || ( cla.getNumberOfNames() > 2 ) ) ) {
                 printHelp();
                 System.exit( 0 );
             }
             final File in = cla.getFile( 0 );
-            final File out = cla.getFile( 1 );
+            File out = null;
+            if ( cla.getNumberOfNames() > 1 ) {
+                out = cla.getFile( 1 );
+            }
             int worst_remove = -1;
             double av_gap = -1;
             int length = -1;
@@ -129,6 +156,9 @@ public class msa_compactor {
             else if ( length > 0 ) {
                 // TODO if < shortest seq -> error
                 MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
+            }
+            else {
+                MsaCompactor.chart( msa, realign, norm, path_to_mafft );
             }
         }
         catch ( final Exception e ) {

@@ -159,6 +159,14 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
+    public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( int c = from; c <= to; ++c ) {
+            stats.addValue( calculateIdentityRatio( msa, c ) );
+        }
+        return stats;
+    }
+
     public static double calculateIdentityRatio( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> dist = calculateResidueDestributionPerColumn( msa, column );
         int majority_count = 0;

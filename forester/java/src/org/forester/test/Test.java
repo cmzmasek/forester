@@ -2,8 +2,8 @@
 // FORESTER -- software libraries and applications
 // for evolutionary biology research and applications.
 //
-// Copyright (C) 2008-2009 Christian M. Zmasek
-// Copyright (C) 2008-2009 Burnham Institute for Medical Research
+// Copyright (C) 2014 Christian M. Zmasek
+// Copyright (C) 2014 Sanford-Burnham Medical Research Institute
 // All rights reserved
 //
 // This library is free software; you can redistribute it and/or
@@ -20,7 +20,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 //
-// Contact: phylosoft @ gmail . com
 // WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.test;

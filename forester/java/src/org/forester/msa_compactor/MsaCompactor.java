@@ -1,3 +1,26 @@
+// $Id:
+// FORESTER -- software libraries and applications
+// for evolutionary biology research and applications.
+//
+// Copyright (C) 2014 Christian M. Zmasek
+// Copyright (C) 2014 Sanford-Burnham Medical Research Institute
+// All rights reserved
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+//
+// WWW: https://sites.google.com/site/cmzmasek/home/software/forester
 
 package org.forester.msa_compactor;
 
@@ -29,8 +52,6 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
-import org.forester.util.BasicDescriptiveStatistics;
-import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
@@ -175,7 +196,7 @@ public class MsaCompactor {
         sb.append( "\t" );
         sb.append( NF_4.format( MsaMethods.calcGapRatio( _msa ) ) );
         sb.append( "\t" );
-        sb.append( NF_4.format( calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
+        sb.append( NF_4.format( MsaMethods.calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
         return sb;
     }
 
@@ -242,6 +263,38 @@ public class MsaCompactor {
             }
             ++i;
         }
+    }
+
+    final private List<MsaProperties> chart( final boolean realign, final boolean norm, final boolean verbose )
+            throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final List<String> to_remove_ids = new ArrayList<String>();
+        final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
+        for( final GapContribution gap_gontribution : stats ) {
+            to_remove_ids.add( gap_gontribution.getId() );
+        }
+        if ( verbose ) {
+            printTableHeader();
+        }
+        int i = 0;
+        final int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
+        while ( _msa.getNumberOfSequences() > x ) {
+            final String id = to_remove_ids.get( i );
+            _msa = MsaMethods.removeSequence( _msa, id );
+            removeGapColumns();
+            msa_props.add( new MsaProperties( _msa ) );
+            if ( verbose ) {
+                printMsaStats( id );
+            }
+            if ( realign ) {
+                realignWithMafft();
+            }
+            if ( verbose ) {
+                System.out.println();
+            }
+            ++i;
+        }
+        return msa_props;
     }
 
     final private void removeViaLength( final int length,
@@ -397,6 +450,19 @@ public class MsaCompactor {
         return mc;
     }
 
+    public final static MsaCompactor chart( final Msa msa,
+                                            final boolean realign,
+                                            final boolean norm,
+                                            final String path_to_mafft ) throws IOException, InterruptedException {
+        final MsaCompactor mc = new MsaCompactor( msa );
+        if ( realign ) {
+            mc.setPathToMafft( path_to_mafft );
+        }
+        final List<MsaProperties> msa_props = mc.chart( realign, norm, true );
+        Chart.display( msa_props );
+        return mc;
+    }
+
     public final static MsaCompactor removeWorstOffenders( final Msa msa,
                                                            final int worst_offenders_to_remove,
                                                            final int step,
@@ -411,14 +477,6 @@ public class MsaCompactor {
         mc.setOutFileBase( out );
         mc.removeWorstOffenders( worst_offenders_to_remove, step, realign, norm, true );
         return mc;
-    }
-
-    private static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
-        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( int c = from; c <= to; ++c ) {
-            stats.addValue( MsaMethods.calculateIdentityRatio( msa, c ) );
-        }
-        return stats;
     }
 
     private final static void printTableHeader() {
