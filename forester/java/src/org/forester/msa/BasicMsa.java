@@ -192,10 +192,12 @@ public class BasicMsa implements Msa {
         for( int row = 0; row < seqs.size(); ++row ) {
             final Sequence seq = seqs.get( row );
             if ( seq.getLength() != length ) {
-                throw new IllegalArgumentException( "illegal attempt to build msa from sequences of unequal length" );
+                throw new IllegalArgumentException( "illegal attempt to build msa from sequences of unequal length ["
+                        + seq.getIdentifier() + "]" );
             }
             if ( seq.getType() != msa.getType() ) {
-                throw new IllegalArgumentException( "illegal attempt to build msa from sequences of different type" );
+                throw new IllegalArgumentException( "illegal attempt to build msa from sequences of different type ["
+                        + seq.getIdentifier() + "]" );
             }
             if ( ids.contains( seq.getIdentifier() ) ) {
                 throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers ["

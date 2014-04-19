@@ -172,22 +172,32 @@ public class MsaCompactor {
             printTableHeader();
         }
         int i = 0;
-        final int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
+        final int s = _msa.getNumberOfSequences();
+        final int x = ForesterUtil.roundToInt( s / 20.0 );
         while ( _msa.getNumberOfSequences() > x ) {
             final String id = to_remove_ids.get( i );
             _msa = MsaMethods.removeSequence( _msa, id );
-            removeGapColumns();
-            msa_props.add( new MsaProperties( _msa ) );
-            if ( verbose ) {
-                printMsaStats( id );
-            }
-            if ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) {
-                if ( realign ) {
+            if ( ( s < 500 ) || ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) ) {
+                removeGapColumns();
+                if ( realign && ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) ) {
                     realignWithMafft();
+                    msa_props.add( new MsaProperties( _msa ) );
+                    if ( verbose ) {
+                        printMsaStats( id );
+                    }
+                    if ( verbose ) {
+                        System.out.print( "(realigned)" );
+                    }
                 }
-            }
-            if ( verbose ) {
-                System.out.println();
+                else {
+                    msa_props.add( new MsaProperties( _msa ) );
+                    if ( verbose ) {
+                        printMsaStats( id );
+                    }
+                }
+                if ( verbose ) {
+                    System.out.println();
+                }
             }
             ++i;
         }
@@ -256,7 +266,7 @@ public class MsaCompactor {
         }
         final String s = writeOutfile();
         if ( verbose ) {
-            System.out.print( "-> " + s + ( realign ? " (realigned)" : "" ) );
+            System.out.print( "-> " + s + ( realign ? "\t(realigned)" : "" ) );
         }
     }
 
@@ -393,12 +403,13 @@ public class MsaCompactor {
                                             final boolean realign,
                                             final boolean norm,
                                             final String path_to_mafft ) throws IOException, InterruptedException {
+        final int initial_number_of_seqs = msa.getNumberOfSequences();
         final MsaCompactor mc = new MsaCompactor( msa );
         if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
         final List<MsaProperties> msa_props = mc.chart( step, realign, norm, true );
-        Chart.display( msa_props );
+        Chart.display( msa_props, initial_number_of_seqs );
         return mc;
     }
 

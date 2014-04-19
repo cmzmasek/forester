@@ -50,10 +50,12 @@ public final class Chart extends JDialog implements ActionListener {
     private ChartPanel          _chart_panel     = null;
     private final JMenuItem     _m_exit          = new JMenuItem();
     private List<MsaProperties> _msa_props;
+    private final int           _initial_number_of_seqs;
 
-    private Chart( final List<MsaProperties> msa_props ) {
+    private Chart( final List<MsaProperties> msa_props, final int initial_number_of_seqs ) {
         super();
         _msa_props = msa_props;
+        _initial_number_of_seqs = initial_number_of_seqs;
         setTitle( "msa compactor" );
         setSize( 500, 400 );
         setResizable( true );
@@ -95,7 +97,7 @@ public final class Chart extends JDialog implements ActionListener {
             }
             final double[][] seqs_length = new double[ _msa_props.size() ][ 2 ];
             for( int i = 0; i < _msa_props.size(); ++i ) {
-                seqs_length[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
+                seqs_length[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_length[ i ][ 1 ] = _msa_props.get( i ).getLength();
             }
             model.addData( seqs_length, "Length" );
@@ -103,7 +105,7 @@ public final class Chart extends JDialog implements ActionListener {
             model.setSeriesMarker( "Series " + "Length", false );
             final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
             for( int i = 0; i < _msa_props.size(); ++i ) {
-                seqs_gaps[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
+                seqs_gaps[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 100 );
             }
             model.addData( seqs_gaps, "Gaps" );
@@ -111,7 +113,7 @@ public final class Chart extends JDialog implements ActionListener {
             model.setSeriesMarker( "Series " + "Gaps", false );
             final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
             for( int i = 0; i < _msa_props.size(); ++i ) {
-                seqs_identity[ i ][ 0 ] = _msa_props.get( i ).getNumberOfSequences();
+                seqs_identity[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_identity[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 100 );
             }
             model.addData( seqs_identity, "Id" );
@@ -131,14 +133,14 @@ public final class Chart extends JDialog implements ActionListener {
         return _chart_panel;
     }
 
-    public static void display( final List<MsaProperties> msa_props ) {
+    public static void display( final List<MsaProperties> msa_props, final int initial_number_of_seqs ) {
         try {
             UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
         }
-        final Chart chart = new Chart( msa_props );
+        final Chart chart = new Chart( msa_props, initial_number_of_seqs );
         chart.setVisible( true );
     }
 
@@ -149,7 +151,7 @@ public final class Chart extends JDialog implements ActionListener {
         catch ( final Exception e ) {
             e.printStackTrace();
         }
-        final Chart temp = new Chart( null );
+        final Chart temp = new Chart( null, 0 );
         temp.setVisible( true );
     }
 }
