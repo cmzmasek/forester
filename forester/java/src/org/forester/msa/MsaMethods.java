@@ -76,7 +76,7 @@ public final class MsaMethods {
         final List<Sequence> seqs = new ArrayList<Sequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_id.equals( msa.getIdentifier( row ) ) ) {
-                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+                seqs.add( msa.getSequence( row ) );
             }
         }
         if ( seqs.size() < 1 ) {
@@ -89,7 +89,7 @@ public final class MsaMethods {
         final List<Sequence> seqs = new ArrayList<Sequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_ids.contains( msa.getIdentifier( row ) ) ) {
-                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+                seqs.add( msa.getSequence( row ) );
             }
         }
         if ( seqs.size() < 1 ) {
@@ -102,7 +102,7 @@ public final class MsaMethods {
         final List<Sequence> seqs = new ArrayList<Sequence>();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             if ( !to_remove_rows.contains( row ) ) {
-                seqs.add( BasicSequence.copySequence( msa.getSequence( row ) ) );
+                seqs.add( msa.getSequence( row ) );
             }
         }
         if ( seqs.size() < 1 ) {
@@ -157,6 +157,19 @@ public final class MsaMethods {
             return null;
         }
         return BasicMsa.createInstance( seqs );
+    }
+
+    synchronized final public static void removeGapColumns( final double max_allowed_gap_ratio, final DeleteableMsa msa ) {
+        if ( ( max_allowed_gap_ratio < 0 ) || ( max_allowed_gap_ratio > 1 ) ) {
+            throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );
+        }
+        //   final boolean ignore_too_short_seqs = min_allowed_length > 0;
+        for( int col = 0; col < msa.getLength(); ++col ) {
+            final boolean delete = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) >= max_allowed_gap_ratio;
+            if ( delete ) {
+                msa.deleteColumn( col );
+            }
+        }
     }
 
     public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {

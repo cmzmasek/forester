@@ -42,6 +42,7 @@ import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANC
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
 import org.forester.msa.BasicMsa;
+import org.forester.msa.DeleteableMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
 import org.forester.msa.Msa.MSA_FORMAT;
@@ -60,7 +61,7 @@ public class MsaCompactor {
     final private static NumberFormat NF_4         = new DecimalFormat( "#.####" );
     //   private final String              _maffts_opts = "--retree 1";
     private final String              _maffts_opts = "--auto";
-    private Msa                       _msa;
+    private DeleteableMsa             _msa;
     private File                      _out_file_base;
     private String                    _path_to_mafft;
     private final SortedSet<String>   _removed_seq_ids;
@@ -69,7 +70,7 @@ public class MsaCompactor {
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
 
-    private MsaCompactor( final Msa msa ) {
+    private MsaCompactor( final DeleteableMsa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
     }
@@ -108,7 +109,7 @@ public class MsaCompactor {
         final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
         final int seed = 15;
         final int n = 100;
-        final ResampleableMsa resampleable_msa = new ResampleableMsa( ( BasicMsa ) _msa );
+        final ResampleableMsa resampleable_msa = new ResampleableMsa( _msa );
         final int[][] resampled_column_positions = BootstrapResampler.createResampledColumnPositions( _msa.getLength(),
                                                                                                       n,
                                                                                                       seed );
@@ -176,7 +177,8 @@ public class MsaCompactor {
         final int x = ForesterUtil.roundToInt( s / 20.0 );
         while ( _msa.getNumberOfSequences() > x ) {
             final String id = to_remove_ids.get( i );
-            _msa = MsaMethods.removeSequence( _msa, id );
+            //~_msa = MsaMethods.removeSequence( _msa, id );
+            _msa.deleteRow( id );
             if ( ( s < 500 ) || ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) ) {
                 removeGapColumns();
                 if ( realign && ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) ) {
@@ -282,11 +284,12 @@ public class MsaCompactor {
         //opts.add( "1000" );
         //opts.add( "--localpair" );
         //opts.add( "--quiet" );
-        _msa = mafft.infer( _msa.asSequenceList(), opts );
+        _msa = new DeleteableMsa( ( BasicMsa ) mafft.infer( _msa.asSequenceList(), opts ) );
     }
 
     final private void removeGapColumns() {
-        _msa = MsaMethods.createInstance().removeGapColumns( 1, 0, _msa );
+        //~ _msa = MsaMethods.createInstance().removeGapColumns( 1, 0, _msa );
+        MsaMethods.removeGapColumns( 1, _msa );
     }
 
     final private void removeViaGapAverage( final double mean_gapiness,
@@ -305,7 +308,8 @@ public class MsaCompactor {
         int i = 0;
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
             final String id = to_remove_ids.get( i );
-            _msa = MsaMethods.removeSequence( _msa, id );
+            //`_msa = MsaMethods.removeSequence( _msa, id );
+            _msa.deleteRow( id );
             removeGapColumns();
             if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) )
                     || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
@@ -337,7 +341,8 @@ public class MsaCompactor {
         int i = 0;
         while ( _msa.getLength() > length ) {
             final String id = to_remove_ids.get( i );
-            _msa = MsaMethods.removeSequence( _msa, id );
+            //~_msa = MsaMethods.removeSequence( _msa, id );
+            _msa.deleteRow( id );
             removeGapColumns();
             if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( _msa.getLength() <= length ) ) {
                 printMsaStatsWriteOutfileAndRealign( realign, verbose, id );
@@ -368,7 +373,8 @@ public class MsaCompactor {
         }
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
-            _msa = MsaMethods.removeSequence( _msa, id );
+            //~ _msa = MsaMethods.removeSequence( _msa, id );
+            _msa.deleteRow( id );
             removeGapColumns();
             if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
                 printMsaStatsWriteOutfileAndRealign( realign, verbose, id );
@@ -398,7 +404,7 @@ public class MsaCompactor {
         return s;
     }
 
-    public final static MsaCompactor chart( final Msa msa,
+    public final static MsaCompactor chart( final DeleteableMsa msa,
                                             final int step,
                                             final boolean realign,
                                             final boolean norm,
@@ -445,7 +451,7 @@ public class MsaCompactor {
         return null;
     }
 
-    public final static MsaCompactor reduceGapAverage( final Msa msa,
+    public final static MsaCompactor reduceGapAverage( final DeleteableMsa msa,
                                                        final double max_gap_average,
                                                        final int step,
                                                        final boolean realign,
@@ -461,7 +467,7 @@ public class MsaCompactor {
         return mc;
     }
 
-    public final static MsaCompactor reduceLength( final Msa msa,
+    public final static MsaCompactor reduceLength( final DeleteableMsa msa,
                                                    final int length,
                                                    final int step,
                                                    final boolean realign,
@@ -477,7 +483,7 @@ public class MsaCompactor {
         return mc;
     }
 
-    public final static MsaCompactor removeWorstOffenders( final Msa msa,
+    public final static MsaCompactor removeWorstOffenders( final DeleteableMsa msa,
                                                            final int worst_offenders_to_remove,
                                                            final int step,
                                                            final boolean realign,

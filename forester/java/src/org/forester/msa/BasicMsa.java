@@ -191,6 +191,20 @@ public class BasicMsa implements Msa {
         final BasicMsa msa = new BasicMsa( seqs.size(), length, seqs.get( 0 ).getType() );
         for( int row = 0; row < seqs.size(); ++row ) {
             final Sequence seq = seqs.get( row );
+            //
+            //            int x = length - seq.getLength();
+            //            if ( x > 0 ) {
+            //                String a = "";
+            //                for( int i = 0; i < x; i++ ) {
+            //                    a += "-";
+            //                }
+            //                seq = BasicSequence.createAaSequence( seq.getIdentifier(), seq.getMolecularSequenceAsString() + a );
+            //            }
+            //            else {
+            //                seq = BasicSequence.createAaSequence( seq.getIdentifier(), seq.getMolecularSequenceAsString()
+            //                        .substring( 0, length ) );
+            //            }
+            //
             if ( seq.getLength() != length ) {
                 throw new IllegalArgumentException( "illegal attempt to build msa from sequences of unequal length ["
                         + seq.getIdentifier() + "]" );
