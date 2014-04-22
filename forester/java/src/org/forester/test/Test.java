@@ -912,7 +912,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.exit( 0 );
         if ( PERFORM_DB_TESTS ) {
             System.out.print( "Uniprot Entry Retrieval: " );
             if ( Test.testUniprotEntryRetrieval() ) {
@@ -6109,17 +6108,9 @@ public final class Test {
             if ( !dmsa0.getIdentifier( 1 ).equals( "c" ) ) {
                 return false;
             }
-            System.out.println();
-            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "e" );
-            System.out.println();
-            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "a" );
-            System.out.println();
-            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "f" );
-            System.out.println();
-            System.out.println( dmsa0.toString() );
             if ( dmsa0.getLength() != 4 ) {
                 return false;
             }
@@ -6161,15 +6152,11 @@ public final class Test {
             l1.add( s_4 );
             l1.add( s_5 );
             final DeleteableMsa dmsa1 = DeleteableMsa.createInstance( l1 );
-            System.out.println( dmsa1.toString() );
             dmsa1.deleteGapOnlyColumns();
-            System.out.println( dmsa1.toString() );
             dmsa1.deleteRow( "a" );
             dmsa1.deleteRow( "f" );
             dmsa1.deleteRow( "d" );
-            System.out.println( dmsa1.toString() );
             dmsa1.deleteGapOnlyColumns();
-            System.out.println( dmsa1.toString() );
             if ( !dmsa1.getSequenceAsString( 0 ).toString().equals( "B--C-" ) ) {
                 return false;
             }
@@ -6183,10 +6170,8 @@ public final class Test {
             dmsa1.deleteGapOnlyColumns();
             final Writer w0 = new StringWriter();
             dmsa1.write( w0, MSA_FORMAT.FASTA );
-            System.out.println( w0.toString() );
             final Writer w1 = new StringWriter();
             dmsa1.write( w1, MSA_FORMAT.PHYLIP );
-            System.out.println( w1.toString() );
             if ( !dmsa1.getSequenceAsString( 0 ).toString().equals( "B--C" ) ) {
                 return false;
             }
@@ -6208,9 +6193,47 @@ public final class Test {
             l2.add( s__4 );
             l2.add( s__5 );
             final DeleteableMsa dmsa2 = DeleteableMsa.createInstance( l2 );
-            System.out.println( dmsa2.toString() );
             dmsa2.deleteGapColumns( 0.5 );
-            System.out.println( dmsa2.toString() );
+            if ( !dmsa2.getSequenceAsString( 0 ).toString().equals( "A---" ) ) {
+                return false;
+            }
+            if ( !dmsa2.getSequenceAsString( 1 ).toString().equals( "BB--" ) ) {
+                return false;
+            }
+            if ( !dmsa2.getSequenceAsString( 2 ).toString().equals( "CCC-" ) ) {
+                return false;
+            }
+            dmsa2.deleteGapColumns( 0.2 );
+            if ( !dmsa2.getSequenceAsString( 0 ).toString().equals( "A-" ) ) {
+                return false;
+            }
+            if ( !dmsa2.getSequenceAsString( 1 ).toString().equals( "BB" ) ) {
+                return false;
+            }
+            if ( !dmsa2.getSequenceAsString( 2 ).toString().equals( "CC" ) ) {
+                return false;
+            }
+            dmsa2.deleteGapColumns( 0 );
+            dmsa2.deleteRow( "a" );
+            dmsa2.deleteRow( "b" );
+            dmsa2.deleteRow( "f" );
+            dmsa2.deleteRow( "e" );
+            dmsa2.setIdentifier( 0, "new_c" );
+            dmsa2.setIdentifier( 1, "new_d" );
+            dmsa2.setResidueAt( 0, 0, 'x' );
+            dmsa2.deleteRow( "new_d" );
+            final Writer w = new StringWriter();
+            dmsa2.write( w, MSA_FORMAT.PHYLIP );
+            final String phylip = w.toString();
+            if ( !phylip.equals( "new_c x" + ForesterUtil.LINE_SEPARATOR ) ) {
+                return false;
+            }
+            final Writer w2 = new StringWriter();
+            dmsa2.write( w2, MSA_FORMAT.FASTA );
+            final String fasta = w2.toString();
+            if ( !fasta.equals( ">new_c" + ForesterUtil.LINE_SEPARATOR + "x" + ForesterUtil.LINE_SEPARATOR ) ) {
+                return false;
+            }
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

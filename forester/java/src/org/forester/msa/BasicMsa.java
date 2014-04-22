@@ -42,9 +42,10 @@ import org.forester.util.ForesterUtil;
 
 public class BasicMsa implements Msa {
 
-    private final char[][] _data;
-    private final String[] _identifiers;
-    private final TYPE     _type;
+    private final char[][]    _data;
+    private final String[]    _identifiers;
+    private final Set<String> _identifiers_set;
+    private final TYPE        _type;
 
     public BasicMsa( final int rows, final int columns, final TYPE type ) {
         if ( ( rows < 1 ) || ( columns < 1 ) ) {
@@ -52,6 +53,7 @@ public class BasicMsa implements Msa {
         }
         _data = new char[ rows ][ columns ];
         _identifiers = new String[ rows ];
+        _identifiers_set = new HashSet<String>();
         _type = type;
     }
 
@@ -59,6 +61,7 @@ public class BasicMsa implements Msa {
         _data = msa._data;
         _identifiers = msa._identifiers;
         _type = msa._type;
+        _identifiers_set = msa._identifiers_set;
     }
 
     @Override
@@ -70,15 +73,13 @@ public class BasicMsa implements Msa {
         return seqs;
     }
 
-    private int determineMaxIdLength() {
-        int max = 0;
+    @Override
+    public List<Character> getColumnAt( final int col ) {
+        final List<Character> column = new ArrayList<Character>();
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            final int l = getIdentifier( row ).length();
-            if ( l > max ) {
-                max = l;
-            }
+            column.add( getResidueAt( row, col ) );
         }
-        return max;
+        return column;
     }
 
     @Override
@@ -102,6 +103,11 @@ public class BasicMsa implements Msa {
     }
 
     @Override
+    public Sequence getSequence( final int row ) {
+        return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
+    }
+
+    @Override
     public Sequence getSequence( final String id ) {
         for( int i = 0; i < getNumberOfSequences(); ++i ) {
             if ( getIdentifier( i ).equals( id ) ) {
@@ -109,11 +115,6 @@ public class BasicMsa implements Msa {
             }
         }
         return null;
-    }
-
-    @Override
-    public Sequence getSequence( final int row ) {
-        return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
     }
 
     @Override
@@ -131,7 +132,20 @@ public class BasicMsa implements Msa {
     }
 
     @Override
+    public boolean isGapAt( final int row, final int col ) {
+        return getResidueAt( row, col ) == Sequence.GAP;
+    }
+
+    @Override
     public void setIdentifier( final int row, final String id ) {
+        if ( ForesterUtil.isEmpty( id ) ) {
+            throw new IllegalArgumentException( "illegal attempt to create msa with empty identifier" );
+        }
+        if ( _identifiers_set.contains( id ) ) {
+            throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers [" + id
+                    + "]" );
+        }
+        _identifiers_set.add( id );
         _identifiers[ row ] = id;
     }
 
@@ -166,6 +180,17 @@ public class BasicMsa implements Msa {
         }
     }
 
+    private int determineMaxIdLength() {
+        int max = 0;
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            final int l = getIdentifier( row ).length();
+            if ( l > max ) {
+                max = l;
+            }
+        }
+        return max;
+    }
+
     private void writeToFasta( final Writer w ) throws IOException {
         SequenceWriter.writeSeqs( asSequenceList(), w, SEQ_FORMAT.FASTA, 100 );
     }
@@ -183,9 +208,8 @@ public class BasicMsa implements Msa {
 
     public static Msa createInstance( final List<Sequence> seqs ) {
         if ( seqs.size() < 1 ) {
-            throw new IllegalArgumentException( "cannot create basic msa from less than one sequence" );
+            throw new IllegalArgumentException( "cannot create msa from less than one sequence" );
         }
-        final Set<String> ids = new HashSet<String>();
         final int length = seqs.get( 0 ).getLength();
         final BasicMsa msa = new BasicMsa( seqs.size(), length, seqs.get( 0 ).getType() );
         for( int row = 0; row < seqs.size(); ++row ) {
@@ -198,30 +222,11 @@ public class BasicMsa implements Msa {
                 throw new IllegalArgumentException( "illegal attempt to build msa from sequences of different type ["
                         + seq.getIdentifier() + "]" );
             }
-            if ( ids.contains( seq.getIdentifier() ) ) {
-                throw new IllegalArgumentException( "illegal attempt to create msa with non-unique identifiers ["
-                        + seq.getIdentifier() + "]" );
-            }
-            ids.add( seq.getIdentifier() );
             msa.setIdentifier( row, seq.getIdentifier() );
             for( int col = 0; col < length; ++col ) {
                 msa._data[ row ][ col ] = seq.getResidueAt( col );
             }
         }
         return msa;
-    }
-
-    @Override
-    public List<Character> getColumnAt( final int col ) {
-        final List<Character> column = new ArrayList<Character>();
-        for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            column.add( getResidueAt( row, col ) );
-        }
-        return column;
-    }
-
-    @Override
-    public boolean isGapAt( final int row, final int col ) {
-        return getResidueAt( row, col ) == Sequence.GAP;
     }
 }

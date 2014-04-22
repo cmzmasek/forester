@@ -24,7 +24,6 @@
 
 package org.forester.msa;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.forester.sequence.BasicSequence;
@@ -32,11 +31,10 @@ import org.forester.sequence.Sequence;
 
 public final class DeleteableMsa extends BasicMsa {
 
-    private int                      _length                 = 0;
-    private int                      _mapped_col_positions[] = null;
-    private int                      _mapped_row_positions[] = null;
-    private HashMap<String, Integer> _seq_id_to_row_map      = null;
-    private int                      _seqs                   = 0;
+    private int _length                 = 0;
+    private int _mapped_col_positions[] = null;
+    private int _mapped_row_positions[] = null;
+    private int _seqs                   = 0;
 
     private DeleteableMsa( final BasicMsa msa ) {
         super( msa );
@@ -47,10 +45,6 @@ public final class DeleteableMsa extends BasicMsa {
         }
         for( int i = 0; i < _mapped_row_positions.length; ++i ) {
             _mapped_row_positions[ i ] = i;
-        }
-        _seq_id_to_row_map = new HashMap<String, Integer>();
-        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            _seq_id_to_row_map.put( msa.getIdentifier( row ), row );
         }
         _length = msa.getLength();
         _seqs = msa.getNumberOfSequences();
@@ -92,6 +86,7 @@ public final class DeleteableMsa extends BasicMsa {
 
     @Override
     final public String getIdentifier( final int row ) {
+        checkRow( row );
         return super.getIdentifier( _mapped_row_positions[ row ] );
     }
 
@@ -107,28 +102,44 @@ public final class DeleteableMsa extends BasicMsa {
 
     @Override
     final public char getResidueAt( final int row, final int col ) {
+        checkRow( row );
+        checkColumn( col );
         return super.getResidueAt( _mapped_row_positions[ row ], _mapped_col_positions[ col ] );
     }
 
     @Override
     public Sequence getSequence( final int row ) {
+        checkRow( row );
         return new BasicSequence( getIdentifier( row ), getSequenceAsString( row ).toString(), getType() );
     }
 
     @Override
     final public void setIdentifier( final int row, final String id ) {
+        checkRow( row );
         super.setIdentifier( _mapped_row_positions[ row ], id );
     }
 
     @Override
     final public void setResidueAt( final int row, final int col, final char residue ) {
+        checkRow( row );
+        checkColumn( col );
         super.setResidueAt( _mapped_row_positions[ row ], _mapped_col_positions[ col ], residue );
     }
 
-    final private void deleteColumn( final int col ) {
+    final private void checkColumn( final int col ) {
         if ( ( col >= _length ) || ( col < 0 ) ) {
             throw new IllegalArgumentException( "column " + col + " is out of range" );
         }
+    }
+
+    final private void checkRow( final int row ) {
+        if ( ( row >= _seqs ) || ( row < 0 ) ) {
+            throw new IllegalArgumentException( "row " + row + " is out of range" );
+        }
+    }
+
+    final private void deleteColumn( final int col ) {
+        checkColumn( col );
         for( int c = col; c < _length - 1; ++c ) {
             _mapped_col_positions[ c ] = _mapped_col_positions[ c + 1 ];
         }
@@ -136,9 +147,7 @@ public final class DeleteableMsa extends BasicMsa {
     }
 
     final private void deleteRow( final int row ) {
-        if ( ( row >= _seqs ) || ( row < 0 ) ) {
-            throw new IllegalArgumentException( "row " + row + " is out of range" );
-        }
+        checkRow( row );
         for( int r = row; r < _seqs - 1; ++r ) {
             _mapped_row_positions[ r ] = _mapped_row_positions[ r + 1 ];
         }
