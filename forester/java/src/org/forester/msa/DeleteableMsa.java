@@ -26,6 +26,8 @@ package org.forester.msa;
 
 import java.util.HashMap;
 
+import org.forester.util.ForesterUtil;
+
 public final class DeleteableMsa extends BasicMsa {
 
     private int                      _length                 = 0;
@@ -51,6 +53,12 @@ public final class DeleteableMsa extends BasicMsa {
         _length = msa.getLength();
         _seqs = msa.getNumberOfSequences();
     }
+    
+    
+    @Override
+    public char[] getSequenceAsArray( final int row ) {
+        return  super.getSequenceAsArray( _mapped_row_positions[ row ] );
+    }
 
     public void deleteColumn( final int col ) {
         if ( col >= _length || col < 0 ) {
@@ -62,7 +70,9 @@ public final class DeleteableMsa extends BasicMsa {
         --_length;
     }
 
-    public void deleteRow( final int row ) {
+    
+  
+    private void deleteRow( final int row ) {
         if ( row >= _seqs || row < 0 ) {
             throw new IllegalArgumentException( "row " + row + " is out of range" );
         }
@@ -101,9 +111,10 @@ public final class DeleteableMsa extends BasicMsa {
         return _seqs;
     }
 
+    
     @Override
     public char getResidueAt( final int row, final int col ) {
-        return super.getResidueAt( _mapped_row_positions[ row ], _mapped_col_positions[ col ] );
+         return super.getResidueAt( _mapped_row_positions[ row ], _mapped_col_positions[ col ] );
     }
 
     @Override

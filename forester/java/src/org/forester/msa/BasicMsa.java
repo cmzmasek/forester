@@ -71,8 +71,8 @@ public class BasicMsa implements Msa {
 
     private int determineMaxIdLength() {
         int max = 0;
-        for( int row = 0; row < _data.length; ++row ) {
-            final int l = _identifiers[ row ].toString().length();
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            final int l = getIdentifier(row).length();
             if ( l > max ) {
                 max = l;
             }
@@ -112,16 +112,21 @@ public class BasicMsa implements Msa {
 
     @Override
     public Sequence getSequence( final int row ) {
-        return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
+        return new BasicSequence( getIdentifier( row ),  getSequenceAsArray( row ), getType() );
     }
 
     @Override
     public StringBuffer getSequenceAsString( final int row ) {
-        final StringBuffer sb = new StringBuffer( _data[ 0 ].length );
-        for( int col = 0; col < _data[ 0 ].length; ++col ) {
+        final StringBuffer sb = new StringBuffer(getLength() );
+        for( int col = 0; col < getLength(); ++col ) {
             sb.append( getResidueAt( row, col ) );
         }
         return sb;
+    }
+    
+    @Override
+    public char[] getSequenceAsArray( final int row ) {
+        return  _data[ row ];
     }
 
     @Override
@@ -143,9 +148,9 @@ public class BasicMsa implements Msa {
     public String toString() {
         final int max = determineMaxIdLength() + 1;
         final StringBuffer sb = new StringBuffer();
-        for( int row = 0; row < _data.length; ++row ) {
-            sb.append( ForesterUtil.pad( _identifiers[ row ].toString(), max, ' ', false ) );
-            for( int col = 0; col < _data[ 0 ].length; ++col ) {
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            sb.append( ForesterUtil.pad( getIdentifier( row ).toString(), max, ' ', false ) );
+            for( int col = 0; col < getLength(); ++col ) {
                 sb.append( getResidueAt( row, col ) );
             }
             sb.append( ForesterUtil.LINE_SEPARATOR );
@@ -173,9 +178,9 @@ public class BasicMsa implements Msa {
 
     private void writeToPhylip( final Writer w ) throws IOException {
         final int max = determineMaxIdLength() + 1;
-        for( int row = 0; row < _data.length; ++row ) {
-            w.write( ForesterUtil.pad( _identifiers[ row ].toString(), max, ' ', false ).toString() );
-            for( int col = 0; col < _data[ 0 ].length; ++col ) {
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            w.write( ForesterUtil.pad( getIdentifier( row ), max, ' ', false ).toString() );
+            for( int col = 0; col < getLength(); ++col ) {
                 w.write( getResidueAt( row, col ) );
             }
             w.write( ForesterUtil.LINE_SEPARATOR );

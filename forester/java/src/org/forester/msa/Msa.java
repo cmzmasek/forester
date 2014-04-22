@@ -65,4 +65,6 @@ public interface Msa {
     public void setResidueAt( final int row, final int col, final char residue );
 
     public void write( Writer w, MSA_FORMAT format ) throws IOException;
+
+    char[] getSequenceAsArray( int row );
 }

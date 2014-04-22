@@ -164,7 +164,7 @@ public final class MsaMethods {
             throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );
         }
         //   final boolean ignore_too_short_seqs = min_allowed_length > 0;
-        for( int col = 0; col < msa.getLength(); ++col ) {
+        for( int col = msa.getLength() - 1; col >= 0 ; --col ) {
             final boolean delete = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) >= max_allowed_gap_ratio;
             if ( delete ) {
                 msa.deleteColumn( col );
