@@ -6147,12 +6147,12 @@ public final class Test {
                 return false;
             }
             //
-            final Sequence s_0 = BasicSequence.createAaSequence( "a", "--A---A-A---" );
-            final Sequence s_1 = BasicSequence.createAaSequence( "b", "--B-----A---" );
-            final Sequence s_2 = BasicSequence.createAaSequence( "c", "--C--AA-A---" );
-            final Sequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-A---" );
-            final Sequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-A---" );
-            final Sequence s_5 = BasicSequence.createAaSequence( "f", "--F--AA-AA--" );
+            final Sequence s_0 = BasicSequence.createAaSequence( "a", "--A---B-C---" );
+            final Sequence s_1 = BasicSequence.createAaSequence( "b", "--B-----C---" );
+            final Sequence s_2 = BasicSequence.createAaSequence( "c", "--C--AB-C---" );
+            final Sequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C---" );
+            final Sequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C---" );
+            final Sequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--" );
             final List<Sequence> l1 = new ArrayList<Sequence>();
             l1.add( s_0 );
             l1.add( s_1 );
