@@ -203,7 +203,7 @@ public class PhylogeneticInferrer extends RunnableProcess {
             }
             final MsaMethods msa_tools = MsaMethods.createInstance();
             if ( _options.isExecuteMsaProcessing() ) {
-                msa = msa_tools.removeGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(),
+                msa = msa_tools.deleteGapColumns( _options.getMsaProcessingMaxAllowedGapRatio(),
                                                   _options.getMsaProcessingMinAllowedLength(),
                                                   msa );
                 if ( msa == null ) {

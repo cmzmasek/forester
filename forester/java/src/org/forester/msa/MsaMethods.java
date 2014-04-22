@@ -111,7 +111,7 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
-    synchronized final public Msa removeGapColumns( final double max_allowed_gap_ratio,
+    synchronized final public Msa deleteGapColumns( final double max_allowed_gap_ratio,
                                                     final int min_allowed_length,
                                                     final Msa msa ) {
         init();
@@ -122,7 +122,7 @@ public final class MsaMethods {
         final boolean[] delete_cols = new boolean[ msa.getLength() ];
         int new_length = 0;
         for( int col = 0; col < msa.getLength(); ++col ) {
-            delete_cols[ col ] = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) >= max_allowed_gap_ratio;
+            delete_cols[ col ] = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) > max_allowed_gap_ratio;
             if ( !delete_cols[ col ] ) {
                 ++new_length;
             }
@@ -157,19 +157,6 @@ public final class MsaMethods {
             return null;
         }
         return BasicMsa.createInstance( seqs );
-    }
-
-    synchronized final public static void removeGapColumns( final double max_allowed_gap_ratio, final DeleteableMsa msa ) {
-        if ( ( max_allowed_gap_ratio < 0 ) || ( max_allowed_gap_ratio > 1 ) ) {
-            throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );
-        }
-        //   final boolean ignore_too_short_seqs = min_allowed_length > 0;
-        for( int col = msa.getLength() - 1; col >= 0 ; --col ) {
-            final boolean delete = ( ( double ) calcGapSumPerColumn( msa, col ) / msa.getNumberOfSequences() ) >= max_allowed_gap_ratio;
-            if ( delete ) {
-                msa.deleteColumn( col );
-            }
-        }
     }
 
     public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {

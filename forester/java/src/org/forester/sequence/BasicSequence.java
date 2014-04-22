@@ -34,7 +34,11 @@ public class BasicSequence implements Sequence {
     private String       _identifier;
     private final TYPE   _type;
 
-    private BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
+    /**
+     * Only use if you know what you are doing!
+     * 
+     */
+    public BasicSequence( final String identifier, final String mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
             throw new IllegalArgumentException( "identifier of sequence cannot be empty" );
         }
@@ -46,7 +50,10 @@ public class BasicSequence implements Sequence {
         _type = type;
     }
 
-    // Only use if you know what you are doing!
+    /**
+     * Only use if you know what you are doing!
+     * 
+     */
     public BasicSequence( final String identifier, final char[] mol_sequence, final TYPE type ) {
         if ( ForesterUtil.isEmpty( identifier ) ) {
             throw new IllegalArgumentException( "identifier of sequence cannot be empty" );

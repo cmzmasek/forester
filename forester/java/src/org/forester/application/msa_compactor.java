@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
-import org.forester.msa.BasicMsa;
 import org.forester.msa.DeleteableMsa;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa_compactor.MsaCompactor;
@@ -91,10 +90,10 @@ public class msa_compactor {
             DeleteableMsa msa = null;
             final FileInputStream is = new FileInputStream( in );
             if ( FastaParser.isLikelyFasta( in ) ) {
-                msa = new DeleteableMsa( ( BasicMsa ) FastaParser.parseMsa( is ) );
+                msa = DeleteableMsa.createInstance( FastaParser.parseMsa( is ) );
             }
             else {
-                msa = new DeleteableMsa( ( BasicMsa ) GeneralMsaParser.parse( is ) );
+                msa = DeleteableMsa.createInstance( GeneralMsaParser.parse( is ) );
             }
             if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );

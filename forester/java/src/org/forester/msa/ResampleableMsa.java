@@ -25,6 +25,9 @@
 
 package org.forester.msa;
 
+import org.forester.sequence.BasicSequence;
+import org.forester.sequence.Sequence;
+
 public final class ResampleableMsa extends BasicMsa {
 
     private int[] _resampled_column_positions = null;
@@ -33,7 +36,15 @@ public final class ResampleableMsa extends BasicMsa {
         super( msa );
     }
 
-    public void resample( final int[] resampled_column_positions ) {
+    @Override
+    final public char getResidueAt( final int row, final int col ) {
+        if ( _resampled_column_positions != null ) {
+            return super.getResidueAt( row, _resampled_column_positions[ col ] );
+        }
+        return super.getResidueAt( row, col );
+    }
+
+    final public void resample( final int[] resampled_column_positions ) {
         if ( resampled_column_positions.length != getLength() ) {
             throw new IllegalArgumentException( "illegal attempt to use " + resampled_column_positions.length
                     + " resampled column positions on msa of length " + getLength() );
@@ -42,15 +53,12 @@ public final class ResampleableMsa extends BasicMsa {
     }
 
     @Override
-    public char getResidueAt( final int row, final int col ) {
-        if ( _resampled_column_positions != null ) {
-            return super.getResidueAt( row, _resampled_column_positions[ col ] );
-        }
-        return super.getResidueAt( row, col );
+    final public void setResidueAt( final int row, final int col, final char residue ) {
+        throw new NoSuchMethodError( "illegal attempt to set residue in resampleable msa" );
     }
 
     @Override
-    public void setResidueAt( final int row, final int col, final char residue ) {
-        throw new NoSuchMethodError( "illegal attempt to set residue in resampleable msa" );
+    public Sequence getSequence( final int row ) {
+        return new BasicSequence( getIdentifier( row ), getSequenceAsString( row ).toString(), getType() );
     }
 }

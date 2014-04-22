@@ -46,7 +46,7 @@ public class SequenceWriter {
 
     public static void toFasta( final Sequence seq, final Writer w, final int width ) throws IOException {
         w.write( ">" );
-        w.write( seq.getIdentifier().toString() );
+        w.write( seq.getIdentifier() );
         w.write( ForesterUtil.LINE_SEPARATOR );
         if ( ( width < 1 ) || ( width >= seq.getLength() ) ) {
             w.write( seq.getMolecularSequence() );

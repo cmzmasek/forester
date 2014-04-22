@@ -26,6 +26,7 @@
 package org.forester.msa;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public class BasicMsa implements Msa {
     private int determineMaxIdLength() {
         int max = 0;
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            final int l = getIdentifier(row).length();
+            final int l = getIdentifier( row ).length();
             if ( l > max ) {
                 max = l;
             }
@@ -112,21 +113,16 @@ public class BasicMsa implements Msa {
 
     @Override
     public Sequence getSequence( final int row ) {
-        return new BasicSequence( getIdentifier( row ),  getSequenceAsArray( row ), getType() );
+        return new BasicSequence( getIdentifier( row ), _data[ row ], getType() );
     }
 
     @Override
     public StringBuffer getSequenceAsString( final int row ) {
-        final StringBuffer sb = new StringBuffer(getLength() );
+        final StringBuffer sb = new StringBuffer( getLength() );
         for( int col = 0; col < getLength(); ++col ) {
             sb.append( getResidueAt( row, col ) );
         }
         return sb;
-    }
-    
-    @Override
-    public char[] getSequenceAsArray( final int row ) {
-        return  _data[ row ];
     }
 
     @Override
@@ -146,16 +142,14 @@ public class BasicMsa implements Msa {
 
     @Override
     public String toString() {
-        final int max = determineMaxIdLength() + 1;
-        final StringBuffer sb = new StringBuffer();
-        for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            sb.append( ForesterUtil.pad( getIdentifier( row ).toString(), max, ' ', false ) );
-            for( int col = 0; col < getLength(); ++col ) {
-                sb.append( getResidueAt( row, col ) );
-            }
-            sb.append( ForesterUtil.LINE_SEPARATOR );
+        final Writer w = new StringWriter();
+        try {
+            write( w, MSA_FORMAT.PHYLIP );
         }
-        return sb.toString();
+        catch ( final IOException e ) {
+            e.printStackTrace();
+        }
+        return w.toString();
     }
 
     @Override
@@ -196,20 +190,6 @@ public class BasicMsa implements Msa {
         final BasicMsa msa = new BasicMsa( seqs.size(), length, seqs.get( 0 ).getType() );
         for( int row = 0; row < seqs.size(); ++row ) {
             final Sequence seq = seqs.get( row );
-            //
-            //            int x = length - seq.getLength();
-            //            if ( x > 0 ) {
-            //                String a = "";
-            //                for( int i = 0; i < x; i++ ) {
-            //                    a += "-";
-            //                }
-            //                seq = BasicSequence.createAaSequence( seq.getIdentifier(), seq.getMolecularSequenceAsString() + a );
-            //            }
-            //            else {
-            //                seq = BasicSequence.createAaSequence( seq.getIdentifier(), seq.getMolecularSequenceAsString()
-            //                        .substring( 0, length ) );
-            //            }
-            //
             if ( seq.getLength() != length ) {
                 throw new IllegalArgumentException( "illegal attempt to build msa from sequences of unequal length ["
                         + seq.getIdentifier() + "]" );

@@ -41,7 +41,6 @@ import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
-import org.forester.msa.BasicMsa;
 import org.forester.msa.DeleteableMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
@@ -284,12 +283,12 @@ public class MsaCompactor {
         //opts.add( "1000" );
         //opts.add( "--localpair" );
         //opts.add( "--quiet" );
-        _msa = new DeleteableMsa( ( BasicMsa ) mafft.infer( _msa.asSequenceList(), opts ) );
+        _msa = DeleteableMsa.createInstance( mafft.infer( _msa.asSequenceList(), opts ) );
     }
 
     final private void removeGapColumns() {
         //~ _msa = MsaMethods.createInstance().removeGapColumns( 1, 0, _msa );
-        MsaMethods.removeGapColumns( 1, _msa );
+        _msa.deleteGapOnlyColumns();
     }
 
     final private void removeViaGapAverage( final double mean_gapiness,

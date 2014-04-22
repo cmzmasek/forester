@@ -28,6 +28,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,6 +66,7 @@ import org.forester.msa.BasicMsa;
 import org.forester.msa.DeleteableMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
+import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.pccx.TestPccx;
@@ -909,7 +912,7 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.exit(  0 );
+        System.exit( 0 );
         if ( PERFORM_DB_TESTS ) {
             System.out.print( "Uniprot Entry Retrieval: " );
             if ( Test.testUniprotEntryRetrieval() ) {
@@ -6085,7 +6088,7 @@ public final class Test {
         }
         return true;
     }
-    
+
     private static boolean testDeleteableMsa() {
         try {
             final Sequence s0 = BasicSequence.createAaSequence( "a", "AAAA" );
@@ -6101,44 +6104,41 @@ public final class Test {
             l0.add( s3 );
             l0.add( s4 );
             l0.add( s5 );
-            final Msa msa0 = BasicMsa.createInstance( l0 );
-            final DeleteableMsa dmsa0 = new DeleteableMsa( ( BasicMsa ) msa0 );
+            final DeleteableMsa dmsa0 = DeleteableMsa.createInstance( l0 );
             dmsa0.deleteRow( "b" );
             if ( !dmsa0.getIdentifier( 1 ).equals( "c" ) ) {
                 return false;
             }
             System.out.println();
-            System.out.println(  dmsa0.toString() );
+            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "e" );
             System.out.println();
-            System.out.println(  dmsa0.toString() );
+            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "a" );
             System.out.println();
-            System.out.println(  dmsa0.toString() );
+            System.out.println( dmsa0.toString() );
             dmsa0.deleteRow( "f" );
             System.out.println();
-            System.out.println(  dmsa0.toString() );
-            
+            System.out.println( dmsa0.toString() );
             if ( dmsa0.getLength() != 4 ) {
                 return false;
             }
             if ( dmsa0.getNumberOfSequences() != 2 ) {
                 return false;
             }
-            
             if ( !dmsa0.getIdentifier( 0 ).equals( "c" ) ) {
                 return false;
             }
             if ( !dmsa0.getIdentifier( 1 ).equals( "d" ) ) {
                 return false;
             }
-            if ( dmsa0.getResidueAt( 0, 0 )  != 'C') {
+            if ( dmsa0.getResidueAt( 0, 0 ) != 'C' ) {
                 return false;
             }
-            if ( !dmsa0.getSequenceAsString( 0 ).toString().equals( "CAAA" )) {
+            if ( !dmsa0.getSequenceAsString( 0 ).toString().equals( "CAAA" ) ) {
                 return false;
             }
-            if ( dmsa0.getColumnAt( 0 ).size() !=2 ) {
+            if ( dmsa0.getColumnAt( 0 ).size() != 2 ) {
                 return false;
             }
             dmsa0.deleteRow( "c" );
@@ -6147,12 +6147,12 @@ public final class Test {
                 return false;
             }
             //
-            final Sequence s_0 = BasicSequence.createAaSequence( "a", "--A---B-C---" );
-            final Sequence s_1 = BasicSequence.createAaSequence( "b", "--B-----C---" );
-            final Sequence s_2 = BasicSequence.createAaSequence( "c", "--C--AB-C---" );
-            final Sequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C---" );
-            final Sequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C---" );
-            final Sequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--" );
+            final Sequence s_0 = BasicSequence.createAaSequence( "a", "--A---B-C--X----" );
+            final Sequence s_1 = BasicSequence.createAaSequence( "b", "--B-----C-------" );
+            final Sequence s_2 = BasicSequence.createAaSequence( "c", "--C--AB-C------Z" );
+            final Sequence s_3 = BasicSequence.createAaSequence( "d", "--D--AA-C-------" );
+            final Sequence s_4 = BasicSequence.createAaSequence( "e", "--E--AA-C-------" );
+            final Sequence s_5 = BasicSequence.createAaSequence( "f", "--F--AB-CD--Y---" );
             final List<Sequence> l1 = new ArrayList<Sequence>();
             l1.add( s_0 );
             l1.add( s_1 );
@@ -6160,12 +6160,57 @@ public final class Test {
             l1.add( s_3 );
             l1.add( s_4 );
             l1.add( s_5 );
-            final Msa msa1 = BasicMsa.createInstance( l1 );
-            final DeleteableMsa dmsa1 = new DeleteableMsa( ( BasicMsa ) msa1 );
-            System.out.println(  dmsa1.toString() );
-            MsaMethods.removeGapColumns( 1, dmsa1 );
-            System.out.println(  dmsa1.toString() );
-            
+            final DeleteableMsa dmsa1 = DeleteableMsa.createInstance( l1 );
+            System.out.println( dmsa1.toString() );
+            dmsa1.deleteGapOnlyColumns();
+            System.out.println( dmsa1.toString() );
+            dmsa1.deleteRow( "a" );
+            dmsa1.deleteRow( "f" );
+            dmsa1.deleteRow( "d" );
+            System.out.println( dmsa1.toString() );
+            dmsa1.deleteGapOnlyColumns();
+            System.out.println( dmsa1.toString() );
+            if ( !dmsa1.getSequenceAsString( 0 ).toString().equals( "B--C-" ) ) {
+                return false;
+            }
+            if ( !dmsa1.getSequenceAsString( 1 ).toString().equals( "CABCZ" ) ) {
+                return false;
+            }
+            if ( !dmsa1.getSequenceAsString( 2 ).toString().equals( "EAAC-" ) ) {
+                return false;
+            }
+            dmsa1.deleteRow( "c" );
+            dmsa1.deleteGapOnlyColumns();
+            final Writer w0 = new StringWriter();
+            dmsa1.write( w0, MSA_FORMAT.FASTA );
+            System.out.println( w0.toString() );
+            final Writer w1 = new StringWriter();
+            dmsa1.write( w1, MSA_FORMAT.PHYLIP );
+            System.out.println( w1.toString() );
+            if ( !dmsa1.getSequenceAsString( 0 ).toString().equals( "B--C" ) ) {
+                return false;
+            }
+            if ( !dmsa1.getSequenceAsString( 1 ).toString().equals( "EAAC" ) ) {
+                return false;
+            }
+            //
+            final Sequence s__0 = BasicSequence.createAaSequence( "a", "A------" );
+            final Sequence s__1 = BasicSequence.createAaSequence( "b", "BB-----" );
+            final Sequence s__2 = BasicSequence.createAaSequence( "c", "CCC----" );
+            final Sequence s__3 = BasicSequence.createAaSequence( "d", "DDDD---" );
+            final Sequence s__4 = BasicSequence.createAaSequence( "e", "EEEEE--" );
+            final Sequence s__5 = BasicSequence.createAaSequence( "f", "FFFFFF-" );
+            final List<Sequence> l2 = new ArrayList<Sequence>();
+            l2.add( s__0 );
+            l2.add( s__1 );
+            l2.add( s__2 );
+            l2.add( s__3 );
+            l2.add( s__4 );
+            l2.add( s__5 );
+            final DeleteableMsa dmsa2 = DeleteableMsa.createInstance( l2 );
+            System.out.println( dmsa2.toString() );
+            dmsa2.deleteGapColumns( 0.5 );
+            System.out.println( dmsa2.toString() );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
