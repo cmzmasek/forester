@@ -56,14 +56,15 @@ public class msa_compactor {
     final static private String REPORT_ALN_MEAN_IDENTITY               = "q";
     final static private String OUTPUT_FORMAT_PHYLIP_OPTION            = "f";
     final static private String OUTPUT_REMOVED_SEQS_OPTION             = "ro";
-    //
+    final static private String MAFFT_OPTIONS                          = "mo";
+    //        
     final static private String PATH_TO_MAFFT_OPTION                   = "mafft";
     final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String PRG_NAME                               = "msa_compactor";
     final static private String PRG_DESC                               = "multiple sequence aligment compactor";
     final static private String PRG_VERSION                            = "0.01";
     final static private String PRG_DATE                               = "140316";
-    final static private String E_MAIL                                 = "phylosoft@gmail.com";
+    final static private String E_MAIL                                 = "czmasek@sanfordburham.org";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
@@ -86,18 +87,13 @@ public class msa_compactor {
             boolean realign = false;
             boolean norm = true;
             String path_to_mafft = null;
-            //            final static private String STEP_FOR_DIAGNOSTICS_OPTION            = "sd";
-            //            final static private String MIN_LENGTH_OPTION                      = "ml";
-            //            final static private String GAP_RATIO_LENGTH_OPTION                = "gr";
-            //            final static private String REPORT_ALN_MEAN_IDENTITY               = "q";
-            //            final static private String OUTPUT_FORMAT_PHYLIP_OPTION            = "f";
-            //            final static private String OUTPUT_REMOVED_SEQS_OPTION             = "ro";
             int step_for_diagnostics = -1;
             int min_length = -1;
             double gap_ratio = -1;
             boolean report_aln_mean_identity = false;
             MSA_FORMAT output_format = MSA_FORMAT.FASTA;
-            final File roved_seqs_out_base = null;
+            File removed_seqs_out_base = null;
+            String mafft_options = "--auto";
             final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( REMOVE_WORST_OFFENDERS_OPTION );
             allowed_options.add( AV_GAPINESS_OPTION );
@@ -112,6 +108,7 @@ public class msa_compactor {
             allowed_options.add( REPORT_ALN_MEAN_IDENTITY );
             allowed_options.add( OUTPUT_FORMAT_PHYLIP_OPTION );
             allowed_options.add( OUTPUT_REMOVED_SEQS_OPTION );
+            allowed_options.add( MAFFT_OPTIONS );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -183,7 +180,7 @@ public class msa_compactor {
             }
             if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
                 min_length = cla.getOptionValueAsInt( MIN_LENGTH_OPTION );
-                if ( ( min_length < 1 ) || ( min_length > initial_msa_stats.getMax() ) ) {
+                if ( ( min_length < 2 ) || ( min_length > initial_msa_stats.getMax() ) ) {
                     ForesterUtil.fatalError( PRG_NAME, "value for minimal sequence length is out of range: "
                             + min_length );
                 }
@@ -200,19 +197,69 @@ public class msa_compactor {
             if ( cla.isOptionSet( OUTPUT_FORMAT_PHYLIP_OPTION ) ) {
                 output_format = MSA_FORMAT.PHYLIP;
             }
-            //            if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
-            //                gap_ratio = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
-            //                if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
-            //                    ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
-            //                }
-            //            }
-            //
+            if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
+                String s = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
+                removed_seqs_out_base = new File( s );
+            }
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                     path_to_mafft = MsaCompactor.guessPathToMafft();
                 }
                 checkPathToMafft( path_to_mafft );
+                if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
+                    mafft_options = cla.getOptionValueAsCleanString( MAFFT_OPTIONS );
+                    if ( ForesterUtil.isEmpty( mafft_options ) || mafft_options.length() < 3 ) {
+                        ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
+                    }
+                }
             }
+            ForesterUtil.printProgramInformation( PRG_NAME,
+                                                  PRG_DESC,
+                                                  PRG_VERSION,
+                                                  PRG_DATE,
+                                                  E_MAIL,
+                                                  WWW,
+                                                  ForesterUtil.getForesterLibraryInformation() );
+            //
+            System.out.println( "Input MSA: " + in );
+            if ( out != null ) {
+                System.out.println( "Output   : " + out );
+            }
+            else {
+                System.out.println( "Output   : n/a" );
+            }
+            if ( removed_seqs_out_base != null ) {
+                System.out.println( "Write removed sequences to   : " + removed_seqs_out_base );
+            }
+            if ( worst_remove > 0 ) {
+                System.out.println( ": " + worst_remove );
+            }
+            else if ( av_gap > 0 ) {
+                System.out.println( ": " + av_gap );
+            }
+            else if ( length > 0 ) {
+                System.out.println( ": " + length );
+            }
+            if ( out != null || removed_seqs_out_base != null ) {
+                System.out.println( "Output format: " + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
+            }
+            System.out.println( "Step for output and re-aligning) : " + step );
+            System.out.println( "Step for dia: " + step_for_diagnostics );
+            System.out.println( "Step for diagnostics reports: " + report_aln_mean_identity );
+            if ( !norm ) {
+                System.out.println( "Normalize: " + norm );
+            }
+            System.out.println( "Realign: " + realign );
+            if ( realign ) {
+                System.out.println( "MAFFT options: " + mafft_options );
+            }
+            if ( min_length > -1 ) {
+                System.out.println( "Minimal effective sequence length: " + min_length );
+            }
+            if ( gap_ratio > -1 ) {
+                System.out.println( ": " + gap_ratio );
+            }
+            //
             if ( worst_remove > 0 ) {
                 MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
             }
@@ -276,6 +323,7 @@ public class msa_compactor {
         System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>   target gap-ratio (0.0-1.0)" );
         System.out.println( "   -" + STEP_OPTION + "=<integer>   step for output and re-aligning (default: 1)" );
         System.out.println( "   -" + REALIGN_OPTION + "             to realign using MAFFT" + mafft_comment );
+        System.out.println( "   -" + MAFFT_OPTIONS + "=<string>   options for MAFFT (default: --auto)" );
         System.out.println( "   -" + STEP_FOR_DIAGNOSTICS_OPTION
                 + "=<integer>  step for diagnostics reports (default: 1)" );
         System.out.println( "   -" + MIN_LENGTH_OPTION

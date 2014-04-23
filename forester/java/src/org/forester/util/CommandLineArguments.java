@@ -93,7 +93,7 @@ public final class CommandLineArguments {
         if ( o.containsKey( option_name ) ) {
             final String value = o.get( option_name );
             if ( !ForesterUtil.isEmpty( value ) ) {
-                return value;
+                return value.replaceAll( "\\s+", " " ).trim();
             }
             else {
                 throw new IllegalArgumentException( "value for \"" + option_name + "\" is not set" );
