@@ -54,7 +54,7 @@ import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
 
-public class MsaCompactor2 {
+public class MsaCompactor {
 
     final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
     final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
@@ -80,7 +80,7 @@ public class MsaCompactor2 {
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
 
-    public MsaCompactor2( final DeleteableMsa msa ) {
+    public MsaCompactor( final DeleteableMsa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
     }

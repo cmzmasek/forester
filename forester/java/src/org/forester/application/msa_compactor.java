@@ -36,7 +36,7 @@ import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.msa_compactor.Chart;
-import org.forester.msa_compactor.MsaCompactor2;
+import org.forester.msa_compactor.MsaCompactor;
 import org.forester.msa_compactor.MsaProperties;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
@@ -205,7 +205,7 @@ public class msa_compactor {
             }
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
-                    path_to_mafft = MsaCompactor2.guessPathToMafft();
+                    path_to_mafft = MsaCompactor.guessPathToMafft();
                 }
                 checkPathToMafft( path_to_mafft );
                 if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
@@ -269,7 +269,7 @@ public class msa_compactor {
             //
             //
             if ( worst_remove > 0 ) {
-                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
@@ -280,7 +280,7 @@ public class msa_compactor {
                 mc.removeWorstOffenders( worst_remove, true );
             }
             else if ( av_gap > 0 ) {
-                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
@@ -292,7 +292,7 @@ public class msa_compactor {
             }
             else if ( length > 0 ) {
                 // TODO if < shortest seq -> error
-                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
@@ -305,7 +305,7 @@ public class msa_compactor {
             else {
                 //MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
                 final int initial_number_of_seqs = msa.getNumberOfSequences();
-                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
@@ -346,7 +346,7 @@ public class msa_compactor {
                                               E_MAIL,
                                               WWW,
                                               ForesterUtil.getForesterLibraryInformation() );
-        final String path_to_mafft = MsaCompactor2.guessPathToMafft();
+        final String path_to_mafft = MsaCompactor.guessPathToMafft();
         String mafft_comment;
         if ( !ForesterUtil.isEmpty( path_to_mafft ) ) {
             mafft_comment = " (using " + path_to_mafft + ")";
