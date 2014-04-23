@@ -58,23 +58,23 @@ public class MsaCompactor {
 
     final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
     final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
+    private double                    _gap_ratio                = -1;
     //
     private final String              _maffts_opts              = "--auto";
-    private int                       _step                     = 1;
-    //
-    private boolean                   _realign                  = false;
-    private boolean                   _norm                     = true;
-    private int                       _step_for_diagnostics     = 1;
     private int                       _min_length               = -1;
-    private double                    _gap_ratio                = -1;
-    private final boolean             _report_aln_mean_identity = false;
-    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
-    private final File                _removed_seqs_out_base    = null;
     //
     private DeleteableMsa             _msa;
+    private boolean                   _norm                     = true;
     private File                      _out_file_base;
+    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
     private String                    _path_to_mafft;
+    //
+    private boolean                   _realign                  = false;
     private final SortedSet<String>   _removed_seq_ids;
+    private final File                _removed_seqs_out_base    = null;
+    private final boolean             _report_aln_mean_identity = false;
+    private int                       _step                     = 1;
+    private int                       _step_for_diagnostics     = 1;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -83,90 +83,6 @@ public class MsaCompactor {
     public MsaCompactor( final DeleteableMsa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
-    }
-
-    final public Msa getMsa() {
-        return _msa;
-    }
-
-    final public SortedSet<String> getRemovedSeqIds() {
-        return _removed_seq_ids;
-    }
-
-    final public void setOutFileBase( final File out_file_base ) {
-        _out_file_base = out_file_base;
-    }
-
-    final public String writeMsa( final File outfile, final MSA_FORMAT format, final String suffix ) throws IOException {
-        final Double gr = MsaMethods.calcGapRatio( _msa );
-        final String s = outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
-                + ForesterUtil.roundToInt( gr * 100 );
-        writeMsa( s + suffix, format );
-        return s;
-    }
-
-    final int calcNonGapResidues( final Sequence seq ) {
-        int ng = 0;
-        for( int i = 0; i < seq.getLength(); ++i ) {
-            if ( !seq.isGapAt( i ) ) {
-                ++ng;
-            }
-        }
-        return ng;
-    }
-
-    Phylogeny pi( final String matrix ) {
-        final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
-        final int seed = 15;
-        final int n = 100;
-        final ResampleableMsa resampleable_msa = new ResampleableMsa( _msa );
-        final int[][] resampled_column_positions = BootstrapResampler.createResampledColumnPositions( _msa.getLength(),
-                                                                                                      n,
-                                                                                                      seed );
-        final Phylogeny[] eval_phys = new Phylogeny[ n ];
-        for( int i = 0; i < n; ++i ) {
-            resampleable_msa.resample( resampled_column_positions[ i ] );
-            eval_phys[ i ] = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, resampleable_msa, false, null );
-        }
-        ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
-        PhylogenyMethods.extractFastaInformation( master_phy );
-        return master_phy;
-    }
-
-    private final GapContribution[] calcGapContribtions( final boolean normalize_for_effective_seq_length ) {
-        final double gappiness[] = calcGappiness();
-        final GapContribution stats[] = new GapContribution[ _msa.getNumberOfSequences() ];
-        for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
-            stats[ row ] = new GapContribution( _msa.getIdentifier( row ) );
-            for( int col = 0; col < _msa.getLength(); ++col ) {
-                if ( !_msa.isGapAt( row, col ) ) {
-                    stats[ row ].addToValue( gappiness[ col ] );
-                }
-            }
-            if ( normalize_for_effective_seq_length ) {
-                stats[ row ].divideValue( calcNonGapResidues( _msa.getSequence( row ) ) );
-            }
-            else {
-                stats[ row ].divideValue( _msa.getLength() );
-            }
-        }
-        return stats;
-    }
-
-    final private GapContribution[] calcGapContribtionsStats( final boolean norm ) {
-        final GapContribution stats[] = calcGapContribtions( norm );
-        Arrays.sort( stats );
-        return stats;
-    }
-
-    private final double[] calcGappiness() {
-        final int l = _msa.getLength();
-        final double gappiness[] = new double[ l ];
-        final int seqs = _msa.getNumberOfSequences();
-        for( int i = 0; i < l; ++i ) {
-            gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
-        }
-        return gappiness;
     }
 
     public final List<MsaProperties> chart( final int step,
@@ -216,85 +132,12 @@ public class MsaCompactor {
         return msa_props;
     }
 
-    private Phylogeny inferNJphylogeny( final PWD_DISTANCE_METHOD pwd_distance_method,
-                                        final Msa msa,
-                                        final boolean write_matrix,
-                                        final String matrix_name ) {
-        BasicSymmetricalDistanceMatrix m = null;
-        switch ( pwd_distance_method ) {
-            case KIMURA_DISTANCE:
-                m = PairwiseDistanceCalculator.calcKimuraDistances( msa );
-                break;
-            case POISSON_DISTANCE:
-                m = PairwiseDistanceCalculator.calcPoissonDistances( msa );
-                break;
-            case FRACTIONAL_DISSIMILARITY:
-                m = PairwiseDistanceCalculator.calcFractionalDissimilarities( msa );
-                break;
-            default:
-                throw new IllegalArgumentException( "invalid pwd method" );
-        }
-        if ( write_matrix ) {
-            try {
-                m.write( ForesterUtil.createBufferedWriter( matrix_name ) );
-            }
-            catch ( final IOException e ) {
-                e.printStackTrace();
-            }
-        }
-        final NeighborJoiningF nj = NeighborJoiningF.createInstance( false, 5 );
-        final Phylogeny phy = nj.execute( m );
-        return phy;
+    final public Msa getMsa() {
+        return _msa;
     }
 
-    private StringBuilder msaStatsAsSB() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( _msa.getNumberOfSequences() );
-        sb.append( "\t" );
-        sb.append( _msa.getLength() );
-        sb.append( "\t" );
-        sb.append( NF_4.format( MsaMethods.calcGapRatio( _msa ) ) );
-        sb.append( "\t" );
-        sb.append( NF_4.format( MsaMethods.calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
-        return sb;
-    }
-
-    private final void printMsaStats( final String id ) {
-        System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
-        System.out.print( "\t" );
-        final StringBuilder sb = msaStatsAsSB();
-        System.out.print( sb );
-        System.out.print( "\t" );
-    }
-
-    final private void printMsaStatsWriteOutfileAndRealign( final boolean realign,
-                                                            final boolean verbose,
-                                                            final String id ) throws IOException, InterruptedException {
-        if ( realign ) {
-            realignWithMafft();
-        }
-        if ( verbose ) {
-            printMsaStats( id );
-        }
-        final String s = writeOutfile();
-        if ( verbose ) {
-            System.out.print( "-> " + s + ( realign ? "\t(realigned)" : "" ) );
-        }
-    }
-
-    final private void realignWithMafft() throws IOException, InterruptedException {
-        //  final MsaInferrer mafft = Mafft
-        //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
-        final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
-        final List<String> opts = new ArrayList<String>();
-        for( final String o : _maffts_opts.split( "\\s" ) ) {
-            opts.add( o );
-        }
-        _msa = DeleteableMsa.createInstance( mafft.infer( _msa.asSequenceList(), opts ) );
-    }
-
-    final private void removeGapColumns() {
-        _msa.deleteGapOnlyColumns();
+    final public SortedSet<String> getRemovedSeqIds() {
+        return _removed_seq_ids;
     }
 
     public final void removeViaGapAverage( final double mean_gapiness, final boolean verbose ) throws IOException,
@@ -380,8 +223,193 @@ public class MsaCompactor {
         }
     }
 
+    public final void setGapRatio( final double gap_ratio ) {
+        _gap_ratio = gap_ratio;
+    }
+
+    public final void setMinLength( final int min_length ) {
+        _min_length = min_length;
+    }
+
+    public final void setNorm( final boolean norm ) {
+        _norm = norm;
+    }
+
+    final public void setOutFileBase( final File out_file_base ) {
+        _out_file_base = out_file_base;
+    }
+
+    public final void setOutputFormat( final MSA_FORMAT output_format ) {
+        _output_format = output_format;
+    }
+
     public void setPathToMafft( final String path_to_mafft ) {
         _path_to_mafft = path_to_mafft;
+    }
+
+    public final void setRealign( final boolean realign ) {
+        _realign = realign;
+    }
+
+    public final void setStep( final int step ) {
+        _step = step;
+    }
+
+    public final void setStepForDiagnostics( final int step_for_diagnostics ) {
+        _step_for_diagnostics = step_for_diagnostics;
+    }
+
+    final public String writeMsa( final File outfile, final MSA_FORMAT format, final String suffix ) throws IOException {
+        final Double gr = MsaMethods.calcGapRatio( _msa );
+        final String s = outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
+                + ForesterUtil.roundToInt( gr * 100 );
+        writeMsa( s + suffix, format );
+        return s;
+    }
+
+    final int calcNonGapResidues( final Sequence seq ) {
+        int ng = 0;
+        for( int i = 0; i < seq.getLength(); ++i ) {
+            if ( !seq.isGapAt( i ) ) {
+                ++ng;
+            }
+        }
+        return ng;
+    }
+
+    Phylogeny pi( final String matrix ) {
+        final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
+        final int seed = 15;
+        final int n = 100;
+        final ResampleableMsa resampleable_msa = new ResampleableMsa( _msa );
+        final int[][] resampled_column_positions = BootstrapResampler.createResampledColumnPositions( _msa.getLength(),
+                                                                                                      n,
+                                                                                                      seed );
+        final Phylogeny[] eval_phys = new Phylogeny[ n ];
+        for( int i = 0; i < n; ++i ) {
+            resampleable_msa.resample( resampled_column_positions[ i ] );
+            eval_phys[ i ] = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, resampleable_msa, false, null );
+        }
+        ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
+        PhylogenyMethods.extractFastaInformation( master_phy );
+        return master_phy;
+    }
+
+    private final GapContribution[] calcGapContribtions( final boolean normalize_for_effective_seq_length ) {
+        final double gappiness[] = calcGappiness();
+        final GapContribution stats[] = new GapContribution[ _msa.getNumberOfSequences() ];
+        for( int row = 0; row < _msa.getNumberOfSequences(); ++row ) {
+            stats[ row ] = new GapContribution( _msa.getIdentifier( row ) );
+            for( int col = 0; col < _msa.getLength(); ++col ) {
+                if ( !_msa.isGapAt( row, col ) ) {
+                    stats[ row ].addToValue( gappiness[ col ] );
+                }
+            }
+            if ( normalize_for_effective_seq_length ) {
+                stats[ row ].divideValue( calcNonGapResidues( _msa.getSequence( row ) ) );
+            }
+            else {
+                stats[ row ].divideValue( _msa.getLength() );
+            }
+        }
+        return stats;
+    }
+
+    final private GapContribution[] calcGapContribtionsStats( final boolean norm ) {
+        final GapContribution stats[] = calcGapContribtions( norm );
+        Arrays.sort( stats );
+        return stats;
+    }
+
+    private final double[] calcGappiness() {
+        final int l = _msa.getLength();
+        final double gappiness[] = new double[ l ];
+        final int seqs = _msa.getNumberOfSequences();
+        for( int i = 0; i < l; ++i ) {
+            gappiness[ i ] = ( double ) MsaMethods.calcGapSumPerColumn( _msa, i ) / seqs;
+        }
+        return gappiness;
+    }
+
+    private Phylogeny inferNJphylogeny( final PWD_DISTANCE_METHOD pwd_distance_method,
+                                        final Msa msa,
+                                        final boolean write_matrix,
+                                        final String matrix_name ) {
+        BasicSymmetricalDistanceMatrix m = null;
+        switch ( pwd_distance_method ) {
+            case KIMURA_DISTANCE:
+                m = PairwiseDistanceCalculator.calcKimuraDistances( msa );
+                break;
+            case POISSON_DISTANCE:
+                m = PairwiseDistanceCalculator.calcPoissonDistances( msa );
+                break;
+            case FRACTIONAL_DISSIMILARITY:
+                m = PairwiseDistanceCalculator.calcFractionalDissimilarities( msa );
+                break;
+            default:
+                throw new IllegalArgumentException( "invalid pwd method" );
+        }
+        if ( write_matrix ) {
+            try {
+                m.write( ForesterUtil.createBufferedWriter( matrix_name ) );
+            }
+            catch ( final IOException e ) {
+                e.printStackTrace();
+            }
+        }
+        final NeighborJoiningF nj = NeighborJoiningF.createInstance( false, 5 );
+        final Phylogeny phy = nj.execute( m );
+        return phy;
+    }
+
+    private StringBuilder msaStatsAsSB() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( _msa.getNumberOfSequences() );
+        sb.append( "\t" );
+        sb.append( _msa.getLength() );
+        sb.append( "\t" );
+        sb.append( NF_4.format( MsaMethods.calcGapRatio( _msa ) ) );
+        sb.append( "\t" );
+        sb.append( NF_4.format( MsaMethods.calculateIdentityRatio( 0, _msa.getLength() - 1, _msa ).arithmeticMean() ) );
+        return sb;
+    }
+
+    private final void printMsaStats( final String id ) {
+        System.out.print( ForesterUtil.pad( id, 20, ' ', false ) );
+        System.out.print( "\t" );
+        final StringBuilder sb = msaStatsAsSB();
+        System.out.print( sb );
+        System.out.print( "\t" );
+    }
+
+    final private void printMsaStatsWriteOutfileAndRealign( final boolean realign,
+                                                            final boolean verbose,
+                                                            final String id ) throws IOException, InterruptedException {
+        if ( realign ) {
+            realignWithMafft();
+        }
+        if ( verbose ) {
+            printMsaStats( id );
+        }
+        final String s = writeOutfile();
+        if ( verbose ) {
+            System.out.print( "-> " + s + ( realign ? "\t(realigned)" : "" ) );
+        }
+    }
+
+    final private void realignWithMafft() throws IOException, InterruptedException {
+        //  final MsaInferrer mafft = Mafft
+        //       .createInstance( "/home/czmasek/SOFTWARE/MSA/MAFFT/mafft-7.130-without-extensions/scripts/mafft" );
+        final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
+        final List<String> opts = new ArrayList<String>();
+        for( final String o : _maffts_opts.split( "\\s" ) ) {
+            opts.add( o );
+        }
+        _msa = DeleteableMsa.createInstance( mafft.infer( _msa.asSequenceList(), opts ) );
+    }
+
+    final private void removeGapColumns() {
+        _msa.deleteGapOnlyColumns();
     }
 
     final private void writeMsa( final String outfile, final MSA_FORMAT format ) throws IOException {
@@ -426,34 +454,6 @@ public class MsaCompactor {
             return path;
         }
         return null;
-    }
-
-    public final void setStep( final int step ) {
-        _step = step;
-    }
-
-    public final void setNorm( final boolean norm ) {
-        _norm = norm;
-    }
-
-    public final void setStepForDiagnostics( final int step_for_diagnostics ) {
-        _step_for_diagnostics = step_for_diagnostics;
-    }
-
-    public final void setMinLength( final int min_length ) {
-        _min_length = min_length;
-    }
-
-    public final void setGapRatio( final double gap_ratio ) {
-        _gap_ratio = gap_ratio;
-    }
-
-    public final void setOutputFormat( final MSA_FORMAT output_format ) {
-        _output_format = output_format;
-    }
-
-    public final void setRealign( final boolean realign ) {
-        _realign = realign;
     }
 
     private final static void printTableHeader() {
