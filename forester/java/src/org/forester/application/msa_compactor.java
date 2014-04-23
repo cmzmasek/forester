@@ -36,7 +36,6 @@ import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
 import org.forester.msa_compactor.Chart;
-import org.forester.msa_compactor.MsaCompactor;
 import org.forester.msa_compactor.MsaCompactor2;
 import org.forester.msa_compactor.MsaProperties;
 import org.forester.util.CommandLineArguments;
@@ -206,7 +205,7 @@ public class msa_compactor {
             }
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
-                    path_to_mafft = MsaCompactor.guessPathToMafft();
+                    path_to_mafft = MsaCompactor2.guessPathToMafft();
                 }
                 checkPathToMafft( path_to_mafft );
                 if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
@@ -347,7 +346,7 @@ public class msa_compactor {
                                               E_MAIL,
                                               WWW,
                                               ForesterUtil.getForesterLibraryInformation() );
-        final String path_to_mafft = MsaCompactor.guessPathToMafft();
+        final String path_to_mafft = MsaCompactor2.guessPathToMafft();
         String mafft_comment;
         if ( !ForesterUtil.isEmpty( path_to_mafft ) ) {
             mafft_comment = " (using " + path_to_mafft + ")";
