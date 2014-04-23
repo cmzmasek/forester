@@ -62,7 +62,7 @@ public class msa_compactor {
     final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String PRG_NAME                               = "msa_compactor";
     final static private String PRG_DESC                               = "multiple sequence aligment compactor";
-    final static private String PRG_VERSION                            = "0.01";
+    final static private String PRG_VERSION                            = "0.02";
     final static private String PRG_DATE                               = "140316";
     final static private String E_MAIL                                 = "czmasek@sanfordburham.org";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
@@ -221,44 +221,49 @@ public class msa_compactor {
                                                   WWW,
                                                   ForesterUtil.getForesterLibraryInformation() );
             //
-            System.out.println( "Input MSA: " + in );
+            System.out.println( "Input MSA                            : " + in );
             if ( out != null ) {
-                System.out.println( "Output   : " + out );
+                System.out.println( "Output                               : " + out );
             }
             else {
-                System.out.println( "Output   : n/a" );
+                System.out.println( "Output                               : n/a" );
             }
             if ( removed_seqs_out_base != null ) {
-                System.out.println( "Write removed sequences to   : " + removed_seqs_out_base );
+                System.out.println( "Write removed sequences to           : " + removed_seqs_out_base );
             }
             if ( worst_remove > 0 ) {
-                System.out.println( ": " + worst_remove );
+                System.out.println( "Number of worst offenders to remove  : " + worst_remove );
             }
             else if ( av_gap > 0 ) {
-                System.out.println( ": " + av_gap );
+                System.out.println( "Target gap-ratio                     : " + av_gap );
             }
             else if ( length > 0 ) {
-                System.out.println( ": " + length );
+                System.out.println( "Target MSA length                    : " + length );
+            }
+            else {
+                System.out.println( "Chart and diagnostics only           : true" );
             }
             if ( out != null || removed_seqs_out_base != null ) {
-                System.out.println( "Output format: " + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
+                System.out.println( "Output format                        : "
+                        + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
             }
-            System.out.println( "Step for output and re-aligning) : " + step );
-            System.out.println( "Step for dia: " + step_for_diagnostics );
-            System.out.println( "Step for diagnostics reports: " + report_aln_mean_identity );
+            System.out.println( "Step for output and re-aligning)     : " + step );
+            System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
+            System.out.println( "Report mean identity (\"MSA quality\") : " + report_aln_mean_identity );
             if ( !norm ) {
-                System.out.println( "Normalize: " + norm );
+                System.out.println( "Normalize                            : " + norm );
             }
-            System.out.println( "Realign: " + realign );
+            System.out.println( "Realign                              : " + realign );
             if ( realign ) {
-                System.out.println( "MAFFT options: " + mafft_options );
+                System.out.println( "MAFFT options                        : " + mafft_options );
             }
             if ( min_length > -1 ) {
-                System.out.println( "Minimal effective sequence length: " + min_length );
+                System.out.println( "Minimal effective sequence length    : " + min_length );
             }
             if ( gap_ratio > -1 ) {
-                System.out.println( ": " + gap_ratio );
+                System.out.println( "Maximum allowed gap ratio per column : " + gap_ratio );
             }
+            System.out.println();
             //
             if ( worst_remove > 0 ) {
                 MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );

@@ -54,7 +54,7 @@ import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
 
-public class MsaCompactor {
+public class MsaCompactor2 {
 
     final private static NumberFormat NF_3         = new DecimalFormat( "#.###" );
     final private static NumberFormat NF_4         = new DecimalFormat( "#.####" );
@@ -69,7 +69,7 @@ public class MsaCompactor {
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
 
-    private MsaCompactor( final DeleteableMsa msa ) {
+    private MsaCompactor2( final DeleteableMsa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
     }
@@ -398,13 +398,13 @@ public class MsaCompactor {
         return s;
     }
 
-    public final static MsaCompactor chart( final DeleteableMsa msa,
+    public final static MsaCompactor2 chart( final DeleteableMsa msa,
                                             final int step,
                                             final boolean realign,
                                             final boolean norm,
                                             final String path_to_mafft ) throws IOException, InterruptedException {
         final int initial_number_of_seqs = msa.getNumberOfSequences();
-        final MsaCompactor mc = new MsaCompactor( msa );
+        final MsaCompactor2 mc = new MsaCompactor2( msa );
         if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
@@ -445,14 +445,14 @@ public class MsaCompactor {
         return null;
     }
 
-    public final static MsaCompactor reduceGapAverage( final DeleteableMsa msa,
+    public final static MsaCompactor2 reduceGapAverage( final DeleteableMsa msa,
                                                        final double max_gap_average,
                                                        final int step,
                                                        final boolean realign,
                                                        final boolean norm,
                                                        final String path_to_mafft,
                                                        final File out ) throws IOException, InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
+        final MsaCompactor2 mc = new MsaCompactor2( msa );
         if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
@@ -461,14 +461,14 @@ public class MsaCompactor {
         return mc;
     }
 
-    public final static MsaCompactor reduceLength( final DeleteableMsa msa,
+    public final static MsaCompactor2 reduceLength( final DeleteableMsa msa,
                                                    final int length,
                                                    final int step,
                                                    final boolean realign,
                                                    final boolean norm,
                                                    final String path_to_mafft,
                                                    final File out ) throws IOException, InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
+        final MsaCompactor2 mc = new MsaCompactor2( msa );
         if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
@@ -477,14 +477,14 @@ public class MsaCompactor {
         return mc;
     }
 
-    public final static MsaCompactor removeWorstOffenders( final DeleteableMsa msa,
+    public final static MsaCompactor2 removeWorstOffenders( final DeleteableMsa msa,
                                                            final int worst_offenders_to_remove,
                                                            final int step,
                                                            final boolean realign,
                                                            final boolean norm,
                                                            final String path_to_mafft,
                                                            final File out ) throws IOException, InterruptedException {
-        final MsaCompactor mc = new MsaCompactor( msa );
+        final MsaCompactor2 mc = new MsaCompactor2( msa );
         if ( realign ) {
             mc.setPathToMafft( path_to_mafft );
         }
