@@ -159,7 +159,7 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
-    public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
+    final public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( int c = from; c <= to; ++c ) {
             stats.addValue( calculateIdentityRatio( msa, c ) );
@@ -167,7 +167,16 @@ public final class MsaMethods {
         return stats;
     }
 
-    public static double calculateIdentityRatio( final Msa msa, final int column ) {
+    final public static DescriptiveStatistics calculateEffectiveLengthStatistics( final Msa msa ) {
+        DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            Sequence s = msa.getSequence( row );
+            stats.addValue( s.getLength() - s.getNumberOfGapResidues() );
+        }
+        return stats;
+    }
+
+    final public static double calculateIdentityRatio( final Msa msa, final int column ) {
         final SortedMap<Character, Integer> dist = calculateResidueDestributionPerColumn( msa, column );
         int majority_count = 0;
         final Iterator<Map.Entry<Character, Integer>> it = dist.entrySet().iterator();

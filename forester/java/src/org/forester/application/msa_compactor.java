@@ -32,9 +32,12 @@ import java.util.List;
 import org.forester.io.parsers.FastaParser;
 import org.forester.io.parsers.GeneralMsaParser;
 import org.forester.msa.DeleteableMsa;
+import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
+import org.forester.msa.MsaMethods;
 import org.forester.msa_compactor.MsaCompactor;
 import org.forester.util.CommandLineArguments;
+import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public class msa_compactor {
@@ -93,43 +96,8 @@ public class msa_compactor {
             int min_length = -1;
             double gap_ratio = -1;
             boolean report_aln_mean_identity = false;
-            Format output_format = FASTA;
+            MSA_FORMAT output_format = MSA_FORMAT.FASTA;
             final File roved_seqs_out_base = null;
-            //
-            if ( cla.isOptionSet( STEP_FOR_DIAGNOSTICS_OPTION ) ) {
-                step_for_diagnostics = cla.getOptionValueAsInt( STEP_FOR_DIAGNOSTICS_OPTION );
-                if ( ( step_for_diagnostics < 1 )
-                        || ( ( step_for_diagnostics > msa.getNumberOfSequences() ) || ( ( worst_remove > 0 ) && ( step_for_diagnostics > worst_remove ) ) ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "value for diagnostic step is out of range: "
-                            + step_for_diagnostics );
-                }
-            }
-            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
-                min_length = cla.getOptionValueAsInt( MIN_LENGTH_OPTION );
-                if ( ( min_length < 1 ) || ( min_length > longest_msa_seq ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "value for minimal sequence length is out of range: "
-                            + min_length );
-                }
-            }
-            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
-                gap_ratio = cla.getOptionValueAsDouble( GAP_RATIO_LENGTH_OPTION );
-                if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
-                }
-            }
-            if ( cla.isOptionSet( REPORT_ALN_MEAN_IDENTITY ) ) {
-                report_aln_mean_identity = true;
-            }
-            if ( cla.isOptionSet( OUTPUT_FORMAT_PHYLIP_OPTION ) ) {
-                output_format = PHYLIP;
-            }
-            if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
-                gap_ratio = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
-                if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
-                }
-            }
-            //
             final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( REMOVE_WORST_OFFENDERS_OPTION );
             allowed_options.add( AV_GAPINESS_OPTION );
@@ -156,6 +124,8 @@ public class msa_compactor {
             else {
                 msa = DeleteableMsa.createInstance( GeneralMsaParser.parse( is ) );
             }
+            final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
+            System.out.println( initial_msa_stats.toString() );
             if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );
                 if ( ( worst_remove < 1 ) || ( worst_remove >= msa.getNumberOfSequences() - 1 ) ) {
@@ -202,6 +172,41 @@ public class msa_compactor {
             if ( cla.isOptionSet( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION ) ) {
                 norm = false;
             }
+            //
+            if ( cla.isOptionSet( STEP_FOR_DIAGNOSTICS_OPTION ) ) {
+                step_for_diagnostics = cla.getOptionValueAsInt( STEP_FOR_DIAGNOSTICS_OPTION );
+                if ( ( step_for_diagnostics < 1 )
+                        || ( ( step_for_diagnostics > msa.getNumberOfSequences() ) || ( ( worst_remove > 0 ) && ( step_for_diagnostics > worst_remove ) ) ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "value for diagnostic step is out of range: "
+                            + step_for_diagnostics );
+                }
+            }
+            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
+                min_length = cla.getOptionValueAsInt( MIN_LENGTH_OPTION );
+                if ( ( min_length < 1 ) || ( min_length > initial_msa_stats.getMax() ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "value for minimal sequence length is out of range: "
+                            + min_length );
+                }
+            }
+            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
+                gap_ratio = cla.getOptionValueAsDouble( GAP_RATIO_LENGTH_OPTION );
+                if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
+                }
+            }
+            if ( cla.isOptionSet( REPORT_ALN_MEAN_IDENTITY ) ) {
+                report_aln_mean_identity = true;
+            }
+            if ( cla.isOptionSet( OUTPUT_FORMAT_PHYLIP_OPTION ) ) {
+                output_format = MSA_FORMAT.PHYLIP;
+            }
+            //            if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
+            //                gap_ratio = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
+            //                if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
+            //                    ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
+            //                }
+            //            }
+            //
             if ( realign ) {
                 if ( ForesterUtil.isEmpty( path_to_mafft ) ) {
                     path_to_mafft = MsaCompactor.guessPathToMafft();
