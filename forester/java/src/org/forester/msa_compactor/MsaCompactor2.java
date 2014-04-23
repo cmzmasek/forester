@@ -56,10 +56,21 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor2 {
 
-    final private static NumberFormat NF_3         = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4         = new DecimalFormat( "#.####" );
-    //   private final String              _maffts_opts = "--retree 1";
-    private final String              _maffts_opts = "--auto";
+    final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
+    //
+    private final String              _maffts_opts              = "--auto";
+    private int                       _step                     = 1;
+    //
+    private boolean                   _realign                  = false;
+    private boolean                   _norm                     = true;
+    private int                       _step_for_diagnostics     = 1;
+    private int                       _min_length               = -1;
+    private double                    _gap_ratio                = -1;
+    private final boolean             _report_aln_mean_identity = false;
+    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
+    private final File                _removed_seqs_out_base    = null;
+    //
     private DeleteableMsa             _msa;
     private File                      _out_file_base;
     private String                    _path_to_mafft;
@@ -69,7 +80,7 @@ public class MsaCompactor2 {
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
 
-    private MsaCompactor2( final DeleteableMsa msa ) {
+    public MsaCompactor2( final DeleteableMsa msa ) {
         _msa = msa;
         _removed_seq_ids = new TreeSet<String>();
     }
@@ -158,10 +169,10 @@ public class MsaCompactor2 {
         return gappiness;
     }
 
-    final private List<MsaProperties> chart( final int step,
-                                             final boolean realign,
-                                             final boolean norm,
-                                             final boolean verbose ) throws IOException, InterruptedException {
+    public final List<MsaProperties> chart( final int step,
+                                            final boolean realign,
+                                            final boolean norm,
+                                            final boolean verbose ) throws IOException, InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
@@ -286,12 +297,9 @@ public class MsaCompactor2 {
         _msa.deleteGapOnlyColumns();
     }
 
-    final private void removeViaGapAverage( final double mean_gapiness,
-                                            final int step,
-                                            final boolean realign,
-                                            final boolean norm,
-                                            final boolean verbose ) throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
+    public final void removeViaGapAverage( final double mean_gapiness, final boolean verbose ) throws IOException,
+            InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
@@ -302,12 +310,11 @@ public class MsaCompactor2 {
         int i = 0;
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
             final String id = to_remove_ids.get( i );
-            //`_msa = MsaMethods.removeSequence( _msa, id );
             _msa.deleteRow( id );
             removeGapColumns();
-            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) )
+            if ( ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) )
                     || ( MsaMethods.calcGapRatio( _msa ) <= mean_gapiness ) ) {
-                printMsaStatsWriteOutfileAndRealign( realign, verbose, id );
+                printMsaStatsWriteOutfileAndRealign( _realign, verbose, id );
             }
             else if ( verbose ) {
                 printMsaStats( id );
@@ -319,12 +326,8 @@ public class MsaCompactor2 {
         }
     }
 
-    final private void removeViaLength( final int length,
-                                        final int step,
-                                        final boolean realign,
-                                        final boolean norm,
-                                        final boolean verbose ) throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
+    public void removeViaLength( final int length, final boolean verbose ) throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
@@ -335,11 +338,10 @@ public class MsaCompactor2 {
         int i = 0;
         while ( _msa.getLength() > length ) {
             final String id = to_remove_ids.get( i );
-            //~_msa = MsaMethods.removeSequence( _msa, id );
             _msa.deleteRow( id );
             removeGapColumns();
-            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( _msa.getLength() <= length ) ) {
-                printMsaStatsWriteOutfileAndRealign( realign, verbose, id );
+            if ( ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) ) || ( _msa.getLength() <= length ) ) {
+                printMsaStatsWriteOutfileAndRealign( _realign, verbose, id );
             }
             else if ( verbose ) {
                 printMsaStats( id );
@@ -351,12 +353,9 @@ public class MsaCompactor2 {
         }
     }
 
-    final private void removeWorstOffenders( final int to_remove,
-                                             final int step,
-                                             final boolean realign,
-                                             final boolean norm,
-                                             final boolean verbose ) throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
+    public final void removeWorstOffenders( final int to_remove, final boolean verbose ) throws IOException,
+            InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( _norm );
         final List<String> to_remove_ids = new ArrayList<String>();
         for( int j = 0; j < to_remove; ++j ) {
             to_remove_ids.add( stats[ j ].getId() );
@@ -367,11 +366,10 @@ public class MsaCompactor2 {
         }
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
-            //~ _msa = MsaMethods.removeSequence( _msa, id );
             _msa.deleteRow( id );
             removeGapColumns();
-            if ( ( ( step > 0 ) && ( ( ( i + 1 ) % step ) == 0 ) ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
-                printMsaStatsWriteOutfileAndRealign( realign, verbose, id );
+            if ( ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
+                printMsaStatsWriteOutfileAndRealign( _realign, verbose, id );
             }
             else if ( verbose ) {
                 printMsaStats( id );
@@ -382,7 +380,7 @@ public class MsaCompactor2 {
         }
     }
 
-    private void setPathToMafft( final String path_to_mafft ) {
+    public void setPathToMafft( final String path_to_mafft ) {
         _path_to_mafft = path_to_mafft;
     }
 
@@ -396,21 +394,6 @@ public class MsaCompactor2 {
         final String s = writeMsa( _out_file_base, MSA_FORMAT.PHYLIP, ".aln" );
         //writeMsa( _out_file_base, MSA_FORMAT.FASTA, ".fasta" );
         return s;
-    }
-
-    public final static MsaCompactor2 chart( final DeleteableMsa msa,
-                                            final int step,
-                                            final boolean realign,
-                                            final boolean norm,
-                                            final String path_to_mafft ) throws IOException, InterruptedException {
-        final int initial_number_of_seqs = msa.getNumberOfSequences();
-        final MsaCompactor2 mc = new MsaCompactor2( msa );
-        if ( realign ) {
-            mc.setPathToMafft( path_to_mafft );
-        }
-        final List<MsaProperties> msa_props = mc.chart( step, realign, norm, true );
-        Chart.display( msa_props, initial_number_of_seqs );
-        return mc;
     }
 
     // Returns null if not path found.
@@ -445,52 +428,32 @@ public class MsaCompactor2 {
         return null;
     }
 
-    public final static MsaCompactor2 reduceGapAverage( final DeleteableMsa msa,
-                                                       final double max_gap_average,
-                                                       final int step,
-                                                       final boolean realign,
-                                                       final boolean norm,
-                                                       final String path_to_mafft,
-                                                       final File out ) throws IOException, InterruptedException {
-        final MsaCompactor2 mc = new MsaCompactor2( msa );
-        if ( realign ) {
-            mc.setPathToMafft( path_to_mafft );
-        }
-        mc.setOutFileBase( out );
-        mc.removeViaGapAverage( max_gap_average, step, realign, norm, true );
-        return mc;
+    public final void setStep( int step ) {
+        _step = step;
     }
 
-    public final static MsaCompactor2 reduceLength( final DeleteableMsa msa,
-                                                   final int length,
-                                                   final int step,
-                                                   final boolean realign,
-                                                   final boolean norm,
-                                                   final String path_to_mafft,
-                                                   final File out ) throws IOException, InterruptedException {
-        final MsaCompactor2 mc = new MsaCompactor2( msa );
-        if ( realign ) {
-            mc.setPathToMafft( path_to_mafft );
-        }
-        mc.setOutFileBase( out );
-        mc.removeViaLength( length, step, realign, norm, true );
-        return mc;
+    public final void setNorm( boolean norm ) {
+        _norm = norm;
     }
 
-    public final static MsaCompactor2 removeWorstOffenders( final DeleteableMsa msa,
-                                                           final int worst_offenders_to_remove,
-                                                           final int step,
-                                                           final boolean realign,
-                                                           final boolean norm,
-                                                           final String path_to_mafft,
-                                                           final File out ) throws IOException, InterruptedException {
-        final MsaCompactor2 mc = new MsaCompactor2( msa );
-        if ( realign ) {
-            mc.setPathToMafft( path_to_mafft );
-        }
-        mc.setOutFileBase( out );
-        mc.removeWorstOffenders( worst_offenders_to_remove, step, realign, norm, true );
-        return mc;
+    public final void setStepForDiagnostics( int step_for_diagnostics ) {
+        _step_for_diagnostics = step_for_diagnostics;
+    }
+
+    public final void setMinLength( int min_length ) {
+        _min_length = min_length;
+    }
+
+    public final void setGapRatio( double gap_ratio ) {
+        _gap_ratio = gap_ratio;
+    }
+
+    public final void setOutputFormat( MSA_FORMAT output_format ) {
+        _output_format = output_format;
+    }
+
+    public final void setRealign( boolean realign ) {
+        _realign = realign;
     }
 
     private final static void printTableHeader() {

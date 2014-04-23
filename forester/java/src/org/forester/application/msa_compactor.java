@@ -35,7 +35,10 @@ import org.forester.msa.DeleteableMsa;
 import org.forester.msa.Msa.MSA_FORMAT;
 import org.forester.msa.MsaInferrer;
 import org.forester.msa.MsaMethods;
+import org.forester.msa_compactor.Chart;
 import org.forester.msa_compactor.MsaCompactor;
+import org.forester.msa_compactor.MsaCompactor2;
+import org.forester.msa_compactor.MsaProperties;
 import org.forester.util.CommandLineArguments;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
@@ -265,18 +268,54 @@ public class msa_compactor {
             }
             System.out.println();
             //
+            //
             if ( worst_remove > 0 ) {
-                MsaCompactor.removeWorstOffenders( msa, worst_remove, step, realign, norm, path_to_mafft, out );
+                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                }
+                mc.setNorm( norm );
+                mc.setOutFileBase( out );
+                mc.setStep( step );
+                mc.removeWorstOffenders( worst_remove, true );
             }
             else if ( av_gap > 0 ) {
-                MsaCompactor.reduceGapAverage( msa, av_gap, step, realign, norm, path_to_mafft, out );
+                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                }
+                mc.setNorm( norm );
+                mc.setOutFileBase( out );
+                mc.setStep( step );
+                mc.removeViaGapAverage( av_gap, true );
             }
             else if ( length > 0 ) {
                 // TODO if < shortest seq -> error
-                MsaCompactor.reduceLength( msa, length, step, realign, norm, path_to_mafft, out );
+                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                }
+                mc.setNorm( norm );
+                mc.setOutFileBase( out );
+                mc.setStep( step );
+                mc.removeViaLength( length, true );
             }
             else {
-                MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
+                //MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
+                final int initial_number_of_seqs = msa.getNumberOfSequences();
+                final MsaCompactor2 mc = new MsaCompactor2( msa );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                }
+                mc.setNorm( norm );
+                mc.setOutFileBase( out );
+                mc.setStep( step );
+                final List<MsaProperties> msa_props = mc.chart( step, realign, norm, true );
+                Chart.display( msa_props, initial_number_of_seqs );
             }
         }
         catch ( final Exception e ) {
