@@ -200,7 +200,7 @@ public class msa_compactor {
                 output_format = MSA_FORMAT.PHYLIP;
             }
             if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
-                String s = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
+                final String s = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
                 removed_seqs_out_base = new File( s );
             }
             if ( realign ) {
@@ -210,7 +210,7 @@ public class msa_compactor {
                 checkPathToMafft( path_to_mafft );
                 if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
                     mafft_options = cla.getOptionValueAsCleanString( MAFFT_OPTIONS );
-                    if ( ForesterUtil.isEmpty( mafft_options ) || mafft_options.length() < 3 ) {
+                    if ( ForesterUtil.isEmpty( mafft_options ) || ( mafft_options.length() < 3 ) ) {
                         ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
                     }
                 }
@@ -245,7 +245,7 @@ public class msa_compactor {
             else {
                 System.out.println( "Chart and diagnostics only           : true" );
             }
-            if ( out != null || removed_seqs_out_base != null ) {
+            if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
                 System.out.println( "Output format                        : "
                         + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
             }

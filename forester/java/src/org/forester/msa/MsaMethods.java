@@ -168,9 +168,9 @@ public final class MsaMethods {
     }
 
     final public static DescriptiveStatistics calculateEffectiveLengthStatistics( final Msa msa ) {
-        DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            Sequence s = msa.getSequence( row );
+            final Sequence s = msa.getSequence( row );
             stats.addValue( s.getLength() - s.getNumberOfGapResidues() );
         }
         return stats;

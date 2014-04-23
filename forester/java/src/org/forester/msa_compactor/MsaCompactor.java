@@ -428,31 +428,31 @@ public class MsaCompactor {
         return null;
     }
 
-    public final void setStep( int step ) {
+    public final void setStep( final int step ) {
         _step = step;
     }
 
-    public final void setNorm( boolean norm ) {
+    public final void setNorm( final boolean norm ) {
         _norm = norm;
     }
 
-    public final void setStepForDiagnostics( int step_for_diagnostics ) {
+    public final void setStepForDiagnostics( final int step_for_diagnostics ) {
         _step_for_diagnostics = step_for_diagnostics;
     }
 
-    public final void setMinLength( int min_length ) {
+    public final void setMinLength( final int min_length ) {
         _min_length = min_length;
     }
 
-    public final void setGapRatio( double gap_ratio ) {
+    public final void setGapRatio( final double gap_ratio ) {
         _gap_ratio = gap_ratio;
     }
 
-    public final void setOutputFormat( MSA_FORMAT output_format ) {
+    public final void setOutputFormat( final MSA_FORMAT output_format ) {
         _output_format = output_format;
     }
 
-    public final void setRealign( boolean realign ) {
+    public final void setRealign( final boolean realign ) {
         _realign = realign;
     }
 
