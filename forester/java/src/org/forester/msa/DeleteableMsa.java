@@ -64,7 +64,7 @@ public final class DeleteableMsa extends BasicMsa {
 
     final public void deleteGapOnlyColumns() {
         for( int col = getLength() - 1; col >= 0; --col ) {
-            if ( MsaMethods.calcGapSumPerColumn( this, col ) == getNumberOfSequences() ) {
+            if ( isAllGap( col ) ) {
                 deleteColumn( col );
             }
         }
@@ -111,6 +111,16 @@ public final class DeleteableMsa extends BasicMsa {
     public Sequence getSequence( final int row ) {
         checkRow( row );
         return new BasicSequence( getIdentifier( row ), getSequenceAsString( row ).toString(), getType() );
+    }
+
+    final public boolean isAllGap( final int col ) {
+        final int m_col = _mapped_col_positions[ col ];
+        for( int j = 0; j < getNumberOfSequences(); ++j ) {
+            if ( super.getResidueAt( _mapped_row_positions[ j ], m_col ) != Sequence.GAP ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

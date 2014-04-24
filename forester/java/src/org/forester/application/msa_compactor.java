@@ -26,6 +26,7 @@ package org.forester.application;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -249,8 +250,9 @@ public class msa_compactor {
                 System.out.println( "Output format                        : "
                         + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
             }
-            System.out.println( "Step for output and re-aligning)     : " + step );
-            System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
+            System.out.println( "Step for output and re-aligning)     : " + ( step > 1 ? step : 1 ) );
+            System.out.println( "Step for diagnostics reports         : "
+                    + ( step_for_diagnostics > 1 ? step_for_diagnostics : 1 ) );
             System.out.println( "Report mean identity (\"MSA quality\") : " + report_aln_mean_identity );
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
@@ -276,8 +278,13 @@ public class msa_compactor {
                 }
                 mc.setNorm( norm );
                 mc.setOutFileBase( out );
-                mc.setStep( step );
-                mc.removeWorstOffenders( worst_remove, true );
+                if ( step > 1 ) {
+                    mc.setStep( step );
+                }
+                if ( step_for_diagnostics > 1 ) {
+                    mc.setStepForDiagnostics( step_for_diagnostics );
+                }
+                mc.removeWorstOffenders( worst_remove );
             }
             else if ( av_gap > 0 ) {
                 final MsaCompactor mc = new MsaCompactor( msa );
@@ -311,15 +318,28 @@ public class msa_compactor {
                     mc.setPathToMafft( path_to_mafft );
                 }
                 mc.setNorm( norm );
+                mc.setReportAlnMeanIdentity( report_aln_mean_identity );
                 mc.setOutFileBase( out );
-                mc.setStep( step );
-                final List<MsaProperties> msa_props = mc.chart( step, realign, norm, true );
+                if ( step > 1 ) {
+                    mc.setStep( step );
+                }
+                if ( step_for_diagnostics > 1 ) {
+                    mc.setStepForDiagnostics( step_for_diagnostics );
+                }
+                final List<MsaProperties> msa_props = mc.chart( step, realign, norm );
                 Chart.display( msa_props, initial_number_of_seqs );
             }
         }
+        catch ( final IllegalArgumentException iae ) {
+            iae.printStackTrace(); //TODO remove me
+            ForesterUtil.fatalError( PRG_NAME, iae.getMessage() );
+        }
+        catch ( final IOException ioe ) {
+            ioe.printStackTrace(); //TODO remove me
+            ForesterUtil.fatalError( PRG_NAME, ioe.getMessage() );
+        }
         catch ( final Exception e ) {
-            e.printStackTrace();
-            ForesterUtil.fatalError( PRG_NAME, e.getMessage() );
+            ForesterUtil.unexpectedFatalError( PRG_NAME, e );
         }
     }
 

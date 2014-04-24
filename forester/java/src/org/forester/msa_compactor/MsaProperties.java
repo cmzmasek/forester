@@ -34,13 +34,6 @@ public final class MsaProperties {
     final private int    _length;
     final private int    _number_of_sequences;
 
-    public MsaProperties( final Msa msa ) {
-        _number_of_sequences = msa.getNumberOfSequences();
-        _length = msa.getLength();
-        _gap_ratio = MsaMethods.calcGapRatio( msa );
-        _average_identity_ratio = MsaMethods.calculateIdentityRatio( 0, msa.getLength() - 1, msa ).arithmeticMean();
-    }
-
     public MsaProperties( final int number_of_sequences,
                           final int length,
                           final double gap_ratio,
@@ -49,6 +42,18 @@ public final class MsaProperties {
         _length = length;
         _gap_ratio = gap_ratio;
         _average_identity_ratio = average_identity_ratio;
+    }
+
+    public MsaProperties( final Msa msa, final boolean calculate_aln_mean_identity ) {
+        _number_of_sequences = msa.getNumberOfSequences();
+        _length = msa.getLength();
+        _gap_ratio = MsaMethods.calcGapRatio( msa );
+        if ( calculate_aln_mean_identity ) {
+            _average_identity_ratio = MsaMethods.calculateIdentityRatio( 0, msa.getLength() - 1, msa ).arithmeticMean();
+        }
+        else {
+            _average_identity_ratio = -1;
+        }
     }
 
     public final double getAverageIdentityRatio() {
