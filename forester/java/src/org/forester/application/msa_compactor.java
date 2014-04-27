@@ -253,7 +253,8 @@ public class msa_compactor {
             System.out.println( "Step for output and re-aligning)     : " + ( step > 1 ? step : 1 ) );
             System.out.println( "Step for diagnostics reports         : "
                     + ( step_for_diagnostics > 1 ? step_for_diagnostics : 1 ) );
-            System.out.println( "Report mean identity (\"MSA quality\") : " + report_aln_mean_identity );
+            System.out.println( "Calculate mean identity              : " + report_aln_mean_identity );
+            
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
             }
@@ -295,7 +296,7 @@ public class msa_compactor {
                 mc.setNorm( norm );
                 mc.setOutFileBase( out );
                 mc.setStep( step );
-                mc.removeViaGapAverage( av_gap, true );
+                mc.removeViaGapAverage( av_gap );
             }
             else if ( length > 0 ) {
                 // TODO if < shortest seq -> error
@@ -307,7 +308,7 @@ public class msa_compactor {
                 mc.setNorm( norm );
                 mc.setOutFileBase( out );
                 mc.setStep( step );
-                mc.removeViaLength( length, true );
+                mc.removeViaLength( length );
             }
             else {
                 //MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
@@ -394,7 +395,7 @@ public class msa_compactor {
         System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
                 + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
         System.out.println( "   -" + REPORT_ALN_MEAN_IDENTITY
-                + "             to report mean identity diagnostic (not recommended for very large alignments)" );
+                + "             to calculate mean MSA column identity (\"MSA quality\")  (not recommended for very large alignments)" );
         System.out.println( "   -" + OUTPUT_FORMAT_PHYLIP_OPTION
                 + "             to write output alignments in phylip format instead of fasta" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );

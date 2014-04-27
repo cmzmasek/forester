@@ -180,10 +180,10 @@ public class BasicMsa implements Msa {
         }
     }
 
-    private int determineMaxIdLength() {
-        int max = 0;
+    private short determineMaxIdLength() {
+        short max = 0;
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            final int l = getIdentifier( row ).length();
+            final short l = ( short ) getIdentifier( row ).length();
             if ( l > max ) {
                 max = l;
             }

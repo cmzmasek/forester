@@ -50,6 +50,17 @@ public final class DeleteableMsa extends BasicMsa {
         _seqs = msa.getNumberOfSequences();
     }
 
+    public short determineMaxIdLength() {
+        short max = 0;
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            final short l = ( short ) getIdentifier( row ).length();
+            if ( l > max ) {
+                max = l;
+            }
+        }
+        return max;
+    }
+    
     final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
         if ( ( max_allowed_gap_ratio < 0 ) || ( max_allowed_gap_ratio > 1 ) ) {
             throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );
@@ -70,7 +81,7 @@ public final class DeleteableMsa extends BasicMsa {
         }
     }
 
-    final public void deleteRow( final String id ) {
+    final public Sequence deleteRow( final String id ) {
         int row = -1;
         for( int r = 0; r < getNumberOfSequences(); ++r ) {
             if ( getIdentifier( r ).equals( id ) ) {
@@ -81,7 +92,9 @@ public final class DeleteableMsa extends BasicMsa {
         if ( row < 0 ) {
             throw new IllegalArgumentException( "id [" + id + "] not found" );
         }
+        final Sequence s = getSequence( row );
         deleteRow( row );
+        return s;
     }
 
     @Override
