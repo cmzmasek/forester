@@ -57,7 +57,7 @@ public class msa_compactor {
     final static private String MIN_LENGTH_OPTION                      = "ml";
     final static private String GAP_RATIO_LENGTH_OPTION                = "gr";
     final static private String REPORT_ALN_MEAN_IDENTITY               = "q";
-    final static private String OUTPUT_FORMAT_PHYLIP_OPTION            = "f";
+    final static private String OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
     final static private String OUTPUT_REMOVED_SEQS_OPTION             = "ro";
     final static private String MAFFT_OPTIONS                          = "mo";
     //        
@@ -65,8 +65,8 @@ public class msa_compactor {
     final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
     final static private String PRG_NAME                               = "msa_compactor";
     final static private String PRG_DESC                               = "multiple sequence aligment compactor";
-    final static private String PRG_VERSION                            = "0.02";
-    final static private String PRG_DATE                               = "140316";
+    final static private String PRG_VERSION                            = "0.2";
+    final static private String PRG_DATE                               = "140428";
     final static private String E_MAIL                                 = "czmasek@sanfordburham.org";
     final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
@@ -86,11 +86,11 @@ public class msa_compactor {
             int worst_remove = -1;
             double av_gap = -1;
             int length = -1;
-            int step = -1;
+            int step = 1;
             boolean realign = false;
             boolean norm = true;
             String path_to_mafft = null;
-            int step_for_diagnostics = -1;
+            int step_for_diagnostics = 1;
             int min_length = -1;
             double gap_ratio = -1;
             boolean report_aln_mean_identity = false;
@@ -125,7 +125,7 @@ public class msa_compactor {
                 msa = DeleteableMsa.createInstance( GeneralMsaParser.parse( is ) );
             }
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
-            System.out.println( initial_msa_stats.toString() );
+            //System.out.println( initial_msa_stats.toString() );
             if ( ( cla.isOptionSet( LENGTH_OPTION ) || cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) || cla
                     .isOptionSet( AV_GAPINESS_OPTION ) ) && ( out == null ) ) {
                 ForesterUtil.fatalError( PRG_NAME, "outfile file missing" );
@@ -259,9 +259,8 @@ public class msa_compactor {
                 System.out.println( "Output format                        : "
                         + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
             }
-            System.out.println( "Step for output and re-aligning)     : " + ( step > 1 ? step : 1 ) );
-            System.out.println( "Step for diagnostics reports         : "
-                    + ( step_for_diagnostics > 1 ? step_for_diagnostics : 1 ) );
+            System.out.println( "Step for output and re-aligning      : " + step );
+            System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
             System.out.println( "Calculate mean identity              : " + report_aln_mean_identity );
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
@@ -279,83 +278,79 @@ public class msa_compactor {
             System.out.println();
             //
             //
+            final int initial_number_of_seqs = msa.getNumberOfSequences();
+            List<MsaProperties> msa_props = null;
             if ( worst_remove > 0 ) {
                 final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
+                mc.setOutputFormat( output_format );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
+                    mc.setMafftOptions( mafft_options );
                 }
                 mc.setNorm( norm );
+                mc.setReportAlnMeanIdentity( report_aln_mean_identity );
                 mc.setOutFileBase( out );
                 if ( removed_seqs_out_base != null ) {
                     mc.setRemovedSeqsOutBase( removed_seqs_out_base );
                 }
-                if ( step > 1 ) {
-                    mc.setStep( step );
-                }
-                if ( step_for_diagnostics > 1 ) {
-                    mc.setStepForDiagnostics( step_for_diagnostics );
-                }
-                mc.removeWorstOffenders( worst_remove );
+                mc.setStep( step );
+                mc.setStepForDiagnostics( step_for_diagnostics );
+                msa_props = mc.removeWorstOffenders( worst_remove );
             }
             else if ( av_gap > 0 ) {
                 final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
+                mc.setOutputFormat( output_format );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
+                    mc.setMafftOptions( mafft_options );
                 }
                 mc.setNorm( norm );
+                mc.setReportAlnMeanIdentity( report_aln_mean_identity );
                 mc.setOutFileBase( out );
                 if ( removed_seqs_out_base != null ) {
                     mc.setRemovedSeqsOutBase( removed_seqs_out_base );
                 }
-                if ( step > 1 ) {
-                    mc.setStep( step );
-                }
-                if ( step_for_diagnostics > 1 ) {
-                    mc.setStepForDiagnostics( step_for_diagnostics );
-                }
-                mc.removeViaGapAverage( av_gap );
+                mc.setStep( step );
+                mc.setStepForDiagnostics( step_for_diagnostics );
+                msa_props = mc.removeViaGapAverage( av_gap );
             }
             else if ( length > 0 ) {
                 // TODO if < shortest seq -> error
                 final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
+                mc.setOutputFormat( output_format );
                 if ( realign ) {
                     mc.setPathToMafft( path_to_mafft );
-                }
-                mc.setNorm( norm );
-                if ( removed_seqs_out_base != null ) {
-                    mc.setRemovedSeqsOutBase( removed_seqs_out_base );
-                }
-                if ( step > 1 ) {
-                    mc.setStep( step );
-                }
-                if ( step_for_diagnostics > 1 ) {
-                    mc.setStepForDiagnostics( step_for_diagnostics );
-                }
-                mc.removeViaLength( length );
-            }
-            else {
-                //MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
-                final int initial_number_of_seqs = msa.getNumberOfSequences();
-                final MsaCompactor mc = new MsaCompactor( msa );
-                mc.setRealign( realign );
-                if ( realign ) {
-                    mc.setPathToMafft( path_to_mafft );
+                    mc.setMafftOptions( mafft_options );
                 }
                 mc.setNorm( norm );
                 mc.setReportAlnMeanIdentity( report_aln_mean_identity );
                 mc.setOutFileBase( out );
-                if ( step > 1 ) {
-                    mc.setStep( step );
+                if ( removed_seqs_out_base != null ) {
+                    mc.setRemovedSeqsOutBase( removed_seqs_out_base );
                 }
-                if ( step_for_diagnostics > 1 ) {
-                    mc.setStepForDiagnostics( step_for_diagnostics );
-                }
-                final List<MsaProperties> msa_props = mc.chart( step, realign, norm );
-                Chart.display( msa_props, initial_number_of_seqs );
+                mc.setStep( step );
+                mc.setStepForDiagnostics( step_for_diagnostics );
+                msa_props = mc.removeViaLength( length );
             }
+            else {
+                //MsaCompactor.chart( msa, step, realign, norm, path_to_mafft );
+                final MsaCompactor mc = new MsaCompactor( msa );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                    mc.setMafftOptions( mafft_options );
+                }
+                mc.setNorm( norm );
+                mc.setReportAlnMeanIdentity( report_aln_mean_identity );
+                mc.setOutFileBase( out );
+                mc.setStep( step );
+                mc.setStepForDiagnostics( step_for_diagnostics );
+                msa_props = mc.chart( step, realign, norm );
+            }
+            Chart.display( msa_props, initial_number_of_seqs, report_aln_mean_identity, in.toString() );
         }
         catch ( final IllegalArgumentException iae ) {
             iae.printStackTrace(); //TODO remove me
@@ -411,19 +406,19 @@ public class msa_compactor {
                 + "=<integer>   number of worst offender sequences to remove" );
         System.out.println( "   -" + LENGTH_OPTION + "=<integer>   target MSA length" );
         System.out.println( "   -" + AV_GAPINESS_OPTION + "=<decimal>   target gap-ratio (0.0-1.0)" );
-        System.out.println( "   -" + STEP_OPTION + "=<integer>   step for output and re-aligning (default: 1)" );
         System.out.println( "   -" + REALIGN_OPTION + "             to realign using MAFFT" + mafft_comment );
         System.out.println( "   -" + MAFFT_OPTIONS + "=<string>   options for MAFFT (default: --auto)" );
+        System.out.println( "   -" + STEP_OPTION + "=<integer>   step for output and re-aligning (default: 1)" );
         System.out.println( "   -" + STEP_FOR_DIAGNOSTICS_OPTION
                 + "=<integer>  step for diagnostics reports (default: 1)" );
-        System.out.println( "   -" + MIN_LENGTH_OPTION
-                + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
-        System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
-                + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
+        //   System.out.println( "   -" + MIN_LENGTH_OPTION
+        //           + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
+        //   System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
+        //           + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
         System.out
                 .println( "   -"
                         + REPORT_ALN_MEAN_IDENTITY
-                        + "             to calculate mean MSA column identity (\"MSA quality\")  (not recommended for very large alignments)" );
+                        + "             to calculate mean MSA column identity (\"MSA quality\") (not recommended for very large alignments)" );
         System.out.println( "   -" + OUTPUT_FORMAT_PHYLIP_OPTION
                 + "             to write output alignments in phylip format instead of fasta" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );

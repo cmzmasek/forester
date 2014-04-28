@@ -50,12 +50,19 @@ public final class Chart extends JDialog implements ActionListener {
     private ChartPanel          _chart_panel     = null;
     private final JMenuItem     _m_exit          = new JMenuItem();
     private List<MsaProperties> _msa_props;
+    private final boolean       _show_msa_qual;
     private final int           _initial_number_of_seqs;
+    private final String        _title;
 
-    private Chart( final List<MsaProperties> msa_props, final int initial_number_of_seqs ) {
+    private Chart( final List<MsaProperties> msa_props,
+                   final int initial_number_of_seqs,
+                   final boolean show_msa_qual,
+                   final String title ) {
         super();
         _msa_props = msa_props;
+        _title = title;
         _initial_number_of_seqs = initial_number_of_seqs;
+        _show_msa_qual = show_msa_qual;
         setTitle( "msa compactor" );
         setSize( 500, 400 );
         setResizable( true );
@@ -108,23 +115,26 @@ public final class Chart extends JDialog implements ActionListener {
                 seqs_gaps[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 100 );
             }
-            model.addData( seqs_gaps, "Gaps" );
-            model.setSeriesLine( "Series " + "Gaps", true );
-            model.setSeriesMarker( "Series " + "Gaps", false );
-            final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
-            for( int i = 0; i < _msa_props.size(); ++i ) {
-                seqs_identity[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
-                seqs_identity[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 100 );
+            model.addData( seqs_gaps, "Gap ratio" );
+            model.setSeriesLine( "Series " + "Gap ratio", true );
+            model.setSeriesMarker( "Series " + "Gap ratio", false );
+            if ( _show_msa_qual ) {
+                final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
+                for( int i = 0; i < _msa_props.size(); ++i ) {
+                    seqs_identity[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
+                    seqs_identity[ i ][ 1 ] = ForesterUtil
+                            .roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 100 );
+                }
+                model.addData( seqs_identity, "mean MSA column identity" );
+                model.setSeriesLine( "Series " + "mean MSA column identity", true );
+                model.setSeriesMarker( "Series " + "mean MSA column identity", false );
             }
-            model.addData( seqs_identity, "Id" );
-            model.setSeriesLine( "Series " + "Id", true );
-            model.setSeriesMarker( "Series " + "Id", false );
             final BoxCoordSystem coord = new BoxCoordSystem( model );
             coord.setUnitFont( coord.getUnitFont().deriveFont( 20.0f ) );
             coord.setXAxisUnit( "Number of Sequences" );
             coord.setPaintGrid( true );
             coord.setYAxisUnit( "MSA Length" );
-            _chart_panel = new ChartPanel( model, "msa compactor" );
+            _chart_panel = new ChartPanel( model, _title );
             _chart_panel.setCoordSystem( coord );
             final MultiScatterChartRenderer renderer = new MultiScatterChartRenderer( coord, model );
             renderer.setAllowBuffer( false );
@@ -133,14 +143,17 @@ public final class Chart extends JDialog implements ActionListener {
         return _chart_panel;
     }
 
-    public static void display( final List<MsaProperties> msa_props, final int initial_number_of_seqs ) {
+    public static void display( final List<MsaProperties> msa_props,
+                                final int initial_number_of_seqs,
+                                final boolean show_msa_qual,
+                                final String title ) {
         try {
             UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
         }
         catch ( final Exception e ) {
             e.printStackTrace();
         }
-        final Chart chart = new Chart( msa_props, initial_number_of_seqs );
+        final Chart chart = new Chart( msa_props, initial_number_of_seqs, show_msa_qual, title );
         chart.setVisible( true );
     }
 
@@ -151,7 +164,7 @@ public final class Chart extends JDialog implements ActionListener {
         catch ( final Exception e ) {
             e.printStackTrace();
         }
-        final Chart temp = new Chart( null, 0 );
+        final Chart temp = new Chart( null, 0, true, "title" );
         temp.setVisible( true );
     }
 }
