@@ -60,7 +60,7 @@ public final class DeleteableMsa extends BasicMsa {
         }
         return max;
     }
-    
+
     final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
         if ( ( max_allowed_gap_ratio < 0 ) || ( max_allowed_gap_ratio > 1 ) ) {
             throw new IllegalArgumentException( "max allowed gap ration is out of range: " + max_allowed_gap_ratio );

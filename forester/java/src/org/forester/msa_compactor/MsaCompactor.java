@@ -41,7 +41,8 @@ import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
-import org.forester.msa.BasicMsa;
+import org.forester.io.writers.SequenceWriter;
+import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.msa.DeleteableMsa;
 import org.forester.msa.Mafft;
 import org.forester.msa.Msa;
@@ -57,22 +58,26 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
-    private double                    _gap_ratio                = -1;
+    final private static NumberFormat NF_3                   = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4                   = new DecimalFormat( "#.####" );
+    private double                    _gap_ratio             = -1;
     //
-    private final String              _maffts_opts              = "--auto";
-    private int                       _min_length               = -1;
+    private final String              _maffts_opts           = "--auto";
+    private int                       _min_length            = -1;
     //
-    private DeleteableMsa             _msa                      = null;
-    private boolean                   _norm                     = true;
-    private File                      _out_file_base            = null;
-    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
-    private String                    _path_to_mafft            = null;
+    private DeleteableMsa             _msa                   = null;
+    private boolean                   _norm                  = true;
+    private File                      _out_file_base         = null;
+    private MSA_FORMAT                _output_format         = MSA_FORMAT.FASTA;
+    private String                    _path_to_mafft         = null;
     //
-    private boolean                   _realign                  = false;
+    private boolean                   _realign               = false;
     private final SortedSet<String>   _removed_seq_ids;
-    private final File                _removed_seqs_out_base    = null;
+    private File                      _removed_seqs_out_base = null;
+
+    public final void setRemovedSeqsOutBase( final File removed_seqs_out_base ) {
+        _removed_seqs_out_base = removed_seqs_out_base;
+    }
     private boolean                   _report_aln_mean_identity = false;
     private int                       _step                     = -1;
     private int                       _step_for_diagnostics     = -1;
@@ -123,8 +128,10 @@ public class MsaCompactor {
             System.out.println();
             ++i;
         }
-        final String msg = writeAndAlignRemovedSeqs();
-        System.out.println( msg );
+        if ( _removed_seqs_out_base != null ) {
+            final String msg = writeAndAlignRemovedSeqs();
+            System.out.println( msg );
+        }
     }
 
     public void removeViaLength( final int length ) throws IOException, InterruptedException {
@@ -149,8 +156,10 @@ public class MsaCompactor {
             System.out.println();
             ++i;
         }
-        final String msg = writeAndAlignRemovedSeqs();
-        System.out.println( msg );
+        if ( _removed_seqs_out_base != null ) {
+            final String msg = writeAndAlignRemovedSeqs();
+            System.out.println( msg );
+        }
     }
 
     public final void removeWorstOffenders( final int to_remove ) throws IOException, InterruptedException {
@@ -177,8 +186,10 @@ public class MsaCompactor {
                 System.out.println();
             }
         }
-        final String msg = writeAndAlignRemovedSeqs();
-        System.out.println( msg );
+        if ( _removed_seqs_out_base != null ) {
+            final String msg = writeAndAlignRemovedSeqs();
+            System.out.println( msg );
+        }
     }
 
     public final List<MsaProperties> chart( final int step, final boolean realign, final boolean norm )
@@ -278,10 +289,9 @@ public class MsaCompactor {
 
     final public String writeAndAlignRemovedSeqs() throws IOException, InterruptedException {
         final StringBuilder msg = new StringBuilder();
-        final Msa removed = BasicMsa.createInstance( _removed_seqs );
-        final String n = _removed_seqs_out_base + "_" + removed.getNumberOfSequences() + ".fasta";
-        writeMsa( removed, n, MSA_FORMAT.FASTA );
-        msg.append( "wrote " + removed.getNumberOfSequences() + " removed sequences to " + n );
+        final String n = _removed_seqs_out_base + "_" + _removed_seqs.size() + ".fasta";
+        SequenceWriter.writeSeqs( _removed_seqs, new File( n ), SEQ_FORMAT.FASTA, 100 );
+        msg.append( "wrote " + _removed_seqs.size() + " removed sequences to " + n );
         if ( _realign ) {
             final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
             final List<String> opts = new ArrayList<String>();
@@ -402,7 +412,7 @@ public class MsaCompactor {
     }
 
     private final void printMsaProperties( final String id, final MsaProperties msa_properties ) {
-        System.out.print( ForesterUtil.pad( _longest_id_length + 1, 20, ' ', false ) );
+        System.out.print( ForesterUtil.pad( id, _longest_id_length, ' ', false ) );
         System.out.print( "\t" );
         final StringBuilder sb = msaPropertiesAsSB( msa_properties );
         System.out.print( sb );
@@ -493,7 +503,7 @@ public class MsaCompactor {
     }
 
     private final void printTableHeader() {
-        System.out.print( ForesterUtil.pad( "Id", _longest_id_length + 1, ' ', false ) );
+        System.out.print( ForesterUtil.pad( "Id", _longest_id_length, ' ', false ) );
         System.out.print( "\t" );
         System.out.print( "Seqs" );
         System.out.print( "\t" );

@@ -126,6 +126,10 @@ public class msa_compactor {
             }
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
             System.out.println( initial_msa_stats.toString() );
+            if ( ( cla.isOptionSet( LENGTH_OPTION ) || cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) || cla
+                    .isOptionSet( AV_GAPINESS_OPTION ) ) && ( out == null ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "outfile file missing" );
+            }
             if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );
                 if ( ( worst_remove < 1 ) || ( worst_remove >= msa.getNumberOfSequences() - 1 ) ) {
@@ -216,6 +220,11 @@ public class msa_compactor {
                     }
                 }
             }
+            if ( ( !cla.isOptionSet( LENGTH_OPTION ) && !cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) && !cla
+                    .isOptionSet( AV_GAPINESS_OPTION ) ) && ( ( out != null ) || ( removed_seqs_out_base != null ) ) ) {
+                ForesterUtil.fatalError( PRG_NAME,
+                                         "chart only, no outfile(s) produced (no need to indicate output file(s))" );
+            }
             ForesterUtil.printProgramInformation( PRG_NAME,
                                                   PRG_DESC,
                                                   PRG_VERSION,
@@ -254,7 +263,6 @@ public class msa_compactor {
             System.out.println( "Step for diagnostics reports         : "
                     + ( step_for_diagnostics > 1 ? step_for_diagnostics : 1 ) );
             System.out.println( "Calculate mean identity              : " + report_aln_mean_identity );
-            
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
             }
@@ -279,6 +287,9 @@ public class msa_compactor {
                 }
                 mc.setNorm( norm );
                 mc.setOutFileBase( out );
+                if ( removed_seqs_out_base != null ) {
+                    mc.setRemovedSeqsOutBase( removed_seqs_out_base );
+                }
                 if ( step > 1 ) {
                     mc.setStep( step );
                 }
@@ -295,7 +306,15 @@ public class msa_compactor {
                 }
                 mc.setNorm( norm );
                 mc.setOutFileBase( out );
-                mc.setStep( step );
+                if ( removed_seqs_out_base != null ) {
+                    mc.setRemovedSeqsOutBase( removed_seqs_out_base );
+                }
+                if ( step > 1 ) {
+                    mc.setStep( step );
+                }
+                if ( step_for_diagnostics > 1 ) {
+                    mc.setStepForDiagnostics( step_for_diagnostics );
+                }
                 mc.removeViaGapAverage( av_gap );
             }
             else if ( length > 0 ) {
@@ -306,8 +325,15 @@ public class msa_compactor {
                     mc.setPathToMafft( path_to_mafft );
                 }
                 mc.setNorm( norm );
-                mc.setOutFileBase( out );
-                mc.setStep( step );
+                if ( removed_seqs_out_base != null ) {
+                    mc.setRemovedSeqsOutBase( removed_seqs_out_base );
+                }
+                if ( step > 1 ) {
+                    mc.setStep( step );
+                }
+                if ( step_for_diagnostics > 1 ) {
+                    mc.setStepForDiagnostics( step_for_diagnostics );
+                }
                 mc.removeViaLength( length );
             }
             else {
@@ -377,7 +403,7 @@ public class msa_compactor {
         }
         System.out.println( "Usage:" );
         System.out.println();
-        System.out.println( PRG_NAME + " <options> <msa input file> <output file>" );
+        System.out.println( PRG_NAME + " <options> <msa input file> <output file base>" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println();
@@ -394,8 +420,10 @@ public class msa_compactor {
                 + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
         System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
                 + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
-        System.out.println( "   -" + REPORT_ALN_MEAN_IDENTITY
-                + "             to calculate mean MSA column identity (\"MSA quality\")  (not recommended for very large alignments)" );
+        System.out
+                .println( "   -"
+                        + REPORT_ALN_MEAN_IDENTITY
+                        + "             to calculate mean MSA column identity (\"MSA quality\")  (not recommended for very large alignments)" );
         System.out.println( "   -" + OUTPUT_FORMAT_PHYLIP_OPTION
                 + "             to write output alignments in phylip format instead of fasta" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );
