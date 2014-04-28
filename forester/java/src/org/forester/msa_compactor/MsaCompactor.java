@@ -114,7 +114,7 @@ public class MsaCompactor {
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id );
+            final Sequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) )
@@ -145,7 +145,7 @@ public class MsaCompactor {
         while ( _msa.getLength() > length ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id );
+            final Sequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) ) || ( _msa.getLength() <= length ) ) {
@@ -173,7 +173,7 @@ public class MsaCompactor {
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
             _removed_seq_ids.add( id );
-            final Sequence deleted = _msa.deleteRow( id );
+            final Sequence deleted = _msa.deleteRow( id, true );
             _removed_seqs.add( deleted );
             removeGapColumns();
             if ( isPrintMsaStatsWriteOutfileAndRealign( i ) || ( i == ( to_remove_ids.size() - 1 ) ) ) {
@@ -209,7 +209,7 @@ public class MsaCompactor {
         System.out.println();
         while ( _msa.getNumberOfSequences() > x ) {
             final String id = to_remove_ids.get( i );
-            _msa.deleteRow( id );
+            _msa.deleteRow( id, false );
             if ( realign && isPrintMsaStatsWriteOutfileAndRealign( i ) ) {
                 removeGapColumns();
                 realignWithMafft();
@@ -291,7 +291,7 @@ public class MsaCompactor {
         final StringBuilder msg = new StringBuilder();
         final String n = _removed_seqs_out_base + "_" + _removed_seqs.size() + ".fasta";
         SequenceWriter.writeSeqs( _removed_seqs, new File( n ), SEQ_FORMAT.FASTA, 100 );
-        msg.append( "wrote " + _removed_seqs.size() + " removed sequences to " + n );
+        msg.append( "wrote " + _removed_seqs.size() + " removed sequences to " + " to \"" + n + "\"" );
         if ( _realign ) {
             final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
             final List<String> opts = new ArrayList<String>();
@@ -311,7 +311,7 @@ public class MsaCompactor {
             }
             s += suffix;
             writeMsa( removed_msa, s, _output_format );
-            msg.append( ", and as MSA of length " + removed_msa.getLength() + " to " + s );
+            msg.append( ", and as MSA of length " + removed_msa.getLength() + " to \"" + s + "\"" );
         }
         return msg.toString();
     }

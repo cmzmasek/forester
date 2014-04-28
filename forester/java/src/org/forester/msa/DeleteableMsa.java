@@ -81,7 +81,7 @@ public final class DeleteableMsa extends BasicMsa {
         }
     }
 
-    final public Sequence deleteRow( final String id ) {
+    final public Sequence deleteRow( final String id, final boolean return_removed_seq ) {
         int row = -1;
         for( int r = 0; r < getNumberOfSequences(); ++r ) {
             if ( getIdentifier( r ).equals( id ) ) {
@@ -92,9 +92,25 @@ public final class DeleteableMsa extends BasicMsa {
         if ( row < 0 ) {
             throw new IllegalArgumentException( "id [" + id + "] not found" );
         }
-        final Sequence s = getSequence( row );
+        Sequence s = null;
+        StringBuilder sb = null;
+        if ( return_removed_seq ) {
+            s = getSequence( row );
+            final char[] x = s.getMolecularSequence();
+            sb = new StringBuilder( x.length );
+            for( int i = 0; i < x.length; ++i ) {
+                if ( x[ i ] != Sequence.GAP ) {
+                    sb.append( x[ i ] );
+                }
+            }
+        }
         deleteRow( row );
-        return s;
+        if ( return_removed_seq ) {
+            return new BasicSequence( new String( s.getIdentifier() ), sb.toString(), s.getType() );
+        }
+        else {
+            return null;
+        }
     }
 
     @Override

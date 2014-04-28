@@ -6104,13 +6104,13 @@ public final class Test {
             l0.add( s4 );
             l0.add( s5 );
             final DeleteableMsa dmsa0 = DeleteableMsa.createInstance( l0 );
-            dmsa0.deleteRow( "b" );
+            dmsa0.deleteRow( "b", false );
             if ( !dmsa0.getIdentifier( 1 ).equals( "c" ) ) {
                 return false;
             }
-            dmsa0.deleteRow( "e" );
-            dmsa0.deleteRow( "a" );
-            dmsa0.deleteRow( "f" );
+            dmsa0.deleteRow( "e", false );
+            dmsa0.deleteRow( "a", false );
+            dmsa0.deleteRow( "f", false );
             if ( dmsa0.getLength() != 4 ) {
                 return false;
             }
@@ -6132,8 +6132,8 @@ public final class Test {
             if ( dmsa0.getColumnAt( 0 ).size() != 2 ) {
                 return false;
             }
-            dmsa0.deleteRow( "c" );
-            dmsa0.deleteRow( "d" );
+            dmsa0.deleteRow( "c", false );
+            dmsa0.deleteRow( "d", false );
             if ( dmsa0.getNumberOfSequences() != 0 ) {
                 return false;
             }
@@ -6153,9 +6153,9 @@ public final class Test {
             l1.add( s_5 );
             final DeleteableMsa dmsa1 = DeleteableMsa.createInstance( l1 );
             dmsa1.deleteGapOnlyColumns();
-            dmsa1.deleteRow( "a" );
-            dmsa1.deleteRow( "f" );
-            dmsa1.deleteRow( "d" );
+            dmsa1.deleteRow( "a", false );
+            dmsa1.deleteRow( "f", false );
+            dmsa1.deleteRow( "d", false );
             dmsa1.deleteGapOnlyColumns();
             if ( !dmsa1.getSequenceAsString( 0 ).toString().equals( "B--C-" ) ) {
                 return false;
@@ -6166,7 +6166,7 @@ public final class Test {
             if ( !dmsa1.getSequenceAsString( 2 ).toString().equals( "EAAC-" ) ) {
                 return false;
             }
-            dmsa1.deleteRow( "c" );
+            dmsa1.deleteRow( "c", false );
             dmsa1.deleteGapOnlyColumns();
             final Writer w0 = new StringWriter();
             dmsa1.write( w0, MSA_FORMAT.FASTA );
@@ -6214,14 +6214,17 @@ public final class Test {
                 return false;
             }
             dmsa2.deleteGapColumns( 0 );
-            dmsa2.deleteRow( "a" );
-            dmsa2.deleteRow( "b" );
-            dmsa2.deleteRow( "f" );
-            dmsa2.deleteRow( "e" );
+            dmsa2.deleteRow( "a", false );
+            dmsa2.deleteRow( "b", false );
+            dmsa2.deleteRow( "f", false );
+            dmsa2.deleteRow( "e", false );
             dmsa2.setIdentifier( 0, "new_c" );
             dmsa2.setIdentifier( 1, "new_d" );
             dmsa2.setResidueAt( 0, 0, 'x' );
-            dmsa2.deleteRow( "new_d" );
+            final Sequence s = dmsa2.deleteRow( "new_d", true );
+            if ( !s.getMolecularSequenceAsString().equals( "D" ) ) {
+                return false;
+            }
             final Writer w = new StringWriter();
             dmsa2.write( w, MSA_FORMAT.PHYLIP );
             final String phylip = w.toString();
