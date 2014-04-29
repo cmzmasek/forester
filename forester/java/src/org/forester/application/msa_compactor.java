@@ -27,6 +27,9 @@ package org.forester.application;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,30 +48,34 @@ import org.forester.util.ForesterUtil;
 
 public class msa_compactor {
 
-    final static private String HELP_OPTION_1                          = "help";
-    final static private String HELP_OPTION_2                          = "h";
-    final static private String REMOVE_WORST_OFFENDERS_OPTION          = "r";
-    final static private String AV_GAPINESS_OPTION                     = "g";
-    final static private String STEP_OPTION                            = "s";
-    final static private String LENGTH_OPTION                          = "l";
-    final static private String REALIGN_OPTION                         = "a";
+    final private static NumberFormat NF_1                                   = new DecimalFormat( "#.0" );
+    static {
+        NF_1.setRoundingMode( RoundingMode.HALF_UP );
+    }
+    final static private String       HELP_OPTION_1                          = "help";
+    final static private String       HELP_OPTION_2                          = "h";
+    final static private String       REMOVE_WORST_OFFENDERS_OPTION          = "r";
+    final static private String       AV_GAPINESS_OPTION                     = "g";
+    final static private String       STEP_OPTION                            = "s";
+    final static private String       LENGTH_OPTION                          = "l";
+    final static private String       REALIGN_OPTION                         = "a";
     //
-    final static private String STEP_FOR_DIAGNOSTICS_OPTION            = "sd";
-    final static private String MIN_LENGTH_OPTION                      = "ml";
-    final static private String GAP_RATIO_LENGTH_OPTION                = "gr";
-    final static private String REPORT_ALN_MEAN_IDENTITY               = "q";
-    final static private String OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
-    final static private String OUTPUT_REMOVED_SEQS_OPTION             = "ro";
-    final static private String MAFFT_OPTIONS                          = "mo";
+    final static private String       STEP_FOR_DIAGNOSTICS_OPTION            = "sd";
+    final static private String       MIN_LENGTH_OPTION                      = "ml";
+    final static private String       GAP_RATIO_LENGTH_OPTION                = "gr";
+    final static private String       REPORT_ALN_MEAN_IDENTITY               = "q";
+    final static private String       OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
+    final static private String       OUTPUT_REMOVED_SEQS_OPTION             = "ro";
+    final static private String       MAFFT_OPTIONS                          = "mo";
     //        
-    final static private String PATH_TO_MAFFT_OPTION                   = "mafft";
-    final static private String DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
-    final static private String PRG_NAME                               = "msa_compactor";
-    final static private String PRG_DESC                               = "multiple sequence aligment compactor";
-    final static private String PRG_VERSION                            = "0.2";
-    final static private String PRG_DATE                               = "140428";
-    final static private String E_MAIL                                 = "czmasek@sanfordburham.org";
-    final static private String WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
+    final static private String       PATH_TO_MAFFT_OPTION                   = "mafft";
+    final static private String       DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
+    final static private String       PRG_NAME                               = "msa_compactor";
+    final static private String       PRG_DESC                               = "multiple sequence aligment compactor";
+    final static private String       PRG_VERSION                            = "0.2";
+    final static private String       PRG_DATE                               = "140428";
+    final static private String       E_MAIL                                 = "czmasek@sanfordburham.org";
+    final static private String       WWW                                    = "https://sites.google.com/site/cmzmasek/home/software/forester";
 
     public static void main( final String args[] ) {
         try {
@@ -153,8 +160,15 @@ public class msa_compactor {
                     System.exit( 0 );
                 }
                 length = cla.getOptionValueAsInt( LENGTH_OPTION );
-                if ( ( length < 2 ) || ( length >= msa.getLength() ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "target length is out of range: " + length );
+                if ( length >= msa.getLength() ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "target length is out of range [longer than MSA (" + msa.getLength()
+                                                     + ")]: " + length );
+                }
+                else if ( length < initial_msa_stats.getMin() ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "target length is out of range [shorter than the shortest sequence ("
+                                                     + initial_msa_stats.getMin() + ") ]: " + length );
                 }
             }
             if ( cla.isOptionSet( STEP_OPTION ) ) {
@@ -176,7 +190,6 @@ public class msa_compactor {
             if ( cla.isOptionSet( DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION ) ) {
                 norm = false;
             }
-            //
             if ( cla.isOptionSet( STEP_FOR_DIAGNOSTICS_OPTION ) ) {
                 step_for_diagnostics = cla.getOptionValueAsInt( STEP_FOR_DIAGNOSTICS_OPTION );
                 if ( ( step_for_diagnostics < 1 )
@@ -192,7 +205,7 @@ public class msa_compactor {
                             + min_length );
                 }
             }
-            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
+            if ( cla.isOptionSet( GAP_RATIO_LENGTH_OPTION ) ) {
                 gap_ratio = cla.getOptionValueAsDouble( GAP_RATIO_LENGTH_OPTION );
                 if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
                     ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
@@ -232,8 +245,14 @@ public class msa_compactor {
                                                   E_MAIL,
                                                   WWW,
                                                   ForesterUtil.getForesterLibraryInformation() );
-            //
             System.out.println( "Input MSA                            : " + in );
+            System.out.println( "  MSA length                         : " + msa.getLength() );
+            System.out.println( "  Number of sequences                : " + msa.getNumberOfSequences() );
+            System.out.println( "  Median sequence length             : " + NF_1.format( initial_msa_stats.median() ) );
+            System.out.println( "  Mean sequence length               : "
+                    + NF_1.format( initial_msa_stats.arithmeticMean() ) );
+            System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
+            System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
             if ( out != null ) {
                 System.out.println( "Output                               : " + out );
             }
@@ -265,7 +284,7 @@ public class msa_compactor {
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
             }
-            System.out.println( "Realign                              : " + realign );
+            System.out.println( "Realign with MAFFT                   : " + realign );
             if ( realign ) {
                 System.out.println( "MAFFT options                        : " + mafft_options );
             }
@@ -317,7 +336,6 @@ public class msa_compactor {
                 msa_props = mc.removeViaGapAverage( av_gap );
             }
             else if ( length > 0 ) {
-                // TODO if < shortest seq -> error
                 final MsaCompactor mc = new MsaCompactor( msa );
                 mc.setRealign( realign );
                 mc.setOutputFormat( output_format );
@@ -353,11 +371,11 @@ public class msa_compactor {
             Chart.display( msa_props, initial_number_of_seqs, report_aln_mean_identity, in.toString() );
         }
         catch ( final IllegalArgumentException iae ) {
-            iae.printStackTrace(); //TODO remove me
+            //  iae.printStackTrace(); //TODO remove me
             ForesterUtil.fatalError( PRG_NAME, iae.getMessage() );
         }
         catch ( final IOException ioe ) {
-            ioe.printStackTrace(); //TODO remove me
+            // ioe.printStackTrace(); //TODO remove me
             ForesterUtil.fatalError( PRG_NAME, ioe.getMessage() );
         }
         catch ( final Exception e ) {
@@ -367,7 +385,6 @@ public class msa_compactor {
 
     private static void checkPathToMafft( final String path_to_mafft ) {
         if ( !ForesterUtil.isEmpty( path_to_mafft ) && MsaInferrer.isInstalled( path_to_mafft ) ) {
-            ForesterUtil.programMessage( PRG_NAME, "using MAFFT at \"" + path_to_mafft + "\"" );
         }
         else {
             if ( ForesterUtil.isEmpty( path_to_mafft ) ) {

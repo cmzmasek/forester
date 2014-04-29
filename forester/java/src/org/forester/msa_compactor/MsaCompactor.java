@@ -58,31 +58,27 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3                   = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4                   = new DecimalFormat( "#.####" );
-    private double                    _gap_ratio             = -1;
+    final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
+    private double                    _gap_ratio                = -1;
+    private final short               _longest_id_length;
     //
-    private String                    _maffts_opts           = "--auto";
-    private int                       _min_length            = -1;
+    private String                    _maffts_opts              = "--auto";
+    private int                       _min_length               = -1;
     //
-    private DeleteableMsa             _msa                   = null;
-    private boolean                   _norm                  = true;
-    private File                      _out_file_base         = null;
-    private MSA_FORMAT                _output_format         = MSA_FORMAT.FASTA;
-    private String                    _path_to_mafft         = null;
+    private DeleteableMsa             _msa                      = null;
+    private boolean                   _norm                     = true;
+    private File                      _out_file_base            = null;
+    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
+    private String                    _path_to_mafft            = null;
     //
-    private boolean                   _realign               = false;
+    private boolean                   _realign                  = false;
     private final SortedSet<String>   _removed_seq_ids;
-    private File                      _removed_seqs_out_base = null;
-
-    public final void setRemovedSeqsOutBase( final File removed_seqs_out_base ) {
-        _removed_seqs_out_base = removed_seqs_out_base;
-    }
+    private final ArrayList<Sequence> _removed_seqs;
+    private File                      _removed_seqs_out_base    = null;
     private boolean                   _report_aln_mean_identity = false;
     private int                       _step                     = -1;
     private int                       _step_for_diagnostics     = -1;
-    private final short               _longest_id_length;
-    private final ArrayList<Sequence> _removed_seqs;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -93,6 +89,45 @@ public class MsaCompactor {
         _removed_seq_ids = new TreeSet<String>();
         _longest_id_length = _msa.determineMaxIdLength();
         _removed_seqs = new ArrayList<Sequence>();
+    }
+
+    public final List<MsaProperties> chart( final int step, final boolean realign, final boolean norm )
+            throws IOException, InterruptedException {
+        final GapContribution stats[] = calcGapContribtionsStats( norm );
+        final List<String> to_remove_ids = new ArrayList<String>();
+        final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
+        for( final GapContribution gap_gontribution : stats ) {
+            to_remove_ids.add( gap_gontribution.getId() );
+        }
+        printTableHeader();
+        final int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
+        MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
+        msa_props.add( msa_prop );
+        printMsaProperties( "", msa_prop );
+        System.out.println();
+        int i = 0;
+        while ( _msa.getNumberOfSequences() > x ) {
+            final String id = to_remove_ids.get( i );
+            _msa.deleteRow( id, false );
+            if ( realign && isPrintMsaStatsWriteOutfileAndRealign( i ) ) {
+                removeGapColumns();
+                realignWithMafft();
+                msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
+                msa_props.add( msa_prop );
+                printMsaProperties( id, msa_prop );
+                System.out.print( "(realigned)" );
+                System.out.println();
+            }
+            else if ( isPrintMsaStats( i ) ) {
+                removeGapColumns();
+                msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
+                msa_props.add( msa_prop );
+                printMsaProperties( id, msa_prop );
+                System.out.println();
+            }
+            ++i;
+        }
+        return msa_props;
     }
 
     final public Msa getMsa() {
@@ -224,55 +259,12 @@ public class MsaCompactor {
         return msa_props;
     }
 
-    public final List<MsaProperties> chart( final int step, final boolean realign, final boolean norm )
-            throws IOException, InterruptedException {
-        final GapContribution stats[] = calcGapContribtionsStats( norm );
-        final List<String> to_remove_ids = new ArrayList<String>();
-        final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
-        for( final GapContribution gap_gontribution : stats ) {
-            to_remove_ids.add( gap_gontribution.getId() );
-        }
-        printTableHeader();
-        final int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
-        MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
-        msa_props.add( msa_prop );
-        printMsaProperties( "", msa_prop );
-        System.out.println();
-        int i = 0;
-        while ( _msa.getNumberOfSequences() > x ) {
-            final String id = to_remove_ids.get( i );
-            _msa.deleteRow( id, false );
-            if ( realign && isPrintMsaStatsWriteOutfileAndRealign( i ) ) {
-                removeGapColumns();
-                realignWithMafft();
-                msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
-                msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
-                System.out.print( "(realigned)" );
-                System.out.println();
-            }
-            else if ( isPrintMsaStats( i ) ) {
-                removeGapColumns();
-                msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
-                msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
-                System.out.println();
-            }
-            ++i;
-        }
-        return msa_props;
-    }
-
-    private final boolean isPrintMsaStats( final int i ) {
-        return ( ( ( _step < 2 ) && ( _step_for_diagnostics < 2 ) ) || ( ( _step_for_diagnostics > 0 ) && ( ( ( i + 1 ) % _step_for_diagnostics ) == 0 ) ) );
-    }
-
-    private final boolean isPrintMsaStatsWriteOutfileAndRealign( final int i ) {
-        return ( ( ( _step < 2 ) && ( _step_for_diagnostics < 2 ) ) || ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) ) );
-    }
-
     public final void setGapRatio( final double gap_ratio ) {
         _gap_ratio = gap_ratio;
+    }
+
+    public final void setMafftOptions( final String maffts_opts ) {
+        _maffts_opts = maffts_opts;
     }
 
     public final void setMinLength( final int min_length ) {
@@ -299,24 +291,20 @@ public class MsaCompactor {
         _realign = realign;
     }
 
-    public final void setStep( final int step ) {
-        _step = step;
-    }
-
-    public final void setStepForDiagnostics( final int step_for_diagnostics ) {
-        _step_for_diagnostics = step_for_diagnostics;
+    public final void setRemovedSeqsOutBase( final File removed_seqs_out_base ) {
+        _removed_seqs_out_base = removed_seqs_out_base;
     }
 
     public final void setReportAlnMeanIdentity( final boolean report_aln_mean_identity ) {
         _report_aln_mean_identity = report_aln_mean_identity;
     }
 
-    final public String writeMsa( final File outfile ) throws IOException {
-        final Double gr = MsaMethods.calcGapRatio( _msa );
-        final String s = outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
-                + ForesterUtil.roundToInt( gr * 100 );
-        writeMsa( _msa, s + obtainSuffix(), _output_format );
-        return s;
+    public final void setStep( final int step ) {
+        _step = step;
+    }
+
+    public final void setStepForDiagnostics( final int step_for_diagnostics ) {
+        _step_for_diagnostics = step_for_diagnostics;
     }
 
     final public String writeAndAlignRemovedSeqs() throws IOException, InterruptedException {
@@ -342,14 +330,12 @@ public class MsaCompactor {
         return msg.toString();
     }
 
-    private String obtainSuffix() {
-        if ( _output_format == MSA_FORMAT.FASTA ) {
-            return ".fasta";
-        }
-        else if ( _output_format == MSA_FORMAT.PHYLIP ) {
-            return ".aln";
-        }
-        return "";
+    final public String writeMsa( final File outfile ) throws IOException {
+        final Double gr = MsaMethods.calcGapRatio( _msa );
+        final String s = outfile + "_" + _msa.getNumberOfSequences() + "_" + _msa.getLength() + "_"
+                + ForesterUtil.roundToInt( gr * 100 );
+        writeMsa( _msa, s + obtainSuffix(), _output_format );
+        return s;
     }
 
     final int calcNonGapResidues( final Sequence seq ) {
@@ -429,6 +415,38 @@ public class MsaCompactor {
         return phy;
     }
 
+    private final boolean isPrintMsaStats( final int i ) {
+        return ( ( ( _step < 2 ) && ( _step_for_diagnostics < 2 ) ) || ( ( _step_for_diagnostics > 0 ) && ( ( ( i + 1 ) % _step_for_diagnostics ) == 0 ) ) );
+    }
+
+    private final boolean isPrintMsaStatsWriteOutfileAndRealign( final int i ) {
+        return ( ( ( _step < 2 ) && ( _step_for_diagnostics < 2 ) ) || ( ( _step > 0 ) && ( ( ( i + 1 ) % _step ) == 0 ) ) );
+    }
+
+    private final StringBuilder msaPropertiesAsSB( final MsaProperties msa_properties ) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( msa_properties.getNumberOfSequences() );
+        sb.append( "\t" );
+        sb.append( msa_properties.getLength() );
+        sb.append( "\t" );
+        sb.append( NF_4.format( msa_properties.getGapRatio() ) );
+        if ( _report_aln_mean_identity /*msa_properties.getAverageIdentityRatio() >= 0*/) {
+            sb.append( "\t" );
+            sb.append( NF_4.format( msa_properties.getAverageIdentityRatio() ) );
+        }
+        return sb;
+    }
+
+    private String obtainSuffix() {
+        if ( _output_format == MSA_FORMAT.FASTA ) {
+            return ".fasta";
+        }
+        else if ( _output_format == MSA_FORMAT.PHYLIP ) {
+            return ".aln";
+        }
+        return "";
+    }
+
     private final Phylogeny pi( final String matrix ) {
         final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
         final int seed = 15;
@@ -456,20 +474,6 @@ public class MsaCompactor {
         System.out.print( "\t" );
     }
 
-    private final StringBuilder msaPropertiesAsSB( final MsaProperties msa_properties ) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( msa_properties.getNumberOfSequences() );
-        sb.append( "\t" );
-        sb.append( msa_properties.getLength() );
-        sb.append( "\t" );
-        sb.append( NF_4.format( msa_properties.getGapRatio() ) );
-        if ( _report_aln_mean_identity /*msa_properties.getAverageIdentityRatio() >= 0*/) {
-            sb.append( "\t" );
-            sb.append( NF_4.format( msa_properties.getAverageIdentityRatio() ) );
-        }
-        return sb;
-    }
-
     final private MsaProperties printMsaStatsWriteOutfileAndRealign( final boolean realign, final String id )
             throws IOException, InterruptedException {
         if ( realign ) {
@@ -482,6 +486,24 @@ public class MsaCompactor {
         return msa_prop;
     }
 
+    private final void printTableHeader() {
+        if ( ( _step < 2 ) || ( _step_for_diagnostics < 2 ) ) {
+            System.out.print( ForesterUtil.pad( "Id", _longest_id_length, ' ', false ) );
+            System.out.print( "\t" );
+        }
+        System.out.print( "Seqs" );
+        System.out.print( "\t" );
+        System.out.print( "Length" );
+        System.out.print( "\t" );
+        System.out.print( "Gaps" );
+        System.out.print( "\t" );
+        if ( _report_aln_mean_identity ) {
+            System.out.print( "MSA qual" );
+            System.out.print( "\t" );
+        }
+        System.out.println();
+    }
+
     final private void realignWithMafft() throws IOException, InterruptedException {
         final MsaInferrer mafft = Mafft.createInstance( _path_to_mafft );
         final List<String> opts = new ArrayList<String>();
@@ -491,19 +513,8 @@ public class MsaCompactor {
         _msa = DeleteableMsa.createInstance( mafft.infer( _msa.asSequenceList(), opts ) );
     }
 
-    public final void setMafftOptions( final String maffts_opts ) {
-        _maffts_opts = maffts_opts;
-    }
-
     final private void removeGapColumns() {
         _msa.deleteGapOnlyColumns();
-    }
-
-    final private static void writeMsa( final Msa msa, final String outfile, final MSA_FORMAT format )
-            throws IOException {
-        final Writer w = ForesterUtil.createBufferedWriter( outfile );
-        msa.write( w, format );
-        w.close();
     }
 
     private final String writeOutfile() throws IOException {
@@ -543,21 +554,10 @@ public class MsaCompactor {
         return null;
     }
 
-    private final void printTableHeader() {
-        if ( ( _step < 2 ) || ( _step_for_diagnostics < 2 ) ) {
-            System.out.print( ForesterUtil.pad( "Id", _longest_id_length, ' ', false ) );
-            System.out.print( "\t" );
-        }
-        System.out.print( "Seqs" );
-        System.out.print( "\t" );
-        System.out.print( "Length" );
-        System.out.print( "\t" );
-        System.out.print( "Gaps" );
-        System.out.print( "\t" );
-        if ( _report_aln_mean_identity ) {
-            System.out.print( "MSA qual" );
-            System.out.print( "\t" );
-        }
-        System.out.println();
+    final private static void writeMsa( final Msa msa, final String outfile, final MSA_FORMAT format )
+            throws IOException {
+        final Writer w = ForesterUtil.createBufferedWriter( outfile );
+        msa.write( w, format );
+        w.close();
     }
 }

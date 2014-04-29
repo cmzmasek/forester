@@ -64,7 +64,7 @@ public final class Chart extends JDialog implements ActionListener {
         _initial_number_of_seqs = initial_number_of_seqs;
         _show_msa_qual = show_msa_qual;
         setTitle( "msa compactor" );
-        setSize( 500, 400 );
+        setSize( 600, 500 );
         setResizable( true );
         final JPanel content_pane = new JPanel();
         content_pane.setLayout( new BorderLayout() );
@@ -113,7 +113,7 @@ public final class Chart extends JDialog implements ActionListener {
             final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
             for( int i = 0; i < _msa_props.size(); ++i ) {
                 seqs_gaps[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
-                seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 100 );
+                seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 200 );
             }
             model.addData( seqs_gaps, "Gap ratio" );
             model.setSeriesLine( "Series " + "Gap ratio", true );
@@ -123,15 +123,15 @@ public final class Chart extends JDialog implements ActionListener {
                 for( int i = 0; i < _msa_props.size(); ++i ) {
                     seqs_identity[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                     seqs_identity[ i ][ 1 ] = ForesterUtil
-                            .roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 100 );
+                            .roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 200 );
                 }
                 model.addData( seqs_identity, "mean MSA column identity" );
                 model.setSeriesLine( "Series " + "mean MSA column identity", true );
                 model.setSeriesMarker( "Series " + "mean MSA column identity", false );
             }
             final BoxCoordSystem coord = new BoxCoordSystem( model );
-            coord.setUnitFont( coord.getUnitFont().deriveFont( 20.0f ) );
-            coord.setXAxisUnit( "Number of Sequences" );
+            coord.setUnitFont( coord.getUnitFont().deriveFont( 16.0f ) );
+            coord.setXAxisUnit( "Number of Removed Sequences" );
             coord.setPaintGrid( true );
             coord.setYAxisUnit( "MSA Length" );
             _chart_panel = new ChartPanel( model, _title );
