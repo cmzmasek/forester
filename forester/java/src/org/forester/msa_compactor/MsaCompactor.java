@@ -99,8 +99,12 @@ public class MsaCompactor {
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
         }
-        printTableHeader();
-        final int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
+        final boolean print_id = ( _step < 2 ) && ( _step_for_diagnostics < 2 );
+        printTableHeader( print_id );
+        int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
+        if ( x < 1 ) {
+            x = 1;
+        }
         MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
         msa_props.add( msa_prop );
         printMsaProperties( "", msa_prop );
@@ -146,7 +150,8 @@ public class MsaCompactor {
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
         }
-        printTableHeader();
+        final boolean print_id = ( _step < 2 ) || ( _step_for_diagnostics < 2 );
+        printTableHeader( print_id );
         MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
         msa_props.add( msa_prop );
         printMsaProperties( "", msa_prop );
@@ -186,7 +191,8 @@ public class MsaCompactor {
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
         }
-        printTableHeader();
+        final boolean print_id = ( _step < 2 ) || ( _step_for_diagnostics < 2 );
+        printTableHeader( print_id );
         MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
         msa_props.add( msa_prop );
         printMsaProperties( "", msa_prop );
@@ -219,6 +225,15 @@ public class MsaCompactor {
         return msa_props;
     }
 
+    public final void removeSequencesByMinimalLength( final int min_effective_length ) {
+        printMsaProperties( "", new MsaProperties( _msa, _report_aln_mean_identity ) );
+        System.out.println();
+        _msa = DeleteableMsa.createInstance( MsaMethods.removeSequencesByMinimalLength( _msa, min_effective_length ) );
+        removeGapColumns();
+        printMsaProperties( "", new MsaProperties( _msa, _report_aln_mean_identity ) );
+        System.out.println();
+    }
+
     public final List<MsaProperties> removeWorstOffenders( final int to_remove ) throws IOException,
             InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( _norm );
@@ -228,7 +243,8 @@ public class MsaCompactor {
             to_remove_ids.add( stats[ j ].getId() );
             _removed_seq_ids.add( stats[ j ].getId() );
         }
-        printTableHeader();
+        final boolean print_id = ( _step < 2 ) || ( _step_for_diagnostics < 2 );
+        printTableHeader( print_id );
         MsaProperties msa_prop = new MsaProperties( _msa, _report_aln_mean_identity );
         msa_props.add( msa_prop );
         printMsaProperties( "", msa_prop );
@@ -257,6 +273,10 @@ public class MsaCompactor {
             System.out.println( msg );
         }
         return msa_props;
+    }
+
+    final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
+        _msa.deleteGapColumns( max_allowed_gap_ratio );
     }
 
     public final void setGapRatio( final double gap_ratio ) {
@@ -430,7 +450,7 @@ public class MsaCompactor {
         sb.append( msa_properties.getLength() );
         sb.append( "\t" );
         sb.append( NF_4.format( msa_properties.getGapRatio() ) );
-        if ( _report_aln_mean_identity /*msa_properties.getAverageIdentityRatio() >= 0*/) {
+        if ( _report_aln_mean_identity ) {
             sb.append( "\t" );
             sb.append( NF_4.format( msa_properties.getAverageIdentityRatio() ) );
         }
@@ -486,8 +506,8 @@ public class MsaCompactor {
         return msa_prop;
     }
 
-    private final void printTableHeader() {
-        if ( ( _step < 2 ) || ( _step_for_diagnostics < 2 ) ) {
+    private final void printTableHeader( final boolean print_id ) {
+        if ( print_id ) {
             System.out.print( ForesterUtil.pad( "Id", _longest_id_length, ' ', false ) );
             System.out.print( "\t" );
         }
