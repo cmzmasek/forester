@@ -134,7 +134,7 @@ public class msa_compactor {
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
             final boolean chart_only = ( !cla.isOptionSet( LENGTH_OPTION ) )
                     && ( !cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) )
-                    && ( !cla.isOptionSet( AV_GAPINESS_OPTION ) ) && ( !cla.isOptionSet( MIN_LENGTH_OPTION ) );
+                    && ( !cla.isOptionSet( AV_GAPINESS_OPTION ) );
             if ( !chart_only && ( out == null ) ) {
                 ForesterUtil.fatalError( PRG_NAME, "outfile file missing" );
             }
@@ -230,9 +230,12 @@ public class msa_compactor {
                 if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
                     mafft_options = cla.getOptionValueAsCleanString( MAFFT_OPTIONS );
                     if ( ForesterUtil.isEmpty( mafft_options ) || ( mafft_options.length() < 3 ) ) {
-                        ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
+                        ForesterUtil.fatalError( PRG_NAME, "illegal or empty MAFFT options: " + mafft_options );
                     }
                 }
+            }
+            else if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
+                ForesterUtil.fatalError( PRG_NAME, "no need to indicate MAFFT options without realigning" );
             }
             if ( chart_only ) {
                 if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
@@ -240,7 +243,7 @@ public class msa_compactor {
                             .fatalError( PRG_NAME,
                                          "chart only, no outfile(s) produced, thus no need to indicate output file(s)" );
                 }
-                if ( !realign && ( step > 1 ) ) {
+                if ( !realign && cla.isOptionSet( STEP_OPTION ) ) {
                     ForesterUtil.fatalError( PRG_NAME,
                                              "chart only, no re-aligning, thus no need to use step for output and re-aligning; use -"
                                                      + STEP_FOR_DIAGNOSTICS_OPTION + " instead" );
@@ -261,7 +264,7 @@ public class msa_compactor {
                     + NF_1.format( initial_msa_stats.arithmeticMean() ) );
             System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
             System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
-            if ( out != null ) {
+            if ( !chart_only ) {
                 System.out.println( "Output                               : " + out );
             }
             else {
@@ -273,20 +276,33 @@ public class msa_compactor {
             if ( worst_remove > 0 ) {
                 System.out.println( "Number of worst offenders to remove  : " + worst_remove );
             }
-            else if ( av_gap > 0 ) {
+            if ( av_gap > 0 ) {
                 System.out.println( "Target gap-ratio                     : " + av_gap );
             }
-            else if ( length > 0 ) {
+            if ( length > 0 ) {
                 System.out.println( "Target MSA length                    : " + length );
             }
-            else {
-                System.out.println( "Chart and diagnostics only           : true" );
+            if ( min_length > 1 ) {
+                System.out.println( "Minimal effective sequence length    : " + min_length );
+            }
+            if ( gap_ratio > -1 ) {
+                System.out.println( "Maximum allowed gap ratio per column : " + gap_ratio );
             }
             if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
                 System.out.println( "Output format                        : "
                         + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
             }
-            System.out.println( "Step for output and re-aligning      : " + step );
+            if ( chart_only && !realign ) {
+                System.out.println( "Step for output and re-aligning      : n/a" );
+            }
+            else {
+                if ( chart_only ) {
+                    System.out.println( "Step for re-aligning                 : " + step );
+                }
+                else {
+                    System.out.println( "Step for output and re-aligning      : " + step );
+                }
+            }
             System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
             System.out.println( "Calculate mean identity              : " + report_aln_mean_identity );
             if ( !norm ) {
@@ -296,15 +312,7 @@ public class msa_compactor {
             if ( realign ) {
                 System.out.println( "MAFFT options                        : " + mafft_options );
             }
-            if ( min_length > 1 ) {
-                System.out.println( "Minimal effective sequence length    : " + min_length );
-            }
-            if ( gap_ratio > -1 ) {
-                System.out.println( "Maximum allowed gap ratio per column : " + gap_ratio );
-            }
             System.out.println();
-            //
-            //
             final int initial_number_of_seqs = msa.getNumberOfSequences();
             List<MsaProperties> msa_props = null;
             final MsaCompactor mc = new MsaCompactor( msa );
