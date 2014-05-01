@@ -50,6 +50,27 @@ public final class DeleteableMsa extends BasicMsa {
         _seqs = msa.getNumberOfSequences();
     }
 
+    public final double[] calcGappiness() {
+        final int length = getLength();
+        final double gappiness[] = new double[ length ];
+        final int seqs = getNumberOfSequences();
+        for( int row = 0; row < seqs; ++row ) {
+            for( int col = 0; col < length; ++col ) {
+            }
+        }
+        return gappiness;
+    }
+
+    public static int calcGapSumPerColumn( final Msa msa, final int col ) {
+        int gap_rows = 0;
+        for( int j = 0; j < msa.getNumberOfSequences(); ++j ) {
+            if ( msa.isGapAt( j, col ) ) {
+                gap_rows++;
+            }
+        }
+        return gap_rows;
+    }
+
     public short determineMaxIdLength() {
         short max = 0;
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
