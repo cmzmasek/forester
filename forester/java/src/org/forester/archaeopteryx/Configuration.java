@@ -400,6 +400,10 @@ public final class Configuration {
         getDisplayColors().put( key, color );
     }
 
+    public void setAddTaxonomyImagesCB( final boolean b ) {
+        display_options[ show_taxonomy_images ][ 1 ] = b ? "yes" : "no";
+    }
+
     public void setAbbreviateScientificTaxonNames( final boolean abbreviate_scientific_names ) {
         _abbreviate_scientific_names = abbreviate_scientific_names;
     }
@@ -440,6 +444,10 @@ public final class Configuration {
         display_options[ display_as_phylogram ][ 2 ] = b ? "yes" : "no";
     }
 
+    public void setUseStyle( final boolean b ) {
+        display_options[ use_style ][ 2 ] = b ? "yes" : "no";
+    }
+
     public void setDisplayColors( final SortedMap<String, Color> display_colors ) {
         _display_colors = display_colors;
     }
@@ -462,6 +470,10 @@ public final class Configuration {
 
     public void setDisplaySequenceNames( final boolean b ) {
         display_options[ show_seq_names ][ 2 ] = b ? "yes" : "no";
+    }
+
+    public void setDisplayGeneNames( final boolean b ) {
+        display_options[ show_gene_names ][ 2 ] = b ? "yes" : "no";
     }
 
     public void setDisplaySequenceRelations( final boolean display_sequence_relations ) {
