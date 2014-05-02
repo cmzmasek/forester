@@ -67,6 +67,7 @@ public class msa_compactor {
     final static private String       OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
     final static private String       OUTPUT_REMOVED_SEQS_OPTION             = "ro";
     final static private String       MAFFT_OPTIONS                          = "mo";
+    final static private String       PERFORM_PHYLOGENETIC_INFERENCE         = "t";
     //        
     final static private String       PATH_TO_MAFFT_OPTION                   = "mafft";
     final static private String       DO_NOT_NORMALIZE_FOR_EFF_LENGTH_OPTION = "nn";
@@ -104,6 +105,7 @@ public class msa_compactor {
             MSA_FORMAT output_format = MSA_FORMAT.FASTA;
             File removed_seqs_out_base = null;
             String mafft_options = "--auto";
+            boolean perform_phylogenetic_inference = false;
             final List<String> allowed_options = new ArrayList<String>();
             allowed_options.add( REMOVE_WORST_OFFENDERS_OPTION );
             allowed_options.add( AV_GAPINESS_OPTION );
@@ -119,6 +121,7 @@ public class msa_compactor {
             allowed_options.add( OUTPUT_FORMAT_PHYLIP_OPTION );
             allowed_options.add( OUTPUT_REMOVED_SEQS_OPTION );
             allowed_options.add( MAFFT_OPTIONS );
+            allowed_options.add( PERFORM_PHYLOGENETIC_INFERENCE );
             final String dissallowed_options = cla.validateAllowedOptionsAsString( allowed_options );
             if ( dissallowed_options.length() > 0 ) {
                 ForesterUtil.fatalError( PRG_NAME, "unknown option(s): " + dissallowed_options );
@@ -237,6 +240,9 @@ public class msa_compactor {
             else if ( cla.isOptionSet( MAFFT_OPTIONS ) ) {
                 ForesterUtil.fatalError( PRG_NAME, "no need to indicate MAFFT options without realigning" );
             }
+            if ( cla.isOptionSet( PERFORM_PHYLOGENETIC_INFERENCE ) ) {
+                perform_phylogenetic_inference = true;
+            }
             if ( chart_only ) {
                 if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
                     ForesterUtil
@@ -312,10 +318,12 @@ public class msa_compactor {
             if ( realign ) {
                 System.out.println( "MAFFT options                        : " + mafft_options );
             }
+            System.out.println( "Simple tree (Kimura distances, NJ)   : " + perform_phylogenetic_inference );
             System.out.println();
             final int initial_number_of_seqs = msa.getNumberOfSequences();
             List<MsaProperties> msa_props = null;
             final MsaCompactor mc = new MsaCompactor( msa );
+            mc.setInfileName( in.getName() );
             mc.setNorm( norm );
             mc.setRealign( realign );
             if ( realign ) {
@@ -325,6 +333,7 @@ public class msa_compactor {
             mc.setStep( step );
             mc.setStepForDiagnostics( step_for_diagnostics );
             mc.setReportAlnMeanIdentity( report_aln_mean_identity );
+            mc.setPeformPhylogenticInference( perform_phylogenetic_inference );
             if ( ( worst_remove > 0 ) || ( av_gap > 0 ) || ( length > 0 ) ) {
                 mc.setOutputFormat( output_format );
                 mc.setOutFileBase( out );
@@ -348,7 +357,7 @@ public class msa_compactor {
             else {
                 msa_props = mc.chart( step, realign, norm );
             }
-            Chart.display( msa_props, initial_number_of_seqs, report_aln_mean_identity, in.toString() );
+            Chart.display( msa_props, initial_number_of_seqs, report_aln_mean_identity, in.getName() );
         }
         catch ( final IllegalArgumentException iae ) {
             //  iae.printStackTrace(); //TODO remove me
@@ -419,6 +428,8 @@ public class msa_compactor {
                 + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );
         System.out.println( "   -" + GAP_RATIO_LENGTH_OPTION
                 + "=<decimal>  maximal allowed gap ratio per column (for deleting of columms) (0.0-1.0)" );
+        System.out.println( "   -" + PERFORM_PHYLOGENETIC_INFERENCE
+                + "             to calculate a simple phylogenetic tree (Kimura distances, NJ)" );
         System.out.println();
         System.out.println();
         System.out.println();

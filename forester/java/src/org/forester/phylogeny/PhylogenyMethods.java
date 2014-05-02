@@ -75,17 +75,14 @@ public class PhylogenyMethods {
         throw new CloneNotSupportedException();
     }
 
-    public static void extractFastaInformation( final Phylogeny phy ) {
+    public static boolean extractFastaInformation( final Phylogeny phy ) {
+        boolean could_extract = false;
         for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
             final PhylogenyNode node = iter.next();
             if ( !ForesterUtil.isEmpty( node.getName() ) ) {
                 final Matcher name_m = FastaParser.FASTA_DESC_LINE.matcher( node.getName() );
                 if ( name_m.lookingAt() ) {
-                    System.out.println();
-                    // System.out.println( name_m.group( 1 ) );
-                    // System.out.println( name_m.group( 2 ) );
-                    // System.out.println( name_m.group( 3 ) );
-                    // System.out.println( name_m.group( 4 ) );
+                    could_extract = true;
                     final String acc_source = name_m.group( 1 );
                     final String acc = name_m.group( 2 );
                     final String seq_name = name_m.group( 3 );
@@ -105,6 +102,7 @@ public class PhylogenyMethods {
                 }
             }
         }
+        return could_extract;
     }
 
     public static DescriptiveStatistics calculatBranchLengthStatistics( final Phylogeny phy ) {

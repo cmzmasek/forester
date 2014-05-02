@@ -36,11 +36,16 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.forester.archaeopteryx.Archaeopteryx;
+import org.forester.archaeopteryx.Configuration;
 import org.forester.evoinference.distance.NeighborJoiningF;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator;
 import org.forester.evoinference.distance.PairwiseDistanceCalculator.PWD_DISTANCE_METHOD;
 import org.forester.evoinference.matrix.distance.BasicSymmetricalDistanceMatrix;
 import org.forester.evoinference.tools.BootstrapResampler;
+import org.forester.io.parsers.nhx.NHXParser.TAXONOMY_EXTRACTION;
+import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
+import org.forester.io.parsers.util.ParserUtils;
 import org.forester.io.writers.SequenceWriter;
 import org.forester.io.writers.SequenceWriter.SEQ_FORMAT;
 import org.forester.msa.DeleteableMsa;
@@ -52,6 +57,8 @@ import org.forester.msa.MsaMethods;
 import org.forester.msa.ResampleableMsa;
 import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
+import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.ForesterUtil;
@@ -66,6 +73,7 @@ public class MsaCompactor {
     private String                    _maffts_opts              = "--auto";
     private int                       _min_length               = -1;
     //
+    private String                    _infile_name              = null;
     private DeleteableMsa             _msa                      = null;
     private boolean                   _norm                     = true;
     private File                      _out_file_base            = null;
@@ -79,6 +87,7 @@ public class MsaCompactor {
     private boolean                   _report_aln_mean_identity = false;
     private int                       _step                     = -1;
     private int                       _step_for_diagnostics     = -1;
+    private boolean                   _phylogentic_inference    = false;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -98,6 +107,11 @@ public class MsaCompactor {
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
+        }
+        if ( _phylogentic_inference ) {
+            System.out.println( "calculating phylegentic tree..." );
+            System.out.println();
+            pi();
         }
         if ( !_realign ) {
             _step = -1;
@@ -466,7 +480,7 @@ public class MsaCompactor {
         return "";
     }
 
-    private final Phylogeny pi( final String matrix ) {
+    private final Phylogeny pi( final String matrix, final int boostrap ) {
         final Phylogeny master_phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, true, matrix );
         final int seed = 15;
         final int n = 100;
@@ -482,6 +496,31 @@ public class MsaCompactor {
         ConfidenceAssessor.evaluate( "bootstrap", eval_phys, master_phy, true, 1 );
         PhylogenyMethods.extractFastaInformation( master_phy );
         return master_phy;
+    }
+
+    private final Phylogeny pi() {
+        final Phylogeny phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, false, "" );
+        PhylogenyMethods.midpointRoot( phy );
+        final boolean x = PhylogenyMethods.extractFastaInformation( phy );
+        if ( !x ) {
+            final PhylogenyNodeIterator it = phy.iteratorExternalForward();
+            while ( it.hasNext() ) {
+                final PhylogenyNode n = it.next();
+                final String name = n.getName().trim();
+                if ( !ForesterUtil.isEmpty( name ) ) {
+                    try {
+                        ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
+                    }
+                    catch ( final PhyloXmlDataFormatException e ) {
+                        // Ignore.
+                    }
+                }
+            }
+        }
+        final Configuration config = new Configuration();
+        config.setDisplayAsPhylogram( true );
+        Archaeopteryx.createApplication( phy, config, _infile_name );
+        return phy;
     }
 
     private final void printMsaProperties( final String id, final MsaProperties msa_properties ) {
@@ -578,5 +617,13 @@ public class MsaCompactor {
         final Writer w = ForesterUtil.createBufferedWriter( outfile );
         msa.write( w, format );
         w.close();
+    }
+
+    public void setPeformPhylogenticInference( final boolean phylogentic_inference ) {
+        _phylogentic_inference = phylogentic_inference;
+    }
+
+    public void setInfileName( final String infile_name ) {
+        _infile_name = infile_name;
     }
 }

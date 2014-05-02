@@ -54,6 +54,12 @@ public final class Archaeopteryx {
         return MainFrameApplication.createInstance( phylogenies, config_file_name, title );
     }
 
+    public static MainFrame createApplication( final Phylogeny phylogeny, final Configuration config, final String title ) {
+        final Phylogeny[] phylogenies = new Phylogeny[ 1 ];
+        phylogenies[ 0 ] = phylogeny;
+        return MainFrameApplication.createInstance( phylogenies, config, title );
+    }
+
     public static void main( final String args[] ) {
         Phylogeny[] phylogenies = null;
         String config_filename = null;
