@@ -503,19 +503,8 @@ public class MsaCompactor {
         return master_phy;
     }
 
-    private final Phylogeny pi( final List<String> to_remove_ids ) {
+    private final Phylogeny calcTree( final List<String> to_remove_ids ) {
         final Phylogeny phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, false, "" );
-        for( int i = 0; i < to_remove_ids.size(); ++i ) {
-            final String id = to_remove_ids.get( i );
-            final PhylogenyNode n = phy.getNode( id );
-            n.setName( n.getName() + " [" + ( i + 1 ) + "]" );
-            final NodeVisualData vis = new NodeVisualData();
-            vis.setFillType( NodeFill.SOLID );
-            vis.setShape( NodeShape.RECTANGLE );
-            vis.setSize( 6 );
-            vis.setNodeColor( new Color( i > 255 ? 0 : 255 - i, 0, 0 ) );
-            n.getNodeData().setNodeVisualData( vis );
-        }
         PhylogenyMethods.midpointRoot( phy );
         PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
         final boolean x = PhylogenyMethods.extractFastaInformation( phy );
@@ -533,6 +522,21 @@ public class MsaCompactor {
                     }
                 }
             }
+        }
+        return phy;
+    }
+
+    private final Phylogeny pi( Phylogeny phy, final List<String> to_remove_ids ) {
+        for( int i = 0; i < to_remove_ids.size(); ++i ) {
+            final String id = to_remove_ids.get( i );
+            final PhylogenyNode n = phy.getNode( id );
+            n.setName( n.getName() + " [" + ( i + 1 ) + "]" );
+            final NodeVisualData vis = new NodeVisualData();
+            vis.setFillType( NodeFill.SOLID );
+            vis.setShape( NodeShape.RECTANGLE );
+            vis.setSize( 6 );
+            vis.setNodeColor( new Color( i > 255 ? 0 : 255 - i, 0, 0 ) );
+            n.getNodeData().setNodeVisualData( vis );
         }
         final Configuration config = new Configuration();
         config.setDisplayAsPhylogram( true );
