@@ -33,21 +33,25 @@ public final class MsaProperties {
     final private double _gap_ratio;
     final private int    _length;
     final private int    _number_of_sequences;
+    final private String _removed_seq;
 
     public MsaProperties( final int number_of_sequences,
                           final int length,
                           final double gap_ratio,
-                          final double average_identity_ratio ) {
+                          final double average_identity_ratio,
+                          final String removed_seq ) {
         _number_of_sequences = number_of_sequences;
         _length = length;
         _gap_ratio = gap_ratio;
         _average_identity_ratio = average_identity_ratio;
+        _removed_seq = removed_seq;
     }
 
-    public MsaProperties( final Msa msa, final boolean calculate_aln_mean_identity ) {
+    public MsaProperties( final Msa msa, final String removed_seq, final boolean calculate_aln_mean_identity ) {
         _number_of_sequences = msa.getNumberOfSequences();
         _length = msa.getLength();
         _gap_ratio = MsaMethods.calcGapRatio( msa );
+        _removed_seq = removed_seq;
         if ( calculate_aln_mean_identity ) {
             _average_identity_ratio = MsaMethods.calculateIdentityRatio( 0, msa.getLength() - 1, msa ).arithmeticMean();
         }
@@ -70,5 +74,9 @@ public final class MsaProperties {
 
     public final int getNumberOfSequences() {
         return _number_of_sequences;
+    }
+
+    public final String getRemovedSeq() {
+        return _removed_seq;
     }
 }

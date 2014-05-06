@@ -93,10 +93,10 @@ public final class Chart extends JDialog implements ActionListener {
             final MultiScatterDataModel model = new MultiScatterDataModel();
             if ( ( _msa_props == null ) || _msa_props.isEmpty() ) {
                 _msa_props = new ArrayList<MsaProperties>();
-                final MsaProperties p0 = new MsaProperties( 10, 200, 0.5, 0.1 );
-                final MsaProperties p1 = new MsaProperties( 9, 190, 0.49, 0.2 );
-                final MsaProperties p2 = new MsaProperties( 8, 150, 0.2, 0.3 );
-                final MsaProperties p3 = new MsaProperties( 7, 145, 0.2, 0.4 );
+                final MsaProperties p0 = new MsaProperties( 10, 200, 0.5, 0.1, "" );
+                final MsaProperties p1 = new MsaProperties( 9, 190, 0.49, 0.2, "" );
+                final MsaProperties p2 = new MsaProperties( 8, 150, 0.2, 0.3, "" );
+                final MsaProperties p3 = new MsaProperties( 7, 145, 0.2, 0.4, "" );
                 _msa_props.add( p0 );
                 _msa_props.add( p1 );
                 _msa_props.add( p2 );
