@@ -255,6 +255,12 @@ public class msa_compactor {
                                                      + STEP_FOR_DIAGNOSTICS_OPTION + " instead" );
                 }
             }
+            if ( perform_phylogenetic_inference ) {
+                if ( step_for_diagnostics != 1 ) {
+                    ForesterUtil.fatalError( PRG_NAME,
+                                             "step for diagnostics reports needs to be set to 1 for tree calculation" );
+                }
+            }
             ForesterUtil.printProgramInformation( PRG_NAME,
                                                   PRG_DESC,
                                                   PRG_VERSION,

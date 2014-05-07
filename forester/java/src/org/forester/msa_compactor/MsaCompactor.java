@@ -74,17 +74,18 @@ public class MsaCompactor {
     final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
     final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
     private double                    _gap_ratio                = -1;
+    //
+    private String                    _infile_name              = null;
     private final short               _longest_id_length;
     //
     private String                    _maffts_opts              = "--auto";
     private int                       _min_length               = -1;
-    //
-    private String                    _infile_name              = null;
     private DeleteableMsa             _msa                      = null;
     private boolean                   _norm                     = true;
     private File                      _out_file_base            = null;
     private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
     private String                    _path_to_mafft            = null;
+    private boolean                   _phylogentic_inference    = false;
     //
     private boolean                   _realign                  = false;
     private final SortedSet<String>   _removed_seq_ids;
@@ -93,7 +94,6 @@ public class MsaCompactor {
     private boolean                   _report_aln_mean_identity = false;
     private int                       _step                     = -1;
     private int                       _step_for_diagnostics     = -1;
-    private boolean                   _phylogentic_inference    = false;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -106,6 +106,29 @@ public class MsaCompactor {
         _removed_seqs = new ArrayList<Sequence>();
     }
 
+    public final Phylogeny calcTree() {
+        final Phylogeny phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, false, "" );
+        PhylogenyMethods.midpointRoot( phy );
+        PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
+        final boolean x = PhylogenyMethods.extractFastaInformation( phy );
+        if ( !x ) {
+            final PhylogenyNodeIterator it = phy.iteratorExternalForward();
+            while ( it.hasNext() ) {
+                final PhylogenyNode n = it.next();
+                final String name = n.getName().trim();
+                if ( !ForesterUtil.isEmpty( name ) ) {
+                    try {
+                        ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
+                    }
+                    catch ( final PhyloXmlDataFormatException e ) {
+                        // Ignore.
+                    }
+                }
+            }
+        }
+        return phy;
+    }
+
     public final List<MsaProperties> chart( final int step, final boolean realign, final boolean norm )
             throws IOException, InterruptedException {
         final GapContribution stats[] = calcGapContribtionsStats( norm );
@@ -113,6 +136,12 @@ public class MsaCompactor {
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
+        }
+        Phylogeny phy = null;
+        if ( _phylogentic_inference ) {
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            phy = calcTree();
         }
         if ( !_realign ) {
             _step = -1;
@@ -123,14 +152,8 @@ public class MsaCompactor {
         }
         MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
         msa_props.add( msa_prop );
-        Phylogeny phy = null;
-        if ( _phylogentic_inference ) {
-            System.out.println( "calculating phylogentic tree..." );
-            System.out.println();
-            phy = calcTree();
-        }
         printTableHeader();
-        printMsaProperties( "", msa_prop );
+        printMsaProperties( msa_prop );
         System.out.println();
         int i = 0;
         while ( _msa.getNumberOfSequences() > x ) {
@@ -141,7 +164,7 @@ public class MsaCompactor {
                 realignWithMafft();
                 msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
                 msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
+                printMsaProperties( msa_prop );
                 System.out.print( "(realigned)" );
                 System.out.println();
             }
@@ -149,39 +172,102 @@ public class MsaCompactor {
                 removeGapColumns();
                 msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
                 msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
+                printMsaProperties( msa_prop );
                 System.out.println();
             }
             ++i;
         }
         if ( _phylogentic_inference ) {
-            final Phylogeny p2 = phy.copy();
-            decorateTree( p2, to_remove_ids );
-            decorateTree2( phy, msa_props );
-            displayTree( p2 );
+            decorateTree( phy, msa_props, true );
             displayTree( phy );
         }
         return msa_props;
+    }
+
+    public final void decorateTree( final Phylogeny phy, final List<MsaProperties> msa_props, final boolean chart_only ) {
+        final BasicDescriptiveStatistics length_stats = new BasicDescriptiveStatistics();
+        for( int i = 0; i < msa_props.size(); ++i ) {
+            final MsaProperties msa_prop = msa_props.get( i );
+            final String id = msa_prop.getRemovedSeq();
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                length_stats.addValue( msa_prop.getLength() );
+            }
+        }
+        final double mean = length_stats.arithmeticMean();
+        final double min = length_stats.getMin();
+        final double max = length_stats.getMax();
+        final Color min_color = new Color( 0, 255, 0 );
+        final Color max_color = new Color( 255, 0, 0 );
+        final Color mean_color = new Color( 255, 255, 0 );
+        final PhylogenyNodeIterator it = phy.iteratorExternalForward();
+        if ( chart_only ) {
+            while ( it.hasNext() ) {
+                final NodeVisualData vis = new NodeVisualData();
+                vis.setFillType( NodeFill.SOLID );
+                vis.setShape( NodeShape.RECTANGLE );
+                vis.setNodeColor( min_color );
+                it.next().getNodeData().setNodeVisualData( vis );
+            }
+        }
+        for( int i = 0; i < msa_props.size(); ++i ) {
+            final MsaProperties msa_prop = msa_props.get( i );
+            final String id = msa_prop.getRemovedSeq();
+            if ( !ForesterUtil.isEmpty( id ) ) {
+                final PhylogenyNode n = phy.getNode( id );
+                n.setName( n.getName() + " [" + i + "]" );
+                if ( !chart_only ) {
+                    final NodeVisualData vis = new NodeVisualData();
+                    vis.setFillType( NodeFill.SOLID );
+                    vis.setShape( NodeShape.RECTANGLE );
+                    vis.setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(), min, max, mean_color, max_color ) );
+                    n.getNodeData().setNodeVisualData( vis );
+                }
+                else {
+                    n.getNodeData()
+                            .getNodeVisualData()
+                            .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
+                                                                   min,
+                                                                   max,
+                                                                   mean,
+                                                                   min_color,
+                                                                   max_color,
+                                                                   mean_color ) );
+                }
+            }
+        }
     }
 
     final public void deleteGapColumns( final double max_allowed_gap_ratio ) {
         _msa.deleteGapColumns( max_allowed_gap_ratio );
     }
 
+    public final void displayTree( final Phylogeny phy ) {
+        final Configuration config = new Configuration();
+        config.setDisplayAsPhylogram( true );
+        config.setUseStyle( true );
+        config.setDisplayTaxonomyCode( false );
+        config.setDisplayTaxonomyCommonNames( false );
+        config.setDisplayTaxonomyScientificNames( false );
+        config.setDisplaySequenceNames( false );
+        config.setDisplaySequenceSymbols( false );
+        config.setDisplayGeneNames( false );
+        config.setShowScale( true );
+        config.setAddTaxonomyImagesCB( false );
+        config.setBaseFontSize( 9 );
+        config.setBaseFontFamilyName( "Arial" );
+        Archaeopteryx.createApplication( phy, config, _infile_name );
+    }
+
     final public Msa getMsa() {
         return _msa;
     }
 
-    final public SortedSet<String> getRemovedSeqIds() {
-        return _removed_seq_ids;
-    }
-
     public final void removeSequencesByMinimalLength( final int min_effective_length ) {
-        printMsaProperties( "", new MsaProperties( _msa, "", _report_aln_mean_identity ) );
+        printMsaProperties( new MsaProperties( _msa, "", _report_aln_mean_identity ) );
         System.out.println();
         _msa = DeleteableMsa.createInstance( MsaMethods.removeSequencesByMinimalLength( _msa, min_effective_length ) );
         removeGapColumns();
-        printMsaProperties( "", new MsaProperties( _msa, "", _report_aln_mean_identity ) );
+        printMsaProperties( new MsaProperties( _msa, "", _report_aln_mean_identity ) );
         System.out.println();
     }
 
@@ -193,10 +279,16 @@ public class MsaCompactor {
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
         }
+        Phylogeny phy = null;
+        if ( _phylogentic_inference ) {
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            phy = calcTree();
+        }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
         msa_props.add( msa_prop );
-        printMsaProperties( "", msa_prop );
+        printMsaProperties( msa_prop );
         System.out.println();
         int i = 0;
         while ( MsaMethods.calcGapRatio( _msa ) > mean_gapiness ) {
@@ -213,7 +305,7 @@ public class MsaCompactor {
             else if ( isPrintMsaStats( i ) ) {
                 msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
                 msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
+                printMsaProperties( msa_prop );
                 System.out.println();
             }
             ++i;
@@ -222,6 +314,10 @@ public class MsaCompactor {
             final String msg = writeAndAlignRemovedSeqs();
             System.out.println();
             System.out.println( msg );
+        }
+        if ( _phylogentic_inference ) {
+            decorateTree( phy, msa_props, false );
+            displayTree( phy );
         }
         return msa_props;
     }
@@ -233,10 +329,16 @@ public class MsaCompactor {
         for( final GapContribution gap_gontribution : stats ) {
             to_remove_ids.add( gap_gontribution.getId() );
         }
+        Phylogeny phy = null;
+        if ( _phylogentic_inference ) {
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            phy = calcTree();
+        }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
         msa_props.add( msa_prop );
-        printMsaProperties( "", msa_prop );
+        printMsaProperties( msa_prop );
         System.out.println();
         int i = 0;
         while ( _msa.getLength() > length ) {
@@ -252,7 +354,7 @@ public class MsaCompactor {
             }
             else if ( isPrintMsaStats( i ) ) {
                 msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
-                printMsaProperties( id, msa_prop );
+                printMsaProperties( msa_prop );
                 msa_props.add( msa_prop );
                 System.out.println();
             }
@@ -262,6 +364,10 @@ public class MsaCompactor {
             final String msg = writeAndAlignRemovedSeqs();
             System.out.println();
             System.out.println( msg );
+        }
+        if ( _phylogentic_inference ) {
+            decorateTree( phy, msa_props, false );
+            displayTree( phy );
         }
         return msa_props;
     }
@@ -273,12 +379,17 @@ public class MsaCompactor {
         final List<MsaProperties> msa_props = new ArrayList<MsaProperties>();
         for( int j = 0; j < to_remove; ++j ) {
             to_remove_ids.add( stats[ j ].getId() );
-            _removed_seq_ids.add( stats[ j ].getId() );
+        }
+        Phylogeny phy = null;
+        if ( _phylogentic_inference ) {
+            System.out.println( "calculating phylogentic tree..." );
+            System.out.println();
+            phy = calcTree();
         }
         printTableHeader();
         MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
         msa_props.add( msa_prop );
-        printMsaProperties( "", msa_prop );
+        printMsaProperties( msa_prop );
         System.out.println();
         for( int i = 0; i < to_remove_ids.size(); ++i ) {
             final String id = to_remove_ids.get( i );
@@ -294,7 +405,7 @@ public class MsaCompactor {
             else if ( isPrintMsaStats( i ) ) {
                 msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
                 msa_props.add( msa_prop );
-                printMsaProperties( id, msa_prop );
+                printMsaProperties( msa_prop );
                 System.out.println();
             }
         }
@@ -303,11 +414,19 @@ public class MsaCompactor {
             System.out.println();
             System.out.println( msg );
         }
+        if ( _phylogentic_inference ) {
+            decorateTree( phy, msa_props, false );
+            displayTree( phy );
+        }
         return msa_props;
     }
 
     public final void setGapRatio( final double gap_ratio ) {
         _gap_ratio = gap_ratio;
+    }
+
+    public void setInfileName( final String infile_name ) {
+        _infile_name = infile_name;
     }
 
     public final void setMafftOptions( final String maffts_opts ) {
@@ -332,6 +451,10 @@ public class MsaCompactor {
 
     public void setPathToMafft( final String path_to_mafft ) {
         _path_to_mafft = path_to_mafft;
+    }
+
+    public void setPeformPhylogenticInference( final boolean phylogentic_inference ) {
+        _phylogentic_inference = phylogentic_inference;
     }
 
     public final void setRealign( final boolean realign ) {
@@ -512,106 +635,9 @@ public class MsaCompactor {
         return master_phy;
     }
 
-    public final Phylogeny calcTree() {
-        final Phylogeny phy = inferNJphylogeny( PWD_DISTANCE_METHOD.KIMURA_DISTANCE, _msa, false, "" );
-        PhylogenyMethods.midpointRoot( phy );
-        PhylogenyMethods.orderAppearance( phy.getRoot(), true, true, DESCENDANT_SORT_PRIORITY.NODE_NAME );
-        final boolean x = PhylogenyMethods.extractFastaInformation( phy );
-        if ( !x ) {
-            final PhylogenyNodeIterator it = phy.iteratorExternalForward();
-            while ( it.hasNext() ) {
-                final PhylogenyNode n = it.next();
-                final String name = n.getName().trim();
-                if ( !ForesterUtil.isEmpty( name ) ) {
-                    try {
-                        ParserUtils.extractTaxonomyDataFromNodeName( n, TAXONOMY_EXTRACTION.AGGRESSIVE );
-                    }
-                    catch ( final PhyloXmlDataFormatException e ) {
-                        // Ignore.
-                    }
-                }
-            }
-        }
-        return phy;
-    }
-
-    public final void decorateTree( final Phylogeny phy, final List<String> to_remove_ids ) {
-        for( int i = 0; i < to_remove_ids.size(); ++i ) {
-            final String id = to_remove_ids.get( i );
-            final PhylogenyNode n = phy.getNode( id );
-            n.setName( n.getName() + " [" + ( i + 1 ) + "]" );
-            final NodeVisualData vis = new NodeVisualData();
-            vis.setFillType( NodeFill.SOLID );
-            vis.setShape( NodeShape.RECTANGLE );
-            vis.setSize( 6 );
-            vis.setNodeColor( new Color( i > 255 ? 0 : 255 - i, 0, 0 ) );
-            n.getNodeData().setNodeVisualData( vis );
-        }
-    }
-
-    public final void decorateTree2( final Phylogeny phy, final List<MsaProperties> msa_props ) {
-        final BasicDescriptiveStatistics length_stats = new BasicDescriptiveStatistics();
-        for( int i = 0; i < msa_props.size(); ++i ) {
-            final MsaProperties msa_prop = msa_props.get( i );
-            final String id = msa_prop.getRemovedSeq();
-            if ( !ForesterUtil.isEmpty( id ) ) {
-                length_stats.addValue( msa_prop.getLength() );
-            }
-        }
-        final double mean = length_stats.arithmeticMean();
-        final double min = length_stats.getMin();
-        final double max = length_stats.getMax();
-        final Color min_color = new Color( 0, 255, 0 );
-        final Color max_color = new Color( 255, 0, 0 );
-        final Color mean_color = new Color( 255, 255, 0 );
-        final PhylogenyNodeIterator it = phy.iteratorExternalForward();
-        while ( it.hasNext() ) {
-            final NodeVisualData vis = new NodeVisualData();
-            vis.setFillType( NodeFill.SOLID );
-            vis.setShape( NodeShape.RECTANGLE );
-            vis.setSize( 6 );
-            vis.setNodeColor( min_color );
-            it.next().getNodeData().setNodeVisualData( vis );
-        }
-        for( int i = 0; i < msa_props.size(); ++i ) {
-            final MsaProperties msa_prop = msa_props.get( i );
-            final String id = msa_prop.getRemovedSeq();
-            if ( !ForesterUtil.isEmpty( id ) ) {
-                final PhylogenyNode n = phy.getNode( id );
-                n.setName( n.getName() + " [" + i + "]" );
-                n.getNodeData()
-                        .getNodeVisualData()
-                        .setNodeColor( ForesterUtil.calcColor( msa_prop.getLength(),
-                                                               min,
-                                                               max,
-                                                               mean,
-                                                               min_color,
-                                                               max_color,
-                                                               mean_color ) );
-            }
-        }
-    }
-
-    public final void displayTree( final Phylogeny phy ) {
-        final Configuration config = new Configuration();
-        config.setDisplayAsPhylogram( true );
-        config.setUseStyle( true );
-        config.setDisplayTaxonomyCode( false );
-        config.setDisplayTaxonomyCommonNames( false );
-        config.setDisplayTaxonomyScientificNames( false );
-        config.setDisplaySequenceNames( false );
-        config.setDisplaySequenceSymbols( false );
-        config.setDisplayGeneNames( false );
-        config.setShowScale( true );
-        config.setAddTaxonomyImagesCB( false );
-        config.setBaseFontSize( 9 );
-        config.setBaseFontFamilyName( "Arial" );
-        Archaeopteryx.createApplication( phy, config, _infile_name );
-    }
-
-    private final void printMsaProperties( final String id, final MsaProperties msa_properties ) {
+    private final void printMsaProperties( final MsaProperties msa_properties ) {
         if ( ( _step == 1 ) || ( _step_for_diagnostics == 1 ) ) {
-            System.out.print( ForesterUtil.pad( id, _longest_id_length, ' ', false ) );
+            System.out.print( ForesterUtil.pad( msa_properties.getRemovedSeq(), _longest_id_length, ' ', false ) );
             System.out.print( "\t" );
         }
         System.out.print( msaPropertiesAsSB( msa_properties ) );
@@ -624,7 +650,7 @@ public class MsaCompactor {
             realignWithMafft();
         }
         final MsaProperties msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
-        printMsaProperties( id, msa_prop );
+        printMsaProperties( msa_prop );
         final String s = writeOutfile();
         System.out.print( "-> " + s + ( realign ? "\t(realigned)" : "" ) );
         return msa_prop;
@@ -703,13 +729,5 @@ public class MsaCompactor {
         final Writer w = ForesterUtil.createBufferedWriter( outfile );
         msa.write( w, format );
         w.close();
-    }
-
-    public void setPeformPhylogenticInference( final boolean phylogentic_inference ) {
-        _phylogentic_inference = phylogentic_inference;
-    }
-
-    public void setInfileName( final String infile_name ) {
-        _infile_name = infile_name;
     }
 }
