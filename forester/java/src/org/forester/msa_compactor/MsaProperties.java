@@ -29,7 +29,8 @@ import org.forester.msa.MsaMethods;
 
 public final class MsaProperties {
 
-    final private double _average_identity_ratio;
+    final private double _entropy21;
+    final private double _entropy7;
     final private double _gap_ratio;
     final private int    _length;
     final private int    _number_of_sequences;
@@ -38,30 +39,38 @@ public final class MsaProperties {
     public MsaProperties( final int number_of_sequences,
                           final int length,
                           final double gap_ratio,
-                          final double average_identity_ratio,
+                          final double entropy7,
+                          final double entropy21,
                           final String removed_seq ) {
         _number_of_sequences = number_of_sequences;
         _length = length;
         _gap_ratio = gap_ratio;
-        _average_identity_ratio = average_identity_ratio;
+        _entropy7 = entropy7;
+        _entropy21 = entropy21;
         _removed_seq = removed_seq;
     }
 
-    public MsaProperties( final Msa msa, final String removed_seq, final boolean calculate_aln_mean_identity ) {
+    public MsaProperties( final Msa msa, final String removed_seq, final boolean calculate_normalized_shannon_entropy ) {
         _number_of_sequences = msa.getNumberOfSequences();
         _length = msa.getLength();
         _gap_ratio = MsaMethods.calcGapRatio( msa );
         _removed_seq = removed_seq;
-        if ( calculate_aln_mean_identity ) {
-            _average_identity_ratio = MsaMethods.calculateIdentityRatio( 0, msa.getLength() - 1, msa ).arithmeticMean();
+        if ( calculate_normalized_shannon_entropy ) {
+            _entropy7 = MsaMethods.calcNormalizedShannonsEntropy( 7, msa );
+            _entropy21 = MsaMethods.calcNormalizedShannonsEntropy( 21, msa );
         }
         else {
-            _average_identity_ratio = -1;
+            _entropy7 = -1;
+            _entropy21 = -1;
         }
     }
 
-    public final double getAverageIdentityRatio() {
-        return _average_identity_ratio;
+    public final double getEntropy21() {
+        return _entropy21;
+    }
+
+    public final double getEntropy7() {
+        return _entropy7;
     }
 
     public final double getGapRatio() {

@@ -26,6 +26,7 @@
 package org.forester.msa;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,74 +42,13 @@ public final class MsaMethods {
 
     private ArrayList<String> _ignored_seqs_ids;
 
-    synchronized public ArrayList<String> getIgnoredSequenceIds() {
-        return _ignored_seqs_ids;
-    }
-
-    synchronized public static MsaMethods createInstance() {
-        return new MsaMethods();
-    }
-
     private MsaMethods() {
         init();
-    }
-
-    synchronized private void init() {
-        _ignored_seqs_ids = new ArrayList<String>();
     }
 
     @Override
     public Object clone() {
         throw new NoSuchMethodError();
-    }
-
-    public static int calcGapSumPerColumn( final Msa msa, final int col ) {
-        int gap_rows = 0;
-        for( int j = 0; j < msa.getNumberOfSequences(); ++j ) {
-            if ( msa.isGapAt( j, col ) ) {
-                gap_rows++;
-            }
-        }
-        return gap_rows;
-    }
-
-    final public static Msa removeSequence( final Msa msa, final String to_remove_id ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
-        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            if ( !to_remove_id.equals( msa.getIdentifier( row ) ) ) {
-                seqs.add( msa.getSequence( row ) );
-            }
-        }
-        if ( seqs.size() < 1 ) {
-            return null;
-        }
-        return BasicMsa.createInstance( seqs );
-    }
-
-    final public static Msa removeSequences( final Msa msa, final List<String> to_remove_ids ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
-        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            if ( !to_remove_ids.contains( msa.getIdentifier( row ) ) ) {
-                seqs.add( msa.getSequence( row ) );
-            }
-        }
-        if ( seqs.size() < 1 ) {
-            return null;
-        }
-        return BasicMsa.createInstance( seqs );
-    }
-
-    final public static Msa removeSequencesByRow( final Msa msa, final List<Integer> to_remove_rows ) {
-        final List<Sequence> seqs = new ArrayList<Sequence>();
-        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
-            if ( !to_remove_rows.contains( row ) ) {
-                seqs.add( msa.getSequence( row ) );
-            }
-        }
-        if ( seqs.size() < 1 ) {
-            return null;
-        }
-        return BasicMsa.createInstance( seqs );
     }
 
     synchronized final public Msa deleteGapColumns( final double max_allowed_gap_ratio,
@@ -159,12 +99,93 @@ public final class MsaMethods {
         return BasicMsa.createInstance( seqs );
     }
 
-    final public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
+    synchronized public ArrayList<String> getIgnoredSequenceIds() {
+        return _ignored_seqs_ids;
+    }
+
+    synchronized private void init() {
+        _ignored_seqs_ids = new ArrayList<String>();
+    }
+
+    public static DescriptiveStatistics calcBasicGapinessStatistics( final Msa msa ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( int c = from; c <= to; ++c ) {
-            stats.addValue( calculateIdentityRatio( msa, c ) );
+        for( int i = 0; i < msa.getLength(); ++i ) {
+            stats.addValue( ( double ) calcGapSumPerColumn( msa, i ) / msa.getNumberOfSequences() );
         }
         return stats;
+    }
+
+    public static double calcGapRatio( final Msa msa ) {
+        int gaps = 0;
+        for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
+            for( int i = 0; i < msa.getLength(); ++i ) {
+                if ( msa.getResidueAt( seq, i ) == Sequence.GAP ) {
+                    gaps++;
+                }
+            }
+        }
+        return ( double ) gaps / ( msa.getLength() * msa.getNumberOfSequences() );
+    }
+
+    public static int calcGapSumPerColumn( final Msa msa, final int col ) {
+        int gap_rows = 0;
+        for( int j = 0; j < msa.getNumberOfSequences(); ++j ) {
+            if ( msa.isGapAt( j, col ) ) {
+                gap_rows++;
+            }
+        }
+        return gap_rows;
+    }
+
+    final public static double calcNormalizedShannonsEntropy( final int k, final Msa msa ) {
+        double s = 0;
+        for( int col = 0; col < msa.getLength(); ++col ) {
+            s += calcNormalizedShannonsEntropy( k, msa, col );
+        }
+        return s / msa.getLength();
+    }
+
+    final public static double calcNormalizedShannonsEntropy( final int k, final Msa msa, final int col ) {
+        // http://www.ebi.ac.uk/thornton-srv/databases/valdarprograms/scorecons_server_help.html
+        // n: number of residues in column
+        // k: number of residue types
+        // na: number of residues of type a
+        // pa = na/n
+        // S=-sum pa log2 pa
+        double s = 0;
+        final double n = msa.getNumberOfSequences();
+        HashMap<Character, Integer> dist = null;
+        if ( k == 6 ) {
+            dist = calcResidueDistribution6( msa, col );
+        }
+        else if ( k == 7 ) {
+            dist = calcResidueDistribution7( msa, col );
+        }
+        else if ( k == 20 ) {
+            dist = calcResidueDistribution20( msa, col );
+        }
+        else if ( k == 21 ) {
+            dist = calcResidueDistribution21( msa, col );
+        }
+        else {
+            throw new IllegalArgumentException( "illegal value for k: " + k );
+        }
+        if ( dist.size() == 1 ) {
+            return 0;
+        }
+        //        if ( dist.size() == n ) {
+        //            return 0;
+        //        }
+        for( final int na : dist.values() ) {
+            final double pa = na / n;
+            s += pa * Math.log( pa );
+        }
+        if ( n < k ) {
+            return -( s / ( Math.log( n ) ) );
+        }
+        else {
+            return -( s / ( Math.log( k ) ) );
+        }
     }
 
     final public static DescriptiveStatistics calculateEffectiveLengthStatistics( final Msa msa ) {
@@ -172,6 +193,14 @@ public final class MsaMethods {
         for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
             final Sequence s = msa.getSequence( row );
             stats.addValue( s.getLength() - s.getNumberOfGapResidues() );
+        }
+        return stats;
+    }
+
+    final public static DescriptiveStatistics calculateIdentityRatio( final int from, final int to, final Msa msa ) {
+        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
+        for( int c = from; c <= to; ++c ) {
+            stats.addValue( calculateIdentityRatio( msa, c ) );
         }
         return stats;
     }
@@ -204,12 +233,34 @@ public final class MsaMethods {
         return map;
     }
 
-    public static DescriptiveStatistics calcBasicGapinessStatistics( final Msa msa ) {
-        final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
-        for( int i = 0; i < msa.getLength(); ++i ) {
-            stats.addValue( ( double ) calcGapSumPerColumn( msa, i ) / msa.getNumberOfSequences() );
+    synchronized public static MsaMethods createInstance() {
+        return new MsaMethods();
+    }
+
+    final public static Msa removeSequence( final Msa msa, final String to_remove_id ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_id.equals( msa.getIdentifier( row ) ) ) {
+                seqs.add( msa.getSequence( row ) );
+            }
         }
-        return stats;
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
+    }
+
+    final public static Msa removeSequences( final Msa msa, final List<String> to_remove_ids ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_ids.contains( msa.getIdentifier( row ) ) ) {
+                seqs.add( msa.getSequence( row ) );
+            }
+        }
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
     }
 
     public static Msa removeSequencesByMinimalLength( final Msa msa, final int min_effective_length ) {
@@ -228,15 +279,135 @@ public final class MsaMethods {
         return removeSequencesByRow( msa, to_remove_rows );
     }
 
-    public static double calcGapRatio( final Msa msa ) {
-        int gaps = 0;
-        for( int seq = 0; seq < msa.getNumberOfSequences(); ++seq ) {
-            for( int i = 0; i < msa.getLength(); ++i ) {
-                if ( msa.getResidueAt( seq, i ) == Sequence.GAP ) {
-                    gaps++;
+    final public static Msa removeSequencesByRow( final Msa msa, final List<Integer> to_remove_rows ) {
+        final List<Sequence> seqs = new ArrayList<Sequence>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            if ( !to_remove_rows.contains( row ) ) {
+                seqs.add( msa.getSequence( row ) );
+            }
+        }
+        if ( seqs.size() < 1 ) {
+            return null;
+        }
+        return BasicMsa.createInstance( seqs );
+    }
+
+    final private static HashMap<Character, Integer> calcResidueDistribution20( final Msa msa, final int col ) {
+        final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            final char c = msa.getResidueAt( row, col );
+            if ( c != Sequence.GAP ) {
+                if ( !counts.containsKey( c ) ) {
+                    counts.put( c, 1 );
+                }
+                else {
+                    counts.put( c, 1 + counts.get( c ) );
                 }
             }
         }
-        return ( double ) gaps / ( msa.getLength() * msa.getNumberOfSequences() );
+        return counts;
+    }
+
+    final private static HashMap<Character, Integer> calcResidueDistribution21( final Msa msa, final int col ) {
+        final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            final char c = msa.getResidueAt( row, col );
+            if ( !counts.containsKey( c ) ) {
+                counts.put( c, 1 );
+            }
+            else {
+                counts.put( c, 1 + counts.get( c ) );
+            }
+        }
+        return counts;
+    }
+
+    final private static HashMap<Character, Integer> calcResidueDistribution6( final Msa msa, final int col ) {
+        // Residues are classified into one of tex2html_wrap199 types:
+        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE], 
+        // special conformations [GP] and gaps. This convention follows that 
+        // of Mirny & Shakhnovich (1999, J Mol Biol 291:177-196).
+        final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            final char c = msa.getResidueAt( row, col );
+            char x;
+            if ( ( c == 'A' ) || ( c == 'V' ) || ( c == 'L' ) || ( c == 'I' ) || ( c == 'M' ) || ( c == 'C' ) ) {
+                // aliphatic
+                x = 'a';
+            }
+            else if ( ( c == 'F' ) || ( c == 'W' ) || ( c == 'Y' ) || ( c == 'H' ) ) {
+                // aromatic
+                x = 'r';
+            }
+            else if ( ( c == 'S' ) || ( c == 'T' ) || ( c == 'N' ) || ( c == 'Q' ) ) {
+                // polar
+                x = 'p';
+            }
+            else if ( ( c == 'K' ) || ( c == 'R' ) ) {
+                // positive
+                x = 'o';
+            }
+            else if ( ( c == 'D' ) || ( c == 'E' ) ) {
+                // negative
+                x = 'e';
+            }
+            else if ( ( c == 'G' ) || ( c == 'P' ) ) {
+                // aliphatic - special conformation
+                x = 's';
+            }
+            else {
+                continue;
+            }
+            if ( !counts.containsKey( x ) ) {
+                counts.put( x, 1 );
+            }
+            else {
+                counts.put( x, 1 + counts.get( x ) );
+            }
+        }
+        return counts;
+    }
+
+    final private static HashMap<Character, Integer> calcResidueDistribution7( final Msa msa, final int col ) {
+        // Residues are classified into one of tex2html_wrap199 types:
+        // aliphatic [AVLIMC], aromatic [FWYH], polar [STNQ], positive [KR], negative [DE], 
+        // special conformations [GP] and gaps. This convention follows that 
+        // of Mirny & Shakhnovich (1999, J Mol Biol 291:177-196).
+        final HashMap<Character, Integer> counts = new HashMap<Character, Integer>();
+        for( int row = 0; row < msa.getNumberOfSequences(); ++row ) {
+            final char c = msa.getResidueAt( row, col );
+            char x = '-';
+            if ( ( c == 'A' ) || ( c == 'V' ) || ( c == 'L' ) || ( c == 'I' ) || ( c == 'M' ) || ( c == 'C' ) ) {
+                // aliphatic
+                x = 'a';
+            }
+            else if ( ( c == 'F' ) || ( c == 'W' ) || ( c == 'Y' ) || ( c == 'H' ) ) {
+                // aromatic
+                x = 'r';
+            }
+            else if ( ( c == 'S' ) || ( c == 'T' ) || ( c == 'N' ) || ( c == 'Q' ) ) {
+                // polar
+                x = 'p';
+            }
+            else if ( ( c == 'K' ) || ( c == 'R' ) ) {
+                // positive
+                x = 'o';
+            }
+            else if ( ( c == 'D' ) || ( c == 'E' ) ) {
+                // negative
+                x = 'e';
+            }
+            else if ( ( c == 'G' ) || ( c == 'P' ) ) {
+                // aliphatic - special conformation
+                x = 's';
+            }
+            if ( !counts.containsKey( x ) ) {
+                counts.put( x, 1 );
+            }
+            else {
+                counts.put( x, 1 + counts.get( x ) );
+            }
+        }
+        return counts;
     }
 }

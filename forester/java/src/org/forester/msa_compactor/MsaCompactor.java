@@ -71,29 +71,27 @@ import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3                      = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4                      = new DecimalFormat( "#.####" );
-    private double                    _gap_ratio                = -1;
+    final private static NumberFormat NF_3                       = new DecimalFormat( "#.###" );
+    final private static NumberFormat NF_4                       = new DecimalFormat( "#.####" );
+    private boolean                   _calculate_shannon_entropy = false;
     //
-    private String                    _infile_name              = null;
+    private String                    _infile_name               = null;
     private final short               _longest_id_length;
     //
-    private String                    _maffts_opts              = "--auto";
-    private int                       _min_length               = -1;
-    private DeleteableMsa             _msa                      = null;
-    private boolean                   _norm                     = true;
-    private File                      _out_file_base            = null;
-    private MSA_FORMAT                _output_format            = MSA_FORMAT.FASTA;
-    private String                    _path_to_mafft            = null;
-    private boolean                   _phylogentic_inference    = false;
+    private String                    _maffts_opts               = "--auto";
+    private DeleteableMsa             _msa                       = null;
+    private boolean                   _norm                      = true;
+    private File                      _out_file_base             = null;
+    private MSA_FORMAT                _output_format             = MSA_FORMAT.FASTA;
+    private String                    _path_to_mafft             = null;
+    private boolean                   _phylogentic_inference     = false;
     //
-    private boolean                   _realign                  = false;
+    private boolean                   _realign                   = false;
     private final SortedSet<String>   _removed_seq_ids;
     private final ArrayList<Sequence> _removed_seqs;
-    private File                      _removed_seqs_out_base    = null;
-    private boolean                   _report_aln_mean_identity = false;
-    private int                       _step                     = -1;
-    private int                       _step_for_diagnostics     = -1;
+    private File                      _removed_seqs_out_base     = null;
+    private int                       _step                      = -1;
+    private int                       _step_for_diagnostics      = -1;
     static {
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
@@ -146,11 +144,11 @@ public class MsaCompactor {
         if ( !_realign ) {
             _step = -1;
         }
-        int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 20.0 );
-        if ( x < 1 ) {
-            x = 1;
+        int x = ForesterUtil.roundToInt( _msa.getNumberOfSequences() / 10.0 );
+        if ( x < 2 ) {
+            x = 2;
         }
-        MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
+        MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
         msa_props.add( msa_prop );
         printTableHeader();
         printMsaProperties( msa_prop );
@@ -162,7 +160,7 @@ public class MsaCompactor {
             if ( realign && isPrintMsaStatsWriteOutfileAndRealign( i ) ) {
                 removeGapColumns();
                 realignWithMafft();
-                msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+                msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
                 msa_props.add( msa_prop );
                 printMsaProperties( msa_prop );
                 System.out.print( "(realigned)" );
@@ -170,7 +168,7 @@ public class MsaCompactor {
             }
             else if ( isPrintMsaStats( i ) ) {
                 removeGapColumns();
-                msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+                msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
                 msa_props.add( msa_prop );
                 printMsaProperties( msa_prop );
                 System.out.println();
@@ -263,11 +261,11 @@ public class MsaCompactor {
     }
 
     public final void removeSequencesByMinimalLength( final int min_effective_length ) {
-        printMsaProperties( new MsaProperties( _msa, "", _report_aln_mean_identity ) );
+        printMsaProperties( new MsaProperties( _msa, "", _calculate_shannon_entropy ) );
         System.out.println();
         _msa = DeleteableMsa.createInstance( MsaMethods.removeSequencesByMinimalLength( _msa, min_effective_length ) );
         removeGapColumns();
-        printMsaProperties( new MsaProperties( _msa, "", _report_aln_mean_identity ) );
+        printMsaProperties( new MsaProperties( _msa, "", _calculate_shannon_entropy ) );
         System.out.println();
     }
 
@@ -286,7 +284,7 @@ public class MsaCompactor {
             phy = calcTree();
         }
         printTableHeader();
-        MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
+        MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
         msa_props.add( msa_prop );
         printMsaProperties( msa_prop );
         System.out.println();
@@ -303,7 +301,7 @@ public class MsaCompactor {
                 System.out.println();
             }
             else if ( isPrintMsaStats( i ) ) {
-                msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+                msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
                 msa_props.add( msa_prop );
                 printMsaProperties( msa_prop );
                 System.out.println();
@@ -336,7 +334,7 @@ public class MsaCompactor {
             phy = calcTree();
         }
         printTableHeader();
-        MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
+        MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
         msa_props.add( msa_prop );
         printMsaProperties( msa_prop );
         System.out.println();
@@ -353,7 +351,7 @@ public class MsaCompactor {
                 System.out.println();
             }
             else if ( isPrintMsaStats( i ) ) {
-                msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+                msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
                 printMsaProperties( msa_prop );
                 msa_props.add( msa_prop );
                 System.out.println();
@@ -387,7 +385,7 @@ public class MsaCompactor {
             phy = calcTree();
         }
         printTableHeader();
-        MsaProperties msa_prop = new MsaProperties( _msa, "", _report_aln_mean_identity );
+        MsaProperties msa_prop = new MsaProperties( _msa, "", _calculate_shannon_entropy );
         msa_props.add( msa_prop );
         printMsaProperties( msa_prop );
         System.out.println();
@@ -403,7 +401,7 @@ public class MsaCompactor {
                 System.out.println();
             }
             else if ( isPrintMsaStats( i ) ) {
-                msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+                msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
                 msa_props.add( msa_prop );
                 printMsaProperties( msa_prop );
                 System.out.println();
@@ -421,8 +419,8 @@ public class MsaCompactor {
         return msa_props;
     }
 
-    public final void setGapRatio( final double gap_ratio ) {
-        _gap_ratio = gap_ratio;
+    public final void setCalculateNormalizedShannonEntropy( final boolean calculate_shannon_entropy ) {
+        _calculate_shannon_entropy = calculate_shannon_entropy;
     }
 
     public void setInfileName( final String infile_name ) {
@@ -431,10 +429,6 @@ public class MsaCompactor {
 
     public final void setMafftOptions( final String maffts_opts ) {
         _maffts_opts = maffts_opts;
-    }
-
-    public final void setMinLength( final int min_length ) {
-        _min_length = min_length;
     }
 
     public final void setNorm( final boolean norm ) {
@@ -463,10 +457,6 @@ public class MsaCompactor {
 
     public final void setRemovedSeqsOutBase( final File removed_seqs_out_base ) {
         _removed_seqs_out_base = removed_seqs_out_base;
-    }
-
-    public final void setReportAlnMeanIdentity( final boolean report_aln_mean_identity ) {
-        _report_aln_mean_identity = report_aln_mean_identity;
     }
 
     public final void setStep( final int step ) {
@@ -600,9 +590,11 @@ public class MsaCompactor {
         sb.append( msa_properties.getLength() );
         sb.append( "\t" );
         sb.append( NF_4.format( msa_properties.getGapRatio() ) );
-        if ( _report_aln_mean_identity ) {
+        if ( _calculate_shannon_entropy ) {
             sb.append( "\t" );
-            sb.append( NF_4.format( msa_properties.getAverageIdentityRatio() ) );
+            sb.append( NF_4.format( msa_properties.getEntropy7() ) );
+            sb.append( "\t" );
+            sb.append( NF_4.format( msa_properties.getEntropy21() ) );
         }
         return sb;
     }
@@ -649,7 +641,7 @@ public class MsaCompactor {
         if ( realign ) {
             realignWithMafft();
         }
-        final MsaProperties msa_prop = new MsaProperties( _msa, id, _report_aln_mean_identity );
+        final MsaProperties msa_prop = new MsaProperties( _msa, id, _calculate_shannon_entropy );
         printMsaProperties( msa_prop );
         final String s = writeOutfile();
         System.out.print( "-> " + s + ( realign ? "\t(realigned)" : "" ) );
@@ -667,8 +659,10 @@ public class MsaCompactor {
         System.out.print( "\t" );
         System.out.print( "Gaps" );
         System.out.print( "\t" );
-        if ( _report_aln_mean_identity ) {
-            System.out.print( "MSA qual" );
+        if ( _calculate_shannon_entropy ) {
+            System.out.print( "entn7" );
+            System.out.print( "\t" );
+            System.out.print( "entn21" );
             System.out.print( "\t" );
         }
         System.out.println();

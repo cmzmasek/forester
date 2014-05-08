@@ -180,6 +180,16 @@ public final class Test {
             System.exit( -1 );
         }
         final long start_time = new Date().getTime();
+        System.out.print( "MSA entropy: " );
+        if ( Test.testMsaEntropy() ) {
+            System.out.println( "OK." );
+            succeeded++;
+        }
+        else {
+            System.out.println( "failed." );
+            failed++;
+        }
+        System.exit( 0 );
         System.out.print( "Basic node methods: " );
         if ( Test.testBasicNodeMethods() ) {
             System.out.println( "OK." );
@@ -6080,6 +6090,69 @@ public final class Test {
             if ( !isEqual( 0.25, MsaMethods.calculateIdentityRatio( msa, 12 ) ) ) {
                 return false;
             }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace( System.out );
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean testMsaEntropy() {
+        try {
+            final Sequence s0 = BasicSequence.createAaSequence( "a", "AAAAAAA" );
+            final Sequence s1 = BasicSequence.createAaSequence( "b", "AAAIACC" );
+            final Sequence s2 = BasicSequence.createAaSequence( "c", "AAIIIIF" );
+            final Sequence s3 = BasicSequence.createAaSequence( "d", "AIIIVVW" );
+            final List<Sequence> l = new ArrayList<Sequence>();
+            l.add( s0 );
+            l.add( s1 );
+            l.add( s2 );
+            l.add( s3 );
+            final Msa msa = BasicMsa.createInstance( l );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 0 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 1 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 2 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 3 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 4 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 5 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa, 6 ) );
+            System.out.println();
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 0 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 1 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 2 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 3 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 4 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 5 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 6, msa, 6 ) );
+            final List<Sequence> l2 = new ArrayList<Sequence>();
+            l2.add( BasicSequence.createAaSequence( "1", "AAAAAAA" ) );
+            l2.add( BasicSequence.createAaSequence( "2", "AAAIACC" ) );
+            l2.add( BasicSequence.createAaSequence( "3", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "4", "AIIIVVW" ) );
+            l2.add( BasicSequence.createAaSequence( "5", "AAAAAAA" ) );
+            l2.add( BasicSequence.createAaSequence( "6", "AAAIACC" ) );
+            l2.add( BasicSequence.createAaSequence( "7", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "8", "AIIIVVW" ) );
+            l2.add( BasicSequence.createAaSequence( "9", "AAAAAAA" ) );
+            l2.add( BasicSequence.createAaSequence( "10", "AAAIACC" ) );
+            l2.add( BasicSequence.createAaSequence( "11", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "12", "AIIIVVW" ) );
+            l2.add( BasicSequence.createAaSequence( "13", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "14", "AIIIVVW" ) );
+            l2.add( BasicSequence.createAaSequence( "15", "AAAAAAA" ) );
+            l2.add( BasicSequence.createAaSequence( "16", "AAAIACC" ) );
+            l2.add( BasicSequence.createAaSequence( "17", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "18", "AIIIVVW" ) );
+            l2.add( BasicSequence.createAaSequence( "19", "AAAAAAA" ) );
+            l2.add( BasicSequence.createAaSequence( "20", "AAAIACC" ) );
+            l2.add( BasicSequence.createAaSequence( "21", "AAIIIIF" ) );
+            l2.add( BasicSequence.createAaSequence( "22", "AIIIVVW" ) );
+            final Msa msa2 = BasicMsa.createInstance( l2 );
+            System.out.println();
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 0 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 1 ) );
+            System.out.println( MsaMethods.calcNormalizedShannonsEntropy( 20, msa2, 2 ) );
         }
         catch ( final Exception e ) {
             e.printStackTrace( System.out );

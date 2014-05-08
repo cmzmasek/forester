@@ -26,7 +26,6 @@ package org.forester.msa_compactor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JDialog;
@@ -46,13 +45,13 @@ import com.approximatrix.charting.swing.ChartPanel;
 
 public final class Chart extends JDialog implements ActionListener {
 
-    private static final long   serialVersionUID = -5292420246132943515L;
-    private ChartPanel          _chart_panel     = null;
-    private final JMenuItem     _m_exit          = new JMenuItem();
-    private List<MsaProperties> _msa_props;
-    private final boolean       _show_msa_qual;
-    private final int           _initial_number_of_seqs;
-    private final String        _title;
+    private static final long         serialVersionUID = -5292420246132943515L;
+    private ChartPanel                _chart_panel     = null;
+    private final int                 _initial_number_of_seqs;
+    private final JMenuItem           _m_exit          = new JMenuItem();
+    private final List<MsaProperties> _msa_props;
+    private final boolean             _show_msa_qual;
+    private final String              _title;
 
     private Chart( final List<MsaProperties> msa_props,
                    final int initial_number_of_seqs,
@@ -91,43 +90,63 @@ public final class Chart extends JDialog implements ActionListener {
     private ChartPanel obtainChartPanel() {
         if ( _chart_panel == null ) {
             final MultiScatterDataModel model = new MultiScatterDataModel();
-            if ( ( _msa_props == null ) || _msa_props.isEmpty() ) {
-                _msa_props = new ArrayList<MsaProperties>();
-                final MsaProperties p0 = new MsaProperties( 10, 200, 0.5, 0.1, "" );
-                final MsaProperties p1 = new MsaProperties( 9, 190, 0.49, 0.2, "" );
-                final MsaProperties p2 = new MsaProperties( 8, 150, 0.2, 0.3, "" );
-                final MsaProperties p3 = new MsaProperties( 7, 145, 0.2, 0.4, "" );
-                _msa_props.add( p0 );
-                _msa_props.add( p1 );
-                _msa_props.add( p2 );
-                _msa_props.add( p3 );
-            }
             final double[][] seqs_length = new double[ _msa_props.size() ][ 2 ];
+            int max_length = -1;
             for( int i = 0; i < _msa_props.size(); ++i ) {
                 seqs_length[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
                 seqs_length[ i ][ 1 ] = _msa_props.get( i ).getLength();
+                if ( _msa_props.get( i ).getLength() > max_length ) {
+                    max_length = _msa_props.get( i ).getLength();
+                }
             }
             model.addData( seqs_length, "Length" );
             model.setSeriesLine( "Series " + "Length", true );
             model.setSeriesMarker( "Series " + "Length", false );
             final double[][] seqs_gaps = new double[ _msa_props.size() ][ 2 ];
+            double max_gap_ratio = -1;
+            double max_ent7 = -1;
+            double max_ent21 = -1;
+            for( int i = 0; i < _msa_props.size(); ++i ) {
+                if ( _msa_props.get( i ).getGapRatio() > max_gap_ratio ) {
+                    max_gap_ratio = _msa_props.get( i ).getGapRatio();
+                }
+                if ( _show_msa_qual ) {
+                    if ( _msa_props.get( i ).getEntropy7() > max_ent7 ) {
+                        max_ent7 = _msa_props.get( i ).getEntropy7();
+                    }
+                    if ( _msa_props.get( i ).getEntropy21() > max_ent21 ) {
+                        max_ent21 = _msa_props.get( i ).getEntropy21();
+                    }
+                }
+            }
+            final double gap_ratio_factor = ( max_length / 2.0 ) / max_gap_ratio;
+            final double ent7_factor = ( max_length / 2.0 ) / max_ent7;
+            final double ent21_factor = ( max_length / 2.0 ) / max_ent21;
             for( int i = 0; i < _msa_props.size(); ++i ) {
                 seqs_gaps[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
-                seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * 200 );
+                seqs_gaps[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getGapRatio() * gap_ratio_factor );
             }
             model.addData( seqs_gaps, "Gap ratio" );
             model.setSeriesLine( "Series " + "Gap ratio", true );
             model.setSeriesMarker( "Series " + "Gap ratio", false );
             if ( _show_msa_qual ) {
-                final double[][] seqs_identity = new double[ _msa_props.size() ][ 2 ];
+                final double[][] entropy7 = new double[ _msa_props.size() ][ 2 ];
                 for( int i = 0; i < _msa_props.size(); ++i ) {
-                    seqs_identity[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
-                    seqs_identity[ i ][ 1 ] = ForesterUtil
-                            .roundToInt( _msa_props.get( i ).getAverageIdentityRatio() * 200 );
+                    entropy7[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
+                    entropy7[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getEntropy7() * ent7_factor );
                 }
-                model.addData( seqs_identity, "mean MSA column identity" );
-                model.setSeriesLine( "Series " + "mean MSA column identity", true );
-                model.setSeriesMarker( "Series " + "mean MSA column identity", false );
+                model.addData( entropy7, "Entropy norm 7" );
+                model.setSeriesLine( "Series " + "Entropy norm 7", true );
+                model.setSeriesMarker( "Series " + "Entropy norm 7", false );
+                //
+                final double[][] entropy21 = new double[ _msa_props.size() ][ 2 ];
+                for( int i = 0; i < _msa_props.size(); ++i ) {
+                    entropy21[ i ][ 0 ] = _initial_number_of_seqs - _msa_props.get( i ).getNumberOfSequences();
+                    entropy21[ i ][ 1 ] = ForesterUtil.roundToInt( _msa_props.get( i ).getEntropy21() * ent21_factor );
+                }
+                model.addData( entropy21, "Entropy norm 21" );
+                model.setSeriesLine( "Series " + "Entropy norm 21", true );
+                model.setSeriesMarker( "Series " + "Entropy norm 21", false );
             }
             final BoxCoordSystem coord = new BoxCoordSystem( model );
             coord.setUnitFont( coord.getUnitFont().deriveFont( 16.0f ) );

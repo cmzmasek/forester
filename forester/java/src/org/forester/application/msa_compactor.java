@@ -63,7 +63,7 @@ public class msa_compactor {
     final static private String       STEP_FOR_DIAGNOSTICS_OPTION            = "sd";
     final static private String       MIN_LENGTH_OPTION                      = "ml";
     final static private String       GAP_RATIO_LENGTH_OPTION                = "gr";
-    final static private String       REPORT_ALN_MEAN_IDENTITY               = "q";
+    final static private String       REPORT_ENTROPY                         = "e";
     final static private String       OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
     final static private String       OUTPUT_REMOVED_SEQS_OPTION             = "ro";
     final static private String       MAFFT_OPTIONS                          = "mo";
@@ -101,7 +101,7 @@ public class msa_compactor {
             int step_for_diagnostics = 1;
             int min_length = -1;
             double gap_ratio = -1;
-            boolean report_aln_mean_identity = false;
+            boolean report_entropy = false;
             MSA_FORMAT output_format = MSA_FORMAT.FASTA;
             File removed_seqs_out_base = null;
             String mafft_options = "--auto";
@@ -117,7 +117,7 @@ public class msa_compactor {
             allowed_options.add( STEP_FOR_DIAGNOSTICS_OPTION );
             allowed_options.add( MIN_LENGTH_OPTION );
             allowed_options.add( GAP_RATIO_LENGTH_OPTION );
-            allowed_options.add( REPORT_ALN_MEAN_IDENTITY );
+            allowed_options.add( REPORT_ENTROPY );
             allowed_options.add( OUTPUT_FORMAT_PHYLIP_OPTION );
             allowed_options.add( OUTPUT_REMOVED_SEQS_OPTION );
             allowed_options.add( MAFFT_OPTIONS );
@@ -215,8 +215,8 @@ public class msa_compactor {
                     ForesterUtil.fatalError( PRG_NAME, "gap ratio is out of range: " + gap_ratio );
                 }
             }
-            if ( cla.isOptionSet( REPORT_ALN_MEAN_IDENTITY ) ) {
-                report_aln_mean_identity = true;
+            if ( cla.isOptionSet( REPORT_ENTROPY ) ) {
+                report_entropy = true;
             }
             if ( cla.isOptionSet( OUTPUT_FORMAT_PHYLIP_OPTION ) ) {
                 output_format = MSA_FORMAT.PHYLIP;
@@ -316,7 +316,7 @@ public class msa_compactor {
                 }
             }
             System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
-            System.out.println( "Calculate mean identity              : " + report_aln_mean_identity );
+            System.out.println( "Calculate normalized Shannon Entropy : " + report_entropy );
             if ( !norm ) {
                 System.out.println( "Normalize                            : " + norm );
             }
@@ -338,7 +338,7 @@ public class msa_compactor {
             }
             mc.setStep( step );
             mc.setStepForDiagnostics( step_for_diagnostics );
-            mc.setReportAlnMeanIdentity( report_aln_mean_identity );
+            mc.setCalculateNormalizedShannonEntropy( report_entropy );
             mc.setPeformPhylogenticInference( perform_phylogenetic_inference );
             if ( ( worst_remove > 0 ) || ( av_gap > 0 ) || ( length > 0 ) ) {
                 mc.setOutputFormat( output_format );
@@ -363,7 +363,7 @@ public class msa_compactor {
             else {
                 msa_props = mc.chart( step, realign, norm );
             }
-            Chart.display( msa_props, initial_number_of_seqs, report_aln_mean_identity, in.getName() );
+            Chart.display( msa_props, initial_number_of_seqs, report_entropy, in.getName() );
         }
         catch ( final IllegalArgumentException iae ) {
             //  iae.printStackTrace(); //TODO remove me
@@ -423,10 +423,8 @@ public class msa_compactor {
         System.out.println( "   -" + STEP_OPTION + "=<integer>   step for output and re-aligning (default: 1)" );
         System.out.println( "   -" + STEP_FOR_DIAGNOSTICS_OPTION
                 + "=<integer>  step for diagnostics reports (default: 1)" );
-        System.out
-                .println( "   -"
-                        + REPORT_ALN_MEAN_IDENTITY
-                        + "             to calculate mean MSA column identity (\"MSA quality\") (not recommended for very large alignments)" );
+        System.out.println( "   -" + REPORT_ENTROPY
+                + "             to calculate normalized Shannon Entropy (not recommended for very large alignments)" );
         System.out.println( "   -" + OUTPUT_FORMAT_PHYLIP_OPTION
                 + "             to write output alignments in phylip format instead of fasta" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );
