@@ -35,7 +35,7 @@
 
 	<target name="compile_applets_only" description="Compiles the Task" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<javac source="1.6" target="1.6" debug="false" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar}">
+		<javac source="1.6" target="1.6" debug="true" debuglevel="lines,source" srcdir="${src.dir}" destdir="${classes.dir}" optimize="on" verbose="false" classpath="${itextjar};${commonscodecjar};${openchartjar}">
 			<compilerarg value="-Xlint:deprecation" />
 		</javac> 
 	</target>
@@ -80,6 +80,7 @@
 			          org/forester/evoinference/**
 			          org/forester/go/**
 			          org/forester/go/etc/**
+			          org/forester/msa_compactor/**
 			          org/forester/pccx/**
 			          org/forester/surfacing/**
 			          org/forester/test/**
