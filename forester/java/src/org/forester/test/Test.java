@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import org.forester.application.support_transfer;
+import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.TreePanelUtil;
 import org.forester.archaeopteryx.webservices.WebserviceUtil;
 import org.forester.development.DevelopmentTools;
@@ -189,7 +190,6 @@ public final class Test {
             System.out.println( "failed." );
             failed++;
         }
-        System.exit( 0 );
         System.out.print( "Basic node methods: " );
         if ( Test.testBasicNodeMethods() ) {
             System.out.println( "OK." );
@@ -971,6 +971,15 @@ public final class Test {
                 System.out.println( "failed." );
                 failed++;
             }
+            System.out.print( "NHX parsing from URL 2: " );
+            if ( Test.testNHXparsingFromURL2() ) {
+                System.out.println( "OK." );
+                succeeded++;
+            }
+            else {
+                System.out.println( "failed." );
+                failed++;
+            }
             System.out.print( "phyloXML parsing from URL: " );
             if ( Test.testPhyloXMLparsingFromURL() ) {
                 System.out.println( "OK." );
@@ -1134,6 +1143,72 @@ public final class Test {
         catch ( final Exception e ) {
             e.printStackTrace( System.out );
             return false;
+        }
+        return true;
+    }
+
+    public static final boolean testNHXparsingFromURL2() {
+        try {
+            final String s = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/examples/simple/simple_1.nh";
+            final Phylogeny phys[] = AptxUtil.readPhylogeniesFromUrl( new URL( s ),
+                                                                      false,
+                                                                      false,
+                                                                      false,
+                                                                      TAXONOMY_EXTRACTION.NO,
+                                                                      false );
+            if ( ( phys == null ) || ( phys.length != 5 ) ) {
+                return false;
+            }
+            if ( !phys[ 0 ].toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
+                System.out.println( phys[ 0 ].toNewHampshire() );
+                return false;
+            }
+            if ( !phys[ 1 ].toNewHampshire().equals( "((1,2,3),(4,5,6),(7,8,9));" ) ) {
+                System.out.println( phys[ 1 ].toNewHampshire() );
+                return false;
+            }
+            final Phylogeny phys2[] = AptxUtil.readPhylogeniesFromUrl( new URL( s ),
+                                                                       false,
+                                                                       false,
+                                                                       false,
+                                                                       TAXONOMY_EXTRACTION.NO,
+                                                                       false );
+            if ( ( phys2 == null ) || ( phys2.length != 5 ) ) {
+                return false;
+            }
+            if ( !phys2[ 0 ].toNewHampshire().equals( "((((A,B),C),D),(E,F));" ) ) {
+                System.out.println( phys2[ 0 ].toNewHampshire() );
+                return false;
+            }
+            if ( !phys2[ 1 ].toNewHampshire().equals( "((1,2,3),(4,5,6),(7,8,9));" ) ) {
+                System.out.println( phys2[ 1 ].toNewHampshire() );
+                return false;
+            }
+            final Phylogeny phys3[] = AptxUtil.readPhylogeniesFromUrl( new URL( "http://swisstree.vital-it.ch:80/"
+                    + "SwissTree/ST001/consensus_tree.nhx" ), false, false, false, TAXONOMY_EXTRACTION.NO, false );
+            if ( ( phys3 == null ) || ( phys3.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys3[ 0 ]
+                    .toNewHampshire()
+                    .equals( "((((POP23a_CIOIN_ENSCING00000016202,POP23b_CIOIN_ENSCING00000016169),POP23_CIOSA_ENSCSAVG00000000248),((POP23a_BRAFL_C3ZMF1,POP23b_BRAFL_121417),(((POP3_ORYLA_ENSORLG00000019669,POP3_GASAC_ENSGACG00000014023,POP3_DANRE_Q6JWW1),(POP3_XENTR_B1H1F6,(POP3_CHICK_Q9DG25,(POP3_ORNAN_ENSOANG00000004179,POP3_MONDO_ENSMODG00000018033,((POP3_MOUSE_Q9ES81,POP3_RAT_Q3BCU3),POP3_RABIT_ENSOCUG00000025973,POP3_MACMU_ENSMMUG00000014473,POP3_HUMAN_Q9HBV1))))),(((POP2_GASAC_ENSGACG00000001420,POP2_ORYLA_ENSORLG00000008627,POP2_TAKRU_ENSTRUG00000015933),POP2_DANRE_ENSDARG00000069922),POP2_XENTR_ENSXETG00000018064,(((POP2_TAEGU_ENSTGUG00000013383,POP2_CHICK_Q6T9Z5),POP2_ANOCA_ENSACAG00000003557),((POP2_MACEU_ENSMEUG00000015825,POP2_MONDO_ENSMODG00000018205),((POP2_RABIT_ENSOCUG00000009515,(POP2_RAT_Q6P722,POP2_MOUSE_Q9ES82)),(POP2_MACMU_ENSMMUG00000000905,POP2_HUMAN_Q9HBU9)))))))),((POP1_CIOSA_ENSCSAVG00000000247,POP1_CIOIN_ENSCING00000000496),((POP1_DANRE_Q5PQZ7,(POP1_ORYLA_ENSORLG00000019663,POP1_GASAC_ENSGACG00000014015,POP1_TAKRU_ENSORLG00000019663)),(POP1_XENTR_B1H1G2,(POP1_ANOCA_ENSACAG00000003910,(POP1_TAEGU_ENSTGUG00000012218,POP1_CHICK_Q9DG23)),POP1_ORNAN_ENSOANG00000004180,POP1_MONDO_ENSMODG00000018034,(POP1_RABIT_ENSOCUG00000016944,(POP1_RAT_Q3BCU4,POP1_MOUSE_Q9ES83),(POP1_HUMAN_Q8NE79,POP1_MACMU_ENSMMUG00000014471))))));" ) ) {
+                System.out.println( phys3[ 0 ].toNewHampshire() );
+                return false;
+            }
+            final Phylogeny phys4[] = AptxUtil.readPhylogeniesFromUrl( new URL( "http://swisstree.vital-it.ch:80/"
+                    + "SwissTree/ST001/consensus_tree.nhx" ), false, false, false, TAXONOMY_EXTRACTION.NO, false );
+            if ( ( phys4 == null ) || ( phys4.length != 1 ) ) {
+                return false;
+            }
+            if ( !phys4[ 0 ]
+                    .toNewHampshire()
+                    .equals( "((((POP23a_CIOIN_ENSCING00000016202,POP23b_CIOIN_ENSCING00000016169),POP23_CIOSA_ENSCSAVG00000000248),((POP23a_BRAFL_C3ZMF1,POP23b_BRAFL_121417),(((POP3_ORYLA_ENSORLG00000019669,POP3_GASAC_ENSGACG00000014023,POP3_DANRE_Q6JWW1),(POP3_XENTR_B1H1F6,(POP3_CHICK_Q9DG25,(POP3_ORNAN_ENSOANG00000004179,POP3_MONDO_ENSMODG00000018033,((POP3_MOUSE_Q9ES81,POP3_RAT_Q3BCU3),POP3_RABIT_ENSOCUG00000025973,POP3_MACMU_ENSMMUG00000014473,POP3_HUMAN_Q9HBV1))))),(((POP2_GASAC_ENSGACG00000001420,POP2_ORYLA_ENSORLG00000008627,POP2_TAKRU_ENSTRUG00000015933),POP2_DANRE_ENSDARG00000069922),POP2_XENTR_ENSXETG00000018064,(((POP2_TAEGU_ENSTGUG00000013383,POP2_CHICK_Q6T9Z5),POP2_ANOCA_ENSACAG00000003557),((POP2_MACEU_ENSMEUG00000015825,POP2_MONDO_ENSMODG00000018205),((POP2_RABIT_ENSOCUG00000009515,(POP2_RAT_Q6P722,POP2_MOUSE_Q9ES82)),(POP2_MACMU_ENSMMUG00000000905,POP2_HUMAN_Q9HBU9)))))))),((POP1_CIOSA_ENSCSAVG00000000247,POP1_CIOIN_ENSCING00000000496),((POP1_DANRE_Q5PQZ7,(POP1_ORYLA_ENSORLG00000019663,POP1_GASAC_ENSGACG00000014015,POP1_TAKRU_ENSORLG00000019663)),(POP1_XENTR_B1H1G2,(POP1_ANOCA_ENSACAG00000003910,(POP1_TAEGU_ENSTGUG00000012218,POP1_CHICK_Q9DG23)),POP1_ORNAN_ENSOANG00000004180,POP1_MONDO_ENSMODG00000018034,(POP1_RABIT_ENSOCUG00000016944,(POP1_RAT_Q3BCU4,POP1_MOUSE_Q9ES83),(POP1_HUMAN_Q8NE79,POP1_MACMU_ENSMMUG00000014471))))));" ) ) {
+                System.out.println( phys4[ 0 ].toNewHampshire() );
+                return false;
+            }
+        }
+        catch ( final Exception e ) {
+            e.printStackTrace();
         }
         return true;
     }

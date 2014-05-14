@@ -105,7 +105,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
 
     @Override
     public String getName() {
-        return "NN/NHX Parser";
+        return "NH/NHX Parser";
     }
 
     public final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
@@ -587,7 +587,7 @@ public final class NHXParser implements PhylogenyParser, IteratingPhylogenyParse
         return phy;
     }
 
-    public final static NHXParser createInstance( final Object nhx_source ) throws NHXFormatException, IOException {
+    private final static NHXParser createInstance( final Object nhx_source ) throws NHXFormatException, IOException {
         final NHXParser parser = new NHXParser();
         parser.setSource( nhx_source );
         return parser;

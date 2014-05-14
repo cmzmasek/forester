@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -649,13 +650,13 @@ public final class AptxUtil {
         System.out.println( "[" + applet_name + "] > " + message );
     }
 
-    final static Phylogeny[] readPhylogeniesFromUrl( final URL url,
-                                                     final boolean phyloxml_validate_against_xsd,
-                                                     final boolean replace_underscores,
-                                                     final boolean internal_numbers_are_confidences,
-                                                     final TAXONOMY_EXTRACTION taxonomy_extraction,
-                                                     final boolean midpoint_reroot ) throws FileNotFoundException,
-            IOException {
+    final public static Phylogeny[] readPhylogeniesFromUrl( final URL url,
+                                                            final boolean phyloxml_validate_against_xsd,
+                                                            final boolean replace_underscores,
+                                                            final boolean internal_numbers_are_confidences,
+                                                            final TAXONOMY_EXTRACTION taxonomy_extraction,
+                                                            final boolean midpoint_reroot )
+            throws FileNotFoundException, IOException {
         final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
         final PhylogenyParser parser;
         boolean nhx_or_nexus = false;
@@ -679,7 +680,9 @@ public final class AptxUtil {
             }
         }
         AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
-        final Phylogeny[] phys = factory.create( url.openStream(), parser );
+        final InputStream i = url.openStream();
+        final Phylogeny[] phys = factory.create( i, parser );
+        i.close();
         if ( phys != null ) {
             if ( nhx_or_nexus && internal_numbers_are_confidences ) {
                 for( final Phylogeny phy : phys ) {
