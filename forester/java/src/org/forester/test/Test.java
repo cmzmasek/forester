@@ -11322,7 +11322,6 @@ public final class Test {
                 }
                 return false;
             }
-            //
             id = SequenceAccessionTools.parseAccessorFromString( "segmented worms|gb_ADF31344" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "ADF31344" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11332,7 +11331,6 @@ public final class Test {
                 }
                 return false;
             }
-            //
             id = SequenceAccessionTools.parseAccessorFromString( "segmented worms gb_ADF31344 and more" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "ADF31344" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11342,7 +11340,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "gb_AAA96518_1" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "AAA96518" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11352,7 +11349,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "gb_EHB07727_1_rodents_" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "EHB07727" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11362,7 +11358,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "dbj_BAF37827_1_turtles_" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "BAF37827" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11372,7 +11367,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "emb_CAA73223_1_primates_" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "CAA73223" ) || !id.getSource().equals( "ncbi" ) ) {
@@ -11382,7 +11376,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "mites|ref_XP_002434188_1" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "XP_002434188" ) || !id.getSource().equals( "refseq" ) ) {
@@ -11392,7 +11385,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "mites_ref_XP_002434188_1_bla_XP_12345" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "XP_002434188" ) || !id.getSource().equals( "refseq" ) ) {
@@ -11402,7 +11394,6 @@ public final class Test {
                 }
                 return false;
             }
-            // 
             id = SequenceAccessionTools.parseAccessorFromString( "P4A123" );
             if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
                     || !id.getValue().equals( "P4A123" ) || !id.getSource().equals( "uniprot" ) ) {
@@ -11413,6 +11404,40 @@ public final class Test {
                 return false;
             }
             id = SequenceAccessionTools.parseAccessorFromString( "XP_12345" );
+            if ( id != null ) {
+                System.out.println( "value   =" + id.getValue() );
+                System.out.println( "provider=" + id.getSource() );
+                return false;
+            }
+            //
+            id = SequenceAccessionTools.parseAccessorFromString( "N3B004Z009" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "N3B004Z009" ) || !id.getSource().equals( "uniprot" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            id = SequenceAccessionTools.parseAccessorFromString( "A4CAA4ZBB9" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "A4CAA4ZBB9" ) || !id.getSource().equals( "uniprot" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            id = SequenceAccessionTools.parseAccessorFromString( "ecoli_A4CAA4ZBB9_rt" );
+            if ( ( id == null ) || ForesterUtil.isEmpty( id.getValue() ) || ForesterUtil.isEmpty( id.getSource() )
+                    || !id.getValue().equals( "A4CAA4ZBB9" ) || !id.getSource().equals( "uniprot" ) ) {
+                if ( id != null ) {
+                    System.out.println( "value   =" + id.getValue() );
+                    System.out.println( "provider=" + id.getSource() );
+                }
+                return false;
+            }
+            id = SequenceAccessionTools.parseAccessorFromString( "Q4CAA4ZBB9" );
             if ( id != null ) {
                 System.out.println( "value   =" + id.getValue() );
                 System.out.println( "provider=" + id.getSource() );
