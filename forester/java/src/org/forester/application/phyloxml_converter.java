@@ -70,10 +70,10 @@ public class phyloxml_converter {
     final static private String  REPLACE_UNDER_SCORES              = "ru";
     final static private String  IGNORE_QUOTES                     = "iqs";
     final static private String  PRG_NAME                          = "phyloxml_converter";
-    final static private String  PRG_VERSION                       = "1.301";
-    final static private String  PRG_DATE                          = "2012.08.31";
-    final static private String  E_MAIL                            = "phylosoft@gmail.com";
-    final static private String  WWW                               = "www.phylosoft.org/forester/";
+    final static private String  PRG_VERSION                       = "1.302";
+    final static private String  PRG_DATE                          = "140516";
+    final static private String  E_MAIL                            = "phyloxml@gmail.com";
+    final static private String  WWW                               = "sites.google.com/site/cmzmasek/home/software/forester";
     final static private boolean SPECIAL                           = false;
 
     public static void main( final String args[] ) throws PhyloXmlDataFormatException {
@@ -367,20 +367,19 @@ public class phyloxml_converter {
         System.out.println();
         System.out.println( " field options: " );
         System.out.println();
-        System.out.println( "   " + FIELD_CLADE_NAME + ": transfer name to node/clade name" );
-        System.out.println( "   " + FIELD_TAXONOMY_CODE + ": transfer name to taxonomy code" );
-        System.out.println( "   " + FIELD_TAXONOMY_SCI_NAME + ": transfer name to taxonomy scientific name" );
-        System.out.println( "   " + FIELD_TAXONOMY_COMM_NAME + ": transfer name to taxonomy common name" );
-        System.out.println( "   " + FIELD_SEQUENCE_GENE_NAME + ": transfer name to sequence name" );
-        System.out.println( "   " + FIELD_SEQUENCE_SYMBOL + ": transfer name to sequence symbol" );
-        System.out
-                .println( "   "
-                        + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
-                        + ": transfer/split name to taxonomy uniprot identifier\n       (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")" );
-        System.out
-                .println( "   "
-                        + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
-                        + ": transfer/split name to taxonomy uniprot identifier\n       (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")" );
+        System.out.println( "   " + FIELD_CLADE_NAME + ":    transfer name to node/clade name" );
+        System.out.println( "   " + FIELD_TAXONOMY_CODE + ":    transfer name to taxonomy code" );
+        System.out.println( "   " + FIELD_TAXONOMY_SCI_NAME + ":    transfer name to taxonomy scientific name" );
+        System.out.println( "   " + FIELD_TAXONOMY_COMM_NAME + ":    transfer name to taxonomy common name" );
+        System.out.println( "   " + FIELD_SEQUENCE_GENE_NAME + ":    transfer name to sequence name" );
+        System.out.println( "   " + FIELD_SEQUENCE_SYMBOL + ":    transfer name to sequence symbol" );
+        System.out.println( "   " + FIELD_DUMMY + ": to convert NHX formatted trees to phyloXML" );
+        System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_1
+                + ":    transfer/split name to taxonomy uniprot identifier" );
+        System.out.println( "          (split at underscore if \"id_name\" pattern, e.g. \"817_SusD\")" );
+        System.out.println( "   " + FIELD_UNIPROT_TAXONOMY_ID_SPLIT_2
+                + ":    transfer/split name to taxonomy uniprot identifier" );
+        System.out.println( "          (split at underscore if \"name_id\" pattern, e.g. \"SusD_817\")" );
         System.out.println();
         System.out.println( " options: " );
         System.out.println( " -" + INTERNAL_NAMES_ARE_BOOT_SUPPPORT
