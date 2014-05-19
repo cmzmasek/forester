@@ -48,9 +48,11 @@ import org.forester.util.ForesterUtil;
 
 public class msa_compactor {
 
-    final private static NumberFormat NF_1                                   = new DecimalFormat( "#.0" );
+    final private static NumberFormat NF_1                                   = new DecimalFormat( "0.#" );
+    final private static NumberFormat NF_4                                   = new DecimalFormat( "0.####" );
     static {
         NF_1.setRoundingMode( RoundingMode.HALF_UP );
+        NF_4.setRoundingMode( RoundingMode.HALF_UP );
     }
     final static private String       HELP_OPTION_1                          = "help";
     final static private String       HELP_OPTION_2                          = "h";
@@ -64,7 +66,7 @@ public class msa_compactor {
     final static private String       MIN_LENGTH_OPTION                      = "ml";
     final static private String       GAP_RATIO_LENGTH_OPTION                = "gr";
     final static private String       REPORT_ENTROPY                         = "e";
-    final static private String       OUTPUT_FORMAT_PHYLIP_OPTION            = "p";
+    final static private String       OUTPUT_FORMAT_OPTION                   = "f";
     final static private String       OUTPUT_REMOVED_SEQS_OPTION             = "ro";
     final static private String       MAFFT_OPTIONS                          = "mo";
     final static private String       PERFORM_PHYLOGENETIC_INFERENCE         = "t";
@@ -118,7 +120,7 @@ public class msa_compactor {
             allowed_options.add( MIN_LENGTH_OPTION );
             allowed_options.add( GAP_RATIO_LENGTH_OPTION );
             allowed_options.add( REPORT_ENTROPY );
-            allowed_options.add( OUTPUT_FORMAT_PHYLIP_OPTION );
+            allowed_options.add( OUTPUT_FORMAT_OPTION );
             allowed_options.add( OUTPUT_REMOVED_SEQS_OPTION );
             allowed_options.add( MAFFT_OPTIONS );
             allowed_options.add( PERFORM_PHYLOGENETIC_INFERENCE );
@@ -137,7 +139,7 @@ public class msa_compactor {
             final DescriptiveStatistics initial_msa_stats = MsaMethods.calculateEffectiveLengthStatistics( msa );
             final boolean chart_only = ( !cla.isOptionSet( LENGTH_OPTION ) )
                     && ( !cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) )
-                    && ( !cla.isOptionSet( AV_GAPINESS_OPTION ) );
+                    && ( !cla.isOptionSet( AV_GAPINESS_OPTION ) && ( !cla.isOptionSet( MIN_LENGTH_OPTION ) ) );
             if ( !chart_only && ( out == null ) ) {
                 ForesterUtil.fatalError( PRG_NAME, "outfile file missing" );
             }
@@ -175,6 +177,22 @@ public class msa_compactor {
                                                      + initial_msa_stats.getMin() + ") ]: " + length );
                 }
             }
+            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
+                if ( cla.isOptionSet( LENGTH_OPTION ) || cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION )
+                        || cla.isOptionSet( AV_GAPINESS_OPTION ) || cla.isOptionSet( STEP_OPTION )
+                        || cla.isOptionSet( REALIGN_OPTION ) || cla.isOptionSet( PATH_TO_MAFFT_OPTION )
+                        || cla.isOptionSet( STEP_FOR_DIAGNOSTICS_OPTION ) || cla.isOptionSet( REPORT_ENTROPY )
+                        || cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION )
+                        || cla.isOptionSet( PERFORM_PHYLOGENETIC_INFERENCE ) ) {
+                    printHelp();
+                    System.exit( 0 );
+                }
+                min_length = cla.getOptionValueAsInt( MIN_LENGTH_OPTION );
+                if ( ( min_length < 2 ) || ( min_length > initial_msa_stats.getMax() ) ) {
+                    ForesterUtil.fatalError( PRG_NAME, "value for minimal sequence length is out of range: "
+                            + min_length );
+                }
+            }
             if ( cla.isOptionSet( STEP_OPTION ) ) {
                 step = cla.getOptionValueAsInt( STEP_OPTION );
                 if ( ( step < 1 )
@@ -202,13 +220,6 @@ public class msa_compactor {
                             + step_for_diagnostics );
                 }
             }
-            if ( cla.isOptionSet( MIN_LENGTH_OPTION ) ) {
-                min_length = cla.getOptionValueAsInt( MIN_LENGTH_OPTION );
-                if ( ( min_length < 2 ) || ( min_length > initial_msa_stats.getMax() ) ) {
-                    ForesterUtil.fatalError( PRG_NAME, "value for minimal sequence length is out of range: "
-                            + min_length );
-                }
-            }
             if ( cla.isOptionSet( GAP_RATIO_LENGTH_OPTION ) ) {
                 gap_ratio = cla.getOptionValueAsDouble( GAP_RATIO_LENGTH_OPTION );
                 if ( ( gap_ratio < 0 ) || ( gap_ratio > 1 ) ) {
@@ -218,8 +229,20 @@ public class msa_compactor {
             if ( cla.isOptionSet( REPORT_ENTROPY ) ) {
                 report_entropy = true;
             }
-            if ( cla.isOptionSet( OUTPUT_FORMAT_PHYLIP_OPTION ) ) {
-                output_format = MSA_FORMAT.PHYLIP;
+            if ( cla.isOptionSet( OUTPUT_FORMAT_OPTION ) ) {
+                final String fs = cla.getOptionValueAsCleanString( OUTPUT_FORMAT_OPTION );
+                if ( fs.equalsIgnoreCase( "p" ) ) {
+                    output_format = MSA_FORMAT.PHYLIP;
+                }
+                else if ( fs.equalsIgnoreCase( "f" ) ) {
+                    output_format = MSA_FORMAT.FASTA;
+                }
+                else if ( fs.equalsIgnoreCase( "n" ) ) {
+                    output_format = MSA_FORMAT.NEXUS;
+                }
+                else {
+                    ForesterUtil.fatalError( PRG_NAME, "illegal or empty output format option: " + fs );
+                }
             }
             if ( cla.isOptionSet( OUTPUT_REMOVED_SEQS_OPTION ) ) {
                 final String s = cla.getOptionValueAsCleanString( OUTPUT_REMOVED_SEQS_OPTION );
@@ -276,6 +299,10 @@ public class msa_compactor {
                     + NF_1.format( initial_msa_stats.arithmeticMean() ) );
             System.out.println( "  Max sequence length                : " + ( ( int ) initial_msa_stats.getMax() ) );
             System.out.println( "  Min sequence length                : " + ( ( int ) initial_msa_stats.getMin() ) );
+            System.out.println( "  Gap ratio                          : "
+                    + NF_4.format( MsaMethods.calcGapRatio( msa ) ) );
+            System.out.println( "  Normalized Shannon Entropy (entn21): "
+                    + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, msa ) ) );
             if ( !chart_only ) {
                 System.out.println( "Output                               : " + out );
             }
@@ -301,69 +328,80 @@ public class msa_compactor {
                 System.out.println( "Maximum allowed gap ratio per column : " + gap_ratio );
             }
             if ( ( out != null ) || ( removed_seqs_out_base != null ) ) {
-                System.out.println( "Output format                        : "
-                        + ( output_format == MSA_FORMAT.FASTA ? "fasta" : "phylip" ) );
+                System.out.print( "Output format                        : " );
+                if ( output_format == MSA_FORMAT.FASTA ) {
+                    System.out.println( "fasta" );
+                }
+                else if ( output_format == MSA_FORMAT.PHYLIP ) {
+                    System.out.println( "phylip" );
+                }
+                else if ( output_format == MSA_FORMAT.NEXUS ) {
+                    System.out.println( "nexus" );
+                }
             }
-            if ( chart_only && !realign ) {
-                System.out.println( "Step for output and re-aligning      : n/a" );
-            }
-            else {
-                if ( chart_only ) {
-                    System.out.println( "Step for re-aligning                 : " + step );
+            if ( min_length == -1 ) {
+                if ( chart_only && !realign ) {
+                    System.out.println( "Step for output and re-aligning      : n/a" );
                 }
                 else {
-                    System.out.println( "Step for output and re-aligning      : " + step );
+                    if ( chart_only ) {
+                        System.out.println( "Step for re-aligning                 : " + step );
+                    }
+                    else {
+                        System.out.println( "Step for output and re-aligning      : " + step );
+                    }
                 }
+                System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
+                System.out.println( "Calculate normalized Shannon Entropy : " + report_entropy );
+                if ( !norm ) {
+                    System.out.println( "Normalize                            : " + norm );
+                }
+                System.out.println( "Realign with MAFFT                   : " + realign );
+                if ( realign ) {
+                    System.out.println( "MAFFT options                        : " + mafft_options );
+                }
+                System.out.println( "Simple tree (Kimura distances, NJ)   : " + perform_phylogenetic_inference );
             }
-            System.out.println( "Step for diagnostics reports         : " + step_for_diagnostics );
-            System.out.println( "Calculate normalized Shannon Entropy : " + report_entropy );
-            if ( !norm ) {
-                System.out.println( "Normalize                            : " + norm );
-            }
-            System.out.println( "Realign with MAFFT                   : " + realign );
-            if ( realign ) {
-                System.out.println( "MAFFT options                        : " + mafft_options );
-            }
-            System.out.println( "Simple tree (Kimura distances, NJ)   : " + perform_phylogenetic_inference );
             System.out.println();
             final int initial_number_of_seqs = msa.getNumberOfSequences();
             List<MsaProperties> msa_props = null;
             final MsaCompactor mc = new MsaCompactor( msa );
             mc.setInfileName( in.getName() );
-            mc.setNorm( norm );
-            mc.setRealign( realign );
-            if ( realign ) {
-                mc.setPathToMafft( path_to_mafft );
-                mc.setMafftOptions( mafft_options );
-            }
-            mc.setStep( step );
-            mc.setStepForDiagnostics( step_for_diagnostics );
-            mc.setCalculateNormalizedShannonEntropy( report_entropy );
-            mc.setPeformPhylogenticInference( perform_phylogenetic_inference );
-            if ( ( worst_remove > 0 ) || ( av_gap > 0 ) || ( length > 0 ) ) {
+            if ( ( worst_remove > 0 ) || ( av_gap > 0 ) || ( length > 0 ) || ( min_length != -1 ) ) {
                 mc.setOutputFormat( output_format );
                 mc.setOutFileBase( out );
+            }
+            if ( min_length != -1 ) {
+                mc.removeSequencesByMinimalLength( min_length );
+            }
+            else {
+                mc.setPeformPhylogenticInference( perform_phylogenetic_inference );
                 if ( removed_seqs_out_base != null ) {
                     mc.setRemovedSeqsOutBase( removed_seqs_out_base );
                 }
+                mc.setNorm( norm );
+                mc.setRealign( realign );
+                if ( realign ) {
+                    mc.setPathToMafft( path_to_mafft );
+                    mc.setMafftOptions( mafft_options );
+                }
+                mc.setStep( step );
+                mc.setStepForDiagnostics( step_for_diagnostics );
+                mc.setCalculateNormalizedShannonEntropy( report_entropy );
+                if ( worst_remove > 0 ) {
+                    msa_props = mc.removeWorstOffenders( worst_remove );
+                }
+                else if ( av_gap > 0 ) {
+                    msa_props = mc.removeViaGapAverage( av_gap );
+                }
+                else if ( length > 0 ) {
+                    msa_props = mc.removeViaLength( length );
+                }
+                else {
+                    msa_props = mc.chart( step, realign, norm );
+                }
+                Chart.display( msa_props, initial_number_of_seqs, report_entropy, in.getName() );
             }
-            if ( min_length > 1 ) {
-                mc.removeSequencesByMinimalLength( min_length );
-                mc.writeMsa( new File( "removed" ) );
-            }
-            if ( worst_remove > 0 ) {
-                msa_props = mc.removeWorstOffenders( worst_remove );
-            }
-            else if ( av_gap > 0 ) {
-                msa_props = mc.removeViaGapAverage( av_gap );
-            }
-            else if ( length > 0 ) {
-                msa_props = mc.removeViaLength( length );
-            }
-            else {
-                msa_props = mc.chart( step, realign, norm );
-            }
-            Chart.display( msa_props, initial_number_of_seqs, report_entropy, in.getName() );
         }
         catch ( final IllegalArgumentException iae ) {
             //  iae.printStackTrace(); //TODO remove me
@@ -425,8 +463,8 @@ public class msa_compactor {
                 + "=<integer>  step for diagnostics reports (default: 1)" );
         System.out.println( "   -" + REPORT_ENTROPY
                 + "             to calculate normalized Shannon Entropy (not recommended for very large alignments)" );
-        System.out.println( "   -" + OUTPUT_FORMAT_PHYLIP_OPTION
-                + "             to write output alignments in phylip format instead of fasta" );
+        System.out.println( "   -" + OUTPUT_FORMAT_OPTION
+                + "=<f|p|n>     format for output alignments: f for fasta (default), p for phylip, or n for nexus" );
         System.out.println( "   -" + OUTPUT_REMOVED_SEQS_OPTION + "=<file>     to output the removed sequences" );
         System.out.println( "   -" + MIN_LENGTH_OPTION
                 + "=<integer>  minimal effecive sequence length (for deleting of shorter sequences)" );

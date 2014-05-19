@@ -6376,13 +6376,15 @@ public final class Test {
             final Writer w = new StringWriter();
             dmsa2.write( w, MSA_FORMAT.PHYLIP );
             final String phylip = w.toString();
-            if ( !phylip.equals( "new_c x" + ForesterUtil.LINE_SEPARATOR ) ) {
+            if ( !phylip.equals( "1 1" + ForesterUtil.LINE_SEPARATOR + "new_c x" + ForesterUtil.LINE_SEPARATOR ) ) {
+                System.out.println( phylip );
                 return false;
             }
             final Writer w2 = new StringWriter();
             dmsa2.write( w2, MSA_FORMAT.FASTA );
             final String fasta = w2.toString();
             if ( !fasta.equals( ">new_c" + ForesterUtil.LINE_SEPARATOR + "x" + ForesterUtil.LINE_SEPARATOR ) ) {
+                System.out.println( fasta );
                 return false;
             }
         }

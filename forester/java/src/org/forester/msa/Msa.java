@@ -35,7 +35,7 @@ import org.forester.sequence.Sequence.TYPE;
 public interface Msa {
 
     public static enum MSA_FORMAT {
-        FASTA, PHYLIP;
+        FASTA, PHYLIP, NEXUS;
     }
 
     public String getIdentifier( int row );

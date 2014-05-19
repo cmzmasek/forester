@@ -67,12 +67,14 @@ import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sequence.Sequence;
 import org.forester.tools.ConfidenceAssessor;
 import org.forester.util.BasicDescriptiveStatistics;
+import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
 public class MsaCompactor {
 
-    final private static NumberFormat NF_3                       = new DecimalFormat( "#.###" );
-    final private static NumberFormat NF_4                       = new DecimalFormat( "#.####" );
+    final private static NumberFormat NF_1                       = new DecimalFormat( "0.#" );
+    final private static NumberFormat NF_3                       = new DecimalFormat( "0.###" );
+    final private static NumberFormat NF_4                       = new DecimalFormat( "0.####" );
     private boolean                   _calculate_shannon_entropy = false;
     //
     private String                    _infile_name               = null;
@@ -93,6 +95,7 @@ public class MsaCompactor {
     private int                       _step                      = -1;
     private int                       _step_for_diagnostics      = -1;
     static {
+        NF_1.setRoundingMode( RoundingMode.HALF_UP );
         NF_4.setRoundingMode( RoundingMode.HALF_UP );
         NF_3.setRoundingMode( RoundingMode.HALF_UP );
     }
@@ -260,12 +263,21 @@ public class MsaCompactor {
         return _msa;
     }
 
-    public final void removeSequencesByMinimalLength( final int min_effective_length ) {
-        printMsaProperties( new MsaProperties( _msa, "", _calculate_shannon_entropy ) );
-        System.out.println();
+    public final void removeSequencesByMinimalLength( final int min_effective_length ) throws IOException {
         _msa = DeleteableMsa.createInstance( MsaMethods.removeSequencesByMinimalLength( _msa, min_effective_length ) );
         removeGapColumns();
-        printMsaProperties( new MsaProperties( _msa, "", _calculate_shannon_entropy ) );
+        final String s = writeOutfile();
+        final DescriptiveStatistics msa_stats = MsaMethods.calculateEffectiveLengthStatistics( _msa );
+        System.out.println( "Output MSA                           : " + s );
+        System.out.println( "  MSA length                         : " + _msa.getLength() );
+        System.out.println( "  Number of sequences                : " + _msa.getNumberOfSequences() );
+        System.out.println( "  Median sequence length             : " + NF_1.format( msa_stats.median() ) );
+        System.out.println( "  Mean sequence length               : " + NF_1.format( msa_stats.arithmeticMean() ) );
+        System.out.println( "  Max sequence length                : " + ( ( int ) msa_stats.getMax() ) );
+        System.out.println( "  Min sequence length                : " + ( ( int ) msa_stats.getMin() ) );
+        System.out.println( "  Gap ratio                          : " + NF_4.format( MsaMethods.calcGapRatio( _msa ) ) );
+        System.out.println( "  Normalized Shannon Entropy (entn21): "
+                + NF_4.format( MsaMethods.calcNormalizedShannonsEntropy( 21, _msa ) ) );
         System.out.println();
     }
 

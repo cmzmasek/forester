@@ -175,6 +175,9 @@ public class BasicMsa implements Msa {
             case FASTA:
                 writeToFasta( w );
                 break;
+            case NEXUS:
+                writeToNexus( w );
+                break;
             default:
                 throw new RuntimeException( "unknown format " + format );
         }
@@ -195,10 +198,39 @@ public class BasicMsa implements Msa {
         SequenceWriter.writeSeqs( asSequenceList(), w, SEQ_FORMAT.FASTA, 100 );
     }
 
+    private void writeToNexus( final Writer w ) throws IOException {
+        final int max = determineMaxIdLength() + 1;
+        w.write( "Begin Data;" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+        w.write( "   Dimensions NTax=" + getNumberOfSequences() );
+        w.write( " NChar=" + getLength() );
+        w.write( ";" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+        w.write( "   Format DataType=Protein Interleave=No gap=-;" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+        w.write( "   Matrix" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+        for( int row = 0; row < getNumberOfSequences(); ++row ) {
+            final Sequence seq = getSequence( row );
+            final String s = seq.getMolecularSequenceAsString();
+            w.write( "      " );
+            w.write( ForesterUtil.pad( getIdentifier( row ).replace( ' ', '_' ), max, ' ', false ).toString() );
+            w.write( " " );
+            w.write( s );
+            w.write( ForesterUtil.LINE_SEPARATOR );
+        }
+        w.write( "   ;" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+        w.write( "End;" );
+        w.write( ForesterUtil.LINE_SEPARATOR );
+    }
+
     private void writeToPhylip( final Writer w ) throws IOException {
         final int max = determineMaxIdLength() + 1;
+        w.write( getNumberOfSequences() + " " + getLength() );
+        w.write( ForesterUtil.LINE_SEPARATOR );
         for( int row = 0; row < getNumberOfSequences(); ++row ) {
-            w.write( ForesterUtil.pad( getIdentifier( row ), max, ' ', false ).toString() );
+            w.write( ForesterUtil.pad( getIdentifier( row ).replace( ' ', '_' ), max, ' ', false ).toString() );
             for( int col = 0; col < getLength(); ++col ) {
                 w.write( getResidueAt( row, col ) );
             }
