@@ -41,6 +41,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -463,7 +464,9 @@ public final class ForesterUtil {
             reader = new BufferedReader( new StringReader( source.toString() ) );
         }
         else if ( source instanceof URL ) {
-            reader = new BufferedReader( new InputStreamReader( ( ( URL ) source ).openStream() ) );
+            final URLConnection url_connection = ( ( URL ) source ).openConnection();
+            url_connection.setDefaultUseCaches( false );
+            reader = new BufferedReader( new InputStreamReader( url_connection.getInputStream() ) );
         }
         else {
             throw new IllegalArgumentException( "dont know how to read [" + source.getClass() + "]" );

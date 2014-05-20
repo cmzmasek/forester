@@ -40,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -680,7 +681,9 @@ public final class AptxUtil {
             }
         }
         AptxUtil.printAppletMessage( "Archaeopteryx", "parser is " + parser.getName() );
-        final InputStream i = url.openStream();
+        final URLConnection url_connection = url.openConnection();
+        url_connection.setDefaultUseCaches( false );
+        final InputStream i = url_connection.getInputStream();
         final Phylogeny[] phys = factory.create( i, parser );
         i.close();
         if ( phys != null ) {

@@ -556,6 +556,12 @@ public class MsaCompactor {
         return gappiness;
     }
 
+    private final Phylogeny collapse( final Msa msa, final int threshold ) {
+        final BasicSymmetricalDistanceMatrix m = PairwiseDistanceCalculator.calcFractionalDissimilarities( msa );
+        //TODO
+        return null;
+    }
+
     private final Phylogeny inferNJphylogeny( final PWD_DISTANCE_METHOD pwd_distance_method,
                                               final Msa msa,
                                               final boolean write_matrix,
