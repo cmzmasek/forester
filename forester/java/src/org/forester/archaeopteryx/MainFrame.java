@@ -140,6 +140,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _lineage_inference;
     // file menu:
     JMenuItem                   _open_item;
+    JMenuItem                   _open_url_item;
     JMenuItem                   _save_item;
     JMenuItem                   _save_all_item;
     JMenuItem                   _close_item;
@@ -1457,7 +1458,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                     if ( !ForesterUtil.isEmpty( ref ) ) {
                         ref = ref.trim();
                         ref = ref.replaceAll( "\\s+", " " );
-                        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ref.length() - 2 )
+                        if ( ( ref.indexOf( ':' ) < 1 ) || ( ref.indexOf( ':' ) > ( ref.length() - 2 ) )
                                 || ( ref.length() < 3 ) ) {
                             JOptionPane.showMessageDialog( this,
                                                            "Reference needs to be in the form of \"GO:1234567\"",

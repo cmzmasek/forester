@@ -37,6 +37,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -92,6 +94,8 @@ import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
+import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
+import org.forester.phylogeny.factories.PhylogenyFactory;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sequence.Sequence;
 import org.forester.util.BasicDescriptiveStatistics;
@@ -412,6 +416,9 @@ public final class MainFrameApplication extends MainFrame {
             // Handle app-specific actions here:
             if ( o == _open_item ) {
                 readPhylogeniesFromFile();
+            }
+            if ( o == _open_url_item ) {
+                readPhylogeniesFromURL();
             }
             else if ( o == _save_item ) {
                 writeToFile( _mainpanel.getCurrentPhylogeny() );
@@ -782,6 +789,8 @@ public final class MainFrameApplication extends MainFrame {
         _file_jmenu = MainFrame.createMenu( "File", getConfiguration() );
         _file_jmenu.add( _open_item = new JMenuItem( "Read Tree from File..." ) );
         _file_jmenu.addSeparator();
+        _file_jmenu.add( _open_url_item = new JMenuItem( "Read Tree from URL/Webservice..." ) );
+        _file_jmenu.addSeparator();
         final WebservicesManager webservices_manager = WebservicesManager.getInstance();
         _load_phylogeny_from_webservice_menu_items = new JMenuItem[ webservices_manager
                 .getAvailablePhylogeniesWebserviceClients().size() ];
@@ -821,10 +830,10 @@ public final class MainFrameApplication extends MainFrame {
         _close_item.setEnabled( true );
         _file_jmenu.addSeparator();
         _file_jmenu.add( _exit_item = new JMenuItem( "Exit" ) );
-        // For print in color option item
         customizeJMenuItem( _open_item );
         _open_item
                 .setFont( new Font( _open_item.getFont().getFontName(), Font.BOLD, _open_item.getFont().getSize() + 4 ) );
+        customizeJMenuItem( _open_url_item );
         for( int i = 0; i < webservices_manager.getAvailablePhylogeniesWebserviceClients().size(); ++i ) {
             customizeJMenuItem( _load_phylogeny_from_webservice_menu_items[ i ] );
         }
@@ -1153,6 +1162,87 @@ public final class MainFrameApplication extends MainFrame {
         setVisible( false );
         dispose();
         System.exit( 0 );
+    }
+
+    void readPhylogeniesFromURL() {
+        URL url = null;
+        Phylogeny[] phys = null;
+        final String message = "Please enter a complete URL, for example \"http://purl.org/phylo/treebase/phylows/study/TB2:S15480?format=nexus\"";
+        final String url_string = JOptionPane.showInputDialog( this,
+                                                               message,
+                                                               "Use URL/webservice to obtain a phylogeny",
+                                                               JOptionPane.QUESTION_MESSAGE );
+        boolean nhx_or_nexus = false;
+        if ( ( url_string != null ) && ( url_string.length() > 0 ) ) {
+            try {
+                url = new URL( url_string );
+                PhylogenyParser parser = null;
+                if ( url.getHost().toLowerCase().indexOf( "tolweb" ) >= 0 ) {
+                    parser = new TolParser();
+                }
+                else {
+                    parser = ParserUtils.createParserDependingOnUrlContents( url, getConfiguration()
+                            .isValidatePhyloXmlAgainstSchema() );
+                }
+                if ( parser instanceof NexusPhylogeniesParser ) {
+                    nhx_or_nexus = true;
+                }
+                else if ( parser instanceof NHXParser ) {
+                    nhx_or_nexus = true;
+                }
+                if ( _mainpanel.getCurrentTreePanel() != null ) {
+                    _mainpanel.getCurrentTreePanel().setWaitCursor();
+                }
+                else {
+                    _mainpanel.setWaitCursor();
+                }
+                final PhylogenyFactory factory = ParserBasedPhylogenyFactory.getInstance();
+                phys = factory.create( url.openStream(), parser );
+            }
+            catch ( final MalformedURLException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Malformed URL: " + url + "\n" + e.getLocalizedMessage(),
+                                               "Malformed URL",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            catch ( final IOException e ) {
+                JOptionPane.showMessageDialog( this,
+                                               "Could not read from " + url + "\n"
+                                                       + ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
+                                               "Failed to read URL",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            catch ( final Exception e ) {
+                JOptionPane.showMessageDialog( this,
+                                               ForesterUtil.wordWrap( e.getLocalizedMessage(), 80 ),
+                                               "Unexpected Exception",
+                                               JOptionPane.ERROR_MESSAGE );
+            }
+            finally {
+                if ( _mainpanel.getCurrentTreePanel() != null ) {
+                    _mainpanel.getCurrentTreePanel().setArrowCursor();
+                }
+                else {
+                    _mainpanel.setArrowCursor();
+                }
+            }
+            if ( ( phys != null ) && ( phys.length > 0 ) ) {
+                if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
+                    for( final Phylogeny phy : phys ) {
+                        
+                        PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
+                    }
+                }
+                AptxUtil.addPhylogeniesToTabs( phys,
+                                               new File( url.getFile() ).getName(),
+                                               new File( url.getFile() ).toString(),
+                                               getConfiguration(),
+                                               getMainPanel() );
+                _mainpanel.getControlPanel().showWhole();
+            }
+        }
+        activateSaveAllIfNeeded();
+        System.gc();
     }
 
     void setMsa( final Msa msa ) {
