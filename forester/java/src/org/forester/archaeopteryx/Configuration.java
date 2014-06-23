@@ -90,17 +90,18 @@ public final class Configuration {
     // ------------------
     final static String                     display_options[][]                                    = {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
-            { "Seq Annotations", "nodisplay", "no" }, { "Confidence Values", "display", "?" },
+            { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
+            { "Colorize by Sequence", "display", "no" },
             { "Visual Styles/Branch Colors", "display", "no" }, { "Branch Widths", "display", "no" },
-            { "Protein Domains", "nodisplay", "no" }, { "Binary Characters", "nodisplay", "no" },
+            { "Protein Domains", "display", "no" }, { "Binary Characters", "nodisplay", "no" },
             { "Binary Char Counts", "nodisplay", "no" }, { "Seq Name", "display", "yes" },
             { "Seq Accession", "display", "no" }, { "Show Internal Data", "display", "yes" },
             { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
-            { "Taxonomy Common", "display", "no" }, { "Colorize by Annotation", "nodisplay", "no" },
+            { "Taxonomy Common", "display", "no" }, { "Colorize by Annotation", "display", "no" },
             { "Seq Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
             { "Relation Confidence", "nodisplay", "no" }, { "Vector Data", "nodisplay", "no" },
-            { "Taxonomy Images", "display", "no" }, { "Properties", "nodisplay", "no" },
+            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" },
             { "Gene Name", "display", "yes" }                                                     };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
@@ -109,37 +110,32 @@ public final class Configuration {
     final static int                        write_confidence_values                                = 4;
     final static int                        write_events                                           = 5;
     final static int                        color_according_to_species                             = 6;
-    final static int                        use_style                                              = 7;
-    final static int                        width_branches                                         = 8;
-    final static int                        show_domain_architectures                              = 9;
-    final static int                        show_binary_characters                                 = 10;
-    final static int                        show_binary_character_counts                           = 11;
-    final static int                        show_seq_names                                         = 12;
-    final static int                        show_sequence_acc                                      = 13;
-    final static int                        display_internal_data                                  = 14;
-    final static int                        dynamically_hide_data                                  = 15;
-    final static int                        show_taxonomy_scientific_names                         = 16;
-    final static int                        show_taxonomy_common_names                             = 17;
-    final static int                        color_according_to_annotation                          = 18;
-    final static int                        show_seq_symbols                                       = 19;
-    final static int                        node_data_popup                                        = 20;
-    final static int                        show_relation_confidence                               = 21;
-    final static int                        show_vector_data                                       = 22;
-    final static int                        show_taxonomy_images                                   = 23;
-    final static int                        show_properties                                        = 24;
-    final static int                        show_gene_names                                        = 25;
+    final static int                        color_according_to_sequence                            = 7;
+    final static int                        use_style                                              = 8;
+    final static int                        width_branches                                         = 9;
+    final static int                        show_domain_architectures                              = 10;
+    final static int                        show_binary_characters                                 = 11;
+    final static int                        show_binary_character_counts                           = 12;
+    final static int                        show_seq_names                                         = 13;
+    final static int                        show_sequence_acc                                      = 14;
+    final static int                        display_internal_data                                  = 15;
+    final static int                        dynamically_hide_data                                  = 16;
+    final static int                        show_taxonomy_scientific_names                         = 17;
+    final static int                        show_taxonomy_common_names                             = 18;
+    final static int                        color_according_to_annotation                          = 19;
+    final static int                        show_seq_symbols                                       = 20;
+    final static int                        node_data_popup                                        = 21;
+    final static int                        show_relation_confidence                               = 22;
+    final static int                        show_vector_data                                       = 23;
+    final static int                        show_taxonomy_images                                   = 24;
+    final static int                        show_properties                                        = 25;
+    final static int                        show_gene_names                                        = 26;
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
-    // ----------------
-    // Function colors
-    // ----------------
+     private static Hashtable<String, Color> _sequence_colors;
+    
+    
     private static Hashtable<String, Color> _annotation_colors;
-    // ----------------
-    // Domain colors
-    // ----------------
     private static Hashtable<String, Color> _domain_colors;
-    // ----------------
-    // Species colors
-    // ----------------
     private static Hashtable<String, Color> _species_colors;
     private static String                   DEFAULT_FONT_FAMILY                                    = "";
     private static final int                DEPRECATED                                             = -2;
@@ -567,15 +563,7 @@ public final class Configuration {
     public void setShowScale( final boolean show_scale ) {
         _show_scale = show_scale;
     }
-
-    public void setTaxonomyColorize( final boolean b ) {
-        display_options[ color_according_to_species ][ 2 ] = b ? "yes" : "no";
-    }
-
-    public void setUseBranchesWidths( final boolean b ) {
-        display_options[ width_branches ][ 2 ] = b ? "yes" : "no";
-    }
-
+  
     boolean displaySequenceRelations() {
         return _display_sequence_relations;
     }
@@ -733,6 +721,13 @@ public final class Configuration {
             _species_colors = new Hashtable<String, Color>();
         }
         return _species_colors;
+    }
+    
+    Hashtable<String, Color> getSequenceColors() {
+        if ( _sequence_colors == null ) {
+            _sequence_colors = new Hashtable<String, Color>();
+        }
+        return _sequence_colors;
     }
 
     final TAXONOMY_EXTRACTION getTaxonomyExtraction() {
@@ -1522,6 +1517,9 @@ public final class Configuration {
             else if ( key.equals( "color_according_to_species" ) ) {
                 key_index = Configuration.color_according_to_species;
             }
+            else if ( key.equals( "color_according_to_sequence" ) ) {
+                key_index = Configuration.color_according_to_sequence;
+            }
             else if ( key.equals( "show_node_names" ) ) {
                 key_index = Configuration.show_node_names;
             }
@@ -1623,6 +1621,10 @@ public final class Configuration {
                 }
                 else if ( key.equals( "species_color" ) ) {
                     getSpeciesColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ),
+                                            Color.decode( ( String ) st.nextElement() ) );
+                }
+                else if ( key.equals( "sequence_color" ) ) {
+                    getSequenceColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ),
                                             Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "domain_color" ) ) {

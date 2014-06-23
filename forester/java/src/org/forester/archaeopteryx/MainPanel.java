@@ -409,6 +409,7 @@ public class MainPanel extends JPanel implements ComponentListener {
 
     void setupTreeGraphic( final Configuration config_settings, final ControlPanel control ) {
         control.setSpeciesColors( config_settings.getSpeciesColors() );
+        control.setSequenceColors( config_settings.getSequenceColors() );
         control.setAnnotationColors( config_settings.getAnnotationColors() );
         RenderableDomainArchitecture.setColorMap( config_settings.getDomainColors() );
     }

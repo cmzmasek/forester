@@ -91,6 +91,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private List<String>         _click_to_names;
     private int                  _collapse_cb_item;
     private JCheckBox            _color_acc_species;
+    private JCheckBox            _color_acc_sequence;
     private JCheckBox            _color_according_to_annotation;
     private boolean              _color_branches;
     private JCheckBox            _use_visual_styles_cb;
@@ -156,6 +157,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JButton              _show_whole;
     private int                  _sort_descendents_item;
     private Map<String, Color>   _species_colors;
+    private Map<String, Color>   _sequence_colors;
     private int                  _subtree_cb_item;
     private int                  _swap_cb_item;
     private JButton              _uncollapse_all;
@@ -189,6 +191,19 @@ final class ControlPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed( final ActionEvent e ) {
         try {
+            if ( e.getSource() == _color_acc_sequence ) {
+                if ( _color_acc_species != null  ) {
+                    _color_acc_species.setSelected( false );
+                }
+             }
+            else if ( e.getSource() == _color_acc_species ) {
+                if ( _color_acc_sequence != null  ) {
+                    _color_acc_sequence.setSelected( false );
+                }
+                
+            }
+            
+            
             final TreePanel tp = getMainPanel().getCurrentTreePanel();
             if ( tp == null ) {
                 return;
@@ -291,6 +306,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
+                
+              
+                
+                
                 else {
                     displayedPhylogenyMightHaveChanged( true );
                 }
@@ -309,6 +328,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     public JCheckBox getColorAccSpeciesCb() {
         return _color_acc_species;
+    }
+    
+    public JCheckBox getColorAccSequenceCb() {
+        return _color_acc_sequence;
     }
 
     public JCheckBox getUseVisualStylesCb() {
@@ -532,8 +555,15 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.color_according_to_species:
                 _color_acc_species = new JCheckBox( title );
                 _color_acc_species
-                        .setToolTipText( "To colorize taxonomy and sequence labels as a function of taxonomy" );
+                        .setToolTipText( "To colorize node labels as a function of taxonomy" );
                 addJCheckBox( _color_acc_species, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.color_according_to_sequence:
+                _color_acc_sequence = new JCheckBox( title );
+                _color_acc_sequence
+                        .setToolTipText( "To colorize node labels as a function of sequence name" );
+                addJCheckBox( _color_acc_sequence, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.color_according_to_annotation:
@@ -790,6 +820,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     Map<String, Color> getSpeciesColors() {
         return _species_colors;
     }
+    
+    Map<String, Color> getSequenceColors() {
+        return _sequence_colors;
+    }
 
     boolean isAntialiasScreenText() {
         return true;
@@ -801,6 +835,10 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     boolean isColorAccordingToTaxonomy() {
         return ( ( _color_acc_species != null ) && _color_acc_species.isSelected() );
+    }
+    
+    boolean isColorAccordingToSequence() {
+        return ( ( _color_acc_sequence != null ) && _color_acc_sequence.isSelected() );
     }
 
     boolean isUseVisualStyles() {
@@ -976,6 +1014,11 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.color_according_to_species:
                 if ( _color_acc_species != null ) {
                     _color_acc_species.setSelected( state );
+                }
+                break;
+            case Configuration.color_according_to_sequence:
+                if ( _color_acc_sequence != null ) {
+                    _color_acc_sequence.setSelected( state );
                 }
                 break;
             case Configuration.color_according_to_annotation:
@@ -1230,6 +1273,10 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setSpeciesColors( final Map<String, Color> species_colors ) {
         _species_colors = species_colors;
     }
+    
+    void setSequenceColors( final Map<String, Color> sequence_colors ) {
+        _sequence_colors = sequence_colors;
+    }
 
     /* GUILHEM_END */
     /*
@@ -1421,6 +1468,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         }
         if ( _color_acc_species != null ) {
             _color_acc_species.setSelected( false );
+        }
+        if ( _color_acc_sequence != null ) {
+            _color_acc_sequence.setSelected( false );
         }
         _mainpanel.getCurrentTreePanel().repaint();
     }
@@ -1721,6 +1771,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private void init() {
         _draw_phylogram = new ArrayList<Boolean>();
         setSpeciesColors( new HashMap<String, Color>() );
+        setSequenceColors( new HashMap<String, Color>() );
         setAnnotationColors( new HashMap<String, Color>() );
     }
 
@@ -2095,6 +2146,18 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.display_internal_data,
                          _configuration.doCheckOption( Configuration.display_internal_data ) );
         }
+        
+        
+        if ( _configuration.doDisplayOption( Configuration.color_according_to_sequence ) ) {
+            addCheckbox( Configuration.color_according_to_sequence,
+                         _configuration.getDisplayTitle( Configuration.color_according_to_sequence ) );
+            setCheckbox( Configuration.color_according_to_sequence,
+                         _configuration.doCheckOption( Configuration.color_according_to_sequence ) );
+        }
+        
+        
+        
+        
         if ( _configuration.doDisplayOption( Configuration.color_according_to_species ) ) {
             addCheckbox( Configuration.color_according_to_species,
                          _configuration.getDisplayTitle( Configuration.color_according_to_species ) );

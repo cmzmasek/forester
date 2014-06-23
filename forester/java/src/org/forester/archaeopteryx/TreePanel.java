@@ -715,6 +715,20 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return c;
         }
     }
+    
+    final Color calculateSequenceBasedColor( final Sequence seq ) {
+            if ( ForesterUtil.isEmpty( seq.getName() ) ) {
+                return getTreeColorSet().getSequenceColor();
+            }
+            Color c = null;
+            final String seq_name = seq.getName();
+            c = getControlPanel().getSequenceColors().get( seq_name  );
+            if ( c == null ) {
+                    c = TreePanelUtil.calculateColorFromString( seq_name, false );
+                    getControlPanel().getSequenceColors().put( seq_name, c );
+            }
+            return c;
+    }
 
     void checkForVectorProperties( final Phylogeny phy ) {
         final DescriptiveStatistics stats = new BasicDescriptiveStatistics();
@@ -841,6 +855,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             if ( _control_panel.getColorAccSpeciesCb() != null ) {
                 _control_panel.getColorAccSpeciesCb().setSelected( false );
             }
+           
             _options.setColorLabelsSameAsParentBranch( true );
             _control_panel.repaint();
         }
@@ -986,12 +1001,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return _statistics_for_vector_data;
     }
 
-    /**
-     * Find a color for this species name.
-     * 
-     * @param species
-     * @return the species color
-     */
+  
     final Color getTaxonomyBasedColor( final PhylogenyNode node ) {
         if ( node.getNodeData().isHasTaxonomy() ) {
             return calculateTaxonomyBasedColor( node.getNodeData().getTaxonomy() );
@@ -999,6 +1009,16 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         // return non-colorized color
         return getTreeColorSet().getTaxonomyColor();
     }
+    
+
+    final Color getSequenceBasedColor( final PhylogenyNode node ) {
+        if ( node.getNodeData().isHasSequence() ) {
+            return calculateSequenceBasedColor( node.getNodeData().getSequence() );
+        }
+        // return non-colorized color
+        return getTreeColorSet().getSequenceColor();
+    }
+    
 
     /**
      * @return pointer to colorset for tree drawing
@@ -3924,6 +3944,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         else if ( is_in_found_nodes ) {
             c = getColorForFoundNode( node );
         }
+        else if ( getControlPanel().isColorAccordingToSequence() ) {
+            c = getSequenceBasedColor( node );
+        }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             c = getTaxonomyBasedColor( node );
         }
@@ -5161,6 +5184,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 && ( node.getNodeData().getNodeVisualData().getFontColor() != null ) ) {
             g.setColor( node.getNodeData().getNodeVisualData().getFontColor() );
         }
+        else if ( getControlPanel().isColorAccordingToSequence() ) {
+            g.setColor( getSequenceBasedColor( node ) );
+        }
         else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
             g.setColor( getTaxonomyBasedColor( node ) );
         }
@@ -5688,9 +5714,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                         else if ( isInFoundNodes0( node ) && isInFoundNodes1( node ) ) {
                             _rollover_popup.setForeground( getTreeColorSet().getFoundColor0and1() );
-                        }
-                        else if ( getControlPanel().isColorAccordingToTaxonomy() ) {
-                            _rollover_popup.setForeground( getTaxonomyBasedColor( node ) );
                         }
                         else {
                             _rollover_popup.setForeground( getTreeColorSet().getSequenceColor() );
