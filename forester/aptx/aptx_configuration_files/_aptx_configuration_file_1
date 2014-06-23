@@ -186,6 +186,7 @@ validate_against_phyloxml_xsd_schema: true
 
 phylogram:                      display   ?
 rollover:                       display   yes
+color_according_to_sequence:    display   no
 color_according_to_species:     display   no
 color_according_to_annotation:  nodisplay no
 show_node_names:                display   yes
@@ -298,6 +299,13 @@ use_tabbed_display:      yes
 
 
 
+#  Sequence colors
+#  ---------------
+#  Format: species_color: sequencename hexcolor
+sequence_color: Tubulin-alpha        0xEE0000
+sequence_color: Tubulin-beta         0x00EE00
+
+
 #  Species colors
 #  --------------
 #  Format: species_color: speciesname hexcolor
@@ -399,5 +407,45 @@ species_color: Bacteria       0x00FF00
 species_color: Archaea        0x0000FF
 species_color: Eukaryota      0xFF0000
 species_color: eukaryotes     0xFF0000
+
+
+
+#  Domain colors
+#  -------------
+domain_color: Cofilin_ADF     0xFC0FC0
+domain_color: TIR             0x900000
+domain_color: NACHT           0x202020
+domain_color: CARD            0xFF0000
+domain_color: Peptidase_C14   0x00FF00
+domain_color: Death           0x0000FF
+domain_color: DED             0x00FFFF
+domain_color: BIR             0xCCFF33
+domain_color: PAAD_DAPIN      0x9999CC
+domain_color: NB-ARC          0x500050
+domain_color: WD40            0x888888
+domain_color: RVT_1           0x999900
+domain_color: CBM_48          0xFF0000
+domain_color: Alpha-amylase   0x0000FF
+domain_color: Alpha-amylase_C 0x0080FF
+domain_color: CBM_48          0xFF0000
+domain_color: Alpha-amylase   0x0000FF
+domain_color: Alpha-amylase_C 0x0080FF
+domain_color: GDE_N           0x009000
+domain_color: GDE_C           0x00FF00
+domain_color: hGDE_N          0x990099
+domain_color: GDE_N_bis       0x007000
+domain_color: hGDE_central    0xFF8000
+domain_color: hGDE_amylase    0x0000EE
+domain_color: hDGE_amylase    0x0000EE
+
+
+
+#  Annotation colors
+#  -----------------
+annotation_color: dehydrogenase 0x0000FF
+annotation_color: kinase        0xFF00FF
+annotation_color: protease      0x009900
+annotation_color: transcription 0xAAAA00
+
 
 # END
