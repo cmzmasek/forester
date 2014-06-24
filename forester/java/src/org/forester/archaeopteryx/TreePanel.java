@@ -2360,6 +2360,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sb.append( !ForesterUtil.isEmpty( a.getRefValue() ) ? a.getRefValue() : a.getDesc() );
             }
             final String ann_str = sb.toString();
+            System.out.println( ann_str );
             if ( !ForesterUtil.isEmpty( ann_str ) ) {
                 c = getControlPanel().getAnnotationColors().get( ann_str );
                 if ( c == null ) {
@@ -2371,6 +2372,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
+        System.out.println( c.toString() );
         return c;
     }
 
