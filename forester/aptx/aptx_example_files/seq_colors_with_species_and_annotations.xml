@@ -20,7 +20,7 @@
           </taxonomy>
           <sequence>
             <name>Tubulin-alpha</name>
-            <annotation ref="subtree:A"></annotation>
+            <annotation ref="subtree:one"></annotation>
           </sequence>
         </clade>
         <clade>
@@ -36,7 +36,7 @@
           </taxonomy>
           <sequence>
             <name>Tubulin-beta</name>
-            <annotation ref="subtree:A"></annotation>
+            <annotation ref="subtree:one"></annotation>
           </sequence>
         </clade>
       </clade>
@@ -55,7 +55,7 @@
           </taxonomy>
           <sequence>
             <name>Tubulin-beta</name>
-            <annotation ref="subtree:A"></annotation>
+            <annotation ref="subtree:one"></annotation>
           </sequence>
         </clade>
         <clade>
@@ -73,7 +73,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-alpha</name>
-              <annotation ref="subtree:A"></annotation>
+              <annotation ref="subtree:one"></annotation>
             </sequence>
           </clade>
           <clade>
@@ -89,7 +89,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-alpha</name>
-              <annotation ref="subtree:A"></annotation>
+              <annotation ref="subtree:one"></annotation>
             </sequence>
           </clade>
         </clade>
@@ -110,7 +110,7 @@
           </taxonomy>
           <sequence>
             <name>Tubulin-alpha</name>
-            <annotation ref="subtree:B"></annotation>
+            <annotation ref="subtree:two"></annotation>
           </sequence>
         </clade>
         <clade>
@@ -128,7 +128,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-alpha</name>
-              <annotation ref="subtree:B"></annotation>
+              <annotation ref="subtree:two"></annotation>
             </sequence>
           </clade>
           <clade>
@@ -144,7 +144,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-alpha</name>
-              <annotation ref="subtree:B"></annotation>
+              <annotation ref="subtree:two"></annotation>
             </sequence>
           </clade>
         </clade>
@@ -166,7 +166,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-alpha</name>
-              <annotation ref="subtree:B"></annotation>
+              <annotation ref="subtree:two"></annotation>
             </sequence>
           </clade>
           <clade>
@@ -182,7 +182,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-beta</name>
-              <annotation ref="subtree:B"></annotation>
+              <annotation ref="subtree:two"></annotation>
             </sequence>
           </clade>
         </clade>
@@ -201,7 +201,7 @@
             </taxonomy>
             <sequence>
               <name>Tubulin-beta</name>
-              <annotation ref="subtree:B"></annotation>
+              <annotation ref="subtree:two"></annotation>
             </sequence>
           </clade>
           <clade>
@@ -219,7 +219,7 @@
               </taxonomy>
               <sequence>
                 <name>Tubulin-delta</name>
-                <annotation ref="subtree:B"></annotation>
+                <annotation ref="subtree:two"></annotation>
               </sequence>
             </clade>
             <clade>
@@ -235,7 +235,7 @@
               </taxonomy>
               <sequence>
                 <name>Tubulin-delta</name>
-                <annotation ref="subtree:B"></annotation>
+                <annotation ref="subtree:two"></annotation>
               </sequence>
             </clade>
           </clade>
