@@ -2471,8 +2471,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( additional_nodes != null ) {
-            for( final PhylogenyNode n : additional_nodes ) {
-                n.getBranchData().setBranchColor( new BranchColor( c ) );
+            for( final PhylogenyNode an : additional_nodes ) {
+               // n.getBranchData().setBranchColor( new BranchColor( c ) );
+                for( final PreorderTreeIterator it = new PreorderTreeIterator( an ); it.hasNext(); ) {
+                    it.next().getBranchData().setBranchColor( new BranchColor( c ) );
+                }
             }
         }
         repaint();
