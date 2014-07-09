@@ -1,4 +1,4 @@
-# Last updated: 140319
+# Last updated: 140708
 #
 # Ophistokonta::Animals (mammals)
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/BOVIN.hmmscan    BOVIN
@@ -204,7 +204,7 @@
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ENTDS.hmmscan    ENTDS
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ENTHI.hmmscan    ENTHI
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/POLPA.hmmscan    POLPA
-# Corticata::Archaeplastida::Viridaeplantae::Streptophyta
+# Archaeplastida::Viridaeplantae::Streptophyta
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/AMBTC.hmmscan    AMBTC
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/AQUCA.hmmscan    AQUCA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ARALY.hmmscan    ARALY
@@ -236,7 +236,7 @@
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/SOYBN.hmmscan    SOYBN
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/THEHA.hmmscan    THEHA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/VITVI.hmmscan    VITVI
-# Corticata::Archaeplastida::Viridaeplantae::Chlorophyta
+# Archaeplastida::Viridaeplantae::Chlorophyta
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ASCXX.hmmscan    ASCXX
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/CHLRE.hmmscan    CHLRE
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/CHLVA.hmmscan    CHLVA
@@ -247,9 +247,9 @@
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/OSTLU.hmmscan    OSTLU
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/OSTTA.hmmscan    OSTTA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/VOLCA.hmmscan    VOLCA
-# Corticata::Archaeplastida::Rhodophyta
+# Archaeplastida::Rhodophyta
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/CYAME.hmmscan    CYAME
-# Corticata::Chromalveolates
+# Chromalveolates
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/AKEXX.hmmscan    AKEXX
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ALIXX.hmmscan    ALIXX
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/AURAN.hmmscan    AURAN
@@ -283,7 +283,7 @@
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/THEAN.hmmscan    THEAN
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/THEPA.hmmscan    THEPA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/TOXGO.hmmscan    TOXGO
-# Cabozoa::Excavata
+# Excavata
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/BODSA.hmmscan    BODSA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/GIAIC.hmmscan    GIAIC
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/LEIBR.hmmscan    LEIBR
@@ -292,8 +292,9 @@
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/NAEGR.hmmscan    NAEGR
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/TRIVA.hmmscan    TRIVA
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/TRYB2.hmmscan    TRYB2
-# Cabozoa::Rhizaria
+# Rhizaria
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/BIGNA.hmmscan    BIGNA
+/home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/RETFI.hmmscan    RETFI
 # Archaea
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/AERPE.hmmscan    AERPE
 /home/czmasek/DATA/GENOME_HMMSCAN/CDHIT_095_PFAM270X/ARCFU.hmmscan    ARCFU
