@@ -5153,7 +5153,6 @@
                   <taxonomy>
                     <id provider="uniprot">38254</id>
                     <scientific_name>Glaucocystophyceae</scientific_name>
-                    <synonym>Glaucophyta</synonym>
                     <rank>class</rank>
                   </taxonomy>
                   <clade>
@@ -5184,7 +5183,8 @@
                     <scientific_name>Emiliania huxleyi</scientific_name>
                     <synonym>Pontosphaera huxleyi</synonym>
                     <rank>species</rank>
-                    <uri>http://research.kahaku.go.jp/zoology/kaisei/hp-2/images/hapto.jpg</uri>
+                    <uri>http://www.nhm.ac.uk/resources-rx/images/1049/emiliania-huxleyi-light-microscope-image_68318_1.jpg</uri>
+                    <uri>http://cmore.soest.hawaii.edu/education/kidskorner/images/emiliania_600px.jpg</uri>
                   </taxonomy>
                 </clade>
                 <clade>
