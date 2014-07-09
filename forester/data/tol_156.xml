@@ -5772,11 +5772,28 @@
                 </taxonomy>
                 <clade>
                   <taxonomy>
-                    <id provider="uniprot">71427</id>
-                    <scientific_name>Allogromia laticollaris</scientific_name>
-                    <rank>species</rank>
-                    <uri>http://forambarcoding.unige.ch/system/pictures/424/s600/A.laticollaris1.jpg</uri>
+                    <id provider="uniprot">29178</id>
+                    <scientific_name>Foraminifera</scientific_name>
+                    <common_name>foraminifers</common_name>
+                    <rank>class</rank>
                   </taxonomy>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">71427</id>
+                      <scientific_name>Allogromia laticollaris</scientific_name>
+                      <rank>species</rank>
+                      <uri>http://forambarcoding.unige.ch/system/pictures/424/s600/A.laticollaris1.jpg</uri>
+                    </taxonomy>
+                  </clade>
+                  <clade>
+                    <taxonomy>
+                      <id provider="uniprot">46433</id>
+                      <code>RETFI</code>
+                      <scientific_name>Reticulomyxa filosa</scientific_name>
+                      <rank>species</rank>
+                      <uri>http://forambarcoding.unige.ch/system/pictures/269/s600/R.filosa2.jpg</uri>
+                    </taxonomy>
+                  </clade>
                 </clade>
                 <clade>
                   <taxonomy>
