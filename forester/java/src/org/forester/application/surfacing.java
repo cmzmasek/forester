@@ -806,61 +806,55 @@ public class surfacing {
             }
             SurfacingUtil.checkForOutputFileWriteability( dcc_outfile );
         }
-        File pfam_to_go_file = null;
-        Map<String, List<GoId>> domain_id_to_go_ids_map = null;
-        int domain_id_to_go_ids_count = 0;
+        File pfam_to_go_file = new File( "pfam2go.txt" );
         if ( cla.isOptionSet( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for Pfam to GO mapping file: -"
                         + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>" );
             }
             pfam_to_go_file = new File( cla.getOptionValue( surfacing.PFAM_TO_GO_FILE_USE_OPTION ) );
-            final String error = ForesterUtil.isReadableFile( pfam_to_go_file );
-            if ( !ForesterUtil.isEmpty( error ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read Pfam to GO mapping file: " + error );
-            }
-            try {
-                final PfamToGoParser parser = new PfamToGoParser( pfam_to_go_file );
-                final List<PfamToGoMapping> pfam_to_go_mappings = parser.parse();
-                domain_id_to_go_ids_map = SurfacingUtil.createDomainIdToGoIdMap( pfam_to_go_mappings );
-                if ( parser.getMappingCount() < domain_id_to_go_ids_map.size() ) {
-                    ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME,
-                                                       "parser.getMappingCount() < domain_id_to_go_ids_map.size()" );
-                }
-                domain_id_to_go_ids_count = parser.getMappingCount();
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read from Pfam to GO mapping file: " + e );
-            }
         }
-        File go_obo_file = null;
-        List<GoTerm> go_terms = null;
+        final String error1 = ForesterUtil.isReadableFile( pfam_to_go_file );
+        if ( !ForesterUtil.isEmpty( error1 ) ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read Pfam to GO mapping file: " + error1 );
+        }
+        Map<String, List<GoId>> domain_id_to_go_ids_map = null;
+        int domain_id_to_go_ids_count = 0;
+        try {
+            final PfamToGoParser parser = new PfamToGoParser( pfam_to_go_file );
+            final List<PfamToGoMapping> pfam_to_go_mappings = parser.parse();
+            domain_id_to_go_ids_map = SurfacingUtil.createDomainIdToGoIdMap( pfam_to_go_mappings );
+            if ( parser.getMappingCount() < domain_id_to_go_ids_map.size() ) {
+                ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME,
+                                                   "parser.getMappingCount() < domain_id_to_go_ids_map.size()" );
+            }
+            domain_id_to_go_ids_count = parser.getMappingCount();
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read from Pfam to GO mapping file: " + e );
+        }
+        File go_obo_file = new File( "go.obo" );
         if ( cla.isOptionSet( surfacing.GO_OBO_FILE_USE_OPTION ) ) {
             if ( !cla.isOptionValueSet( surfacing.GO_OBO_FILE_USE_OPTION ) ) {
                 ForesterUtil.fatalError( surfacing.PRG_NAME, "no value for GO OBO file: -"
                         + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>" );
             }
-            if ( ( domain_id_to_go_ids_map == null ) || ( domain_id_to_go_ids_map.size() < 1 ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot use GO OBO file (-"
-                        + surfacing.GO_OBO_FILE_USE_OPTION + "=<file>) without Pfam to GO mapping file ("
-                        + surfacing.PFAM_TO_GO_FILE_USE_OPTION + "=<file>)" );
-            }
             go_obo_file = new File( cla.getOptionValue( surfacing.GO_OBO_FILE_USE_OPTION ) );
-            final String error = ForesterUtil.isReadableFile( go_obo_file );
-            if ( !ForesterUtil.isEmpty( error ) ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read GO OBO file: " + error );
+        }
+        final String error2 = ForesterUtil.isReadableFile( go_obo_file );
+        if ( !ForesterUtil.isEmpty( error2 ) ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read GO OBO file: " + error2 );
+        }
+        List<GoTerm> go_terms = null;
+        try {
+            final OBOparser parser = new OBOparser( go_obo_file, OBOparser.ReturnType.BASIC_GO_TERM );
+            go_terms = parser.parse();
+            if ( parser.getGoTermCount() != go_terms.size() ) {
+                ForesterUtil.unexpectedFatalError( surfacing.PRG_NAME, "parser.getGoTermCount() != go_terms.size()" );
             }
-            try {
-                final OBOparser parser = new OBOparser( go_obo_file, OBOparser.ReturnType.BASIC_GO_TERM );
-                go_terms = parser.parse();
-                if ( parser.getGoTermCount() != go_terms.size() ) {
-                    ForesterUtil
-                            .unexpectedFatalError( surfacing.PRG_NAME, "parser.getGoTermCount() != go_terms.size()" );
-                }
-            }
-            catch ( final IOException e ) {
-                ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read from GO OBO file: " + e );
-            }
+        }
+        catch ( final IOException e ) {
+            ForesterUtil.fatalError( surfacing.PRG_NAME, "cannot read from GO OBO file: " + e );
         }
         Map<GoId, GoTerm> go_id_to_term_map = null;
         if ( ( ( domain_id_to_go_ids_map != null ) && ( domain_id_to_go_ids_map.size() > 0 ) )

@@ -1,0 +1,23 @@
+<synth>
+  <style id="basicStyle">
+    <font name="Verdana" size="16"/>
+    <state>
+      <color value="WHITE" type="BACKGROUND"/>
+      <color value="BLACK" type="FOREGROUND"/>
+    </state>
+  </style>
+  <bind style="basicStyle" type="region" key=".*"/>
+  <style id="textfield">
+   <opaque value="true"/>
+   <state>
+      <font name="Aharoni" size="14"/>
+      <color value="#D2DFF2" type="BACKGROUND"/>
+      <color value="#000000" type="TEXT_FOREGROUND"/>
+   </state>
+   <imagePainter method="textFieldBorder" path="images/textfield.png"
+      sourceInsets="4 6 4 6" paintCenter="false"/>
+   <insets top="4" left="6" bottom="4" right="6"/>
+</style>
+<bind style="textfield" type="region" key="TextField"/>
+</synth>
+
