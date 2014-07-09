@@ -2192,7 +2192,10 @@ public class surfacing {
         System.out.println();
         System.out.println();
         System.out
-                .println( "Example: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -detail=punctilious -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
+                .println( "Example 1: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -no_eo -ie=0.01 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -out_dir=_tf1 -o=tf1" );
+System.out.println();
+        System.out
+                .println( "Example 2: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
         System.out.println();
     }
 }
