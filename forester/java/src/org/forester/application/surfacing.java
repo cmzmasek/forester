@@ -216,7 +216,7 @@ public class surfacing {
     final static private String                                     INPUT_SPECIES_TREE_OPTION                                                     = "species_tree";
     final static private String                                     SEQ_EXTRACT_OPTION                                                            = "prot_extract";
     final static private String                                     PRG_VERSION                                                                   = "2.404";
-    final static private String                                     PRG_DATE                                                                      = "140319";
+    final static private String                                     PRG_DATE                                                                      = "140709";
     final static private String                                     E_MAIL                                                                        = "czmasek@burnham.org";
     final static private String                                     WWW                                                                           = "https://sites.google.com/site/cmzmasek/home/software/forester/surfacing";
     final static private boolean                                    IGNORE_DUFS_DEFAULT                                                           = true;
@@ -2198,7 +2198,7 @@ public class surfacing {
         System.out.println();
         System.out.println();
         System.out
-                .println( "Example: surfacing -p2g=pfam2go_130621.txt -obo=gene_onotology_130621.obo -species_tree=tol_156.xml -last -detail=punctilious -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
+                .println( "Example: surfacing -p2g=pfam2go.txt -obo=go.obo -species_tree=tol_156.xml -last -detail=punctilious -ignore_viral_ids -no_eo -ie=0.1 -dufs -genomes=genomes_all.txt -pos_filter=tf_1.txt -all_prot -all_prot_e=0.1 -out_dir=_tf1_e01_ape01 -o=tf1_e01_ape01" );
         System.out.println();
     }
 }
