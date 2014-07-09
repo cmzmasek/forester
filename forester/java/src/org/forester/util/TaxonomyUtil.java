@@ -169,6 +169,12 @@ public final class TaxonomyUtil {
         put( "SCHMA", "protostomia" );
         put( "CLOSI", "protostomia" );
         put( "SCHMD", "protostomia" );
+        put( "ANOGL", "protostomia" );
+        put( "BLAGE", "protostomia" );
+        put( "ZOONE", "protostomia" );
+        put( "SCHAM", "protostomia" );
+        put( "GRYPE", "protostomia" );
+        put( "ONCFA", "protostomia" );
         put( "ACRDI", "cnidaria" );
         put( "NEMVE", "cnidaria" );
         put( "HYDVU", "cnidaria" );
@@ -364,6 +370,7 @@ public final class TaxonomyUtil {
         put( "ALIXX", "stramenopiles" );
         put( "BLAHO", "stramenopiles" );
         put( "BIGNA", "rhizaria" );
+        put( "RETFI", "rhizaria" );
         put( "TRYB2", "excavata" );
         put( "TRYCR", "excavata" );
         put( "LEIMA", "excavata" );
