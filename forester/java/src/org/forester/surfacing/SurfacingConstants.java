@@ -37,7 +37,7 @@ public class SurfacingConstants {
     public static final String GOOGLE_WEB_SEARCH_LINK         = "http://www.google.com/search?q=";
     public static final String NL                             = ForesterUtil.LINE_SEPARATOR;
     public static final String NONE                           = "[none]";
-    public static final String PFAM_FAMILY_ID_LINK            = "http://pfam.janelia.org/family/";
+    public static final String PFAM_FAMILY_ID_LINK            = "http://pfam.xfam.org/family/";
     public static final String UNIPROT_TAXONOMY_ID_LINK       = "http://www.uniprot.org/taxonomy/";
     static final boolean       PRINT_MORE_DOM_SIMILARITY_INFO = false;
     static final boolean       SECONDARY_FEATURES_ARE_SCOP    = true;

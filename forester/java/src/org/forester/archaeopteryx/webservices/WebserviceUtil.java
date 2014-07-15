@@ -45,7 +45,7 @@ public final class WebserviceUtil {
 
     public static final String PFAM_INST                       = "pfam";
     public static final String PFAM_NAME                       = "Pfam";
-    public static final String PFAM_SERVER                     = "http://pfam.janelia.org";
+    public static final String PFAM_SERVER                     = "http://pfam.xfam.org";
     public static final String TOL_NAME                        = "Tree of Life (ToL)";
     public static final String TOL_URL_BASE                    = "http://tolweb.org/onlinecontributors/app?service=external&page=xml/TreeStructureService&node_id=";
     public static final String TOL_WEBSERVER                   = TOL_URL_BASE
