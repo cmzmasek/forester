@@ -86,7 +86,7 @@ public final class WebserviceUtil {
                                                            "http://www.treebase.org",
                                                            TREE_BASE_INST ) );
         clients.add( new BasicPhylogeniesWebserviceClient( PFAM_NAME,
-                                                           "Read Gene Tree from Pfam...",
+                                                           "Read Domain Tree from Pfam...",
                                                            "Use  Pfam to obtain gene trees for seed alignments",
                                                            "Please enter a Pfam (PF) accession number\n(Examples: 01849 for NAC, 00452 for Bcl-2, 00046 for Homeobox)",
                                                            WsPhylogenyFormat.PFAM,
