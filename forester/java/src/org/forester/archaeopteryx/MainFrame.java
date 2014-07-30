@@ -165,8 +165,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _annotate_item;
     JMenuItem                   _remove_branch_color_item;
     JMenuItem                   _remove_visual_styles_item;
-    JMenuItem                   _deleted_selected_nodes_item;
-    JMenuItem                   _deleted_not_selected_nodes_item;
+    JMenuItem                   _delete_selected_nodes_item;
+    JMenuItem                   _delete_not_selected_nodes_item;
     // font size menu:
     JMenuItem                   _super_tiny_fonts_item;
     JMenuItem                   _tiny_fonts_item;
@@ -325,13 +325,13 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             midpointRoot();
         }
-        else if ( o == _deleted_selected_nodes_item ) {
+        else if ( o == _delete_selected_nodes_item ) {
             if ( isSubtreeDisplayed() ) {
                 return;
             }
             deleteSelectedNodes( true );
         }
-        else if ( o == _deleted_not_selected_nodes_item ) {
+        else if ( o == _delete_not_selected_nodes_item ) {
             if ( isSubtreeDisplayed() ) {
                 return;
             }
@@ -570,7 +570,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( delete ) {
             res = ext - todo;
         }
-        
         if ( res < 1 ) {
             JOptionPane.showMessageDialog( this,
                                            "Cannot delete all nodes",
@@ -578,9 +577,9 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                                            JOptionPane.ERROR_MESSAGE );
             return;
         }
-        final int result = JOptionPane.showConfirmDialog( null, "OK to " + function.toLowerCase() + " " + todo
+        final int result = JOptionPane.showConfirmDialog( null, function + " " + todo
                 + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
-                + " nodes", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
+                + " nodes?", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
         if ( result == JOptionPane.OK_OPTION ) {
             if ( !delete ) {
                 final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
