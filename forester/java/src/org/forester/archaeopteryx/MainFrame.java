@@ -548,10 +548,16 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         if ( phy == null || phy.getNumberOfExternalNodes() < 2 ) {
             return;
         }
-        List<PhylogenyNode> nodes = null;
+        List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( ( getCurrentTreePanel().getFoundNodes0() != null ) || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
-            nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            final List<PhylogenyNode>  all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            for( final PhylogenyNode n : all_selected_nodes ) {
+                if ( n.isExternal() ) {
+                    nodes.add( n );
+                }
+            }
         }
+        
         String function = "Retain";
         if ( delete ) {
             function = "Delete";
