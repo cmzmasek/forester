@@ -2820,7 +2820,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         return getTreeFontSet().getFontMetricsLarge();
     }
 
-    private List<PhylogenyNode> getFoundNodesAsListOfPhylogenyNodes() {
+    List<PhylogenyNode> getFoundNodesAsListOfPhylogenyNodes() {
         final List<PhylogenyNode> additional_nodes = new ArrayList<PhylogenyNode>();
         if ( getFoundNodes0() != null ) {
             for( final Long id : getFoundNodes0() ) {

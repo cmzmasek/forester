@@ -32,6 +32,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +69,7 @@ import org.forester.phylogeny.PhylogenyNode.NH_CONVERSION_SUPPORT_VALUE_STYLE;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
+import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.sdi.GSDI;
 import org.forester.sdi.GSDIR;
 import org.forester.sdi.SDIException;
@@ -162,6 +165,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _annotate_item;
     JMenuItem                   _remove_branch_color_item;
     JMenuItem                   _remove_visual_styles_item;
+    JMenuItem                   _deleted_selected_nodes_item;
+    JMenuItem                   _deleted_not_selected_nodes_item;
     // font size menu:
     JMenuItem                   _super_tiny_fonts_item;
     JMenuItem                   _tiny_fonts_item;
@@ -319,6 +324,18 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 return;
             }
             midpointRoot();
+        }
+        else if ( o == _deleted_selected_nodes_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            deleteSelectedNodes( true );
+        }
+        else if ( o == _deleted_not_selected_nodes_item ) {
+            if ( isSubtreeDisplayed() ) {
+                return;
+            }
+            deleteSelectedNodes( false );
         }
         else if ( o == _annotate_item ) {
             annotateSequences();
@@ -524,6 +541,88 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         _contentpane.repaint();
+    }
+
+    private void deleteSelectedNodes( boolean delete ) {
+        final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
+        if ( phy == null || phy.getNumberOfExternalNodes() < 2 ) {
+            return;
+        }
+        List<PhylogenyNode> nodes = null;
+        if ( ( getCurrentTreePanel().getFoundNodes0() != null ) || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
+            nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+        }
+        String function = "Retain";
+        if ( delete ) {
+            function = "Delete";
+        }
+        if ( ( nodes == null ) || nodes.isEmpty() ) {
+            JOptionPane
+                    .showMessageDialog( this,
+                                        "Need to select external nodes, either via direct selection or via the \"Search\" function",
+                                        "No external nodes selected to " + function.toLowerCase(),
+                                        JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final int todo = nodes.size();
+        final int ext = phy.getNumberOfExternalNodes();
+        int res = todo;
+        if ( delete ) {
+            res = ext - todo;
+        }
+        
+        if ( res < 1 ) {
+            JOptionPane.showMessageDialog( this,
+                                           "Cannot delete all nodes",
+                                           "Attempt to delete all nodes ",
+                                           JOptionPane.ERROR_MESSAGE );
+            return;
+        }
+        final int result = JOptionPane.showConfirmDialog( null, "OK to " + function.toLowerCase() + " " + todo
+                + " external node(s), from a total of " + ext + " external nodes," + "\nresulting in tree with " + res
+                + " nodes", function + " external nodes", JOptionPane.OK_CANCEL_OPTION );
+        if ( result == JOptionPane.OK_OPTION ) {
+            if ( !delete ) {
+                final List<PhylogenyNode> to_delete = new ArrayList<PhylogenyNode>();
+                for( final PhylogenyNodeIterator it = phy.iteratorExternalForward(); it.hasNext(); ) {
+                    final PhylogenyNode n = it.next();
+                    if ( !nodes.contains( n ) ) {
+                        to_delete.add( n );
+                    }
+                }
+                for( final PhylogenyNode n : to_delete ) {
+                    phy.deleteSubtree( n, true );
+                }
+            }
+            else {
+                for( final PhylogenyNode n : nodes ) {
+                    phy.deleteSubtree( n, true );
+                }
+            }
+            resetSearch();
+            getCurrentTreePanel().setNodeInPreorderToNull();
+            phy.externalNodesHaveChanged();
+            phy.clearHashIdToNodeMap();
+            phy.recalculateNumberOfExternalDescendants( true );
+            getCurrentTreePanel().resetNodeIdToDistToLeafMap();
+            getCurrentTreePanel().setEdited( true );
+            repaint();
+        }
+    }
+
+    void resetSearch() {
+        getMainPanel().getCurrentTreePanel().setFoundNodes0( null );
+        getMainPanel().getCurrentTreePanel().setFoundNodes1( null );
+        getMainPanel().getControlPanel().setSearchFoundCountsOnLabel0( 0 );
+        getMainPanel().getControlPanel().getSearchFoundCountsLabel0().setVisible( false );
+        getMainPanel().getControlPanel().getSearchTextField0().setText( "" );
+        getMainPanel().getControlPanel().getSearchResetButton0().setEnabled( false );
+        getMainPanel().getControlPanel().getSearchResetButton0().setVisible( false );
+        getMainPanel().getControlPanel().setSearchFoundCountsOnLabel1( 0 );
+        getMainPanel().getControlPanel().getSearchFoundCountsLabel1().setVisible( false );
+        getMainPanel().getControlPanel().getSearchTextField1().setText( "" );
+        getMainPanel().getControlPanel().getSearchResetButton1().setEnabled( false );
+        getMainPanel().getControlPanel().getSearchResetButton1().setVisible( false );
     }
 
     public Configuration getConfiguration() {
@@ -1426,7 +1525,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     private void annotateSequences() {
         if ( getCurrentTreePanel() != null ) {
-            final Set<Long> nodes = getCurrentTreePanel().getFoundNodes0();
+            List<PhylogenyNode> nodes = null;
+            if ( ( getCurrentTreePanel().getFoundNodes0() != null )
+                    || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
+                nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            }
             if ( ( nodes == null ) || nodes.isEmpty() ) {
                 JOptionPane
                         .showMessageDialog( this,
@@ -1475,8 +1578,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                         desc = desc.replaceAll( "\\s+", " " );
                     }
                     if ( !ForesterUtil.isEmpty( ref ) || !ForesterUtil.isEmpty( desc ) ) {
-                        for( final Long id : nodes ) {
-                            final PhylogenyNode n = phy.getNode( id );
+                        for( final PhylogenyNode n : nodes ) {
                             ForesterUtil.ensurePresenceOfSequence( n );
                             final Annotation ann = ForesterUtil.isEmpty( ref ) ? new Annotation()
                                     : new Annotation( ref );

@@ -1077,6 +1077,11 @@ public final class MainFrameApplication extends MainFrame {
         _tools_menu.add( _midpoint_root_item = new JMenuItem( "Midpoint-Root" ) );
         customizeJMenuItem( _midpoint_root_item );
         _tools_menu.addSeparator();
+        _tools_menu.add( _deleted_selected_nodes_item = new JMenuItem( "Delete Selected Nodes" ) );
+        customizeJMenuItem( _deleted_selected_nodes_item );
+        _tools_menu.add( _deleted_not_selected_nodes_item = new JMenuItem( "Retain Selected Nodes" ) );
+        customizeJMenuItem( _deleted_not_selected_nodes_item );
+        _tools_menu.addSeparator();
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
         customizeJMenuItem( _collapse_species_specific_subtrees );
         _tools_menu
