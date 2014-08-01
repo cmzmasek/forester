@@ -4674,7 +4674,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         float new_x = 0;
         float new_x_min = Float.MAX_VALUE;
-        final boolean disallow_shortcutting = dynamic_hiding_factor < 40;
+        final boolean disallow_shortcutting = ( dynamic_hiding_factor < 40 );
         float min_dist = 1.5f;
         if ( !disallow_shortcutting ) {
             //   System.out.println( dynamic_hiding_factor );
@@ -4749,7 +4749,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                                     final PhylogenyNode node,
                                                     final boolean to_graphics_file,
                                                     final boolean to_pdf ) {
-        if ( isNodeDataInvisible( node ) && !to_graphics_file ) {
+        if ( isNodeDataInvisible( node ) && !( to_graphics_file || to_pdf ) ) {
             return;
         }
         if ( ( !getControlPanel().isShowInternalData() && !node.isExternal() ) ) {
