@@ -14,7 +14,7 @@ public final class InferenceManager {
     private final File          _path_to_local_raxml;
 
     public static InferenceManager createInstance( final Configuration c ) {
-        return new InferenceManager( c.getpathToLocalMafft(), c.getPathToLocalFastme(), c.getPathToLocalRaxml() );
+        return new InferenceManager( c.getPathToLocalMafft(), c.getPathToLocalFastme(), c.getPathToLocalRaxml() );
     }
 
     public boolean canDoMsa() {

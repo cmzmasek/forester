@@ -92,17 +92,16 @@ public final class Configuration {
             { "Phylogram", "display", "?" }, { "Node Name", "display", "yes" }, { "Taxonomy Code", "display", "yes" },
             { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
-            { "Colorize by Sequence", "display", "no" },
-            { "Visual Styles/Branch Colors", "display", "no" }, { "Branch Widths", "display", "no" },
-            { "Protein Domains", "display", "no" }, { "Binary Characters", "nodisplay", "no" },
-            { "Binary Char Counts", "nodisplay", "no" }, { "Seq Name", "display", "yes" },
-            { "Seq Accession", "display", "no" }, { "Show Internal Data", "display", "yes" },
-            { "Dyna Hide", "display", "yes" }, { "Taxonomy Scientific", "display", "yes" },
-            { "Taxonomy Common", "display", "no" }, { "Colorize by Annotation", "display", "no" },
-            { "Seq Symbol", "display", "yes" }, { "Rollover", "display", "yes" },
-            { "Relation Confidence", "nodisplay", "no" }, { "Vector Data", "nodisplay", "no" },
-            { "Taxonomy Images", "display", "no" }, { "Properties", "display", "no" },
-            { "Gene Name", "display", "yes" }                                                     };
+            { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
+            { "Branch Widths", "display", "no" }, { "Protein Domains", "display", "no" },
+            { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
+            { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
+            { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
+            { "Taxonomy Scientific", "display", "yes" }, { "Taxonomy Common", "display", "no" },
+            { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
+            { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
+            { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
+            { "Properties", "display", "no" }, { "Gene Name", "display", "yes" }                  };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -131,9 +130,7 @@ public final class Configuration {
     final static int                        show_properties                                        = 25;
     final static int                        show_gene_names                                        = 26;
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
-     private static Hashtable<String, Color> _sequence_colors;
-    
-    
+    private static Hashtable<String, Color> _sequence_colors;
     private static Hashtable<String, Color> _annotation_colors;
     private static Hashtable<String, Color> _domain_colors;
     private static Hashtable<String, Color> _species_colors;
@@ -220,6 +217,11 @@ public final class Configuration {
     private UI                              _ui                                                    = UI.UNKNOWN;
     private boolean                         _use_tabbed_display                                    = false;
     private boolean                         _validate_against_phyloxml_xsd_schema                  = Constants.VALIDATE_AGAINST_PHYLOXML_XSD_SCJEMA_DEFAULT;
+    private Color                           _vector_data_min_color                                 = Color.BLUE;
+    private Color                           _vector_data_max_color                                 = Color.YELLOW;
+    private Color                           _vector_data_mean_color                                = Color.WHITE;
+    private double                          _vector_data_height                                    = 12;
+    private int                             _vector_data_width                                     = 120;
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
@@ -348,7 +350,7 @@ public final class Configuration {
         return _path_to_local_fastme;
     }
 
-    public File getpathToLocalMafft() {
+    public File getPathToLocalMafft() {
         return _path_to_local_mafft;
     }
 
@@ -563,7 +565,7 @@ public final class Configuration {
     public void setShowScale( final boolean show_scale ) {
         _show_scale = show_scale;
     }
-  
+
     boolean displaySequenceRelations() {
         return _display_sequence_relations;
     }
@@ -722,7 +724,7 @@ public final class Configuration {
         }
         return _species_colors;
     }
-    
+
     Hashtable<String, Color> getSequenceColors() {
         if ( _sequence_colors == null ) {
             _sequence_colors = new Hashtable<String, Color>();
@@ -1505,6 +1507,30 @@ public final class Configuration {
                         + "] for [ext_descendents_data_to_return_on]" );
             }
         }
+        //
+        else if ( key.equals( "vector_data_min_color" ) ) {
+            _vector_data_min_color = Color.decode( ( String ) st.nextElement() );
+        }
+        else if ( key.equals( "vector_data_max_color" ) ) {
+            _vector_data_max_color = Color.decode( ( String ) st.nextElement() );
+        }
+        else if ( key.equals( "vector_data_mean_color" ) ) {
+            _vector_data_mean_color = Color.decode( ( String ) st.nextElement() );
+        }
+        //
+        else if ( key.equals( "vector_data_width" ) ) {
+            _vector_data_width = parseShort( ( String ) st.nextElement() );
+            if ( _vector_data_width < 1 ) {
+                _vector_data_width = 120;
+            }
+        }
+        else if ( key.equals( "vector_data_height" ) ) {
+            _vector_data_height = parseShort( ( String ) st.nextElement() );
+            if ( _vector_data_height < 1 ) {
+                _vector_data_height = 12;
+            }
+        }
+        //
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1625,7 +1651,7 @@ public final class Configuration {
                 }
                 else if ( key.equals( "sequence_color" ) ) {
                     getSequenceColors().put( ( ( String ) st.nextElement() ).replace( '_', ' ' ),
-                                            Color.decode( ( String ) st.nextElement() ) );
+                                             Color.decode( ( String ) st.nextElement() ) );
                 }
                 else if ( key.equals( "domain_color" ) ) {
                     getDomainColors().put( ( String ) st.nextElement(), Color.decode( ( String ) st.nextElement() ) );
@@ -1715,5 +1741,25 @@ public final class Configuration {
 
     static enum TRIPLET {
         FALSE, TRUE, UNKNOWN
+    }
+
+    public Color getVectorDataMinColor() {
+        return _vector_data_min_color;
+    }
+
+    public Color getVectorDataMaxColor() {
+        return _vector_data_max_color;
+    }
+
+    public Color getVectorDataMeanColor() {
+        return _vector_data_mean_color;
+    }
+
+    public double getVectorDataHeight() {
+        return _vector_data_height;
+    }
+
+    public int getVectorDataWidth() {
+        return _vector_data_width;
     }
 }

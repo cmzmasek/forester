@@ -48,16 +48,21 @@ public final class RenderableVector implements RenderablePhylogenyData {
     private double                  _rendering_factor_width = 1.0;
     private List<Double>            _values;
     private final Rectangle2D       _rectangle              = new Rectangle2D.Float();
-    private Configuration           _configuration;
-    private double                  _height;
+   
+    private double                  _height =  VECTOR_DEFAULT_HEIGHT;
     private double                  _min;
     private double                  _max;
     private double                  _mean;
+    private  Color _min_color = Color.BLUE;
+    private  Color _max_color = Color.YELLOW;
+    private  Color _mean_color = Color.WHITE;
+    private  int _width = VECTOR_DEFAULT_WIDTH;
+    
+    
     private static RenderableVector _instance               = null;
 
     private RenderableVector() {
         _values = null;
-        _configuration = null;
     }
 
     @Override
@@ -116,7 +121,7 @@ public final class RenderableVector implements RenderablePhylogenyData {
                         final boolean to_pdf ) {
         final double y = y1;
         final double start = x1 + 20.0;
-        final double width = ( double ) VECTOR_DEFAULT_WIDTH / _values.size();
+        final double width = ( double ) _width / _values.size();
         for( int i = 0; i < _values.size(); ++i ) {
             g.setColor( calculateColor( _values.get( i ) ) );
             _rectangle.setFrame( start + ( i * width ), y - 0.5, width, getRenderingHeight() );
@@ -149,7 +154,7 @@ public final class RenderableVector implements RenderablePhylogenyData {
     }
 
     private Color calculateColor( final double v ) {
-        return ForesterUtil.calcColor( v, _min, _max, _mean, Color.BLUE, Color.RED, Color.WHITE );
+        return ForesterUtil.calcColor( v, _min, _max, _mean, _min_color, _max_color, _mean_color );
     }
 
     private double getRenderingHeight() {
@@ -162,9 +167,18 @@ public final class RenderableVector implements RenderablePhylogenyData {
         if ( _instance == null ) {
             _instance = new RenderableVector();
         }
-        _instance.setRenderingHeight( VECTOR_DEFAULT_HEIGHT );
+        //_instance.setRenderingHeight( VECTOR_DEFAULT_HEIGHT );
         _instance._values = values;
-        _instance._configuration = configuration;
+        
+        if ( configuration != null ) {
+            _instance._min_color =configuration.getVectorDataMinColor();
+            _instance._max_color = configuration.getVectorDataMaxColor();
+            _instance._mean_color = configuration.getVectorDataMeanColor();
+            _instance._width = configuration.getVectorDataWidth();
+            _instance._height = configuration.getVectorDataHeight();
+        }
+        
+        
         if ( stats.getN() > 0 ) {
             _instance._min = stats.getMin();
             _instance._max = stats.getMax();
