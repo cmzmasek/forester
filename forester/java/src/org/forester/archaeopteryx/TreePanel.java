@@ -623,6 +623,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 sum += getFontMetricsForLargeDefaultFont().stringWidth( node.getNodeData().getBinaryCharacters()
                         .getGainedCharactersAsStringBuffer().toString() );
             }
+            
+            if ( getControlPanel().isShowVectorData() && node.getNodeData().getVector() != null &&  node.getNodeData().getVector().size() > 0 ) {
+                sum += RenderableVector.VECTOR_DEFAULT_WIDTH + 10;
+            }
+            
             if ( sum >= max_length ) {
                 setLongestExtNodeInfo( max_length );
                 return;
