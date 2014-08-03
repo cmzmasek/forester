@@ -310,6 +310,14 @@ gui_menu_text_color:                  0xFFFFFF
 gui_button_border_color:              0x000000
 
 
+#  Vector Data Display Colors and Sizes
+#  ------------------------------------
+vector_data_min_color:                0x0000FF
+vector_data_max_color:                0xFFFF00
+vector_data_mean_color:               0x000000
+vector_data_width:                    120
+vector_data_height:                   12
+
 
 #  Domain Structure Display Colors
 #  -------------------------------
