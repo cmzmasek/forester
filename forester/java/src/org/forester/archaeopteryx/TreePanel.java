@@ -625,7 +625,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             
             if ( getControlPanel().isShowVectorData() && node.getNodeData().getVector() != null &&  node.getNodeData().getVector().size() > 0 ) {
-                sum += RenderableVector.VECTOR_DEFAULT_WIDTH + 10;
+                if ( getConfiguration() != null ) {
+                    sum += getConfiguration().getVectorDataWidth() + 10;
+                }
+                else {
+                    sum += RenderableVector.VECTOR_DEFAULT_WIDTH + 10;
+                }  
             }
             
             if ( sum >= max_length ) {

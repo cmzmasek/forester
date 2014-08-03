@@ -44,7 +44,7 @@ import org.forester.util.ForesterUtil;
 public final class RenderableVector implements RenderablePhylogenyData {
 
     final static int         VECTOR_DEFAULT_HEIGHT          = 12;
-    final static public int         VECTOR_DEFAULT_WIDTH           = 120;
+    public final static  int         VECTOR_DEFAULT_WIDTH           = 120;
     private double                  _rendering_factor_width = 1.0;
     private List<Double>            _values;
     private final Rectangle2D       _rectangle              = new Rectangle2D.Float();
@@ -167,7 +167,7 @@ public final class RenderableVector implements RenderablePhylogenyData {
         if ( _instance == null ) {
             _instance = new RenderableVector();
         }
-        //_instance.setRenderingHeight( VECTOR_DEFAULT_HEIGHT );
+       
         _instance._values = values;
         
         if ( configuration != null ) {
