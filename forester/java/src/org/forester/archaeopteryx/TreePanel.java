@@ -635,7 +635,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
             if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
-                // FIXME
+                // FIXME 
                 // TODO this might need some clean up
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
                 sum += ( ( _domain_structure_width / ( ( RenderableDomainArchitecture ) d  ).getOriginalSize().getWidth() ) * d.getTotalLength() ) + 10;
@@ -4794,7 +4794,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                     .stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
                         }
                         if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
-                            xx += getFontMetricsForLargeDefaultFont().stringWidth( my_node.getName() + " " );
+                            //TODO fixme, need to look at all nodes not only the first
+                            xx += getFontMetricsForLargeDefaultFont().stringWidth( my_node.getName() + "      " );
                         }
                         //
                         rds.render( my_node.getXcoord() + xx, node.getYcoord() - 3, g, this, to_pdf );
