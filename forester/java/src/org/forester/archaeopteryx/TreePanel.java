@@ -251,6 +251,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _x_correction_factor                               = 0.0f;
     private float                        _x_distance                                        = 0.0f;
     private float                        _y_distance                                        = 0.0f;
+    
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -1075,7 +1076,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( _phylogeny == null ) || _phylogeny.isEmpty() ) {
             return;
         }
-        double max_original_domain_structure_width = 0.0;
+        double _max_original_domain_structure_width = 0.0;
         for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
             if ( node.getNodeData().isHasSequence()
                     && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
@@ -1090,14 +1091,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 if ( getControlPanel().isShowDomainArchitectures() ) {
                     final double dsw = rds.getOriginalSize().getWidth();
-                    if ( dsw > max_original_domain_structure_width ) {
-                        max_original_domain_structure_width = dsw;
+                    if ( dsw > _max_original_domain_structure_width ) {
+                        _max_original_domain_structure_width = dsw;
                     }
                 }
             }
         }
         if ( getControlPanel().isShowDomainArchitectures() ) {
-            final double ds_factor_width = _domain_structure_width / max_original_domain_structure_width;
+            final double ds_factor_width = _domain_structure_width / _max_original_domain_structure_width;
             for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
                 if ( node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
@@ -4772,6 +4773,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( !getControlPanel().isShowInternalData() && !node.isExternal() ) ) {
             return;
         }
+        int length_of_longest_text = -1;
         if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                 && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
             RenderableDomainArchitecture rds = null;
@@ -4787,7 +4789,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
                 }
                 else {
-                    final int length_of_longest_text = calcLengthOfLongestText();
+                    length_of_longest_text = calcLengthOfLongestText();
                     rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + length_of_longest_text,
                                 node.getYcoord() - 3,
                                 g,
@@ -4796,29 +4798,34 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        //////////////
+      
         if ( getControlPanel().isShowVectorData() && ( node.getNodeData().getVector() != null )
                 && ( node.getNodeData().getVector().size() > 0 ) && ( getStatisticsForExpressionValues() != null ) ) {
             final RenderableVector rv = RenderableVector.createInstance( node.getNodeData().getVector(),
                                                                          getStatisticsForExpressionValues(),
                                                                          getConfiguration() );
+
             if ( rv != null ) {
-                int xx = 0;
-                PhylogenyNode my_node = node;
-                if ( !getControlPanel().isDrawPhylogram() ) {
-                    my_node = getPhylogeny().getFirstExternalNode();
+                double domain_add = 0;
+                if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
+                        && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
+                    domain_add = _domain_structure_width + 10;
                 }
-                if ( getControlPanel().isShowTaxonomyCode() && ( PhylogenyMethods.getSpecies( my_node ).length() > 0 ) ) {
-                    xx += getFontMetricsForLargeDefaultFont()
-                            .stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
+                if ( getControlPanel().isDrawPhylogram() ) {
+                    rv.render( node.getXcoord() + x + domain_add, node.getYcoord() - 3, g, this, to_pdf );
                 }
-                if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
-                    xx += getFontMetricsForLargeDefaultFont().stringWidth( my_node.getName() + " " );
+                else {
+                    if ( length_of_longest_text < 0 ) {
+                        length_of_longest_text = calcLengthOfLongestText();
+                    }
+                    rv.render( getPhylogeny().getFirstExternalNode().getXcoord() + length_of_longest_text + domain_add,
+                                node.getYcoord() - 3,
+                                g,
+                                this,
+                                to_pdf );
                 }
-                rv.render( my_node.getXcoord() + xx, node.getYcoord() - 5, g, this, to_pdf );
             }
         }
-        //////////////
     }
 
     private int calcLengthOfLongestText() {
