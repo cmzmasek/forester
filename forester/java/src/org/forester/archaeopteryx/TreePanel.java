@@ -203,6 +203,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _last_drag_point_y                                 = 0;
     private final Line2D                 _line                                              = new Line2D.Float();
     private int                          _longest_ext_node_info                             = 0;
+    private PhylogenyNode                _ext_node_with_longest_txt_info                    = null;
     private MainPanel                    _main_panel                                        = null;
     private double                       _max_distance_to_root                              = -1;
     private Popup                        _node_desc_popup;
@@ -237,7 +238,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private final StringBuilder          _sb                                                = new StringBuilder();
     private double                       _scale_distance                                    = 0.0;
     private String                       _scale_label                                       = null;
-    // expression values menu:
     private DescriptiveStatistics        _statistics_for_vector_data;
     private final Phylogeny[]            _sub_phylogenies                                   = new Phylogeny[ TreePanel.MAX_SUBTREES ];
     private final PhylogenyNode[]        _sub_phylogenies_temp_roots                        = new PhylogenyNode[ TreePanel.MAX_SUBTREES ];
@@ -599,6 +599,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             max_length = 40;
         }
         int longest = 30;
+        int longest_txt = 0;
+        PhylogenyNode longest_txt_node = _phylogeny.getFirstExternalNode();
         for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
             int sum = 0;
             if ( node.isCollapse() ) {
@@ -608,6 +610,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             nodeDataAsSB( node, sb );
             if ( node.getNodeData().isHasTaxonomy() ) {
                 nodeTaxonomyDataAsSB( node.getNodeData().getTaxonomy(), sb );
+            }
+            final int txt = sb.length();
+            if ( txt > longest_txt ) {
+                longest_txt = txt;
+                longest_txt_node = node;
             }
             boolean use_vis = false;
             final Graphics2D g = ( Graphics2D ) getGraphics();
@@ -638,21 +645,23 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 // FIXME 
                 // TODO this might need some clean up
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
-                sum += ( ( _domain_structure_width / ( ( RenderableDomainArchitecture ) d  ).getOriginalSize().getWidth() ) * d.getTotalLength() ) + 10;
+                sum += ( ( _domain_structure_width / ( ( RenderableDomainArchitecture ) d ).getOriginalSize()
+                        .getWidth() ) * d.getTotalLength() ) + 10;
             }
             if ( sum >= max_length ) {
-                setLongestExtNodeInfo( max_length );
+                _longest_ext_node_info = max_length;
                 return;
             }
             if ( sum > longest ) {
                 longest = sum;
             }
         }
+        _ext_node_with_longest_txt_info = longest_txt_node;
         if ( longest >= max_length ) {
-            setLongestExtNodeInfo( max_length );
+            _longest_ext_node_info = max_length;
         }
         else {
-            setLongestExtNodeInfo( longest );
+            _longest_ext_node_info = longest;
         }
     }
 
@@ -1876,10 +1885,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final void setLastMouseDragPointY( final float y ) {
         _last_drag_point_y = y;
-    }
-
-    final void setLongestExtNodeInfo( final int i ) {
-        _longest_ext_node_info = i;
     }
 
     final void setMediumFonts() {
@@ -4770,36 +4775,24 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                 && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
             RenderableDomainArchitecture rds = null;
-            if ( node.getNodeData().getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) {
-                try {
-                    rds = ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture();
+            try {
+                rds = ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture();
+            }
+            catch ( final ClassCastException cce ) {
+                cce.printStackTrace();
+            }
+            if ( rds != null ) {
+                rds.setRenderingHeight( 6 );
+                if ( getControlPanel().isDrawPhylogram() ) {
+                    rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
                 }
-                catch ( final ClassCastException cce ) {
-                    cce.printStackTrace();
-                }
-                if ( rds != null ) {
-                    rds.setRenderingHeight( 6 );
-                    if ( getControlPanel().isDrawPhylogram() ) {
-                        rds.render( node.getXcoord() + x, node.getYcoord() - 3, g, this, to_pdf );
-                    }
-                    else {
-                        int xx = 0;
-                        PhylogenyNode my_node = node;
-                        if ( !getControlPanel().isDrawPhylogram() ) {
-                            my_node = getPhylogeny().getFirstExternalNode();
-                        }
-                        if ( getControlPanel().isShowTaxonomyCode()
-                                && ( PhylogenyMethods.getSpecies( my_node ).length() > 0 ) ) {
-                            xx += getFontMetricsForLargeDefaultFont()
-                                    .stringWidth( PhylogenyMethods.getSpecies( my_node ) + " " );
-                        }
-                        if ( getControlPanel().isShowNodeNames() && ( my_node.getName().length() > 0 ) ) {
-                            //TODO fixme, need to look at all nodes not only the first
-                            xx += getFontMetricsForLargeDefaultFont().stringWidth( my_node.getName() + "      " );
-                        }
-                        //
-                        rds.render( my_node.getXcoord() + xx, node.getYcoord() - 3, g, this, to_pdf );
-                    }
+                else {
+                    final int length_of_longest_text = calcLengthOfLongestText();
+                    rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + length_of_longest_text,
+                                node.getYcoord() - 3,
+                                g,
+                                this,
+                                to_pdf );
                 }
             }
         }
@@ -4826,6 +4819,15 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         //////////////
+    }
+
+    private int calcLengthOfLongestText() {
+        final StringBuilder sb = new StringBuilder();
+        nodeDataAsSB( _ext_node_with_longest_txt_info, sb );
+        if ( _ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy() ) {
+            nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
+        }
+        return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() + " " );
     }
 
     final private void paintOvRectangle( final Graphics2D g ) {
