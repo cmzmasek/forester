@@ -170,8 +170,6 @@ public final class Configuration {
     private short                           _default_node_shape_size                               = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
     private SortedMap<String, Color>        _display_colors                                        = null;
     private boolean                         _display_sequence_relations                            = false;
-    private Color                           _domain_structure_base_color                           = Constants.DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT;
-    private Color                           _domain_structure_font_color                           = Constants.DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT;
     private boolean                         _editable                                              = true;
     private NODE_DATA                       _ext_desc_data_to_return                               = NODE_DATA.UNKNOWN;
     private EXT_NODE_DATA_RETURN_ON         _ext_node_data_return_on                               = EXT_NODE_DATA_RETURN_ON.WINODW;
@@ -316,14 +314,6 @@ public final class Configuration {
 
     public short getDefaultNodeShapeSize() {
         return _default_node_shape_size;
-    }
-
-    public Color getDomainStructureBaseColor() {
-        return _domain_structure_base_color;
-    }
-
-    public Color getDomainStructureFontColor() {
-        return _domain_structure_font_color;
     }
 
     public NODE_DATA getExtDescNodeDataToReturn() {
@@ -1385,12 +1375,7 @@ public final class Configuration {
         else if ( key.equals( "gui_button_border_color" ) ) {
             _gui_button_border_color = Color.decode( ( String ) st.nextElement() );
         }
-        else if ( key.equals( "domain_structure_font_color" ) ) {
-            _domain_structure_font_color = Color.decode( ( String ) st.nextElement() );
-        }
-        else if ( key.equals( "domain_structure_base_color" ) ) {
-            _domain_structure_base_color = Color.decode( ( String ) st.nextElement() );
-        }
+      
         else if ( key.equals( "show_default_node_shapes" ) ) {
             ForesterUtil
                     .printWarningMessage( Constants.PRG_NAME,

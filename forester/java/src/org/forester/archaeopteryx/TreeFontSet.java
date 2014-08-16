@@ -151,7 +151,7 @@ public final class TreeFontSet {
 
     void smallFonts() {
         setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( SMALL_FONTS_BASE - 1 );
+        _small_font = _small_font.deriveFont( SMALL_FONTS_BASE - 2 );
         _large_font = _large_font.deriveFont( SMALL_FONTS_BASE );
         setupFontMetrics();
     }
@@ -159,13 +159,13 @@ public final class TreeFontSet {
     void superTinyFonts() {
         setDecreasedSizeBySystem( false );
         _small_font = _small_font.deriveFont( 2f );
-        _large_font = _large_font.deriveFont( 3f );
+        _large_font = _large_font.deriveFont( 4f );
         setupFontMetrics();
     }
 
     void tinyFonts() {
         setDecreasedSizeBySystem( false );
-        _small_font = _small_font.deriveFont( 5f );
+        _small_font = _small_font.deriveFont( 4f );
         _large_font = _large_font.deriveFont( 6f );
         setupFontMetrics();
     }
@@ -175,7 +175,7 @@ public final class TreeFontSet {
     }
 
     private void intializeFonts() {
-        final int small_size = getBaseFont().getSize() - 1;
+        final int small_size = getBaseFont().getSize() - 2;
         int italic = Font.ITALIC;
         if ( getBaseFont().getStyle() == Font.BOLD ) {
             italic = italic + Font.BOLD;

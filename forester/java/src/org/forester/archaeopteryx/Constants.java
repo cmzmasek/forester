@@ -43,7 +43,7 @@ public final class Constants {
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.9894 beta";
-    final static String         PRG_DATE                                                      = "140811";
+    final static String         PRG_DATE                                                      = "140815";
     final static String         DEFAULT_CONFIGURATION_FILE_NAME                               = "_aptx_configuration_file";
     final static String[]       DEFAULT_FONT_CHOICES                                          = { "Arial", "Helvetica",
             "Verdana", "Tahoma", "Dialog", "Lucida Sans", "SansSerif", "Sans-serif", "Sans"  };
@@ -104,10 +104,12 @@ public final class Constants {
                                                                                                            255 );
     final static Color          BUTTON_BORDER_COLOR_DEFAULT                                   = new Color( 0, 0, 0 );
     final static Color          TAB_LABEL_FOREGROUND_COLOR_SELECTED                           = new Color( 0, 0, 0 );
-    final static Color          DOMAIN_STRUCTURE_BASE_COLOR_DEFAULT                           = new Color( 32, 32, 32 );
-    final static Color          DOMAIN_STRUCTURE_FONT_COLOR_DEFAULT                           = new Color( 144,
-                                                                                                           144,
-                                                                                                           144 );
     final static String         NCBI_ALL_DATABASE_SEARCH                                      = "http://www.ncbi.nlm.nih.gov/gquery/?term=";
+    public final static Color   DOMAIN_BASE_COLOR_FOR_PDF                                     = new Color( 100,
+                                                                                                           100,
+                                                                                                           100 );
+    public final static Color   DOMAIN_LABEL_COLOR_FOR_PDF                                    = new Color( 150,
+                                                                                                           150,
+                                                                                                           150 );
     final static short          DEFAULT_NODE_SHAPE_SIZE_DEFAULT                               = 4;
 }

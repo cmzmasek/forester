@@ -464,7 +464,7 @@ final public class Options {
         }
         _min_confidence_value = MIN_CONFIDENCE_DEFAULT;
         _print_black_and_white = false;
-        _print_using_actual_size = false;
+        _print_using_actual_size = true;
         _graphics_export_using_actual_size = true;
         _phylogeny_graphics_type = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
         _base_font = new Font( Configuration.getDefaultFontFamilyName(), Font.PLAIN, 10 );

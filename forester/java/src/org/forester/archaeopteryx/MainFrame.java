@@ -493,6 +493,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 || ( o == _unrooted_type_cbmi ) || ( o == _circular_type_cbmi ) ) {
             typeChanged( o );
         }
+        
         else if ( o == _about_item ) {
             about();
         }

@@ -199,44 +199,6 @@ public class TreePanelUtil {
         JOptionPane.showMessageDialog( parent, msg, title, JOptionPane.INFORMATION_MESSAGE );
     }
 
-    final static Color calculateColorFromString( final String str, final boolean is_taxonomy ) {
-        final String my_str = str.toUpperCase();
-        char first = my_str.charAt( 0 );
-        char second = ' ';
-        char third = ' ';
-        if ( my_str.length() > 1 ) {
-            if ( is_taxonomy ) {
-                second = my_str.charAt( 1 );
-            }
-            else {
-                second = my_str.charAt( my_str.length() - 1 );
-            }
-            if ( is_taxonomy ) {
-                if ( my_str.length() > 2 ) {
-                    if ( my_str.indexOf( " " ) > 0 ) {
-                        third = my_str.charAt( my_str.indexOf( " " ) + 1 );
-                    }
-                    else {
-                        third = my_str.charAt( 2 );
-                    }
-                }
-            }
-            else if ( my_str.length() > 2 ) {
-                third = my_str.charAt( ( my_str.length() - 1 ) / 2 );
-            }
-        }
-        first = TreePanelUtil.normalizeCharForRGB( first );
-        second = TreePanelUtil.normalizeCharForRGB( second );
-        third = TreePanelUtil.normalizeCharForRGB( third );
-        if ( ( first > 235 ) && ( second > 235 ) && ( third > 235 ) ) {
-            first = 0;
-        }
-        else if ( ( first < 60 ) && ( second < 60 ) && ( third < 60 ) ) {
-            second = 255;
-        }
-        return new Color( first, second, third );
-    }
-
     final static void collapseSpeciesSpecificSubtrees( final Phylogeny phy ) {
         boolean inferred = false;
         for( final PhylogenyNodeIterator it = phy.iteratorPreorder(); it.hasNext(); ) {
@@ -513,14 +475,6 @@ public class TreePanelUtil {
             size = data.size();
         }
         return size;
-    }
-
-    final static char normalizeCharForRGB( char c ) {
-        c -= 65;
-        c *= 10.2;
-        c = c > 255 ? 255 : c;
-        c = c < 0 ? 0 : c;
-        return c;
     }
 
     final static String pdbAccToString( final List<Accession> accs, final int i ) {

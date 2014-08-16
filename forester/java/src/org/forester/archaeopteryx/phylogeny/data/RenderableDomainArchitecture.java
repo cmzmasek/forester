@@ -38,7 +38,8 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.forester.archaeopteryx.Configuration;
+import org.forester.archaeopteryx.AptxUtil;
+import org.forester.archaeopteryx.Constants;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;
@@ -48,27 +49,22 @@ import org.forester.util.ForesterUtil;
 
 public final class RenderableDomainArchitecture extends DomainArchitecture implements RenderablePhylogenyData {
 
-    static private Map<String, Color> Domain_colors;
     final static private int          BRIGHTEN_COLOR_BY             = 200;
     final static private int          E_VALUE_THRESHOLD_EXP_DEFAULT = 0;
-    private static int                _Next_default_domain_color    = 0;
-    private final static String[]     DEFAULT_DOMAINS_COLORS        = { "0xFF0000", "0x0000FF", "0xAAAA00", "0xFF00FF",
-            "0x00FFFF", "0x800000", "0x000080", "0x808000", "0x800080", "0x008080", "0xE1B694" };
-    private int                       _e_value_threshold_exp        = RenderableDomainArchitecture.E_VALUE_THRESHOLD_EXP_DEFAULT;
+    final static private BasicStroke  STROKE_1                      = new BasicStroke( 1f );
+    private static Map<String, Color> _domain_colors;
+    private final DomainArchitecture  _domain_structure;
+    private int                       _e_value_threshold_exp        = E_VALUE_THRESHOLD_EXP_DEFAULT;
+    private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
     private double                    _rendering_factor_width       = 1.0;
     private double                    _rendering_height             = 0;
-    private final DomainArchitecture  _domain_structure;
-    private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
-    private final Configuration       _configuration;
-    private static final BasicStroke  STROKE_1                      = new BasicStroke( 1f );
 
-    public RenderableDomainArchitecture( final DomainArchitecture domain_structure, final Configuration configuration ) {
+    public RenderableDomainArchitecture( final DomainArchitecture domain_structure ) {
         _domain_structure = domain_structure;
-        _configuration = configuration;
     }
 
-    private Configuration getConfiguration() {
-        return _configuration;
+    public static void setColorMap( final Map<String, Color> domain_colors ) {
+        _domain_colors = domain_colors;
     }
 
     @Override
@@ -98,7 +94,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         final Color color_two = getColorTwo( color_one );
         double step = 1;
         if ( to_pdf ) {
-            step = 0.1;
+            step = 0.05;
         }
         for( double i = 0; i < heigth; i += step ) {
             g.setColor( org.forester.util.ForesterUtil
@@ -108,20 +104,14 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         }
     }
 
-    private Color getColorOne( final String name ) {
-        Color c = getConfiguration().getDomainStructureBaseColor();
-        if ( RenderableDomainArchitecture.Domain_colors != null ) {
-            c = RenderableDomainArchitecture.Domain_colors.get( name );
+    private final Color getColorOne( final String name ) {
+        Color c = _domain_colors.get( name );
+        if ( c == null ) {
+            c = AptxUtil.calculateColorFromString( name, false );
             if ( c == null ) {
-                if ( RenderableDomainArchitecture._Next_default_domain_color < RenderableDomainArchitecture.DEFAULT_DOMAINS_COLORS.length ) {
-                    c = Color
-                            .decode( RenderableDomainArchitecture.DEFAULT_DOMAINS_COLORS[ RenderableDomainArchitecture._Next_default_domain_color++ ] );
-                    RenderableDomainArchitecture.Domain_colors.put( name, c );
-                }
-                else {
-                    c = getConfiguration().getDomainStructureBaseColor();
-                }
+                throw new IllegalStateException();
             }
+            _domain_colors.put( name, c );
         }
         return c;
     }
@@ -189,7 +179,12 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         final double start = x1 + 20.0;
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_1 );
-        g.setColor( getConfiguration().getDomainStructureFontColor() );
+        if ( !to_pdf ) {
+            g.setColor( tree_panel.getTreeColorSet().getDomainBaseColor() );
+        }
+        else {
+            g.setColor( Constants.DOMAIN_BASE_COLOR_FOR_PDF );
+        }
         _rectangle.setFrame( start, y - 0.5, _domain_structure.getTotalLength() * f, 1 );
         g.fill( _rectangle );
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
@@ -197,11 +192,18 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
             if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
                 final double xa = start + ( d.getFrom() * f );
                 final double xb = xa + ( d.getLength() * f );
-                if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels() ) {
+                if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels()
+                        && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 ) ) {
                     g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
-                    g.setColor( getConfiguration().getDomainStructureFontColor() );
+                    if ( !to_pdf ) {
+                        g.setColor( tree_panel.getTreeColorSet().getDomainLabelColor() );
+                    }
+                    else {
+                        g.setColor( Constants.DOMAIN_LABEL_COLOR_FOR_PDF );
+                    }
                     PhylogenyDataUtil.drawString( d.getName(), xa, y1
-                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent() + 6, g );
+                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
+                            + _rendering_height, g );
                 }
                 drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
             }
@@ -231,9 +233,5 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     @Override
     public void toPhyloXML( final Writer writer, final int level, final String indentation ) throws IOException {
         _domain_structure.toPhyloXML( writer, level, indentation );
-    }
-
-    public static void setColorMap( final Map<String, Color> domain_colors ) {
-        RenderableDomainArchitecture.Domain_colors = domain_colors;
     }
 }

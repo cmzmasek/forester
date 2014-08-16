@@ -65,6 +65,7 @@ import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
 import org.forester.phylogeny.data.Sequence;
 import org.forester.phylogeny.data.SequenceRelation;
+import org.forester.phylogeny.data.SequenceRelation.SEQUENCE_RELATION_TYPE;
 import org.forester.phylogeny.iterators.PhylogenyNodeIterator;
 import org.forester.util.ForesterUtil;
 
@@ -86,7 +87,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private Map<Integer, String> _all_click_to_names;
     private Map<String, Color>   _annotation_colors;
     private int                  _blast_item;
-    private JComboBox            _click_to_combobox;
+    private JComboBox<String>            _click_to_combobox;
     private JLabel               _click_to_label;
     private List<String>         _click_to_names;
     private int                  _collapse_cb_item;
@@ -134,7 +135,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private int                  _select_nodes_item;
     private Sequence             _selected_query_seq;
     private JCheckBox            _seq_relation_confidence_switch;
-    private JComboBox            _sequence_relation_type_box;
+    private JComboBox<SEQUENCE_RELATION_TYPE>            _sequence_relation_type_box;
     private JCheckBox            _show_annotation;
     private JCheckBox            _show_binary_character_counts;
     private JCheckBox            _show_binary_characters;
@@ -148,7 +149,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox            _show_seq_names;
     private JCheckBox            _show_seq_symbols;
     private JCheckBox            _show_sequence_acc;
-    private JComboBox            _show_sequence_relations;
+    private JComboBox<String>            _show_sequence_relations;
     private JCheckBox            _show_taxo_code;
     private JCheckBox            _show_taxo_common_names;
     private JCheckBox            _show_taxo_images_cb;
@@ -306,10 +307,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
-                
-              
-                
-                
+                else if ( _dynamically_hide_data != null &&  e.getSource() == _dynamically_hide_data && !_dynamically_hide_data.isSelected() ) {
+                    setDynamicHidingIsOn( false );
+                    displayedPhylogenyMightHaveChanged( true );
+                }
                 else {
                     displayedPhylogenyMightHaveChanged( true );
                 }
@@ -354,9 +355,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         return _selected_query_seq;
     }
 
-    public JComboBox getSequenceRelationBox() {
+    public JComboBox<String> getSequenceRelationBox() {
         if ( _show_sequence_relations == null ) {
-            _show_sequence_relations = new JComboBox();
+            _show_sequence_relations = new JComboBox<String>();
             _show_sequence_relations.setFocusable( false );
             _show_sequence_relations.setMaximumRowCount( 20 );
             _show_sequence_relations.setFont( ControlPanel.js_font );
@@ -371,9 +372,9 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     /* GUILHEM_BEG */
-    public JComboBox getSequenceRelationTypeBox() {
+    public JComboBox<SEQUENCE_RELATION_TYPE> getSequenceRelationTypeBox() {
         if ( _sequence_relation_type_box == null ) {
-            _sequence_relation_type_box = new JComboBox();
+            _sequence_relation_type_box = new JComboBox<SEQUENCE_RELATION_TYPE>();
             for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : SequenceRelation.SEQUENCE_RELATION_TYPE.values() ) {
                 _sequence_relation_type_box.addItem( type );
             }
@@ -411,7 +412,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     public void setSequenceRelationQueries( final Collection<Sequence> sequenceRelationQueries ) {
-        final JComboBox box = getSequenceRelationBox();
+        final JComboBox<String> box = getSequenceRelationBox();
         while ( box.getItemCount() > 1 ) {
             box.removeItemAt( 1 );
         }
@@ -663,7 +664,7 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case Configuration.dynamically_hide_data:
                 _dynamically_hide_data = new JCheckBox( title );
-                getDynamicallyHideData().setToolTipText( "To hide labels depending on likely visibility" );
+                getDynamicallyHideData().setToolTipText( "To hide labels depending on expected visibility" );
                 addJCheckBox( getDynamicallyHideData(), ch_panel );
                 add( ch_panel );
                 break;
@@ -1240,7 +1241,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setDynamicHidingIsOn( final boolean is_on ) {
-        //  if ( !_configuration.isUseNativeUI() ) {
         if ( is_on ) {
             getDynamicallyHideData().setForeground( getConfiguration().getGuiCheckboxAndButtonActiveColor() );
         }
@@ -1252,7 +1252,6 @@ final class ControlPanel extends JPanel implements ActionListener {
                 getDynamicallyHideData().setForeground( Color.BLACK );
             }
         }
-        // }
     }
 
     void setSearchFoundCountsOnLabel0( final int counts ) {
@@ -1524,7 +1523,7 @@ final class ControlPanel extends JPanel implements ActionListener {
         add( spacer );
         _click_to_label = new JLabel( "Click on Node to:" );
         add( customizeLabel( _click_to_label, getConfiguration() ) );
-        _click_to_combobox = new JComboBox();
+        _click_to_combobox = new JComboBox<String>();
         _click_to_combobox.setFocusable( false );
         _click_to_combobox.setMaximumRowCount( 14 );
         _click_to_combobox.setFont( ControlPanel.js_font );
@@ -1725,10 +1724,10 @@ final class ControlPanel extends JPanel implements ActionListener {
             _sequence_relation_type_box.setBackground( getConfiguration().getGuiButtonBackgroundColor() );
             _sequence_relation_type_box.setForeground( getConfiguration().getGuiButtonTextColor() );
         }
-        _sequence_relation_type_box.setRenderer( new ListCellRenderer() {
+        _sequence_relation_type_box.setRenderer( new ListCellRenderer<Object>() {
 
             @Override
-            public Component getListCellRendererComponent( final JList list,
+            public Component getListCellRendererComponent( final JList<?> list,
                                                            final Object value,
                                                            final int index,
                                                            final boolean isSelected,
@@ -2054,6 +2053,9 @@ final class ControlPanel extends JPanel implements ActionListener {
                     case UNKNOWN:
                         s = "User Selected Data";
                         break;
+                    default:
+                        throw new IllegalStateException( "dont know how to deal with " + getConfiguration().getExtDescNodeDataToReturn() );
+                        
                 }
                 final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
                 addClickToOption( Configuration.get_ext_desc_data, label );
