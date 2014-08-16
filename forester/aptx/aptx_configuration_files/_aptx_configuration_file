@@ -276,7 +276,7 @@ display_color: background                 0x000000
 display_color: background_gradient_bottom 0x0000FF
 display_color: sequence                   0xE6E6E6
 display_color: taxonomy                   0xB4B4B4
-display_color: confidence                 0x38B0FF
+display_color: confidence                 0xB4B4B4
 display_color: branch_length              0x8C8C8C
 display_color: branch                     0xFFFFFF
 display_color: node_box                   0xFFFFFF
@@ -287,7 +287,8 @@ display_color: matching_a_and_b           0xFFFF00
 display_color: duplication                0xFF0000
 display_color: speciation                 0x00FF00
 display_color: duplication_or_specation   0xFFFF00
-display_color: domains                    0x7B68EE
+display_color: domain_label               0xE6E6E6
+display_color: domain_base                0x646464
 display_color: binary_domain_combinations 0x4169FF
 display_color: annotation                 0xADFF2F
 display_color: overview                   0x828282
@@ -317,13 +318,6 @@ vector_data_max_color:                0xFFFF00
 vector_data_mean_color:               0x000000
 vector_data_width:                    120
 vector_data_height:                   12
-
-
-#  Domain Structure Display Colors
-#  -------------------------------
-domain_structure_base_color:          0x202020
-domain_structure_font_color:          0x909090
-
 
 
 #  Settings Specific for Archaeopteryx Applets (E and A)
