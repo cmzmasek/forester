@@ -307,7 +307,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             MainFrame.about();
         }
         else if ( o == _help_item ) {
-            help();
+            try {
+                AptxUtil.openWebsite( Constants.APTX_DOC_SITE, true, this );
+            }
+            catch ( final IOException e1 ) {
+                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+            }
         }
         else if ( o == _website_item ) {
             try {
@@ -674,7 +679,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
 
     void buildHelpMenu() {
         _help_jmenu = MainFrame.createMenu( "Help", getConfiguration() );
-        _help_jmenu.add( _help_item = new JMenuItem( "Help" ) );
+        _help_jmenu.add( _help_item = new JMenuItem( "Documentation" ) );
+        _help_jmenu.addSeparator();
         _help_jmenu.add( _website_item = new JMenuItem( "Archaeopteryx Home" ) );
         _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" );
         _help_jmenu.add( _phyloxml_website_item = new JMenuItem( "phyloXML Home" ) );
@@ -1074,49 +1080,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return _options;
     }
 
-    void help() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( "Display options\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
-        sb.append( "Clickable tree nodes\n" );
-        sb.append( "--------------------\n" );
-        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
-        sb.append( "or by right clicking:\n" );
-        sb.append( "o  Display Node Data -- display information for a node\n" );
-        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
-        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
-        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
-        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
-        sb.append( "o  Colorize Subtree -- color a subtree\n" );
-        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
-        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
-        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
-        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
-        sb.append( "Zooming\n" );
-        sb.append( "---------\n" );
-        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
-        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
-        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
-        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
-        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
-        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
-        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
-        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
-        sb.append( "Quick tree manipulation:\n" );
-        sb.append( "------------------------\n" );
-        sb.append( "Order Subtrees -- order the tree by branch length\n" );
-        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
-        sb.append( "phyloXML\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
-        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
-        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
-        sb.append( "\n" );
-        sb.append( "For more information: http://www.phylosoft.org/archaeopteryx/\n" );
-        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
-        TextFrame.instantiate( sb.toString(), "Help", _textframes );
-    }
+   
 
     void initializeTypeMenu( final Options options ) {
         setTypeMenuToAllUnselected();

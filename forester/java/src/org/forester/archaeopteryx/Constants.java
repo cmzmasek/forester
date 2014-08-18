@@ -76,6 +76,8 @@ public final class Constants {
     static final int            A4_SIZE_Y                                                     = 845;
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
     final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
+    final static String         APTX_DOC_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";
+    
     final static String         PHYLOXML_WEB_SITE                                             = ForesterConstants.PHYLO_XML_LOCATION;
     final static String         PHYLOXML_REFERENCE_URL                                        = "http://www.biomedcentral.com/1471-2105/10/356/";
     final static String         APTX_REFERENCE_URL                                            = "http://www.biomedcentral.com/bmcbioinformatics/";

@@ -33,12 +33,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.JApplet;
@@ -498,7 +496,12 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             about();
         }
         else if ( o == _help_item ) {
-            help();
+            try {
+                AptxUtil.openWebsite( Constants.APTX_DOC_SITE, is_applet, applet );
+            }
+            catch ( final IOException e1 ) {
+                ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
+            }
         }
         else if ( o == _website_item ) {
             try {
@@ -725,9 +728,10 @@ public abstract class MainFrame extends JFrame implements ActionListener {
 
     void buildHelpMenu() {
         _help_jmenu = createMenu( "Help", getConfiguration() );
-        _help_jmenu.add( _help_item = new JMenuItem( "Help" ) );
+        _help_jmenu.add( _help_item = new JMenuItem( "Documentation" ) );
+        _help_jmenu.addSeparator();
         _help_jmenu.add( _website_item = new JMenuItem( "Archaeopteryx Home" ) );
-        _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" );
+        _aptx_ref_item = new JMenuItem( "Archaeopteryx Reference" ); //TODO need to add this...
         _help_jmenu.add( _phyloxml_website_item = new JMenuItem( "phyloXML Home" ) );
         _help_jmenu.add( _phyloxml_ref_item = new JMenuItem( "phyloXML Reference" ) );
         _help_jmenu.addSeparator();
@@ -1083,95 +1087,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _species_tree;
     }
 
-    void help() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append( "Display options\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Use the checkboxes to select types of information to display on the tree.\n\n" );
-        sb.append( "Clickable tree nodes\n" );
-        sb.append( "--------------------\n" );
-        sb.append( "Tree nodes can be clicked, the action is determined by the 'click on node to' menu\n" );
-        sb.append( "or by right clicking:\n" );
-        sb.append( "o  Display Node Data -- display information for a node\n" );
-        sb.append( "o  Collapse/Uncollapse -- collapse and uncollapse subtree from clicked node\n" );
-        sb.append( "o  Root/Reroot -- change tree root to clicked node\n" );
-        sb.append( "o  Sub/Super Tree -- toggle between subtree from clicked node and whole tree\n" );
-        sb.append( "o  Swap Descendants -- switch descendant on either side of clicked node\n" );
-        sb.append( "o  Colorize Subtree -- color a subtree\n" );
-        sb.append( "o  Open Sequence Web -- launch a web browser to display sequence information\n" );
-        sb.append( "o  Open Taxonomy Web -- launch a web browser to display taxonomy information\n" );
-        sb.append( "-  there may be additional choices depending on this particular setup\n\n" );
-        sb.append( "Right clicking on a node always displays the information of a node.\n\n" );
-        sb.append( "Zooming\n" );
-        sb.append( "---------\n" );
-        sb.append( "The mouse wheel and the plus and minus keys control zooming.\n" );
-        sb.append( "Mouse wheel+Ctrl changes the text size.\n" );
-        sb.append( "Mouse wheel+Shift controls zooming in vertical direction only.\n" );
-        sb.append( "Use the buttons on the control panel to zoom the tree in and out, horizontally or vertically.\n" );
-        sb.append( "The entire tree can be fitted into the window by clicking the \"F\" button, or by pressing F, Delete, or Home.\n" );
-        sb.append( "The up, down, left, and right keys can be used to move the visible part (if zoomed in).\n" );
-        sb.append( "Up, down, left, and right+Shift can be used to control zooming horizontally and vertically.\n" );
-        sb.append( "Plus and minus keys+Ctrl change the text size; F+Ctrl, Delete+Ctrl, or Home+Ctrl resets it.\n\n" );
-        sb.append( "Quick tree manipulation:\n" );
-        sb.append( "------------------------\n" );
-        sb.append( "Order Subtrees -- order the tree by branch length\n" );
-        sb.append( "Uncollapse All -- uncollapse any and all collapsed branches\n\n" );
-        sb.append( "Memory problems (Java heap space error)\n" );
-        sb.append( "---------------------------------------\n" );
-        sb.append( "Since the Java default memory allocation is quite small, it might by necessary (for trees\n" );
-        sb.append( "with more than approximately 5000 external nodes) to increase the memory which Java can use, with\n" );
-        sb.append( "the '-Xmx' Java command line option. For example:\n" );
-        sb.append( "java -Xmx1024m -cp path\\to\\forester.jar org.forester.archaeopteryx.Archaeopteryx\n\n" );
-        // + "General remarks\n"
-        // + "---------------\n"
-        // +
-        // "o  The application version permits copying to the clipboard \n"
-        // +
-        // "    in the \"View\"|\"View as ...\" frame (either by control-c or button press).\n"
-        // +
-        // "o  Changes made to a subtree affect this subtree and its subtrees,\n"
-        // + "    but not any of its parent tree(s).\n"
-        // +
-        // "o  Archaeopteryx tries to detect whether the numerical values in a NH tree\n"
-        // +
-        // "    are likely to be bootstrap values instead of branch length values.\n\n"
-        // +
-        // " Remarks regarding SDI (Speciation Duplication Inference):\n"
-        // +
-        // "o  Each external node of the gene tree (in display) needs to be associated with\n"
-        // +
-        // "    a species: either directly through the \"Species\" field, or the species\n"
-        // +
-        // "    is part of the sequence name in the form \"XXXX_SPECIES\"\n"
-        // +
-        // "    (e.g. \"ACON_DROME\" or \"ACON_DROME/123-4489\" which is also acceptable).\n"
-        // +
-        // "o  A species tree for each species of the gene tree needs to be loaded with\n"
-        // +
-        // "   \"SDI\"|\"Load species tree\" prior the SDI execution.\n"
-        // +
-        // "o  !External nodes of the gene tree associated with species not present in\n"
-        // +
-        // "    the species tree are REMOVED prior to SDI execution!\n"
-        // +
-        // "o  Both the gene tree and the species tree must be completely binary.\n"
-        // +
-        // "o  Duplications and speciations are a function of the position of the root.\n"
-        // +
-        // "    Hence, after each manual \"Root/Reroot\"ing some duplications will be\n"
-        // + "    incorrect and need to be inferred again\n"
-        // +
-        // "    with: \"SDI\"|\"SDI (Speciation Duplication Inference)\n\n"
-        sb.append( "phyloXML\n" );
-        sb.append( "-------------------\n" );
-        sb.append( "Reference: " + Constants.PHYLOXML_REFERENCE + "\n" );
-        sb.append( "Website: " + Constants.PHYLOXML_WEB_SITE + "\n" );
-        sb.append( "Version: " + ForesterConstants.PHYLO_XML_VERSION + "\n" );
-        sb.append( "\n" );
-        sb.append( "For more information: https://sites.google.com/site/cmzmasek/home/software/archaeopteryx\n" );
-        sb.append( "Email: " + Constants.AUTHOR_EMAIL + "\n\n" );
-        TextFrame.instantiate( sb.toString(), "Help", _textframes );
-    }
+    
 
     void initializeTypeMenu( final Options options ) {
         setTypeMenuToAllUnselected();
@@ -1689,7 +1605,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
      */
     static void about() {
         final StringBuffer about = new StringBuffer( "Archaeopteryx\nVersion " + Constants.VERSION + "\n" );
-        about.append( "Copyright (C) 2013 Christian M. Zmasek\n" );
+        about.append( "Copyright (C) 2014 Christian M Zmasek\n" );
         about.append( "All Rights Reserved\n" );
         about.append( "License: GNU Lesser General Public License (LGPL)\n" );
         about.append( "Last modified: " + Constants.PRG_DATE + "\n" );
@@ -1713,6 +1629,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         about.append( Constants.PHYLOXML_REFERENCE_SHORT + "\n" );
         about.append( "For more information & download:\n" );
         about.append( Constants.APTX_WEB_SITE + "\n" );
+        about.append( "Documentation:\n" );
+        about.append( Constants.APTX_DOC_SITE + "\n" );
         about.append( "Comments: " + Constants.AUTHOR_EMAIL );
         JOptionPane.showMessageDialog( null, about, Constants.PRG_NAME, JOptionPane.PLAIN_MESSAGE );
     }
