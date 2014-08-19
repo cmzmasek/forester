@@ -277,6 +277,20 @@ public class PhylogenyMethods {
         }
         return max;
     }
+    
+    public static PhylogenyNode calculateNodeWithMaxDistanceToRoot( final Phylogeny phy ) {
+        double max = 0.0;
+        PhylogenyNode max_node = phy.getFirstExternalNode();
+        for( final PhylogenyNodeIterator iter = phy.iteratorExternalForward(); iter.hasNext(); ) {
+            final PhylogenyNode node = iter.next();
+            final double d = node.calculateDistanceToRoot();
+            if ( d > max ) {
+                max = d;
+                max_node = node;
+            }
+        }
+        return max_node;
+    }
 
     public static int calculateNumberOfExternalNodesWithoutTaxonomy( final PhylogenyNode node ) {
         final List<PhylogenyNode> descs = node.getAllExternalDescendants();

@@ -132,6 +132,10 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _gsdi_item;
     private JMenuItem                   _gsdir_item;
     private Phylogeny                   _species_tree;
+    
+    private JCheckBoxMenuItem _right_line_up_domains_cbmi;
+    private JCheckBoxMenuItem _line_up_renderable_data_cbmi;
+    
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -349,6 +353,14 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _color_by_taxonomic_group_cbmi ) {
             updateOptions( getOptions() );
         }
+        else if ( o == _right_line_up_domains_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _line_up_renderable_data_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        
+        
         repaint();
     }
 
@@ -744,7 +756,9 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( MainFrame.SHOW_DOMAIN_LABELS_LABEL ) );
+            _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
         }
+        _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( MainFrame.SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu
@@ -1350,6 +1364,17 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
+        
+       
+        if ( ( _right_line_up_domains_cbmi != null ) && _right_line_up_domains_cbmi.isEnabled() ) {
+            options.setRightLineUpDomains( _right_line_up_domains_cbmi.isSelected() );
+        }
+        
+        
+        if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
+            options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
+        }
+        
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {

@@ -39,6 +39,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import javax.swing.Box;
+import javax.swing.Icon;
 import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -125,6 +126,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         USE_BRACKETS_FOR_CONF_IN_NH_LABEL       = "Use Brackets for Confidence Values";
     static final String         USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Basic Tree Information";
+    static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
+    static final String LINE_UP_RENDERABLE_DATA = "Line Up Node Diagrams";
     JMenuBar                    _jmenubar;
     JMenu                       _file_jmenu;
     JMenu                       _tools_menu;
@@ -198,6 +201,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
     JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
+   JCheckBoxMenuItem _right_line_up_domains_cbmi;
+    JCheckBoxMenuItem _line_up_renderable_data_cbmi;
     // _  print
     JCheckBoxMenuItem           _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem           _antialias_print_cbmi;
@@ -486,6 +491,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 getCurrentTreePanel().updateOvSizes();
             }
         }
+        else if ( o == _line_up_renderable_data_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        else if ( o == _right_line_up_domains_cbmi ) {
+            updateOptions( getOptions() );
+        }
+        
+        
         else if ( ( o == _rectangular_type_cbmi ) || ( o == _triangular_type_cbmi ) || ( o == _curved_type_cbmi )
                 || ( o == _convex_type_cbmi ) || ( o == _euro_type_cbmi ) || ( o == _rounded_type_cbmi )
                 || ( o == _unrooted_type_cbmi ) || ( o == _circular_type_cbmi ) ) {
@@ -1404,6 +1417,14 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         else if ( ( _circular_type_cbmi != null ) && _circular_type_cbmi.isSelected() ) {
             options.setPhylogenyGraphicsType( PHYLOGENY_GRAPHICS_TYPE.CIRCULAR );
+        }
+        if ( ( _right_line_up_domains_cbmi != null ) && _right_line_up_domains_cbmi.isEnabled() ) {
+            options.setRightLineUpDomains( _right_line_up_domains_cbmi.isSelected() );
+        }
+        
+        
+        if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
+            options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
         }
     }
 

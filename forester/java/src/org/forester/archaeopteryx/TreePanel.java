@@ -4789,7 +4789,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int h = y < default_height ? ForesterUtil.roundToInt( y ) : default_height;
                 rds.setRenderingHeight( h > 1 ? h : 2 );
                 if ( getControlPanel().isDrawPhylogram() ) {
-                    rds.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                    if ( getOptions().isLineUpRendarableNodeData() ) {
+                        length_of_longest_text = calcLengthOfLongestText();
+                      
+                        rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + length_of_longest_text, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                    }
+                    else {
+                        rds.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                    }
                 }
                 else {
                     length_of_longest_text = calcLengthOfLongestText();
