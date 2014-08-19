@@ -947,30 +947,7 @@ public final class AptxUtil {
         }
     }
 
-    // See: http://www.xml.nig.ac.jp/tutorial/rest/index.html#2.2
-    // static void openDDBJRest() throws IOException {
-    // //set URL
-    // URL url = new URL( "http://xml.nig.ac.jp/rest/Invoke" );
-    // //set parameter
-    // String query = "service=GetEntry&method=getDDBJEntry&accession=AB000100";
-    // //make connection
-    // URLConnection urlc = url.openConnection();
-    // //use post mode
-    // urlc.setDoOutput( true );
-    // urlc.setAllowUserInteraction( false );
-    // //send query
-    // PrintStream ps = new PrintStream( urlc.getOutputStream() );
-    // ps.print( query );
-    // ps.close();
-    // //get result
-    // BufferedReader br = new BufferedReader( new InputStreamReader(
-    // urlc.getInputStream() ) );
-    // String l = null;
-    // while ( ( l = br.readLine() ) != null ) {
-    // System.out.println( l );
-    // }
-    // br.close();
-    // }
+   
     public static enum GraphicsExportType {
         BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
 
