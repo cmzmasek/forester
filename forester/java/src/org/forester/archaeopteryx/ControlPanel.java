@@ -165,7 +165,6 @@ final class ControlPanel extends JPanel implements ActionListener {
     private JCheckBox                         _width_branches;
     private JCheckBox                         _write_confidence;
     private JButton                           _zoom_in_domain_structure;
-    // zooming and quick tree manipulation buttons:
     private JButton                           _zoom_in_x;
     private JButton                           _zoom_in_y;
     private JLabel                            _zoom_label;
@@ -1297,7 +1296,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     }
 
     void setUpControlsForDomainStrucures() {
-        _domain_display_label = new JLabel( "Domain Display:" );
+        _domain_display_label = new JLabel( "Domain Architectures:" );
         add( customizeLabel( _domain_display_label, getConfiguration() ) );
         add( _domain_display_label );
         _zoom_in_domain_structure = new JButton( "d+" );
@@ -2273,6 +2272,12 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _decr_domain_structure_evalue_thr.setVisible( true );
                 _incr_domain_structure_evalue_thr.setVisible( true );
                 _domain_structure_evalue_thr_tf.setVisible( true );
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( true );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( true );
+                }
             }
             else {
                 _domain_display_label.setVisible( false );
@@ -2281,7 +2286,108 @@ final class ControlPanel extends JPanel implements ActionListener {
                 _decr_domain_structure_evalue_thr.setVisible( false );
                 _incr_domain_structure_evalue_thr.setVisible( false );
                 _domain_structure_evalue_thr_tf.setVisible( false );
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                }
             }
+        }
+    }
+
+    void setVisibilityOfX() {
+        try {
+            if ( isDrawPhylogram()
+                    || ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
+                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) ) {
+                if ( getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi != null ) {
+                    getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._uniform_cladograms_rbmi != null ) {
+                    getMainPanel().getMainFrame()._uniform_cladograms_rbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi != null ) {
+                    getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi.setVisible( false );
+                }
+            }
+            else {
+                if ( getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi != null ) {
+                    getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi.setVisible( true );
+                }
+                if ( getMainPanel().getMainFrame()._uniform_cladograms_rbmi != null ) {
+                    getMainPanel().getMainFrame()._uniform_cladograms_rbmi.setVisible( true );
+                }
+                if ( getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi != null ) {
+                    getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi.setVisible( true );
+                }
+            }
+            if ( isDrawPhylogram() ) {
+                if ( getMainPanel().getMainFrame()._show_scale_cbmi != null ) {
+                    getMainPanel().getMainFrame()._show_scale_cbmi.setVisible( true );
+                }
+            }
+            else {
+                if ( getMainPanel().getMainFrame()._show_scale_cbmi != null ) {
+                    getMainPanel().getMainFrame()._show_scale_cbmi.setVisible( false );
+                }
+            }
+            if ( getCurrentTreePanel() != null ) {
+                if ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
+                        || ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) {
+                    if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
+                        getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( true );
+                    }
+                    if ( getMainPanel().getMainFrame()._show_branch_length_values_cbmi != null ) {
+                        getMainPanel().getMainFrame()._show_branch_length_values_cbmi.setVisible( false );
+                    }
+                }
+                else {
+                    if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
+                        getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( false );
+                    }
+                    if ( getMainPanel().getMainFrame()._show_branch_length_values_cbmi != null ) {
+                        getMainPanel().getMainFrame()._show_branch_length_values_cbmi.setVisible( true );
+                    }
+                }
+            }
+        }
+        catch ( final Exception ignore ) {
+            //not important...
+        }
+    }
+
+    void setVisibilityOfDomainStrucureCB() {
+        try {
+            if ( ( getCurrentTreePanel() != null )
+                    && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
+                            .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                }
+            }
+            else if ( isShowDomainArchitectures() ) {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( true );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( true );
+                }
+            }
+            else {
+                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
+                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
+                }
+                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
+                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                }
+            }
+        }
+        catch ( final Exception ignore ) {
+            //not important...
         }
     }
 

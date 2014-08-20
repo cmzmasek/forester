@@ -868,16 +868,16 @@ public final class MainFrameApplication extends MainFrame {
                         .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
                 setTextForGraphicsSizeChooserMenuItem( _print_size_mi, getOptions() );
                 setTextForPdfLineWidthChooserMenuItem( _choose_pdf_width_mi, getOptions() );
-                MainFrame.updateOptionsMenuDependingOnPhylogenyType( getMainPanel(),
-                                                                     _show_scale_cbmi,
-                                                                     _show_branch_length_values_cbmi,
-                                                                     _non_lined_up_cladograms_rbmi,
-                                                                     _uniform_cladograms_rbmi,
-                                                                     _ext_node_dependent_cladogram_rbmi,
-                                                                     _label_direction_cbmi );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
+                try {
+                    getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
+                    getMainPanel().getControlPanel().setVisibilityOfX();
+                }
+                catch ( final Exception ignore ) {
+                    // do nothing, not important.
+                }
             }
         } );
         _options_jmenu.add( customizeMenuItemAsLabel( new JMenuItem( DISPLAY_SUBHEADER ), getConfiguration() ) );

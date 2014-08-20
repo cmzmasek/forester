@@ -736,16 +736,16 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                         .setTextMinSupportMenuItem( _choose_minimal_confidence_mi, getOptions(), getCurrentTreePanel() );
                 MainFrame.setTextForFontChooserMenuItem( _choose_font_mi, MainFrame
                         .createCurrentFontDesc( getMainPanel().getTreeFontSet() ) );
-                MainFrame.updateOptionsMenuDependingOnPhylogenyType( getMainPanel(),
-                                                                     _show_scale_cbmi,
-                                                                     _show_branch_length_values_cbmi,
-                                                                     _non_lined_up_cladograms_rbmi,
-                                                                     _uniform_cladograms_rbmi,
-                                                                     _ext_node_dependent_cladogram_rbmi,
-                                                                     _label_direction_cbmi );
                 MainFrame.setCycleNodeFillMenuItem( _cycle_node_fill_mi, getOptions() );
                 MainFrame.setCycleNodeShapeMenuItem( _cycle_node_shape_mi, getOptions() );
                 MainFrame.setTextNodeSizeMenuItem( _choose_node_size_mi, getOptions() );
+                try {
+                    getMainPanel().getControlPanel().setVisibilityOfDomainStrucureCB();
+                    getMainPanel().getControlPanel().setVisibilityOfX();
+                }
+                catch ( final Exception ignore ) {
+                    // do nothing, not important.
+                }
             }
         } );
         _options_jmenu.add( MainFrame.customizeMenuItemAsLabel( new JMenuItem( MainFrame.DISPLAY_SUBHEADER ),
