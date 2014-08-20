@@ -566,6 +566,9 @@ final public class Options {
             if ( configuration.getExtDescNodeDataToReturn() != null ) {
                 instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
             }
+            
+            instance.setRightLineUpDomains(  configuration.isRightLineUpDomains() );
+            instance.setLineUpRendarableNodeData(  configuration.isLineUpRendarableNodeData() );
             instance.setAllowErrorsInDistanceToParent( false );
         }
         return instance;

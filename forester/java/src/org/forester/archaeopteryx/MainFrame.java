@@ -39,7 +39,6 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import javax.swing.Box;
-import javax.swing.Icon;
 import javax.swing.JApplet;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -492,9 +491,15 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
         }
         else if ( o == _line_up_renderable_data_cbmi ) {
+            if ( !_line_up_renderable_data_cbmi.isSelected() ) {
+                _right_line_up_domains_cbmi.setSelected( false );
+            }
             updateOptions( getOptions() );
         }
         else if ( o == _right_line_up_domains_cbmi ) {
+            if ( _right_line_up_domains_cbmi.isSelected() ) {
+                _line_up_renderable_data_cbmi.setSelected( true );
+            }
             updateOptions( getOptions() );
         }
         
@@ -548,6 +553,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
             }
         }
+       
         else {
             if ( _load_phylogeny_from_webservice_menu_items != null ) {
                 for( int i = 0; i < _load_phylogeny_from_webservice_menu_items.length; ++i ) {
@@ -1420,9 +1426,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if ( ( _right_line_up_domains_cbmi != null ) && _right_line_up_domains_cbmi.isEnabled() ) {
             options.setRightLineUpDomains( _right_line_up_domains_cbmi.isSelected() );
+           
         }
-        
-        
         if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
             options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
         }

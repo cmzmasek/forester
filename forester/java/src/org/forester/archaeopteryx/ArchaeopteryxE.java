@@ -353,13 +353,21 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _color_by_taxonomic_group_cbmi ) {
             updateOptions( getOptions() );
         }
-        else if ( o == _right_line_up_domains_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _line_up_renderable_data_cbmi ) {
-            updateOptions( getOptions() );
-        }
+       
         
+        
+        else if ( o == _line_up_renderable_data_cbmi ) {
+            if ( !_line_up_renderable_data_cbmi.isSelected() ) {
+                _right_line_up_domains_cbmi.setSelected( false );
+            }
+            updateOptions( getOptions() );
+        }
+        else if ( o == _right_line_up_domains_cbmi ) {
+            if ( _right_line_up_domains_cbmi.isSelected() ) {
+                _line_up_renderable_data_cbmi.setSelected( true );
+            }
+            updateOptions( getOptions() );
+        }
         
         repaint();
     }

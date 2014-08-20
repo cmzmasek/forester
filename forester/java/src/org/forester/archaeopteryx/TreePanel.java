@@ -251,6 +251,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     private float                        _x_correction_factor                               = 0.0f;
     private float                        _x_distance                                        = 0.0f;
     private float                        _y_distance                                        = 0.0f;
+    private int                          _length_of_longest_text;
+    private int                          _longest_domain;
     //  private Image                           offscreenImage;
     //  private Graphics                        offscreenGraphics;
     //  private Dimension                       offscreenDimension;
@@ -519,6 +521,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                         }
                     }
                 }
+                _length_of_longest_text = calcLengthOfLongestText();
             }
             int ext_nodes = _phylogeny.getRoot().getNumberOfExternalNodes();
             final int max_depth = PhylogenyMethods.calculateMaxDepth( _phylogeny );
@@ -600,6 +603,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
         int longest = 30;
         int longest_txt = 0;
+        _longest_domain = 0;
         PhylogenyNode longest_txt_node = _phylogeny.getFirstExternalNode();
         for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
             int sum = 0;
@@ -647,6 +651,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final DomainArchitecture d = node.getNodeData().getSequence().getDomainArchitecture();
                 sum += ( ( _domain_structure_width / ( ( RenderableDomainArchitecture ) d ).getOriginalSize()
                         .getWidth() ) * d.getTotalLength() ) + 10;
+                if ( d.getTotalLength() > _longest_domain ) {
+                    _longest_domain = d.getTotalLength();
+                }
             }
             if ( sum >= max_length ) {
                 _longest_ext_node_info = max_length;
@@ -4770,7 +4777,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( ( !getControlPanel().isShowInternalData() && !node.isExternal() ) ) {
             return;
         }
-        int length_of_longest_text = -1;
         if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
                 && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
             RenderableDomainArchitecture rds = null;
@@ -4790,21 +4796,44 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 rds.setRenderingHeight( h > 1 ? h : 2 );
                 if ( getControlPanel().isDrawPhylogram() ) {
                     if ( getOptions().isLineUpRendarableNodeData() ) {
-                        length_of_longest_text = calcLengthOfLongestText();
-                      
-                        rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + length_of_longest_text, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                        if ( getOptions().isRightLineUpDomains() ) {
+                            rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + _length_of_longest_text
+                                                + ( _longest_domain - rds.getTotalLength() )
+                                                * rds.getRenderingFactorWidth(),
+                                        node.getYcoord() - ( h / 2 ),
+                                        g,
+                                        this,
+                                        to_pdf );
+                        }
+                        else {
+                            rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + _length_of_longest_text,
+                                        node.getYcoord() - ( h / 2 ),
+                                        g,
+                                        this,
+                                        to_pdf );
+                        }
                     }
                     else {
                         rds.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
                     }
                 }
                 else {
-                    length_of_longest_text = calcLengthOfLongestText();
-                    rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + length_of_longest_text,
-                                node.getYcoord() - ( h / 2 ),
-                                g,
-                                this,
-                                to_pdf );
+                    if ( getOptions().isRightLineUpDomains() ) {
+                        rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text
+                                            - 20 + ( _longest_domain - rds.getTotalLength() ) 
+                                            * rds.getRenderingFactorWidth(),
+                                    node.getYcoord() - ( h / 2 ),
+                                    g,
+                                    this,
+                                    to_pdf );
+                    }
+                    else {
+                        rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
+                                    node.getYcoord() - ( h / 2 ),
+                                    g,
+                                    this,
+                                    to_pdf );
+                    }
                 }
             }
         }
@@ -4823,10 +4852,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     rv.render( node.getXcoord() + x + domain_add, node.getYcoord() - 3, g, this, to_pdf );
                 }
                 else {
-                    if ( length_of_longest_text < 0 ) {
-                        length_of_longest_text = calcLengthOfLongestText();
-                    }
-                    rv.render( getPhylogeny().getFirstExternalNode().getXcoord() + length_of_longest_text + domain_add,
+                    rv.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text + domain_add,
                                node.getYcoord() - 3,
                                g,
                                this,
@@ -4836,13 +4862,13 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         }
     }
 
-    private int calcLengthOfLongestText() {
+    final private int calcLengthOfLongestText() {
         final StringBuilder sb = new StringBuilder();
         nodeDataAsSB( _ext_node_with_longest_txt_info, sb );
         if ( _ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy() ) {
             nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
         }
-        return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() + " " );
+        return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() );
     }
 
     final private void paintOvRectangle( final Graphics2D g ) {
