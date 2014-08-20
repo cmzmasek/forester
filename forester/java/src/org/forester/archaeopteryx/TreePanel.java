@@ -4871,9 +4871,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
 
     final private int calcLengthOfLongestText() {
         final StringBuilder sb = new StringBuilder();
-        nodeDataAsSB( _ext_node_with_longest_txt_info, sb );
-        if ( _ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy() ) {
-            nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
+        if ( _ext_node_with_longest_txt_info != null ) {
+            nodeDataAsSB( _ext_node_with_longest_txt_info, sb );
+            if ( _ext_node_with_longest_txt_info.getNodeData().isHasTaxonomy() ) {
+                nodeTaxonomyDataAsSB( _ext_node_with_longest_txt_info.getNodeData().getTaxonomy(), sb );
+            }
         }
         return getFontMetricsForLargeDefaultFont().stringWidth( sb.toString() );
     }
