@@ -64,7 +64,7 @@ public class DirectedBinaryDomainCombination extends BasicBinaryDomainCombinatio
         else {
             final DirectedBinaryDomainCombination dc = new DirectedBinaryDomainCombination( n_terminal, c_terminal );
             DDC_POOL.put( code, dc );
-            if ( VERBOSE && ( DDC_POOL.size() % 100 == 0 ) ) {
+            if ( VERBOSE && ( ( DDC_POOL.size() % 100 ) == 0 ) ) {
                 System.out.println( " ddc pool size: " + DDC_POOL.size() );
             }
             return dc;

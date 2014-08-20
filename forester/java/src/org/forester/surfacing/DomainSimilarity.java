@@ -159,6 +159,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
         }
     }
 
+    @Override
     public int compareTo( final DomainSimilarity domain_similarity ) {
         if ( this == domain_similarity ) {
             return EQUAL;
@@ -629,6 +630,7 @@ public class DomainSimilarity implements Comparable<DomainSimilarity> {
             _base = base;
         }
 
+        @Override
         public int compare( final String a, final String b ) {
             if ( _base.get( a ) >= _base.get( b ) ) {
                 return -1;

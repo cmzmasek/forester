@@ -35,7 +35,6 @@ import org.forester.phylogeny.data.NodeVisualData;
 import org.forester.phylogeny.data.NodeVisualData.NodeFill;
 import org.forester.phylogeny.data.NodeVisualData.NodeShape;
 import org.forester.util.ForesterUtil;
-import org.omg.stub.java.rmi._Remote_Stub;
 
 /*
  * This is to hold changeable options.
@@ -86,8 +85,8 @@ final public class Options {
     private boolean                           _show_overview;
     private boolean                           _show_scale;
     private TAXONOMY_EXTRACTION               _taxonomy_extraction;
-    private boolean _line_up_renderable_node_data;
-    private boolean _right_align_domains;
+    private boolean                           _line_up_renderable_node_data;
+    private boolean                           _right_align_domains;
 
     private Options() {
         init();
@@ -566,9 +565,8 @@ final public class Options {
             if ( configuration.getExtDescNodeDataToReturn() != null ) {
                 instance.setExtDescNodeDataToReturn( configuration.getExtDescNodeDataToReturn() );
             }
-            
-            instance.setRightLineUpDomains(  configuration.isRightLineUpDomains() );
-            instance.setLineUpRendarableNodeData(  configuration.isLineUpRendarableNodeData() );
+            instance.setRightLineUpDomains( configuration.isRightLineUpDomains() );
+            instance.setLineUpRendarableNodeData( configuration.isLineUpRendarableNodeData() );
             instance.setAllowErrorsInDistanceToParent( false );
         }
         return instance;
@@ -613,23 +611,18 @@ final public class Options {
     }
 
     final public boolean isLineUpRendarableNodeData() {
-       
         return _line_up_renderable_node_data;
     }
-    
+
     final public boolean isRightLineUpDomains() {
-        
         return _right_align_domains;
     }
-    
-    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data) {
-        
-         _line_up_renderable_node_data = line_up_renderable_node_data;
+
+    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
+        _line_up_renderable_node_data = line_up_renderable_node_data;
     }
-    
+
     final public void setRightLineUpDomains( final boolean right_align_domains ) {
-        
         _right_align_domains = right_align_domains;
     }
-    
 }

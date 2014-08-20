@@ -145,7 +145,7 @@ public class msa_compactor {
             }
             if ( cla.isOptionSet( REMOVE_WORST_OFFENDERS_OPTION ) ) {
                 worst_remove = cla.getOptionValueAsInt( REMOVE_WORST_OFFENDERS_OPTION );
-                if ( ( worst_remove < 1 ) || ( worst_remove >= msa.getNumberOfSequences() - 1 ) ) {
+                if ( ( worst_remove < 1 ) || ( worst_remove >= ( msa.getNumberOfSequences() - 1 ) ) ) {
                     ForesterUtil.fatalError( PRG_NAME, "number of worst offender sequences to remove is out of range: "
                             + worst_remove );
                 }

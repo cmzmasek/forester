@@ -157,7 +157,6 @@ public final class MainFrameApplication extends MainFrame {
     private File                             _seqs_file                            = null;
     JMenuItem                                _read_values_jmi;
     JMenuItem                                _read_seqs_jmi;
-   
 
     private MainFrameApplication( final Phylogeny[] phys, final Configuration config ) {
         _configuration = config;
@@ -902,9 +901,8 @@ public final class MainFrameApplication extends MainFrame {
         if ( getConfiguration().doDisplayOption( Configuration.show_domain_architectures ) ) {
             _options_jmenu.add( _show_domain_labels = new JCheckBoxMenuItem( SHOW_DOMAIN_LABELS_LABEL ) );
             _options_jmenu.add( _right_line_up_domains_cbmi = new JCheckBoxMenuItem( MainFrame.RIGHT_LINE_UP_DOMAINS ) );
-         }
+        }
         _options_jmenu.add( _line_up_renderable_data_cbmi = new JCheckBoxMenuItem( MainFrame.LINE_UP_RENDERABLE_DATA ) );
- 
         _options_jmenu.add( _show_annotation_ref_source = new JCheckBoxMenuItem( SHOW_ANN_REF_SOURCE_LABEL ) );
         _options_jmenu.add( _show_confidence_stddev_cbmi = new JCheckBoxMenuItem( SHOW_CONF_STDDEV_LABEL ) );
         _options_jmenu.add( _color_by_taxonomic_group_cbmi = new JCheckBoxMenuItem( COLOR_BY_TAXONOMIC_GROUP ) );
@@ -1033,11 +1031,7 @@ public final class MainFrameApplication extends MainFrame {
                 .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.IN_SQUARE_BRACKETS );
         customizeCheckBoxMenuItem( _use_internal_names_for_conf_in_nh_export_cbmi, getOptions()
                 .getNhConversionSupportValueStyle() == NH_CONVERSION_SUPPORT_VALUE_STYLE.AS_INTERNAL_NODE_NAMES );
-      
-        
-        customizeCheckBoxMenuItem( _line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData()
-                                    );
-        
+        customizeCheckBoxMenuItem( _line_up_renderable_data_cbmi, getOptions().isLineUpRendarableNodeData() );
         customizeCheckBoxMenuItem( _right_line_up_domains_cbmi, getOptions().isRightLineUpDomains() );
         _jmenubar.add( _options_jmenu );
     }
@@ -1092,7 +1086,6 @@ public final class MainFrameApplication extends MainFrame {
         customizeJMenuItem( _delete_selected_nodes_item );
         _tools_menu.add( _delete_not_selected_nodes_item = new JMenuItem( "Retain Selected Nodes" ) );
         _delete_not_selected_nodes_item.setToolTipText( "To delete all not selected external nodes" );
-        
         customizeJMenuItem( _delete_not_selected_nodes_item );
         _tools_menu.addSeparator();
         _tools_menu.add( _collapse_species_specific_subtrees = new JMenuItem( "Collapse Species-Specific Subtrees" ) );
@@ -1247,7 +1240,6 @@ public final class MainFrameApplication extends MainFrame {
             if ( ( phys != null ) && ( phys.length > 0 ) ) {
                 if ( nhx_or_nexus && getOptions().isInternalNumberAreConfidenceForNhParsing() ) {
                     for( final Phylogeny phy : phys ) {
-                        
                         PhylogenyMethods.transferInternalNodeNamesToConfidence( phy, "" );
                     }
                 }

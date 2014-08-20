@@ -220,9 +220,8 @@ public final class Configuration {
     private Color                           _vector_data_mean_color                                = Color.WHITE;
     private double                          _vector_data_height                                    = 12;
     private int                             _vector_data_width                                     = 120;
-    private boolean _line_up_renderable_node_data;
-    private boolean _right_align_domains;
-    
+    private boolean                         _line_up_renderable_node_data;
+    private boolean                         _right_align_domains;
     static {
         for( final String font_name : Constants.DEFAULT_FONT_CHOICES ) {
             if ( Arrays.binarySearch( AptxUtil.getAvailableFontFamiliesSorted(), font_name ) >= 0 ) {
@@ -1378,7 +1377,6 @@ public final class Configuration {
         else if ( key.equals( "gui_button_border_color" ) ) {
             _gui_button_border_color = Color.decode( ( String ) st.nextElement() );
         }
-      
         else if ( key.equals( "show_default_node_shapes" ) ) {
             ForesterUtil
                     .printWarningMessage( Constants.PRG_NAME,
@@ -1495,7 +1493,6 @@ public final class Configuration {
                         + "] for [ext_descendents_data_to_return_on]" );
             }
         }
-       
         else if ( key.equals( "vector_data_min_color" ) ) {
             _vector_data_min_color = Color.decode( ( String ) st.nextElement() );
         }
@@ -1505,7 +1502,6 @@ public final class Configuration {
         else if ( key.equals( "vector_data_mean_color" ) ) {
             _vector_data_mean_color = Color.decode( ( String ) st.nextElement() );
         }
-      
         else if ( key.equals( "vector_data_width" ) ) {
             _vector_data_width = parseShort( ( String ) st.nextElement() );
             if ( _vector_data_width < 1 ) {
@@ -1518,16 +1514,12 @@ public final class Configuration {
                 _vector_data_height = 12;
             }
         }
-       
         else if ( key.equals( "line_up_renderable_data" ) ) {
             setLineUpRendarableNodeData( parseBoolean( ( String ) st.nextElement() ) );
         }
-        
         else if ( key.equals( "right_align_domain_architectures" ) ) {
             setRightLineUpDomains( parseBoolean( ( String ) st.nextElement() ) );
         }
-        
-        
         else if ( st.countTokens() >= 2 ) { // counts the tokens that are not
             // yet retrieved!
             int key_index = -1;
@@ -1759,26 +1751,20 @@ public final class Configuration {
     public int getVectorDataWidth() {
         return _vector_data_width;
     }
-    
+
     final public boolean isLineUpRendarableNodeData() {
-        
         return _line_up_renderable_node_data;
     }
-    
+
     final public boolean isRightLineUpDomains() {
-        
         return _right_align_domains;
     }
-    
-    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data) {
-        
-         _line_up_renderable_node_data = line_up_renderable_node_data;
+
+    final public void setLineUpRendarableNodeData( final boolean line_up_renderable_node_data ) {
+        _line_up_renderable_node_data = line_up_renderable_node_data;
     }
-    
+
     final public void setRightLineUpDomains( final boolean right_align_domains ) {
-        
         _right_align_domains = right_align_domains;
     }
-    
-    
 }

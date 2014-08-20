@@ -133,7 +133,7 @@ public class BasicGoRelationship implements GoRelationship {
             case HAS_PART:
                 sb.append( HAS_PART_STR );
                 break;
-            case OCCURS_IN:    
+            case OCCURS_IN:
                 sb.append( OCCURS_IN_STR );
                 break;
             default:

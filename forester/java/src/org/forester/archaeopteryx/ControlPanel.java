@@ -71,107 +71,107 @@ import org.forester.util.ForesterUtil;
 
 final class ControlPanel extends JPanel implements ActionListener {
 
-    final static Font            jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                       Font.BOLD,
-                                                                       9 );
-    final static Font            jcb_font                  = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                       Font.PLAIN,
-                                                                       9 );
-    final static Font            js_font                   = new Font( Configuration.getDefaultFontFamilyName(),
-                                                                       Font.PLAIN,
-                                                                       9 );
-    private static final String  RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
-    private static final long    serialVersionUID          = -8463483932821545633L;
-    private NodeClickAction      _action_when_node_clicked;
-    private int                  _add_new_node_item;
-    private Map<Integer, String> _all_click_to_names;
-    private Map<String, Color>   _annotation_colors;
-    private int                  _blast_item;
-    private JComboBox<String>            _click_to_combobox;
-    private JLabel               _click_to_label;
-    private List<String>         _click_to_names;
-    private int                  _collapse_cb_item;
-    private JCheckBox            _color_acc_species;
-    private JCheckBox            _color_acc_sequence;
-    private JCheckBox            _color_according_to_annotation;
-    private boolean              _color_branches;
-    private JCheckBox            _use_visual_styles_cb;
-    private int                  _color_subtree_cb_item;
-    private int                  _change_node_font_item;
+    final static Font                         jcb_bold_font             = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                                    Font.BOLD,
+                                                                                    9 );
+    final static Font                         jcb_font                  = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                                    Font.PLAIN,
+                                                                                    9 );
+    final static Font                         js_font                   = new Font( Configuration.getDefaultFontFamilyName(),
+                                                                                    Font.PLAIN,
+                                                                                    9 );
+    private static final String               RETURN_TO_SUPER_TREE_TEXT = "Back to Super Tree";
+    private static final long                 serialVersionUID          = -8463483932821545633L;
+    private NodeClickAction                   _action_when_node_clicked;
+    private int                               _add_new_node_item;
+    private Map<Integer, String>              _all_click_to_names;
+    private Map<String, Color>                _annotation_colors;
+    private int                               _blast_item;
+    private JComboBox<String>                 _click_to_combobox;
+    private JLabel                            _click_to_label;
+    private List<String>                      _click_to_names;
+    private int                               _collapse_cb_item;
+    private JCheckBox                         _color_acc_species;
+    private JCheckBox                         _color_acc_sequence;
+    private JCheckBox                         _color_according_to_annotation;
+    private boolean                           _color_branches;
+    private JCheckBox                         _use_visual_styles_cb;
+    private int                               _color_subtree_cb_item;
+    private int                               _change_node_font_item;
     // The settings from the conf file
-    private final Configuration  _configuration;
-    private int                  _copy_subtree_item;
-    private int                  _cut_subtree_item;
-    private JButton              _decr_domain_structure_evalue_thr;
-    private int                  _delete_node_or_subtree_item;
-    private JCheckBox            _display_as_phylogram_cb;
+    private final Configuration               _configuration;
+    private int                               _copy_subtree_item;
+    private int                               _cut_subtree_item;
+    private JButton                           _decr_domain_structure_evalue_thr;
+    private int                               _delete_node_or_subtree_item;
+    private JCheckBox                         _display_as_phylogram_cb;
     // Tree checkboxes
-    private JCheckBox            _display_internal_data;
-    private JLabel               _domain_display_label;
-    private JTextField           _domain_structure_evalue_thr_tf;
-    private List<Boolean>        _draw_phylogram;
-    private JCheckBox            _dynamically_hide_data;
-    private int                  _edit_node_data_item;
-    private int                  _get_ext_desc_data;
-    private JButton              _incr_domain_structure_evalue_thr;
-    private final MainPanel      _mainpanel;
-    private JCheckBox            _node_desc_popup_cb;
-    private int                  _open_pdb_item;
-    private int                  _open_seq_web_item;
-    private int                  _open_tax_web_item;
-    private int                  _color_node_font_item;
-    private JButton              _order;
-    private boolean              _order_of_appearance;
-    private int                  _paste_subtree_item;
-    private int                  _reroot_cb_item;
-    private JButton              _return_to_super_tree;
+    private JCheckBox                         _display_internal_data;
+    private JLabel                            _domain_display_label;
+    private JTextField                        _domain_structure_evalue_thr_tf;
+    private List<Boolean>                     _draw_phylogram;
+    private JCheckBox                         _dynamically_hide_data;
+    private int                               _edit_node_data_item;
+    private int                               _get_ext_desc_data;
+    private JButton                           _incr_domain_structure_evalue_thr;
+    private final MainPanel                   _mainpanel;
+    private JCheckBox                         _node_desc_popup_cb;
+    private int                               _open_pdb_item;
+    private int                               _open_seq_web_item;
+    private int                               _open_tax_web_item;
+    private int                               _color_node_font_item;
+    private JButton                           _order;
+    private boolean                           _order_of_appearance;
+    private int                               _paste_subtree_item;
+    private int                               _reroot_cb_item;
+    private JButton                           _return_to_super_tree;
     // Search 
-    private JLabel               _search_found_label_0;
-    private JLabel               _search_found_label_1;
-    private JButton              _search_reset_button_0;
-    private JButton              _search_reset_button_1;
-    private JTextField           _search_tf_0;
-    private JTextField           _search_tf_1;
-    private int                  _select_nodes_item;
-    private Sequence             _selected_query_seq;
-    private JCheckBox            _seq_relation_confidence_switch;
-    private JComboBox<SEQUENCE_RELATION_TYPE>            _sequence_relation_type_box;
-    private JCheckBox            _show_annotation;
-    private JCheckBox            _show_binary_character_counts;
-    private JCheckBox            _show_binary_characters;
+    private JLabel                            _search_found_label_0;
+    private JLabel                            _search_found_label_1;
+    private JButton                           _search_reset_button_0;
+    private JButton                           _search_reset_button_1;
+    private JTextField                        _search_tf_0;
+    private JTextField                        _search_tf_1;
+    private int                               _select_nodes_item;
+    private Sequence                          _selected_query_seq;
+    private JCheckBox                         _seq_relation_confidence_switch;
+    private JComboBox<SEQUENCE_RELATION_TYPE> _sequence_relation_type_box;
+    private JCheckBox                         _show_annotation;
+    private JCheckBox                         _show_binary_character_counts;
+    private JCheckBox                         _show_binary_characters;
     // Indices for the click-to options in the combo box
-    private int                  _show_data_item;
-    private JCheckBox            _show_domain_architectures;
-    private JCheckBox            _show_events;
-    private JCheckBox            _show_gene_names;
-    private JCheckBox            _show_node_names;
-    private JCheckBox            _show_properties_cb;
-    private JCheckBox            _show_seq_names;
-    private JCheckBox            _show_seq_symbols;
-    private JCheckBox            _show_sequence_acc;
-    private JComboBox<String>            _show_sequence_relations;
-    private JCheckBox            _show_taxo_code;
-    private JCheckBox            _show_taxo_common_names;
-    private JCheckBox            _show_taxo_images_cb;
-    private JCheckBox            _show_taxo_scientific_names;
-    private JCheckBox            _show_vector_data_cb;
-    private JButton              _show_whole;
-    private int                  _sort_descendents_item;
-    private Map<String, Color>   _species_colors;
-    private Map<String, Color>   _sequence_colors;
-    private int                  _subtree_cb_item;
-    private int                  _swap_cb_item;
-    private JButton              _uncollapse_all;
-    private JCheckBox            _width_branches;
-    private JCheckBox            _write_confidence;
-    private JButton              _zoom_in_domain_structure;
+    private int                               _show_data_item;
+    private JCheckBox                         _show_domain_architectures;
+    private JCheckBox                         _show_events;
+    private JCheckBox                         _show_gene_names;
+    private JCheckBox                         _show_node_names;
+    private JCheckBox                         _show_properties_cb;
+    private JCheckBox                         _show_seq_names;
+    private JCheckBox                         _show_seq_symbols;
+    private JCheckBox                         _show_sequence_acc;
+    private JComboBox<String>                 _show_sequence_relations;
+    private JCheckBox                         _show_taxo_code;
+    private JCheckBox                         _show_taxo_common_names;
+    private JCheckBox                         _show_taxo_images_cb;
+    private JCheckBox                         _show_taxo_scientific_names;
+    private JCheckBox                         _show_vector_data_cb;
+    private JButton                           _show_whole;
+    private int                               _sort_descendents_item;
+    private Map<String, Color>                _species_colors;
+    private Map<String, Color>                _sequence_colors;
+    private int                               _subtree_cb_item;
+    private int                               _swap_cb_item;
+    private JButton                           _uncollapse_all;
+    private JCheckBox                         _width_branches;
+    private JCheckBox                         _write_confidence;
+    private JButton                           _zoom_in_domain_structure;
     // zooming and quick tree manipulation buttons:
-    private JButton              _zoom_in_x;
-    private JButton              _zoom_in_y;
-    private JLabel               _zoom_label;
-    private JButton              _zoom_out_domain_structure;
-    private JButton              _zoom_out_x;
-    private JButton              _zoom_out_y;
+    private JButton                           _zoom_in_x;
+    private JButton                           _zoom_in_y;
+    private JLabel                            _zoom_label;
+    private JButton                           _zoom_out_domain_structure;
+    private JButton                           _zoom_out_x;
+    private JButton                           _zoom_out_y;
 
     ControlPanel( final MainPanel ap, final Configuration configuration ) {
         init();
@@ -193,18 +193,15 @@ final class ControlPanel extends JPanel implements ActionListener {
     public void actionPerformed( final ActionEvent e ) {
         try {
             if ( e.getSource() == _color_acc_sequence ) {
-                if ( _color_acc_species != null  ) {
+                if ( _color_acc_species != null ) {
                     _color_acc_species.setSelected( false );
                 }
-             }
+            }
             else if ( e.getSource() == _color_acc_species ) {
-                if ( _color_acc_sequence != null  ) {
+                if ( _color_acc_sequence != null ) {
                     _color_acc_sequence.setSelected( false );
                 }
-                
             }
-            
-            
             final TreePanel tp = getMainPanel().getCurrentTreePanel();
             if ( tp == null ) {
                 return;
@@ -307,7 +304,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                     search1();
                     displayedPhylogenyMightHaveChanged( true );
                 }
-                else if ( _dynamically_hide_data != null &&  e.getSource() == _dynamically_hide_data && !_dynamically_hide_data.isSelected() ) {
+                else if ( ( _dynamically_hide_data != null ) && ( e.getSource() == _dynamically_hide_data )
+                        && !_dynamically_hide_data.isSelected() ) {
                     setDynamicHidingIsOn( false );
                     displayedPhylogenyMightHaveChanged( true );
                 }
@@ -330,7 +328,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     public JCheckBox getColorAccSpeciesCb() {
         return _color_acc_species;
     }
-    
+
     public JCheckBox getColorAccSequenceCb() {
         return _color_acc_sequence;
     }
@@ -555,15 +553,13 @@ final class ControlPanel extends JPanel implements ActionListener {
                 break;
             case Configuration.color_according_to_species:
                 _color_acc_species = new JCheckBox( title );
-                _color_acc_species
-                        .setToolTipText( "To colorize node labels as a function of taxonomy" );
+                _color_acc_species.setToolTipText( "To colorize node labels as a function of taxonomy" );
                 addJCheckBox( _color_acc_species, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.color_according_to_sequence:
                 _color_acc_sequence = new JCheckBox( title );
-                _color_acc_sequence
-                        .setToolTipText( "To colorize node labels as a function of sequence name" );
+                _color_acc_sequence.setToolTipText( "To colorize node labels as a function of sequence name" );
                 addJCheckBox( _color_acc_sequence, ch_panel );
                 add( ch_panel );
                 break;
@@ -821,7 +817,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     Map<String, Color> getSpeciesColors() {
         return _species_colors;
     }
-    
+
     Map<String, Color> getSequenceColors() {
         return _sequence_colors;
     }
@@ -837,7 +833,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     boolean isColorAccordingToTaxonomy() {
         return ( ( _color_acc_species != null ) && _color_acc_species.isSelected() );
     }
-    
+
     boolean isColorAccordingToSequence() {
         return ( ( _color_acc_sequence != null ) && _color_acc_sequence.isSelected() );
     }
@@ -1272,7 +1268,7 @@ final class ControlPanel extends JPanel implements ActionListener {
     void setSpeciesColors( final Map<String, Color> species_colors ) {
         _species_colors = species_colors;
     }
-    
+
     void setSequenceColors( final Map<String, Color> sequence_colors ) {
         _sequence_colors = sequence_colors;
     }
@@ -2054,8 +2050,8 @@ final class ControlPanel extends JPanel implements ActionListener {
                         s = "User Selected Data";
                         break;
                     default:
-                        throw new IllegalStateException( "dont know how to deal with " + getConfiguration().getExtDescNodeDataToReturn() );
-                        
+                        throw new IllegalStateException( "dont know how to deal with "
+                                + getConfiguration().getExtDescNodeDataToReturn() );
                 }
                 final String label = _configuration.getClickToTitle( Configuration.get_ext_desc_data ) + " " + s;
                 addClickToOption( Configuration.get_ext_desc_data, label );
@@ -2148,18 +2144,12 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.display_internal_data,
                          _configuration.doCheckOption( Configuration.display_internal_data ) );
         }
-        
-        
         if ( _configuration.doDisplayOption( Configuration.color_according_to_sequence ) ) {
             addCheckbox( Configuration.color_according_to_sequence,
                          _configuration.getDisplayTitle( Configuration.color_according_to_sequence ) );
             setCheckbox( Configuration.color_according_to_sequence,
                          _configuration.doCheckOption( Configuration.color_according_to_sequence ) );
         }
-        
-        
-        
-        
         if ( _configuration.doDisplayOption( Configuration.color_according_to_species ) ) {
             addCheckbox( Configuration.color_according_to_species,
                          _configuration.getDisplayTitle( Configuration.color_according_to_species ) );

@@ -125,8 +125,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         USE_BRACKETS_FOR_CONF_IN_NH_LABEL       = "Use Brackets for Confidence Values";
     static final String         USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Basic Tree Information";
-    static final String RIGHT_LINE_UP_DOMAINS = "Right-align Domain Architectures";
-    static final String LINE_UP_RENDERABLE_DATA = "Line Up Node Diagrams";
+    static final String         RIGHT_LINE_UP_DOMAINS                   = "Right-align Domain Architectures";
+    static final String         LINE_UP_RENDERABLE_DATA                 = "Line Up Node Diagrams";
     JMenuBar                    _jmenubar;
     JMenu                       _file_jmenu;
     JMenu                       _tools_menu;
@@ -200,8 +200,8 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JMenuItem                   _cycle_node_fill_mi;
     JMenuItem                   _choose_node_size_mi;
     JCheckBoxMenuItem           _show_confidence_stddev_cbmi;
-   JCheckBoxMenuItem _right_line_up_domains_cbmi;
-    JCheckBoxMenuItem _line_up_renderable_data_cbmi;
+    JCheckBoxMenuItem           _right_line_up_domains_cbmi;
+    JCheckBoxMenuItem           _line_up_renderable_data_cbmi;
     // _  print
     JCheckBoxMenuItem           _graphics_export_visible_only_cbmi;
     JCheckBoxMenuItem           _antialias_print_cbmi;
@@ -502,14 +502,11 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             }
             updateOptions( getOptions() );
         }
-        
-        
         else if ( ( o == _rectangular_type_cbmi ) || ( o == _triangular_type_cbmi ) || ( o == _curved_type_cbmi )
                 || ( o == _convex_type_cbmi ) || ( o == _euro_type_cbmi ) || ( o == _rounded_type_cbmi )
                 || ( o == _unrooted_type_cbmi ) || ( o == _circular_type_cbmi ) ) {
             typeChanged( o );
         }
-        
         else if ( o == _about_item ) {
             about();
         }
@@ -553,7 +550,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
                 ForesterUtil.printErrorMessage( Constants.PRG_NAME, e1.toString() );
             }
         }
-       
         else {
             if ( _load_phylogeny_from_webservice_menu_items != null ) {
                 for( int i = 0; i < _load_phylogeny_from_webservice_menu_items.length; ++i ) {
@@ -566,21 +562,20 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         _contentpane.repaint();
     }
 
-    private void deleteSelectedNodes( boolean delete ) {
+    private void deleteSelectedNodes( final boolean delete ) {
         final Phylogeny phy = getMainPanel().getCurrentPhylogeny();
-        if ( phy == null || phy.getNumberOfExternalNodes() < 2 ) {
+        if ( ( phy == null ) || ( phy.getNumberOfExternalNodes() < 2 ) ) {
             return;
         }
-        List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
+        final List<PhylogenyNode> nodes = new ArrayList<PhylogenyNode>();
         if ( ( getCurrentTreePanel().getFoundNodes0() != null ) || ( getCurrentTreePanel().getFoundNodes1() != null ) ) {
-            final List<PhylogenyNode>  all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
+            final List<PhylogenyNode> all_selected_nodes = getCurrentTreePanel().getFoundNodesAsListOfPhylogenyNodes();
             for( final PhylogenyNode n : all_selected_nodes ) {
                 if ( n.isExternal() ) {
                     nodes.add( n );
                 }
             }
         }
-        
         String function = "Retain";
         if ( delete ) {
             function = "Delete";
@@ -1106,8 +1101,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         return _species_tree;
     }
 
-    
-
     void initializeTypeMenu( final Options options ) {
         setTypeMenuToAllUnselected();
         switch ( options.getPhylogenyGraphicsType() ) {
@@ -1426,7 +1419,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         }
         if ( ( _right_line_up_domains_cbmi != null ) && _right_line_up_domains_cbmi.isEnabled() ) {
             options.setRightLineUpDomains( _right_line_up_domains_cbmi.isSelected() );
-           
         }
         if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
             options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );

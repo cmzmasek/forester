@@ -66,7 +66,7 @@ public class AdjactantDirectedBinaryDomainCombination extends BasicBinaryDomainC
             final AdjactantDirectedBinaryDomainCombination dc = new AdjactantDirectedBinaryDomainCombination( n_terminal,
                                                                                                               c_terminal );
             ADDC_POOL.put( code, dc );
-            if ( VERBOSE && ( ADDC_POOL.size() % 100 == 0 ) ) {
+            if ( VERBOSE && ( ( ADDC_POOL.size() % 100 ) == 0 ) ) {
                 System.out.println( " addc pool size: " + ADDC_POOL.size() );
             }
             return dc;

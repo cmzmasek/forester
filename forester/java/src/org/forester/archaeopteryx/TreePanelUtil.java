@@ -296,7 +296,7 @@ public class TreePanelUtil {
             if ( n.getNodeData().isHasTaxonomy()
                     && ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getCommonName() ) || !ForesterUtil
-                            .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
+                                .isEmpty( n.getNodeData().getTaxonomy().getTaxonomyCode() ) ) ) {
                 if ( !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getRank() )
                         && n.getNodeData().getTaxonomy().getRank().equalsIgnoreCase( rank ) ) {
                     final BranchColor c = new BranchColor( tree_panel.calculateTaxonomyBasedColor( n.getNodeData()
@@ -397,7 +397,7 @@ public class TreePanelUtil {
                 if ( sb.charAt( sb.length() - 1 ) == ' ' ) {
                     sb.deleteCharAt( sb.length() - 1 );
                 }
-                if ( i < ans.size() - 1 ) {
+                if ( i < ( ans.size() - 1 ) ) {
                     sb.append( ", " );
                 }
             }

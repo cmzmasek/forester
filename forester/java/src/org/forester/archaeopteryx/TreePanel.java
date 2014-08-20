@@ -4797,16 +4797,17 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getControlPanel().isDrawPhylogram() ) {
                     if ( getOptions().isLineUpRendarableNodeData() ) {
                         if ( getOptions().isRightLineUpDomains() ) {
-                            rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + _length_of_longest_text
-                                                + ( _longest_domain - rds.getTotalLength() )
-                                                * rds.getRenderingFactorWidth(),
+                            rds.render( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
+                                                + _length_of_longest_text
+                                                + ( ( _longest_domain - rds.getTotalLength() ) * rds
+                                                        .getRenderingFactorWidth() ),
                                         node.getYcoord() - ( h / 2 ),
                                         g,
                                         this,
                                         to_pdf );
                         }
                         else {
-                            rds.render( getMaxDistanceToRoot() * getXcorrectionFactor() + _length_of_longest_text,
+                            rds.render( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text,
                                         node.getYcoord() - ( h / 2 ),
                                         g,
                                         this,
@@ -4819,9 +4820,9 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
                 else {
                     if ( getOptions().isRightLineUpDomains() ) {
-                        rds.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text
-                                            - 20 + ( _longest_domain - rds.getTotalLength() ) 
-                                            * rds.getRenderingFactorWidth(),
+                        rds.render( ( ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text ) - 20 )
+                                            + ( ( _longest_domain - rds.getTotalLength() ) * rds
+                                                    .getRenderingFactorWidth() ),
                                     node.getYcoord() - ( h / 2 ),
                                     g,
                                     this,

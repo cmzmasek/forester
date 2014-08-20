@@ -65,7 +65,7 @@ public final class AncestralTaxonomyInference {
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getScientificName() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() )
                             || !ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getTaxonomyCode() ) || !ForesterUtil
-                            .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
+                                .isEmpty( desc.getNodeData().getTaxonomy().getCommonName() ) ) ) {
                 final UniProtTaxonomy up_tax = TaxonomyDataManager.obtainUniProtTaxonomy( desc.getNodeData()
                         .getTaxonomy(), null, null );
                 if ( ( up_tax == null ) && ForesterUtil.isEmpty( desc.getNodeData().getTaxonomy().getLineage() ) ) {

@@ -133,7 +133,7 @@ public final class Sarray {
         }
         else {
             final int[] x = new int[ m.get( key ).length + 1 ];
-            for( int i = 0; i < x.length - 1; i++ ) {
+            for( int i = 0; i < ( x.length - 1 ); i++ ) {
                 x[ i ] = m.get( key )[ i ];
             }
             x[ x.length - 1 ] = value;

@@ -183,12 +183,12 @@ public final class NeighborJoiningR {
         }
         double new_d;
         if ( otu1 < mj ) {
-            new_d = ( _d_values[ otu1 ][ mj ] + getDvalue( j, otu2 ) - d ) / 2;
+            new_d = ( ( _d_values[ otu1 ][ mj ] + getDvalue( j, otu2 ) ) - d ) / 2;
             _s.addPairing( new_d, otu1, mj );
             _d_values[ otu1 ][ mj ] = new_d;
         }
         else {
-            new_d = ( _d_values[ mj ][ otu1 ] + getDvalue( j, otu2 ) - d ) / 2;
+            new_d = ( ( _d_values[ mj ][ otu1 ] + getDvalue( j, otu2 ) ) - d ) / 2;
             _s.addPairing( new_d, mj, otu1 );
             _d_values[ mj ][ otu1 ] = new_d;
         }

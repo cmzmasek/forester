@@ -251,7 +251,7 @@ public final class TaxonomyDataManager extends RunnableProcess {
                 if ( ( ( tax != null ) && ( isHasAppropriateId( tax )
                         || !ForesterUtil.isEmpty( tax.getScientificName() )
                         || !ForesterUtil.isEmpty( tax.getTaxonomyCode() ) || !ForesterUtil
-                        .isEmpty( tax.getCommonName() ) ) ) ) {
+                            .isEmpty( tax.getCommonName() ) ) ) ) {
                     uniprot_tax = obtainUniProtTaxonomy( tax, null, qt );
                 }
                 else {

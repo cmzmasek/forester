@@ -947,7 +947,6 @@ public final class AptxUtil {
         }
     }
 
-   
     public static enum GraphicsExportType {
         BMP( "bmp" ), GIF( "gif" ), JPG( "jpg" ), PDF( "pdf" ), PNG( "png" ), TIFF( "tif" );
 

@@ -43,22 +43,19 @@ import org.forester.util.ForesterUtil;
 
 public final class RenderableVector implements RenderablePhylogenyData {
 
-    final static int         VECTOR_DEFAULT_HEIGHT          = 12;
-    public final static  int         VECTOR_DEFAULT_WIDTH           = 120;
+    final static int                VECTOR_DEFAULT_HEIGHT   = 12;
+    public final static int         VECTOR_DEFAULT_WIDTH    = 120;
     private double                  _rendering_factor_width = 1.0;
     private List<Double>            _values;
     private final Rectangle2D       _rectangle              = new Rectangle2D.Float();
-   
-    private double                  _height =  VECTOR_DEFAULT_HEIGHT;
+    private double                  _height                 = VECTOR_DEFAULT_HEIGHT;
     private double                  _min;
     private double                  _max;
     private double                  _mean;
-    private  Color _min_color = Color.BLUE;
-    private  Color _max_color = Color.YELLOW;
-    private  Color _mean_color = Color.WHITE;
-    private  int _width = VECTOR_DEFAULT_WIDTH;
-    
-    
+    private Color                   _min_color              = Color.BLUE;
+    private Color                   _max_color              = Color.YELLOW;
+    private Color                   _mean_color             = Color.WHITE;
+    private int                     _width                  = VECTOR_DEFAULT_WIDTH;
     private static RenderableVector _instance               = null;
 
     private RenderableVector() {
@@ -167,18 +164,14 @@ public final class RenderableVector implements RenderablePhylogenyData {
         if ( _instance == null ) {
             _instance = new RenderableVector();
         }
-       
         _instance._values = values;
-        
         if ( configuration != null ) {
-            _instance._min_color =configuration.getVectorDataMinColor();
+            _instance._min_color = configuration.getVectorDataMinColor();
             _instance._max_color = configuration.getVectorDataMaxColor();
             _instance._mean_color = configuration.getVectorDataMeanColor();
             _instance._width = configuration.getVectorDataWidth();
             _instance._height = configuration.getVectorDataHeight();
         }
-        
-        
         if ( stats.getN() > 0 ) {
             _instance._min = stats.getMin();
             _instance._max = stats.getMax();

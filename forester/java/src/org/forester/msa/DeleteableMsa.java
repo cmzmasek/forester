@@ -119,9 +119,9 @@ public final class DeleteableMsa extends BasicMsa {
             s = getSequence( row );
             final char[] x = s.getMolecularSequence();
             sb = new StringBuilder( x.length );
-            for( int i = 0; i < x.length; ++i ) {
-                if ( x[ i ] != Sequence.GAP ) {
-                    sb.append( x[ i ] );
+            for( final char element : x ) {
+                if ( element != Sequence.GAP ) {
+                    sb.append( element );
                 }
             }
         }
@@ -200,7 +200,7 @@ public final class DeleteableMsa extends BasicMsa {
 
     final private void deleteColumn( final int col ) {
         checkColumn( col );
-        for( int c = col; c < _length - 1; ++c ) {
+        for( int c = col; c < ( _length - 1 ); ++c ) {
             _mapped_col_positions[ c ] = _mapped_col_positions[ c + 1 ];
         }
         --_length;
@@ -208,7 +208,7 @@ public final class DeleteableMsa extends BasicMsa {
 
     final private void deleteRow( final int row ) {
         checkRow( row );
-        for( int r = row; r < _seqs - 1; ++r ) {
+        for( int r = row; r < ( _seqs - 1 ); ++r ) {
             _mapped_row_positions[ r ] = _mapped_row_positions[ r + 1 ];
         }
         --_seqs;

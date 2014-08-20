@@ -37,9 +37,9 @@ import org.forester.util.ForesterConstants;
 public final class Constants {
 
     final static boolean        __ALLOW_PHYLOGENETIC_INFERENCE                                = true;
-    public final static boolean __RELEASE                                                     = false;                                                               // TODO remove me
-    public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                               // TODO remove me
-    public final static boolean __SYNTH_LF                                                    = false;                                                               // TODO remove me
+    public final static boolean __RELEASE                                                     = false;                                                                             // TODO remove me
+    public final static boolean __SNAPSHOT_RELEASE                                            = false;                                                                             // TODO remove me
+    public final static boolean __SYNTH_LF                                                    = false;                                                                             // TODO remove me
     public final static boolean ALLOW_DDBJ_BLAST                                              = false;
     public final static String  PRG_NAME                                                      = "Archaeopteryx";
     final static String         VERSION                                                       = "0.9894 beta";
@@ -59,7 +59,7 @@ public final class Constants {
     final static float          WHEEL_ZOOM_OUT_FACTOR                                         = 1 / Constants.WHEEL_ZOOM_IN_FACTOR;
     final static float          WHEEL_ZOOM_IN_X_CORRECTION_FACTOR                             = 1.085f;
     final static float          WHEEL_ZOOM_OUT_X_CORRECTION_FACTOR                            = 1 / Constants.WHEEL_ZOOM_IN_X_CORRECTION_FACTOR;
-    static final boolean        SPECIAL_CUSTOM                                                = false;                                                               //TODO remove me
+    static final boolean        SPECIAL_CUSTOM                                                = false;                                                                             //TODO remove me
     static final double         EXT_NODE_INFO_LENGTH_MAX_RATIO                                = 0.95;
     static final Dimension      NODE_PANEL_SPLIT_MINIMUM_SIZE                                 = new Dimension( 100, 50 );
     static final Dimension      NODE_PANEL_SIZE                                               = new Dimension( 500, 600 );
@@ -77,11 +77,10 @@ public final class Constants {
     final static float          PDF_LINE_WIDTH_DEFAULT                                        = 0.5f;
     final static String         APTX_WEB_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx";
     final static String         APTX_DOC_SITE                                                 = "https://sites.google.com/site/cmzmasek/home/software/archaeopteryx/documentation";
-    
     final static String         PHYLOXML_WEB_SITE                                             = ForesterConstants.PHYLO_XML_LOCATION;
     final static String         PHYLOXML_REFERENCE_URL                                        = "http://www.biomedcentral.com/1471-2105/10/356/";
     final static String         APTX_REFERENCE_URL                                            = "http://www.biomedcentral.com/bmcbioinformatics/";
-    final static String         APTX_REFERENCE                                                = "Zmasek...";                                                         //TODO
+    final static String         APTX_REFERENCE                                                = "Zmasek...";                                                                       //TODO
     final static String         PHYLOXML_REFERENCE                                            = ForesterConstants.PHYLO_XML_REFERENCE;
     final static String         PHYLOXML_REFERENCE_SHORT                                      = "Han MV and Zmasek CM (2009), BMC Bioinformatics, 10:356";
     final static short          NUMBER_OF_DIGITS_AFTER_COMMA_FOR_BRANCH_LENGTH_VALUES_DEFAULT = 3;

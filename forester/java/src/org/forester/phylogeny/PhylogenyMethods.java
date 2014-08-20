@@ -277,7 +277,7 @@ public class PhylogenyMethods {
         }
         return max;
     }
-    
+
     public static PhylogenyNode calculateNodeWithMaxDistanceToRoot( final Phylogeny phy ) {
         double max = 0.0;
         PhylogenyNode max_node = phy.getFirstExternalNode();

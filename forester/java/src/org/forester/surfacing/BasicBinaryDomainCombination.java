@@ -206,7 +206,7 @@ public class BasicBinaryDomainCombination implements BinaryDomainCombination {
         else {
             final BasicBinaryDomainCombination dc = new BasicBinaryDomainCombination( id0, id1 );
             DC_POOL.put( code, dc );
-            if ( VERBOSE && ( DC_POOL.size() % 100 == 0 ) ) {
+            if ( VERBOSE && ( ( DC_POOL.size() % 100 ) == 0 ) ) {
                 System.out.println( " dc pool size: " + DC_POOL.size() );
             }
             return dc;

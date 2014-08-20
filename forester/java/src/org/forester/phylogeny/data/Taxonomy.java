@@ -249,7 +249,7 @@ public class Taxonomy implements PhylogenyData, MultipleUris, Comparable<Taxonom
     public boolean isEmpty() {
         return ( ( getIdentifier() == null ) && ForesterUtil.isEmpty( getTaxonomyCode() )
                 && ForesterUtil.isEmpty( getCommonName() ) && ForesterUtil.isEmpty( getScientificName() ) && ForesterUtil
-                .isEmpty( _lineage ) );
+                    .isEmpty( _lineage ) );
     }
 
     /**

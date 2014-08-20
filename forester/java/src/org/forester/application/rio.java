@@ -382,15 +382,15 @@ public class rio {
             final java.text.DecimalFormat df = new java.text.DecimalFormat( "0.#" );
             System.out.println( "Mean number of duplications  : " + df.format( stats.arithmeticMean() ) + " (sd: "
                     + df.format( stats.sampleStandardDeviation() ) + ") ("
-                    + df.format( 100.0 * stats.arithmeticMean() / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                    + df.format( ( 100.0 * stats.arithmeticMean() ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
             if ( stats.getN() > 3 ) {
                 System.out.println( "Median number of duplications: " + df.format( stats.median() ) + " ("
-                        + df.format( 100.0 * stats.median() / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                        + df.format( ( 100.0 * stats.median() ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
             }
             System.out.println( "Minimum duplications         : " + ( int ) stats.getMin() + " ("
-                    + df.format( 100.0 * stats.getMin() / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                    + df.format( ( 100.0 * stats.getMin() ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
             System.out.println( "Maximum duplications         : " + ( int ) stats.getMax() + " ("
-                    + df.format( 100.0 * stats.getMax() / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
+                    + df.format( ( 100.0 * stats.getMax() ) / rio.getIntNodesOfAnalyzedGeneTrees() ) + "%)" );
             System.out.println( "Gene tree internal nodes     : " + rio.getIntNodesOfAnalyzedGeneTrees() );
             System.out.println( "Gene tree external nodes     : " + rio.getExtNodesOfAnalyzedGeneTrees() );
         }

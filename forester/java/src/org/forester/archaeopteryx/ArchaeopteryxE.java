@@ -132,10 +132,8 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JMenuItem                   _gsdi_item;
     private JMenuItem                   _gsdir_item;
     private Phylogeny                   _species_tree;
-    
-    private JCheckBoxMenuItem _right_line_up_domains_cbmi;
-    private JCheckBoxMenuItem _line_up_renderable_data_cbmi;
-    
+    private JCheckBoxMenuItem           _right_line_up_domains_cbmi;
+    private JCheckBoxMenuItem           _line_up_renderable_data_cbmi;
 
     @Override
     public void actionPerformed( final ActionEvent e ) {
@@ -353,9 +351,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         else if ( o == _color_by_taxonomic_group_cbmi ) {
             updateOptions( getOptions() );
         }
-       
-        
-        
         else if ( o == _line_up_renderable_data_cbmi ) {
             if ( !_line_up_renderable_data_cbmi.isSelected() ) {
                 _right_line_up_domains_cbmi.setSelected( false );
@@ -368,7 +363,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             updateOptions( getOptions() );
         }
-        
         repaint();
     }
 
@@ -1102,8 +1096,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         return _options;
     }
 
-   
-
     void initializeTypeMenu( final Options options ) {
         setTypeMenuToAllUnselected();
         try {
@@ -1372,17 +1364,12 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }
-        
-       
         if ( ( _right_line_up_domains_cbmi != null ) && _right_line_up_domains_cbmi.isEnabled() ) {
             options.setRightLineUpDomains( _right_line_up_domains_cbmi.isSelected() );
         }
-        
-        
         if ( ( _line_up_renderable_data_cbmi != null ) && _line_up_renderable_data_cbmi.isEnabled() ) {
             options.setLineUpRendarableNodeData( _line_up_renderable_data_cbmi.isSelected() );
         }
-        
     }
 
     void updateTypeCheckboxes( final Options options, final Object o ) {

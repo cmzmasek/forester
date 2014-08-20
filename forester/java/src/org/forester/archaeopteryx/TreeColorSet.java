@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.forester.util.ForesterUtil;
 
-
 public final class TreeColorSet {
 
     public static final String ANNOTATION                 = "Annotation";
@@ -60,9 +59,7 @@ public final class TreeColorSet {
             BINARY_DOMAIN_COMBINATIONS, ANNOTATION, OVERVIEW };
     static final String[]      SCHEME_NAMES               = { "Default", "Black", "Black & White", "Silver", "Green",
             "White & Blue", "Cyan", "Orange", "Blue", "Blue & White", "Neon" };
-   
     private int                _color_scheme;
-   
     private final Color[][]    _color_schemes             = { { new Color( 0, 0, 0 ), // background_color
             new Color( 0, 100, 100 ), // background_color_gradient_bottom
             new Color( 230, 230, 230 ), // sequence  __ Default (same as Black)
@@ -218,8 +215,8 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color( 255, 200, 0  ), // domain_label  
-            new Color( 255, 200, 0  ), // domains_base  
+            new Color( 255, 200, 0 ), // domain_label  
+            new Color( 255, 200, 0 ), // domains_base  
             new Color( 150, 150, 150 ), // binary_domain_combinations_color
             new Color( 150, 150, 150 ) // annotation
             , new Color( 150, 150, 150 ) // ov
@@ -238,7 +235,7 @@ public final class TreeColorSet {
             new Color( 255, 0, 0 ), // duplication_box_color
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
-            new Color(255, 255, 255 ), // domain_label  
+            new Color( 255, 255, 255 ), // domain_label  
             new Color( 100, 100, 100 ), // domains_base  
             new Color( 255, 255, 255 ), // binary_domain_combinations_color
             new Color( 255, 255, 255 ) // annotation
@@ -279,7 +276,7 @@ public final class TreeColorSet {
             new Color( 0, 255, 0 ), // speciation_box_color
             new Color( 255, 255, 0 ), // duplication_speciation_color
             new Color( 127, 255, 0 ), // domain_label  
-            new Color(  234, 173, 234 ), // domains_base  
+            new Color( 234, 173, 234 ), // domains_base  
             new Color( 27, 255, 0 ), // binary_domain_combinations_color
             new Color( 27, 255, 0 ) // annotation
             , new Color( 77, 77, 255 ) // ov
@@ -377,7 +374,7 @@ public final class TreeColorSet {
     public Color getDomainBaseColor() {
         return domain_base_color;
     }
-    
+
     public Color getDomainLabelColor() {
         return domain_label_color;
     }

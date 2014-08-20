@@ -273,7 +273,7 @@ public final class RIO {
             first = 0;
         }
         if ( log() ) {
-            postLog( species_tree, first, first + counter - 1 );
+            postLog( species_tree, first, ( first + counter ) - 1 );
         }
         if ( _verbose ) {
             System.out.println();
