@@ -126,7 +126,7 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         USE_INTERNAL_NAMES_FOR_CONF_IN_NH_LABEL = "Use Internal Node Names for Confidence Values";
     static final String         SHOW_BASIC_TREE_INFORMATION_LABEL       = "Basic Tree Information";
     static final String         RIGHT_LINE_UP_DOMAINS                   = "Right-align Domain Architectures";
-    static final String         LINE_UP_RENDERABLE_DATA                 = "Line Up Node Diagrams";
+    static final String         LINE_UP_RENDERABLE_DATA                 = "Line Up Diagrams (such as Domain Architectures)";
     JMenuBar                    _jmenubar;
     JMenu                       _file_jmenu;
     JMenu                       _tools_menu;

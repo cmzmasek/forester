@@ -4778,7 +4778,8 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             return;
         }
         if ( getControlPanel().isShowDomainArchitectures() && node.getNodeData().isHasSequence()
-                && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
+                && ( node.getNodeData().getSequence().getDomainArchitecture() != null )
+                && ( node.getNodeData().getSequence().getDomainArchitecture() instanceof RenderableDomainArchitecture ) ) {
             RenderableDomainArchitecture rds = null;
             try {
                 rds = ( RenderableDomainArchitecture ) node.getNodeData().getSequence().getDomainArchitecture();

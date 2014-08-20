@@ -93,7 +93,7 @@ public final class Configuration {
             { "Seq Annotations", "display", "no" }, { "Confidence Values", "display", "?" },
             { "Node Events", "display", "?" }, { "Colorize by Taxonomy", "display", "no" },
             { "Colorize by Sequence", "display", "no" }, { "Visual Styles/Branch Colors", "display", "no" },
-            { "Branch Widths", "display", "no" }, { "Protein Domains", "display", "no" },
+            { "Branch Widths", "display", "no" }, { "Domain Architectures", "display", "no" },
             { "Binary Characters", "nodisplay", "no" }, { "Binary Char Counts", "nodisplay", "no" },
             { "Seq Name", "display", "yes" }, { "Seq Accession", "display", "no" },
             { "Show Internal Data", "display", "yes" }, { "Dyna Hide", "display", "yes" },
