@@ -3426,47 +3426,52 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
     }
 
     private final void nodeDataAsSB( final PhylogenyNode node, final StringBuilder sb ) {
-        if ( getControlPanel().isShowNodeNames() && ( node.getName().length() > 0 ) ) {
-            if ( sb.length() > 0 ) {
-                sb.append( " " );
-            }
-            sb.append( node.getName() );
-        }
-        if ( node.getNodeData().isHasSequence() ) {
-            if ( getControlPanel().isShowSeqSymbols() && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
+        if ( node != null ) {
+            if ( getControlPanel().isShowNodeNames() && ( !ForesterUtil.isEmpty( node.getName() ) ) ) {
                 if ( sb.length() > 0 ) {
                     sb.append( " " );
                 }
-                sb.append( node.getNodeData().getSequence().getSymbol() );
+                sb.append( node.getName() );
             }
-            if ( getControlPanel().isShowGeneNames() && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
+            if ( node.getNodeData().isHasSequence() ) {
+                if ( getControlPanel().isShowSeqSymbols()
+                        && ( node.getNodeData().getSequence().getSymbol().length() > 0 ) ) {
+                    if ( sb.length() > 0 ) {
+                        sb.append( " " );
+                    }
+                    sb.append( node.getNodeData().getSequence().getSymbol() );
+                }
+                if ( getControlPanel().isShowGeneNames()
+                        && ( node.getNodeData().getSequence().getGeneName().length() > 0 ) ) {
+                    if ( sb.length() > 0 ) {
+                        sb.append( " " );
+                    }
+                    sb.append( node.getNodeData().getSequence().getGeneName() );
+                }
+                if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
+                    if ( sb.length() > 0 ) {
+                        sb.append( " " );
+                    }
+                    sb.append( node.getNodeData().getSequence().getName() );
+                }
+                if ( getControlPanel().isShowSequenceAcc()
+                        && ( node.getNodeData().getSequence().getAccession() != null ) ) {
+                    if ( sb.length() > 0 ) {
+                        sb.append( " " );
+                    }
+                    if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
+                        sb.append( node.getNodeData().getSequence().getAccession().getSource() );
+                        sb.append( ":" );
+                    }
+                    sb.append( node.getNodeData().getSequence().getAccession().getValue() );
+                }
+            }
+            if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
                 if ( sb.length() > 0 ) {
                     sb.append( " " );
                 }
-                sb.append( node.getNodeData().getSequence().getGeneName() );
+                sb.append( propertiesToString( node ) );
             }
-            if ( getControlPanel().isShowSeqNames() && ( node.getNodeData().getSequence().getName().length() > 0 ) ) {
-                if ( sb.length() > 0 ) {
-                    sb.append( " " );
-                }
-                sb.append( node.getNodeData().getSequence().getName() );
-            }
-            if ( getControlPanel().isShowSequenceAcc() && ( node.getNodeData().getSequence().getAccession() != null ) ) {
-                if ( sb.length() > 0 ) {
-                    sb.append( " " );
-                }
-                if ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getAccession().getSource() ) ) {
-                    sb.append( node.getNodeData().getSequence().getAccession().getSource() );
-                    sb.append( ":" );
-                }
-                sb.append( node.getNodeData().getSequence().getAccession().getValue() );
-            }
-        }
-        if ( getControlPanel().isShowProperties() && node.getNodeData().isHasProperties() ) {
-            if ( sb.length() > 0 ) {
-                sb.append( " " );
-            }
-            sb.append( propertiesToString( node ) );
         }
     }
 

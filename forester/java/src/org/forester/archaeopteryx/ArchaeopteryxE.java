@@ -608,12 +608,18 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
         } );
         if ( getConfiguration().isUseTabbedDisplay() ) {
-            AptxUtil.printAppletMessage( NAME, "using tabbed display" );
-            AptxUtil.addPhylogeniesToTabs( phys,
-                                           new File( phys_url.getFile() ).getName(),
-                                           phys_url.toString(),
-                                           getConfiguration(),
-                                           getMainPanel() );
+            try {
+                AptxUtil.printAppletMessage( NAME, "using tabbed display" );
+                AptxUtil.addPhylogeniesToTabs( phys,
+                                               new File( phys_url.getFile() ).getName(),
+                                               phys_url.toString(),
+                                               getConfiguration(),
+                                               getMainPanel() );
+            }
+            catch ( final Exception e ) {
+                ForesterUtil.printErrorMessage( NAME, e.toString() );
+                e.printStackTrace();
+            }
         }
         else {
             AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
@@ -623,28 +629,34 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
             AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
         }
-        validate();
-        setName( NAME );
-        getMainPanel().getControlPanel().showWholeAll();
-        getMainPanel().getControlPanel().showWhole();
-        /* GUILHEM_BEG */
-        getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
-        for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
-                .getRelevantSequenceRelationTypes() ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().addItem( type );
+        try {
+            validate();
+            setName( NAME );
+            getMainPanel().getControlPanel().showWholeAll();
+            getMainPanel().getControlPanel().showWhole();
+            /* GUILHEM_BEG */
+            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().removeAllItems();
+            for( final SequenceRelation.SEQUENCE_RELATION_TYPE type : getMainPanel().getCurrentPhylogeny()
+                    .getRelevantSequenceRelationTypes() ) {
+                getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().addItem( type );
+            }
+            final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
+            if ( default_relation != null ) {
+                getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().setSelectedItem( default_relation );
+            }
+            final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
+            if ( default_sequence != null ) {
+                getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
+            }
+            /* GUILHEM_END */
+            System.gc();
+            AptxUtil.printAppletMessage( NAME, "successfully initialized" );
+            setVisible( true );
         }
-        final String default_relation = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_SEQUENCE_RELATION_TYPE );
-        if ( default_relation != null ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationTypeBox().setSelectedItem( default_relation );
+        catch ( final Exception e ) {
+            ForesterUtil.printErrorMessage( NAME, e.toString() );
+            e.printStackTrace();
         }
-        final String default_sequence = getParameter( Constants.APPLET_PARAM_NAME_FOR_DEFAULT_QUERY_SEQUENCE );
-        if ( default_sequence != null ) {
-            getCurrentTreePanel().getControlPanel().getSequenceRelationBox().setSelectedItem( default_sequence );
-        }
-        /* GUILHEM_END */
-        System.gc();
-        AptxUtil.printAppletMessage( NAME, "successfully initialized" );
-        setVisible( true );
     }
 
     public void showTextFrame( final String s, final String title ) {
