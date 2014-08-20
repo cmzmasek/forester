@@ -144,6 +144,8 @@ overview_placement_type:                   upper_left
 color_labels_same_as_branch_length_values: no
 display_sequence_relations:                no
 show_domain_labels:                        yes
+line_up_renderable_data:                   no
+right_align_domain_architectures:          no
 branch_length_value_digits:                3
 confidence_value_digits:                   3
 background_gradient:                       no
