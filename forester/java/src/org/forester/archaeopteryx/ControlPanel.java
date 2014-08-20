@@ -2298,6 +2298,38 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     void setVisibilityOfX() {
         try {
+            if ( ( getCurrentTreePanel() != null ) && ( getCurrentTreePanel().getPhylogeny() != null ) ) {
+                if ( AptxUtil.isHasAtLeastOneBranchWithSupportSD( getCurrentTreePanel().getPhylogeny() ) ) {
+                    if ( getMainPanel().getMainFrame()._show_confidence_stddev_cbmi != null ) {
+                        getMainPanel().getMainFrame()._show_confidence_stddev_cbmi.setVisible( true );
+                    }
+                }
+                else {
+                    if ( getMainPanel().getMainFrame()._show_confidence_stddev_cbmi != null ) {
+                        getMainPanel().getMainFrame()._show_confidence_stddev_cbmi.setVisible( false );
+                    }
+                }
+                if ( AptxUtil.isHasAtLeastOneNodeWithScientificName( getCurrentTreePanel().getPhylogeny() ) ) {
+                    if ( getMainPanel().getMainFrame()._abbreviate_scientific_names != null ) {
+                        getMainPanel().getMainFrame()._abbreviate_scientific_names.setVisible( true );
+                    }
+                }
+                else {
+                    if ( getMainPanel().getMainFrame()._abbreviate_scientific_names != null ) {
+                        getMainPanel().getMainFrame()._abbreviate_scientific_names.setVisible( false );
+                    }
+                }
+                if ( AptxUtil.isHasAtLeastOneNodeWithSequenceAnnotation( getCurrentTreePanel().getPhylogeny() ) ) {
+                    if ( getMainPanel().getMainFrame()._show_annotation_ref_source != null ) {
+                        getMainPanel().getMainFrame()._show_annotation_ref_source.setVisible( true );
+                    }
+                }
+                else {
+                    if ( getMainPanel().getMainFrame()._show_annotation_ref_source != null ) {
+                        getMainPanel().getMainFrame()._show_annotation_ref_source.setVisible( false );
+                    }
+                }
+            }
             if ( isDrawPhylogram()
                     || ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
                             .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) ) {

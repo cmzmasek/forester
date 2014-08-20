@@ -72,6 +72,7 @@ import org.forester.phylogeny.Phylogeny;
 import org.forester.phylogeny.PhylogenyMethods;
 import org.forester.phylogeny.PhylogenyMethods.DESCENDANT_SORT_PRIORITY;
 import org.forester.phylogeny.PhylogenyNode;
+import org.forester.phylogeny.data.Confidence;
 import org.forester.phylogeny.data.Taxonomy;
 import org.forester.phylogeny.factories.ParserBasedPhylogenyFactory;
 import org.forester.phylogeny.factories.PhylogenyFactory;
@@ -129,6 +130,46 @@ public final class AptxUtil {
         final PhylogenyNodeIterator it = phy.iteratorPostorder();
         while ( it.hasNext() ) {
             if ( it.next().getBranchData().isHasConfidences() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastOneBranchWithSupportSD( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getBranchData().isHasConfidences() ) {
+                final List<Confidence> c = n.getBranchData().getConfidences();
+                for( final Confidence confidence : c ) {
+                    if ( confidence.getStandardDeviation() > 0 ) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastOneNodeWithScientificName( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasTaxonomy()
+                    && !ForesterUtil.isEmpty( n.getNodeData().getTaxonomy().getScientificName() ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final static public boolean isHasAtLeastOneNodeWithSequenceAnnotation( final Phylogeny phy ) {
+        final PhylogenyNodeIterator it = phy.iteratorPostorder();
+        while ( it.hasNext() ) {
+            final PhylogenyNode n = it.next();
+            if ( n.getNodeData().isHasSequence()
+                    && !ForesterUtil.isEmpty( n.getNodeData().getSequence().getAnnotations() ) ) {
                 return true;
             }
         }
