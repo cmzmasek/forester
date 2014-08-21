@@ -1,4 +1,0 @@
-((((A:0.54[&&NHX:S=seahorse:XN=S=status=doubtful:XN=D=genome=12.3=MB],B:0.28[&&NHX:S=seahorse:XN=S=status=certain:XN=D=genome=11.3=MB])AB:0.93[&&NHX:D=Y],
-(C:0.67[&&NHX:S=emu:XN=S=status=unlikely:XN=D=genome=3.3=MB],D:0.23[&&NHX:S=turtle:XN=S=status=doubtful:XN=D=genome=2.2=MB])CD:0.3[&&NHX:D=N])ABCD:0.4[&&NHX:D=Y],
-E:0.8[&&NHX:S=alligator:XN=S=status=certain:XN=D=genome=4.2=MB])ABCDE:0.56[&&NHX:D=Y],
-F:0.9[&&NHX:S=alligatot:XN=S=status=certain:XN=D=genome=4.3=MB])ABCDEF:0.43[&&NHX:D=Y]

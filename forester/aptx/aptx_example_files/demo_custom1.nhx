@@ -1,3 +1,0 @@
-((geneA:12[&&NHX:S=Mouse   :E=1.1.1.1:C=255.12.255:W=2:XN=L=population=200:XN=D=av=20=g],
-  geneB:23[&&NHX:S=Gorilla :E=1.1.1.1:C=255.255.0 :W=3:XN=L=population=300:XN=D=av=800=lb])ab:12[&&NHX:B=95:D=Y:C=123.56.34:C=34.34.56:W=5:XN=L=population=500],
-  geneC:40[&&NHX:S=Bat     :E=1.1.1.1:C=0.255.255 :W=2:XN=L=population=200:XN=D=av=40=g])abc[&&NHX:C=255.0.0:W=7:XN=L=population=700];
