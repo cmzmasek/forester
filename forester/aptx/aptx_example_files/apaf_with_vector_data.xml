@@ -1,0 +1,1596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true">
+  <clade>
+    <clade>
+      <branch_length>0.18105</branch_length>
+      <confidence type="unknown">89</confidence>
+      <clade>
+        <branch_length>0.07466</branch_length>
+        <confidence type="unknown">32</confidence>
+        <clade>
+          <branch_length>0.26168</branch_length>
+          <confidence type="unknown">100</confidence>
+          <clade>
+            <branch_length>0.22058</branch_length>
+            <confidence type="unknown">89</confidence>
+            <clade>
+              <branch_length>0.28901</branch_length>
+              <confidence type="unknown">100</confidence>
+              <clade>
+                <branch_length>0.06584</branch_length>
+                <confidence type="unknown">100</confidence>
+                <clade>
+                  <branch_length>0.02309</branch_length>
+                  <confidence type="unknown">43</confidence>
+                  <clade>
+                    <branch_length>0.0746</branch_length>
+                    <confidence type="unknown">100</confidence>
+                    <clade>
+                      <branch_length>0.02365</branch_length>
+                      <confidence type="unknown">88</confidence>
+                      <clade>
+                        <name>22_MOUSE</name>
+                        <branch_length>0.05998</branch_length>
+                        <taxonomy>
+                          <code>MOUSE</code>
+                        </taxonomy>
+                        <sequence>
+                          <domain_architecture length="1249">
+                            <domain from="6" to="90" confidence="7.0E-26">CARD</domain>
+                            <domain from="109" to="414" confidence="7.2E-117">NB-ARC</domain>
+                            <domain from="605" to="643" confidence="2.4E-6">WD40</domain>
+                            <domain from="647" to="685" confidence="1.1E-12">WD40</domain>
+                            <domain from="689" to="729" confidence="2.4E-7">WD40</domain>
+                            <domain from="733" to="771" confidence="4.7E-14">WD40</domain>
+                            <domain from="872" to="910" confidence="2.5E-8">WD40</domain>
+                            <domain from="993" to="1031" confidence="4.6E-6">WD40</domain>
+                            <domain from="1075" to="1113" confidence="6.3E-7">WD40</domain>
+                            <domain from="1117" to="1155" confidence="1.4E-7">WD40</domain>
+                            <domain from="1168" to="1204" confidence="0.3">WD40</domain>
+                          </domain_architecture>
+                        </sequence>
+                        <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.78371114</property>
+                        <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.59750026</property>
+                        <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.5770906</property>
+                        <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.052005768</property>
+                        <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.2665705</property>
+                        <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.8123515</property>
+                        <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.65870786</property>
+                        <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.35139543</property>
+                        <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.9016194</property>
+                        <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.6987117</property>
+                        <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.26577407</property>
+                        <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.5997761</property>
+                        <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.6851548</property>
+                        <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.15142941</property>
+                        <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.6336282</property>
+                        <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.8054241</property>
+                        <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.10833871</property>
+                        <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.2409839</property>
+                        <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.15210575</property>
+                        <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.26799864</property>
+                        <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.1512199</property>
+                        <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.7610189</property>
+                        <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.13341868</property>
+                        <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.1839819</property>
+                        <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.30569518</property>
+                        <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.6384666</property>
+                        <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.4255718</property>
+                        <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.39877522</property>
+                        <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.42274952</property>
+                        <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.27579862</property>
+                      </clade>
+                      <clade>
+                        <name>Apaf-1_HUMAN</name>
+                        <branch_length>0.01825</branch_length>
+                        <taxonomy>
+                          <code>HUMAN</code>
+                        </taxonomy>
+                        <sequence>
+                          <domain_architecture length="1248">
+                            <domain from="6" to="90" confidence="1.1E-25">CARD</domain>
+                            <domain from="109" to="414" confidence="3.0E-134">NB-ARC</domain>
+                            <domain from="605" to="643" confidence="8.5E-6">WD40</domain>
+                            <domain from="647" to="685" confidence="2.5E-11">WD40</domain>
+                            <domain from="689" to="729" confidence="2.4E-8">WD40</domain>
+                            <domain from="733" to="771" confidence="3.6E-14">WD40</domain>
+                            <domain from="872" to="910" confidence="3.8E-8">WD40</domain>
+                            <domain from="1075" to="1113" confidence="4.0E-7">WD40</domain>
+                            <domain from="1117" to="1155" confidence="5.9E-8">WD40</domain>
+                          </domain_architecture>
+                        </sequence>
+                        <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.94431967</property>
+                        <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.120084286</property>
+                        <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.43711078</property>
+                        <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.32142657</property>
+                        <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.23647976</property>
+                        <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.9949972</property>
+                        <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.12675625</property>
+                        <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.77764076</property>
+                        <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.14062494</property>
+                        <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.56931627</property>
+                        <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.35632038</property>
+                        <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.4051305</property>
+                        <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.7639063</property>
+                        <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.48071146</property>
+                        <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.2763313</property>
+                        <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.85911644</property>
+                        <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.9602677</property>
+                        <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.24123877</property>
+                        <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.70141125</property>
+                        <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.075105906</property>
+                        <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.46799052</property>
+                        <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.6094217</property>
+                        <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.0703153</property>
+                        <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.93354744</property>
+                        <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.8638522</property>
+                        <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.072788</property>
+                        <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.6522666</property>
+                        <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.8841237</property>
+                        <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.6158376</property>
+                        <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.109466314</property>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>12_CANFA</name>
+                      <branch_length>0.04683</branch_length>
+                      <taxonomy>
+                        <code>CANFA</code>
+                      </taxonomy>
+                      <sequence>
+                        <domain_architecture length="1153">
+                          <domain from="6" to="90" confidence="4.5E-22">CARD</domain>
+                          <domain from="110" to="415" confidence="4.0E-119">NB-ARC</domain>
+                          <domain from="597" to="635" confidence="3.9E-5">WD40</domain>
+                          <domain from="639" to="677" confidence="2.5E-11">WD40</domain>
+                          <domain from="681" to="721" confidence="1.8E-7">WD40</domain>
+                          <domain from="725" to="763" confidence="9.4E-13">WD40</domain>
+                          <domain from="889" to="927" confidence="1.1E-6">WD40</domain>
+                          <domain from="971" to="1009" confidence="1.7E-7">WD40</domain>
+                          <domain from="1013" to="1051" confidence="1.9E-7">WD40</domain>
+                        </domain_architecture>
+                      </sequence>
+                      <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.86392474</property>
+                      <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.8546202</property>
+                      <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.19305587</property>
+                      <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.68876684</property>
+                      <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.009067595</property>
+                      <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.6494087</property>
+                      <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.42517924</property>
+                      <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.9378417</property>
+                      <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.46136755</property>
+                      <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.042372644</property>
+                      <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.92733294</property>
+                      <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.34237885</property>
+                      <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.24532443</property>
+                      <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.66299963</property>
+                      <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.33107042</property>
+                      <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.07731497</property>
+                      <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.30042273</property>
+                      <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.47739798</property>
+                      <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.52710986</property>
+                      <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.6578565</property>
+                      <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.06098163</property>
+                      <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.4838441</property>
+                      <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.9482852</property>
+                      <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.65639925</property>
+                      <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.67415756</property>
+                      <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.12140423</property>
+                      <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.7471696</property>
+                      <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.60758793</property>
+                      <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.48946</property>
+                      <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.66712695</property>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>11_CHICK</name>
+                    <branch_length>0.15226</branch_length>
+                    <taxonomy>
+                      <code>CHICK</code>
+                    </taxonomy>
+                    <sequence>
+                      <domain_architecture length="1207">
+                        <domain from="6" to="90" confidence="3.6E-21">CARD</domain>
+                        <domain from="109" to="414" confidence="3.6E-109">NB-ARC</domain>
+                        <domain from="603" to="641" confidence="1.6E-4">WD40</domain>
+                        <domain from="645" to="683" confidence="8.2E-11">WD40</domain>
+                        <domain from="687" to="727" confidence="6.2E-10">WD40</domain>
+                        <domain from="731" to="769" confidence="1.8E-11">WD40</domain>
+                        <domain from="828" to="866" confidence="1.8">WD40</domain>
+                        <domain from="993" to="1030" confidence="2.9E-4">WD40</domain>
+                        <domain from="1034" to="1072" confidence="1.7E-8">WD40</domain>
+                        <domain from="1076" to="1114" confidence="7.5E-9">WD40</domain>
+                        <domain from="1127" to="1163" confidence="0.044">WD40</domain>
+                      </domain_architecture>
+                    </sequence>
+                    <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.27570605</property>
+                    <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.79773813</property>
+                    <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.86639917</property>
+                    <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.54980224</property>
+                    <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.6056809</property>
+                    <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.5477458</property>
+                    <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.7970692</property>
+                    <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.40449637</property>
+                    <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.56888515</property>
+                    <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.0076748133</property>
+                    <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.965273</property>
+                    <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.8407882</property>
+                    <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.40233397</property>
+                    <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.80927753</property>
+                    <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.25404596</property>
+                    <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.19826454</property>
+                    <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.09308857</property>
+                    <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.108256936</property>
+                    <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.16306704</property>
+                    <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.05542159</property>
+                    <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.7933063</property>
+                    <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.2952119</property>
+                    <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.35354054</property>
+                    <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.37332404</property>
+                    <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.6615165</property>
+                    <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.6826544</property>
+                    <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.55087405</property>
+                    <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.96449375</property>
+                    <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.4512841</property>
+                    <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.77059525</property>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>16_XENLA</name>
+                  <branch_length>0.4409</branch_length>
+                  <taxonomy>
+                    <code>XENLA</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="1362">
+                      <domain from="6" to="90" confidence="4.0E-20">CARD</domain>
+                      <domain from="109" to="410" confidence="3.1E-56">NB-ARC</domain>
+                      <domain from="148" to="298" confidence="0.8">NACHT</domain>
+                      <domain from="729" to="767" confidence="7.0E-6">WD40</domain>
+                      <domain from="771" to="809" confidence="2.3E-11">WD40</domain>
+                      <domain from="813" to="853" confidence="1.1E-8">WD40</domain>
+                      <domain from="857" to="895" confidence="1.1E-10">WD40</domain>
+                      <domain from="992" to="1030" confidence="8.4E-9">WD40</domain>
+                      <domain from="1116" to="1154" confidence="7.3E-11">WD40</domain>
+                      <domain from="1158" to="1196" confidence="1.6E-8">WD40</domain>
+                      <domain from="1200" to="1238" confidence="1.2E-7">WD40</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.2081986</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.44243628</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.4620263</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.7559456</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.77291197</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.030515134</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.76552856</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.047965527</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.6635517</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.08371103</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.18056744</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.96545196</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.41811466</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.03694445</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.36998016</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.06912941</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.1332522</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.76351076</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.84067035</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.78827864</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.69553417</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.17181695</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.02665323</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.963106</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.2832594</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.8436774</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.09571421</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.48844546</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.76528734</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.819222</property>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.17031</branch_length>
+                <confidence type="unknown">100</confidence>
+                <clade>
+                  <branch_length>0.10929</branch_length>
+                  <confidence type="unknown">100</confidence>
+                  <clade>
+                    <name>14_FUGRU</name>
+                    <branch_length>0.02255</branch_length>
+                    <taxonomy>
+                      <code>FUGRU</code>
+                    </taxonomy>
+                    <sequence>
+                      <domain_architecture length="1258">
+                        <domain from="8" to="92" confidence="4.6E-24">CARD</domain>
+                        <domain from="111" to="418" confidence="7.0E-74">NB-ARC</domain>
+                        <domain from="609" to="647" confidence="2.8E-4">WD40</domain>
+                        <domain from="651" to="689" confidence="2.3E-12">WD40</domain>
+                        <domain from="740" to="778" confidence="1.8E-6">WD40</domain>
+                        <domain from="874" to="912" confidence="1.6E-9">WD40</domain>
+                        <domain from="998" to="1036" confidence="9.8E-13">WD40</domain>
+                        <domain from="1040" to="1080" confidence="1.6E-4">WD40</domain>
+                        <domain from="1084" to="1122" confidence="1.5E-9">WD40</domain>
+                        <domain from="1126" to="1164" confidence="6.2E-9">WD40</domain>
+                      </domain_architecture>
+                    </sequence>
+                    <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.53708094</property>
+                    <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.52045304</property>
+                    <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.47040135</property>
+                    <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.34889358</property>
+                    <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.93433106</property>
+                    <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.32196867</property>
+                    <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.07822859</property>
+                    <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.78961617</property>
+                    <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.90632856</property>
+                    <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.1657939</property>
+                    <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.27530962</property>
+                    <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.43815398</property>
+                    <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.88918686</property>
+                    <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.19548076</property>
+                    <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.215222</property>
+                    <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.22874933</property>
+                    <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.9421009</property>
+                    <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.4332139</property>
+                    <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.5605438</property>
+                    <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.023736775</property>
+                    <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.87551314</property>
+                    <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.41245157</property>
+                    <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.01083535</property>
+                    <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.9850193</property>
+                    <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.8357264</property>
+                    <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.15329713</property>
+                    <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.23179156</property>
+                    <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.9117289</property>
+                    <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.72814465</property>
+                    <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.36080164</property>
+                  </clade>
+                  <clade>
+                    <name>15_TETNG</name>
+                    <branch_length>0.09478</branch_length>
+                    <taxonomy>
+                      <code>TETNG</code>
+                    </taxonomy>
+                    <sequence>
+                      <domain_architecture length="621">
+                        <domain from="8" to="92" confidence="2.5E-24">CARD</domain>
+                        <domain from="104" to="308" confidence="9.8E-11">NB-ARC</domain>
+                        <domain from="366" to="404" confidence="1.2E-12">WD40</domain>
+                        <domain from="455" to="493" confidence="1.0E-10">WD40</domain>
+                        <domain from="537" to="575" confidence="4.1E-10">WD40</domain>
+                      </domain_architecture>
+                    </sequence>
+                    <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.19647032</property>
+                    <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.78635895</property>
+                    <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.042310655</property>
+                    <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.045925915</property>
+                    <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.2833535</property>
+                    <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.30007356</property>
+                    <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.3544523</property>
+                    <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.9966743</property>
+                    <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.40439123</property>
+                    <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.18030101</property>
+                    <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.9541068</property>
+                    <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.17956674</property>
+                    <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.76868814</property>
+                    <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.46327144</property>
+                    <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.17544335</property>
+                    <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.76136</property>
+                    <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.13680768</property>
+                    <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.82465225</property>
+                    <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.44416112</property>
+                    <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.80561835</property>
+                    <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.052616596</property>
+                    <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.9772828</property>
+                    <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.18843275</property>
+                    <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.13184261</property>
+                    <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.22311407</property>
+                    <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.3812493</property>
+                    <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.3465473</property>
+                    <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.40549868</property>
+                    <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.073854566</property>
+                    <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.89383924</property>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>17_BRARE</name>
+                  <branch_length>0.1811</branch_length>
+                  <taxonomy>
+                    <code>BRARE</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="1260">
+                      <domain from="6" to="90" confidence="3.9E-23">CARD</domain>
+                      <domain from="137" to="444" confidence="1.7E-72">NB-ARC</domain>
+                      <domain from="635" to="673" confidence="1.6">WD40</domain>
+                      <domain from="694" to="732" confidence="5.3E-12">WD40</domain>
+                      <domain from="783" to="821" confidence="2.0E-8">WD40</domain>
+                      <domain from="1040" to="1078" confidence="2.4E-8">WD40</domain>
+                      <domain from="1081" to="1121" confidence="6.6E-4">WD40</domain>
+                      <domain from="1125" to="1163" confidence="5.1E-8">WD40</domain>
+                      <domain from="1167" to="1205" confidence="1.3E-7">WD40</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.5520739</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.35016483</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.36358225</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.96155745</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.3350128</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.39849943</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.37486</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.8602909</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.068167984</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.0027846098</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.5892503</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.8004118</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.46361738</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.8500382</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.3405556</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.29927588</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.3145556</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.028324187</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.85544443</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.59299076</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.8409514</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.69279015</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.42830527</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.4119162</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.46952605</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.42058563</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.5303182</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.720149</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.52378076</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.42728227</property>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.01594</branch_length>
+              <confidence type="unknown">53</confidence>
+              <clade>
+                <branch_length>0.10709</branch_length>
+                <confidence type="unknown">68</confidence>
+                <clade>
+                  <name>1_BRAFL</name>
+                  <branch_length>0.26131</branch_length>
+                  <taxonomy>
+                    <code>BRAFL</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="1238">
+                      <domain from="6" to="89" confidence="5.7E-19">CARD</domain>
+                      <domain from="111" to="413" confidence="4.2E-48">NB-ARC</domain>
+                      <domain from="600" to="638" confidence="3.2E-8">WD40</domain>
+                      <domain from="642" to="680" confidence="1.5E-10">WD40</domain>
+                      <domain from="730" to="768" confidence="9.6E-11">WD40</domain>
+                      <domain from="857" to="895" confidence="3.7E-10">WD40</domain>
+                      <domain from="984" to="1022" confidence="6.7E-10">WD40</domain>
+                      <domain from="1025" to="1064" confidence="3.1E-6">WD40</domain>
+                      <domain from="1069" to="1107" confidence="1.5E-4">WD40</domain>
+                      <domain from="1111" to="1149" confidence="7.9E-7">WD40</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.16859359</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.9489044</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.060563326</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.3634377</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.23998624</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.40852815</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.7364714</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.0038849115</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.3691786</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.4057634</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.96887976</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.7851521</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.388277</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.72440094</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.9493055</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.60473734</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.26505774</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.5417232</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.026071727</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.3519953</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.681823</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.18399388</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.18180841</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.34199494</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.3224073</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.89607275</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.4503644</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.73435915</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.16015339</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.67807376</property>
+                </clade>
+                <clade>
+                  <name>18_NEMVE</name>
+                  <branch_length>0.38014</branch_length>
+                  <taxonomy>
+                    <code>NEMVE</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="1290">
+                      <domain from="7" to="90" confidence="1.5E-13">CARD</domain>
+                      <domain from="117" to="200" confidence="5.4E-14">CARD</domain>
+                      <domain from="216" to="517" confidence="1.5E-50">NB-ARC</domain>
+                      <domain from="711" to="749" confidence="1.0E-7">WD40</domain>
+                      <domain from="753" to="791" confidence="8.5E-12">WD40</domain>
+                      <domain from="795" to="833" confidence="4.3E-11">WD40</domain>
+                      <domain from="837" to="875" confidence="1.0E-12">WD40</domain>
+                      <domain from="920" to="957" confidence="2.0E-4">WD40</domain>
+                      <domain from="961" to="999" confidence="3.0E-6">WD40</domain>
+                      <domain from="1085" to="1123" confidence="4.4E-6">WD40</domain>
+                      <domain from="1128" to="1166" confidence="3.0E-4">WD40</domain>
+                      <domain from="1170" to="1207" confidence="1.7E-10">WD40</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.1364637</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.4678877</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.026726305</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.28151095</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.18729591</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.5734382</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.5556479</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.35487098</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.41370147</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.552431</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.26373547</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.07093179</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.94332254</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.9524399</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.2896574</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.082951725</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.11080223</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.22623134</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.8361531</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.4622463</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.33071148</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.33353978</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.04879135</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.12444168</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.5653674</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.50868124</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.25028896</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.8052546</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.07821876</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.86027056</property>
+                </clade>
+              </clade>
+              <clade>
+                <name>23_STRPU</name>
+                <branch_length>0.48179</branch_length>
+                <taxonomy>
+                  <code>STRPU</code>
+                </taxonomy>
+                <sequence>
+                  <domain_architecture length="1236">
+                    <domain from="110" to="402" confidence="1.0E-40">NB-ARC</domain>
+                    <domain from="594" to="632" confidence="8.9E-4">WD40</domain>
+                    <domain from="636" to="673" confidence="2.5E-6">WD40</domain>
+                    <domain from="721" to="759" confidence="0.0043">WD40</domain>
+                    <domain from="765" to="802" confidence="0.0036">WD40</domain>
+                    <domain from="848" to="886" confidence="9.0E-10">WD40</domain>
+                    <domain from="975" to="1013" confidence="1.9E-5">WD40</domain>
+                    <domain from="1015" to="1053" confidence="2.4E-6">WD40</domain>
+                    <domain from="1057" to="1095" confidence="2.7E-9">WD40</domain>
+                    <domain from="1099" to="1137" confidence="4.9E-8">WD40</domain>
+                    <domain from="1141" to="1177" confidence="0.011">WD40</domain>
+                  </domain_architecture>
+                </sequence>
+                <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.6793176</property>
+                <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.6890414</property>
+                <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.86826515</property>
+                <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.44593912</property>
+                <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.1534689</property>
+                <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.5052483</property>
+                <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.7044339</property>
+                <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.64476</property>
+                <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.087815404</property>
+                <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.110562444</property>
+                <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.04146695</property>
+                <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.7684411</property>
+                <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.70662135</property>
+                <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.97993547</property>
+                <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.3993047</property>
+                <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.1602096</property>
+                <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.9426679</property>
+                <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.4902547</property>
+                <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.45294988</property>
+                <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.5442942</property>
+                <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.7359298</property>
+                <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.63944525</property>
+                <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.114239335</property>
+                <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.14123261</property>
+                <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.23367548</property>
+                <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.7849808</property>
+                <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.1238457</property>
+                <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.35275084</property>
+                <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.7232723</property>
+                <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.8835837</property>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.34475</branch_length>
+            <confidence type="unknown">100</confidence>
+            <clade>
+              <name>26_STRPU</name>
+              <branch_length>0.36374</branch_length>
+              <taxonomy>
+                <code>STRPU</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="1319">
+                  <domain from="18" to="98" confidence="3.4E-5">Death</domain>
+                  <domain from="189" to="481" confidence="1.8E-10">NB-ARC</domain>
+                  <domain from="630" to="668" confidence="8.2E-5">WD40</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.022315502</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.45814615</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.166017</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.48333615</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.07227743</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.33106703</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.5672433</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.6661762</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.57750773</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.27603918</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.4399804</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.20909971</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.7338296</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.55839735</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.5748691</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.26324445</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.37547994</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.43541414</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.6993313</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.8189409</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.8003589</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.63198274</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.32870322</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.49993324</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.8983693</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.39842713</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.81888103</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.82009625</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.5268572</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.9637363</property>
+            </clade>
+            <clade>
+              <name>25_STRPU</name>
+              <branch_length>0.33137</branch_length>
+              <taxonomy>
+                <code>STRPU</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="1947">
+                  <domain from="143" to="227" confidence="7.4E-5">Death</domain>
+                  <domain from="227" to="550" confidence="2.0E-13">NB-ARC</domain>
+                  <domain from="697" to="736" confidence="7.9E-4">WD40</domain>
+                  <domain from="745" to="785" confidence="1.5">WD40</domain>
+                  <domain from="1741" to="1836" confidence="2.0">Adeno_VII</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.9218187</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.20193696</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.36705375</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.8788585</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.41500473</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.9174676</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.1354748</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.24505877</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.24471045</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.9805754</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.8841813</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.45159453</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.63237774</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.37643045</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.79594</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.79087776</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.17231083</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.17253405</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.4509099</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.7170596</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.2558514</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.59442973</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.5489495</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.76250297</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.9851427</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.80584246</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.60390335</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.5995041</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.38470078</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.37280566</property>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>1.31498</branch_length>
+          <confidence type="unknown">100</confidence>
+          <clade>
+            <name>CED4_CAEEL</name>
+            <branch_length>0.13241</branch_length>
+            <taxonomy>
+              <code>CAEEL</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="714">
+                <domain from="7" to="90" confidence="9.2E-14">CARD</domain>
+                <domain from="116" to="442" confidence="5.8E-151">NB-ARC</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.9148032</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.8405128</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.012123883</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.29322803</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.74576306</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.22377026</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.6703387</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.27943718</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.4941656</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.4264493</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.77733624</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.5586278</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.80912066</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.27130038</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.7452295</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.038090885</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.35351253</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.35944784</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.73315024</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.44229758</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.7693548</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.8226704</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.20649618</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.005617857</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.38089538</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.269539</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.31870037</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.13793111</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.39077634</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.58074</property>
+          </clade>
+          <clade>
+            <name>31_CAEBR</name>
+            <branch_length>0.04777</branch_length>
+            <taxonomy>
+              <code>CAEBR</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="554">
+                <domain from="1" to="75" confidence="0.0046">CARD</domain>
+                <domain from="101" to="427" confidence="2.1E-123">NB-ARC</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.014024377</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.27248824</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.47882807</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.13111532</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.8202325</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.14073455</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.425817</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.21267879</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.5280222</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.6197915</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.7423475</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.67154145</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.5162464</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.9077031</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.5230545</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.22773993</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.2916203</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.06222862</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.9736197</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.5004355</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.50460863</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.85523677</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.9967519</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.005443454</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.63151115</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.08387804</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.668003</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.5613242</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.2883138</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.544084</property>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.13172</branch_length>
+        <confidence type="unknown">45</confidence>
+        <clade>
+          <branch_length>0.24915</branch_length>
+          <confidence type="unknown">95</confidence>
+          <clade>
+            <branch_length>0.76898</branch_length>
+            <confidence type="unknown">100</confidence>
+            <clade>
+              <name>28_DROPS</name>
+              <branch_length>0.1732</branch_length>
+              <taxonomy>
+                <code>DROPS</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="535">
+                  <domain from="112" to="399" confidence="1.4E-5">NB-ARC</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.33459687</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.38831407</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.59159744</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.76513165</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.590516</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.54182905</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.9660059</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.22480679</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.30332178</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.7339913</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.540107</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.9890662</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.17401952</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.5401442</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.32467997</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.18964851</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.43529022</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.33080047</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.8594299</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.12503356</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.373298</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.5216999</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.9038539</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.9673594</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.48485237</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.2950517</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.071614444</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.51884776</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.548923</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.35363847</property>
+            </clade>
+            <clade>
+              <name>Dark_DROME</name>
+              <branch_length>0.18863</branch_length>
+              <taxonomy>
+                <code>DROME</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="1421">
+                  <domain from="108" to="397" confidence="2.1E-5">NB-ARC</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.42955774</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.39006305</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.4464199</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.45693457</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.94483984</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.58866954</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.65497774</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.026021302</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.036992967</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.29659742</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.37952924</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.4537878</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.22481781</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.57666963</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.86116517</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.521222</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.12747431</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.6533694</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.59573394</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.49268913</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.6399565</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.038775623</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.7525205</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.676752</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.5382725</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.17160785</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.7279858</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.018724203</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.74025416</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.96828485</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>29_AEDAE</name>
+            <branch_length>0.86398</branch_length>
+            <taxonomy>
+              <code>AEDAE</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="423">
+                <domain from="109" to="421" confidence="9.3E-6">NB-ARC</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.41889042</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.30180222</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.9432366</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.07900661</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.8252364</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.8309568</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.94727296</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.043853164</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.07154006</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.75407535</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.04757887</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.5640981</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.89330906</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.025036871</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.9161742</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.86834425</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.30569214</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.16101968</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.19196743</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.55329955</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.2376638</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.50954825</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.9406819</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.22225213</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.7654984</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.4783678</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.439075</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.9034269</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.5544954</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.74261016</property>
+          </clade>
+        </clade>
+        <clade>
+          <name>30_TRICA</name>
+          <branch_length>0.97698</branch_length>
+          <taxonomy>
+            <code>TRICA</code>
+          </taxonomy>
+          <sequence>
+            <domain_architecture length="1279">
+              <domain from="5" to="81" confidence="0.59">CARD</domain>
+              <domain from="92" to="400" confidence="9.0E-11">NB-ARC</domain>
+              <domain from="630" to="668" confidence="1.1E-5">WD40</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.66797227</property>
+          <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.29388553</property>
+          <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.761889</property>
+          <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.6189201</property>
+          <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.0799939</property>
+          <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.79657155</property>
+          <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.9636778</property>
+          <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.765911</property>
+          <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.8328702</property>
+          <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.5682293</property>
+          <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.3439411</property>
+          <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.9558019</property>
+          <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.76843274</property>
+          <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.10958725</property>
+          <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.080387056</property>
+          <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.57526916</property>
+          <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.06936699</property>
+          <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.55737495</property>
+          <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.43085206</property>
+          <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.60696536</property>
+          <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.16736889</property>
+          <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.79703665</property>
+          <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.7818039</property>
+          <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.3599757</property>
+          <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.11235565</property>
+          <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.83763826</property>
+          <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.8742996</property>
+          <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.04149121</property>
+          <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.07583898</property>
+          <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.874297</property>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.18105</branch_length>
+      <confidence type="unknown">89</confidence>
+      <clade>
+        <branch_length>0.15891</branch_length>
+        <confidence type="unknown">64</confidence>
+        <clade>
+          <branch_length>0.54836</branch_length>
+          <confidence type="unknown">100</confidence>
+          <clade>
+            <branch_length>0.09305</branch_length>
+            <confidence type="unknown">46</confidence>
+            <clade>
+              <branch_length>0.21648</branch_length>
+              <confidence type="unknown">61</confidence>
+              <clade>
+                <branch_length>0.93134</branch_length>
+                <confidence type="unknown">100</confidence>
+                <clade>
+                  <name>34_BRAFL</name>
+                  <branch_length>0.093</branch_length>
+                  <taxonomy>
+                    <code>BRAFL</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="752">
+                      <domain from="49" to="356" confidence="9.0E-6">NB-ARC</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.5411213</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.16759205</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.8636137</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.92195934</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.73991483</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.7132892</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.4928069</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.41662794</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.07314789</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.10653639</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.86344564</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.34090668</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.6717915</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.624083</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.9705569</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.100354016</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.5641225</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.28570926</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.6830299</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.9315828</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.9353971</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.9451032</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.91181654</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.2039181</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.9429221</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.30857056</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.6323992</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.7409572</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.62195057</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.08570492</property>
+                </clade>
+                <clade>
+                  <name>35_BRAFL</name>
+                  <branch_length>0.08226</branch_length>
+                  <taxonomy>
+                    <code>BRAFL</code>
+                  </taxonomy>
+                  <sequence>
+                    <domain_architecture length="753">
+                      <domain from="25" to="105" confidence="0.16">DED</domain>
+                      <domain from="113" to="409" confidence="1.1E-6">NB-ARC</domain>
+                    </domain_architecture>
+                  </sequence>
+                  <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.1728239</property>
+                  <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.65941125</property>
+                  <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.49166912</property>
+                  <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.28849614</property>
+                  <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.9651143</property>
+                  <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.13862622</property>
+                  <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.54127324</property>
+                  <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.88716054</property>
+                  <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.4488088</property>
+                  <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.69928837</property>
+                  <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.59081095</property>
+                  <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.03290528</property>
+                  <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.4530745</property>
+                  <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.7037293</property>
+                  <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.5303169</property>
+                  <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.94117194</property>
+                  <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.43886697</property>
+                  <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.8783286</property>
+                  <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.54706705</property>
+                  <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.2555642</property>
+                  <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.80354255</property>
+                  <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.20172459</property>
+                  <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.26101768</property>
+                  <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.38518256</property>
+                  <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.7139647</property>
+                  <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.76750255</property>
+                  <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.26220912</property>
+                  <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.4196359</property>
+                  <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.8953419</property>
+                  <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.4989562</property>
+                </clade>
+              </clade>
+              <clade>
+                <name>8_BRAFL</name>
+                <branch_length>0.58563</branch_length>
+                <taxonomy>
+                  <code>BRAFL</code>
+                </taxonomy>
+                <sequence>
+                  <domain_architecture length="916">
+                    <domain from="58" to="369" confidence="8.4E-7">NB-ARC</domain>
+                  </domain_architecture>
+                </sequence>
+                <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.5047585</property>
+                <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.014883757</property>
+                <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.377401</property>
+                <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.48269123</property>
+                <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.50767475</property>
+                <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.6602764</property>
+                <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.99045116</property>
+                <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.73960084</property>
+                <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.6968868</property>
+                <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.023185313</property>
+                <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.7383163</property>
+                <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.9080976</property>
+                <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.04897803</property>
+                <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.65167266</property>
+                <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.24122387</property>
+                <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.091759026</property>
+                <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.44109637</property>
+                <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.9386579</property>
+                <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.8154266</property>
+                <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.10219842</property>
+                <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.93010026</property>
+                <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.18970132</property>
+                <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.48834926</property>
+                <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.10637838</property>
+                <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.7573042</property>
+                <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.3286727</property>
+                <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.7066951</property>
+                <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.8346655</property>
+                <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.8096838</property>
+                <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.3227895</property>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.28437</branch_length>
+              <confidence type="unknown">84</confidence>
+              <clade>
+                <name>20_NEMVE</name>
+                <branch_length>0.71946</branch_length>
+                <taxonomy>
+                  <code>NEMVE</code>
+                </taxonomy>
+                <sequence>
+                  <domain_architecture length="786">
+                    <domain from="8" to="91" confidence="1.7E-17">DED</domain>
+                    <domain from="8" to="85" confidence="0.37">PAAD_DAPIN</domain>
+                    <domain from="90" to="388" confidence="6.8E-5">NB-ARC</domain>
+                    <domain from="575" to="608" confidence="0.27">TPR_1</domain>
+                    <domain from="657" to="690" confidence="0.22">TPR_2</domain>
+                    <domain from="698" to="731" confidence="4.2E-5">TPR_2</domain>
+                  </domain_architecture>
+                </sequence>
+                <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.9768569</property>
+                <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.9996147</property>
+                <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.8915258</property>
+                <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.046142817</property>
+                <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.31038904</property>
+                <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.88098776</property>
+                <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.2019102</property>
+                <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.49907905</property>
+                <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.6807198</property>
+                <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.3581037</property>
+                <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.98734415</property>
+                <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.013758063</property>
+                <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.2277906</property>
+                <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.6969632</property>
+                <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.13771409</property>
+                <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.2736014</property>
+                <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.87509215</property>
+                <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.44795954</property>
+                <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.037992775</property>
+                <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.8915226</property>
+                <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.5019486</property>
+                <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.09231347</property>
+                <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.8764624</property>
+                <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.6797758</property>
+                <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.19932872</property>
+                <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.9441761</property>
+                <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.76935184</property>
+                <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.11956686</property>
+                <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.2394998</property>
+                <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.013804674</property>
+              </clade>
+              <clade>
+                <name>21_NEMVE</name>
+                <branch_length>0.9571</branch_length>
+                <taxonomy>
+                  <code>NEMVE</code>
+                </taxonomy>
+                <sequence>
+                  <domain_architecture length="1563">
+                    <domain from="234" to="317" confidence="2.3E-14">CARD</domain>
+                    <domain from="238" to="318" confidence="0.5">Death</domain>
+                    <domain from="329" to="619" confidence="0.022">NB-ARC</domain>
+                    <domain from="906" to="939" confidence="0.17">TPR_1</domain>
+                    <domain from="1326" to="1555" confidence="3.2E-26">RVT_1</domain>
+                  </domain_architecture>
+                </sequence>
+                <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.99662143</property>
+                <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.43347305</property>
+                <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.7211908</property>
+                <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.44911522</property>
+                <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.68716383</property>
+                <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.87606186</property>
+                <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.8784068</property>
+                <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.072669804</property>
+                <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.8550648</property>
+                <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.70136636</property>
+                <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.43159175</property>
+                <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.83380276</property>
+                <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.511034</property>
+                <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.8191604</property>
+                <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.23653138</property>
+                <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.5067933</property>
+                <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.9720618</property>
+                <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.5100142</property>
+                <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.67442864</property>
+                <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.13204414</property>
+                <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.6132879</property>
+                <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.09224582</property>
+                <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.504281</property>
+                <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.8550317</property>
+                <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.37261397</property>
+                <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.9980992</property>
+                <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.24749261</property>
+                <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.4449091</property>
+                <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.88251626</property>
+                <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.9633666</property>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <name>9_BRAFL</name>
+            <branch_length>1.09612</branch_length>
+            <taxonomy>
+              <code>BRAFL</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="1011">
+                <domain from="5" to="321" confidence="5.0E-5">NB-ARC</domain>
+                <domain from="497" to="616" confidence="1.6">BTAD</domain>
+                <domain from="500" to="533" confidence="5.6E-4">TPR_1</domain>
+                <domain from="542" to="575" confidence="0.43">TPR_1</domain>
+                <domain from="626" to="659" confidence="0.0084">TPR_2</domain>
+                <domain from="708" to="741" confidence="1.9E-4">TPR_2</domain>
+                <domain from="708" to="739" confidence="1.3">TPR_3</domain>
+                <domain from="708" to="733" confidence="0.16">TPR_4</domain>
+                <domain from="833" to="916" confidence="5.6E-14">Death</domain>
+                <domain from="846" to="868" confidence="0.36">LTXXQ</domain>
+                <domain from="930" to="1011" confidence="8.3E-17">Death</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.029138505</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.7392089</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.29469502</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.6214732</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.29814547</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.071924865</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.63964516</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.6425905</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.08070308</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.7987385</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.96107805</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.109133005</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.6813962</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.8753561</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.8486281</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.27510923</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.7819422</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.0034896731</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.30382013</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.4379815</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.1482048</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.70523816</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.88436294</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.8432803</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.04567486</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.28242683</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.6291049</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.3452021</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.5882881</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.56537116</property>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.34914</branch_length>
+          <confidence type="unknown">98</confidence>
+          <clade>
+            <branch_length>0.22189</branch_length>
+            <confidence type="unknown">95</confidence>
+            <clade>
+              <name>3_BRAFL</name>
+              <branch_length>0.48766</branch_length>
+              <taxonomy>
+                <code>BRAFL</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="2080">
+                  <domain from="116" to="423" confidence="1.4E-12">NB-ARC</domain>
+                  <domain from="620" to="659" confidence="1.4E-6">WD40</domain>
+                  <domain from="663" to="701" confidence="1.4E-8">WD40</domain>
+                  <domain from="705" to="743" confidence="3.0E-11">WD40</domain>
+                  <domain from="747" to="785" confidence="1.1E-8">WD40</domain>
+                  <domain from="788" to="826" confidence="1.6E-5">WD40</domain>
+                  <domain from="830" to="870" confidence="1.3E-4">WD40</domain>
+                  <domain from="874" to="914" confidence="6.2E-9">WD40</domain>
+                  <domain from="919" to="957" confidence="0.0011">WD40</domain>
+                  <domain from="961" to="1000" confidence="1.8E-8">WD40</domain>
+                  <domain from="1013" to="1051" confidence="1.3E-6">WD40</domain>
+                  <domain from="1055" to="1092" confidence="0.096">WD40</domain>
+                  <domain from="1794" to="1853" confidence="3.6E-4">Collagen</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.54719585</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.72739184</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.6648757</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.64871794</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.21502721</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.92930335</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.56439596</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.08426899</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.84638125</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.9727876</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.67121017</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.7764199</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.7460376</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.7043656</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.5439719</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.7700984</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.31412524</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.890093</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.69828236</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.2895137</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.30514598</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.06674898</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.55930895</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.47493166</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.2573477</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.47563213</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.36439544</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.860977</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.36861706</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.5094982</property>
+            </clade>
+            <clade>
+              <name>2_BRAFL</name>
+              <branch_length>0.65293</branch_length>
+              <taxonomy>
+                <code>BRAFL</code>
+              </taxonomy>
+              <sequence>
+                <domain_architecture length="1691">
+                  <domain from="162" to="457" confidence="4.4E-10">NB-ARC</domain>
+                  <domain from="640" to="680" confidence="0.0068">WD40</domain>
+                  <domain from="684" to="722" confidence="1.6E-8">WD40</domain>
+                  <domain from="726" to="764" confidence="6.0E-9">WD40</domain>
+                  <domain from="827" to="865" confidence="6.9E-10">WD40</domain>
+                  <domain from="868" to="906" confidence="1.2E-6">WD40</domain>
+                  <domain from="910" to="950" confidence="0.0080">WD40</domain>
+                  <domain from="954" to="994" confidence="0.0016">WD40</domain>
+                  <domain from="999" to="1037" confidence="4.9E-6">WD40</domain>
+                  <domain from="1042" to="1080" confidence="6.3E-8">WD40</domain>
+                  <domain from="1100" to="1138" confidence="1.9E-8">WD40</domain>
+                  <domain from="1142" to="1178" confidence="1.4">WD40</domain>
+                  <domain from="1577" to="1615" confidence="4.3E-4">WD40</domain>
+                </domain_architecture>
+              </sequence>
+              <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.5087544</property>
+              <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.4711749</property>
+              <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.40605485</property>
+              <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.28072876</property>
+              <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.62419695</property>
+              <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.5877431</property>
+              <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.8777735</property>
+              <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.07690632</property>
+              <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.949214</property>
+              <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.55182403</property>
+              <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.87522465</property>
+              <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.7814357</property>
+              <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.62940013</property>
+              <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.0068129897</property>
+              <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.99865466</property>
+              <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.49017686</property>
+              <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.02415198</property>
+              <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.6062392</property>
+              <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.22136152</property>
+              <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.0043381453</property>
+              <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.8858429</property>
+              <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.5484487</property>
+              <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.62266177</property>
+              <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.09484774</property>
+              <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.12147641</property>
+              <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.1944167</property>
+              <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.64538836</property>
+              <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.14942819</property>
+              <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.3974681</property>
+              <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.18429059</property>
+            </clade>
+          </clade>
+          <clade>
+            <name>19_NEMVE</name>
+            <branch_length>0.57144</branch_length>
+            <taxonomy>
+              <code>NEMVE</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="1649">
+                <domain from="99" to="174" confidence="4.6E-7">DED</domain>
+                <domain from="181" to="503" confidence="8.0E-13">NB-ARC</domain>
+                <domain from="696" to="734" confidence="1.4E-8">WD40</domain>
+                <domain from="738" to="776" confidence="2.9E-9">WD40</domain>
+                <domain from="780" to="818" confidence="3.8E-10">WD40</domain>
+                <domain from="822" to="860" confidence="6.4E-9">WD40</domain>
+                <domain from="864" to="902" confidence="2.1E-10">WD40</domain>
+                <domain from="906" to="944" confidence="1.3E-8">WD40</domain>
+                <domain from="948" to="986" confidence="1.2E-8">WD40</domain>
+                <domain from="990" to="1028" confidence="9.4E-8">WD40</domain>
+                <domain from="1032" to="1070" confidence="6.0E-8">WD40</domain>
+                <domain from="1074" to="1112" confidence="2.6E-4">WD40</domain>
+                <domain from="1364" to="1597" confidence="1.9">SGL</domain>
+                <domain from="1442" to="1480" confidence="9.7E-7">WD40</domain>
+                <domain from="1527" to="1565" confidence="1.2">WD40</domain>
+                <domain from="1568" to="1606" confidence="1.1E-6">WD40</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.009954751</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.28162163</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.9621474</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.74527806</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.07029891</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.21764934</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.04737556</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.5214066</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.23224568</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.3144682</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.08303869</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.13828367</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.90500253</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.19856197</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.6819211</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.6176938</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.23276955</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.5633456</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.09652966</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.59271777</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.7950512</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.202681</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.2359038</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.34971756</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.38859445</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.9836112</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.6845006</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.9852812</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.5564467</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.033390045</property>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.43438</branch_length>
+        <confidence type="unknown">92</confidence>
+        <clade>
+          <branch_length>0.92214</branch_length>
+          <confidence type="unknown">100</confidence>
+          <clade>
+            <name>37_BRAFL</name>
+            <branch_length>0.21133</branch_length>
+            <taxonomy>
+              <code>BRAFL</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="1793">
+                <domain from="6" to="89" confidence="9.6E-13">CARD</domain>
+                <domain from="118" to="202" confidence="4.5E-9">CARD</domain>
+                <domain from="206" to="491" confidence="0.0011">NB-ARC</domain>
+                <domain from="238" to="388" confidence="0.0043">NACHT</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.7652061</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.2509883</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.43406636</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.3101704</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.015847027</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.9441666</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.79048187</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.0849365</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.43782037</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.35683805</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.48406595</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.84163815</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.16432834</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.3265803</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.38558125</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.12586498</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.3750162</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.7414749</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.6818895</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.87826383</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.1475057</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.9767141</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.22635978</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.48134655</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.73147255</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.1134572</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.68894583</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.84709823</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.40772527</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.98245925</property>
+          </clade>
+          <clade>
+            <name>36_BRAFL</name>
+            <branch_length>0.16225</branch_length>
+            <taxonomy>
+              <code>BRAFL</code>
+            </taxonomy>
+            <sequence>
+              <domain_architecture length="918">
+                <domain from="9" to="93" confidence="1.6E-9">CARD</domain>
+                <domain from="98" to="403" confidence="0.0019">NB-ARC</domain>
+              </domain_architecture>
+            </sequence>
+            <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.21028769</property>
+            <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.972389</property>
+            <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.41728055</property>
+            <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.84235704</property>
+            <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.45251054</property>
+            <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.22011238</property>
+            <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.36255753</property>
+            <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.26844907</property>
+            <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.3118307</property>
+            <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.39229184</property>
+            <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.13150632</property>
+            <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.5283403</property>
+            <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.41234523</property>
+            <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.1895966</property>
+            <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">5.7667494E-4</property>
+            <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.63766736</property>
+            <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.67283815</property>
+            <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.62274474</property>
+            <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.5147935</property>
+            <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.81403774</property>
+            <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.8514751</property>
+            <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.7269506</property>
+            <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.47157425</property>
+            <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.14208168</property>
+            <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.5894024</property>
+            <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.44775718</property>
+            <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.95453393</property>
+            <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.07281679</property>
+            <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.88981014</property>
+            <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.81235546</property>
+          </clade>
+        </clade>
+        <clade>
+          <name>33_BRAFL</name>
+          <branch_length>0.8363</branch_length>
+          <taxonomy>
+            <code>BRAFL</code>
+          </taxonomy>
+          <sequence>
+            <domain_architecture length="1212">
+              <domain from="5" to="87" confidence="4.7E-12">Death</domain>
+              <domain from="154" to="465" confidence="2.0E-6">NB-ARC</domain>
+            </domain_architecture>
+          </sequence>
+          <property ref="vector:index=0" datatype="xsd:decimal" applies_to="node">0.84691125</property>
+          <property ref="vector:index=1" datatype="xsd:decimal" applies_to="node">0.33821714</property>
+          <property ref="vector:index=2" datatype="xsd:decimal" applies_to="node">0.505414</property>
+          <property ref="vector:index=3" datatype="xsd:decimal" applies_to="node">0.96570474</property>
+          <property ref="vector:index=4" datatype="xsd:decimal" applies_to="node">0.7496595</property>
+          <property ref="vector:index=5" datatype="xsd:decimal" applies_to="node">0.65659255</property>
+          <property ref="vector:index=6" datatype="xsd:decimal" applies_to="node">0.9774101</property>
+          <property ref="vector:index=7" datatype="xsd:decimal" applies_to="node">0.55842865</property>
+          <property ref="vector:index=8" datatype="xsd:decimal" applies_to="node">0.044787288</property>
+          <property ref="vector:index=9" datatype="xsd:decimal" applies_to="node">0.511948</property>
+          <property ref="vector:index=10" datatype="xsd:decimal" applies_to="node">0.4838943</property>
+          <property ref="vector:index=11" datatype="xsd:decimal" applies_to="node">0.637037</property>
+          <property ref="vector:index=12" datatype="xsd:decimal" applies_to="node">0.6491494</property>
+          <property ref="vector:index=13" datatype="xsd:decimal" applies_to="node">0.7259545</property>
+          <property ref="vector:index=14" datatype="xsd:decimal" applies_to="node">0.9547663</property>
+          <property ref="vector:index=15" datatype="xsd:decimal" applies_to="node">0.6856246</property>
+          <property ref="vector:index=16" datatype="xsd:decimal" applies_to="node">0.9196458</property>
+          <property ref="vector:index=17" datatype="xsd:decimal" applies_to="node">0.3101766</property>
+          <property ref="vector:index=18" datatype="xsd:decimal" applies_to="node">0.4106474</property>
+          <property ref="vector:index=19" datatype="xsd:decimal" applies_to="node">0.8965471</property>
+          <property ref="vector:index=20" datatype="xsd:decimal" applies_to="node">0.02289021</property>
+          <property ref="vector:index=21" datatype="xsd:decimal" applies_to="node">0.635066</property>
+          <property ref="vector:index=22" datatype="xsd:decimal" applies_to="node">0.33083183</property>
+          <property ref="vector:index=23" datatype="xsd:decimal" applies_to="node">0.46602124</property>
+          <property ref="vector:index=24" datatype="xsd:decimal" applies_to="node">0.64916927</property>
+          <property ref="vector:index=25" datatype="xsd:decimal" applies_to="node">0.61785233</property>
+          <property ref="vector:index=26" datatype="xsd:decimal" applies_to="node">0.27340293</property>
+          <property ref="vector:index=27" datatype="xsd:decimal" applies_to="node">0.59512466</property>
+          <property ref="vector:index=28" datatype="xsd:decimal" applies_to="node">0.21337914</property>
+          <property ref="vector:index=29" datatype="xsd:decimal" applies_to="node">0.89138556</property>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
