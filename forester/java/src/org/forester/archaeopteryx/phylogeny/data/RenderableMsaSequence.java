@@ -38,15 +38,16 @@ import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.Configuration;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.PhylogenyData;
+import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.util.DescriptiveStatistics;
 import org.forester.util.ForesterUtil;
 
-public final class RenderableVector implements RenderablePhylogenyData {
+public final class RenderableMsaSequence implements RenderablePhylogenyData {
 
     final static int                VECTOR_DEFAULT_HEIGHT   = 12;
     public final static int         VECTOR_DEFAULT_WIDTH    = 120;
     private double                  _rendering_factor_width = 1.0;
-    private List<Double>            _values;
+    private String            _seq;
     private final Rectangle2D       _rectangle              = new Rectangle2D.Float();
     private double                  _height                 = VECTOR_DEFAULT_HEIGHT;
     private double                  _min;
@@ -56,15 +57,15 @@ public final class RenderableVector implements RenderablePhylogenyData {
     private Color                   _max_color              = Color.YELLOW;
     private Color                   _mean_color             = Color.WHITE;
     private int                     _width                  = VECTOR_DEFAULT_WIDTH;
-    private static RenderableVector _instance               = null;
+    private static RenderableMsaSequence _instance               = null;
 
-    private RenderableVector() {
-        _values = null;
+    private RenderableMsaSequence() {
+        _seq = null;
     }
 
     @Override
     public StringBuffer asSimpleText() {
-        return new StringBuffer( _values.toString() );
+        return new StringBuffer( _seq );
     }
 
     @Override
@@ -102,7 +103,7 @@ public final class RenderableVector implements RenderablePhylogenyData {
     }
 
     public int getTotalLength() {
-        return ( int ) ( _values.size() * getRenderingHeight() );
+        return _seq.length();
     }
 
     @Override
@@ -118,12 +119,8 @@ public final class RenderableVector implements RenderablePhylogenyData {
                         final boolean to_pdf ) {
         final double y = y1;
         final double start = x1 + 20.0;
-        final double width = ( double ) _width / _values.size();
-        for( int i = 0; i < _values.size(); ++i ) {
-            g.setColor( calculateColor( _values.get( i ) ) );
-            _rectangle.setFrame( start + ( i * width ), y - 0.5, width, getRenderingHeight() );
-            g.fill( _rectangle );
-        }
+        g.drawString( _seq, x1, y1
+                                       );
     }
 
     @Override
@@ -158,31 +155,16 @@ public final class RenderableVector implements RenderablePhylogenyData {
         return _height;
     }
 
-    public static RenderableVector createInstance( final List<Double> values,
-                                                   final DescriptiveStatistics stats,
+    public static RenderableMsaSequence createInstance( final String seq,
                                                    final Configuration configuration ) {
         if ( _instance == null ) {
-            _instance = new RenderableVector();
+            _instance = new RenderableMsaSequence();
         }
-        _instance._values = values;
+        _instance._seq = seq;
         if ( configuration != null ) {
-            _instance._min_color = configuration.getVectorDataMinColor();
-            _instance._max_color = configuration.getVectorDataMaxColor();
-            _instance._mean_color = configuration.getVectorDataMeanColor();
-            _instance._width = configuration.getVectorDataWidth();
-            _instance._height = configuration.getVectorDataHeight();
+          
         }
-        if ( stats.getN() > 0 ) {
-            _instance._min = stats.getMin();
-            _instance._max = stats.getMax();
-            _instance._mean = stats.arithmeticMean();
-        }
-        else {
-            _instance._min = 0;
-            _instance._max = 0;
-            _instance._mean = 0;
-            AptxUtil.printWarningMessage( "Archaeopteryx", "creating renderable vector with empty statistics" );
-        }
+       
         return _instance;
     }
 }

@@ -2455,4 +2455,9 @@ final class ControlPanel extends JPanel implements ActionListener {
         CHANGE_NODE_FONT,
         COLOR_NODE_FONT;
     }
+
+    public boolean isShowSequences() {
+        // TODO Auto-generated method stub
+        return true;
+    }
 }

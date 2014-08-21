@@ -98,6 +98,7 @@ import org.forester.archaeopteryx.Options.CLADOGRAM_TYPE;
 import org.forester.archaeopteryx.Options.NODE_LABEL_DIRECTION;
 import org.forester.archaeopteryx.Options.PHYLOGENY_GRAPHICS_TYPE;
 import org.forester.archaeopteryx.phylogeny.data.RenderableDomainArchitecture;
+import org.forester.archaeopteryx.phylogeny.data.RenderableMsaSequence;
 import org.forester.archaeopteryx.phylogeny.data.RenderableVector;
 import org.forester.archaeopteryx.tools.Blast;
 import org.forester.archaeopteryx.tools.ImageLoader;
@@ -1103,7 +1104,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
             }
         }
         if ( getControlPanel().isShowDomainArchitectures() ) {
-            final double ds_factor_width = _domain_structure_width / _max_original_domain_structure_width;
+            final float ds_factor_width = ( float ) ( _domain_structure_width / _max_original_domain_structure_width );
             for( final PhylogenyNode node : _phylogeny.getExternalNodes() ) {
                 if ( node.getNodeData().isHasSequence()
                         && ( node.getNodeData().getSequence().getDomainArchitecture() != null ) ) {
@@ -4803,17 +4804,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 if ( getControlPanel().isDrawPhylogram() ) {
                     if ( getOptions().isLineUpRendarableNodeData() ) {
                         if ( getOptions().isRightLineUpDomains() ) {
-                            rds.render( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
-                                                + _length_of_longest_text
-                                                + ( ( _longest_domain - rds.getTotalLength() ) * rds
-                                                        .getRenderingFactorWidth() ),
-                                        node.getYcoord() - ( h / 2 ),
-                                        g,
-                                        this,
-                                        to_pdf );
+                            rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() )
+                                    + _length_of_longest_text + ( ( _longest_domain - rds.getTotalLength() ) * rds
+                                    .getRenderingFactorWidth() ) ), node.getYcoord() - ( h / 2 ), g, this, to_pdf );
                         }
                         else {
-                            rds.render( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text,
+                            rds.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
                                         node.getYcoord() - ( h / 2 ),
                                         g,
                                         this,
@@ -4856,15 +4852,51 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     domain_add = _domain_structure_width + 10;
                 }
                 if ( getControlPanel().isDrawPhylogram() ) {
-                    rv.render( node.getXcoord() + x + domain_add, node.getYcoord() - 3, g, this, to_pdf );
+                    rv.render( ( float ) ( node.getXcoord() + x + domain_add ), node.getYcoord() - 3, g, this, to_pdf );
                 }
                 else {
-                    rv.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text + domain_add,
+                    rv.render( ( float ) ( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text + domain_add ),
                                node.getYcoord() - 3,
                                g,
                                this,
                                to_pdf );
                 }
+            }
+        }
+        if ( getControlPanel().isShowSequences() && ( node.getNodeData().isHasSequence() )
+                && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
+                && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
+            final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
+                    .getMolecularSequence(), getConfiguration() );
+            if ( rs != null ) {
+              
+                final int default_height = 7;
+                float y = getYdistance();
+                if ( getControlPanel().isDynamicallyHideData() ) {
+                    y = getTreeFontSet().getFontMetricsLarge().getHeight();
+                }
+                final int h = y < default_height ? ForesterUtil.roundToInt( y ) : default_height;
+                rs.setRenderingHeight( h > 1 ? h : 2 );
+                if ( getControlPanel().isDrawPhylogram() ) {
+                    if ( getOptions().isLineUpRendarableNodeData() ) {
+                        rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
+                                   node.getYcoord() - ( h / 2 ),
+                                   g,
+                                   this,
+                                   to_pdf );
+                    }
+                    else {
+                        rs.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
+                    }
+                }
+                else {
+                    rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
+                               node.getYcoord() - ( h / 2 ),
+                               g,
+                               this,
+                               to_pdf );
+                }
+               
             }
         }
     }

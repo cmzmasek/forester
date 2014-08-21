@@ -47,9 +47,9 @@ public interface RenderablePhylogenyData extends PhylogenyData {
      * @param g
      *            the Graphics to render to
      */
-    public void render( final double x, final double y, final Graphics2D g, final TreePanel tree_panel, boolean to_pdf );
+    public void render( final float x, final float y, final Graphics2D g, final TreePanel tree_panel, boolean to_pdf );
 
     public void setParameter( final double parameter );
 
-    public void setRenderingHeight( final double rendering_height );
+    public void setRenderingHeight( final float rendering_height );
 }

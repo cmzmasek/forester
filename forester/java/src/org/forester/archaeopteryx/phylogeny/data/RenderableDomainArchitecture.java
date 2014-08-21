@@ -56,8 +56,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     private final DomainArchitecture  _domain_structure;
     private int                       _e_value_threshold_exp        = E_VALUE_THRESHOLD_EXP_DEFAULT;
     private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
-    private double                    _rendering_factor_width       = 1.0;
-    private double                    _rendering_height             = 0;
+    private float                    _rendering_factor_width       = 1;
+    private float                    _rendering_height             = 0;
 
     public RenderableDomainArchitecture( final DomainArchitecture domain_structure ) {
         _domain_structure = domain_structure;
@@ -148,7 +148,7 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         return new Integer( _e_value_threshold_exp );
     }
 
-    public double getRenderingFactorWidth() {
+    public float getRenderingFactorWidth() {
         return _rendering_factor_width;
     }
 
@@ -169,14 +169,14 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     }
 
     @Override
-    public void render( final double x1,
-                        final double y1,
+    public void render( final float x1,
+                        final float y1,
                         final Graphics2D g,
                         final TreePanel tree_panel,
                         final boolean to_pdf ) {
-        final double f = getRenderingFactorWidth();
-        final double y = y1 + ( _rendering_height / 2 );
-        final double start = x1 + 20.0;
+        final float f = getRenderingFactorWidth();
+        final float y = y1 + ( _rendering_height / 2 );
+        final float start = x1 + 20;
         final Stroke s = g.getStroke();
         g.setStroke( STROKE_1 );
         if ( !to_pdf ) {
@@ -190,8 +190,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         for( int i = 0; i < _domain_structure.getDomains().size(); ++i ) {
             final ProteinDomain d = _domain_structure.getDomain( i );
             if ( d.getConfidence() <= Math.pow( 10, _e_value_threshold_exp ) ) {
-                final double xa = start + ( d.getFrom() * f );
-                final double xb = xa + ( d.getLength() * f );
+                final float xa = start + ( d.getFrom() * f );
+                final float xb = xa + ( d.getLength() * f );
                 if ( tree_panel.getMainPanel().getOptions().isShowDomainLabels()
                         && ( tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getHeight() > 4 ) ) {
                     g.setFont( tree_panel.getMainPanel().getTreeFontSet().getSmallFont() );
@@ -201,9 +201,13 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                     else {
                         g.setColor( Constants.DOMAIN_LABEL_COLOR_FOR_PDF );
                     }
-                    PhylogenyDataUtil.drawString( d.getName(), xa, y1
-                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
-                            + _rendering_height, g );
+                    g.drawString( d.getName(),
+                                  xa,
+                                  y1
+                                  + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
+                                  + _rendering_height  );
+                    
+                    
                 }
                 drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
             }
@@ -216,12 +220,12 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
         _e_value_threshold_exp = ( int ) e_value_threshold_exp;
     }
 
-    public void setRenderingFactorWidth( final double rendering_factor_width ) {
+    public void setRenderingFactorWidth( final float rendering_factor_width ) {
         _rendering_factor_width = rendering_factor_width;
     }
 
     @Override
-    public void setRenderingHeight( final double rendering_height ) {
+    public void setRenderingHeight( final float rendering_height ) {
         _rendering_height = rendering_height;
     }
 
