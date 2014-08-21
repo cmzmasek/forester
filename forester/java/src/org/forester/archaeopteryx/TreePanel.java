@@ -656,6 +656,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     _longest_domain = d.getTotalLength();
                 }
             }
+            if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
+                    && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
+                    && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
+                // FIXME 
+                sum += 100;
+            }
             if ( sum >= max_length ) {
                 _longest_ext_node_info = max_length;
                 return;
@@ -4863,13 +4869,12 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 }
             }
         }
-        if ( getControlPanel().isShowSequences() && ( node.getNodeData().isHasSequence() )
+        if ( getControlPanel().isShowMolSequences() && ( node.getNodeData().isHasSequence() )
                 && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
                 && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
             final RenderableMsaSequence rs = RenderableMsaSequence.createInstance( node.getNodeData().getSequence()
                     .getMolecularSequence(), getConfiguration() );
             if ( rs != null ) {
-              
                 final int default_height = 7;
                 float y = getYdistance();
                 if ( getControlPanel().isDynamicallyHideData() ) {
@@ -4896,7 +4901,6 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                                this,
                                to_pdf );
                 }
-               
             }
         }
     }

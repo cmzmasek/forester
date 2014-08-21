@@ -2456,8 +2456,8 @@ final class ControlPanel extends JPanel implements ActionListener {
         COLOR_NODE_FONT;
     }
 
-    public boolean isShowSequences() {
+    public boolean isShowMolSequences() {
         // TODO Auto-generated method stub
-        return true;
+        return false;
     }
 }
