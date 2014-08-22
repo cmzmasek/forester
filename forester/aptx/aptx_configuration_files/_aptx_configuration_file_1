@@ -125,7 +125,6 @@ font_family:                               Arial,Helvetica,Verdana,Tahoma,Dialog
 font_size:                                 10
 antialias_screen:                          yes
 show_scale:                                yes
-show_branch_length_values:                 no
 cladogram_type:                            ext_node_sum_dep
 phylogeny_graphics_type:                   rectangular
 node_label_direction:                      horizontal
@@ -201,10 +200,12 @@ show_taxonomy_common_names:     nodisplay no
 show_taxonomy_images:           nodisplay no
 show_annotations:               nodisplay no
 write_confidence_values:        display   ?
+write_branch_length_values:     display   no
 write_events:                   nodisplay no
 use_visual_styles:              display   no
 width_branches:                 display   no
 show_domain_architectures:      nodisplay no
+show_msa:                       nodisplay no
 show_binary_characters:         nodisplay no
 show_binary_character_counts:   nodisplay no
 display_internal_data:          display   yes
