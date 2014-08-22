@@ -144,7 +144,9 @@ public class PhylogeneticInferrer extends RunnableProcess {
         }
         final NeighborJoiningF nj = NeighborJoiningF.createInstance( false, 5 );
         final Phylogeny phy = nj.execute( m );
+        PhylogenyMethods.addMolecularSeqsToTree( phy, msa );
         PhylogenyMethods.extractFastaInformation( phy );
+        
         return phy;
     }
 

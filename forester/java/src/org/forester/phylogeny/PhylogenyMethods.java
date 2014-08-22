@@ -46,6 +46,7 @@ import org.forester.io.parsers.PhylogenyParser;
 import org.forester.io.parsers.phyloxml.PhyloXmlDataFormatException;
 import org.forester.io.parsers.phyloxml.PhyloXmlUtil;
 import org.forester.io.parsers.util.PhylogenyParserException;
+import org.forester.msa.Msa;
 import org.forester.phylogeny.data.Accession;
 import org.forester.phylogeny.data.Annotation;
 import org.forester.phylogeny.data.BranchColor;
@@ -1809,5 +1810,23 @@ public class PhylogenyMethods {
         TAXONOMY_ID_UNIPROT_1,
         TAXONOMY_ID_UNIPROT_2,
         TAXONOMY_SCIENTIFIC_NAME;
+    }
+
+    public static void addMolecularSeqsToTree( final Phylogeny phy, final Msa msa ) {
+        for( int s = 0; s < msa.getNumberOfSequences(); ++s ) {
+            final org.forester.sequence.Sequence seq = msa.getSequence( s );
+            final PhylogenyNode node = phy.getNode( seq.getIdentifier() );
+            final org.forester.phylogeny.data.Sequence new_seq = new Sequence();
+            new_seq.setMolecularSequenceAligned( true );
+            new_seq.setMolecularSequence( seq.getMolecularSequenceAsString() );
+            new_seq.setName( seq.getIdentifier() );
+            try {
+                new_seq.setType( PhyloXmlUtil.SEQ_TYPE_PROTEIN );
+            }
+            catch ( final PhyloXmlDataFormatException ignore ) {
+                // do nothing
+            }
+            node.getNodeData().addSequence( new_seq );
+        }
     }
 }

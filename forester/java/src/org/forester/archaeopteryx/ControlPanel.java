@@ -2458,6 +2458,6 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     public boolean isShowMolSequences() {
         // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 }

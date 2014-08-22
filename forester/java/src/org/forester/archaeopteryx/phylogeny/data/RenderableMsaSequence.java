@@ -32,31 +32,20 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 
-import org.forester.archaeopteryx.AptxUtil;
 import org.forester.archaeopteryx.Configuration;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.PhylogenyData;
-import org.forester.phylogeny.data.PhylogenyDataUtil;
-import org.forester.util.DescriptiveStatistics;
-import org.forester.util.ForesterUtil;
 
 public final class RenderableMsaSequence implements RenderablePhylogenyData {
 
-    final static int                VECTOR_DEFAULT_HEIGHT   = 12;
-    public final static int         VECTOR_DEFAULT_WIDTH    = 120;
-    private double                  _rendering_factor_width = 1.0;
-    private String            _seq;
-    private final Rectangle2D       _rectangle              = new Rectangle2D.Float();
-    private double                  _height                 = VECTOR_DEFAULT_HEIGHT;
-    private double                  _min;
-    private double                  _max;
-    private double                  _mean;
-    private Color                   _min_color              = Color.BLUE;
-    private Color                   _max_color              = Color.YELLOW;
-    private Color                   _mean_color             = Color.WHITE;
-    private int                     _width                  = VECTOR_DEFAULT_WIDTH;
+    final static int                     DEFAULT_HEIGHT          = 12;
+    final public static int              DEFAULT_WIDTH           = 400;
+    private double                       _rendering_factor_width = 1.0;
+    private char                         _seq[];
+    private final Rectangle2D            _rectangle              = new Rectangle2D.Float();
+    private double                       _height                 = DEFAULT_HEIGHT;
+    private final float                  _width                  = DEFAULT_WIDTH;
     private static RenderableMsaSequence _instance               = null;
 
     private RenderableMsaSequence() {
@@ -65,7 +54,7 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
 
     @Override
     public StringBuffer asSimpleText() {
-        return new StringBuffer( _seq );
+        return new StringBuffer( _seq.toString() );
     }
 
     @Override
@@ -103,7 +92,7 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
     }
 
     public int getTotalLength() {
-        return _seq.length();
+        return _seq.length;
     }
 
     @Override
@@ -117,10 +106,23 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
                         final Graphics2D g,
                         final TreePanel tree_panel,
                         final boolean to_pdf ) {
-        final double y = y1;
-        final double start = x1 + 20.0;
-        g.drawString( _seq, x1, y1
-                                       );
+        final float y = y1;
+        final float start = x1 + 20;
+        final float width = _width / _seq.length;
+        for( int i = 0; i < _seq.length; ++i ) {
+            final char c = _seq[ i ];
+            if ( width < 4 ) {
+                if ( c != '-' ) {
+                    g.setColor( calculateColor( c ) );
+                    _rectangle.setFrame( start + ( i * width ), y - 0.5, width + 1, getRenderingHeight() );
+                    g.fill( _rectangle );
+                }
+            }
+            else {
+                g.setColor( calculateColor( c ) );
+                g.drawString( String.valueOf( c ), start + ( i * width ), y - 0.5f );
+            }
+        }
     }
 
     @Override
@@ -147,24 +149,38 @@ public final class RenderableMsaSequence implements RenderablePhylogenyData {
         throw new NoSuchMethodError();
     }
 
-    private Color calculateColor( final double v ) {
-        return ForesterUtil.calcColor( v, _min, _max, _mean, _min_color, _max_color, _mean_color );
+    private Color calculateColor( final char c ) {
+        if ( ( c == 'G' ) || ( c == 'A' ) || ( c == 'S' ) || ( c == 'T' ) ) {
+            return Color.ORANGE;
+        }
+        else if ( ( c == 'N' ) || ( c == 'Q' ) || ( c == 'H' ) ) {
+            return Color.MAGENTA;
+        }
+        else if ( ( c == 'D' ) || ( c == 'E' ) ) {
+            return Color.RED;
+        }
+        else if ( ( c == 'K' ) || ( c == 'R' ) ) {
+            return Color.BLUE;
+        }
+        else if ( c == '-' ) {
+            return Color.GRAY;
+        }
+        else {
+            return Color.GREEN;
+        }
     }
 
     private double getRenderingHeight() {
         return _height;
     }
 
-    public static RenderableMsaSequence createInstance( final String seq,
-                                                   final Configuration configuration ) {
+    public static RenderableMsaSequence createInstance( final String seq, final Configuration configuration ) {
         if ( _instance == null ) {
             _instance = new RenderableMsaSequence();
         }
-        _instance._seq = seq;
+        _instance._seq = seq.toCharArray();
         if ( configuration != null ) {
-          
         }
-       
         return _instance;
     }
 }

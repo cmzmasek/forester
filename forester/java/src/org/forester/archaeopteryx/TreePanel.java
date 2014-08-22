@@ -660,7 +660,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                     && ( node.getNodeData().getSequence().isMolecularSequenceAligned() )
                     && ( !ForesterUtil.isEmpty( node.getNodeData().getSequence().getMolecularSequence() ) ) ) {
                 // FIXME 
-                sum += 100;
+                sum += RenderableMsaSequence.DEFAULT_WIDTH + 30;
             }
             if ( sum >= max_length ) {
                 _longest_ext_node_info = max_length;
@@ -4883,16 +4883,14 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int h = y < default_height ? ForesterUtil.roundToInt( y ) : default_height;
                 rs.setRenderingHeight( h > 1 ? h : 2 );
                 if ( getControlPanel().isDrawPhylogram() ) {
-                    if ( getOptions().isLineUpRendarableNodeData() ) {
+                   
                         rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
                                    node.getYcoord() - ( h / 2 ),
                                    g,
                                    this,
                                    to_pdf );
-                    }
-                    else {
-                        rs.render( node.getXcoord() + x, node.getYcoord() - ( h / 2 ), g, this, to_pdf );
-                    }
+                    
+                    
                 }
                 else {
                     rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,
