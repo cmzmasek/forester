@@ -146,7 +146,6 @@ public class PhylogeneticInferrer extends RunnableProcess {
         final Phylogeny phy = nj.execute( m );
         PhylogenyMethods.addMolecularSeqsToTree( phy, msa );
         PhylogenyMethods.extractFastaInformation( phy );
-        
         return phy;
     }
 

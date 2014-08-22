@@ -98,7 +98,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     static final String         SEARCH_TERMS_ONLY_LABEL                 = "Match Complete Terms Only";
     static final String         SEARCH_CASE_SENSITIVE_LABEL             = "Case Sensitive";
     static final String         INVERSE_SEARCH_RESULT_LABEL             = "Negate Result";
-    static final String         DISPLAY_BRANCH_LENGTH_VALUES_LABEL      = "Branch Length Values";
     static final String         COLOR_BY_TAXONOMIC_GROUP                = "Colorize by Taxonomic Group";
     static final String         DISPLAY_SCALE_LABEL                     = "Scale";
     static final String         NON_LINED_UP_CLADOGRAMS_LABEL           = "Non-Lined Up Cladograms";
@@ -184,7 +183,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
     JRadioButtonMenuItem        _non_lined_up_cladograms_rbmi;
     JRadioButtonMenuItem        _uniform_cladograms_rbmi;
     JRadioButtonMenuItem        _ext_node_dependent_cladogram_rbmi;
-    JCheckBoxMenuItem           _show_branch_length_values_cbmi;
     JCheckBoxMenuItem           _color_by_taxonomic_group_cbmi;
     JCheckBoxMenuItem           _show_scale_cbmi;                                                                                                                                                                                             //TODO fix me
     JCheckBoxMenuItem           _show_overview_cbmi;
@@ -458,9 +456,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _show_scale_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _show_branch_length_values_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _color_by_taxonomic_group_cbmi ) {
@@ -1337,9 +1332,6 @@ public abstract class MainFrame extends JFrame implements ActionListener {
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
         options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
                 && _show_confidence_stddev_cbmi.isSelected() );
-        if ( ( _show_branch_length_values_cbmi != null ) && _show_branch_length_values_cbmi.isEnabled() ) {
-            options.setShowBranchLengthValues( _show_branch_length_values_cbmi.isSelected() );
-        }
         if ( ( _color_by_taxonomic_group_cbmi != null ) && _color_by_taxonomic_group_cbmi.isEnabled() ) {
             options.setColorByTaxonomicGroup( _color_by_taxonomic_group_cbmi.isSelected() );
         }

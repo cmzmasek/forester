@@ -893,8 +893,6 @@ public final class MainFrameApplication extends MainFrame {
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( DISPLAY_SCALE_LABEL ) );
         _options_jmenu
-                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( DISPLAY_NODE_BOXES_LABEL_EXT ) );
@@ -1001,7 +999,6 @@ public final class MainFrameApplication extends MainFrame {
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
-        customizeCheckBoxMenuItem( _show_branch_length_values_cbmi, getOptions().isShowBranchLengthValues() );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _label_direction_cbmi,
                                    getOptions().getNodeLabelDirection() == NODE_LABEL_DIRECTION.RADIAL );

@@ -77,7 +77,6 @@ final public class Options {
     private double                            _scale_bar_length;
     private boolean                           _search_case_sensitive;
     private boolean                           _show_annotation_ref_source;
-    private boolean                           _show_branch_length_values;
     private boolean                           _show_confidence_stddev;
     private boolean                           _show_default_node_shapes_external;
     private boolean                           _show_default_node_shapes_internal;
@@ -272,10 +271,6 @@ final public class Options {
         return _search_case_sensitive;
     }
 
-    final boolean isShowBranchLengthValues() {
-        return _show_branch_length_values;
-    }
-
     boolean isShowConfidenceStddev() {
         return _show_confidence_stddev;
     }
@@ -414,10 +409,6 @@ final public class Options {
         _search_case_sensitive = search_case_sensitive;
     }
 
-    final void setShowBranchLengthValues( final boolean show_branch_length_values ) {
-        _show_branch_length_values = show_branch_length_values;
-    }
-
     void setShowConfidenceStddev( final boolean show_confidence_stddev ) {
         _show_confidence_stddev = show_confidence_stddev;
     }
@@ -446,7 +437,6 @@ final public class Options {
         _default_node_shape = NodeShape.CIRCLE;
         _default_node_fill = NodeFill.GRADIENT;
         _default_node_shape_size = Constants.DEFAULT_NODE_SHAPE_SIZE_DEFAULT;
-        _show_branch_length_values = false;
         _internal_number_are_confidence_for_nh_parsing = false;
         _show_scale = false;
         _antialias_screen = true;
@@ -507,7 +497,6 @@ final public class Options {
         if ( configuration != null ) {
             instance.setAntialiasScreen( configuration.isAntialiasScreen() );
             instance.setShowScale( configuration.isShowScale() );
-            instance.setShowBranchLengthValues( configuration.isShowBranchLengthValues() );
             instance.setShowOverview( configuration.isShowOverview() );
             instance.setColorByTaxonomicGroup( configuration.isColorByTaxonomicGroup() );
             instance.setCladogramType( configuration.getCladogramType() );

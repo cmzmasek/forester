@@ -101,7 +101,8 @@ public final class Configuration {
             { "Colorize by Annotation", "display", "no" }, { "Seq Symbol", "display", "yes" },
             { "Rollover", "display", "yes" }, { "Relation Confidence", "nodisplay", "no" },
             { "Vector Data", "nodisplay", "no" }, { "Taxonomy Images", "display", "no" },
-            { "Properties", "display", "no" }, { "Gene Name", "display", "yes" }                  };
+            { "Properties", "display", "no" }, { "Gene Name", "display", "yes" },
+            { "Multiple Seq Alignment", "display", "no" }, { "Branch Length Values", "display", "no" } };
     final static int                        display_as_phylogram                                   = 0;
     final static int                        show_node_names                                        = 1;
     final static int                        show_tax_code                                          = 2;
@@ -129,6 +130,8 @@ public final class Configuration {
     final static int                        show_taxonomy_images                                   = 24;
     final static int                        show_properties                                        = 25;
     final static int                        show_gene_names                                        = 26;
+    final static int                        show_mol_seqs                                          = 27;
+    final static int                        write_branch_length_values                             = 28;
     static final String                     VALIDATE_AGAINST_PHYLOXML_XSD_SCHEMA                   = "validate_against_phyloxml_xsd_schema";
     private static Hashtable<String, Color> _sequence_colors;
     private static Hashtable<String, Color> _annotation_colors;
@@ -205,7 +208,6 @@ public final class Configuration {
     private PHYLOGENY_GRAPHICS_TYPE         _phylogeny_graphics_type                               = PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR;
     private float                           _print_line_width                                      = Constants.PDF_LINE_WIDTH_DEFAULT;
     private boolean                         _show_annotation_ref_source                            = true;
-    private boolean                         _show_branch_length_values                             = false;
     private boolean                         _show_default_node_shapes_external                     = false;
     private boolean                         _show_default_node_shapes_internal                     = false;
     private boolean                         _show_domain_labels                                    = true;
@@ -538,10 +540,6 @@ public final class Configuration {
         _nh_parsing_replace_underscores = nh_parsing_replace_underscores;
     }
 
-    public void setShowBranchLengthValues( final boolean show_branch_length_values ) {
-        _show_branch_length_values = show_branch_length_values;
-    }
-
     public void setShowDefaultNodeShapesExternal( final boolean show_default_node_shapes_external ) {
         _show_default_node_shapes_external = show_default_node_shapes_external;
     }
@@ -763,10 +761,6 @@ public final class Configuration {
 
     boolean isReplaceUnderscoresInNhParsing() {
         return _nh_parsing_replace_underscores;
-    }
-
-    boolean isShowBranchLengthValues() {
-        return _show_branch_length_values;
     }
 
     boolean isShowOverview() {
@@ -1199,9 +1193,6 @@ public final class Configuration {
         else if ( key.equals( "show_overview" ) ) {
             setShowOverview( parseBoolean( ( String ) st.nextElement() ) );
         }
-        else if ( key.equals( "show_branch_length_values" ) ) {
-            setShowBranchLengthValues( parseBoolean( ( String ) st.nextElement() ) );
-        }
         else if ( key.equals( "background_gradient" ) ) {
             setBackgroundColorGradient( parseBoolean( ( String ) st.nextElement() ) );
         }
@@ -1544,6 +1535,9 @@ public final class Configuration {
             else if ( key.equals( "write_confidence_values" ) ) {
                 key_index = Configuration.write_confidence_values;
             }
+            else if ( key.equals( "write_branch_length_values" ) ) {
+                key_index = Configuration.write_branch_length_values;
+            }
             else if ( key.equals( "write_events" ) ) {
                 key_index = Configuration.write_events;
             }
@@ -1561,6 +1555,9 @@ public final class Configuration {
             }
             else if ( key.equals( "show_domain_architectures" ) ) {
                 key_index = Configuration.show_domain_architectures;
+            }
+            else if ( key.equals( "show_msa" ) ) {
+                key_index = Configuration.show_mol_seqs;
             }
             else if ( key.equals( "show_annotations" ) ) {
                 key_index = Configuration.show_annotation;

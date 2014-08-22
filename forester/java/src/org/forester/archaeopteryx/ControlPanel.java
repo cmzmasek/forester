@@ -142,6 +142,8 @@ final class ControlPanel extends JPanel implements ActionListener {
     // Indices for the click-to options in the combo box
     private int                               _show_data_item;
     private JCheckBox                         _show_domain_architectures;
+    private JCheckBox                         _show_mol_seqs;
+    private JCheckBox                         _write_branch_length_values;
     private JCheckBox                         _show_events;
     private JCheckBox                         _show_gene_names;
     private JCheckBox                         _show_node_names;
@@ -632,9 +634,19 @@ final class ControlPanel extends JPanel implements ActionListener {
                 addJCheckBox( _width_branches, ch_panel );
                 add( ch_panel );
                 break;
+            case Configuration.write_branch_length_values:
+                _write_branch_length_values = new JCheckBox( title );
+                addJCheckBox( _write_branch_length_values, ch_panel );
+                add( ch_panel );
+                break;
             case Configuration.show_domain_architectures:
                 _show_domain_architectures = new JCheckBox( title );
                 addJCheckBox( _show_domain_architectures, ch_panel );
+                add( ch_panel );
+                break;
+            case Configuration.show_mol_seqs:
+                _show_mol_seqs = new JCheckBox( title );
+                addJCheckBox( _show_mol_seqs, ch_panel );
                 add( ch_panel );
                 break;
             case Configuration.show_seq_names:
@@ -873,8 +885,16 @@ final class ControlPanel extends JPanel implements ActionListener {
         return ( ( getWriteConfidenceCb() != null ) && getWriteConfidenceCb().isSelected() );
     }
 
+    boolean isWriteBranchLengthValues() {
+        return ( ( _write_branch_length_values != null ) && _write_branch_length_values.isSelected() );
+    }
+
     boolean isShowDomainArchitectures() {
         return ( ( _show_domain_architectures != null ) && _show_domain_architectures.isSelected() );
+    }
+
+    public boolean isShowMolSequences() {
+        return ( ( _show_mol_seqs != null ) && _show_mol_seqs.isSelected() );
     }
 
     boolean isShowGeneNames() {
@@ -1085,6 +1105,16 @@ final class ControlPanel extends JPanel implements ActionListener {
             case Configuration.show_domain_architectures:
                 if ( _show_domain_architectures != null ) {
                     _show_domain_architectures.setSelected( state );
+                }
+                break;
+            case Configuration.write_branch_length_values:
+                if ( _write_branch_length_values != null ) {
+                    _write_branch_length_values.setSelected( state );
+                }
+                break;
+            case Configuration.show_mol_seqs:
+                if ( _show_mol_seqs != null ) {
+                    _show_mol_seqs.setSelected( state );
                 }
                 break;
             case Configuration.show_seq_names:
@@ -2218,6 +2248,18 @@ final class ControlPanel extends JPanel implements ActionListener {
             addCheckbox( Configuration.show_annotation, _configuration.getDisplayTitle( Configuration.show_annotation ) );
             setCheckbox( Configuration.show_annotation, _configuration.doCheckOption( Configuration.show_annotation ) );
         }
+        if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
+            addCheckbox( Configuration.write_confidence_values,
+                         _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
+            setCheckbox( Configuration.write_confidence_values,
+                         _configuration.doCheckOption( Configuration.write_confidence_values ) );
+        }
+        if ( _configuration.doDisplayOption( Configuration.write_branch_length_values ) ) {
+            addCheckbox( Configuration.write_branch_length_values,
+                         _configuration.getDisplayTitle( Configuration.write_branch_length_values ) );
+            setCheckbox( Configuration.write_branch_length_values,
+                         _configuration.doCheckOption( Configuration.write_branch_length_values ) );
+        }
         if ( _configuration.doDisplayOption( Configuration.show_binary_characters ) ) {
             addCheckbox( Configuration.show_binary_characters,
                          _configuration.getDisplayTitle( Configuration.show_binary_characters ) );
@@ -2236,11 +2278,9 @@ final class ControlPanel extends JPanel implements ActionListener {
             setCheckbox( Configuration.show_domain_architectures,
                          _configuration.doCheckOption( Configuration.show_domain_architectures ) );
         }
-        if ( _configuration.doDisplayOption( Configuration.write_confidence_values ) ) {
-            addCheckbox( Configuration.write_confidence_values,
-                         _configuration.getDisplayTitle( Configuration.write_confidence_values ) );
-            setCheckbox( Configuration.write_confidence_values,
-                         _configuration.doCheckOption( Configuration.write_confidence_values ) );
+        if ( _configuration.doDisplayOption( Configuration.show_mol_seqs ) ) {
+            addCheckbox( Configuration.show_mol_seqs, _configuration.getDisplayTitle( Configuration.show_mol_seqs ) );
+            setCheckbox( Configuration.show_mol_seqs, _configuration.doCheckOption( Configuration.show_mol_seqs ) );
         }
         if ( _configuration.doDisplayOption( Configuration.write_events ) ) {
             addCheckbox( Configuration.write_events, _configuration.getDisplayTitle( Configuration.write_events ) );
@@ -2370,16 +2410,10 @@ final class ControlPanel extends JPanel implements ActionListener {
                     if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
                         getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( true );
                     }
-                    if ( getMainPanel().getMainFrame()._show_branch_length_values_cbmi != null ) {
-                        getMainPanel().getMainFrame()._show_branch_length_values_cbmi.setVisible( false );
-                    }
                 }
                 else {
                     if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
                         getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( false );
-                    }
-                    if ( getMainPanel().getMainFrame()._show_branch_length_values_cbmi != null ) {
-                        getMainPanel().getMainFrame()._show_branch_length_values_cbmi.setVisible( true );
                     }
                 }
             }
@@ -2454,10 +2488,5 @@ final class ControlPanel extends JPanel implements ActionListener {
         SWAP,
         CHANGE_NODE_FONT,
         COLOR_NODE_FONT;
-    }
-
-    public boolean isShowMolSequences() {
-        // TODO Auto-generated method stub
-        return true;
     }
 }

@@ -117,7 +117,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
     private JCheckBoxMenuItem           _inverse_search_result_cbmi;
     private JCheckBoxMenuItem           _show_overview_cbmi;
     private JMenuItem                   _choose_minimal_confidence_mi;
-    private JCheckBoxMenuItem           _show_branch_length_values_cbmi;
     private JMenuItem                   _collapse_species_specific_subtrees;
     private JMenuItem                   _overview_placment_mi;
     private ButtonGroup                 _radio_group_1;
@@ -261,9 +260,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             getMainPanel().getControlPanel().search1();
         }
         else if ( o == _show_scale_cbmi ) {
-            updateOptions( getOptions() );
-        }
-        else if ( o == _show_branch_length_values_cbmi ) {
             updateOptions( getOptions() );
         }
         else if ( o == _show_confidence_stddev_cbmi ) {
@@ -763,8 +759,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         _options_jmenu.add( _show_overview_cbmi = new JCheckBoxMenuItem( MainFrame.SHOW_OVERVIEW_LABEL ) );
         _options_jmenu.add( _show_scale_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_SCALE_LABEL ) );
         _options_jmenu
-                .add( _show_branch_length_values_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_BRANCH_LENGTH_VALUES_LABEL ) );
-        _options_jmenu
                 .add( _show_default_node_shapes_internal_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_INT ) );
         _options_jmenu
                 .add( _show_default_node_shapes_external_cbmi = new JCheckBoxMenuItem( MainFrame.DISPLAY_NODE_BOXES_LABEL_EXT ) );
@@ -829,7 +823,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.TOTAL_NODE_SUM_DEP );
         customizeRadioButtonMenuItem( _ext_node_dependent_cladogram_rbmi,
                                       getOptions().getCladogramType() == CLADOGRAM_TYPE.EXT_NODE_SUM_DEP );
-        customizeCheckBoxMenuItem( _show_branch_length_values_cbmi, getOptions().isShowBranchLengthValues() );
         customizeCheckBoxMenuItem( _show_overview_cbmi, getOptions().isShowOverview() );
         customizeCheckBoxMenuItem( _search_whole_words_only_cbmi, getOptions().isMatchWholeTermsOnly() );
         customizeCheckBoxMenuItem( _inverse_search_result_cbmi, getOptions().isInverseSearchResult() );
@@ -1344,9 +1337,6 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         options.setShowOverview( ( _show_overview_cbmi != null ) && _show_overview_cbmi.isSelected() );
         options.setShowConfidenceStddev( ( _show_confidence_stddev_cbmi != null )
                 && _show_confidence_stddev_cbmi.isSelected() );
-        if ( ( _show_branch_length_values_cbmi != null ) && _show_branch_length_values_cbmi.isEnabled() ) {
-            options.setShowBranchLengthValues( _show_branch_length_values_cbmi.isSelected() );
-        }
         options.setMatchWholeTermsOnly( ( _search_whole_words_only_cbmi != null )
                 && _search_whole_words_only_cbmi.isSelected() );
         options.setInverseSearchResult( ( _inverse_search_result_cbmi != null )

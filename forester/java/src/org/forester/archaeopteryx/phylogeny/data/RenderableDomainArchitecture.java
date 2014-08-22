@@ -43,7 +43,6 @@ import org.forester.archaeopteryx.Constants;
 import org.forester.archaeopteryx.TreePanel;
 import org.forester.phylogeny.data.DomainArchitecture;
 import org.forester.phylogeny.data.PhylogenyData;
-import org.forester.phylogeny.data.PhylogenyDataUtil;
 import org.forester.phylogeny.data.ProteinDomain;
 import org.forester.util.ForesterUtil;
 
@@ -56,8 +55,8 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
     private final DomainArchitecture  _domain_structure;
     private int                       _e_value_threshold_exp        = E_VALUE_THRESHOLD_EXP_DEFAULT;
     private final Rectangle2D         _rectangle                    = new Rectangle2D.Float();
-    private float                    _rendering_factor_width       = 1;
-    private float                    _rendering_height             = 0;
+    private float                     _rendering_factor_width       = 1;
+    private float                     _rendering_height             = 0;
 
     public RenderableDomainArchitecture( final DomainArchitecture domain_structure ) {
         _domain_structure = domain_structure;
@@ -201,13 +200,9 @@ public final class RenderableDomainArchitecture extends DomainArchitecture imple
                     else {
                         g.setColor( Constants.DOMAIN_LABEL_COLOR_FOR_PDF );
                     }
-                    g.drawString( d.getName(),
-                                  xa,
-                                  y1
-                                  + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
-                                  + _rendering_height  );
-                    
-                    
+                    g.drawString( d.getName(), xa, y1
+                            + tree_panel.getMainPanel().getTreeFontSet().getFontMetricsSmall().getAscent()
+                            + _rendering_height );
                 }
                 drawDomain( xa, y1, xb - xa, _rendering_height, d.getName(), g, to_pdf );
             }

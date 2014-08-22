@@ -4312,7 +4312,7 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
         if ( isNodeDataInvisible( node ) && !to_graphics_file && !to_pdf ) {
             return 0;
         }
-        if ( getOptions().isShowBranchLengthValues()
+        if ( getControlPanel().isWriteBranchLengthValues()
                 && ( ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.RECTANGULAR )
                         || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.ROUNDED ) || ( getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.EURO_STYLE ) )
                 && ( !node.isRoot() ) && ( node.getDistanceToParent() != PhylogenyDataUtil.BRANCH_LENGTH_DEFAULT ) ) {
@@ -4883,14 +4883,11 @@ public final class TreePanel extends JPanel implements ActionListener, MouseWhee
                 final int h = y < default_height ? ForesterUtil.roundToInt( y ) : default_height;
                 rs.setRenderingHeight( h > 1 ? h : 2 );
                 if ( getControlPanel().isDrawPhylogram() ) {
-                   
-                        rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
-                                   node.getYcoord() - ( h / 2 ),
-                                   g,
-                                   this,
-                                   to_pdf );
-                    
-                    
+                    rs.render( ( float ) ( ( getMaxDistanceToRoot() * getXcorrectionFactor() ) + _length_of_longest_text ),
+                               node.getYcoord() - ( h / 2 ),
+                               g,
+                               this,
+                               to_pdf );
                 }
                 else {
                     rs.render( getPhylogeny().getFirstExternalNode().getXcoord() + _length_of_longest_text,

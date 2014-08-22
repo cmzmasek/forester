@@ -371,8 +371,6 @@ public final class PhylogenyDataUtil {
                     org.forester.util.ForesterUtil.roundToInt( y2 ) );
     }
 
-   
-
     public static String replaceIllegalXmlCharacters( final String value ) {
         String v = value.replaceAll( "&", "&amp;" );
         v = v.replaceAll( "<", "&lt;" );
