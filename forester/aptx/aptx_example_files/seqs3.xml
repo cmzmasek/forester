@@ -1,0 +1,1222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <clade>
+    <clade>
+      <branch_length>0.01148</branch_length>
+      <clade>
+        <branch_length>0.01799</branch_length>
+        <clade>
+          <branch_length>0.01628</branch_length>
+          <clade>
+            <branch_length>0.02473</branch_length>
+            <clade>
+              <branch_length>0.04097</branch_length>
+              <clade>
+                <branch_length>0.01661</branch_length>
+                <clade>
+                  <name>75</name>
+                  <branch_length>0.02148</branch_length>
+                  <sequence type="protein">
+                    <name>75</name>
+                    <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MKIFVGNVDGADTTPEE--LAALFAPY--------GT---VMSCAVMK-------------------------QFAFVHMRENAGALRAIE-ALHGH-ELRP--GRALVVEM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SRPRPL------------------------------------------------NTWKIFVGNVSAACT-SQELRS----LFERRGR-V----IECDVVK----------------------------------------------GKRMHVQLSTSRLR---TAPGMGDQSGC-YRCGKEG------------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+                <clade>
+                  <name>7d</name>
+                  <branch_length>0.02208</branch_length>
+                  <sequence type="protein">
+                    <name>7d</name>
+                    <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MKIFVGNVDGADTTPEE--LAALFAPY--------GT---VMSCAVMK-------------------------QFAFVHMRENAGALRAIE-ALHGH-ELRP--GRALVVEM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SRPRPL------------------------------------------------NTWKIFVGNVSAACT-SQELRS----LFERRGR-V----IECDVVK---------------------------------GSCQ--------DGEAVHRKPAPGGYR---AGDSLTLRAVWEG------------------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <name>4b</name>
+                <branch_length>0.03131</branch_length>
+                <sequence type="protein">
+                  <name>4b</name>
+                  <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MKIFVGNVDGADTTPEE--LAALFAPY--------GT---VMSCAVMK-------------------------QFAFVHMRENAGALRAIE-ALHGH-ELRP--GRALVVEM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SRPRPL------------------------------------------------NTWKIFVGNVSAACT-SQELRS----LFERRGR-V----IECDVVK-----------DYAFVHMEKEADAKAAIAQL-NGKEV--------KGKRINVELSTKGQK---KGPGLAVQSGDKTKKPGAGDTAFP-------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.06685</branch_length>
+              <clade>
+                <name>5b</name>
+                <branch_length>0.00129</branch_length>
+                <sequence type="protein">
+                  <name>5b</name>
+                  <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MVKLFIGNLP-REATEQE--IRSLFEQY--------GK---VLECDIIK-------------------------NYGFVHIEDKTAAEDAIR-NLHHY-KLH---GVNINVEA--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SKNKSK------------------------------------------------ASTKLHVGNISPTCT-NQELRA----KFEEYGP-V----IECDIVK-----------DYAFVHMERAEDAVEAIRGL-DNTEF--------QGKRMHVQLSTSRLR---TAPGMGDQSGC-YRCGKEGHWSKE-------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+              <clade>
+                <name>5c</name>
+                <branch_length>0.00113</branch_length>
+                <sequence type="protein">
+                  <name>5c</name>
+                  <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MVKLFIGNLP-REATEQE--IRSLFEQY--------GK---VLECDIIK-------------------------NYGFVHIEDKTAAEDAIR-NLHHY-KLH---GVNINVEA--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SKNKSK------------------------------------------------TSTKLHVGNISPTCT-NKELRA----KFEEYGP-V----IECDIVK-----------DYAFVHMERAEDAVEAIRGL-DNTEF--------QGKRMHVQLSTSRLR---TAPGMGDQSGC-YRCGKEGHWSKE-------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.04854</branch_length>
+            <clade>
+              <branch_length>0.017</branch_length>
+              <clade>
+                <name>1e</name>
+                <branch_length>0.03759</branch_length>
+                <sequence type="protein">
+                  <name>1e</name>
+                  <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNKLYIGNLN-ESVTPAD--LEKVFAEH--------KI---SYSGQFLV-----------------------KSGYAFVDCPDEHWAMKAIE-TFSGKVELQ---GKRLEIEH--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SVPKKQ------------------------------------------------RSRKIQIRNIPPQLR-WEVLDS----LLAQYGT-V----ENCEQVN------TESETAVVNVTYSNREQTRQAIMKL-NGHQL--------ENHALKVSYIPDEQIA--QGPENGRRG---GFGSRGQPRQGS-------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+              <clade>
+                <name>20</name>
+                <branch_length>0.03475</branch_length>
+                <sequence type="protein">
+                  <name>20</name>
+                  <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNKLYIGNLS-ENAAPSD--LESIFKDA--------KI---PVSGPFLV-----------------------KTGYAFVDCPDESWALKAIE-ALSGKIELH---GKPIEVEH--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SVPKRQ------------------------------------------------RIRKLQIRNIPPHLQ-WEVLDS----LLVQYGV-V----ESCEQVN------TDSETAVVNVTYSSKDQARQALDKL-NGFQL--------ENFTLKVAYIPDEMAA-QQNPLQQPRGRR-GLGQRGSSRQG--------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <name>1f</name>
+              <branch_length>0.06031</branch_length>
+              <sequence type="protein">
+                <name>1f</name>
+                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MMNKLYIGNLS-PAVTADD--LRQLFGDR--------KL---PLAGQVLL-----------------------KSGYAFVDYPDQNWAIRAIE-TLSGKVELH---GKIMEVDY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SVSKKL------------------------------------------------RSRKIQIRNIPPHLQ-WEVLDG----LLAQYGT-V----ENVEQVFAFSLVNTDTETAVVNVTYATREEAKIAMEKL-SGHQF--------ENYSFKISYIPDEEVS-SPSPPQRAQRGD-HSSREQGHA----------------------------------------------------------------------------------------------</mol_seq>
+              </sequence>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.00652</branch_length>
+          <clade>
+            <branch_length>0.01074</branch_length>
+            <clade>
+              <branch_length>0.0014</branch_length>
+              <clade>
+                <branch_length>0.00278</branch_length>
+                <clade>
+                  <branch_length>0.00317</branch_length>
+                  <clade>
+                    <branch_length>0.00925</branch_length>
+                    <clade>
+                      <branch_length>0.01111</branch_length>
+                      <clade>
+                        <branch_length>0.02318</branch_length>
+                        <clade>
+                          <branch_length>0.03283</branch_length>
+                          <clade>
+                            <branch_length>0.02991</branch_length>
+                            <clade>
+                              <branch_length>0.00327</branch_length>
+                              <clade>
+                                <branch_length>0.03153</branch_length>
+                                <clade>
+                                  <name>57</name>
+                                  <branch_length>0.0</branch_length>
+                                  <sequence type="protein">
+                                    <name>57</name>
+                                    <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------VQENGQRKFGGPPPG--WEGPPPPRGCEVFVGKIP-RDMYEDE--LVPVFERA--------GK---IYEFRLMME--FSG----------------ENRGYAFVMYTTKEEAQLAIR-ILNNY-EIRP--GKFIGVCV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SL----------------------------------------------------DNCRLFIGAIPKEKK-KEEILD----EMKKVTEGV----VDVIVYP--SATDKTKNRGFAFVEYESHRAAAMARRKLIPGTFQ-------LWGHTIQVDWADPEKEV-DEETMQRVKVLY-VRNLMISTTEETI------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>7b</name>
+                                  <branch_length>0.0</branch_length>
+                                  <sequence type="protein">
+                                    <name>7b</name>
+                                    <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------VQENGQRKFGGPPPG--WEGPPPPRGCEVFVGKIP-RDMYEDE--LVPVFERA--------GK---IYEFRLMME--FSG----------------ENRGYAFVMYTTKEEAQLAIR-ILNNY-EIRP--GKFIGVCV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SL----------------------------------------------------DNCRLFIGAIPKEKK-KEEILD----EMKKVTEGV----VDVIVYP--SATDKTKNRGFAFVEYESHRAAAMARRKLIPGTFQ-------LWGHTIQVDWADPEKEV-DEETMQRVKVLY-VRNLMISTTEETI------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>59</name>
+                                <branch_length>0.03154</branch_length>
+                                <sequence type="protein">
+                                  <name>59</name>
+                                  <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MVQENGQRKYGGPPPG--WEGPHPQRGCEVFVGKIP-RDVYEDE--LVPVFEAV--------GR---IYELRLMMD--FDG----------------KNRGYAFVMYCHKHEAKRAVR-ELNNY-EIRP--GRLLGVCC--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SV----------------------------------------------------DNCRLFIGGIPKMKK-REEILE----EIAKVTEGV----LDVIVYA--SAADKMKNRGFAFVEYESHRAAAMARRKLMPGRIQ-------LWGHQIAVDWAEPEIDV-DEDVMETVKILY-VRNLMIETTEDT-------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>0</name>
+                              <branch_length>0.03422</branch_length>
+                              <sequence type="protein">
+                                <name>0</name>
+                                <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LVQENGQRKYGGPPPG--WDAAPPERGCEIFIGKLP-RDLFEDE--LIPLCEKI--------GK---IYEMRMMMD--FNG----------------NNRGYAFVTFSNKVEAKNAIK-QLNNY-EIRN--GRLLGVCA--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SV----------------------------------------------------DNCRLFVGGIPKTKK-REEILS----EMKKVTEGV----VDVIVYP--SAADKTKNRGFAFVEYESHRAAAMARRKLLPGRIQ-------LWGHGIAVDWAEPEVEV-DEDTMSSVKILY-VRNLMLSTSEEM-------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.04608</branch_length>
+                            <clade>
+                              <name>1a</name>
+                              <branch_length>0.01738</branch_length>
+                              <sequence type="protein">
+                                <name>1a</name>
+                                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DVTTGQRKYGGPPPDSVYSGQQPSVGTEIFVGKIP-RDLFEDE--LVPLFEKA--------GP---IWDLRLMMDP-LTG----------------LNRGYAFVTFCTKEAAQEAVK-LYNNH-EIRS--GKHIGVCI--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SV----------------------------------------------------ANNRLFVGSIPKSKT-KEQILE----EFSKVTEGL----TDVILYH--QPDDKKKNRGFCFLEYEDHKTAAQARRRLMSGKVK-------VWGNVGTVEWADPIEDP-DPEVMAKVKVLF-VRNLANTVTEEI-------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                            <clade>
+                              <name>1c</name>
+                              <branch_length>0.016</branch_length>
+                              <sequence type="protein">
+                                <name>1c</name>
+                                <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GQRKYGGPPPDSVYSGVQPGIGTEVFVGKIP-RDLYEDE--LVPLFEKA--------GP---IWDLRLMMDP-LSG----------------QNRGYAFITFCGKEAAQEAVK-LCDSY-EIRP--GKHLGVCI--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SV----------------------------------------------------ANNRLFVGSIPKNKT-KENILE----EFSKVTEGL----VDVILYH--QPDDKKKNRGFCFLEYEDHKSAAQARRRLMSGKVK-------VWGNVVTVEWADPVEEP-DPEVMAKVKVLF-VRNLATTVTEEI-------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>9</name>
+                          <branch_length>0.10289</branch_length>
+                          <sequence type="protein">
+                            <name>9</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------VQVNGQRKYGGPPPG--WVGSPPPAGSEVFIGRLP-QDVYEHQ--LIPLFQRV--------GR---LYEFRLMMT--FSG----------------LNRGFAYARYSSRRGAQAAIA-TLHNH-PLRP--SCPLLVCR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ST----------------------------------------------------EKCELSVDGLPPNLT-RSALLL----ALQPLGPGL----QEARLLP----SPGPAPGQIALLKFSSHRAAAMAKKALVEGQSH-------LCGEQVAVEWLKPDLK---QRLRQQLVGPF-LRSPQPEGSQLALA-----------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.03778</branch_length>
+                        <clade>
+                          <branch_length>0.1165</branch_length>
+                          <clade>
+                            <branch_length>0.0904</branch_length>
+                            <clade>
+                              <branch_length>0.04841</branch_length>
+                              <clade>
+                                <name>58</name>
+                                <branch_length>0.0</branch_length>
+                                <sequence type="protein">
+                                  <name>58</name>
+                                  <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQLAIR-ILNNY-EIRP--GKFIGVCV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SL----------------------------------------------------DNCRLFIGAIPKEKK-KEEILD----EMKKVTEGV----VDVIVYP--SATDKTKNRGFAFVEYESHRAAAMARRKLIPGTFQ-------LWGHTIQVDWADPEKEV-DEETMQRVKVLY-VRNLMISTTEETIKAEFNKFKPGAVERVKKLRDYAFVHFFNREDAVAAMSVMNGKCIDGASIEVTLAKPVNKENTWRQHLNGQISPNSENLIVFAN-------</mol_seq>
+                                </sequence>
+                              </clade>
+                              <clade>
+                                <name>7c</name>
+                                <branch_length>0.0</branch_length>
+                                <sequence type="protein">
+                                  <name>7c</name>
+                                  <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQLAIR-ILNNY-EIRP--GKFIGVCV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SL----------------------------------------------------DNCRLFIGAIPKEKK-KEEILD----EMKKVTEGV----VDVIVYP--SATDKTKNRGFAFVEYESHRAAAMARRKLIPGTFQ-------LWGHTIQVDWADPEKEV-DEETMQRVKVLY-VRNLMISTTEETIKAEFNKFKPGAVERVKKLRDYAFVHFFNREDAVAAMSVMNGKCIDGASIEVTLAKPVNKENTWRQHLNGQISPNSENLIVFAN-------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>5a</name>
+                              <branch_length>0.04973</branch_length>
+                              <sequence type="protein">
+                                <name>5a</name>
+                                <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKRAVR-ELNNY-EIRP--GRLLGVCC--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SV----------------------------------------------------DNCRLFIGGIPKMKK-REEILE----EIAKVTEGV----LDVIVYA--SAADKMKNRGFAFVEYESHRAAAMARRKLMPGRIQ-------LWGHQIAVDWAEPEIDV-DEDVMETVKILY-VRNLMIETTEDTIKKSFGQFNPGCVERVKKIRDYAFVHFTSREDAVHAMNNLNGTELEGSCLEVTLAKPVDKEQYSRYQKAARGGGAAEAAQQPSY-------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.08719</branch_length>
+                            <clade>
+                              <name>42</name>
+                              <branch_length>0.05948</branch_length>
+                              <sequence type="protein">
+                                <name>42</name>
+                                <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QAEAAIN-AFHQS-RLR---ERELSVQL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QP----------------------------------------------------TDALLCVANLPPSLT-QQQFEE----LVRPFGS-L----ERCFLVY---SERTGQSKGYGFAEYMKKDSAARAKSDL-LGKPL--------GPRTLYVHWTDAGQL---TPALLHSRCLC-VDRLPPGFNDVDALCRALSAVHSPTFCQLACGQDGQLKGFAVLEYETAEMAEEAQQQADGLSLGGSHLRVSFCAPGPPGRSMLAALIAAQATALNRGKGLLP-</mol_seq>
+                              </sequence>
+                            </clade>
+                            <clade>
+                              <name>44</name>
+                              <branch_length>0.0668</branch_length>
+                              <sequence type="protein">
+                                <name>44</name>
+                                <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NAIQ-MFHQY-SFR---GKDLIVQL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QP----------------------------------------------------TDALLCITNVPISFT-SEEFEE----LVRAYGN-I----ERCFLVY---SEVTGHSKGYGFVEYMKKDFAAKARLEL-LGRQL--------GASALFAQWMDVNLL---ASELIHSKCLC-IDKLPSDYRDSEELLQIFSSVHKPVFCQLAQDEGSYVGGFAVVEYSTAEQAEEVQQAADGMTIKGSKVQVSFCAPGAPGRSTLAALIAAQRVMHSNQKGLLPE</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.03649</branch_length>
+                          <clade>
+                            <name>41</name>
+                            <branch_length>0.05352</branch_length>
+                            <sequence type="protein">
+                              <name>41</name>
+                              <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------EEELPPLDPEEIRKRLEHTERQFRNRRKILIRGLP-GDVTNQE--VHDLLSDY-----------------------------------ELKYCFVDKYKGTAFVTLLNGEQAEAAIN-AFHQS-RLR---ERELSVQL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QP----------------------------------------------------TDALLCVANLPPSLT-QQQFEE----LVRPFGS-L----ERCFLVY---SERTGQSKGYGFAEYMKKDSAARAKSDL-LGKPL--------GPRTLYVHWTDAGQL---TPALLHSRCLC-VDRLPPGFND---------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>43</name>
+                            <branch_length>0.05715</branch_length>
+                            <sequence type="protein">
+                              <name>43</name>
+                              <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DPMPAALHPEEVAARLQRMQRELSNRRKILVKNLP-QDSNCQE--VHDLLKDY-----------------------------------DLKYCYVDRNKRTAFVTLLNGEQAQNAIQ-MFHQY-SFR---GKDLIVQL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QP----------------------------------------------------TDALLCITNVPISFT-SEEFEE----LVRAYGN-I----ERCFLVY---SEVTGHSKGYGFVEYMKKDFAAKARLEL-LGRQL--------GASALFAQWMDVNLL---ASELIHSKCLC-IDKLPSD------------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.07791</branch_length>
+                      <clade>
+                        <branch_length>0.0031</branch_length>
+                        <clade>
+                          <name>3e</name>
+                          <branch_length>0.03711</branch_length>
+                          <sequence type="protein">
+                            <name>3e</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------HPDEEMGFTIDIKSFLKPGEKTYTQRCRLFVGNLP-TDITEED--FKRLFERY--------GE---PSEVFIN-----------------------RDRGFGFIRLESRTLAEIAKA-ELDGT-ILK---SRPLRIRF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AT----------------------------------------------------HGAALTVKNLSPVVS-NELLEQ----AFSQFGP-V----EKAVVVV----DDRGRATGKGFVEFAAKPPARKALERCGDGAFL-----LTTTPRPVIVEPMEQFDDE-DGLPEKLMQKTQQYHKEREQ------------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>68</name>
+                          <branch_length>0.03657</branch_length>
+                          <sequence type="protein">
+                            <name>68</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------KISDSEGFKANLSLLRRPGEKTYTQRCRLFVGNLP-ADITEDE--FKRLFAKY--------GE---PGEVFIN-----------------------KGKGFGFIKLESRALAEIAKA-ELDDT-PMR---GRQLRVRF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AT----------------------------------------------------HAAALSVRNLSPYVS-NELLEE----AFSQFGP-I----ERAVVIV----DDRGRSTGKGIVEFASKPAARKAFERCSEGVFL-----LTTTPRPVIVEPLEQLDDE-DGLPEKLAQKNPMYQKER--------------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>27</name>
+                        <branch_length>0.04181</branch_length>
+                        <sequence type="protein">
+                          <name>27</name>
+                          <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ASSQNEGLTIDLKNFRKPGEKTFTQRSRLFVGNLP-PDITEEE--MRKLFEKY--------GK---AGEVFIH-----------------------KDKGFGFIRLETRTLAEIAKV-ELDNM-PLR---GKQLRVRF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AC----------------------------------------------------HSASLTVRNLPQYVS-NELLEE----AFSVFGQ-V----ERAVVIV----DDRGRPSGKGIVEFSGKPAARKALDRCSEGSFL-----LTTFPRPVTVEPMDQLDDE-EGLPEKLVIKNQQFHKEREQP-----------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.02187</branch_length>
+                    <clade>
+                      <branch_length>0.0589</branch_length>
+                      <clade>
+                        <name>48</name>
+                        <branch_length>0.0472</branch_length>
+                        <sequence type="protein">
+                          <name>48</name>
+                          <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DDRGRPYGYPAVCE-EDLMPEDDQRATRNLFIGNLD-HSVSEVE--LRRAFEKY--------GI---IEEVVIKRPA--RG----------------QGGAYAFLKFQNLDMAHRAKV-AMSGR-VIG---RNPIKIGY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKAN--------------------------------------------------PTTRLWVGGLGPNTS-LAALAR----EFDRFGS-I----RTIDHVK---------GDSFAYIQYESLDAAQAACAKM-RGFPL------GGPDRRLRVDFAKAEETR-YPQQYQPSPLPV-HYELLTDGYTR--------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                      <clade>
+                        <name>4d</name>
+                        <branch_length>0.05093</branch_length>
+                        <sequence type="protein">
+                          <name>4d</name>
+                          <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RVGAGAGAAPFREVDEISPEDDQRANRTLFLGNLD-ITVTESD--LRRAFDRF--------GV---ITEVDIKRPS--RG----------------QTSTYGFLKFENLDMSHRAKL-AMSGK-III---RNPIKIGY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKAT--------------------------------------------------PTTRLWVGGLGPWVP-LAALAR----EFDRFGT-I----RTIDYRK---------GDSWAYIQYESLDAAHAAWTHM-RGFPL------GGPDRRLRVDFADTEHRY-QQQYLQPLPLTHYELVTDAFGHRA--------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>24</name>
+                      <branch_length>0.10636</branch_length>
+                      <sequence type="protein">
+                        <name>24</name>
+                        <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GPETESENEFRPLDERIDEFHPKATRTLFIGNLE-KTTTYHD--LRNIFQRF--------GE---IVDIDIKKVN--------------------GVPQYAFLQYCDIASVCKAIK-KMDGE-YLG---NNRLKLGF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKSM--------------------------------------------------PTNCVWLDGLSSNVS-DQYLTR----HFCRYGP-V----VKVVFDR---------LKGMALVLYNEIEYAQAAVKET-KGRKI--------GGNKIKVDFANRESQL-AFYHCMEKSGQDIRDFYEMLA-----------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>54</name>
+                  <branch_length>0.15815</branch_length>
+                  <sequence type="protein">
+                    <name>54</name>
+                    <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DDTEDTVVSQRKKIQINQEEERLKNERTVFVGNLP-VTCNKKK--LKSFFKEY--------GQ---IESVRFRSLIPAEGTLSKKLAAIKRKIHPDQKNINAYVVFKEESAATQALK-RNGAQ-IAD---GFRIRVDL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ASETSSR-----------------------------------------------DKRSVFVGNLPYKVE-ESAIEK----HFLDCGS-I----MAVRIVR---DKMTGIGKGFGYVLFENTDSVHLALKL--NNSEL--------MGRKLRVMRSVNKEKF-KQQNSNPRLKNV-SKPKQGLNFTSK-------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.00475</branch_length>
+                <clade>
+                  <branch_length>0.00867</branch_length>
+                  <clade>
+                    <branch_length>0.04586</branch_length>
+                    <clade>
+                      <branch_length>0.03528</branch_length>
+                      <clade>
+                        <branch_length>0.00872</branch_length>
+                        <clade>
+                          <branch_length>0.00133</branch_length>
+                          <clade>
+                            <name>5</name>
+                            <branch_length>0.04731</branch_length>
+                            <sequence type="protein">
+                              <name>5</name>
+                              <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GSAGHMNGLSHSPGNPSTIP--MKDHDAIKLFIGQIP-RNLDEKD--LKPLFEEF--------GK---IYELTVLKDR-FTG----------------MHKGCAFLTYCERESALKAQS-ALHEQ-KTLPGMNRPIQVKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSESRGGSSCLRQPPS-------------------------------------QDRKLFVGMLNKQQS-EDDVRR----LFEAFGN-I----EECTILR----GPDGNSKGCAFVKYSSHAEAQAAINAL-HGSQT-----MPGASSSLVVKFADTDKER-TMRRMQQMAGQM-GMFNP-MAIPFGA------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>6</name>
+                            <branch_length>0.03308</branch_length>
+                            <sequence type="protein">
+                              <name>6</name>
+                              <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RPSPVGSSGPEPPGGQPDGMKDLDAIKLFVGQIP-RHLDEKD--LKPLFEQF--------GR---IYELTVLKDP-YTG----------------MHKGCAFLTYCARDSAIKAQT-ALHEQ-KTLPGMARPIQVKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSESRGG----------------------------------------------RDRKLFVGMLNKQQS-EEDVLR----LFQPFGV-I----DECTVLR----GPDGSSKGCAFVKFSSHTEAQAAIHAL-HGSQT-----MPGASSSLVVKFADTDKER-TLRRMQQMVGQL-GILTPSLTLPF--------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>7</name>
+                          <branch_length>0.03824</branch_length>
+                          <sequence type="protein">
+                            <name>7</name>
+                            <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------FSTADSGVGMSGLNPGPAVP--MKDHDAIKLFVGQIP-RGLDEQD--LKPLFEEF--------GR---IYELTVLKDR-LTG----------------LHKGCAFLTYCARDSALKAQS-ALHEQ-KTLPGMNRPIQVKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AASEGRG-----------------------------------------------EDRKLFVGMLGKQQG-EEDVRR----LFQPFGH-I----EECTVLR----SPDGTSKGCAFVKFGSQGEAQAAIRGL-HGSRT-----MAGASSSLVVKLADTDRER-ALRRMQQMAGHL-GAFHP-APLPLG-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.03554</branch_length>
+                        <clade>
+                          <name>4</name>
+                          <branch_length>0.0</branch_length>
+                          <sequence type="protein">
+                            <name>4</name>
+                            <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MKEPDAIKLFVGQIP-RHLEEKD--LKPIFEQF--------GR---IFELTVIKDK-YTG----------------LHKGCAFLTYCARDSALKAQS-ALHEQ-KTLPGMNRPIQVKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSESRG-----------------------------------------------EDRKLFVGMLGKQQT-DEDVRK----MFEPFGT-I----DECTVLR----GPDGTSKGCAFVKFQTHAEAQAAINTL-HSSRT-----LPGASSSLVVKFADTEKER-GLRRMQQVATQL-GMFSP-IALQFG-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>76</name>
+                          <branch_length>0.0</branch_length>
+                          <sequence type="protein">
+                            <name>76</name>
+                            <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MKEPDAIKLFVGQIP-RHLEEKD--LKPIFEQF--------GR---IFELTVIKDK-YTG----------------LHKGCAFLTYCARDSALKAQS-ALHEQ-KTLPGMNRPIQVKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSESRG-----------------------------------------------EDRKLFVGMLGKQQT-DEDVRK----MFEPFGT-I----DECTVLR----GPDGTSKGCAFVKFQTHAEAQAAINTL-HSSRT-----LPGASSSLVVKFADTEKER-GLRRMQQVATQL-GMFSP-IALQFG-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.06058</branch_length>
+                      <clade>
+                        <branch_length>0.01712</branch_length>
+                        <clade>
+                          <name>3</name>
+                          <branch_length>0.01011</branch_length>
+                          <sequence type="protein">
+                            <name>3</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------VPDRINGTANKMNGALDHSDQPDPDAIKMFVGQIP-RSWSEKE--LKELFEPY--------GA---VYQINVLRDR-SQN--------------PPQSKGCCFVTFYTRKAALEAQN-ALHNI-KTLPGMHHPIQMKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSEKSNAV---------------------------------------------EDRKLFIGMVSKKCN-ENDIRV----MFSPFGQ-I----EECRILR----GPDGLSRGCAFVTFSTRAMAQNAIKAM-HQSQT-----MEGCSSPIVVKFADTQKDK-EQRRLQQQLAQQ-MQQLNTATWGNL-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>77</name>
+                          <branch_length>0.0033</branch_length>
+                          <sequence type="protein">
+                            <name>77</name>
+                            <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNGALDHSDQPDPDAIKMFVGQIP-RSWSEKE--LKELFEPY--------GA---VYQINVLRDR-SQN--------------PPQSKGCCFVTFYTRKAALEAQN-ALHNI-KTLPGMHHPIQMKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSEKSNAV---------------------------------------------EDRKLFIGMVSKKCN-ENDIRV----MFSPFGQ-I----EECRILR----GPDGLSRGCAFVTFSTRAMAQNAIKAM-HQSQT-----MEGCSSPIVVKFADTQKDK-EQRRLQQQLAQQ-MQQLNTATWGNL-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>2</name>
+                        <branch_length>0.02618</branch_length>
+                        <sequence type="protein">
+                          <name>2</name>
+                          <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NSSPVSKKMNGTLDHPDQPDLDAIKMFVGQVP-RTWSEKD--LRELFEQY--------GA---VYEINVLRDR-SQN--------------PPQSKGCCFVTFYTRKAALEAQN-ALHNM-KVLPGMHHPIQMKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ADSEKNNAV---------------------------------------------EDRKLFIGMISKKCT-ENDIRV----MFSSFGQ-I----EECRILR----GPDGLSRGCAFVTFTTRAMAQTAIKAM-HQAQT-----MEGCSSPMVVKFADTQKDK-EQKRMAQQLQQQ-MQQISAASVWGN-------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.01246</branch_length>
+                    <clade>
+                      <branch_length>0.05687</branch_length>
+                      <clade>
+                        <branch_length>0.02626</branch_length>
+                        <clade>
+                          <branch_length>0.01058</branch_length>
+                          <clade>
+                            <name>b</name>
+                            <branch_length>0.01296</branch_length>
+                            <sequence type="protein">
+                              <name>b</name>
+                              <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTANGPTTINNNCSSPVDS-GNTEDSKTNLIVNYLP-QNMTQEE--LKSLFGSI--------GE---IESCKLVRDK-ITG----------------QSLGYGFVNYIDPKDAEKAIN-TLNGL-RLQ---TKTIKVSY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARPSSASI----------------------------------------------RDANLYVSGLPKTMT-QKELEQ----LFSQYGR-I----ITSRILV---DQVTGISRGVGFIRFDKRIEAEEAIKGL-NGQKP------PGATEPITVKFANNPSQK-TNQAILSQLYQS-PNRRYPGPLAQQ-------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>d</name>
+                            <branch_length>0.01412</branch_length>
+                            <sequence type="protein">
+                              <name>d</name>
+                              <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NTSNGPSSNNRNCPSPMQTGATTDDSKTNLIVNYLP-QNMTQEE--FRSLFGSI--------GE---IESCKLVRDK-ITG----------------QSLGYGFVNYIDPKDAEKAIN-TLNGL-RLQ---TKTIKVSY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARPSSASI----------------------------------------------RDANLYVSGLPKTMT-QKELEQ----LFSQYGR-I----ITSRILV---DQVTGVSRGVGFIRFDKRIEAEEAIKGL-NGQKP------SGATEPITVKFANNPSQK-SSQALLSQLYQS-PNRRYPGPLHHQ-------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>c</name>
+                          <branch_length>0.0246</branch_length>
+                          <sequence type="protein">
+                            <name>c</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------VGGGPAGPALPNGPLLGTNGATDDSKTNLIVNYLP-QNMTQDE--FKSLFGSI--------GD---IESCKLVRDK-ITG----------------QSLGYGFVNYSDPNDADKAIN-TLNGL-KLQ---TKTIKVSY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARPSSASI----------------------------------------------RDANLYVSGLPKTMS-QKEMEQ----LFSQYGR-I----ITSRILV---DQVTGVSRGVGFIRFDKRIEAEEAIKGL-NGQKP------LGAAEPITVKFANNPSQK-TGQALLTHLYQS-SARRYAGPLHHQ-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>a</name>
+                        <branch_length>0.04995</branch_length>
+                        <sequence type="protein">
+                          <name>a</name>
+                          <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------FLKNTMSNGYEDHMAEDCRGDIGRTNLIVNYLP-QNMTQDE--LRSLFSSI--------GE---VESAKLIRDK-VAG----------------HSLGYGFVNYVTAKDAERAIN-TLNGL-RLQ---SKTIKVSY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARPSSEVI----------------------------------------------KDANLYISGLPRTMT-QKDVED----MFSRFGR-I----INSRVLV---DQTTGLSRGVAFIRFDKRSEAEEAITSF-NGHKP------PGSSEPITVKFAANPNQN-KNVALLSQLYHS-PARRFGGPVHHQ-------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.10061</branch_length>
+                      <clade>
+                        <branch_length>0.00281</branch_length>
+                        <clade>
+                          <name>5d</name>
+                          <branch_length>0.02135</branch_length>
+                          <sequence type="protein">
+                            <name>5d</name>
+                            <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PSPSTTSSNNNSSSSSNSGWDQLSKTNLYIRGLP-PHTTDQD--LVKLCQPY--------GK---IVSTKAILDK-TTN----------------KCKGYGFVDFDSPAAAQKAVS-ALKAS---------GVQAQM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKQQEQ------------------------------------------------DPTNLYISNLPLSMD-EQELEN----MLKPFGQ-V----ISTRILR----DSSGTSRGVGFARMESTEKCEAVIGHF-NGKFIKTPPGVSAPTEPLLCKFADGGQKK-RQNPNKYIPNGR-PWHREGEAGMT--------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>5f</name>
+                          <branch_length>0.02479</branch_length>
+                          <sequence type="protein">
+                            <name>5f</name>
+                            <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MAPPSPSTNSSSNN--SSNNSSGEQLSKTNLYIRGLP-PGTTDQD--LIKLCQPY--------GK---IVSTKAILDK-NTN----------------QCKGYGFVDFDSPAAAQKAVA-SLKAN---------GVQAQM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKQQEQ------------------------------------------------DPTNLYISNLPISMD-EQELEN----MLKPFGH-V----ISTRILR----DANGVSRGVGFARMESTEKCEVVIQHF-NGKYLKTPPGIPAPSEPLLCKFADGGQKK-RQNQSKYTQNGR-PWPREGEAGMAL-------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>5e</name>
+                        <branch_length>0.02933</branch_length>
+                        <sequence type="protein">
+                          <name>5e</name>
+                          <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QMAPPSPSNSTPNS---SSGSNGNDQLSKTNLYIRGLQ-PGTTDQD--LVKLCQPY--------GK---IVSTKAILDK-TTN----------------KCKGYGFVDFDSPSAAQKAVT-ALKAS---------GVQAQM--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKQQEQ------------------------------------------------DPTNLYISNLPLSMD-EQELEG----MLKPFGQ-V----ISTRILR----DTSGTSRGVGFARMESTEKCEAIITHF-NGKYIKTPPGVPAPSDPLLCKFADGGPKK-RQNQGKFVQNGR-AWPRNADMGVM--------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>56</name>
+                  <branch_length>0.13351</branch_length>
+                  <sequence type="protein">
+                    <name>56</name>
+                    <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MDEAGSSASGGGFRPGVDSLDEPPNSRIFL-VIS-KYTPESV--LRERFSPF--------GD---IQDIWVVRDK-HTK----------------ESKGIAFVKFARSSQACRAME-EMHGQ-CLGPNDTKPIKVFI--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQSRSSGSHRDVEDE---------------------------------------ELTRIFV-MIPKSYT-EEDLRE----KFKVYGD-I----EYCSIIK---NKVTGESKGLGYVRYLKPSQAAQAIENC---------------DRSFRAILAEPKNKA-SESSEQDYYSNMRQEALGHEPRVN--------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.00261</branch_length>
+              <clade>
+                <branch_length>0.00103</branch_length>
+                <clade>
+                  <branch_length>0.01084</branch_length>
+                  <clade>
+                    <branch_length>0.00488</branch_length>
+                    <clade>
+                      <name>29</name>
+                      <branch_length>0.12109</branch_length>
+                      <sequence type="protein">
+                        <name>29</name>
+                        <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LTGLKVFGNEIKLEKPKGKDSKKERDARTLLAKNLP-YKVTQDE--LKEVFEDA--------AE---IRLVS----K--DG----------------KSKGIAYIEFKTEADAEKTFE-EKQGT-EID---GRSISLYY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------TGEKGQNQDYRGGKNSTWSG----------------------------------ESKTLVLSNLSYSAT-EETLQE----VFEKATF-I-------KVPQ----NQNGKSKGYAFIEFASFEDAKEALNSC-NKREI--------EGRAIRLELQGPRGSP-NARSQPSKTLFV-KGLSEDTTEET--------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                    <clade>
+                      <name>2a</name>
+                      <branch_length>0.11112</branch_length>
+                      <sequence type="protein">
+                        <name>2a</name>
+                        <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LYYTGEKGQNQDYRGGKNSTWSGESKTLVLSNLS-YSATEET--LQEVFEKA--------------TFIKVPQNQ--NG----------------KSKGYAFIEFASFEDAKEALN-SCNKR-EIE---GRAIRLEL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------QGPRGSPNARSQ------------------------------------------PSKTLFVKGLSEDTT-EETLKE----SFD--GS------VRARIVT---DRETGSSKGFGFVDFNSEEDAKAAKEAM-EDGEI--------DGNKVTLDWAKPKGEGGFGGRGGGRGGFGGRGGGRG-------------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>28</name>
+                    <branch_length>0.12366</branch_length>
+                    <sequence type="protein">
+                      <name>28</name>
+                      <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------KKEMAKQKAAPEAKKQKVEGTEPTTAFNLFVGNLN-FNKSAPE--LKTGISDV--------FA---KNDLAVVDVR--IG----------------MTRKFGYVDFESAEDLEKALE--LTGL-KVF---GNEIKLEK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PKGKDSKKER--------------------------------------------DARTLLAKNLPYKVT-QDELKE----VFEDAAE-I-------RLVS-----KDGKSKGIAYIEFKTEADAEKTFEEK-QGTEI--------DGRSISLYYTGEKGQN-QDYRGGKNSTWSGESKTLVLSNL---------------------------------------------------------------------------------------------</mol_seq>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.00324</branch_length>
+                  <clade>
+                    <branch_length>0.01084</branch_length>
+                    <clade>
+                      <branch_length>0.01524</branch_length>
+                      <clade>
+                        <branch_length>0.00328</branch_length>
+                        <clade>
+                          <branch_length>0.01019</branch_length>
+                          <clade>
+                            <branch_length>0.04256</branch_length>
+                            <clade>
+                              <branch_length>0.00264</branch_length>
+                              <clade>
+                                <name>13</name>
+                                <branch_length>0.0505</branch_length>
+                                <sequence type="protein">
+                                  <name>13</name>
+                                  <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------EDMNEYSNIEEFAEGSKINASKNQQDDGKMFIGGLS-WDTSKKD--LTEYLSRF--------GE---VVDCTIKTDP-VTG----------------RSRGFGFVLFKDAASVDKVLE--LKEH-KLD---GKLIDPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKALKGKE----------------------------------------------PPKKVFVGGLSPDTS-EEQIKE----YFGAFGE-I----ENIELPM---DTKTNERRGFCFITYTDEEPVKKLLES--RYHQI--------GSGKCEIKVAQPKEVYRQQQQQQKGGRGAAAGGRGGTRGR---------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                              <clade>
+                                <name>65</name>
+                                <branch_length>0.05041</branch_length>
+                                <sequence type="protein">
+                                  <name>65</name>
+                                  <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATAAPPSGNQNGAEGDQINASKNEEDAGKMFVGGLS-WDTSKKD--LKDYFTKF--------GE---VVDCTIKMDP-NTG----------------RSRGFGFILFKDAASVEKVLD--QKEH-RLD---GRVIDPKK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AMAMKKD-----------------------------------------------PVKKIFVGGLNPESPTEEKIRE----YFGEFGE-I----EAIELPM---DPKLNKRRGFVFITFKEEEPVKKVLEK--KFHTV--------SGSKCEIKVAQPKEVY-QQQQYGSGGRGNRNRGNRGSGGGG--------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>17</name>
+                              <branch_length>0.05477</branch_length>
+                              <sequence type="protein">
+                                <name>17</name>
+                                <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ASKNEEDEGHSNSSPRHSEAATAQREEWKMFIGGLS-WDTTKKD--LKDYFSKF--------GE---VVDCTLKLDP-ITG----------------RSRGFGFVLFKESESVDKVMD--QKEH-KLN---GKVIDPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKAMKTKE----------------------------------------------PVKKIFVGGLSPDTP-EEKIRE----YFGGFGE-V----ESIELPM---DNKTNKRRGFCFITFKEEEPVKKIMEK--KYHNV--------GLSKCEIKVAMSKEQY-QQQQQWGSRGGF-AGRARGRGGGPSQN-----------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.06144</branch_length>
+                            <clade>
+                              <name>25</name>
+                              <branch_length>0.0292</branch_length>
+                              <sequence type="protein">
+                                <name>25</name>
+                                <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------METDAPQPGLASPDSPHDPCKMFIGGLS-WQTTQEG--LREYFGQF--------GE---VKECLVMRDP-LTK----------------RSRGFGFVTFMDQAGVDKVLA--QSRH-ELD---SKTIDPKV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AFPRRAQPKMVT------------------------------------------RTKKIFVGGLSVNTT-VEDVKQ----YFEQFGK-V----DDAMLMF---DKTTNRHRGFGFVTFESEDIVEKVCEI--HFHEI--------NNKMVECKKAQPKEVM-SPTGSARGRSRV-MPYGMDAFML---------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                            <clade>
+                              <name>26</name>
+                              <branch_length>0.02992</branch_length>
+                              <sequence type="protein">
+                                <name>26</name>
+                                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MEANGSQGTSGSANDSQHDPGKMFIGGLS-WQTSPDS--LRDYFSKF--------GE---IRECMVMRDP-TTK----------------RSRGFGFVTFADPASVDKVLG--QPHH-ELD---SKTIDPKV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AFPRRAQPKMVT------------------------------------------RTKKIFVGGLSANTV-VEDVKQ----YFEQFGK-V----EDAMLMF---DKTTNRHRGFGFVTFENEDVVEKVCEI--HFHEI--------NNKMVECKKAQPKEVM-FPPGT-RGRARG-LPYTMDAFM----------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.02672</branch_length>
+                          <clade>
+                            <branch_length>0.03259</branch_length>
+                            <clade>
+                              <branch_length>0.00906</branch_length>
+                              <clade>
+                                <branch_length>0.02669</branch_length>
+                                <clade>
+                                  <name>40</name>
+                                  <branch_length>0.00439</branch_length>
+                                  <sequence type="protein">
+                                    <name>40</name>
+                                    <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSKSASPKEPEQLRKLFIGGLS-FETTDES--LRSHFEQW--------GT---LTDCVVMRDP-NTK----------------RSRGFGFVTYATVEEVDAAMN--TTPH-KVD---GRVVEPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AVSREDSQRPGAHL----------------------------------------TVKKIFVGGIKEDTE-EHHLRD----YFEQYGK-I----EVIEIMT---DRGSGKKRGFAFVTFDDHDSVDKIVIQ--KYHTV--------KGHNCEVRKALPKQEM-ASASSSQRGRRG-SGNFGGGRGDG--------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>62</name>
+                                  <branch_length>0.00411</branch_length>
+                                  <sequence type="protein">
+                                    <name>62</name>
+                                    <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSKSESPKEPEQLRKLFIGGLS-FETTDES--LRSHFEQW--------GT---LTDCVVMRDP-NTK----------------RSRGFGFVTYATVEEVDAAMN--ARPH-KVD---GRVVEPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AVSREDSQRPGAHL----------------------------------------TVKKIFVGGIKEDTE-EHHLRD----YFEQYGK-I----EVIEIMT---DRGSGKKRGFAFVTFDDHDSVDKIVIQ--KYHTV--------NGHNCEVRKALSKQEM-ASASSSQRGRSG-SGNFGGGRGGG--------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>64</name>
+                                <branch_length>0.03741</branch_length>
+                                <sequence type="protein">
+                                  <name>64</name>
+                                  <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RPQPDSGRRRRRRGEEGHDPKEPEQLRKLFIGGLS-FETTDDS--LREHFEKW--------GT---LTDCVVMRDP-QTK----------------RSRGFGFVTYSCVEEVDAAMC--ARPH-KVD---GRVVEPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AVSREDSVKPGAHL----------------------------------------TVKKIFVGGIKEDTE-EYNLRD----YFEKYGK-I----ETIEVME---DRQSGKKRGFAFVTFDDHDTVDKIVVQ--KYHTI--------NGHNCEVKKALSKQEM-QSAGSQRGRGGG-SGNFMGRGGNF--------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>63</name>
+                              <branch_length>0.0443</branch_length>
+                              <sequence type="protein">
+                                <name>63</name>
+                                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MEKTLETVPLERKKREKEQFRKLFIGGLS-FETTEES--LRNYYEQW--------GK---LTDCVVMRDP-ASK----------------RSRGFGFVTFSSMAEVDAAMA--ARPH-SID---GRVVEPKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AVAREESGKPGAHV----------------------------------------TVKKLFVGGIKEDTE-EHHLRD----YFEEYGK-I----DTIEIIT---DRQSGKKRGFGFVTFDDHDPVDKIVLQ--KYHTI--------NGHNAEVRKALSRQEM-QEVQSSRSGRGG-NFGFGDSRGGG--------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <name>61</name>
+                            <branch_length>0.06629</branch_length>
+                            <sequence type="protein">
+                              <name>61</name>
+                              <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MENSQLCKLFIGGLN-VQTSESG--LRGHFEAF--------GT---LTDCVVVVNP-QTK----------------RSRCFGFVTYSNVEEADAAMA--ASPH-AVD---GNTVELKR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AVSREDSARPGAHA----------------------------------------KVKKLFVGGLKGDVA-EGDLIE----HFSQFGT-V----EKAEIIA---DKQSGKKRGFGFVYFQNHDAADKAAVV--KFHPI--------QGHRVEVKKAVPKEDI-YSGGGGGGSRSS-RGGRGGRGRG---------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>8</name>
+                        <branch_length>0.11276</branch_length>
+                        <sequence type="protein">
+                          <name>8</name>
+                          <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNNSGADEIGKLFVGGLD-WSTTQET--LRSYFSQY--------GE---VVDCVIMKDK-TTN----------------QSRGFGFVKFKDPNCVGTVLA--SRPH-TLD---GRNIDPKP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CTPRGMQPERTRPKEGWQKGPRSDNS----------------------------KSNKIFVGGIPHNCG-ETELRE----YFKKFGV-V----TEVVMIY---DAEKQRPRGFGFITFEDEQSVDQAVNM--HFHDI--------MGKKVEVKRAEPRDSK-SQAPGQPGASQW-GSRVVPNAANG--------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>6e</name>
+                      <branch_length>0.12243</branch_length>
+                      <sequence type="protein">
+                        <name>6e</name>
+                        <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PKDNKRKMDETDASSAVKVKRAVQKTSDLIVLGLP-WKTTEQD--LKEYFSTF--------GE---VLMVQVKKDL-KTG----------------HSKGFGFVRFTEYETQVKVMS-QRH---MID---GRWCDCKL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PNSKQSQDEPL-------------------------------------------RSRKVFVGRCTEDMT-EDELRE----FFSQYGD-V----MDVFIPK--------PFRAFAFVTFADDQIAQSL-----CGEDL------IIKGISVHISNAEPKHNS-NRQLERSGRFGGNPGGFGNQGGFG--------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>51</name>
+                    <branch_length>0.14032</branch_length>
+                    <sequence type="protein">
+                      <name>51</name>
+                      <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------EGADNSSAKMEEEEEEEEEEEESLPGCTLFIKNLN-FDTTEEK--LKEVFSKV--------GT---VKSCSISKKKNKAG--------------VLLSMGFGFVEYRKPEQAQKALK-QLQGH-VVD---GHKLEVRI--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SERATKPAVTLARKKQVPRKQ---------------------------------TTSKILVRNIPFQAH-SREIRE----LFSTFGE-L----KTVRLPK--KMTGTGTHRGFGFVDFLTKQDAKRAFNALCHSTHL--------YGRRLVLEWADSEVTL-QALRRKTAAHFHEPPKKKRSVV----------------------------------------------------------------------------------------------</mol_seq>
+                    </sequence>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.00299</branch_length>
+                <clade>
+                  <branch_length>0.00166</branch_length>
+                  <clade>
+                    <branch_length>0.00246</branch_length>
+                    <clade>
+                      <branch_length>0.00329</branch_length>
+                      <clade>
+                        <branch_length>0.05293</branch_length>
+                        <clade>
+                          <branch_length>0.01252</branch_length>
+                          <clade>
+                            <branch_length>0.02929</branch_length>
+                            <clade>
+                              <branch_length>0.01073</branch_length>
+                              <clade>
+                                <branch_length>0.02163</branch_length>
+                                <clade>
+                                  <name>30</name>
+                                  <branch_length>0.00701</branch_length>
+                                  <sequence type="protein">
+                                    <name>30</name>
+                                    <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DRKVFVGRFKSRKEREAELGAR-AKEFTNVYIKNFG-EDMDDER--LKDLFGKF--------GP---ALSVKVMTDE--SG----------------KSKGFGFVSFERHEDAQKAVD-EMNGK-ELN---GKQIYVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKKVERQTELKRKFEQMKQDRITRY----------------------------QGVNLYVKNLDDGID-DERLRK----EFSPFGT-I----TSAKVMM-----EGGRSKGFGFVCFSSPEEATKAVTEM-NGRIV--------ATKPLYVALAQRKEE---RQAHLTNQYMQ-RMASVRAVPNPVIN-----------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>33</name>
+                                  <branch_length>0.00763</branch_length>
+                                  <sequence type="protein">
+                                    <name>33</name>
+                                    <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GRKVFVGQFKSRKEREAELGAR-AKEFPNVYIKNFG-EDMDDER--LKDLFGKF--------GP---ALSVKVMTDE--SG----------------KSKGFGFVSFERHEDAQKAVD-EMNGK-ELN---GKQIYVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKKVERQTELKRTFEQMKQDRITRY----------------------------QVVNLYVKNLDDGID-DERLRK----AFSPFGT-I----TSAKVMM-----EGGRSKGFGFVCFSSPEEATKAVTEM-NGRIV--------ATKPLYVALAQRKEE---RQAYLTNEYMQ-RMASVRAVPNQRAP-----------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>36</name>
+                                <branch_length>0.02823</branch_length>
+                                <sequence type="protein">
+                                  <name>36</name>
+                                  <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DRKVFVGRFKSRKEREAELGAK-AKEFTNVYIKNFG-EEVDDES--LKELFSQF--------GK---TLSVKVMRDP--NG----------------KSKGFGFVSYEKHEDANKAVE-EMNGK-EIS---GKIIFVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKKVERQAELKRKFEQLKQERISRY----------------------------QGVNLYIKNLDDTID-DEKLRK----EFSPFGS-I----TSAKVML-----EDGRSKGFGFVCFSSPEEATKAVTEM-NGRIV--------GSKPLYVALAQRKEE---RKAHLTNQYMQ-RVAGMRALPANAIL-----------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>3c</name>
+                              <branch_length>0.03872</branch_length>
+                              <sequence type="protein">
+                                <name>3c</name>
+                                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RKVFVGHFKSRREREAELGAR-ALEFTNIYVKNLP-VDVDEQG--LQDLFSQF--------GK---MLSVKVMRDN--SG----------------HSRCFGFVNFEKHEEAQKAVV-HMNGK-EVS---GRLLYAGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKRVERQNELKRRFEQMKQDRLRRY----------------------------QGVNLYVKNLDDSID-DDKLRK----EFSPYGV-I----TSAKVMT-----EGGHSKGFGFVCFSSPEEATKAVTEM-NGRIV--------GTKPLYVALAQRKEE---RKAILTNQYMQ-RLSTMRTLSNPLLG-----------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.01189</branch_length>
+                            <clade>
+                              <name>2d</name>
+                              <branch_length>0.0575</branch_length>
+                              <sequence type="protein">
+                                <name>2d</name>
+                                <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GCKVFVGRFKNRKDREAELRSK-ASEFTNVYIKNFG-GDMDDER--LKDVFSKY--------GK---TLSVKVMTDS--SG----------------KSKGFGFVSFDSHEAAKKAVE-EMNGR-DIN---GQLIFVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKKVERQAELKQMFEQLKRERIRGC----------------------------QGVKLYIKNLDDTID-DEKLRN----EFSSFGS-I----SRVKVMQ-----EEGQSKGFGLICFSSPEDATKAMTEM-NGRIL--------GSKPLSIALAQRH------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                            <clade>
+                              <name>39</name>
+                              <branch_length>0.0574</branch_length>
+                              <sequence type="protein">
+                                <name>39</name>
+                                <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RQVYVGRFKFPEERAAEVRTRDRATFTNVFVKNIG-DDIDDEK--LKELFCEY--------GP---TESVKVIRDA--SG----------------KSKGFGFVRYETHEAAQKAVL-DLHGK-SID---GKVLYVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKKIERLAELRRRFERLRLKEKSRP----------------------------PGVPIYIKNLDETIN-DEKLKE----EFSSFGS-I----SRAKVMM-----EVGQGKGFGVVCFSSFEEATKAVDEM-NGRIV--------GSKPLHVTLGQARRRC---------------------------------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.06618</branch_length>
+                          <clade>
+                            <branch_length>0.07352</branch_length>
+                            <clade>
+                              <branch_length>0.05773</branch_length>
+                              <clade>
+                                <branch_length>0.22422</branch_length>
+                                <clade>
+                                  <name>47</name>
+                                  <branch_length>0.13471</branch_length>
+                                  <sequence type="protein">
+                                    <name>47</name>
+                                    <mol_seq is_aligned="true">SPLPPPPPPPGAEPACPGSSAAAPEYKTLLISSLSPALPAEHLEDRLFHQFKRFGEISLRLSHTPELG----RVAYVNFRHPQDAREARQHALARQLLLYDRPLKVEPVYLRGGGGSSRRSSSSSAAASTPPPGPPAPADPLGYLPLHGGYQYKQRSLSPVAAPPLREPRARHAAAAFALDAAAAAAVGLSRERALDY---------YGLYDDRGRPYGYPAVCE-EDLMPEDDQRATRNLFIGNLD-HSVSEVE--LRRAFEKY--------GI---IEEVVIKRPA--RG----------------QGGAYAFLKFQNLDMAHRAKV-AMSGR-VIG---RNPIKIGY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKAN--------------------------------------------------PTTRLWVGGLGPNTS-LAALAR----E-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>4c</name>
+                                  <branch_length>0.1467</branch_length>
+                                  <sequence type="protein">
+                                    <name>4c</name>
+                                    <mol_seq is_aligned="true">---GGGESRSSGAASSAPGGGDGAEYKTLKISELGSQLSDEAVEDGLFHEFKRFGDVSVKISHLSGSGSGDERVAFVNFRRPEDARAAKHARGRLVLYDRPLKIEAVYV--------SRRRSRSPLDKDTYPPSASVVGASVGGHRHPPGGGGGQRSLSPGGAALGYRDYRLQQLALGRLPPPPPPPLPRDLERERDYPFYERVRPAYSLEPRVGAGAGAAPFREVDEISPEDDQRANRTLFLGNLD-ITVTESD--LRRAFDRF--------GV---ITEVDIKRPS--RG----------------QTSTYGFLKFENLDMSHRAKL-AMSGK-III---RNPIKIGY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKAT--------------------------------------------------PTTRLWVGGLGPWVP-LAALAR----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>23</name>
+                                <branch_length>0.10915</branch_length>
+                                <sequence type="protein">
+                                  <name>23</name>
+                                  <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------RSVQSAAVPAPTSQLLSSLEKDEPRKSFGIKVQNLPVRSTDTSLKDGLFHEFKKFGKVTSVQIHGTSEERYGLVFFRQQEDQEKALTASKGKLFFGMQIEVTAWIGPETESENEFRPLDERIDEFHPKATRTLFIGNLE-KTTTYHD--LRNIFQRF--------GE---IVDIDIKKVN--------------------GVPQYAFLQYCDIASVCKAIK-KMDGE-YLG---NNRLKLGF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GKSM--------------------------------------------------PTNCVWLDGLSSNVS-DQYLTR----HF----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>3b</name>
+                              <branch_length>0.15942</branch_length>
+                              <sequence type="protein">
+                                <name>3b</name>
+                                <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------NFEMLKGQPIRIMWSQRDPGLRKSGVGNIFIKNLEDSIDNKALYDTFSTFGNILSCKVACDEHGSRGFGFVHFETHEAAQQAINTMNGMLLNDRKVFVGHFKSRREREAELGAR-ALEFTNIYVKNLP-VDVDEQG--LQDLFSQF--------GK---MLSVKVMRDN--SG----------------HSRCFGFVNFEKHEEAQKAVV-HMNGK-EVS---GRLLYAGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKRVERQNELKRRFEQMKQDRLRRY----------------------------QGVNL---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <name>7a</name>
+                            <branch_length>0.02899</branch_length>
+                            <sequence type="protein">
+                              <name>7a</name>
+                              <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RKVFVGHFKSRREREAELGAR-ALEFTNIYVKNLP-VDVDEQG--LQDLFSQF--------GK---MLSVKVMRDN--SG----------------HSRCFGFVNFEKHEEAQKAVV-HMNGK-EVS---GRLLYAGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AQKRVERQNELKRRFEQMKQDRLRRY----------------------------QGVNLYVKNLDDSID-DDKLRK----EFSPYGV-I----TSAKKRR----------------------------------------------QRP---------------------------------------------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.00607</branch_length>
+                        <clade>
+                          <name>3f</name>
+                          <branch_length>0.12277</branch_length>
+                          <sequence type="protein">
+                            <name>3f</name>
+                            <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GFGDPLSPLQSMAAQRQRALAIMCRVYVGSIY-YELGEDT--IRQAFAPF--------GP---IKSIDMSWDS-VTM----------------KHKGFAFVEYEVPEAAQLALE-QMNSV-MLG---GRNIKVGR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PSNIGQAQPIIDQLAEEAR-----------------------------------AFNRIYVASVHQDLS-DDDIKS----VFEAFGK-I----KSCTLAR---DPTTGKHKGYGFIEYEKAQSSQDAVSSM-NLFDL--------GGQYLRVGKAVTPPMP-LLTPATPGGLPP-AAAVAAA------------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>60</name>
+                          <branch_length>0.14993</branch_length>
+                          <sequence type="protein">
+                            <name>60</name>
+                            <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------FSFKAFSPVLTEEMNKRMRIKWTEISTVYAGPFS-KNCNLRA--LKRLFKSF--------GP---VQSMTFVLET---------------------RQPHLCIQYEVLEAAQLAIE-SLDGI-LVD---GICIKVQR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PVTELTLDCDTLVNELEGDSE---------------------------------NQGSIYLSGVSETFK-EQLLQE----PRLFLGL------EAVILPK---DLKSGKQKKYCFLKFKSFGSAQQALNIL-TGKDWKLKGRHALTPRHLHAWLRGLPPES-TRLPG---------------------------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.0187</branch_length>
+                      <clade>
+                        <branch_length>0.0768</branch_length>
+                        <clade>
+                          <name>16</name>
+                          <branch_length>0.05589</branch_length>
+                          <sequence type="protein">
+                            <name>16</name>
+                            <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GDGGGGGRSFSQPEAGGSHHKVSVSPVVHVRGLC-ESVVEAD--LVEALEKF--------GT---ICYVMMMP-----------------------FKRQALVEFENIDSAKECVTFAADEPVYIA---GQQAFFNY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------STSKRITRPGNTDDPSGGN-----------------------------------KVLLLSIQNPLYPIT-VDVLYT----VCNPVGK-V----QRIVIFK--------RNGIQAMVEFESVLCAQKAKAAL-NGADI------YAGCCTLKIEYARPTRLN-VIRNDNDSWDYT-KPYLGRRDR----------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>19</name>
+                          <branch_length>0.05478</branch_length>
+                          <sequence type="protein">
+                            <name>19</name>
+                            <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GGGGAGAAGGGGGGENYDDPHKTPASPVVHIRGLI-DGVVEAD--LVEALQEF--------GP---ISYVVVMP-----------------------KKRQALVEFEDVLGACNAVNYAADNQIYIA---GHPAFVNY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------STSQKISRPGDSDDSRSVN-----------------------------------SVLLFTILNPIYSIT-TDVLYT----ICNPCGP-V----QRIVIFR--------KNGVQAMVEFDSVQSAQRAKASL-NGADI------YSGCCTLKIEYAKPTRLN-VFKNDQDTWDYT-NPNLSGQGD----------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>21</name>
+                        <branch_length>0.14144</branch_length>
+                        <sequence type="protein">
+                          <name>21</name>
+                          <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GNGNLQGPRHMQKGRVETSRVVHIMDFQRGKNLRYQ--LLQLVEPF--------GV---ISNHLILN-----------------------KINEAFIEMATTEDAQAAVDYYTTTPALVF---GKPVRVHL--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQKYKRIKKPEGKPDQKFDQKQE-------------------------------LGRVIHLSNLPHSGYSDSAVLK----LAEPYGK-I----KNYILMR---------MKSQAFIEMETREDAMAMVDHC-LKKAL------WFQGRCVKVDLSEKYKKL-VLRIPNRGIDLL-KKDKSRKRS----------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.00211</branch_length>
+                    <clade>
+                      <branch_length>0.09867</branch_length>
+                      <clade>
+                        <name>52</name>
+                        <branch_length>0.02846</branch_length>
+                        <sequence type="protein">
+                          <name>52</name>
+                          <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SKSPHFREKSPVREPVDNLSPEERDARTVFCMQLA-ARIRPRD--LEDFFSAV--------GK---VRDVRIISDR-NSR----------------RSKGIAYVEFCEIQSVPLAIG--LTGQ-RLL---GVPIIVQA--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQAEKNRLAAMANNLQKGNG----------------------------------GPMRLYVGSLHFNIT-EDMLRG----IFEPFGK-I----DNIVLMK---DSDTGRSKGYGFITFSDSECARRALEQL-NGFEL--------AGRPMRVGHVTERLDG-GTDITFPDGDQELDLGSAGG------------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                      <clade>
+                        <name>55</name>
+                        <branch_length>0.03066</branch_length>
+                        <sequence type="protein">
+                          <name>55</name>
+                          <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RSKSPFRKDKSPVREPIDNLTPEERDARTVFCMQLA-ARIRPRD--LEEFFSTV--------GK---VRDVRMISDR-NSR----------------RSKGIAYVEFVDVSSVPLAIG--LTGQ-RVL---GVPIIVQA--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQAEKNRAAAMANNLQKGSA----------------------------------GPMRLYVGSLHFNIT-EDMLRG----IFEPFGR-I----ESIQLMM---DSETGRSKGYGFITFSDSECAKKALEQL-NGFEL--------AGRPMKVGHVTERTDA-SSASSFLDSDELERTGIDLGTTG---------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.11589</branch_length>
+                      <clade>
+                        <name>70</name>
+                        <branch_length>0.0316</branch_length>
+                        <sequence type="protein">
+                          <name>70</name>
+                          <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------NWATTPSSQKKDTSSSTVVSTQRSQDHFHVFVGDLS-PEITTED--IKAAFAPF--------GR---ISDARVVKDM-ATG----------------KSKGYGFVSFFNKWDAENAIQ-QMGGQ-WLG---GRQIRTNW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATRKPPAPKSTYESNTKQLSYDEVVNQSSP------------------------SNCTVYCGGVTSGLT-EQLMRQ----TFSPFGQ-I----MEIRVFP---------DKGYSFVRFNSHESAAHAIVSV-NGTTI--------EGHVVKCYWGKETLDM-INPVQQQNQIGY-PQPYGQWG-----------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                      <clade>
+                        <name>72</name>
+                        <branch_length>0.05014</branch_length>
+                        <sequence type="protein">
+                          <name>72</name>
+                          <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GRKILGKEVKVNWATTPSSQKKDTS-----------NHFHVFVGDLS-PEITTED--IKSAFAPF--------GK---ISDARVVKDM-ATG----------------KSKGYGFVSFYNKLDAENAIV-HMGGQ-WLG---GRQIRTNW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATRKPPAPKSTQENNTKQLRFEDVVNQSSP------------------------KNCTVYCGGIASGLT-DQLMRQ----TFSPFGQ-I----MEIRVFP---------EKGYSFVRFSTHESAAHAIVSV-NGTTI--------EGHVVKCYWGKESPDM-TKNFQQVDYSQW-GQWSQVYGNPQQ-------------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.00351</branch_length>
+                  <clade>
+                    <branch_length>0.01229</branch_length>
+                    <clade>
+                      <branch_length>0.01477</branch_length>
+                      <clade>
+                        <branch_length>0.01075</branch_length>
+                        <clade>
+                          <branch_length>0.02146</branch_length>
+                          <clade>
+                            <branch_length>0.05855</branch_length>
+                            <clade>
+                              <branch_length>0.02357</branch_length>
+                              <clade>
+                                <name>14</name>
+                                <branch_length>0.00506</branch_length>
+                                <sequence type="protein">
+                                  <name>14</name>
+                                  <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MMLGTEGGEGFVVKVRGLP-WSCSADE--VQRFFSDC--------KIQNGAQGIRFIYTR--EG----------------RPSGEAFVELESEDEVKLALK-KDRET--MG---HRYVEVFK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SNNVEMDWVLKHTGPNSPDTA---------------------------------NDGFVRLRGLPFGCS-KEEIVQ----FFSGLEIVP----NGITLPV----DFQGRSTGEAFVQFASQEIAEKALKK--HKERI--------GHRYIEIFKSSRAEVR-THYDPPRKLMAM-QRPGPYDRPGA--------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                              <clade>
+                                <name>15</name>
+                                <branch_length>0.00467</branch_length>
+                                <sequence type="protein">
+                                  <name>15</name>
+                                  <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MMLSTEGREGFVVKVRGLP-WSCSADE--VMRFFSDC--------KIQNGTSGIRFIYTR--EG----------------RPSGEAFVELESEEEVKLALK-KDRET--MG---HRYVEVFK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SNSVEMDWVLKHTGPNSPDTA---------------------------------NDGFVRLRGLPFGCS-KEEIVQ----FFSGLEIVP----NGMTLPV----DFQGRSTGEAFVQFASQEIAEKALKK--HKERI--------GHRYIEIFKSSRAEVR-THYDPPRKLMAM-QRPGPYDRPGA--------------------------------------------------------------------------------------------</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>18</name>
+                              <branch_length>0.02939</branch_length>
+                              <sequence type="protein">
+                                <name>18</name>
+                                <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MMLGPEGGEGFVVKLRGLP-WSCSVED--VQNFLSDC--------TIHDGAAGVHFIYTR--EG----------------RQSGEAFVELGSEDDVKMALK-KDRES--MG---HRYIEVFK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SHRTEMDWVLKHSGPNSADSA---------------------------------NDGFVRLRGLPFGCT-KEEIVQ----FFSGLEIVP----NGITLPV----DPEGKITGEAFVQFASQELAEKALGK--HKERI--------GHRYIEVFKSSQEEVR-SYSDPPLKFMSV-QRPGPYDRPGT--------------------------------------------------------------------------------------------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <name>12</name>
+                            <branch_length>0.09691</branch_length>
+                            <sequence type="protein">
+                              <name>12</name>
+                              <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------DLPPPPEYELAPSKLEEEVDDVFLIRAQGLP-WSCTMED--VLNFFSDC--------RIRNGENGIHFLLNR--DG----------------KRRGDALIEMESEQDVQKALE-KHRMY--MG---QRYVEVYE--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------INNEDVDALMKSLQVKSSPVV---------------------------------NDGVVRLRGLPYSCN-EKDIVD----FFAGLNI------VDITFVM---DYRGRRKTGEAYVQFEEPEMANQALLK--HREEI--------GNRYIEIFPSRRNEVR-THVGSYKGKKIA-SFPTAKYITEP--------------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.09786</branch_length>
+                          <clade>
+                            <name>10</name>
+                            <branch_length>0.04706</branch_length>
+                            <sequence type="protein">
+                              <name>10</name>
+                              <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------YETGPCSDSTVPCPYSSKADVVDSETVVRARGLP-WQSSDQD--VARFFKGL--------NV--ARGGVALCLNA--QG----------------RRNGEALIRFVDSEQRDLALQ-RHKHH--MG---VRYIEVYK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATGEEFVKIAGGTSLEVARFLSRE------------------------------DQVILRLRGLPFSAG-PTDVLG----FLGPECP-VTGGTEGLLFVR----HPDGRPTGDAFALFACEELAQAALRR--HKGML--------GKRYIELFRSTAAEVQ-QVLNRYASGPLL----------------------------------------------------------------------------------------------PTLTAPLLPI</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>e</name>
+                            <branch_length>0.04557</branch_length>
+                            <sequence type="protein">
+                              <name>e</name>
+                              <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------HRFSDPERVNYKFESGTCSKMELIDDNTVVRARGLP-WQSSDQD--IARFFKGL--------NI--AKGGAALCLNA--QG----------------RRNGEALVRFVSEEHRDLALQ-RHKHH--MG---TRYIEVYK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATGEDFLKIAGGTSNEVAQFLSKE------------------------------NQVIVRMRGLPFTAT-AEEVVA----FFGQHCP-ITGGKEGILFVT----YPDGRPTGDAFVLFACEEYAQNALRK--HKDLL--------GKRYIELFRSTAAEVQ-QVLNRFSSAPLI----------------------------------------------------------------------------------------------PLPTPPIIPV</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.04673</branch_length>
+                        <clade>
+                          <name>45</name>
+                          <branch_length>0.13464</branch_length>
+                          <sequence type="protein">
+                            <name>45</name>
+                            <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GFHTNGTGHGNLRPRKTRPLKAENPYLFLRGLP-YLVNEDD--VRVFFSGL------------CVDGVIFLKHH--DG----------------RNNGDAIVKFASCVDASGGLK-CHRSF--MG---SRFIEVMQ--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GSEQQWIEFGGNAVKEGDVLRRSEEHSPPRGINDRHFRKRSHSKSPRRTRSRSPLGFYVHLKNLSLSID-ERDLRN----FFRGTDLTD----EQIRFLY-----KDENRTRYAFVMFKTLKDYNTALSL--HKTVL--------QYRPVHIDPISRKQML-KFIARYEKKRSG-SLERDRPGH----------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>49</name>
+                          <branch_length>0.13117</branch_length>
+                          <sequence type="protein">
+                            <name>49</name>
+                            <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LNPVNPIQMNSQSSVKPLPINPDDLYVSVHGMP-FSAMEND--VRDFFHGL------------RVDAVHLLKDH--VG----------------RNNGNGLVKFLSPQDTFEALK---RNRMLMI---QRYVEVSP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATERQWVAAGGHITFKQNMGPSGQTHPPPQTLPRSKSPSGQKRSRSRSPHE---AGFCVYLKGLPFEAE-NKHVID----FFKKLDI-V----EDSIYIA---YGPNGKATGEGFVEFRNEADYKAALCR--HKQYM--------GNRFIQVHPITKKGML-EKIDMIRKRLQNFSYDQREMIL----------------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>4f</name>
+                      <branch_length>0.14443</branch_length>
+                      <sequence type="protein">
+                        <name>4f</name>
+                        <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MPAGKKRPPEARAETEKPANQKEPTTCHTVKLRGAP-FNVTEKN--VMEFLAPL--------KP----VAIRIVRNA--HG----------------NKTGYIFVDFSNEEEVKQALK--CNRE-YMG---GRYIEVFR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------EKNVPTTKGAPKNTTKSWQGRILGENEEEEDLA---------------------ESGRLFVRNLPYTST-EEDLEK----LFSKYGP-L----SELHYPI---DSLTKKPKGFAFITFMFPEHAVKAYSEV-DGQVF--------QGRMLHVLPSTIKKEA-SEDASALGSSSY-KKKKEAQDKANS-------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.00404</branch_length>
+                    <clade>
+                      <name>66</name>
+                      <branch_length>0.13301</branch_length>
+                      <sequence type="protein">
+                        <name>66</name>
+                        <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PPSKQKEKAASLKRDMPKVLHDSSKDSITVFVSNLP-YSMQEPDTKLRPLFEAC--------GE---VVQIRPIFSN--RG----------------DFRGYCYVEFKEEKSALQALE--MDRK-SVE---GRPMFVSP--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CVDKSKNPDFKVFRYSTSL-----------------------------------EKHKLFISGLPFSCT-KEELEE----ICKAHGT-V----KDLRLVT----NRAGKPKGLAYVEYENESQASQAVMKM-DGMTI--------KENIIKVAISNPPQRK-VPEKPETRKAPGGPMLLPQTYGA---------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                    <clade>
+                      <name>74</name>
+                      <branch_length>0.16789</branch_length>
+                      <sequence type="protein">
+                        <name>74</name>
+                        <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LPTMTPDGLAVTPTPVPVVGSQMTRQARRLYVGNIP-FGITEEA--MMDFFNAQMRLGGLTQAPGNPVLAVQIN-----------------------QDKNFAFLEFRSVDETTQAMA--FDGI-IFQ---GQSLKIRR--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PHDYQPLPGMSENPSVYVPGVVSTVVPD--------------------------SAHKLFIGGLPNYLN-DDQVKE----LLTSFGP-L----KAFNLVK---DSATGLSKGYAFCEYVDINVTDQAIAGL-NGMQL--------GDKKLLVQRASVGAKN-ATLVSPPSTINQTPVTLQVPGLM---------------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.00643</branch_length>
+            <clade>
+              <branch_length>0.01087</branch_length>
+              <clade>
+                <branch_length>0.04323</branch_length>
+                <clade>
+                  <branch_length>0.00126</branch_length>
+                  <clade>
+                    <branch_length>0.01727</branch_length>
+                    <clade>
+                      <branch_length>0.01151</branch_length>
+                      <clade>
+                        <branch_length>0.0089</branch_length>
+                        <clade>
+                          <branch_length>0.0074</branch_length>
+                          <clade>
+                            <name>2e</name>
+                            <branch_length>0.00799</branch_length>
+                            <sequence type="protein">
+                              <name>2e</name>
+                              <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNPSAPSYPMASLYVGDLH-PDVTEAM--LYEKFSPA--------GP---ILSIRVCRDM-ITR----------------RSLGYAYVNFQQPADAERALD-TMNFD-VIK---GKPVRIMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDPSLRKS--------------------------------------------GVGNIFIKNLDKSID-NKALYD----TFSAFGN-I----LSCKVVC-----DENGSKGYGFVHFETQEAAERAIEKM-NGMLL--------NDRKVFVGRFKSRKE---REAELGARAKE-FTNVYIKNFGEDMD-----------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>34</name>
+                            <branch_length>0.00788</branch_length>
+                            <sequence type="protein">
+                              <name>34</name>
+                              <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNAAASSYPMASLYVGDLH-SDVTEAM--LYEKFSPA--------GP---VLSIRVCRDM-ITR----------------RSLGYAYVNFQQPADAERALD-TMNFD-VIK---GKPIRIMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDPSLRKS--------------------------------------------GVGNVFIKNLDKSID-NKALYD----TFSAFGN-I----LSCKVVC-----DENGSKGYAFVHFETQEAADKAIEKM-NGMLL--------NDRKVFVGRFKSRKE---REAELGAKAKE-FTNVYIKNFGEEVD-----------------------------------------------------------------------------------------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>31</name>
+                          <branch_length>0.01871</branch_length>
+                          <sequence type="protein">
+                            <name>31</name>
+                            <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNPSTPSYPTASLYVGDLH-PDVTEAM--LYEKFSPA--------GP---ILSIRICRDL-ITS----------------GSSNYAYVNFQHTKDAEHALD-TMNFD-VIK---GKPVRIMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDPSLRKS--------------------------------------------GVGNIFVKNLDKSIN-NKALYD----TVSAFGN-I----LSCNVVC-----DENGSKGYGFVHFETHEAAERAIKKM-NGMLL--------NGRKVFVGQFKSRKE---REAELGARAKE-FPNVYIKNFGEDMD-----------------------------------------------------------------------------------------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>78</name>
+                        <branch_length>0.02769</branch_length>
+                        <sequence type="protein">
+                          <name>78</name>
+                          <mol_seq is_aligned="true">------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MNASGSGYPLASLYVGDLH-PDVTEAM--LYEKFSPA--------GP---ILSIRVCRDV-ATR----------------RSLGYAYINFQQPADAERALD-TMNFE-MLK---GQPIRIMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDPGLRKS--------------------------------------------GVGNIFIKNLEDSID-NKALYD----TFSTFGN-I----LSCKVAC-----DEHGSRGFGFVHFETHEAAQQAINTM-NGMLL--------NDRKVFVGHFKSRRE---REAELGARALE-FTNIYVKNLPVDVD-----------------------------------------------------------------------------------------</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>3d</name>
+                      <branch_length>0.03774</branch_length>
+                      <sequence type="protein">
+                        <name>3d</name>
+                        <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MASLYVGDLH-PEVTEAM--LYEKFSPA--------GP---ILSIRICRDK-ITR----------------RSLGYAYVNYQQPVDAKRALE-TLNFD-VIK---GRPVRIMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDPSLRKS--------------------------------------------GVGNVFIKNLGKTID-NKALYN----IFSAFGN-I----LSCKVAC-----DEKGPKGYGFVHFQKQESAERAIDVM-NGMFL--------NYRKIFVGRFKSHKE---REAERGAWARQ-STSADVKDFEEDTD-----------------------------------------------------------------------------------------</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>2b</name>
+                    <branch_length>0.06544</branch_length>
+                    <sequence type="protein">
+                      <name>2b</name>
+                      <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------RDCSKNSRGQTHSGKDKEMNVAAKYRMASLYVGDLH-ADVTEDL--LFRKFSTV--------GP---VLSIRICRDQ-VTR----------------RSLGYAYVNFLQLADAQKALD-TMNFD-IIK---GKSIRLMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQRDAYLRRS--------------------------------------------GIGNVFIKNLDKSID-NKTLYE----HFSAFGK-I----LSSKVMS-----DDQGSKGYAFVHFQNQSAADRAIEEM-NGKLL--------KGCKVFVGRFKNRKD---REAELRSKASE-FTNVYIKNFGGDMD-----------------------------------------------------------------------------------------</mol_seq>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>37</name>
+                  <branch_length>0.06396</branch_length>
+                  <sequence type="protein">
+                    <name>37</name>
+                    <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MGSGEPNPAGKKKKYLKAALYVGDLD-PDVTEDM--LYKKFRPA--------GP---LRFTRICRDP-VTR----------------SPLGYGYVNFRFPADAEWALN-TMNFD-LIN---GKPFRLMW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SQPDDRLRKS--------------------------------------------GVGNIFIKNLDKSID-NRALFY----LFSAFGN-I----LSCKVVC-----DDNGSKGYAYVHFDSLAAANRAIWHM-NGVRL--------NNRQVYVGRFKFPEE---RAAEVRTRDRATFTNVFVKNIGDDI------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <name>67</name>
+                <branch_length>0.10019</branch_length>
+                <sequence type="protein">
+                  <name>67</name>
+                  <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MAAGPISERNQDATVYVGGLD-EKVSEPL--LWELFLQA--------GP---VVNTHMPKDR-VTG----------------QHQGYGFVEFLSEEDADYAIK-IMNMI-KLY---GKPIRVNK--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ASAHNKNLD---------------------------------------------VGANIFIGNLDPEID-EKLLYD----TFSAFGVIL----QTPKIMR---DPDTGNSKGYAFINFASFDASDAAIEAM-NGQYL--------CNRPITVSYAFKKDS---KGERHGSAAER-LLAAQNPLSQADRP-----------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.00634</branch_length>
+              <clade>
+                <branch_length>0.0808</branch_length>
+                <clade>
+                  <name>6f</name>
+                  <branch_length>0.03216</branch_length>
+                  <sequence type="protein">
+                    <name>6f</name>
+                    <mol_seq is_aligned="true">----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MEDEMPKTLYVGNLS-RDVTEAL--ILQLFSQI--------GP---CKNCKMIMDTA-------------------GNDPYCFVEFHEHRHAAAALA-AMNGR-KIM---GKEVKVNW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATTPSSQKKDTSSSTVVSTQRSQ-------------------------------DHFHVFVGDLSPEIT-TEDIKA----AFAPFGR-I----SDARVVK---DMATGKSKGYGFVSFFNKWDAENAIQQM-GGQWL--------GGRQIRTNWATRKPPA-PKSTYESNTKQLSYDEVVNQSSP---------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+                <clade>
+                  <name>71</name>
+                  <branch_length>0.02044</branch_length>
+                  <sequence type="protein">
+                    <name>71</name>
+                    <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MMEDDGQPRTLYVGNLS-RDVTEVL--ILQLFSQI--------GP---CKSCKMITEHT-------------------SNDPYCFVEFYEHRDAAAALA-AMNGR-KIL---GKEVKVNW--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATTPSSQKKDTS------------------------------------------NHFHVFVGDLSPEIT-TEDIKS----AFAPFGK-I----SDARVVK---DMATGKSKGYGFVSFYNKLDAENAIVHM-GGQWL--------GGRQIRTNWATRKPPA-PKSTQENNTKQLRFEDVVNQSSPK--------------------------------------------------------------------------------------------</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <name>73</name>
+                <branch_length>0.12432</branch_length>
+                <sequence type="protein">
+                  <name>73</name>
+                  <mol_seq is_aligned="true">--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MAASLWMGDLE-PYMDENF--ISRAFATM--------GE--TVMSVKIIRNR-LTG----------------IPAGYCFVEFADLATAEKCLH-KINGKPLPGATPAKRFKLNY--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ATYGKQPDNS--------------------------------------------PEYSLFVGDLTPDVD-DGMLYE----FFVKVYPSC----RGGKVVL----DQTGVSKGYGFVKFTDELEQKRALTECQGAVGL--------GSKPVRLSVAIPKASR-VKPVEYSQMYSY-SYNQYYQQYQNY-------------------------------------------------------------------------------------------</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <name>53</name>
+        <branch_length>0.12322</branch_length>
+        <sequence type="protein">
+          <name>53</name>
+          <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MAGLTLFVGRLP-PSARSEQ--LEELFSQV--------GP---VKQCFVVTEK-GSK----------------ACRGFGYVTFSMLEDVQRALK-EIT---TFE---GCKINVTV--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------AKKKLRNKTKEKGKNENSECPKKEPKAKKAKVAD--------------------KKARLIIRNLSFKCS-EDDLKT----VFAQFGA-V----LEVNIPR----KPDGKMRGFGFVQFKNLLEAGKALKGM-NMKEI--------KGRTVAVDWAVAKDK---YKDTQSVSAIG-EEKSHESKHQESVK-----------------------------------------------------------------------------------------</mol_seq>
+        </sequence>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.00105</branch_length>
+      <clade>
+        <branch_length>0.02002</branch_length>
+        <clade>
+          <branch_length>0.04749</branch_length>
+          <clade>
+            <branch_length>0.02305</branch_length>
+            <clade>
+              <name>6a</name>
+              <branch_length>0.026</branch_length>
+              <sequence type="protein">
+                <name>6a</name>
+                <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MPRVYIGRLS-YQARERD--VERFFKGY--------GK---ILEVDL-------------------------KNGYGFVEFDDLRDADDAVY-ELNGK-DLC---GERVIVEH--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARGPRRDG---SYGSGRSGYG-----YRRSGRDKYGPPTR--------------TEYRLIVENLSSRCS-WQDLKD----YMRQAGE-V----TYADAHK--------GRKNEGVIEFVSYSDMKRALEKL-DGTEV--------NGRKIRLVEDKPGSRR-RRSYSRSRSHSR-SRSRSRHSRKSR-------------------------------------------------------------------------------------------</mol_seq>
+              </sequence>
+            </clade>
+            <clade>
+              <name>6c</name>
+              <branch_length>0.03181</branch_length>
+              <sequence type="protein">
+                <name>6c</name>
+                <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MPRVYIGRLS-YNVREKD--IQRFFSGY--------GR---LLEVDL-------------------------KNGYGFVEFEDSRDADDAVY-ELNGK-ELC---GERVIVEH--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARGPRRDRDGYSYGSRSGGGG--YSSRRTSGRDKYGPPVR--------------TEYRLIVENLSSRCS-WQDLKD----FMRQAGE-V----TYADAHK--------ERTNEGVIEFRSYSDMKRALDKL-DGTEI--------NGRNIRLIEDKPRTSH-RRSYSGSRSRSR-SRRRSRSRSRRS-------------------------------------------------------------------------------------------</mol_seq>
+              </sequence>
+            </clade>
+          </clade>
+          <clade>
+            <name>6b</name>
+            <branch_length>0.05381</branch_length>
+            <sequence type="protein">
+              <name>6b</name>
+              <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSGCRVFIGRLN-PAAREKD--VERFFKGY--------GR---IRDIDL-------------------------KRGFGFVEFEDPRDADDAVY-ELDGK-ELC---SERVTIEH--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ARARSRG------GRGRGRYSDRFSSRRPRNDRRNAPPVR--------------TENRLIVENLSSRVS-WQDLKD----FMRQAGE-V----TFADAHR--------PKLNEGVVEFASYGDLKNAIEKL-SGKEI--------NGRKIKLIEGSKRHSR-SRSRSRSRTRSS-SRSRSRSRSRSR-------------------------------------------------------------------------------------------</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.05666</branch_length>
+          <clade>
+            <name>69</name>
+            <branch_length>0.05515</branch_length>
+            <sequence type="protein">
+              <name>69</name>
+              <mol_seq is_aligned="true">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSGGGVIRGPAGNNDCRIYVGNLP-PDIRTKD--IEDVFYKY--------GA---IRDIDLKNRR--------------------GGPPFAFVEFEDPRDAEDAVY-GRDGY-DYD---GYRLRVEF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PRSGR----------GTGRGGGGGGGGGAPRGRYGPPSRR--------------SENRVVVSGLPPSGS-WQDLKD----HMREAGD-V----CYADVYR----------DGTGVVEFVRKEDMTYAVRKL-DNTKF--------RSHEGETAYIRVKVDG-PRSPSYGRSRSR-SRSRSRSRSRSNSR-----------------------------------------------------------------------------------------</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>6d</name>
+            <branch_length>0.04437</branch_length>
+            <sequence type="protein">
+              <name>6d</name>
+              <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSGWADERGGEGDGRIYVGNLP-TDVREKD--LEDLFYKY--------GR---IREIELKNRH--------------------GLVPFAFVRFEDPRDAEDAIY-GRNGY-DYG---QCRLRVEF--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------PRTY------------------GGRGGWPRGGRNGPPTRR--------------SDFRVLVSGLPPSGS-WQDLKD----HMREAGD-V----CYADVQK----------DGVGMVEYLRKEDMEYALRKL-DDTKF--------RSHEGETSYIRVYPE---RSTSYGYSRSR-SGSRGRDSPYQSRG-----------------------------------------------------------------------------------------</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.2219</branch_length>
+        <clade>
+          <name>22</name>
+          <branch_length>0.45807</branch_length>
+          <sequence type="protein">
+            <name>22</name>
+            <mol_seq is_aligned="true">-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MVRETRHLWVGNLP-ENVREEK--IIEHFKRY--------GR---VESVKILP----KR--------------GSEGGVAAFVDFVDIKSAQKAHN-SVN---KMG---DRDLRTDYNEPGTIPSAARGLDDTVSIASRSREVSGFRGGGGGPAYGPPPSLHAREGRYERRLDGASDNRERAYEHSAYGHHERGTGGFDRTRHYDQDYYRDPRERTLQHGLYYASRSRSPNRFDAHDPRYEPRAREQFTLPSVVHRDIYRDDITREVRGRRPERNYQHSRSRSPHSSQSRNQSPQRLASQASRPTRSPSGSGSRSRSSSSDSISSSSSTSSDSSDSSSSSSDDSPARSVQSAAVPAPTSQLLSSLEKDEPRKSFGIKVQNLPVRST-DTSLKDGLFHEFKKFGK-V----TSVQIHG-------TSEERYGLVFFRQQEDQEKALTAS-KGKLF--------FGMQIEVTAWIGPETE-SENEFRPLDERI-DEFHPKATRTL--------------------------------------------------------------------------------------------</mol_seq>
+          </sequence>
+        </clade>
+        <clade>
+          <name>4e</name>
+          <branch_length>0.3088</branch_length>
+          <sequence type="protein">
+            <name>4e</name>
+            <mol_seq is_aligned="true">---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------MSRLIVKNLP-NGMKEER--FRQLFAAF--------GT---LTDCSLKFTK--DG----------------KFRKFGFIGFKSEEEAQKAQK-HFNKS-FID---TSRITVEF------------------------------CKSFGDPAKPRAWSKHAQKPSQPKQPPKDSTTPEIKKDEKKKKVAGQLEKLKEDTEFQEFLSVHQRRAQAATWANDGLDAEPSKGKSKPASDYLNFDSDSGQESEEEGAGEDLEEEASLEPKAAVQKELSDMDYLKSKMVKAGSSSSSEEEESEDEAVHCDEGSEAEEEDSSATPVLQERDSKGAGQEQGMPAGKKRPPEARAETEKPANQKEPT---------TCHTVKLRGAPFNVT-EKNVME----FLAPLKP------VAIRIVR----NAHGNKTGYIFVDFSNEEEVKQALKC--NREYM--------GGRYIEVFREKNVPTT-KGAPKNTTKSWQ-GRILGENEEE---------------------------------------------------------------------------------------------</mol_seq>
+          </sequence>
+        </clade>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>

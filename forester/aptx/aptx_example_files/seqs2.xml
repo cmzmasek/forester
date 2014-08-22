@@ -1,0 +1,1354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true" rerootable="true">
+  <clade>
+    <clade>
+      <branch_length>0.00656</branch_length>
+      <clade>
+        <branch_length>0.02194</branch_length>
+        <clade>
+          <branch_length>0.02213</branch_length>
+          <clade>
+            <branch_length>0.01245</branch_length>
+            <clade>
+              <branch_length>0.05707</branch_length>
+              <clade>
+                <branch_length>0.00571</branch_length>
+                <clade>
+                  <branch_length>0.01781</branch_length>
+                  <clade>
+                    <branch_length>0.0514</branch_length>
+                    <clade>
+                      <branch_length>0.10659</branch_length>
+                      <clade>
+                        <branch_length>0.03685</branch_length>
+                        <clade>
+                          <branch_length>0.01931</branch_length>
+                          <clade>
+                            <branch_length>0.0242</branch_length>
+                            <clade>
+                              <branch_length>0.01035</branch_length>
+                              <clade>
+                                <branch_length>0.01788</branch_length>
+                                <clade>
+                                  <branch_length>0.02017</branch_length>
+                                  <clade>
+                                    <branch_length>0.01587</branch_length>
+                                    <clade>
+                                      <branch_length>0.00907</branch_length>
+                                      <clade>
+                                        <branch_length>0.01943</branch_length>
+                                        <clade>
+                                          <branch_length>0.01428</branch_length>
+                                          <clade>
+                                            <branch_length>0.0096</branch_length>
+                                            <clade>
+                                              <branch_length>0.00996</branch_length>
+                                              <clade>
+                                                <branch_length>0.02929</branch_length>
+                                                <clade>
+                                                  <branch_length>0.0031</branch_length>
+                                                  <clade>
+                                                    <branch_length>0.00729</branch_length>
+                                                    <clade>
+                                                      <branch_length>0.01213</branch_length>
+                                                      <clade>
+                                                        <branch_length>0.0088</branch_length>
+                                                        <clade>
+                                                          <branch_length>0.0</branch_length>
+                                                          <clade>
+                                                            <name>3c3~1-3</name>
+                                                            <branch_length>0.0</branch_length>
+                                                            <sequence type="protein">
+                                                              <name>3c3~1-3</name>
+                                                              <mol_seq is_aligned="true">--------------TPEERDARTVFCMQLAARIRPRDLEEFF-STV------GK--------------------------VRDVRMISDRNSRRSKGIAYVEFVDVSSVPLAI-GLT-------G-QR--V-LGVPIIVQASQAEKNRAAAM</mol_seq>
+                                                            </sequence>
+                                                          </clade>
+                                                          <clade>
+                                                            <name>a3a~1-3</name>
+                                                            <branch_length>0.0</branch_length>
+                                                            <sequence type="protein">
+                                                              <name>a3a~1-3</name>
+                                                              <mol_seq is_aligned="true">--------------TPEERDARTVFCMQLAARIRPRDLEEFF-STV------GK--------------------------VRDVRMISDRNSRRSKGIAYVEFVDVSSVPLAI-GLT-------G-QR--V-LGVPIIVQASQAEKNRAAAM</mol_seq>
+                                                            </sequence>
+                                                          </clade>
+                                                        </clade>
+                                                        <clade>
+                                                          <name>ccd~1-3</name>
+                                                          <branch_length>0.0</branch_length>
+                                                          <sequence type="protein">
+                                                            <name>ccd~1-3</name>
+                                                            <mol_seq is_aligned="true">--------------TPEERDARTVFCMQLAARIRPRDLEEFF-STV------GK--------------------------VRDVRMISDRNSRRSKGIAYVEFVDVSSVPLAI-GLT-------G-QR--V-LGVPIIVQASQAEKNRAAAM</mol_seq>
+                                                          </sequence>
+                                                        </clade>
+                                                      </clade>
+                                                      <clade>
+                                                        <name>1579~1-3</name>
+                                                        <branch_length>0.01121</branch_length>
+                                                        <sequence type="protein">
+                                                          <name>1579~1-3</name>
+                                                          <mol_seq is_aligned="true">---------------PEERDARTVFCMQLAARIRPRDLEEFF-STV------GK--------------------------VRDVRMISDRNSRRSKGIAYVEFVDQSSVPLAI-GLT-------G-QK--V-LGVPIIVQASQAEKNRAAAM</mol_seq>
+                                                        </sequence>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <name>574~1-2</name>
+                                                      <branch_length>0.01214</branch_length>
+                                                      <sequence type="protein">
+                                                        <name>574~1-2</name>
+                                                        <mol_seq is_aligned="true">---------------PEERDARTVFCMQLAARIRPRDLEDFF-SAV------GK--------------------------VRDVRMISDRNSRRSKGIAYVEFVDSTSVPLAI-GLT-------G-QR--V-LGVPIIVQASQAEKNRAAAM</mol_seq>
+                                                      </sequence>
+                                                    </clade>
+                                                  </clade>
+                                                  <clade>
+                                                    <name>599~1-3</name>
+                                                    <branch_length>0.02917</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>599~1-3</name>
+                                                      <mol_seq is_aligned="true">--------------TPEERDARTVFCMQLAARIRPRDLEEFF-SAV------GK--------------------------VRDVRIISDRNSRRSKGIAYIEFVDSTSVPLAI-GLS-------G-QR--L-LGVPIIVQASQAEKNRAAAL</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <branch_length>0.02861</branch_length>
+                                                  <clade>
+                                                    <name>1578~1-2</name>
+                                                    <branch_length>0.01156</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>1578~1-2</name>
+                                                      <mol_seq is_aligned="true">---------------PEERDARTVFCMQLAARIRSRDLEDFF-SAV------GK--------------------------VRDVRIISDRNSRRSKGIAYVEFCDIQSVPLAI-GLT-------G-QR--L-LGVPIIVQVSQAEKNRLAAM</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                  <clade>
+                                                    <name>a31~1-2</name>
+                                                    <branch_length>0.00846</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>a31~1-2</name>
+                                                      <mol_seq is_aligned="true">---------------PEERDARTVFCMQLAARIRPRDLEDFF-SAV------GK--------------------------VRDVRIISDRNSRRSKGIAYVEFCEIQSVPLAI-GLT-------G-QR--L-LGVPIIVQASQAEKNRLAAM</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <branch_length>0.00142</branch_length>
+                                                <clade>
+                                                  <name>1fc~1-2</name>
+                                                  <branch_length>0.09725</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>1fc~1-2</name>
+                                                    <mol_seq is_aligned="true">---------------PEERDQRTVFVMQLSQRVRPKDLEDFF-SSV------GK--------------------------VREVRLIADRNSRRHKGIAYCEFTDASCVPMAI-GLT-------N-QK--L-LGVPIIVQASQAEKNRAAA-</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                                <clade>
+                                                  <name>4fa~1-3</name>
+                                                  <branch_length>0.08054</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>4fa~1-3</name>
+                                                    <mol_seq is_aligned="true">--------------TPEERDARTVFCMQLSARIRPRDLEEFF-SSV------GK--------------------------VRDVRLIMDNKTRRSKGISYVEFQDTDSVPLAI-GLT-------N-QK--L-LGVPIIVQHSQAEKNRVGN-</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <name>eef~1-3</name>
+                                              <branch_length>0.0818</branch_length>
+                                              <sequence type="protein">
+                                                <name>eef~1-3</name>
+                                                <mol_seq is_aligned="true">---------------PEERDARTVFCWQLSQKIRPRDMEEFF-SSV------GI--------------------------VRDVRLISDRNSRRSKGIAYVEFQDKNSVPLAL-GLS-------G-QK--L-LSIPIMVQASQAEKNRAAQN</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <branch_length>0.01298</branch_length>
+                                            <clade>
+                                              <branch_length>0.0111</branch_length>
+                                              <clade>
+                                                <branch_length>0.1041</branch_length>
+                                                <clade>
+                                                  <name>6ce~1-3</name>
+                                                  <branch_length>0.00332</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>6ce~1-3</name>
+                                                    <mol_seq is_aligned="true">---------------PEERDARTVFCIQLSQRVRARDLEEFF-SSV------GK--------------------------VRDVRLITCNKTKRFKGIAYIEFDDPESVALAL-GLS-------G-QR--L-LGVPIMVQHTQAEKNRLQNA</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                                <clade>
+                                                  <name>749~1-3</name>
+                                                  <branch_length>0.00329</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>749~1-3</name>
+                                                    <mol_seq is_aligned="true">---------------PEERDARTVFCIQLSQRVRARDLEEFF-SSV------GK--------------------------VRDVRLITCNKTKRFKGIAYIEFEDPESVALAL-GLS-------G-QR--L-LGVPIMVQHTQAEKNRLQNA</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <branch_length>0.00867</branch_length>
+                                                <clade>
+                                                  <name>928~1-2</name>
+                                                  <branch_length>0.07463</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>928~1-2</name>
+                                                    <mol_seq is_aligned="true">--------------TVEERDVRTVFCMQLSPRIRPRDLEEFF-SSV------GK--------------------------VRDVRLILDNKSHRSKGIAYIEFRDIESVALAI-GLS-------G-QK--L-LGVPIIVQNAHAERNRQAST</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                                <clade>
+                                                  <name>977~1-3</name>
+                                                  <branch_length>0.15498</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>977~1-3</name>
+                                                    <mol_seq is_aligned="true">--------------TPEERDARTIFCMQLSTKLRPIDLKDFF-GKL------GK--------------------------IRDVRLIMDNRSRRSKGIAYIEFQDTESVAKAL-ELS-------G-QR--L-LGVPIIIQPSHGERNRSNM-</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <name>418~1-3</name>
+                                              <branch_length>0.129</branch_length>
+                                              <sequence type="protein">
+                                                <name>418~1-3</name>
+                                                <mol_seq is_aligned="true">----------------PDRDARTIFCMQLAQRIRVRDLEEFF-SSV------GK--------------------------VREVKLIQDKHSKRSKGIAYVEFKDLESIPLAL-GLS-------G-QK--L-LGVPIVVQPTQSEKNKIAA-</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <branch_length>0.02892</branch_length>
+                                          <clade>
+                                            <branch_length>0.112</branch_length>
+                                            <clade>
+                                              <name>b13~1-2</name>
+                                              <branch_length>0.0</branch_length>
+                                              <sequence type="protein">
+                                                <name>b13~1-2</name>
+                                                <mol_seq is_aligned="true">--------------SQEERDSRTVFIMQLAKQVTIRDIQDFF-SKV------GQ--------------------------VRDVRLISDRNSRRSKGIGYVEFTDASAVTLAI-KLS-------G-QK--L-LGVPIMVSPTMAEKNRYAA-</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                            <clade>
+                                              <name>b14~1-2</name>
+                                              <branch_length>0.0</branch_length>
+                                              <sequence type="protein">
+                                                <name>b14~1-2</name>
+                                                <mol_seq is_aligned="true">--------------SQEERDSRTVFIMQLAKQVTIRDIQDFF-SKV------GQ--------------------------VRDVRLISDRNSRRSKGIGYVEFTDASAVTLAI-KLS-------G-QK--L-LGVPIMVSPTMAEKNRYAA-</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <name>e07~1-3</name>
+                                            <branch_length>0.06579</branch_length>
+                                            <sequence type="protein">
+                                              <name>e07~1-3</name>
+                                              <mol_seq is_aligned="true">--------------SAEEKDQRTVFCMQLARNIRPRDLEEFF-SKV------GQ--------------------------VSDVRIISDRNSRRSKGIAYIEFTDKSAVPLAI-GLS-------G-QK--L-LGAPIMVMLTQAEKNRLAA-</mol_seq>
+                                            </sequence>
+                                          </clade>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <branch_length>0.02278</branch_length>
+                                        <clade>
+                                          <branch_length>0.00658</branch_length>
+                                          <clade>
+                                            <branch_length>0.01838</branch_length>
+                                            <clade>
+                                              <branch_length>0.02829</branch_length>
+                                              <clade>
+                                                <name>1035~1-3</name>
+                                                <branch_length>0.15807</branch_length>
+                                                <sequence type="protein">
+                                                  <name>1035~1-3</name>
+                                                  <mol_seq is_aligned="true">--------------SEEERDRRTVFVSQLANRLTSRELYDFF-EQA------GP--------------------------VRDAQIVRDKISGRSKGVAYVEFCHEDSVQAAI-ALS-------G-KR--L-LGLPVIVQLTEAEKNRKARE</mol_seq>
+                                                </sequence>
+                                              </clade>
+                                              <clade>
+                                                <name>b7c~1-3</name>
+                                                <branch_length>0.25101</branch_length>
+                                                <sequence type="protein">
+                                                  <name>b7c~1-3</name>
+                                                  <mol_seq is_aligned="true">--------------KEDDSEARSVFVSQLAARLTARDLGYFFEDKL----GEGT--------------------------VMDSRIVTDRLSRRSKGIGYVEFRTIDHVEKAL-ALS-------G-TV--V-MGLPIMVQLTESERNKLH--</mol_seq>
+                                                </sequence>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <name>125c~1-3</name>
+                                              <branch_length>0.2586</branch_length>
+                                              <sequence type="protein">
+                                                <name>125c~1-3</name>
+                                                <mol_seq is_aligned="true">--------------EENDRQERSVVCLQLSQNLKDTDLVDFFVEHE------IM--------------------------CREARIISDRNSRKSKGIAYVELLMHADMEKAI-ALT-------G-TR--L-MGVPIIIQYSQAEKNRVAQQ</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <name>13dc~1-3</name>
+                                            <branch_length>0.2557</branch_length>
+                                            <sequence type="protein">
+                                              <name>13dc~1-3</name>
+                                              <mol_seq is_aligned="true">---------------------------QLAGRTGRRQLEELF-SPV------GE--------------------------MRDIRVIADRNSRRSKGIAYVEFRLVDSVDKAL-KLN-------G-TK--V-EGIPIMIQRTQSEKNKIAAL</mol_seq>
+                                            </sequence>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <branch_length>0.01993</branch_length>
+                                          <clade>
+                                            <branch_length>0.08912</branch_length>
+                                            <clade>
+                                              <name>c1f~1-3</name>
+                                              <branch_length>0.15267</branch_length>
+                                              <sequence type="protein">
+                                                <name>c1f~1-3</name>
+                                                <mol_seq is_aligned="true">--------------SEEERDERTVICSQLSRKTTEADLFDFLEQNA------GK--------------------------VRSVSMVRDRNTGRGKGVAYAEFLEPESVPTAL-TLN-------G-QR--L-NHAPIVIMLTQAQKNRQAAE</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                            <clade>
+                                              <name>fda~1-3</name>
+                                              <branch_length>0.16169</branch_length>
+                                              <sequence type="protein">
+                                                <name>fda~1-3</name>
+                                                <mol_seq is_aligned="true">---------------NVDRDARTVTCLQLHRTCTAEDLGQFLEEKA------GK--------------------------LVSCRIVRDRNTGRSKGIAYAEFEDESSVTVAL-SLT-------G-QR--L-KGAPLVVMPTMAERNRQAAE</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <name>93~1-3</name>
+                                            <branch_length>0.15176</branch_length>
+                                            <sequence type="protein">
+                                              <name>93~1-3</name>
+                                              <mol_seq is_aligned="true">---------------SVDRDNRTIMCMQLSAKVTNRDLEDFF-MRA------GV--------------------------VRDVHIIADRQSRRSKGIAYVEFQEESSVFTAL-SFS-------G-QK--V-HGIPIMIQPTMAEKNRLAA-</mol_seq>
+                                            </sequence>
+                                          </clade>
+                                        </clade>
+                                      </clade>
+                                    </clade>
+                                    <clade>
+                                      <branch_length>0.15917</branch_length>
+                                      <clade>
+                                        <name>242~1-2</name>
+                                        <branch_length>0.06526</branch_length>
+                                        <sequence type="protein">
+                                          <name>242~1-2</name>
+                                          <mol_seq is_aligned="true">--------------SAEERDQRTLLIMQIARDTRPRDLEEFF-SSV------GA--------------------------VRDVRIITDSRTGRSKGICYVEFWDEESVPLGL-ALN-------G-QR--L-MGAPLQIQVKETV-------</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                      <clade>
+                                        <name>2df~1-2</name>
+                                        <branch_length>0.02574</branch_length>
+                                        <sequence type="protein">
+                                          <name>2df~1-2</name>
+                                          <mol_seq is_aligned="true">--------------TAEERDQRTLLIMQIARDTRPRDLEEFF-SAV------GA--------------------------VRDVRIITDSRTGRSKGICYVEFWDEESVPLGL-ALN-------G-QR--L-MGAPLQIQRTCAERNRAAN-</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                    </clade>
+                                  </clade>
+                                  <clade>
+                                    <branch_length>0.13698</branch_length>
+                                    <clade>
+                                      <branch_length>0.00948</branch_length>
+                                      <clade>
+                                        <branch_length>0.02031</branch_length>
+                                        <clade>
+                                          <branch_length>0.00703</branch_length>
+                                          <clade>
+                                            <branch_length>0.00721</branch_length>
+                                            <clade>
+                                              <name>1185</name>
+                                              <branch_length>0.10925</branch_length>
+                                              <sequence type="protein">
+                                                <name>1185</name>
+                                                <mol_seq is_aligned="true">--------------ADPERDQRTVFAYQMPLKATERDVYEFF-SKA------GK------------------------HCVKLVVVQCSRTSNVSWGCRYIEFYDAMSVPMAI-ALS-------G-QL--L-LGQPVMVKPSEAEKNLVQS-</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                            <clade>
+                                              <name>1205~1-3</name>
+                                              <branch_length>-0.00318</branch_length>
+                                              <sequence type="protein">
+                                                <name>1205~1-3</name>
+                                                <mol_seq is_aligned="true">--------------ADPERDQRTVFAYQMPLKATERDVYEFF-SKA------GK--------------------------VRDVRLIMDRNSRRSKGVGYIEFYDAMSVPMAI-ALS-------G-QL--L-LGQPVMVKPSEAEKNLVQS-</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <name>119d~1-3</name>
+                                            <branch_length>0.00711</branch_length>
+                                            <sequence type="protein">
+                                              <name>119d~1-3</name>
+                                              <mol_seq is_aligned="true">--------------ADPERDQRTVFAYQMPLKASERDAYEFF-SKA------GK--------------------------VRDVRLIMDRNSRRSKGVGYIEFYDAMSVPMAI-ALS-------G-QL--L-LGQPVMVKPSEAEKNLVQS-</mol_seq>
+                                            </sequence>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <name>189~1-3</name>
+                                          <branch_length>0.01344</branch_length>
+                                          <sequence type="protein">
+                                            <name>189~1-3</name>
+                                            <mol_seq is_aligned="true">--------------ADPERDQRTVFAYQMPLKATERDVYEFF-SKA------GK--------------------------VRDVRLIMDRNSRRSKGVGYIEFYDVMSVPMAI-ALS-------G-QL--F-LGQPVMVKPSEAEKNLAQS-</mol_seq>
+                                          </sequence>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <name>11fb~1-3</name>
+                                        <branch_length>0.0343</branch_length>
+                                        <sequence type="protein">
+                                          <name>11fb~1-3</name>
+                                          <mol_seq is_aligned="true">---------------DPERDQRAVFAYQISLKADERDVFEFF-SRA------GK--------------------------VRDVRLIMDRNSRRSKGVGYIEFYDVMSVPMAI-ALS-------G-QP--L-LGQPVMVKPSEAEKNLVQS-</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                    </clade>
+                                    <clade>
+                                      <name>df~1-3</name>
+                                      <branch_length>0.04045</branch_length>
+                                      <sequence type="protein">
+                                        <name>df~1-3</name>
+                                        <mol_seq is_aligned="true">--------------ADPERDQRTVFAYQIALRATERDVYEFF-SRA------GK--------------------------VRDVRIIMDRISRRSRGIGYVEFYDTMSVPMAI-ALS-------G-QP--L-LGQPVMVKPSEAEKNLVQS-</mol_seq>
+                                      </sequence>
+                                    </clade>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <name>1299~1-2</name>
+                                  <branch_length>0.31265</branch_length>
+                                  <sequence type="protein">
+                                    <name>1299~1-2</name>
+                                    <mol_seq is_aligned="true">---------------ADTRDARTVFVMQLSQRAKERELKEFF-SSV------GK--------------------------VRTVKIITDRNSRRSKGVGYVEYDVADSVP------------------------------------------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>342~1-3</name>
+                                <branch_length>0.33805</branch_length>
+                                <sequence type="protein">
+                                  <name>342~1-3</name>
+                                  <mol_seq is_aligned="true">---------------RDERLKNTVIVHQLPTNVRKHEIEQVF-SEC------GE--------------------------IRDVAIQSDRARGRAGGVAYVEFKDFAAVSKAM-GLS-------S-RR--I-DNIPMLVQATKPAAAALAM-</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <branch_length>0.03182</branch_length>
+                              <clade>
+                                <branch_length>0.26743</branch_length>
+                                <clade>
+                                  <name>80f~1-2</name>
+                                  <branch_length>0.0</branch_length>
+                                  <sequence type="protein">
+                                    <name>80f~1-2</name>
+                                    <mol_seq is_aligned="true">----------------AAKDELTLMLRQLHPKTGEFDVFKLF-SKA------GK--------------------------VTDVRLITDERTGKCLGAGYIEMADGGSFSRAL-QLD-------G-SL--I-REMPIIVQPSYAEKNRLAA-</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>82a~1-2</name>
+                                  <branch_length>0.0</branch_length>
+                                  <sequence type="protein">
+                                    <name>82a~1-2</name>
+                                    <mol_seq is_aligned="true">----------------AAKDELTLMLRQLHPKTGEFDVFKLF-SKA------GK--------------------------VTDVRLITDERTGKCLGAGYIEMADGGSFSRAL-QLD-------G-SL--I-REMPIIVQPSYAEKNRLAA-</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <branch_length>0.05006</branch_length>
+                                <clade>
+                                  <name>825~1-3</name>
+                                  <branch_length>0.20009</branch_length>
+                                  <sequence type="protein">
+                                    <name>825~1-3</name>
+                                    <mol_seq is_aligned="true">---------------EAMRDDLTVLVQRIHPKADDFEIFEFF-SQA------GK--------------------------VRDIRLIRDQRSGKSKGVGYVEYGDVESVMRAL-ALN-------G-IA--F-KGQPLL-----AAKNVAAAS</mol_seq>
+                                  </sequence>
+                                </clade>
+                                <clade>
+                                  <name>e8e~1-3</name>
+                                  <branch_length>0.30337</branch_length>
+                                  <sequence type="protein">
+                                    <name>e8e~1-3</name>
+                                    <mol_seq is_aligned="true">---------------EAHRQDLTVLMYCLPLKAKEKHIYQFF-QTF----NCGK--------------------------IRDIRIIRDQKSGRSRGVAYVEFYQEESIPMAL-ALNDRLFIMDG-QQ--V-GTIPVKIQLSQAEKNRAAR-</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.00749</branch_length>
+                            <clade>
+                              <branch_length>0.1131</branch_length>
+                              <clade>
+                                <name>14d4~1-3</name>
+                                <branch_length>0.08696</branch_length>
+                                <sequence type="protein">
+                                  <name>14d4~1-3</name>
+                                  <mol_seq is_aligned="true">---------------ELERATRTVFAYNLSLRADERDIFEFF-SKV------GR--------------------------VVDIRLITDKNTKKSRGLAYVEFSKVEEVISAV-ALT-------G-NI--L-KGQPVMVKASEAEKNMAWE-</mol_seq>
+                                </sequence>
+                              </clade>
+                              <clade>
+                                <name>1521~1-3</name>
+                                <branch_length>0.125</branch_length>
+                                <sequence type="protein">
+                                  <name>1521~1-3</name>
+                                  <mol_seq is_aligned="true">----------------MERSTRTAFAYNLNLKADERDIYQLF-SKV------GK--------------------------VVDIKLITDKTTKRSKGFAYIEFSKVEEVIAAV-ALT-------G-TV--F-MGQAIMVKSSEHEKNLA---</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>687~1-3</name>
+                              <branch_length>0.23001</branch_length>
+                              <sequence type="protein">
+                                <name>687~1-3</name>
+                                <mol_seq is_aligned="true">---------------DEESDQRTVFVSKLSQNIVEKDLSDLF-SQA------GT--------------------------VLNVRLITDKVTKRMKGVGYVEFSQKEMVDKAI-ALS-------G-SV--L-DGQQILVHSIQPEKKVIKS-</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.02689</branch_length>
+                          <clade>
+                            <name>1317~1-3</name>
+                            <branch_length>0.3947</branch_length>
+                            <sequence type="protein">
+                              <name>1317~1-3</name>
+                              <mol_seq is_aligned="true">---------------ELTKDQRTIFISQLVMKAEERDIRRYF-QRKILNGHRGC--------------------------VRDVILLRDKRTGRHKGCAYVELANLSDVEKAL-DAS-------G-KTPDF-QKFPILVKSSTLP-------</mol_seq>
+                            </sequence>
+                          </clade>
+                          <clade>
+                            <name>13a2</name>
+                            <branch_length>0.27356</branch_length>
+                            <sequence type="protein">
+                              <name>13a2</name>
+                              <mol_seq is_aligned="true">--------------TAAERDARTLFVYNLARETTEVHLADFF-ARV------GE--------------------------VVAATLVLDRATGRTKGVAYVEMASLEAMRAAF-SLS-------N-VP--L-NGRPMMMRPSLAGG------</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.28501</branch_length>
+                        <clade>
+                          <name>872~1-2</name>
+                          <branch_length>0.0339</branch_length>
+                          <sequence type="protein">
+                            <name>872~1-2</name>
+                            <mol_seq is_aligned="true">--------------QQIEKERRTVFVRGLTTEASNEEIKEFF-NQA------GE--------------------------VVHVEQVIDTTTKRSRGFGYVEFKTIEGAMKAI-EMS-------G-MF--FKESSPIYVSESNAQQNRNTI-</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>88c~1-3</name>
+                          <branch_length>0.05711</branch_length>
+                          <sequence type="protein">
+                            <name>88c~1-3</name>
+                            <mol_seq is_aligned="true">--------------QQIEKERRTVFVRGLTTEASNEEIKEFF-NQA------GE---------------------------------------RSRGFGYVEFKTIEGAMKAI-EMS-------G-MF--FKESSPIYVSESNAQQNRNTI-</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <branch_length>0.11739</branch_length>
+                      <clade>
+                        <branch_length>0.08282</branch_length>
+                        <clade>
+                          <branch_length>0.00643</branch_length>
+                          <clade>
+                            <branch_length>0.01332</branch_length>
+                            <clade>
+                              <branch_length>0.01587</branch_length>
+                              <clade>
+                                <branch_length>0.00129</branch_length>
+                                <clade>
+                                  <branch_length>0.01012</branch_length>
+                                  <clade>
+                                    <branch_length>0.0077</branch_length>
+                                    <clade>
+                                      <branch_length>0.00488</branch_length>
+                                      <clade>
+                                        <branch_length>0.00898</branch_length>
+                                        <clade>
+                                          <branch_length>0.01798</branch_length>
+                                          <clade>
+                                            <branch_length>0.02036</branch_length>
+                                            <clade>
+                                              <branch_length>0.0118</branch_length>
+                                              <clade>
+                                                <branch_length>0.02837</branch_length>
+                                                <clade>
+                                                  <branch_length>0.011</branch_length>
+                                                  <clade>
+                                                    <branch_length>0.02668</branch_length>
+                                                    <clade>
+                                                      <branch_length>0.00799</branch_length>
+                                                      <clade>
+                                                        <branch_length>0.00406</branch_length>
+                                                        <clade>
+                                                          <branch_length>0.01589</branch_length>
+                                                          <clade>
+                                                            <branch_length>0.02578</branch_length>
+                                                            <clade>
+                                                              <branch_length>0.0043</branch_length>
+                                                              <clade>
+                                                                <name>a3a~3-3</name>
+                                                                <branch_length>0.0</branch_length>
+                                                                <sequence type="protein">
+                                                                  <name>a3a~3-3</name>
+                                                                  <mol_seq is_aligned="true">---------------------------GWDTEIKDDVIEEC--NKH------GG--------------------------VIHIYVDKNS----AQGNVYVKCPSIAAAIAAVNALH-------G-RW--F-AGKMITAAYVP---------</mol_seq>
+                                                                </sequence>
+                                                              </clade>
+                                                              <clade>
+                                                                <name>ccd~3-3</name>
+                                                                <branch_length>0.0</branch_length>
+                                                                <sequence type="protein">
+                                                                  <name>ccd~3-3</name>
+                                                                  <mol_seq is_aligned="true">---------------------------GWDTEIKDDVIEEC--NKH------GG--------------------------VIHIYVDKNS----AQGNVYVKCPSIAAAIAAVNALH-------G-RW--F-AGKMITAAYVP---------</mol_seq>
+                                                                </sequence>
+                                                              </clade>
+                                                            </clade>
+                                                            <clade>
+                                                              <name>3c3~3-3</name>
+                                                              <branch_length>0.00231</branch_length>
+                                                              <sequence type="protein">
+                                                                <name>3c3~3-3</name>
+                                                                <mol_seq is_aligned="true">----------------------------WDTEIKDDVIEEC--NKH------GG--------------------------VIHIYVDKNS----AQGNVYVKCPSIAAAIAAVNALH-------G-RW--F-AGKMITAAYVP---------</mol_seq>
+                                                              </sequence>
+                                                            </clade>
+                                                          </clade>
+                                                          <clade>
+                                                            <name>1579~3-3</name>
+                                                            <branch_length>0.01501</branch_length>
+                                                            <sequence type="protein">
+                                                              <name>1579~3-3</name>
+                                                              <mol_seq is_aligned="true">----------------------------WDSEIKEDVIEEC--NKH------GG--------------------------VVHIYVDKNS----PQGNVYVKCPTIASAIAAVNALH-------G-RW--F-AGKMITAAYVP---------</mol_seq>
+                                                            </sequence>
+                                                          </clade>
+                                                        </clade>
+                                                        <clade>
+                                                          <branch_length>0.01135</branch_length>
+                                                          <clade>
+                                                            <name>4fa~3-3</name>
+                                                            <branch_length>0.05474</branch_length>
+                                                            <sequence type="protein">
+                                                              <name>4fa~3-3</name>
+                                                              <mol_seq is_aligned="true">-----------------------------DQEIRDDVIEEC--NKH------GG--------------------------VLHLYVDKAS----PQGNVYVKCPTISAAVASVRALH-------G-RY--F-GGKMITAAYVP---------</mol_seq>
+                                                            </sequence>
+                                                          </clade>
+                                                          <clade>
+                                                            <name>599~3-3</name>
+                                                            <branch_length>0.04375</branch_length>
+                                                            <sequence type="protein">
+                                                              <name>599~3-3</name>
+                                                              <mol_seq is_aligned="true">--------------------------------IQDDVIEEC--NKH------GG--------------------------VIHIYVDKKS----AEGNVYVKCPTIPAAMAAVSALH-------G-RW--F-GGKMITAAYVP---------</mol_seq>
+                                                            </sequence>
+                                                          </clade>
+                                                        </clade>
+                                                      </clade>
+                                                      <clade>
+                                                        <name>977~3-3</name>
+                                                        <branch_length>0.06725</branch_length>
+                                                        <sequence type="protein">
+                                                          <name>977~3-3</name>
+                                                          <mol_seq is_aligned="true">-----------------------------ERELKDDVIEEC--NKH------GG--------------------------VLHIHVDKTS----AQGHVYVKCPSIASAMSSVNALH-------G-RF--F-AGKQITAAYVP---------</mol_seq>
+                                                        </sequence>
+                                                      </clade>
+                                                    </clade>
+                                                    <clade>
+                                                      <name>eef~3-3</name>
+                                                      <branch_length>0.06842</branch_length>
+                                                      <sequence type="protein">
+                                                        <name>eef~3-3</name>
+                                                        <mol_seq is_aligned="true">------------------------------REIQDDVIEEC--NKH------GG--------------------------CVHIYVDKTN----PLGVVYVKCATVQIAQMAVNALH-------G-RW--F-AGKMITAAYVP---------</mol_seq>
+                                                      </sequence>
+                                                    </clade>
+                                                  </clade>
+                                                  <clade>
+                                                    <name>418~3-3</name>
+                                                    <branch_length>0.08263</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>418~3-3</name>
+                                                      <mol_seq is_aligned="true">-----------------------------DKEIRDDVIEEC--QRH------GA--------------------------VYHVFVDKQS-----KGNVYVKCDSVSAAANSVAALH-------G-RY--F-AGNMITAAYVP---------</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <branch_length>0.07633</branch_length>
+                                                  <clade>
+                                                    <name>6ce~3-3</name>
+                                                    <branch_length>0.00701</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>6ce~3-3</name>
+                                                      <mol_seq is_aligned="true">---------------------------TWDVEIRDDVLEEC--AKH------GG--------------------------VLHIHVDTIS----HTGTVYVKCPSTTTAVLAVNALH-------G-RW--F-AGRVITAAYVP---------</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                  <clade>
+                                                    <name>749~3-3</name>
+                                                    <branch_length>0.00627</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>749~3-3</name>
+                                                      <mol_seq is_aligned="true">---------------------------TWDVEIRDDVLEEC--AKH------GG--------------------------VLHIHVDTAS----PTGTVYVKCPSTTTAVLAVNALH-------G-RW--F-AGRVITAAYVP---------</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <name>e07~3-3</name>
+                                                <branch_length>0.1033</branch_length>
+                                                <sequence type="protein">
+                                                  <name>e07~3-3</name>
+                                                  <mol_seq is_aligned="true">------------------------------LDIRDDVLEEC--NKF------GP--------------------------IVHIHVDKNS----PQGIVYVKCATPDIAISASKSLH-------G-RW--F-AGKQIIAAPV----------</mol_seq>
+                                                </sequence>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <name>13dc~3-3</name>
+                                              <branch_length>0.10947</branch_length>
+                                              <sequence type="protein">
+                                                <name>13dc~3-3</name>
+                                                <mol_seq is_aligned="true">----------------------------WDLDIRDDIIEEC--NKH------GN--------------------------VYHVYVDKTS----PKGIVYVKCQTIDVAARAVKSLN-------G-RW--F-AGNMITAQFLSLAS------</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <name>93~3-3</name>
+                                            <branch_length>0.15493</branch_length>
+                                            <sequence type="protein">
+                                              <name>93~3-3</name>
+                                              <mol_seq is_aligned="true">----------------------------WDKEIREDVLEEC--VKF------GN--------------------------IFHIHVDKFS-----QGKVYIKSQTPQTASAAVGSFN-------G-RR--Y-AGNVIHAELVPENTYH----</mol_seq>
+                                            </sequence>
+                                          </clade>
+                                        </clade>
+                                        <clade>
+                                          <branch_length>0.00592</branch_length>
+                                          <clade>
+                                            <branch_length>0.02749</branch_length>
+                                            <clade>
+                                              <branch_length>0.03483</branch_length>
+                                              <clade>
+                                                <branch_length>0.02672</branch_length>
+                                                <clade>
+                                                  <branch_length>0.01988</branch_length>
+                                                  <clade>
+                                                    <name>119d~3-3</name>
+                                                    <branch_length>0.06699</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>119d~3-3</name>
+                                                      <mol_seq is_aligned="true">----------------------------FDLDIKEDVEEEC--SKY------GR--------------------------VKHIYVDKRS-----AGFVYLQFETVEAASAAQRAMH-------T-RW--F-AGRMISAIYMLPQMYETK--</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                  <clade>
+                                                    <name>189~3-3</name>
+                                                    <branch_length>0.09427</branch_length>
+                                                    <sequence type="protein">
+                                                      <name>189~3-3</name>
+                                                      <mol_seq is_aligned="true">----------------------------FDLEIRDDVADEC--SKY------GP--------------------------VNHIYVDKNS-----AGFVYLRFQSVEAAAAAQRAMH-------M-RW--F-AQKMISATFMPPHEYEAKA-</mol_seq>
+                                                    </sequence>
+                                                  </clade>
+                                                </clade>
+                                                <clade>
+                                                  <name>1205~3-3</name>
+                                                  <branch_length>0.11222</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>1205~3-3</name>
+                                                    <mol_seq is_aligned="true">---------------------------DFDIDIKEDVEEEC--SKY------GR--------------------------VKHIFVDKKS-----AGFVYLRFDTVEAASAAQHAMH-------L-RW--F-ARSNQSCTKPSL--------</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                              </clade>
+                                              <clade>
+                                                <branch_length>0.01379</branch_length>
+                                                <clade>
+                                                  <name>11fb~3-3</name>
+                                                  <branch_length>0.09664</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>11fb~3-3</name>
+                                                    <mol_seq is_aligned="true">----------------------------FDLDIKEDVEAEC--SKL------GT--------------------------LKHIYVDKKS-----AGFVYLRFEDTQSAISAQQALH-------G-RW--F-AGKMITASFMVPQSYEDKF-</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                                <clade>
+                                                  <name>df~3-3</name>
+                                                  <branch_length>0.07283</branch_length>
+                                                  <sequence type="protein">
+                                                    <name>df~3-3</name>
+                                                    <mol_seq is_aligned="true">---------------------------DFDEDIKEDVKEEC--SKF------GK--------------------------LNHIFVDKNS-----VGFVYLRFENAQAAIGAQRALH-------G-RW--F-AGKMITATYMTTEAYEAK--</mol_seq>
+                                                  </sequence>
+                                                </clade>
+                                              </clade>
+                                            </clade>
+                                            <clade>
+                                              <name>342~3-3</name>
+                                              <branch_length>0.16575</branch_length>
+                                              <sequence type="protein">
+                                                <name>342~3-3</name>
+                                                <mol_seq is_aligned="true">------------------------------LDIRDTVLDEC--VKH------GS--------------------------VTHIFVDANS-----PGFVFIKFSSVEACIAVQRTMH-------G-RW--F-AGKLITADYVPEPMYHA---</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                          <clade>
+                                            <branch_length>0.01823</branch_length>
+                                            <clade>
+                                              <name>14d4~3-3</name>
+                                              <branch_length>0.13746</branch_length>
+                                              <sequence type="protein">
+                                                <name>14d4~3-3</name>
+                                                <mol_seq is_aligned="true">-------------------------------EVEVDVREEC--SRF------GE--------------------------LLHVWVDAKS-----KGFVYLRFATTQSAEAAHRALH-------G-RW--Y-SGRQILAEYQF---------</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                            <clade>
+                                              <name>1521~3-3</name>
+                                              <branch_length>0.13812</branch_length>
+                                              <sequence type="protein">
+                                                <name>1521~3-3</name>
+                                                <mol_seq is_aligned="true">-----------------------------AEEIAQDVQDEC--SKY------GA--------------------------VVHIHVDKSS-----KGCVYLKCGSVEAASAAQAAMN-------G-RW--F-AGRQLAVEFQF---------</mol_seq>
+                                              </sequence>
+                                            </clade>
+                                          </clade>
+                                        </clade>
+                                      </clade>
+                                      <clade>
+                                        <name>825~3-3</name>
+                                        <branch_length>0.19765</branch_length>
+                                        <sequence type="protein">
+                                          <name>825~3-3</name>
+                                          <mol_seq is_aligned="true">--------------------------------LREDIMEEC--GKF------GK--------------------------VEAAKVDRAS-----QGHVLLQFDSTGSATKAASSMH-------S-RW--F-AGKQITAEFTDEAAFAS---</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                    </clade>
+                                    <clade>
+                                      <name>125c~3-3</name>
+                                      <branch_length>0.21614</branch_length>
+                                      <sequence type="protein">
+                                        <name>125c~3-3</name>
+                                        <mol_seq is_aligned="true">-----------------------------ESDLTEDVMEEC--NNY------GT--------------------------VKHCAIDKAS----LEGVVFVKYETADMAAAGLSKLH-------G-RW--F-DKRQIAATYITLEEYATK--</mol_seq>
+                                      </sequence>
+                                    </clade>
+                                  </clade>
+                                  <clade>
+                                    <name>88c~3-3</name>
+                                    <branch_length>0.23047</branch_length>
+                                    <sequence type="protein">
+                                      <name>88c~3-3</name>
+                                      <mol_seq is_aligned="true">----------------------------FEKELRNDILEEL--KQY------CQ--------------------------VKDVIVDLIH----PKGVVYVLCETEVDAKKAFSVMH-------L-RW--F-NMHLLRVEYYPESKVP----</mol_seq>
+                                    </sequence>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <name>1035~3-3</name>
+                                  <branch_length>0.19752</branch_length>
+                                  <sequence type="protein">
+                                    <name>1035~3-3</name>
+                                    <mol_seq is_aligned="true">----------------------------WVQELEQDVKEECD-EKY------GK--------------------------VVHIAVVPNE-----LGQIFVKFENADFAEKAITGLH-------Q-RW--F-GGRTIKASILPET-------</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <branch_length>0.15157</branch_length>
+                                <clade>
+                                  <branch_length>0.03127</branch_length>
+                                  <clade>
+                                    <name>10c5~2-2</name>
+                                    <branch_length>0.00227</branch_length>
+                                    <sequence type="protein">
+                                      <name>10c5~2-2</name>
+                                      <mol_seq is_aligned="true">---------------------------NLHLELEEDVKEEC--TKL------GP--------------------------VDSVKICENH----PQGVVLVRFKDRKDAQKCIELMN-------G-RW--F-GGRQIHASEDDGSVNH----</mol_seq>
+                                    </sequence>
+                                  </clade>
+                                  <clade>
+                                    <name>11f9~2-2</name>
+                                    <branch_length>0.02454</branch_length>
+                                    <sequence type="protein">
+                                      <name>11f9~2-2</name>
+                                      <mol_seq is_aligned="true">------------------------------LELEEDVKEEC--TKL------GP--------------------------LDSVKICENH----PQGVVLVRFKDRKDAQKCIELMN-------G-RW--F-GGRQIHASEDDGSVNH----</mol_seq>
+                                    </sequence>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <name>115~2-2</name>
+                                  <branch_length>0.07297</branch_length>
+                                  <sequence type="protein">
+                                    <name>115~2-2</name>
+                                    <mol_seq is_aligned="true">-------------------------------ELEEDVKEES--LKH------GP--------------------------FDSVKVCEHH----PQGVVLVRFKDRRDAQKCIEAMN-------G-RW--Y-AKRQIHASLDDGSVNHAT--</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>523~1-2</name>
+                              <branch_length>0.25535</branch_length>
+                              <sequence type="protein">
+                                <name>523~1-2</name>
+                                <mol_seq is_aligned="true">----------------------------ERTEAIDDVTEEL--RQY------GS--------------------------IEEVALDERP-NEPEAGTVYVRFTKAADAAAAADAMQ-------H-RR--F-EQRPVNAELLSV--------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <name>1317~3-3</name>
+                            <branch_length>0.26015</branch_length>
+                            <sequence type="protein">
+                              <name>1317~3-3</name>
+                              <mol_seq is_aligned="true">-------------------------EPNWENDIKLDFEEEC--AQY------GK--------------------------MTSVVVMSKE----VGGKIYASFESSRDAMNCAKNLA-------G-RW--F-DKRQLRVEFVDAVPS-----</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <branch_length>0.03366</branch_length>
+                          <clade>
+                            <branch_length>0.07087</branch_length>
+                            <clade>
+                              <branch_length>0.03111</branch_length>
+                              <clade>
+                                <branch_length>0.04363</branch_length>
+                                <clade>
+                                  <branch_length>0.06165</branch_length>
+                                  <clade>
+                                    <branch_length>0.00355</branch_length>
+                                    <clade>
+                                      <branch_length>0.01027</branch_length>
+                                      <clade>
+                                        <name>9f8</name>
+                                        <branch_length>0.00318</branch_length>
+                                        <sequence type="protein">
+                                          <name>9f8</name>
+                                          <mol_seq is_aligned="true">-----------------------------HLAIQEAILEKC--SDN------DG--------------------------IVHIAVDKNS----REGCVYVKCLSPEYAGKAFKALH-------G-SW--F-DGKLVTVKYLRLDRYHHR--</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                      <clade>
+                                        <name>c97</name>
+                                        <branch_length>0.00343</branch_length>
+                                        <sequence type="protein">
+                                          <name>c97</name>
+                                          <mol_seq is_aligned="true">-----------------------------HLAIQEAILEKC--SDN------DG--------------------------IVHIAVDRNS----REGCVYVKCLSPEYAGKAFKALH-------G-SW--F-DGKLVTVKYLRLDRYHHR--</mol_seq>
+                                        </sequence>
+                                      </clade>
+                                    </clade>
+                                    <clade>
+                                      <name>155b</name>
+                                      <branch_length>0.01667</branch_length>
+                                      <sequence type="protein">
+                                        <name>155b</name>
+                                        <mol_seq is_aligned="true">----------------------------WDLAIQEAILEKC--SDN------EG--------------------------IVHIAVDKNS----REGCVYVKCLSPEFAGKAFKALH-------G-SW--F-DGKLVTVKYLRLDRYHHR--</mol_seq>
+                                      </sequence>
+                                    </clade>
+                                  </clade>
+                                  <clade>
+                                    <name>5a1</name>
+                                    <branch_length>0.0202</branch_length>
+                                    <sequence type="protein">
+                                      <name>5a1</name>
+                                      <mol_seq is_aligned="true">----------------------------WHLAIQEAILEKC--SDN------DG--------------------------IVHIAVDKNS----REGCVYVKCLSAEHSGKAFKALH-------G-SW--F-DGKLVTVKYLRLDRYHQR--</mol_seq>
+                                    </sequence>
+                                  </clade>
+                                </clade>
+                                <clade>
+                                  <name>dc4</name>
+                                  <branch_length>0.08737</branch_length>
+                                  <sequence type="protein">
+                                    <name>dc4</name>
+                                    <mol_seq is_aligned="true">-------------------------------LIQDAILEKC--SDA------GA-------------------------NIVHIAVDKSS----NEGCVYVKCDSHDSAGIAFKSLH-------G-CW--F-DGRLVAVKYLTLKRYHQR--</mol_seq>
+                                  </sequence>
+                                </clade>
+                              </clade>
+                              <clade>
+                                <name>b3e</name>
+                                <branch_length>0.13497</branch_length>
+                                <sequence type="protein">
+                                  <name>b3e</name>
+                                  <mol_seq is_aligned="true">--------------------------EDWVKKVENAVLEKC--END------GA-------------------------RILHIHVDINS----REGCVYVKCDTLESARKAFRSMY-------G-NW--F-DGRLVIVKFVTLARYHQR--</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>13d5</name>
+                              <branch_length>0.20499</branch_length>
+                              <sequence type="protein">
+                                <name>13d5</name>
+                                <mol_seq is_aligned="true">-------------------------GSDWTSRIQDAILEKC--GDS------SS--------------------------IVHIHVERYS----NRGSVYIKCSQIEDAKETFKAMH-------G-CI--F-DGRIVRARFISNQTYHS---</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <branch_length>0.07188</branch_length>
+                            <clade>
+                              <name>c1f~3-3</name>
+                              <branch_length>0.12873</branch_length>
+                              <sequence type="protein">
+                                <name>c1f~3-3</name>
+                                <mol_seq is_aligned="true">--------------------------ANWDKDMAEEVLEEC--TKS------GP--------------------------VFHIVVDKTS-----QGDIYLKFSDTRSAAHASSVMN-------G-RF--F-DGRQITAEYMTQDEYYAK--</mol_seq>
+                              </sequence>
+                            </clade>
+                            <clade>
+                              <name>fda~3-3</name>
+                              <branch_length>0.15637</branch_length>
+                              <sequence type="protein">
+                                <name>fda~3-3</name>
+                                <mol_seq is_aligned="true">--------------------------PDWHEDVRDEVLEAS--TKY------GP--------------------------VFHIFVDKTA----PQGQVFLKFKDSVASAQAYQAMN-------G-RL--F-DGRTVKAEYMKETFYTT---</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <branch_length>0.0156</branch_length>
+                        <clade>
+                          <branch_length>0.04955</branch_length>
+                          <clade>
+                            <branch_length>0.05883</branch_length>
+                            <clade>
+                              <branch_length>0.038</branch_length>
+                              <clade>
+                                <name>82b</name>
+                                <branch_length>0.57399</branch_length>
+                                <sequence type="protein">
+                                  <name>82b</name>
+                                  <mol_seq is_aligned="true">DSKDKERCVVLKNMFDRLSDDVTADPDAFYKELANDVRTEA--SKL------GT--------------------------VVHVAPDRWS-----NGFVYIKMLAHSEAARLKQAMH-------G-RY--F-AKNRIVCEYVEEAAYDKKNK</mol_seq>
+                                </sequence>
+                              </clade>
+                              <clade>
+                                <name>b7c~3-3</name>
+                                <branch_length>0.33652</branch_length>
+                                <sequence type="protein">
+                                  <name>b7c~3-3</name>
+                                  <mol_seq is_aligned="true">-----QAMQSRSVLLKNMFDPEEETERDWDKELADDVKVECE-NKY------GK--------------------------VEAIKVERET-----QGEIYLKFDSIESAKQAIQGLN-------G-RW--F-GGRQVSAAFISDAIMQAH--</mol_seq>
+                                </sequence>
+                              </clade>
+                            </clade>
+                            <clade>
+                              <name>687~3-3</name>
+                              <branch_length>0.25296</branch_length>
+                              <sequence type="protein">
+                                <name>687~3-3</name>
+                                <mol_seq is_aligned="true">----------TCLILRNMFDPETETEENWDQDILSETHAEC--STF------GK--------------------------IMHIYLDKNT-----KGCIYIRYDNNESPLKAIQKLH-------G-RW--F-SKKQIIAELVPEP-------</mol_seq>
+                              </sequence>
+                            </clade>
+                          </clade>
+                          <clade>
+                            <name>15bf~2-2</name>
+                            <branch_length>0.44465</branch_length>
+                            <sequence type="protein">
+                              <name>15bf~2-2</name>
+                              <mol_seq is_aligned="true">------AKADRTVIFANVFNIYKSYTNDDINDIQEDLLEGC--EEI------GQ--------------------------VDSISVSPN------KGEATVVFKNNKVALQCCKIMT-------G-RY--F-DGQKLLAFISGDENTSSTS-</mol_seq>
+                            </sequence>
+                          </clade>
+                        </clade>
+                        <clade>
+                          <name>131e</name>
+                          <branch_length>0.38597</branch_length>
+                          <sequence type="protein">
+                            <name>131e</name>
+                            <mol_seq is_aligned="true">-----------SPDSCTVALFNMVAPGDIDDELATEVKEECE-EQC------GK--------------------------VLNVHVMDAT-SSEEYVRVDVTFENAASASKAVKIFS-------G-RM--F-GDRKITARMKRGR-------</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>1299~2-2</name>
+                    <branch_length>0.33313</branch_length>
+                    <sequence type="protein">
+                      <name>1299~2-2</name>
+                      <mol_seq is_aligned="true">-----------------------------------------L-EPF------GK--------------------------IDNIQLMMDTDANRSKGYGFITFHDAEDAKRALDQLN-------G-FE--L-AGRPMKVNHVTERNEQGQQA</mol_seq>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <branch_length>0.12245</branch_length>
+                  <clade>
+                    <branch_length>0.06564</branch_length>
+                    <clade>
+                      <branch_length>0.04365</branch_length>
+                      <clade>
+                        <name>119d~2-3</name>
+                        <branch_length>0.02169</branch_length>
+                        <sequence type="protein">
+                          <name>119d~2-3</name>
+                          <mol_seq is_aligned="true">------------------AVDRKLYVGNLHFNMTESQLREIF-EPF------GP--------------------------VEIVQLPLDLETGHCKGFGFVQFAHLEHAKAAQ-SLN-------GKLE--I-AGRTIKVSSVTDHVGNQDT-</mol_seq>
+                        </sequence>
+                      </clade>
+                      <clade>
+                        <name>1205~2-3</name>
+                        <branch_length>0.0189</branch_length>
+                        <sequence type="protein">
+                          <name>1205~2-3</name>
+                          <mol_seq is_aligned="true">------------------AVDRKLYVGNLHFNMTESQLREIF-EPF------GP--------------------------VEVVQLPLDLETGHCKGFGFVQFTHLEHAKAAQ-SLN-------GKLE--I-AGRTIKVSCVTDHVASQDA-</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>189~2-3</name>
+                      <branch_length>0.09735</branch_length>
+                      <sequence type="protein">
+                        <name>189~2-3</name>
+                        <mol_seq is_aligned="true">----------------TGPADRKLYVGNLHFNMSELQLRQIF-EAF------GP--------------------------VELVQLPLDPETGQCKGFGFIQFVQLEHSKAAQIALN-------GKLE--I-AGRTIKVSSVSDHIGTQD--</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <branch_length>0.03752</branch_length>
+                    <clade>
+                      <name>11fb~2-3</name>
+                      <branch_length>0.08304</branch_length>
+                      <sequence type="protein">
+                        <name>11fb~2-3</name>
+                        <mol_seq is_aligned="true">------------------GGARKLYVGNLHISITEADIRRVF-EAF------GQ--------------------------VELVQLPLD-ESGHCKGFGFVQFARLEDARNAQ-SLN-------GQLE--I-GGRTIKVSAVTDQSGMQE--</mol_seq>
+                      </sequence>
+                    </clade>
+                    <clade>
+                      <name>df~2-3</name>
+                      <branch_length>0.07822</branch_length>
+                      <sequence type="protein">
+                        <name>df~2-3</name>
+                        <mol_seq is_aligned="true">------------------GGARRLYVGNLHINMSEDDLRKVF-ESF------GS--------------------------VELVQVPRD-ETGLCKGFGFVQFARLEDARNAL-NLN-------GQLE--I-AGRAIKVSAVTDQTEVPEA-</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.06279</branch_length>
+                <clade>
+                  <name>1035~2-3</name>
+                  <branch_length>0.21264</branch_length>
+                  <sequence type="protein">
+                    <name>1035~2-3</name>
+                    <mol_seq is_aligned="true">---------------SAEIPFHRLCVSNIHFNLTDEDVKAIF-EPF------GD--------------------------IEFVHLQRD-DQNRSKGFGYIQYRNPISARNALEKMN-------G-FD--L-AGRNMRVCLGNDKFTTETT-</mol_seq>
+                  </sequence>
+                </clade>
+                <clade>
+                  <name>b7c~2-3</name>
+                  <branch_length>0.20767</branch_length>
+                  <sequence type="protein">
+                    <name>b7c~2-3</name>
+                    <mol_seq is_aligned="true">----------------TASHGAILYVGSLHFNLTESDIKQVF-EPF------GE--------------------------LEFVDLHRDPMTGRSKGYAFVQYKRSEDARMALEQME-------G-FE--L-AGRTLRVNTVHEKGTARYT-</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <name>93~2-3</name>
+              <branch_length>0.16204</branch_length>
+              <sequence type="protein">
+                <name>93~2-3</name>
+                <mol_seq is_aligned="true">--------------LKKAEGPKKLYVGSLHYNITEDMLQGIF-SPF------GN--------------------------VERVSIMRDTATNVSRGYAFVEFRDSDSAERAMANLN-------G-FE--L-AGRPMKVNYGTVDTS-----</mol_seq>
+              </sequence>
+            </clade>
+          </clade>
+          <clade>
+            <branch_length>0.01312</branch_length>
+            <clade>
+              <branch_length>0.06913</branch_length>
+              <clade>
+                <branch_length>0.09333</branch_length>
+                <clade>
+                  <name>b13~2-2</name>
+                  <branch_length>0.0</branch_length>
+                  <sequence type="protein">
+                    <name>b13~2-2</name>
+                    <mol_seq is_aligned="true">---------------VKPQGPMKLYVGSLHYNITEPMLRAIF-EPF------GT--------------------------VESVQLQYDSETNRSKGFGFVNFREAGAAKRAMEQMN-------G-FE--L-AGRPMKVNTVSERTDGSMS-</mol_seq>
+                  </sequence>
+                </clade>
+                <clade>
+                  <name>b14~2-2</name>
+                  <branch_length>0.0</branch_length>
+                  <sequence type="protein">
+                    <name>b14~2-2</name>
+                    <mol_seq is_aligned="true">---------------VKPQGPMKLYVGSLHYNITEPMLRAIF-EPF------GT--------------------------VESVQLQYDSETNRSKGFGFVNFREAGAAKRAMEQMN-------G-FE--L-AGRPMKVNTVSERTDGSMS-</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <name>e07~2-3</name>
+                <branch_length>0.09286</branch_length>
+                <sequence type="protein">
+                  <name>e07~2-3</name>
+                  <mol_seq is_aligned="true">--------------LKQPLGPTRLYVGSLHFNITEAMVKAVF-EPF------GT--------------------------VDSVQLIYDSETNRSKGYGFVQFREAEAAKRAMEQMN-------G-FE--L-AGRPLKIGPVTERGDSSAY-</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+            <clade>
+              <name>13dc~2-3</name>
+              <branch_length>0.17225</branch_length>
+              <sequence type="protein">
+                <name>13dc~2-3</name>
+                <mol_seq is_aligned="true">--------------QKAQQGPTRLYIGSLHYNINEDMLRAIF-EPF------GL--------------------------VENVNIIRDSDTNVSKGYGFIQYKEPDSARRALEQLN-------G-LE--V-AGRPIKVGTVTDRSADLSAM</mol_seq>
+              </sequence>
+            </clade>
+          </clade>
+        </clade>
+        <clade>
+          <name>418~2-3</name>
+          <branch_length>0.15953</branch_length>
+          <sequence type="protein">
+            <name>418~2-3</name>
+            <mol_seq is_aligned="true">----------------AALGPTKLYVGSLHENITEEMIKGIF-SPF------GR--------------------------VEQVQIIKD-DAGASRGYGFITFAEAECAKRALDQLN-------G-FE--I-AGKPIKLNTVSYGTD-----</mol_seq>
+          </sequence>
+        </clade>
+      </clade>
+      <clade>
+        <branch_length>0.02654</branch_length>
+        <clade>
+          <branch_length>0.01124</branch_length>
+          <clade>
+            <branch_length>0.01223</branch_length>
+            <clade>
+              <branch_length>0.01355</branch_length>
+              <clade>
+                <branch_length>0.01582</branch_length>
+                <clade>
+                  <branch_length>0.02319</branch_length>
+                  <clade>
+                    <branch_length>0.00597</branch_length>
+                    <clade>
+                      <branch_length>0.00675</branch_length>
+                      <clade>
+                        <branch_length>0.0</branch_length>
+                        <clade>
+                          <name>3c3~2-3</name>
+                          <branch_length>0.0</branch_length>
+                          <sequence type="protein">
+                            <name>3c3~2-3</name>
+                            <mol_seq is_aligned="true">----------------GSAGPMRLYVGSLHFNITEDMLRGIF-EPF------GR--------------------------IESIQLMMDSETGRSKGYGFITFSDSECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERTDASSA-</mol_seq>
+                          </sequence>
+                        </clade>
+                        <clade>
+                          <name>a3a~2-3</name>
+                          <branch_length>0.0</branch_length>
+                          <sequence type="protein">
+                            <name>a3a~2-3</name>
+                            <mol_seq is_aligned="true">----------------GSAGPMRLYVGSLHFNITEDMLRGIF-EPF------GR--------------------------IESIQLMMDSETGRSKGYGFITFSDSECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERTDASSA-</mol_seq>
+                          </sequence>
+                        </clade>
+                      </clade>
+                      <clade>
+                        <name>ccd~2-3</name>
+                        <branch_length>0.0</branch_length>
+                        <sequence type="protein">
+                          <name>ccd~2-3</name>
+                          <mol_seq is_aligned="true">----------------GSAGPMRLYVGSLHFNITEDMLRGIF-EPF------GR--------------------------IESIQLMMDSETGRSKGYGFITFSDSECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERTDASSA-</mol_seq>
+                        </sequence>
+                      </clade>
+                    </clade>
+                    <clade>
+                      <name>1579~2-3</name>
+                      <branch_length>0.00653</branch_length>
+                      <sequence type="protein">
+                        <name>1579~2-3</name>
+                        <mol_seq is_aligned="true">----------------GTAGPMRLYVGSLHFNITEDMLRGIF-EPF------GR--------------------------IESIQLMMDSETGRSKGYGFITFSDSECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERTDASNA-</mol_seq>
+                      </sequence>
+                    </clade>
+                  </clade>
+                  <clade>
+                    <name>599~2-3</name>
+                    <branch_length>0.01081</branch_length>
+                    <sequence type="protein">
+                      <name>599~2-3</name>
+                      <mol_seq is_aligned="true">----------------GSAGPMRLYVGSLHFNITEDMLRGIF-EPF------GR--------------------------IDSIQLMMDSETGRSKGYGFITFSDAECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERTDASTA-</mol_seq>
+                    </sequence>
+                  </clade>
+                </clade>
+                <clade>
+                  <name>574~2-2</name>
+                  <branch_length>0.0251</branch_length>
+                  <sequence type="protein">
+                    <name>574~2-2</name>
+                    <mol_seq is_aligned="true">------------------AGPMRLYVGSLHFNITEDMLRGIF-EPF------GK--------------------------IEGIQLMMDSETGRSKGYGFISFADAECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERSDASSA-</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+              <clade>
+                <branch_length>0.01926</branch_length>
+                <clade>
+                  <name>1fc~2-2</name>
+                  <branch_length>0.02097</branch_length>
+                  <sequence type="protein">
+                    <name>1fc~2-2</name>
+                    <mol_seq is_aligned="true">---------------KGSSGPMRLYVGSLHFNITEDMLRGIF-EPF------GK--------------------------IDNIQLMKDSETGRSKGYGFITFHDAECAKKALEQLN-------G-FE--L-AGRPMKVGHVTERSDAGAA-</mol_seq>
+                  </sequence>
+                </clade>
+                <clade>
+                  <name>eef~2-3</name>
+                  <branch_length>0.02662</branch_length>
+                  <sequence type="protein">
+                    <name>eef~2-3</name>
+                    <mol_seq is_aligned="true">---------------KGNSGPMRLYVGSLHFNITEEMLRGIF-EPF------GK--------------------------IDNIQLMKDNETGRSKGYGFITFHDAEDAKKALEQLN-------G-FE--L-AGRPMKVGHVTERSDAATD-</mol_seq>
+                  </sequence>
+                </clade>
+              </clade>
+            </clade>
+            <clade>
+              <branch_length>0.062</branch_length>
+              <clade>
+                <name>6ce~2-3</name>
+                <branch_length>0.02513</branch_length>
+                <sequence type="protein">
+                  <name>6ce~2-3</name>
+                  <mol_seq is_aligned="true">---------------KSHTGPMRLYVGSLHFNITEDMLRGIF-EPF------GK--------------------------IDAIQLIMDTETGRSKGYGFITYHNADDAKKALEQLN-------G-FE--L-AGRLMKVGNVTERLDMNT--</mol_seq>
+                </sequence>
+              </clade>
+              <clade>
+                <name>749~2-3</name>
+                <branch_length>0.01547</branch_length>
+                <sequence type="protein">
+                  <name>749~2-3</name>
+                  <mol_seq is_aligned="true">---------------KSHVGPMRLYVGSLHFDITEEMLRGIF-EPF------GK--------------------------IDAIQLIMDTETNRSKGYGFITYHNAEDAKKALEQLN-------G-FE--L-AGRPMKVGNVTERLDMNT--</mol_seq>
+                </sequence>
+              </clade>
+            </clade>
+          </clade>
+          <clade>
+            <name>4fa~2-3</name>
+            <branch_length>0.06378</branch_length>
+            <sequence type="protein">
+              <name>4fa~2-3</name>
+              <mol_seq is_aligned="true">-------------------GPMRLYVGSLHFNITEEMLRGIF-EPF------GK--------------------------IDDIKLIRDHETNRSQGYGFITFHDSEDAKKALEQLN-------G-FE--L-AGRPMKVGHVTERQGEIQ--</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+        <clade>
+          <branch_length>0.03413</branch_length>
+          <clade>
+            <name>1578~2-2</name>
+            <branch_length>0.06336</branch_length>
+            <sequence type="protein">
+              <name>1578~2-2</name>
+              <mol_seq is_aligned="true">---------------RGNPGPMRLYVGSLHFNITEDMLRGIF-EPF------GK--------------------------IENIQLLKEPDTGRSKGFGFITFTDAECARRALEQLN-------G-FE--L-AGRPMKVGHVTDHLE-----</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>a31~2-2</name>
+            <branch_length>0.05035</branch_length>
+            <sequence type="protein">
+              <name>a31~2-2</name>
+              <mol_seq is_aligned="true">-----------------NGGPMRLYVGSLHFNITEDMLRGIF-EPF------GK--------------------------IDNIVLMKDSDTGRSKGYGFITFSDSECARRALEQLN-------G-FE--L-AGRPMRVGHVTERLDG----</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+      </clade>
+    </clade>
+    <clade>
+      <branch_length>0.02067</branch_length>
+      <clade>
+        <branch_length>0.0378</branch_length>
+        <clade>
+          <branch_length>0.39539</branch_length>
+          <clade>
+            <name>80f~2-2</name>
+            <branch_length>-0.16288</branch_length>
+            <sequence type="protein">
+              <name>80f~2-2</name>
+              <mol_seq is_aligned="true">-----------------VESGMKLYVGNLHSEITEEQLRGVF-SPF------GF--------------------------LERIDIHREQATGEAR-YGFLHFALAADGKRCMDQMD-------G-FN--L-AGRNLRVSLSGQDSSMSSS-</mol_seq>
+            </sequence>
+          </clade>
+          <clade>
+            <name>82a~2-2</name>
+            <branch_length>0.59457</branch_length>
+            <sequence type="protein">
+              <name>82a~2-2</name>
+              <mol_seq is_aligned="true">-----------------VESGMKLYVGNLHSEITEEQLRGVF-SPF------GSPKRKKAARRKPRDGRRRRCPHLHVGFLERIDIHREQATGEAR-YGFLHFALAADGKRCMDQMD-------Q-MD------------------------</mol_seq>
+            </sequence>
+          </clade>
+        </clade>
+        <clade>
+          <name>977~2-3</name>
+          <branch_length>0.09961</branch_length>
+          <sequence type="protein">
+            <name>977~2-3</name>
+            <mol_seq is_aligned="true">-------------------GPMKLYIGSLHYNITEEMLKGIF-EPF------GP--------------------------IDELKLMRDHSTGRSLGYGFLQFKRGDDGKKALEQLN-------G-FE--L-AGRPMKLGNVADYQL-----</mol_seq>
+          </sequence>
+        </clade>
+      </clade>
+      <clade>
+        <name>928~2-2</name>
+        <branch_length>0.15896</branch_length>
+        <sequence type="protein">
+          <name>928~2-2</name>
+          <mol_seq is_aligned="true">------------------EGPGRLYVGLLHPNITEEMLSGLF-EPF------GK--------------------------LLELKLVKDPSSGKSAGYGFITYALTEDAKKAMGQFN-------G-FQ--L-AGKAIKVGFVTEKTTEIL--</mol_seq>
+        </sequence>
+      </clade>
+    </clade>
+  </clade>
+</phylogeny>
+</phyloxml>
