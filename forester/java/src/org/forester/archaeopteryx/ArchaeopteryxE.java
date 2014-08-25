@@ -566,66 +566,62 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
             }
         }
         //
-        setVisible( false );
-        setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
-        _jmenubar = new JMenuBar();
-        if ( !getConfiguration().isHideControlPanelAndMenubar() ) {
-            if ( !getConfiguration().isUseNativeUI() ) {
-                _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+        try {
+            setVisible( false );
+            setMainPanel( new MainPanelApplets( getConfiguration(), this ) );
+            _jmenubar = new JMenuBar();
+            if ( !getConfiguration().isHideControlPanelAndMenubar() ) {
+                if ( !getConfiguration().isUseNativeUI() ) {
+                    _jmenubar.setBackground( getConfiguration().getGuiMenuBackgroundColor() );
+                }
+                if ( getSpeciesTree() != null ) {
+                    buildAnalysisMenu();
+                }
+                buildToolsMenu();
+                buildViewMenu();
+                buildFontSizeMenu();
+                buildOptionsMenu();
+                buildTypeMenu();
+                buildHelpMenu();
+                setJMenuBar( _jmenubar );
             }
-            if ( getSpeciesTree() != null ) {
-                buildAnalysisMenu();
-            }
-            buildToolsMenu();
-            buildViewMenu();
-            buildFontSizeMenu();
-            buildOptionsMenu();
-            buildTypeMenu();
-            buildHelpMenu();
-            setJMenuBar( _jmenubar );
-        }
-        final Container contentpane = getContentPane();
-        contentpane.setLayout( new BorderLayout() );
-        contentpane.add( getMainPanel(), BorderLayout.CENTER );
-        addComponentListener( new ComponentAdapter() {
+            final Container contentpane = getContentPane();
+            contentpane.setLayout( new BorderLayout() );
+            contentpane.add( getMainPanel(), BorderLayout.CENTER );
+            addComponentListener( new ComponentAdapter() {
 
-            @Override
-            public void componentResized( final ComponentEvent e ) {
-                if ( getMainPanel().getCurrentTreePanel() != null ) {
-                    getMainPanel().getCurrentTreePanel().calcParametersForPainting( getMainPanel()
-                                                                                            .getCurrentTreePanel()
-                                                                                            .getWidth(),
-                                                                                    getMainPanel()
-                                                                                            .getCurrentTreePanel()
-                                                                                            .getHeight(),
-                                                                                    getOptions()
-                                                                                            .isAllowFontSizeChange() );
+                @Override
+                public void componentResized( final ComponentEvent e ) {
+                    if ( getMainPanel().getCurrentTreePanel() != null ) {
+                        getMainPanel().getCurrentTreePanel()
+                                .calcParametersForPainting( getMainPanel().getCurrentTreePanel().getWidth(),
+                                                            getMainPanel().getCurrentTreePanel().getHeight(),
+                                                            getOptions().isAllowFontSizeChange() );
+                    }
+                }
+            } );
+            if ( getConfiguration().isUseTabbedDisplay() ) {
+                try {
+                    AptxUtil.printAppletMessage( NAME, "using tabbed display" );
+                    AptxUtil.addPhylogeniesToTabs( phys,
+                                                   new File( phys_url.getFile() ).getName(),
+                                                   phys_url.toString(),
+                                                   getConfiguration(),
+                                                   getMainPanel() );
+                }
+                catch ( final Exception e ) {
+                    ForesterUtil.printErrorMessage( NAME, e.toString() );
+                    e.printStackTrace();
                 }
             }
-        } );
-        if ( getConfiguration().isUseTabbedDisplay() ) {
-            try {
-                AptxUtil.printAppletMessage( NAME, "using tabbed display" );
-                AptxUtil.addPhylogeniesToTabs( phys,
-                                               new File( phys_url.getFile() ).getName(),
-                                               phys_url.toString(),
-                                               getConfiguration(),
-                                               getMainPanel() );
+            else {
+                AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
+                if ( getSpeciesTree() != null ) {
+                    AptxUtil.printAppletMessage( NAME,
+                                                 "Warning: gsdi (gene duplication inference) only available tabbed display" );
+                }
+                AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
             }
-            catch ( final Exception e ) {
-                ForesterUtil.printErrorMessage( NAME, e.toString() );
-                e.printStackTrace();
-            }
-        }
-        else {
-            AptxUtil.printAppletMessage( NAME, "not using tabbed display" );
-            if ( getSpeciesTree() != null ) {
-                AptxUtil.printAppletMessage( NAME,
-                                             "Warning: gsdi (gene duplication inference) only available tabbed display" );
-            }
-            AptxUtil.addPhylogenyToPanel( phys, getConfiguration(), getMainPanel() );
-        }
-        try {
             validate();
             setName( NAME );
             getMainPanel().getControlPanel().showWholeAll();
@@ -1465,7 +1461,7 @@ public class ArchaeopteryxE extends JApplet implements ActionListener {
         }
     }
 
-    private MainPanel getMainPanel() {
+    MainPanel getMainPanel() {
         return _mainpanel;
     }
 

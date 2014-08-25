@@ -2305,121 +2305,137 @@ final class ControlPanel extends JPanel implements ActionListener {
 
     private void setVisibilityOfDomainStrucureControls() {
         if ( _zoom_in_domain_structure != null ) {
-            if ( isShowDomainArchitectures() ) {
-                _domain_display_label.setVisible( true );
-                _zoom_in_domain_structure.setVisible( true );
-                _zoom_out_domain_structure.setVisible( true );
-                _decr_domain_structure_evalue_thr.setVisible( true );
-                _incr_domain_structure_evalue_thr.setVisible( true );
-                _domain_structure_evalue_thr_tf.setVisible( true );
-                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( true );
+            final MainFrame mf = getMainFrame();
+            if ( mf != null ) {
+                if ( isShowDomainArchitectures() ) {
+                    _domain_display_label.setVisible( true );
+                    _zoom_in_domain_structure.setVisible( true );
+                    _zoom_out_domain_structure.setVisible( true );
+                    _decr_domain_structure_evalue_thr.setVisible( true );
+                    _incr_domain_structure_evalue_thr.setVisible( true );
+                    _domain_structure_evalue_thr_tf.setVisible( true );
+                    if ( mf._right_line_up_domains_cbmi != null ) {
+                        mf._right_line_up_domains_cbmi.setVisible( true );
+                    }
+                    if ( mf._show_domain_labels != null ) {
+                        mf._show_domain_labels.setVisible( true );
+                    }
                 }
-                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( true );
-                }
-            }
-            else {
-                _domain_display_label.setVisible( false );
-                _zoom_in_domain_structure.setVisible( false );
-                _zoom_out_domain_structure.setVisible( false );
-                _decr_domain_structure_evalue_thr.setVisible( false );
-                _incr_domain_structure_evalue_thr.setVisible( false );
-                _domain_structure_evalue_thr_tf.setVisible( false );
-                if ( getMainPanel().getMainFrame()._right_line_up_domains_cbmi != null ) {
-                    getMainPanel().getMainFrame()._right_line_up_domains_cbmi.setVisible( false );
-                }
-                if ( getMainPanel().getMainFrame()._show_domain_labels != null ) {
-                    getMainPanel().getMainFrame()._show_domain_labels.setVisible( false );
+                else {
+                    _domain_display_label.setVisible( false );
+                    _zoom_in_domain_structure.setVisible( false );
+                    _zoom_out_domain_structure.setVisible( false );
+                    _decr_domain_structure_evalue_thr.setVisible( false );
+                    _incr_domain_structure_evalue_thr.setVisible( false );
+                    _domain_structure_evalue_thr_tf.setVisible( false );
+                    if ( mf._right_line_up_domains_cbmi != null ) {
+                        mf._right_line_up_domains_cbmi.setVisible( false );
+                    }
+                    if ( mf._show_domain_labels != null ) {
+                        mf._show_domain_labels.setVisible( false );
+                    }
                 }
             }
         }
     }
 
+    // This takes care of ArchaeopteryxE-issue.
+    // Can, and will, return null prior to  ArchaeopteryxE initialization completion.
+    final private MainFrame getMainFrame() {
+        MainFrame mf = getMainPanel().getMainFrame();
+        if ( mf == null ) {
+            // Must be "E" applet version.
+            final ArchaeopteryxE e = ( ArchaeopteryxE ) ( ( MainPanelApplets ) getMainPanel() ).getApplet();
+            if ( e.getMainPanel() == null ) {
+                return null;
+            }
+            mf = e.getMainPanel().getMainFrame();
+        }
+        return mf;
+    }
+
     void setVisibilityOfX() {
-        try {
+        final MainFrame mf = getMainFrame();
+        if ( mf != null ) {
             if ( ( getCurrentTreePanel() != null ) && ( getCurrentTreePanel().getPhylogeny() != null ) ) {
                 if ( AptxUtil.isHasAtLeastOneBranchWithSupportSD( getCurrentTreePanel().getPhylogeny() ) ) {
-                    if ( getMainPanel().getMainFrame()._show_confidence_stddev_cbmi != null ) {
-                        getMainPanel().getMainFrame()._show_confidence_stddev_cbmi.setVisible( true );
+                    if ( mf._show_confidence_stddev_cbmi != null ) {
+                        mf._show_confidence_stddev_cbmi.setVisible( true );
                     }
                 }
                 else {
-                    if ( getMainPanel().getMainFrame()._show_confidence_stddev_cbmi != null ) {
-                        getMainPanel().getMainFrame()._show_confidence_stddev_cbmi.setVisible( false );
+                    if ( mf._show_confidence_stddev_cbmi != null ) {
+                        mf._show_confidence_stddev_cbmi.setVisible( false );
                     }
                 }
                 if ( AptxUtil.isHasAtLeastOneNodeWithScientificName( getCurrentTreePanel().getPhylogeny() ) ) {
-                    if ( getMainPanel().getMainFrame()._abbreviate_scientific_names != null ) {
-                        getMainPanel().getMainFrame()._abbreviate_scientific_names.setVisible( true );
+                    if ( mf._abbreviate_scientific_names != null ) {
+                        mf._abbreviate_scientific_names.setVisible( true );
                     }
                 }
                 else {
-                    if ( getMainPanel().getMainFrame()._abbreviate_scientific_names != null ) {
-                        getMainPanel().getMainFrame()._abbreviate_scientific_names.setVisible( false );
+                    if ( mf._abbreviate_scientific_names != null ) {
+                        mf._abbreviate_scientific_names.setVisible( false );
                     }
                 }
                 if ( AptxUtil.isHasAtLeastOneNodeWithSequenceAnnotation( getCurrentTreePanel().getPhylogeny() ) ) {
-                    if ( getMainPanel().getMainFrame()._show_annotation_ref_source != null ) {
-                        getMainPanel().getMainFrame()._show_annotation_ref_source.setVisible( true );
+                    if ( mf._show_annotation_ref_source != null ) {
+                        mf._show_annotation_ref_source.setVisible( true );
                     }
                 }
                 else {
-                    if ( getMainPanel().getMainFrame()._show_annotation_ref_source != null ) {
-                        getMainPanel().getMainFrame()._show_annotation_ref_source.setVisible( false );
+                    if ( mf._show_annotation_ref_source != null ) {
+                        mf._show_annotation_ref_source.setVisible( false );
                     }
                 }
             }
             if ( isDrawPhylogram()
                     || ( ( getCurrentTreePanel() != null ) && ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR ) || ( getCurrentTreePanel()
                             .getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) ) ) {
-                if ( getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi != null ) {
-                    getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi.setVisible( false );
+                if ( mf._non_lined_up_cladograms_rbmi != null ) {
+                    mf._non_lined_up_cladograms_rbmi.setVisible( false );
                 }
-                if ( getMainPanel().getMainFrame()._uniform_cladograms_rbmi != null ) {
-                    getMainPanel().getMainFrame()._uniform_cladograms_rbmi.setVisible( false );
+                if ( mf._uniform_cladograms_rbmi != null ) {
+                    mf._uniform_cladograms_rbmi.setVisible( false );
                 }
-                if ( getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi != null ) {
-                    getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi.setVisible( false );
+                if ( mf._ext_node_dependent_cladogram_rbmi != null ) {
+                    mf._ext_node_dependent_cladogram_rbmi.setVisible( false );
                 }
             }
             else {
-                if ( getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi != null ) {
-                    getMainPanel().getMainFrame()._non_lined_up_cladograms_rbmi.setVisible( true );
+                if ( mf._non_lined_up_cladograms_rbmi != null ) {
+                    mf._non_lined_up_cladograms_rbmi.setVisible( true );
                 }
-                if ( getMainPanel().getMainFrame()._uniform_cladograms_rbmi != null ) {
-                    getMainPanel().getMainFrame()._uniform_cladograms_rbmi.setVisible( true );
+                if ( mf._uniform_cladograms_rbmi != null ) {
+                    mf._uniform_cladograms_rbmi.setVisible( true );
                 }
-                if ( getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi != null ) {
-                    getMainPanel().getMainFrame()._ext_node_dependent_cladogram_rbmi.setVisible( true );
+                if ( mf._ext_node_dependent_cladogram_rbmi != null ) {
+                    mf._ext_node_dependent_cladogram_rbmi.setVisible( true );
                 }
             }
             if ( isDrawPhylogram() ) {
-                if ( getMainPanel().getMainFrame()._show_scale_cbmi != null ) {
-                    getMainPanel().getMainFrame()._show_scale_cbmi.setVisible( true );
+                if ( mf._show_scale_cbmi != null ) {
+                    mf._show_scale_cbmi.setVisible( true );
                 }
             }
             else {
-                if ( getMainPanel().getMainFrame()._show_scale_cbmi != null ) {
-                    getMainPanel().getMainFrame()._show_scale_cbmi.setVisible( false );
+                if ( mf._show_scale_cbmi != null ) {
+                    mf._show_scale_cbmi.setVisible( false );
                 }
             }
             if ( getCurrentTreePanel() != null ) {
                 if ( ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.CIRCULAR )
                         || ( getCurrentTreePanel().getPhylogenyGraphicsType() == PHYLOGENY_GRAPHICS_TYPE.UNROOTED ) ) {
-                    if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
-                        getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( true );
+                    if ( mf._label_direction_cbmi != null ) {
+                        mf._label_direction_cbmi.setVisible( true );
                     }
                 }
                 else {
-                    if ( getMainPanel().getMainFrame()._label_direction_cbmi != null ) {
-                        getMainPanel().getMainFrame()._label_direction_cbmi.setVisible( false );
+                    if ( mf._label_direction_cbmi != null ) {
+                        mf._label_direction_cbmi.setVisible( false );
                     }
                 }
             }
-        }
-        catch ( final Exception ignore ) {
-            //not important...
         }
     }
 
